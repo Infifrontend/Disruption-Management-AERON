@@ -54,7 +54,7 @@ export function WorldMap() {
     { id: 'KWI', name: 'Kuwait City', lat: 29.2267, lng: 47.9690, flights: 6 },
     { id: 'MCT', name: 'Muscat', lat: 23.5933, lng: 58.2844, flights: 5 },
     { id: 'BAH', name: 'Bahrain', lat: 26.2671, lng: 50.6333, flights: 4 },
-    
+
     // Indian Subcontinent
     { id: 'BOM', name: 'Mumbai', lat: 19.0896, lng: 72.8656, flights: 12 },
     { id: 'DEL', name: 'Delhi', lat: 28.5665, lng: 77.1031, flights: 10 },
@@ -62,18 +62,18 @@ export function WorldMap() {
     { id: 'COK', name: 'Kochi', lat: 10.1556, lng: 76.4019, flights: 6 },
     { id: 'KHI', name: 'Karachi', lat: 24.9056, lng: 67.1608, flights: 7 },
     { id: 'CMB', name: 'Colombo', lat: 7.1807, lng: 79.8841, flights: 5 },
-    
+
     // Europe
     { id: 'IST', name: 'Istanbul', lat: 41.2619, lng: 28.7419, flights: 9 },
     { id: 'PRG', name: 'Prague', lat: 50.1008, lng: 14.2632, flights: 4 },
     { id: 'BCN', name: 'Barcelona', lat: 41.2974, lng: 2.0833, flights: 3 },
     { id: 'BEG', name: 'Belgrade', lat: 44.8184, lng: 20.3090, flights: 4 },
     { id: 'SKP', name: 'Skopje', lat: 41.9614, lng: 21.6214, flights: 3 },
-    
+
     // Central Asia & Iran
     { id: 'TBZ', name: 'Tabriz', lat: 38.1339, lng: 46.2353, flights: 3 },
     { id: 'KBL', name: 'Kabul', lat: 34.5658, lng: 69.2123, flights: 2 },
-    
+
     // Africa
     { id: 'SLL', name: 'Salalah', lat: 17.0387, lng: 54.0917, flights: 4 },
     { id: 'KRT', name: 'Khartoum', lat: 15.5894, lng: 32.5732, flights: 2 }
@@ -130,7 +130,7 @@ export function WorldMap() {
               <p className="text-sm text-muted-foreground underline">Real-time flight operations & network monitoring</p>
             </div>
           </div>
-          
+
           <div className="flex items-center justify-center gap-4">
             <Tabs value={selectedView} onValueChange={setSelectedView} className="w-auto pb-8">
               <TabsList className="grid w-full grid-cols-3 ">
@@ -138,21 +138,21 @@ export function WorldMap() {
                   value="routes" 
                   className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center "
                 >
-                  
+
                   <span className="text-[14px]  pt-1 pb-1"><Navigation className="flex-shrink-0" />Routes</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="flights" 
                   className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center gap-1 whitespace-nowrap"
                 >
-                  
+
                   <span className="text-[14px] pt-1 pb-1"><Plane className="flex-shrink-0" />Live Flights</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="status" 
                   className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] text-m flex items-center justify-center gap-1 whitespace-nowrap"
                 >
-                 
+
                   <span className="text-[14px] pt-1 pb-1"> <AlertTriangle className="flex-shrink-0" />Disruptions</span>
                 </TabsTrigger>
               </TabsList>
@@ -168,7 +168,7 @@ export function WorldMap() {
                 <RefreshCw className={`w-3 h-3 mr-1 ${isRealtime ? 'animate-spin' : ''}`} />
                 Real-time
               </Button>
-              
+
               <Select defaultValue="global">
                 <SelectTrigger className="w-[120px] h-8 border-flydubai-blue/30 text-xs">
                   <SelectValue />
@@ -194,7 +194,7 @@ export function WorldMap() {
                 <Radar className="w-4 h-4" />
                 Network Overview
               </h3>
-              
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
                   <div className="text-lg font-semibold text-flydubai-blue">89</div>
@@ -221,7 +221,7 @@ export function WorldMap() {
                   <AlertTriangle className="w-4 h-4" />
                   Active Disruptions
                 </h3>
-                
+
                 <div className="space-y-2">
                   {disruptions.map((disruption) => (
                     <Alert key={disruption.id} className={`border-l-4 ${
@@ -247,7 +247,7 @@ export function WorldMap() {
                   <Plane className="w-4 h-4" />
                   Active Flights
                 </h3>
-                
+
                 <div className="space-y-2">
                   {activeFlights.map((flight) => (
                     <div key={flight.id} className="bg-white border border-gray-200 rounded-lg p-3">
@@ -290,7 +290,7 @@ export function WorldMap() {
             >
               {/* Overlay gradient for better contrast */}
               <div className="absolute inset-0 bg-gradient-to-b from-blue-900/40 to-blue-700/60"></div>
-              
+
               {/* World map SVG overlay */}
               <svg viewBox="0 0 1000 500" className="absolute inset-0 w-full h-full">
                 <defs>
@@ -303,7 +303,7 @@ export function WorldMap() {
                     <stop offset="100%" style={{stopColor:'#059669', stopOpacity:0.1}} />
                   </linearGradient>
                 </defs>
-                
+
                 {/* Flight Routes */}
                 {selectedView === 'routes' && (
                   <g className="routes">
@@ -453,7 +453,7 @@ export function WorldMap() {
               {selectedView === 'status' && disruptions.map((disruption) => {
                 const airport = [...hubs, ...destinations].find(a => a.id === disruption.location)
                 if (!airport) return null
-                
+
                 const coords = latLngToXY(airport.lat, airport.lng)
                 return (
                   <div
@@ -547,21 +547,4 @@ export function WorldMap() {
       </CardContent>
     </Card>
   )
-}
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-
-export function WorldMap() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Flydubai Network Map</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-          <p className="text-gray-500">World Map Component - Network visualization would go here</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
 }
