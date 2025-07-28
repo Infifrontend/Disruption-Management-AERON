@@ -196,37 +196,24 @@ export default function App() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
-      <div className="w-64 bg-flydubai-blue text-white border-r border-blue-700 flex flex-col">
+      <div className="w-64 min-w-[16rem] max-w-[16rem] bg-flydubai-blue text-white border-r border-blue-700 flex flex-col flex-shrink-0">
         {/* Sidebar Header - flydubai Branding */}
-        <div className="p-4 border-b border-blue-700">
-          <div className="flex items-center justify-between">
-            {(sidebarOpen || !isMobile) && (
-              <div className="flex flex-col items-center gap-2">
-                {/* flydubai Logo */}
-                <img 
-                  src={flydubaiLogo} 
-                  alt="Flydubai" 
-                  className="h-9 w-auto object-contain"
-                />
-                <div className="text-center">
-                  <h1 className="text-base font-semibold text-white">
-                    AERON
-                  </h1>
-                  <p className="text-xs text-blue-200 leading-tight">
-                    Adaptive Engine for Recovery &<br />Operational Navigation
-                  </p>
-                </div>
-              </div>
-            )}
-            {!sidebarOpen && (
-              <div className="flex items-center justify-center w-full">
-                <div className="relative">
-                  <img 
-                    src={flydubaiLogo} 
-                    alt="Flydubai" 
-                    className="h-6 w-auto object-contain"
-                  />
-                </div>
+        <div className="p-4 border-b border-blue-700 min-h-[120px] flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2 w-full">
+            {/* flydubai Logo */}
+            <img 
+              src={flydubaiLogo} 
+              alt="Flydubai" 
+              className={sidebarOpen ? "h-9 w-auto object-contain" : "h-6 w-auto object-contain"}
+            />
+            {sidebarOpen && (
+              <div className="text-center">
+                <h1 className="text-base font-semibold text-white">
+                  AERON
+                </h1>
+                <p className="text-xs text-blue-200 leading-tight">
+                  Adaptive Engine for Recovery &<br />Operational Navigation
+                </p>
               </div>
             )}
           </div>
@@ -259,11 +246,11 @@ export default function App() {
                       <Button
                         key={screen.id}
                         variant={isActive ? "default" : "ghost"}
-                        className={`w-full justify-start gap-3 ${sidebarOpen ? 'px-3' : 'px-2'} ${isActive ? 'bg-white text-flydubai-blue hover:bg-gray-100' : 'text-white hover:text-[#ff8200]'}`}
+                        className={`w-full justify-start gap-3 px-3 min-h-[40px] ${isActive ? 'bg-white text-flydubai-blue hover:bg-gray-100' : 'text-white hover:text-[#ff8200]'}`}
                         onClick={() => handleScreenChange(screen.id)}
                       >
                         <Icon className="h-4 w-4 flex-shrink-0" />
-                        {sidebarOpen && <span className="truncate">{screen.name}</span>}
+                        {sidebarOpen && <span className="truncate flex-1 text-left">{screen.name}</span>}
                       </Button>
                     )
                   })}
@@ -274,20 +261,20 @@ export default function App() {
         </div>
 
         {/* Sidebar Footer - flydubai Partnership */}
-        <div className="p-4 border-t border-blue-700">
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
+        <div className="p-4 border-t border-blue-700 min-h-[80px]">
+          <div className="flex items-center gap-2 mb-2">
+            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 flex-shrink-0">
               Online
             </Badge>
-            {(sidebarOpen || !isMobile) && (
+            {sidebarOpen && (
               <div className="text-right flex-1">
                 <p className="text-xs font-medium text-white">Friday, January 10, 2025</p>
                 <p className="text-xs text-blue-200">14:32 GST</p>
               </div>
             )}
           </div>
-          {(sidebarOpen || !isMobile) && (
-            <div className="mt-2 pt-2 border-t border-blue-700">
+          {sidebarOpen && (
+            <div className="pt-2 border-t border-blue-700">
               <p className="text-xs text-blue-200">
                 Powered by Flydubai × AERON Partnership
               </p>
