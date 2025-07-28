@@ -145,29 +145,29 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 export function KPIWidgets() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>On-Time Performance</CardTitle>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 xl:gap-4">
+      <Card className="kpi-flydubai">
+        <CardHeader className="pb-2 xl:pb-3">
+          <CardTitle className="text-sm xl:text-base">On-Time Performance</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-2xl font-bold">89.3%</p>
+        <CardContent className="pt-0">
+          <p className="text-xl xl:text-2xl font-bold">89.3%</p>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Active Flights</CardTitle>
+      <Card className="kpi-flydubai">
+        <CardHeader className="pb-2 xl:pb-3">
+          <CardTitle className="text-sm xl:text-base">Active Flights</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-2xl font-bold">47</p>
+        <CardContent className="pt-0">
+          <p className="text-xl xl:text-2xl font-bold">47</p>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Passengers Today</CardTitle>
+      <Card className="kpi-flydubai">
+        <CardHeader className="pb-2 xl:pb-3">
+          <CardTitle className="text-sm xl:text-base">Passengers Today</CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-2xl font-bold">2,847</p>
+        <CardContent className="pt-0">
+          <p className="text-xl xl:text-2xl font-bold">2,847</p>
         </CardContent>
       </Card>
     </div>
