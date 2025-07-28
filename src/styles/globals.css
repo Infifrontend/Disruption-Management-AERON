@@ -131,6 +131,32 @@
   box-shadow: 0 0 0 2px #0066CC;
 }
 
+/* Responsive logo styles */
+.responsive-logo {
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  transition: all 0.2s ease-in-out;
+}
+
+@media (max-width: 768px) {
+  .responsive-logo {
+    max-height: 1.5rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .responsive-logo {
+    max-height: 2rem;
+  }
+}
+
+@media (min-width: 1025px) {
+  .responsive-logo {
+    max-height: 2.5rem;
+  }
+}
+
 /* Custom scrollbar for better UX */
 ::-webkit-scrollbar {
   width: 6px;

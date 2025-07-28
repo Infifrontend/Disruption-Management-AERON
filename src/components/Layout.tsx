@@ -16,7 +16,7 @@ const iconMap = {
   BarChart3, Settings
 }
 
-const flydubaiLogo = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjQwIiB2aWV3Qm94PSIwIDAgMTAwIDQwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMDA2NkNDIi8+Cjx0ZXh0IHg9IjUwIiB5PSIyNSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Zmx5ZHViYWk8L3RleHQ+Cjwvc3ZnPgo='
+const flydubaiLogo = '/attached_assets/flydubai_1753709270029.png'
 
 interface LayoutProps {
   children: ReactNode
@@ -76,7 +76,7 @@ export function Layout({ children }: LayoutProps) {
             <img 
               src={flydubaiLogo} 
               alt="Flydubai" 
-              className={sidebarOpen ? "h-9 w-auto object-contain" : "h-6 w-auto object-contain"}
+              className={`responsive-logo ${sidebarOpen ? "h-8 w-auto" : "h-6 w-auto"}`}
             />
             {sidebarOpen && (
               <div className="text-center">
