@@ -196,7 +196,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
-      <div className="w-64 min-w-[16rem] max-w-[16rem] bg-flydubai-blue text-white border-r border-blue-700 flex flex-col flex-shrink-0">
+      <div className="w-52 min-w-[13rem] max-w-[13rem] bg-flydubai-blue text-white border-r border-blue-700 flex flex-col flex-shrink-0">
         {/* Sidebar Header - flydubai Branding */}
         <div className="p-4 border-b border-blue-700 min-h-[120px] flex items-center justify-center">
           <div className="flex flex-col items-center gap-2 w-full">
