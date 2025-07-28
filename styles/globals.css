@@ -635,34 +635,46 @@
   }
   
   .kpi-flydubai {
-    @apply p-3;
+    padding: 0.75rem;
   }
   
   .card-flydubai {
-    @apply text-sm;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
   }
   
   /* Adjust padding for better fit */
   .container-1366 {
-    @apply px-4 py-2;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
   }
   
   /* Reduce font sizes slightly for better fit */
-  .text-2xl {
-    @apply text-xl;
+  .text-2xl-responsive {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
   }
   
-  .text-xl {
-    @apply text-lg;
+  .text-xl-responsive {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
   }
   
   /* Compact table spacing */
   .table-compact td {
-    @apply px-2 py-1;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
   }
   
   .table-compact th {
-    @apply px-2 py-1;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
   }
 }
 
@@ -674,11 +686,12 @@
   }
   
   .kpi-flydubai {
-    @apply p-3;
+    padding: 0.75rem;
   }
   
   .card-flydubai {
-    @apply mx-2;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
   }
 }
 
