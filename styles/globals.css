@@ -10,14 +10,14 @@
     --flydubai-orange: #ff8200;
     --flydubai-progress-blue: #006496;
     --flydubai-progress-bg: #f0fbff;
-    
+
     /* Convert to HSL for better CSS variable support */
     --flydubai-blue-hsl: 203 100% 45%;
     --flydubai-navy-hsl: 210 45% 25%;
     --flydubai-orange-hsl: 24 100% 51%;
     --flydubai-progress-blue-hsl: 205 100% 29%;
     --flydubai-progress-bg-hsl: 204 100% 97%;
-    
+
     /* Light theme variables */
     --background: 0 0% 100%;
     --foreground: 210 45% 25%; /* Navy blue for text */
@@ -39,7 +39,7 @@
     --input: 214 32% 91%;
     --ring: 24 100% 51%;
     --radius: 0.5rem;
-    
+
     /* Success and warning colors */
     --success: 142 76% 36%;
     --success-foreground: 0 0% 100%;
@@ -633,16 +633,16 @@
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 0.75rem;
   }
-  
+
   .kpi-flydubai {
     padding: 0.75rem;
   }
-  
+
   .card-flydubai {
     font-size: 0.875rem;
     line-height: 1.25rem;
   }
-  
+
   /* Adjust padding for better fit */
   .container-1366 {
     padding-left: 1rem;
@@ -650,18 +650,18 @@
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
   }
-  
+
   /* Reduce font sizes slightly for better fit */
   .text-2xl-responsive {
     font-size: 1.25rem;
     line-height: 1.75rem;
   }
-  
+
   .text-xl-responsive {
     font-size: 1.125rem;
     line-height: 1.75rem;
   }
-  
+
   /* Compact table spacing */
   .table-compact td {
     padding-left: 0.5rem;
@@ -669,7 +669,7 @@
     padding-top: 0.25rem;
     padding-bottom: 0.25rem;
   }
-  
+
   .table-compact th {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
@@ -678,20 +678,39 @@
   }
 }
 
+/* Navigation consistency */
+.navigation-menu {
+  width: 100%;
+  min-height: 60px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.navigation-menu button {
+  flex-shrink: 0;
+  min-width: fit-content;
+  white-space: nowrap;
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .mobile-flydubai {
-    background-color: var(--flydubai-orange);
-    @apply text-white;
+    flex-direction: column;
   }
-  
+
   .kpi-flydubai {
     padding: 0.75rem;
   }
-  
+
   .card-flydubai {
     margin-left: 0.5rem;
     margin-right: 0.5rem;
+  }
+
+  .navigation-menu {
+    min-height: auto;
   }
 }
 
@@ -711,7 +730,7 @@
   .spinner-flydubai {
     animation: none;
   }
-  
+
   .progress-flydubai-fill {
     transition: none;
   }
@@ -722,7 +741,7 @@
   .table-flydubai th {
     background-color: rgba(255, 130, 0, 0.2);
   }
-  
+
   .table-flydubai tr:hover {
     background-color: rgba(255, 130, 0, 0.1);
   }
