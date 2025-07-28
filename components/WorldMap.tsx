@@ -548,3 +548,20 @@ export function WorldMap() {
     </Card>
   )
 }
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+
+export function WorldMap() {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Flydubai Network Map</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-64 bg-gray-100 rounded-lg flex items-center justify-center">
+          <p className="text-gray-500">World Map Component - Network visualization would go here</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

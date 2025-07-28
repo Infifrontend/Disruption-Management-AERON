@@ -140,3 +140,36 @@ export function KPIWidgets() {
     </div>
   )
 }
+import React from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+
+export function KPIWidgets() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>On-Time Performance</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-2xl font-bold">89.3%</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Active Flights</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-2xl font-bold">47</p>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle>Passengers Today</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-2xl font-bold">2,847</p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
