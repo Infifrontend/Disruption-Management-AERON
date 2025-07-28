@@ -110,11 +110,25 @@
 }
 
 .input-flydubai {
-  @apply border-blue-200 focus:border-flydubai-blue focus:ring-flydubai-blue;
+  border-color: rgb(191 219 254);
+}
+
+.input-flydubai:focus {
+  border-color: #0066CC;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #0066CC;
 }
 
 .select-flydubai {
-  @apply border-blue-200 focus:border-flydubai-blue focus:ring-flydubai-blue;
+  border-color: rgb(191 219 254);
+}
+
+.select-flydubai:focus {
+  border-color: #0066CC;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px #0066CC;
 }
 
 /* Custom scrollbar for better UX */
