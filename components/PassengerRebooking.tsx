@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Textarea } from './ui/textarea'
 import { Progress } from './ui/progress'
 import { Checkbox } from './ui/checkbox'
-import { toast } from 'sonner@2.0.3'
+import { toast } from 'sonner'
 import { 
   Users, 
   Search, 
