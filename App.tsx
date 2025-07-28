@@ -105,6 +105,10 @@ export default function App() {
     setActiveScreen('passengers')
   }
 
+  const handleNavigateToPendingSolutions = () => {
+    setActiveScreen('pending')
+  }
+
   const handleScreenSettingsChange = (newSettings) => {
     setScreenSettings(newSettings)
 
@@ -336,6 +340,7 @@ export default function App() {
               onSelectPlan={handleSelectRecoveryPlan}
               onCompare={() => handleScreenChange('comparison')}
               onPassengerServices={handlePassengerServicesNavigation}
+              onNavigateToPendingSolutions={handleNavigateToPendingSolutions}
             />
           )}
 
@@ -647,8 +652,7 @@ function DashboardScreen({ filters, setFilters, onCreateRecoveryPlan, setActiveS
         )}
 
         {enabledScreens.find(s => s.id === 'past-logs') && (
-          <Button 
-            variant="outline" 
+          <Button            variant="outline" 
             onClick={() => navigateToScreen('past-logs')}
             className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200 min-w-fit whitespace-nowrap"
           >
