@@ -63,7 +63,8 @@
     "react-hook-form": "^7.45.0",
     "@hookform/resolvers": "^3.3.0",
     "zod": "^3.22.0",
-    "react-resizable-panels": "^0.0.55"
+    "react-resizable-panels": "^0.0.55",
+    "cmdk": "^0.2.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0"
