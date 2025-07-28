@@ -117,8 +117,8 @@ export function WorldMap() {
   ]
 
   return (
-    <Card className="w-full h-[600px] border-flydubai-blue/30 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50">
-      <CardHeader className="border-b border-flydubai-blue/10 bg-white/80 backdrop-blur-sm px-[24px] py-[8px]">
+    <Card className="w-full h-[600px] border-flydubai-blue/30 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 relative z-10">
+      <CardHeader className="border-b border-flydubai-blue/10 bg-white/80 backdrop-blur-sm px-[24px] py-[8px] relative z-20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -132,8 +132,8 @@ export function WorldMap() {
           </div>
 
           <div className="flex items-center justify-center gap-4">
-            <Tabs value={selectedView} onValueChange={setSelectedView} className="w-auto pb-8">
-              <TabsList className="grid w-full grid-cols-3 ">
+            <Tabs value={selectedView} onValueChange={setSelectedView} className="w-auto pb-8 relative z-30">
+              <TabsList className="grid w-full grid-cols-3 bg-white border border-gray-200 shadow-sm">
                 <TabsTrigger 
                   value="routes" 
                   className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center "
@@ -185,10 +185,10 @@ export function WorldMap() {
         </div>
       </CardHeader>
 
-      <CardContent className="p-0 h-full">
-        <div className="h-full flex">
+      <CardContent className="p-0 h-full relative z-10">
+        <div className="h-full flex relative">
           {/* Stats Panel */}
-          <div className="w-72 border-r border-flydubai-blue/10 bg-white/95 backdrop-blur-sm p-4 space-y-4 overflow-y-auto">
+          <div className="w-72 border-r border-flydubai-blue/10 bg-white/95 backdrop-blur-sm p-4 space-y-4 overflow-y-auto relative z-20">
             <div className="space-y-3">
               <h3 className="font-semibold text-flydubai-navy flex items-center gap-2">
                 <Radar className="w-4 h-4" />
@@ -278,21 +278,22 @@ export function WorldMap() {
           </div>
 
           {/* Interactive Map */}
-          <div className="flex-1 relative">
+          <div className="flex-1 relative z-10">
             <div 
-              className="relative w-full h-full rounded-lg border-2 border-flydubai-blue/20 overflow-hidden"
+              className="relative w-full h-full rounded-lg border-2 border-flydubai-blue/20 overflow-hidden z-10"
               style={{
                 backgroundImage: `url(https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80)`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat'
+                backgroundRepeat: 'no-repeat',
+                minHeight: '500px'
               }}
             >
               {/* Overlay gradient for better contrast */}
-              <div className="absolute inset-0 bg-gradient-to-b from-blue-900/40 to-blue-700/60"></div>
+              <div className="absolute inset-0 bg-gradient-to-b from-blue-900/40 to-blue-700/60 z-10"></div>
 
               {/* World map SVG overlay */}
-              <svg viewBox="0 0 1000 500" className="absolute inset-0 w-full h-full">
+              <svg viewBox="0 0 1000 500" className="absolute inset-0 w-full h-full z-20" style={{ minHeight: '500px' }}>
                 <defs>
                   <pattern id="ocean" patternUnits="userSpaceOnUse" width="4" height="4">
                     <rect width="4" height="4" fill="#1e3a8a" opacity="0.1"/>
@@ -484,7 +485,7 @@ export function WorldMap() {
               })}
 
               {/* Enhanced Legend */}
-              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-4 text-xs shadow-xl">
+              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-4 text-xs shadow-xl z-30">
                 <h4 className="font-semibold mb-3 text-flydubai-navy">Legend</h4>
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
@@ -533,7 +534,7 @@ export function WorldMap() {
               </div>
 
               {/* Network Performance Indicator */}
-              <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-xs shadow-xl">
+              <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-xs shadow-xl z-30">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
                   <span className="font-semibold text-flydubai-navy">Network Status</span>

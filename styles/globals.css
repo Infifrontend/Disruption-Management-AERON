@@ -770,6 +770,23 @@ html, body {
   }
 }
 
+/* WorldMap specific styles to ensure visibility */
+.world-map-container {
+  position: relative;
+  z-index: 10;
+  min-height: 600px;
+}
+
+.world-map-content {
+  position: relative;
+  z-index: 20;
+}
+
+.world-map-overlay {
+  position: absolute;
+  z-index: 30;
+}
+
 /* Additional utility classes for progress bars with new background */
 .bg-progress-blue {
   background-color: #006496 !important;
