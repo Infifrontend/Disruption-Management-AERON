@@ -774,17 +774,43 @@ html, body {
 .world-map-container {
   position: relative;
   z-index: 10;
-  min-height: 600px;
+  min-height: 700px;
+  height: 700px;
 }
 
 .world-map-content {
   position: relative;
   z-index: 20;
+  min-height: 620px;
 }
 
 .world-map-overlay {
   position: absolute;
   z-index: 30;
+}
+
+/* Ensure WorldMap doesn't get compressed at smaller resolutions */
+@media (max-width: 1400px) and (min-width: 1300px) {
+  .world-map-container {
+    min-height: 650px;
+    height: 650px;
+  }
+  
+  .world-map-content {
+    min-height: 580px;
+  }
+}
+
+/* Prevent WorldMap content from being hidden */
+.world-map-stats-panel {
+  min-width: 288px;
+  flex-shrink: 0;
+}
+
+.world-map-interactive {
+  min-width: 0;
+  flex: 1;
+  min-height: 620px;
 }
 
 /* Additional utility classes for progress bars with new background */

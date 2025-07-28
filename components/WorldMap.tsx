@@ -117,8 +117,8 @@ export function WorldMap() {
   ]
 
   return (
-    <Card className="w-full h-[600px] border-flydubai-blue/30 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 relative z-10">
-      <CardHeader className="border-b border-flydubai-blue/10 bg-white/80 backdrop-blur-sm px-[24px] py-[8px] relative z-20">
+    <Card className="w-full min-h-[700px] h-[700px] border-flydubai-blue/30 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 relative z-10">
+      <CardHeader className="border-b border-flydubai-blue/10 bg-white/80 backdrop-blur-sm px-[24px] py-[12px] relative z-20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -185,10 +185,10 @@ export function WorldMap() {
         </div>
       </CardHeader>
 
-      <CardContent className="p-0 h-full relative z-10">
-        <div className="h-full flex relative">
+      <CardContent className="p-0 h-full min-h-[620px] relative z-10">
+        <div className="h-full min-h-[620px] flex relative">
           {/* Stats Panel */}
-          <div className="w-72 border-r border-flydubai-blue/10 bg-white/95 backdrop-blur-sm p-4 space-y-4 overflow-y-auto relative z-20">
+          <div className="w-72 min-w-[288px] border-r border-flydubai-blue/10 bg-white/95 backdrop-blur-sm p-4 space-y-4 overflow-y-auto relative z-20 flex-shrink-0">
             <div className="space-y-3">
               <h3 className="font-semibold text-flydubai-navy flex items-center gap-2">
                 <Radar className="w-4 h-4" />
@@ -278,22 +278,21 @@ export function WorldMap() {
           </div>
 
           {/* Interactive Map */}
-          <div className="flex-1 relative z-10">
+          <div className="flex-1 relative z-10 min-w-0">
             <div 
-              className="relative w-full h-full rounded-lg border-2 border-flydubai-blue/20 overflow-hidden z-10"
+              className="relative w-full h-full min-h-[620px] rounded-lg border-2 border-flydubai-blue/20 overflow-hidden z-10"
               style={{
                 backgroundImage: `url(https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80)`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                minHeight: '500px'
+                backgroundRepeat: 'no-repeat'
               }}
             >
               {/* Overlay gradient for better contrast */}
               <div className="absolute inset-0 bg-gradient-to-b from-blue-900/40 to-blue-700/60 z-10"></div>
 
               {/* World map SVG overlay */}
-              <svg viewBox="0 0 1000 500" className="absolute inset-0 w-full h-full z-20" style={{ minHeight: '500px' }}>
+              <svg viewBox="0 0 1000 500" className="absolute inset-0 w-full h-full min-h-[620px] z-20">
                 <defs>
                   <pattern id="ocean" patternUnits="userSpaceOnUse" width="4" height="4">
                     <rect width="4" height="4" fill="#1e3a8a" opacity="0.1"/>
