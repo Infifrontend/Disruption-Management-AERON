@@ -773,11 +773,11 @@ export function FlightTrackingGantt() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="flex flex-col lg:flex-row h-[600px]">
+          <div className="flex flex-col lg:flex-row max-h-[600px] min-h-[400px]">
             {/* Tail Numbers List - flydubai A6-FE* format */}
-            <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r bg-green-50 flex-shrink-0 overflow-y-auto">
+            <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r bg-green-50 flex-shrink-0 max-h-full overflow-hidden">
               {/* Header */}
-              <div className="p-3 border-b bg-white sticky top-0 z-20">
+              <div className="p-3 border-b bg-white flex-shrink-0">
                 <h4 className="font-medium flex items-center gap-2">
                   <Hash className="h-4 w-4" />
                   Flydubai Fleet (A6-FE*)
@@ -785,72 +785,74 @@ export function FlightTrackingGantt() {
                 <p className="text-sm text-muted-foreground">{filteredAircraft.length} aircraft</p>
               </div>
               
-              {/* Tail Numbers List */}
-              <div className="space-y-1 p-1">
-                {filteredAircraft.map((aircraft) => (
-                  <div
-                    key={aircraft.id}
-                    className={`p-2 rounded-md cursor-pointer transition-colors ${
-                      selectedTailNumbers.includes(aircraft.tailNumber) 
-                        ? 'bg-green-100 border-green-200' 
-                        : 'bg-white hover:bg-green-50'
-                    } border`}
-                    onClick={() => handleTailNumberSelection(aircraft.tailNumber)}
-                  >
-                    {/* Primary Tail Number Display */}
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
-                        <Hash className="h-3 w-3 text-green-600" />
-                        <div className="font-bold text-sm text-green-700">{aircraft.tailNumber}</div>
-                      </div>
-                      <Badge className={`text-xs px-1 py-0 ${getAircraftStatusColor(aircraft.status)}`}>
-                        {aircraft.status}
-                      </Badge>
-                    </div>
-                    
-                    {/* Aircraft Details - Compact */}
-                    <div className="text-xs text-muted-foreground space-y-0.5">
-                      <div className="flex items-center gap-1">
-                        <Plane className="h-2.5 w-2.5" />
-                        <span className="font-medium truncate">{aircraft.type}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-2.5 w-2.5" />
-                          <span>{aircraft.currentLocation}</span>
+              {/* Tail Numbers List - Scrollable */}
+              <div className="flex-1 overflow-y-auto max-h-[calc(600px-80px)]">
+                <div className="space-y-1 p-1">
+                  {filteredAircraft.map((aircraft) => (
+                    <div
+                      key={aircraft.id}
+                      className={`p-2 rounded-md cursor-pointer transition-colors ${
+                        selectedTailNumbers.includes(aircraft.tailNumber) 
+                          ? 'bg-green-100 border-green-200' 
+                          : 'bg-white hover:bg-green-50'
+                      } border`}
+                      onClick={() => handleTailNumberSelection(aircraft.tailNumber)}
+                    >
+                      {/* Primary Tail Number Display */}
+                      <div className="flex items-center justify-between mb-1">
+                        <div className="flex items-center gap-2">
+                          <Hash className="h-3 w-3 text-green-600" />
+                          <div className="font-bold text-sm text-green-700">{aircraft.tailNumber}</div>
                         </div>
+                        <Badge className={`text-xs px-1 py-0 ${getAircraftStatusColor(aircraft.status)}`}>
+                          {aircraft.status}
+                        </Badge>
+                      </div>
+                      
+                      {/* Aircraft Details - Compact */}
+                      <div className="text-xs text-muted-foreground space-y-0.5">
                         <div className="flex items-center gap-1">
-                          <Users className="h-2.5 w-2.5" />
-                          <span>{aircraft.capacity}</span>
+                          <Plane className="h-2.5 w-2.5" />
+                          <span className="font-medium truncate">{aircraft.type}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <MapPin className="h-2.5 w-2.5" />
+                            <span>{aircraft.currentLocation}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Users className="h-2.5 w-2.5" />
+                            <span>{aircraft.capacity}</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Flight Count - Compact */}
+                      <div className="mt-1 pt-1 border-t border-gray-200">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-muted-foreground">Flights:</span>
+                          <span className="font-semibold text-green-600">{aircraft.flights.length}</span>
                         </div>
                       </div>
                     </div>
-                    
-                    {/* Flight Count - Compact */}
-                    <div className="mt-1 pt-1 border-t border-gray-200">
-                      <div className="flex items-center justify-between text-xs">
-                        <span className="text-muted-foreground">Flights:</span>
-                        <span className="font-semibold text-green-600">{aircraft.flights.length}</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Timeline */}
-            <div className="flex-1 min-w-0 relative overflow-hidden" ref={ganttRef}>
-              <div className="h-full overflow-x-auto overflow-y-auto">
+            <div className="flex-1 min-w-0 max-h-full overflow-hidden" ref={ganttRef}>
+              <div className="h-full max-h-[600px] overflow-x-auto overflow-y-auto">
                 <div 
-                  className="relative" 
+                  className="relative min-h-full" 
                   ref={timelineRef}
                   style={{ 
                     minWidth: `${Math.max(timeSlots.length * 48, 800)}px`,
-                    width: '100%'
+                    width: 'max-content'
                   }}
                 >
                   {/* Time Header */}
-                  <div className="flex border-b bg-white sticky top-0 z-10 shadow-sm">
+                  <div className="flex border-b bg-white sticky top-0 z-10 shadow-sm flex-shrink-0">
                     {timeSlots.map((slot, index) => (
                       <div
                         key={index}
@@ -864,11 +866,11 @@ export function FlightTrackingGantt() {
                   </div>
 
                   {/* Flight Timeline Rows - One per Tail Number */}
-                  <div className="space-y-1 p-2 relative">
+                  <div className="space-y-1 p-2 relative min-h-0">
                     {filteredAircraft.map((aircraft) => (
                       <div
                         key={aircraft.id}
-                        className={`relative h-16 bg-white rounded border ${
+                        className={`relative h-16 bg-white rounded border flex-shrink-0 ${
                           selectedTailNumbers.includes(aircraft.tailNumber) ? 'ring-2 ring-green-300' : ''
                         }`}
                         style={{ minWidth: `${Math.max(timeSlots.length * 48, 800)}px` }}
