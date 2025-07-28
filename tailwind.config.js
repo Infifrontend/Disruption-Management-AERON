@@ -43,6 +43,12 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Add custom Flydubai colors
+        'flydubai-blue': '#0066CC',
+        'flydubai-orange': '#ff8200',
+        'flydubai-navy': '#001f3f',
+        'flydubai-progress-blue': '#006496',
+        'flydubai-progress-bg': '#f0fbff',
       },
       borderRadius: {
         lg: "var(--radius)",
