@@ -537,20 +537,70 @@ function DashboardScreen({ filters, setFilters, onCreateRecoveryPlan, setActiveS
       </div>
 
       {/* Action Buttons - flydubai themed */}
-      <div className="flex gap-4 flex-wrap">
-        <Button onClick={() => onCreateRecoveryPlan(null)} className="flex items-center gap-2 btn-flydubai-primary">
-          <Plus className="h-4 w-4" />
-          View Affected Flights
-        </Button>
-
-        {enabledScreens.find(s => s.id === 'prediction-dashboard') && (
+      <div className="navigation-menu mb-6">
+        {enabledScreens.find(s => s.id === 'disruption-input') && (
           <Button 
             variant="outline" 
-            onClick={() => navigateToScreen('prediction-dashboard')}
-            className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 text-flydubai-navy border-blue-200"
+            onClick={() => navigateToScreen('disruption-input')}
+            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200 min-w-fit whitespace-nowrap"
           >
-            <Brain className="h-4 w-4" />
-            Disruption Prediction
+            <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+            Add Disruption
+          </Button>
+        )}
+
+        {enabledScreens.find(s => s.id === 'flight-disruption-list') && (
+          <Button 
+            variant="outline" 
+            onClick={() => navigateToScreen('flight-disruption-list')}
+            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200 min-w-fit whitespace-nowrap"
+          >
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            Active Disruptions
+          </Button>
+        )}
+
+        {enabledScreens.find(s => s.id === 'recovery-options') && (
+          <Button 
+            variant="outline" 
+            onClick={() => navigateToScreen('recovery-options')}
+            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200 min-w-fit whitespace-nowrap"
+          >
+            <Zap className="h-4 w-4 flex-shrink-0" />
+            Recovery Options
+          </Button>
+        )}
+
+        {enabledScreens.find(s => s.id === 'passenger-rebooking') && (
+          <Button 
+            variant="outline" 
+            onClick={() => navigateToScreen('passenger-rebooking')}
+            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200 min-w-fit whitespace-nowrap"
+          >
+            <UserCheck className="h-4 w-4 flex-shrink-0" />
+            Passenger Rebooking
+          </Button>
+        )}
+
+        {enabledScreens.find(s => s.id === 'prediction-analytics') && (
+          <Button 
+            variant="outline" 
+            onClick={() => navigateToScreen('prediction-analytics')}
+            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200 min-w-fit whitespace-nowrap"
+          >
+            <BarChart3 className="h-4 w-4 flex-shrink-0" />
+            Prediction Analytics
+          </Button>
+        )}
+
+        {enabledScreens.find(s => s.id === 'crew-tracking') && (
+          <Button 
+            variant="outline" 
+            onClick={() => navigateToScreen('crew-tracking')}
+            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200 min-w-fit whitespace-nowrap"
+          >
+            <Users className="h-4 w-4 flex-shrink-0" />
+            Crew Tracking
           </Button>
         )}
 
@@ -558,10 +608,32 @@ function DashboardScreen({ filters, setFilters, onCreateRecoveryPlan, setActiveS
           <Button 
             variant="outline" 
             onClick={() => navigateToScreen('flight-tracking')}
-            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
+            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200 min-w-fit whitespace-nowrap"
           >
-            <Calendar className="h-4 w-4" />
-            Flight Tracking Gantt
+            <Plane className="h-4 w-4 flex-shrink-0" />
+            Flight Tracking
+          </Button>
+        )}
+
+        {enabledScreens.find(s => s.id === 'fuel-optimization') && (
+          <Button 
+            variant="outline" 
+            onClick={() => navigateToScreen('fuel-optimization')}
+            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200 min-w-fit whitespace-nowrap"
+          >
+            <Fuel className="h-4 w-4 flex-shrink-0" />
+            Fuel Optimization
+          </Button>
+        )}
+
+        {enabledScreens.find(s => s.id === 'aircraft-maintenance') && (
+          <Button 
+            variant="outline" 
+            onClick={() => navigateToScreen('aircraft-maintenance')}
+            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200 min-w-fit whitespace-nowrap"
+          >
+            <Wrench className="h-4 w-4 flex-shrink-0" />
+            Aircraft Maintenance
           </Button>
         )}
 
@@ -569,9 +641,9 @@ function DashboardScreen({ filters, setFilters, onCreateRecoveryPlan, setActiveS
           <Button 
             variant="outline" 
             onClick={() => navigateToScreen('hotac')}
-            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
+            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200 min-w-fit whitespace-nowrap"
           >
-            <Hotel className="h-4 w-4" />
+            <Hotel className="h-4 w-4 flex-shrink-0" />
             HOTAC Management
           </Button>
         )}
@@ -580,9 +652,9 @@ function DashboardScreen({ filters, setFilters, onCreateRecoveryPlan, setActiveS
           <Button 
             variant="outline" 
             onClick={() => navigateToScreen('pending')}
-            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
+            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200 min-w-fit whitespace-nowrap"
           >
-            <ClockIcon className="h-4 w-4" />
+            <ClockIcon className="h-4 w-4 flex-shrink-0" />
             View Pending Solutions
           </Button>
         )}
@@ -591,32 +663,10 @@ function DashboardScreen({ filters, setFilters, onCreateRecoveryPlan, setActiveS
           <Button 
             variant="outline" 
             onClick={() => navigateToScreen('past-logs')}
-            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
+            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200 min-w-fit whitespace-nowrap"
           >
-            <CheckSquare className="h-4 w-4" />
+            <CheckSquare className="h-4 w-4 flex-shrink-0" />
             Past Recovery Logs
-          </Button>
-        )}
-
-        {enabledScreens.find(s => s.id === 'passengers') && (
-          <Button 
-            variant="outline" 
-            onClick={() => navigateToScreen('passengers')}
-            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
-          >
-            <UserCheck className="h-4 w-4" />
-            Passenger Services
-          </Button>
-        )}
-
-        {enabledScreens.find(s => s.id === 'reports') && (
-          <Button 
-            variant="outline" 
-            onClick={() => navigateToScreen('reports')}
-            className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
-          >
-            <BarChart3 className="h-4 w-4" />
-            Analytics Dashboard
           </Button>
         )}
       </div>
