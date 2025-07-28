@@ -4,20 +4,19 @@ import * as React from "react";
 
 import { cn } from "./utils";
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
-  return (
-    <div
-      data-slot="table-container"
-      className="relative w-full overflow-x-auto"
-    >
-      <table
-        data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
-        {...props}
-      />
-    </div>
-  );
-}
+const Table = React.forwardRef<
+  HTMLTableElement,
+  React.HTMLAttributes<HTMLTableElement>
+>(({ className, ...props }, ref) => (
+  <div className="relative w-full overflow-x-auto overflow-y-hidden">
+    <table
+      ref={ref}
+      className={cn("w-full caption-bottom text-sm min-w-full", className)}
+      {...props}
+    />
+  </div>
+));
+Table.displayName = "Table";
 
 function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
@@ -114,3 +113,4 @@ export {
   TableCell,
   TableCaption,
 };
+```

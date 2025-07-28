@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card'
 import { Button } from './components/ui/button'
 import { Badge } from './components/ui/badge'
@@ -107,7 +107,7 @@ export default function App() {
 
   const handleScreenSettingsChange = (newSettings) => {
     setScreenSettings(newSettings)
-    
+
     // If the current active screen is disabled, switch to dashboard
     const currentScreen = newSettings.find(s => s.id === activeScreen)
     if (currentScreen && !currentScreen.enabled) {
@@ -168,6 +168,31 @@ export default function App() {
 
   const quickStats = getQuickStats()
 
+    // Use state to track if the app is running on the client-side
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Determine if it's a mobile device
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (isClient) {
+      setIsMobile(window.innerWidth < 768); // Adjust breakpoint as needed
+      const handleResize = () => {
+        setIsMobile(window.innerWidth < 768);
+      };
+
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        window.removeEventListener('resize', handleResize);
+      };
+    }
+  }, [isClient]);
+
   return (
     <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
@@ -175,7 +200,7 @@ export default function App() {
         {/* Sidebar Header - flydubai Branding */}
         <div className="p-4 border-b border-blue-700">
           <div className="flex items-center justify-between">
-            {sidebarOpen && (
+            {(sidebarOpen || !isMobile) && (
               <div className="flex flex-col items-center gap-2">
                 {/* flydubai Logo */}
                 <img 
@@ -211,10 +236,10 @@ export default function App() {
         <div className="flex-1 overflow-y-auto py-4">
           {Object.entries(categories).map(([categoryKey, category]) => {
             const categoryScreens = enabledScreens.filter(screen => screen.category === categoryKey)
-            
+
             // Don't render category if no enabled screens
             if (categoryScreens.length === 0) return null
-            
+
             return (
               <div key={categoryKey} className="mb-6">
                 {sidebarOpen && (
@@ -224,12 +249,12 @@ export default function App() {
                     </h3>
                   </div>
                 )}
-                
+
                 <div className="space-y-1 px-2">
                   {categoryScreens.map((screen) => {
                     const Icon = screen.icon
                     const isActive = activeScreen === screen.id
-                    
+
                     return (
                       <Button
                         key={screen.id}
@@ -254,14 +279,14 @@ export default function App() {
             <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300">
               Online
             </Badge>
-            {sidebarOpen && (
+            {(sidebarOpen || !isMobile) && (
               <div className="text-right flex-1">
                 <p className="text-xs font-medium text-white">Friday, January 10, 2025</p>
                 <p className="text-xs text-blue-200">14:32 GST</p>
               </div>
             )}
           </div>
-          {sidebarOpen && (
+          {(sidebarOpen || !isMobile) && (
             <div className="mt-2 pt-2 border-t border-blue-700">
               <p className="text-xs text-blue-200">
                 Powered by Flydubai × AERON Partnership
@@ -284,7 +309,7 @@ export default function App() {
                 Flydubai AERON - AI-powered recovery and operational excellence
               </p>
             </div>
-            
+
             {quickStats && (
               <div className={`flex items-center gap-3 px-4 py-2 bg-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-50 rounded-lg border border-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-200`}>
                 {React.createElement(quickStats.icon, { className: `h-4 w-4 text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-600` })}
@@ -310,14 +335,14 @@ export default function App() {
           )}
 
           {activeScreen === 'flight-tracking' && <FlightTrackingGantt />}
-          
+
           {activeScreen === 'disruption' && (
             <DisruptionInput 
               disruption={selectedDisruption}
               onSelectFlight={handleSelectFlight}
             />
           )}
-          
+
           {activeScreen === 'recovery' && (
             <RecoveryOptionsGenerator 
               selectedFlight={selectedFlight}
@@ -326,14 +351,14 @@ export default function App() {
               onPassengerServices={handlePassengerServicesNavigation}
             />
           )}
-          
+
           {activeScreen === 'comparison' && (
             <ComparisonMatrix 
               selectedFlight={selectedFlight}
               onSelectPlan={handleSelectRecoveryPlan}
             />
           )}
-          
+
           {activeScreen === 'detailed' && (
             <DetailedRecoveryPlan 
               plan={selectedRecoveryPlan}
@@ -348,11 +373,11 @@ export default function App() {
           {activeScreen === 'risk-assessment' && <RiskAssessment />}
 
           {activeScreen === 'pending' && <PendingSolutions />}
-          
+
           {activeScreen === 'past-logs' && <PastRecoveryLogs />}
 
           {activeScreen === 'maintenance' && <AircraftMaintenance />}
-          
+
           {activeScreen === 'passengers' && (
             <PassengerRebooking 
               context={passengerServicesContext}
@@ -363,7 +388,7 @@ export default function App() {
           {activeScreen === 'hotac' && <HOTACManagement />}
 
           {activeScreen === 'fuel-optimization' && <FuelOptimization />}
-          
+
           {activeScreen === 'reports' && <AuditReporting />}
 
           {activeScreen === 'settings' && (
@@ -539,7 +564,7 @@ function DashboardScreen({ filters, setFilters, onCreateRecoveryPlan, setActiveS
             Flight Tracking Gantt
           </Button>
         )}
-        
+
         {enabledScreens.find(s => s.id === 'hotac') && (
           <Button 
             variant="outline" 
@@ -550,7 +575,7 @@ function DashboardScreen({ filters, setFilters, onCreateRecoveryPlan, setActiveS
             HOTAC Management
           </Button>
         )}
-        
+
         {enabledScreens.find(s => s.id === 'pending') && (
           <Button 
             variant="outline" 
@@ -561,7 +586,7 @@ function DashboardScreen({ filters, setFilters, onCreateRecoveryPlan, setActiveS
             View Pending Solutions
           </Button>
         )}
-        
+
         {enabledScreens.find(s => s.id === 'past-logs') && (
           <Button 
             variant="outline" 
@@ -572,7 +597,7 @@ function DashboardScreen({ filters, setFilters, onCreateRecoveryPlan, setActiveS
             Past Recovery Logs
           </Button>
         )}
-        
+
         {enabledScreens.find(s => s.id === 'passengers') && (
           <Button 
             variant="outline" 
@@ -583,7 +608,7 @@ function DashboardScreen({ filters, setFilters, onCreateRecoveryPlan, setActiveS
             Passenger Services
           </Button>
         )}
-        
+
         {enabledScreens.find(s => s.id === 'reports') && (
           <Button 
             variant="outline" 
