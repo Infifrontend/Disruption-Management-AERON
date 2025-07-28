@@ -63,7 +63,11 @@
     "@hookform/resolvers": "^3.3.0",
     "zod": "^3.22.0",
     "react-resizable-panels": "^0.0.55",
-    "cmdk": "^0.2.0"
+    "cmdk": "^0.2.0",
+    "class-variance-authority": "^0.7.0",
+    "sonner": "^1.4.0",
+    "react-day-picker": "^8.10.0",
+    "recharts": "^2.12.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0"
