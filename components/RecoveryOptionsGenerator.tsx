@@ -85,7 +85,7 @@ import { requiresPassengerReaccommodation, generateAffectedPassengers } from './
 import { generateRecoveryOptionDetails, calculateScenarioImpact, calculateImpact } from './what-if-simulation-helpers'
 import { CrewTrackingGantt } from './CrewTrackingGantt'
 
-export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompare, onPassengerServices }) {
+export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompare, onPassengerServices, onNavigateToPendingSolutions }) {
   const [selectedOption, setSelectedOption] = useState(null)
   const [showDetails, setShowDetails] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
@@ -295,6 +295,11 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
     setTimeout(() => {
       setIsExecuting(false)
       onSelectPlan && onSelectPlan({ ...optionToExecute, flight: flight })
+      
+      // Navigate to Pending Solutions after execution completes
+      setTimeout(() => {
+        onNavigateToPendingSolutions && onNavigateToPendingSolutions()
+      }, 500)
     }, 2000)
   }
 
