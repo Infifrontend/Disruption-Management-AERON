@@ -741,13 +741,13 @@ export function FlightTrackingGantt() {
       {/* Gantt Chart - flydubai styled */}
       <Card className="overflow-hidden">
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <CardTitle className="flex items-center gap-2">
               <Hash className="h-5 w-5" />
               Flydubai Aircraft Schedule by Tail Number
             </CardTitle>
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-4 text-xs">
+              <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs">
                 <div className="flex items-center gap-1">
                   <div className="w-3 h-3 bg-green-500 rounded"></div>
                   <span>On Time</span>
@@ -773,11 +773,11 @@ export function FlightTrackingGantt() {
           </div>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="flex overflow-hidden">
+          <div className="flex flex-col lg:flex-row h-[600px]">
             {/* Tail Numbers List - flydubai A6-FE* format */}
-            <div className="w-80 border-r bg-green-50 flex-shrink-0">
+            <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r bg-green-50 flex-shrink-0 overflow-y-auto">
               {/* Header */}
-              <div className="p-3 border-b bg-white">
+              <div className="p-3 border-b bg-white sticky top-0 z-20">
                 <h4 className="font-medium flex items-center gap-2">
                   <Hash className="h-4 w-4" />
                   Flydubai Fleet (A6-FE*)
@@ -839,104 +839,108 @@ export function FlightTrackingGantt() {
             </div>
 
             {/* Timeline */}
-            <div className="flex-1 min-w-0 overflow-x-auto overflow-y-hidden relative" ref={ganttRef}>
-              <div 
-                className="w-max" 
-                ref={timelineRef}
-                style={{ 
-                  minWidth: `${timeSlots.length * 48}px` 
-                }}
-              >
-                {/* Time Header */}
-                <div className="flex border-b bg-white sticky top-0 z-10">
-                  {timeSlots.map((slot, index) => (
-                    <div
-                      key={index}
-                      className={`flex-shrink-0 w-12 p-2 text-center text-xs border-r ${
-                        slot.isCurrentHour ? 'bg-green-50 text-green-700' : ''
-                      }`}
-                    >
-                      <div className="font-medium whitespace-nowrap">{slot.label}</div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Flight Timeline Rows - One per Tail Number */}
-                <div className="space-y-1 p-2 relative">
-                  {filteredAircraft.map((aircraft) => (
-                    <div
-                      key={aircraft.id}
-                      className={`relative h-16 bg-white rounded border ${
-                        selectedTailNumbers.includes(aircraft.tailNumber) ? 'ring-2 ring-green-300' : ''
-                      }`}
-                    >
-                      {/* Flight Blocks for this Tail Number */}
-                      {aircraft.flights.map((flight, flightIndex) => {
-                        const position = calculateFlightPosition(flight.departure.time, flight.duration)
-                        return (
-                          <div
-                            key={flightIndex}
-                            className={`absolute top-1 h-14 rounded-md border-2 border-white shadow-sm cursor-pointer transition-transform hover:scale-105 ${getStatusColor(flight.status)}`}
-                            style={position}
-                            title={`${flight.id} - ${aircraft.tailNumber} - ${flight.route} - ${flight.status}`}
-                          >
-                            <div className="p-1 text-white text-xs overflow-hidden h-full flex flex-col justify-between">
-                              <div>
-                                <div className="font-bold flex items-center gap-1 mb-1">
-                                  {getStatusIcon(flight.status)}
-                                  <span className="truncate font-mono">{flight.id}</span>
-                                </div>
-                                <div className="opacity-90 truncate text-xs">
-                                  <span className="font-mono">{aircraft.tailNumber}</span>
-                                </div>
-                              </div>
-                              <div>
-                                <div className="opacity-90 truncate text-xs">
-                                  {flight.departure.time} - {flight.arrival.time}
-                                </div>
-                                <div className="opacity-75 truncate text-xs">
-                                  {flight.route}
-                                </div>
-                                {flight.delay > 0 && (
-                                  <div className="text-yellow-200 truncate text-xs">
-                                    +{flight.delay}min
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )
-                      })}
-
-                      {/* Empty state for aircraft with no flights */}
-                      {aircraft.flights.length === 0 && (
-                        <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                          <div className="text-center">
-                            <Hash className="h-4 w-4 mx-auto mb-1 opacity-50" />
-                            <div className="font-medium text-xs">{aircraft.tailNumber}</div>
-                            <div className="text-xs">
-                              {aircraft.status === 'maintenance' ? 'In Maintenance' : 'No Flights'}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-
-                  {/* Current Time Line */}
-                  {timeRange === '24h' && (
-                    <div 
-                      className="absolute top-0 bottom-0 w-0.5 bg-green-500 z-30 pointer-events-none"
-                      style={{ 
-                        left: `${((currentTime.getHours() * 60 + currentTime.getMinutes()) / (24 * 60)) * 100}%`
-                      }}
-                    >
-                      <div className="absolute -top-6 -left-1 w-3 h-3 bg-green-500 rounded-full"></div>
-                      <div className="absolute -top-6 -left-8 text-xs text-green-600 font-medium whitespace-nowrap">
-                        Now
+            <div className="flex-1 min-w-0 relative overflow-hidden" ref={ganttRef}>
+              <div className="h-full overflow-x-auto overflow-y-auto">
+                <div 
+                  className="relative" 
+                  ref={timelineRef}
+                  style={{ 
+                    minWidth: `${Math.max(timeSlots.length * 48, 800)}px`,
+                    width: '100%'
+                  }}
+                >
+                  {/* Time Header */}
+                  <div className="flex border-b bg-white sticky top-0 z-10 shadow-sm">
+                    {timeSlots.map((slot, index) => (
+                      <div
+                        key={index}
+                        className={`flex-shrink-0 w-12 p-2 text-center text-xs border-r ${
+                          slot.isCurrentHour ? 'bg-green-50 text-green-700' : ''
+                        }`}
+                      >
+                        <div className="font-medium whitespace-nowrap">{slot.label}</div>
                       </div>
-                    </div>
-                  )}
+                    ))}
+                  </div>
+
+                  {/* Flight Timeline Rows - One per Tail Number */}
+                  <div className="space-y-1 p-2 relative">
+                    {filteredAircraft.map((aircraft) => (
+                      <div
+                        key={aircraft.id}
+                        className={`relative h-16 bg-white rounded border ${
+                          selectedTailNumbers.includes(aircraft.tailNumber) ? 'ring-2 ring-green-300' : ''
+                        }`}
+                        style={{ minWidth: `${Math.max(timeSlots.length * 48, 800)}px` }}
+                      >
+                        {/* Flight Blocks for this Tail Number */}
+                        {aircraft.flights.map((flight, flightIndex) => {
+                          const position = calculateFlightPosition(flight.departure.time, flight.duration)
+                          return (
+                            <div
+                              key={flightIndex}
+                              className={`absolute top-1 h-14 rounded-md border-2 border-white shadow-sm cursor-pointer transition-transform hover:scale-105 ${getStatusColor(flight.status)}`}
+                              style={position}
+                              title={`${flight.id} - ${aircraft.tailNumber} - ${flight.route} - ${flight.status}`}
+                            >
+                              <div className="p-1 text-white text-xs overflow-hidden h-full flex flex-col justify-between">
+                                <div>
+                                  <div className="font-bold flex items-center gap-1 mb-1">
+                                    {getStatusIcon(flight.status)}
+                                    <span className="truncate font-mono">{flight.id}</span>
+                                  </div>
+                                  <div className="opacity-90 truncate text-xs">
+                                    <span className="font-mono">{aircraft.tailNumber}</span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="opacity-90 truncate text-xs">
+                                    {flight.departure.time} - {flight.arrival.time}
+                                  </div>
+                                  <div className="opacity-75 truncate text-xs">
+                                    {flight.route}
+                                  </div>
+                                  {flight.delay > 0 && (
+                                    <div className="text-yellow-200 truncate text-xs">
+                                      +{flight.delay}min
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+
+                        {/* Empty state for aircraft with no flights */}
+                        {aircraft.flights.length === 0 && (
+                          <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                            <div className="text-center">
+                              <Hash className="h-4 w-4 mx-auto mb-1 opacity-50" />
+                              <div className="font-medium text-xs">{aircraft.tailNumber}</div>
+                              <div className="text-xs">
+                                {aircraft.status === 'maintenance' ? 'In Maintenance' : 'No Flights'}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {/* Current Time Line */}
+                    {timeRange === '24h' && (
+                      <div 
+                        className="absolute top-0 bottom-0 w-0.5 bg-green-500 z-30 pointer-events-none"
+                        style={{ 
+                          left: `${((currentTime.getHours() * 60 + currentTime.getMinutes()) / (24 * 60)) * (timeSlots.length * 48)}px`
+                        }}
+                      >
+                        <div className="absolute -top-6 -left-1 w-3 h-3 bg-green-500 rounded-full"></div>
+                        <div className="absolute -top-6 -left-8 text-xs text-green-600 font-medium whitespace-nowrap">
+                          Now
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
