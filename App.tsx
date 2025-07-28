@@ -13,7 +13,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Separator } from './components/ui/separator'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './components/ui/dialog'
 import { AlertTriangle, Plane, Users, Clock, TrendingUp, Settings, FileText, Plus, Filter, BarChart3, Download, UserCheck, ClockIcon, CheckSquare, Menu, X, Zap, Wrench, Fuel, Calendar, Brain, Activity, Shield, Target, Hotel, Eye, DollarSign, Timer, Star, CheckCircle, XCircle, Info, AlertCircle, TrendingDown, RotateCcw, PlayCircle, ArrowRight, Network, GitBranch, Package, Calculator, Route, MapPin, Phone, Mail, Bell } from 'lucide-react'
-import flydubaiLogo from 'figma:asset/21e1153ed6bafa9f5f5e48012e7cef21c978235c.png'
+// Placeholder logo - replace with actual flydubai logo URL
+const flydubaiLogo = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjQwIiB2aWV3Qm94PSIwIDAgMTAwIDQwIiBmaWxsPSJub25lIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPgo8cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjQwIiBmaWxsPSIjMDA2NkNDIi8+Cjx0ZXh0IHg9IjUwIiB5PSIyNSIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+Zmx5ZHViYWk8L3RleHQ+Cjwvc3ZnPgo='
 import { WorldMap } from './components/WorldMap'
 import { KPIWidgets } from './components/KPIWidgets'
 import { DisruptionInput } from './components/DisruptionInput'
