@@ -2,7 +2,7 @@
 import React, { useState, ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Button } from './ui/button'
-import { Badge } from '../../components/ui/badge'
+import { Badge } from './ui/badge'
 import { useAppContext } from '../context/AppContext'
 import { 
   TrendingUp, Calendar, AlertTriangle, Plane, FileText, Users, Brain, Target, 
