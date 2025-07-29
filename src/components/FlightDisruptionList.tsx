@@ -817,8 +817,7 @@ export function FlightDisruptionList() {
                       <div className="space-y-3 text-sm">
                         <div>
                           <Label className="text-xs text-muted-foreground">Scheduled Departure</Label>
-                          <p```text
-className="font-medium">{selectedDisruption.scheduledDeparture}</p>
+                          <p className="font-medium">{selectedDisruption.scheduledDeparture}</p>
                         </div>
                         <div>
                           <Label className="text-xs text-muted-foreground">Estimated Departure</Label>
