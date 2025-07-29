@@ -11,8 +11,18 @@ app.use(cors())
 app.use(express.json())
 
 // PostgreSQL connection with fallback
+let connectionString = process.env.DATABASE_URL || 'postgresql://localhost:5432/aeron_settings'
+
+// Add endpoint parameter for Neon compatibility if using Neon
+if (connectionString.includes('neon.tech') && !connectionString.includes('options=endpoint')) {
+  const url = new URL(connectionString)
+  const endpointId = url.hostname.split('.')[0]
+  const separator = url.search ? '&' : '?'
+  connectionString += `${separator}options=endpoint%3D${endpointId}`
+}
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/aeron_settings',
+  connectionString: connectionString,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 })
 
