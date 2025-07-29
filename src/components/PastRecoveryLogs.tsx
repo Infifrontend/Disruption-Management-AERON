@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
@@ -1013,14 +1013,42 @@ const auditLogs = [
 ]
 
 export function PastRecoveryLogs() {
+  const [selectedLog, setSelectedLog] = useState(null)
+  const [recoveryLogs, setRecoveryLogs] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [filters, setFilters] = useState({
+    dateRange: '7days',
+    status: 'all',
+    disruptionType: 'all',
+    severity: 'all',
+    search: ''
+  })
+  const [sortBy, setSortBy] = useState('dateCompleted')
+  const [sortOrder, setSortOrder] = useState('desc')
+
+  useEffect(() => {
+    const fetchRecoveryLogs = async () => {
+      try {
+        // Assuming databaseService.getPastRecoveryLogs() returns the actual data
+        const data = await databaseService.getPastRecoveryLogs()
+        setRecoveryLogs(data)
+      } catch (error) {
+        console.error('Error fetching recovery logs:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchRecoveryLogs()
+  }, [])
+
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [disruptionTypeFilter, setDisruptionTypeFilter] = useState('all')
   const [dateRange, setDateRange] = useState('last7days')
-  const [selectedLog, setSelectedLog] = useState(null)
   const [activeTab, setActiveTab] = useState('metrics')
   const [selectedFlightHistory, setSelectedFlightHistory] = useState(null)
-  
+
   // Audit Trail specific states
   const [selectedAuditRecord, setSelectedAuditRecord] = useState(null)
   const [showDetailModal, setShowDetailModal] = useState(false)
@@ -1033,10 +1061,10 @@ export function PastRecoveryLogs() {
                          log.route.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          log.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          log.disruptionReason.toLowerCase().includes(searchTerm.toLowerCase())
-    
+
     const matchesStatus = statusFilter === 'all' || log.status.toLowerCase().includes(statusFilter.toLowerCase())
     const matchesType = disruptionTypeFilter === 'all' || log.categorization === disruptionTypeFilter
-    
+
     return matchesSearch && matchesStatus && matchesType
   })
 
@@ -1046,10 +1074,10 @@ export function PastRecoveryLogs() {
                          log.user.toLowerCase().includes(auditSearchTerm.toLowerCase()) ||
                          log.action.toLowerCase().includes(auditSearchTerm.toLowerCase()) ||
                          log.details.toLowerCase().includes(auditSearchTerm.toLowerCase())
-    
+
     const matchesStatus = auditStatusFilter === 'all' || log.status.toLowerCase() === auditStatusFilter.toLowerCase()
     const matchesAction = auditActionFilter === 'all' || log.action.toLowerCase().includes(auditActionFilter.toLowerCase())
-    
+
     return matchesSearch && matchesStatus && matchesAction
   })
 
@@ -1122,7 +1150,7 @@ export function PastRecoveryLogs() {
     const totalDelayReductionMinutes = pastRecoveryLogs.reduce((sum, log) => sum + log.delayReductionMinutes, 0)
     const totalPotentialDelayMinutes = pastRecoveryLogs.reduce((sum, log) => sum + log.potentialDelayMinutes, 0)
     const avgRecoveryEfficiency = (pastRecoveryLogs.reduce((sum, log) => sum + log.recoveryEfficiency, 0) / pastRecoveryLogs.length).toFixed(1)
-    
+
     // Disruption category breakdown
     const disruptionCategories = pastRecoveryLogs.reduce((acc, log) => {
       acc[log.disruptionCategory] = (acc[log.disruptionCategory] || 0) + 1
@@ -1448,7 +1476,7 @@ export function PastRecoveryLogs() {
                     </RechartsPieChart>
                   </ResponsiveContainer>
                 </div>
-                
+
                 {/* Category Breakdown */}
                 <div className="mt-4 space-y-2">
                   {disruptionCategoryData.map((category, index) => {
@@ -2119,7 +2147,8 @@ export function PastRecoveryLogs() {
                       <CardTitle className="text-flydubai-navy flex items-center gap-2">
                         <Activity className="h-5 w-5" />
                         Action Summary
-                      </CardTitle>
+                      ```tool_code
+                    </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

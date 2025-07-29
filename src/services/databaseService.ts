@@ -32,6 +32,84 @@ export interface CustomParameter {
   created_at: string
 }
 
+export interface FlightDisruption {
+  id: string
+  flightNumber: string
+  route: string
+  aircraft: string
+  scheduledDeparture: string
+  estimatedDeparture: string
+  delay: number
+  passengers: number
+  crew: number
+  severity: string
+  type: string
+  status: string
+  disruptionReason: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface RecoveryOption {
+  id: string
+  disruptionId: string
+  optionName: string
+  description: string
+  cost: number
+  duration: number
+  confidence: number
+  passengerImpact: number
+  createdAt: string
+  details: any
+}
+
+export interface PassengerData {
+  id: string
+  name: string
+  pnr: string
+  flightNumber: string
+  seatNumber?: string
+  ticketClass: string
+  loyaltyTier: string
+  specialNeeds?: string
+  contactInfo: any
+  rebookingStatus?: string
+}
+
+export interface CrewMember {
+  id: string
+  name: string
+  role: string
+  qualifications: string[]
+  dutyTimeRemaining: number
+  baseLocation: string
+  status: string
+  contactInfo: any
+}
+
+export interface Aircraft {
+  id: string
+  registration: string
+  type: string
+  status: string
+  location: string
+  maintenanceStatus: string
+  fuelLevel: number
+  nextMaintenance: string
+}
+
+export interface HotelBooking {
+  id: string
+  disruptionId: string
+  passengerPnr: string
+  hotelName: string
+  checkIn: string
+  checkOut: string
+  cost: number
+  status: string
+  createdAt: string
+}
+
 class DatabaseService {
   private baseUrl: string
 
@@ -337,6 +415,229 @@ class DatabaseService {
     } catch (error) {
       console.error('Failed to import settings:', error)
       return false
+    }
+  }
+
+  // Flight Disruptions
+  async getAllDisruptions(): Promise<FlightDisruption[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/disruptions`)
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to fetch disruptions:', error)
+      return []
+    }
+  }
+
+  async getDisruption(id: string): Promise<FlightDisruption | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/disruptions/${id}`)
+      if (!response.ok) return null
+      return await response.json()
+    } catch (error) {
+      console.error(`Failed to fetch disruption ${id}:`, error)
+      return null
+    }
+  }
+
+  async saveDisruption(disruption: Omit<FlightDisruption, 'id' | 'createdAt' | 'updatedAt'>): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/disruptions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(disruption)
+      })
+      return response.ok
+    } catch (error) {
+      console.error('Failed to save disruption:', error)
+      return false
+    }
+  }
+
+  // Recovery Options
+  async getRecoveryOptions(disruptionId: string): Promise<RecoveryOption[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-options/${disruptionId}`)
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to fetch recovery options:', error)
+      return []
+    }
+  }
+
+  async saveRecoveryOption(option: Omit<RecoveryOption, 'id' | 'createdAt'>): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-options`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(option)
+      })
+      return response.ok
+    } catch (error) {
+      console.error('Failed to save recovery option:', error)
+      return false
+    }
+  }
+
+  // Passengers
+  async getPassengersByFlight(flightNumber: string): Promise<PassengerData[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/passengers/flight/${flightNumber}`)
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to fetch passengers:', error)
+      return []
+    }
+  }
+
+  async getPassengerByPnr(pnr: string): Promise<PassengerData | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/passengers/pnr/${pnr}`)
+      if (!response.ok) return null
+      return await response.json()
+    } catch (error) {
+      console.error(`Failed to fetch passenger ${pnr}:`, error)
+      return null
+    }
+  }
+
+  async updatePassengerRebooking(pnr: string, rebookingData: any): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/passengers/${pnr}/rebooking`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(rebookingData)
+      })
+      return response.ok
+    } catch (error) {
+      console.error('Failed to update passenger rebooking:', error)
+      return false
+    }
+  }
+
+  // Crew Management
+  async getAvailableCrew(): Promise<CrewMember[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/available`)
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to fetch available crew:', error)
+      return []
+    }
+  }
+
+  async getCrewByFlight(flightNumber: string): Promise<CrewMember[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/crew/flight/${flightNumber}`)
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to fetch crew for flight:', error)
+      return []
+    }
+  }
+
+  // Aircraft Management
+  async getAllAircraft(): Promise<Aircraft[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/aircraft`)
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to fetch aircraft:', error)
+      return []
+    }
+  }
+
+  async getAvailableAircraft(): Promise<Aircraft[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/aircraft/available`)
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to fetch available aircraft:', error)
+      return []
+    }
+  }
+
+  async updateAircraftStatus(id: string, status: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/aircraft/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      })
+      return response.ok
+    } catch (error) {
+      console.error('Failed to update aircraft status:', error)
+      return false
+    }
+  }
+
+  // Hotel Bookings
+  async getHotelBookings(disruptionId?: string): Promise<HotelBooking[]> {
+    try {
+      const url = disruptionId 
+        ? `${this.baseUrl}/hotel-bookings/disruption/${disruptionId}`
+        : `${this.baseUrl}/hotel-bookings`
+      const response = await fetch(url)
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to fetch hotel bookings:', error)
+      return []
+    }
+  }
+
+  async createHotelBooking(booking: Omit<HotelBooking, 'id' | 'createdAt'>): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/hotel-bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(booking)
+      })
+      return response.ok
+    } catch (error) {
+      console.error('Failed to create hotel booking:', error)
+      return false
+    }
+  }
+
+  // Analytics and KPIs
+  async getKPIData(): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/analytics/kpi`)
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to fetch KPI data:', error)
+      return {}
+    }
+  }
+
+  async getPredictionAnalytics(): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/analytics/predictions`)
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to fetch prediction analytics:', error)
+      return {}
+    }
+  }
+
+  async getPastRecoveryLogs(): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-logs`)
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to fetch past recovery logs:', error)
+      return []
     }
   }
 

@@ -1,10 +1,11 @@
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Progress } from './ui/progress'
 import { Badge } from './ui/badge'
 import { TrendingUp, TrendingDown, Plane, Users, Clock, AlertTriangle, CheckCircle } from 'lucide-react'
+import { databaseService } from '@/services/database'
 
 const kpiData = [
   {
@@ -66,15 +67,36 @@ const kpiData = [
 ]
 
 export function KPIWidgets() {
+  const [kpiData, setKpiData] = useState<any>({})
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchKPIData = async () => {
+      try {
+        const data = await databaseService.getKPIData()
+        setKpiData(data)
+      } catch (error) {
+        console.error('Error fetching KPI data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchKPIData()
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchKPIData, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <div className="space-y-4">
       <h3 className="font-medium">Key Performance Indicators</h3>
-      
+
       {kpiData.map((kpi, index) => {
         const Icon = kpi.icon
         const isPositiveTrend = kpi.trend === 'up'
         const TrendIcon = isPositiveTrend ? TrendingUp : TrendingDown
-        
+
         return (
           <Card key={index}>
             <CardContent className="p-4">
@@ -94,14 +116,14 @@ export function KPIWidgets() {
                   </span>
                 </div>
               </div>
-              
+
               <div className="mb-2">
                 <span className="text-2xl font-semibold">{kpi.value}</span>
                 {kpi.subtitle && (
                   <p className="text-xs text-muted-foreground">{kpi.subtitle}</p>
                 )}
               </div>
-              
+
               {kpi.target && (
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
@@ -118,7 +140,7 @@ export function KPIWidgets() {
           </Card>
         )
       })}
-      
+
       {/* Summary Card */}
       <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
         <CardContent className="p-4">
@@ -143,31 +165,64 @@ export function KPIWidgets() {
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
-export function KPIWidgets() {
+export function KPIWidgetsOld() {
+  const [kpiData, setKpiData] = useState<any>({})
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchKPIData = async () => {
+      try {
+        const data = await databaseService.getKPIData()
+        setKpiData(data)
+      } catch (error) {
+        console.error('Error fetching KPI data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchKPIData()
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchKPIData, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 xl:gap-4">
       <Card className="kpi-flydubai">
         <CardHeader className="pb-2 xl:pb-3">
-          <CardTitle className="text-sm xl:text-base">On-Time Performance</CardTitle>
+          <CardTitle className="text-sm xl:text-base">Active Disruptions</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-xl xl:text-2xl font-bold">89.3%</p>
+          <div className="text-2xl font-bold">{loading ? '...' : kpiData.activeDisruptions || 0}</div>
+          <p className="text-xs text-muted-foreground">Real-time data</p>
         </CardContent>
       </Card>
       <Card className="kpi-flydubai">
         <CardHeader className="pb-2 xl:pb-3">
-          <CardTitle className="text-sm xl:text-base">Active Flights</CardTitle>
+          <CardTitle className="text-sm xl:text-base">Average Resolution Time</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-xl xl:text-2xl font-bold">47</p>
+          <div className="text-2xl font-bold">{loading ? '...' : kpiData.avgResolutionTime || 'N/A'}</div>
+          <p className="text-xs text-muted-foreground">Average resolution time</p>
         </CardContent>
       </Card>
       <Card className="kpi-flydubai">
         <CardHeader className="pb-2 xl:pb-3">
-          <CardTitle className="text-sm xl:text-base">Passengers Today</CardTitle>
+          <CardTitle className="text-sm xl:text-base">Passengers Satisfaction</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-xl xl:text-2xl font-bold">2,847</p>
+          <div className="text-2xl font-bold">{loading ? '...' : `${kpiData.passengersSatisfaction || 0}/5`}</div>
+          <p className="text-xs text-muted-foreground">Passenger satisfaction</p>
+        </CardContent>
+      </Card>
+       <Card className="kpi-flydubai">
+        <CardHeader className="pb-2 xl:pb-3">
+          <CardTitle className="text-sm xl:text-base">Cost Savings</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <div className="text-2xl font-bold">{loading ? '...' : `AED ${(kpiData.costSavings || 0).toLocaleString()}`}</div>
+          <p className="text-xs text-muted-foreground">Monthly savings</p>
         </CardContent>
       </Card>
     </div>

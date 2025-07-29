@@ -202,6 +202,150 @@ INSERT INTO settings (category, key, value, type, description, updated_by) VALUE
 
 ON CONFLICT (category, key) DO NOTHING;
 
+-- Flight Disruptions table
+CREATE TABLE IF NOT EXISTS flight_disruptions (
+    id SERIAL PRIMARY KEY,
+    flight_number VARCHAR(10) NOT NULL,
+    route VARCHAR(50) NOT NULL,
+    aircraft VARCHAR(50) NOT NULL,
+    scheduled_departure TIMESTAMP WITH TIME ZONE NOT NULL,
+    estimated_departure TIMESTAMP WITH TIME ZONE,
+    delay_minutes INTEGER DEFAULT 0,
+    passengers INTEGER NOT NULL,
+    crew INTEGER NOT NULL,
+    severity VARCHAR(20) NOT NULL CHECK (severity IN ('Low', 'Medium', 'High', 'Critical')),
+    disruption_type VARCHAR(50) NOT NULL,
+    status VARCHAR(20) NOT NULL CHECK (status IN ('Active', 'Resolved', 'Cancelled')),
+    disruption_reason TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Recovery Options table
+CREATE TABLE IF NOT EXISTS recovery_options (
+    id SERIAL PRIMARY KEY,
+    disruption_id INTEGER REFERENCES flight_disruptions(id),
+    option_name VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    cost DECIMAL(12,2) NOT NULL,
+    duration_minutes INTEGER NOT NULL,
+    confidence DECIMAL(5,2) NOT NULL,
+    passenger_impact INTEGER NOT NULL,
+    details JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Passengers table
+CREATE TABLE IF NOT EXISTS passengers (
+    id SERIAL PRIMARY KEY,
+    pnr VARCHAR(10) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    flight_number VARCHAR(10) NOT NULL,
+    seat_number VARCHAR(10),
+    ticket_class VARCHAR(20) NOT NULL,
+    loyalty_tier VARCHAR(20) DEFAULT 'Bronze',
+    special_needs TEXT,
+    contact_info JSONB,
+    rebooking_status VARCHAR(50),
+    new_flight_number VARCHAR(10),
+    new_seat_number VARCHAR(10),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Crew Members table
+CREATE TABLE IF NOT EXISTS crew_members (
+    id SERIAL PRIMARY KEY,
+    employee_id VARCHAR(20) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL,
+    qualifications TEXT[],
+    duty_time_remaining INTEGER NOT NULL,
+    base_location VARCHAR(50) NOT NULL,
+    status VARCHAR(20) NOT NULL CHECK (status IN ('Available', 'On Duty', 'Rest', 'Unavailable')),
+    current_flight VARCHAR(10),
+    contact_info JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Aircraft table
+CREATE TABLE IF NOT EXISTS aircraft (
+    id SERIAL PRIMARY KEY,
+    registration VARCHAR(20) UNIQUE NOT NULL,
+    aircraft_type VARCHAR(50) NOT NULL,
+    status VARCHAR(20) NOT NULL CHECK (status IN ('Available', 'In Use', 'Maintenance', 'Out of Service')),
+    location VARCHAR(50) NOT NULL,
+    maintenance_status VARCHAR(20) NOT NULL CHECK (maintenance_status IN ('Operational', 'Due', 'In Progress')),
+    fuel_level DECIMAL(5,2),
+    next_maintenance DATE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Hotel Bookings table
+CREATE TABLE IF NOT EXISTS hotel_bookings (
+    id SERIAL PRIMARY KEY,
+    disruption_id INTEGER REFERENCES flight_disruptions(id),
+    passenger_pnr VARCHAR(10) REFERENCES passengers(pnr),
+    hotel_name VARCHAR(255) NOT NULL,
+    check_in DATE NOT NULL,
+    check_out DATE NOT NULL,
+    cost DECIMAL(10,2) NOT NULL,
+    status VARCHAR(20) NOT NULL CHECK (status IN ('Booked', 'Confirmed', 'Cancelled', 'Completed')),
+    booking_reference VARCHAR(50),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Recovery Logs table for historical data
+CREATE TABLE IF NOT EXISTS recovery_logs (
+    id SERIAL PRIMARY KEY,
+    solution_id VARCHAR(50) UNIQUE NOT NULL,
+    disruption_id VARCHAR(50) NOT NULL,
+    flight_number VARCHAR(10) NOT NULL,
+    route VARCHAR(50) NOT NULL,
+    aircraft VARCHAR(50) NOT NULL,
+    disruption_type VARCHAR(50) NOT NULL,
+    disruption_reason TEXT,
+    priority VARCHAR(20) NOT NULL,
+    date_created TIMESTAMP WITH TIME ZONE NOT NULL,
+    date_executed TIMESTAMP WITH TIME ZONE,
+    date_completed TIMESTAMP WITH TIME ZONE,
+    duration INTERVAL,
+    status VARCHAR(20) NOT NULL,
+    affected_passengers INTEGER,
+    actual_cost DECIMAL(12,2),
+    estimated_cost DECIMAL(12,2),
+    cost_variance DECIMAL(5,2),
+    otp_impact DECIMAL(5,2),
+    solution_chosen TEXT,
+    total_options INTEGER,
+    executed_by VARCHAR(255),
+    approved_by VARCHAR(255),
+    passenger_satisfaction DECIMAL(3,1),
+    rebooking_success DECIMAL(5,2),
+    categorization VARCHAR(100),
+    cancellation_avoided BOOLEAN DEFAULT FALSE,
+    potential_delay_minutes INTEGER,
+    actual_delay_minutes INTEGER,
+    delay_reduction_minutes INTEGER,
+    disruption_category VARCHAR(50),
+    recovery_efficiency DECIMAL(5,2),
+    network_impact VARCHAR(20),
+    downstream_flights_affected INTEGER,
+    details JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_flight_disruptions_status ON flight_disruptions(status);
+CREATE INDEX IF NOT EXISTS idx_flight_disruptions_type ON flight_disruptions(disruption_type);
+CREATE INDEX IF NOT EXISTS idx_passengers_flight ON passengers(flight_number);
+CREATE INDEX IF NOT EXISTS idx_passengers_pnr ON passengers(pnr);
+CREATE INDEX IF NOT EXISTS idx_crew_status ON crew_members(status);
+CREATE INDEX IF NOT EXISTS idx_aircraft_status ON aircraft(status);
+CREATE INDEX IF NOT EXISTS idx_recovery_options_disruption ON recovery_options(disruption_id);
+
 -- Insert sample custom rules
 INSERT INTO custom_rules (rule_id, name, description, category, type, priority, overridable, conditions, actions, created_by) VALUES
 ('RULE-001', 'Weather Contingency Rule', 'Automatic HOTAC booking when weather delay exceeds 4 hours', 'Weather', 'Hard', 1, false, 'Weather delay > 240 minutes', 'Auto-book HOTAC, Notify passengers', 'system'),
@@ -211,3 +355,59 @@ INSERT INTO custom_rules (rule_id, name, description, category, type, priority, 
 ('RULE-005', 'Maintenance Slot Protection', 'Protect scheduled maintenance slots from disruption recovery', 'Maintenance', 'Hard', 2, true, 'Aircraft.MaintenanceScheduled = True', 'Protect slot, Use alternative aircraft', 'system')
 
 ON CONFLICT (rule_id) DO NOTHING;
+
+-- Insert sample flight disruptions
+INSERT INTO flight_disruptions (flight_number, route, aircraft, scheduled_departure, estimated_departure, delay_minutes, passengers, crew, severity, disruption_type, status, disruption_reason) VALUES
+('FZ123', 'DXB → JFK', 'A6-FDB', '2025-01-15 14:30:00+00', '2025-01-15 16:45:00+00', 135, 158, 8, 'High', 'Technical', 'Active', 'Engine warning light - hydraulic system check required'),
+('FZ181', 'DXB → COK', 'A6-FDC', '2025-01-15 09:15:00+00', '2025-01-15 09:44:00+00', 29, 175, 6, 'Medium', 'Crew', 'Resolved', 'Captain duty time breach - standby crew activated'),
+('FZ205', 'DXB → BOM', 'A6-FDE', '2025-01-15 11:20:00+00', '2025-01-15 14:30:00+00', 190, 189, 6, 'High', 'Weather', 'Active', 'Severe thunderstorms at destination'),
+('FZ67', 'DXB → LHR', 'A6-FDF', '2025-01-15 08:45:00+00', NULL, 0, 162, 8, 'Critical', 'Technical', 'Active', 'Aircraft AOG - engine failure on ground')
+ON CONFLICT DO NOTHING;
+
+-- Insert sample passengers
+INSERT INTO passengers (pnr, name, flight_number, seat_number, ticket_class, loyalty_tier, special_needs, contact_info, rebooking_status) VALUES
+('ABC123', 'John Smith', 'FZ123', '12A', 'Business', 'Gold', NULL, '{"email": "john.smith@email.com", "phone": "+971501234567"}', 'Pending'),
+('DEF456', 'Sarah Johnson', 'FZ123', '15C', 'Economy', 'Silver', 'Wheelchair assistance', '{"email": "sarah.j@email.com", "phone": "+971507654321"}', 'Confirmed'),
+('GHI789', 'Mohammed Ali', 'FZ181', '8B', 'Business', 'Platinum', NULL, '{"email": "m.ali@email.com", "phone": "+971509876543"}', 'Completed'),
+('JKL012', 'Emma Watson', 'FZ205', '22F', 'Economy', 'Bronze', 'Vegetarian meal', '{"email": "emma.w@email.com", "phone": "+971502468135"}', 'Pending'),
+('MNO345', 'Ahmed Hassan', 'FZ67', '3A', 'Business', 'Gold', NULL, '{"email": "a.hassan@email.com", "phone": "+971503691472"}', 'Urgent')
+ON CONFLICT (pnr) DO NOTHING;
+
+-- Insert sample crew members
+INSERT INTO crew_members (employee_id, name, role, qualifications, duty_time_remaining, base_location, status, current_flight, contact_info) VALUES
+('CREW001', 'Captain Sarah Johnson', 'Captain', '{B737,A320}', 270, 'DXB', 'Available', NULL, '{"phone": "+971555123456", "radio": "CAPT-001"}'),
+('CREW002', 'First Officer Mike Chen', 'First Officer', '{B737,A320}', 315, 'DXB', 'Available', NULL, '{"phone": "+971555234567", "radio": "FO-002"}'),
+('CREW003', 'Flight Attendant Lisa Park', 'Flight Attendant', '{Safety,Service}', 420, 'DXB', 'On Duty', 'FZ123', '{"phone": "+971555345678"}'),
+('CREW004', 'Captain Ahmed Al-Rashid', 'Captain', '{B737,A320,A380}', 180, 'DXB', 'Rest', NULL, '{"phone": "+971555456789", "radio": "CAPT-004"}'),
+('CREW005', 'Senior Flight Attendant Maria Rodriguez', 'Senior Flight Attendant', '{Safety,Service,Training}', 360, 'DXB', 'Available', NULL, '{"phone": "+971555567890"}')
+ON CONFLICT (employee_id) DO NOTHING;
+
+-- Insert sample aircraft
+INSERT INTO aircraft (registration, aircraft_type, status, location, maintenance_status, fuel_level, next_maintenance) VALUES
+('A6-FDB', 'Boeing 737-800', 'Maintenance', 'DXB Gate B12', 'In Progress', 45.5, '2025-01-20'),
+('A6-FDC', 'Boeing 737-800', 'Available', 'DXB Gate C15', 'Operational', 89.2, '2025-02-15'),
+('A6-FDE', 'Boeing 737 MAX 8', 'In Use', 'BOM Terminal 2', 'Operational', 67.8, '2025-01-25'),
+('A6-FDF', 'Boeing 737-800', 'Out of Service', 'DXB Maintenance Hangar', 'In Progress', 0.0, '2025-01-16'),
+('A6-FDG', 'Boeing 737 MAX 8', 'Available', 'DXB Gate A08', 'Operational', 92.5, '2025-02-10')
+ON CONFLICT (registration) DO NOTHING;
+
+-- Insert sample hotel bookings
+INSERT INTO hotel_bookings (disruption_id, passenger_pnr, hotel_name, check_in, check_out, cost, status, booking_reference) VALUES
+(1, 'ABC123', 'Hilton JFK Airport', '2025-01-15', '2025-01-16', 250.00, 'Booked', 'HIL-123456'),
+(1, 'DEF456', 'Hilton JFK Airport', '2025-01-15', '2025-01-16', 250.00, 'Confirmed', 'HIL-123457'),
+(3, 'JKL012', 'ITC Grand Central Mumbai', '2025-01-15', '2025-01-16', 180.00, 'Booked', 'ITC-789012')
+ON CONFLICT DO NOTHING;
+
+-- Insert sample recovery options
+INSERT INTO recovery_options (disruption_id, option_name, description, cost, duration_minutes, confidence, passenger_impact, details) VALUES
+(1, 'Aircraft Swap', 'Replace A6-FDB with available A6-FDC', 25000.00, 120, 95.5, 158, '{"aircraft": "A6-FDC", "gate": "C15", "crew_required": false}'),
+(1, 'Delay & Repair', 'Complete hydraulic system check and repair', 8500.00, 180, 85.2, 158, '{"repair_time": "3 hours", "parts_available": true}'),
+(1, 'Cancel & Rebook', 'Cancel flight and rebook passengers on next available flights', 45000.00, 60, 100.0, 158, '{"next_flights": ["FZ125", "EK201"], "compensation": 400}'),
+(4, 'Emergency Aircraft', 'Deploy backup aircraft A6-FDG', 35000.00, 90, 92.0, 162, '{"aircraft": "A6-FDG", "crew_ready": true, "slots_available": true}')
+ON CONFLICT DO NOTHING;
+
+-- Insert sample recovery logs
+INSERT INTO recovery_logs (solution_id, disruption_id, flight_number, route, aircraft, disruption_type, disruption_reason, priority, date_created, date_executed, date_completed, status, affected_passengers, actual_cost, estimated_cost, cost_variance, otp_impact, solution_chosen, total_options, executed_by, approved_by, passenger_satisfaction, rebooking_success, categorization, cancellation_avoided, potential_delay_minutes, actual_delay_minutes, delay_reduction_minutes, disruption_category, recovery_efficiency, network_impact, downstream_flights_affected, details) VALUES
+('SOL-2025-001', 'DIS-001', 'FZ181', 'DXB → COK', 'A6-FDC', 'Crew issue', 'Captain duty time breach', 'Medium', '2025-01-10 12:30:00+00', '2025-01-10 13:45:00+00', '2025-01-10 15:20:00+00', 'Successful', 175, 45000, 52000, -13.5, -0.5, 'Option A - Standby crew activation', 3, 'crew.manager@flydubai.com', 'ops.supervisor@flydubai.com', 8.8, 98.5, 'Crew issue (e.g., sick report, duty time breach)', true, 720, 29, 691, 'Crew', 95.9, 'Low', 1, '{"crew_swap": true, "delay_avoided": "11.5 hours"}'),
+('SOL-2025-002', 'DIS-002', 'FZ425', 'DXB → DEL', 'A6-FDH', 'Technical', 'Engine oil pressure warning', 'High', '2025-01-09 08:15:00+00', '2025-01-09 09:30:00+00', '2025-01-09 11:45:00+00', 'Successful', 184, 28500, 35000, -18.6, -0.8, 'Option B - Aircraft substitution', 4, 'tech.supervisor@flydubai.com', 'ops.manager@flydubai.com', 9.1, 97.8, 'Aircraft issue (e.g., AOG)', true, 480, 75, 405, 'Technical', 93.7, 'Medium', 2, '{"aircraft_swap": "A6-FDK", "maintenance": "completed"}')
+ON CONFLICT (solution_id) DO NOTHING;
