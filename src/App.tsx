@@ -27,8 +27,9 @@ export default function App() {
   return (
     <AppProvider>
       <Router>
-        <Layout>
-          <Routes>
+        <div className="page-container">
+          <Layout>
+            <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/flight-tracking" element={<FlightTracking />} />
@@ -49,7 +50,8 @@ export default function App() {
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Routes>
-        </Layout>
+          </Layout>
+        </div>
       </Router>
     </AppProvider>
   )

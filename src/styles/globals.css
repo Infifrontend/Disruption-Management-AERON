@@ -225,3 +225,111 @@
 .z-content {
   z-index: 10;
 }
+
+/* Global viewport and scroll fixes */
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+#root {
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Prevent horizontal scroll on all containers */
+* {
+  box-sizing: border-box;
+}
+
+.page-container {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollable-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: 1;
+  max-height: calc(100vh - 120px);
+}
+
+/* Card and component responsive fixes */
+.card-responsive {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.table-responsive {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.gantt-container {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Mobile-first responsive design */
+@media (max-width: 640px) {
+  .responsive-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .responsive-flex {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar-responsive {
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .content-responsive {
+    max-width: calc(100vw - 200px);
+  }
+}
+
+@media (max-width: 1024px) {
+  .large-content {
+    max-width: calc(100vw - 220px);
+  }
+}
+
+/* Prevent text and content overflow */
+.text-responsive {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+/* Fix for charts and complex components */
+.chart-container {
+  max-width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.gantt-timeline {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
+
+/* Ensure buttons and form elements are responsive */
+.button-responsive {
+  min-width: 0;
+  word-wrap: break-word;
+}
+
+.form-responsive {
+  max-width: 100%;
+  overflow: hidden;
+}

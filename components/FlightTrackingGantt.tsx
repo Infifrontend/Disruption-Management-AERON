@@ -649,9 +649,9 @@ export function FlightTrackingGantt() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-full overflow-hidden">
       {/* Header - flydubai themed */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-shrink-0">
         <div>
           <h2 className="text-2xl font-semibold">Flydubai Flight Tracking Gantt</h2>
           <p className="text-muted-foreground">Aircraft schedules by tail number with real-time flight tracking</p>
@@ -739,8 +739,8 @@ export function FlightTrackingGantt() {
       </div>
 
       {/* Gantt Chart - flydubai styled */}
-      <Card className="overflow-hidden">
-        <CardHeader className="pb-2">
+      <Card className="overflow-hidden flex-1 gantt-container">
+        <CardHeader className="pb-2 flex-shrink-0">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <CardTitle className="flex items-center gap-2">
               <Hash className="h-5 w-5" />
@@ -772,10 +772,10 @@ export function FlightTrackingGantt() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-0">
-          <div className="flex flex-col lg:flex-row max-h-[600px] min-h-[400px]">
+        <CardContent className="p-0 flex-1 overflow-hidden">
+          <div className="flex flex-col lg:flex-row h-[500px]">
             {/* Tail Numbers List - flydubai A6-FE* format */}
-            <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r bg-green-50 flex-shrink-0 max-h-full overflow-hidden">
+            <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r bg-green-50 flex-shrink-0 overflow-hidden flex flex-col">
               {/* Header */}
               <div className="p-3 border-b bg-white flex-shrink-0">
                 <h4 className="font-medium flex items-center gap-2">
@@ -786,7 +786,7 @@ export function FlightTrackingGantt() {
               </div>
               
               {/* Tail Numbers List - Scrollable */}
-              <div className="flex-1 overflow-y-auto max-h-[calc(600px-80px)]">
+              <div className="flex-1 overflow-y-auto">
                 <div className="space-y-1 p-1">
                   {filteredAircraft.map((aircraft) => (
                     <div
@@ -841,14 +841,15 @@ export function FlightTrackingGantt() {
             </div>
 
             {/* Timeline */}
-            <div className="flex-1 min-w-0 max-h-full overflow-hidden" ref={ganttRef}>
-              <div className="h-full max-h-[600px] overflow-x-auto overflow-y-auto">
+            <div className="flex-1 min-w-0 overflow-hidden flex flex-col" ref={ganttRef}>
+              <div className="flex-1 overflow-x-auto overflow-y-auto gantt-timeline">
                 <div 
-                  className="relative min-h-full" 
+                  className="relative h-full" 
                   ref={timelineRef}
                   style={{ 
                     minWidth: `${Math.max(timeSlots.length * 48, 800)}px`,
-                    width: 'max-content'
+                    width: 'max-content',
+                    minHeight: '400px'
                   }}
                 >
                   {/* Time Header */}
