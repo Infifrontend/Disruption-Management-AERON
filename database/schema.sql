@@ -187,7 +187,7 @@ INSERT INTO settings (category, key, value, type, description, updated_by) VALUE
 
 -- NLP Settings
 ('nlpSettings', 'enabled', 'true', 'boolean', 'Enable natural language processing for user inputs', 'system'),
-('nlpSettings', 'language', 'english', 'string', 'Primary language for NLP processing', 'system'),
+('nlpSettings', 'language', '"english"', 'string', 'Primary language for NLP processing', 'system'),
 ('nlpSettings', 'confidence', '85', 'number', 'Minimum confidence threshold for NLP interpretations', 'system'),
 ('nlpSettings', 'autoApply', 'false', 'boolean', 'Automatically apply high-confidence NLP interpretations', 'system'),
 
@@ -358,10 +358,12 @@ ON CONFLICT (rule_id) DO NOTHING;
 
 -- Insert sample flight disruptions
 INSERT INTO flight_disruptions (flight_number, route, aircraft, scheduled_departure, estimated_departure, delay_minutes, passengers, crew, severity, disruption_type, status, disruption_reason) VALUES
-('FZ123', 'DXB → JFK', 'A6-FDB', '2025-01-15 14:30:00+00', '2025-01-15 16:45:00+00', 135, 158, 8, 'High', 'Technical', 'Active', 'Engine warning light - hydraulic system check required'),
-('FZ181', 'DXB → COK', 'A6-FDC', '2025-01-15 09:15:00+00', '2025-01-15 09:44:00+00', 29, 175, 6, 'Medium', 'Crew', 'Resolved', 'Captain duty time breach - standby crew activated'),
-('FZ205', 'DXB → BOM', 'A6-FDE', '2025-01-15 11:20:00+00', '2025-01-15 14:30:00+00', 190, 189, 6, 'High', 'Weather', 'Active', 'Severe thunderstorms at destination'),
-('FZ67', 'DXB → LHR', 'A6-FDF', '2025-01-15 08:45:00+00', NULL, 0, 162, 8, 'Critical', 'Technical', 'Active', 'Aircraft AOG - engine failure on ground')
+('FZ203', 'DXB → DEL', 'B737 MAX 8', '2025-01-10 16:45:00+00', NULL, 0, 195, 6, 'Critical', 'Weather', 'Cancelled', 'Dense fog at DEL'),
+('FZ215', 'DXB → BOM', 'B737-800', '2025-01-10 15:30:00+00', '2025-01-10 17:30:00+00', 120, 189, 6, 'High', 'Weather', 'Delayed', 'Sandstorm at DXB'),
+('FZ235', 'KHI → DXB', 'B737-800', '2025-01-10 08:30:00+00', '2025-01-10 11:30:00+00', 180, 181, 6, 'High', 'Airport', 'Diverted', 'DXB runway closure'),
+('FZ329', 'DXB → KHI', 'B737 MAX 8', '2025-01-10 09:15:00+00', '2025-01-10 13:15:00+00', 240, 168, 6, 'High', 'Rotation', 'Delayed', 'Aircraft late from previous sector'),
+('FZ147', 'IST → DXB', 'B737 MAX 8', '2025-01-10 21:15:00+00', '2025-01-10 21:60:00+00', 45, 189, 6, 'Medium', 'Technical', 'Delayed', 'Engine maintenance check'),
+('FZ181', 'DXB → COK', 'B737-800', '2025-01-10 14:20:00+00', '2025-01-10 15:50:00+00', 90, 175, 6, 'Medium', 'Crew', 'Delayed', 'Crew duty time breach')
 ON CONFLICT DO NOTHING;
 
 -- Insert sample passengers
