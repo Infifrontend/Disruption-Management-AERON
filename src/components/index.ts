@@ -1,4 +1,3 @@
-
 // UI Components
 export * from './ui/button'
 export * from './ui/card'
@@ -45,3 +44,4 @@ export { default as WorldMap } from './WorldMap'
 export { default as NetworkHeatMap } from './NetworkHeatMap'
 export { default as CrewTrackingGantt } from './CrewTrackingGantt'
 export { default as RulesAssistantChatbot } from './RulesAssistantChatbot'
+export { AffectedFlightsList } from './AffectedFlightsList'
