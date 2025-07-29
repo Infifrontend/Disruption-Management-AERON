@@ -2507,71 +2507,24 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
         {/* Natural Language Processing */}
         <TabsContent value="nlp" className="space-y-6">
-          {/* Header Section */}
+          {/* Header Section - Natural Language & Knowledge Repository Combined */}
           <Card className="border-flydubai-blue bg-blue-50">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-flydubai-blue">
                 <Brain className="h-5 w-5" />
-                Natural Language
-              </CardTitle>
-              <p className="text-sm text-blue-700">
-                Configure natural language processing and knowledge repository settings for enhanced decision-making capabilities.
-              </p>
-            </CardHeader>
-          </Card>
-
-          {/* Natural Language & Knowledge Repository */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-flydubai-navy">
-                <FileText className="h-5 w-5" />
                 Natural Language & Knowledge Repository
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Enhance AERON's decision-making capabilities by connecting natural language understanding with operational documents, operational procedures, and general policies to improve context-aware recommendations.
+              <p className="text-sm text-blue-700">
+                Enhance AERON's decision-making capabilities by connecting natural language understanding with operational documents, operational procedures, and general policies to improve context-aware recommendations, accuracy and compliance.
               </p>
             </CardHeader>
-          </Card>
-
-          {/* Knowledge Impacts */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-flydubai-navy">
-                <TrendingUp className="h-5 w-5" />
-                Knowledge Impacts
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Adjust how knowledge repository affects recovery recommendations accuracy and compliance.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Accuracy Enhancement</Label>
-                  <Badge className="bg-gray-100 text-gray-800">85%</Badge>
-                </div>
-                <Slider
-                  value={[85]}
-                  max={100}
-                  min={0}
-                  step={5}
-                  className="w-full slider-flydubai"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Compliance Weighting</Label>
-                  <Badge className="bg-gray-100 text-gray-800">75%</Badge>
-                </div>
-                <Slider
-                  value={[75]}
-                  max={100}
-                  min={0}
-                  step={5}
-                  className="w-full"
-                />
-              </div>
+            <CardContent>
+              <Alert className="border-blue-200 bg-blue-50">
+                <Info className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-800">
+                  <strong>Configuration Impact:</strong> Changes to these settings will affect natural language processing accuracy and how knowledge repository impacts recovery recommendations.
+                </AlertDescription>
+              </Alert>
             </CardContent>
           </Card>
 
@@ -2643,14 +2596,48 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     className="switch-flydubai"
                   />
                 </div>
+
+                {/* Knowledge Impacts - Integrated */}
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium text-flydubai-navy mb-3">Knowledge Impacts</h4>
+                  <div className="space-y-3">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-medium">Accuracy Enhancement</Label>
+                        <Badge className="bg-gray-100 text-gray-800 text-xs">85%</Badge>
+                      </div>
+                      <Slider
+                        value={[85]}
+                        max={100}
+                        min={0}
+                        step={5}
+                        className="w-full h-1"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-xs font-medium">Compliance Weighting</Label>
+                        <Badge className="bg-gray-100 text-gray-800 text-xs">75%</Badge>
+                      </div>
+                      <Slider
+                        value={[75]}
+                        max={100}
+                        min={0}
+                        step={5}
+                        className="w-full h-1"
+                      />
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
-            {/* Repository Status */}
+            {/* Repository Status - Updated Layout */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-flydubai-navy">
-                  <Package className="h-5 w-5" />
+                  <TrendingUp className="h-5 w-5" />
                   Repository Status
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
@@ -2658,35 +2645,41 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <div className="text-2xl font-bold text-flydubai-blue">247</div>
+                    <div className="text-xs text-gray-600">Total Documents</div>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 rounded-lg">
+                    <div className="text-2xl font-bold text-green-600">185</div>
+                    <div className="text-xs text-gray-600">Processed</div>
+                  </div>
+                </div>
+                
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <span className="text-sm">Document Processing</span>
                     <div className="flex items-center gap-2">
-                      <Progress value={75} className="w-20 h-2" />
-                      <span className="text-xs text-gray-600">75%</span>
+                      <Progress value={75} className="w-24 h-2" />
+                      <span className="text-xs text-gray-600 min-w-[30px]">75%</span>
                     </div>
                   </div>
                   
                   <div className="flex items-center justify-between text-sm">
-                    <span>Total Documents:</span>
-                    <Badge className="bg-blue-100 text-blue-800">247</Badge>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Processed Documents:</span>
-                    <Badge className="bg-green-100 text-green-800">185</Badge>
-                  </div>
-                  
-                  <div className="flex items-center justify-between text-sm">
                     <span>Last Updated:</span>
-                    <span className="text-gray-600">2 hours ago</span>
+                    <span className="text-gray-600 font-medium">2 hours ago</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Status:</span>
+                    <Badge className="bg-green-100 text-green-800">Operational</Badge>
                   </div>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Document Repository */}
+          {/* Document Repository - Updated Design */}
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -2696,7 +2689,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     Document Repository
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Manage documents that provide operational knowledge and procedural context for recovery operations.
+                    Manage operational knowledge and procedural documents for contextual decision-making.
                   </p>
                 </div>
                 <Button className="btn-flydubai-primary">
@@ -2706,53 +2699,76 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {/* Document Items */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                     <div className="flex items-center gap-3">
-                      <FileText className="h-4 w-4 text-blue-600" />
-                      <div>
-                        <p className="font-medium text-sm">Flexible Operations Manual 2024.pdf</p>
-                        <p className="text-xs text-gray-600">Operations • Emergency procedures and protocols</p>
+                      <div className="p-2 bg-blue-100 rounded">
+                        <FileText className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">Flexible Operations Manual 2024.pdf</p>
+                          <Badge className="bg-green-100 text-green-800 text-xs">Processed</Badge>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Operations • Emergency procedures and protocols</p>
+                        <p className="text-xs text-gray-500">Updated: 1 day ago • Size: 2.3 MB</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-green-100 text-green-800 text-xs">Processed</Badge>
-                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-600">
-                        <Trash2 className="h-3 w-3" />
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600">
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                     <div className="flex items-center gap-3">
-                      <FileText className="h-4 w-4 text-orange-600" />
-                      <div>
-                        <p className="font-medium text-sm">Emergency Response Procedures.docx</p>
-                        <p className="text-xs text-gray-600">Emergency • Emergency response procedures and escalation protocols</p>
+                      <div className="p-2 bg-orange-100 rounded">
+                        <FileText className="h-4 w-4 text-orange-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">Emergency Response Procedures.docx</p>
+                          <Badge className="bg-orange-100 text-orange-800 text-xs">Processing</Badge>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Emergency • Response procedures and escalation protocols</p>
+                        <p className="text-xs text-gray-500">Updated: 3 hours ago • Size: 1.8 MB</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-orange-100 text-orange-800 text-xs">Processing</Badge>
-                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-600">
-                        <Trash2 className="h-3 w-3" />
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600">
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
                     <div className="flex items-center gap-3">
-                      <FileText className="h-4 w-4 text-gray-600" />
-                      <div>
-                        <p className="font-medium text-sm">Weather Decision Guidelines.pdf</p>
-                        <p className="text-xs text-gray-600">Weather • Weather-related decision making guidelines and protocols</p>
+                      <div className="p-2 bg-gray-100 rounded">
+                        <FileText className="h-4 w-4 text-gray-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">Weather Decision Guidelines.pdf</p>
+                          <Badge className="bg-gray-100 text-gray-800 text-xs">Pending</Badge>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Weather • Decision making guidelines and protocols</p>
+                        <p className="text-xs text-gray-500">Updated: 1 week ago • Size: 950 KB</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-gray-100 text-gray-800 text-xs">Pending</Badge>
-                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-600">
-                        <Trash2 className="h-3 w-3" />
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600">
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -2761,12 +2777,86 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
             </CardContent>
           </Card>
 
-          {/* Manual Knowledge Entry */}
+          {/* Manual Knowledge Entries - New Section */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-flydubai-navy">
+                    <Edit className="h-5 w-5" />
+                    Manual Knowledge Entries
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Manage manually added knowledge entries that enhance recovery recommendations.
+                  </p>
+                </div>
+                <Button className="btn-flydubai-primary">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Manual Entry
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-3">
+                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-purple-100 rounded">
+                        <User className="h-4 w-4 text-purple-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">VIP Passenger Handling Protocols</p>
+                          <Badge className="bg-purple-100 text-purple-800 text-xs">Manual</Badge>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Passenger Service • Special handling procedures for VIP passengers</p>
+                        <p className="text-xs text-gray-500">Created: ops.manager@flydubai.com • 2 days ago</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 rounded">
+                        <Shield className="h-4 w-4 text-green-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">Medical Emergency Response</p>
+                          <Badge className="bg-green-100 text-green-800 text-xs">Manual</Badge>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Emergency • Immediate response protocols for medical emergencies</p>
+                        <p className="text-xs text-gray-500">Created: medical.team@flydubai.com • 5 days ago</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Manual Knowledge Entry Form - Updated Labels */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-flydubai-navy">
-                <Edit className="h-5 w-5" />
-                Manual Knowledge Entry
+                <Plus className="h-5 w-5" />
+                Add Manual Knowledge Entry
               </CardTitle>
               <p className="text-sm text-muted-foreground">
                 Add custom operational knowledge that enhances recovery recommendations and decisions.
@@ -2828,7 +2918,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
             </CardContent>
           </Card>
 
-          {/* Test Natural Language Input */}
+          {/* Test Natural Language Input - Updated Labels */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-flydubai-navy">
@@ -2842,10 +2932,13 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
             <CardContent>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="test-input">Sample Natural Language Input</Label>
+                  <Label htmlFor="test-input">Sample Natural Language Inputs</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Examples of supported input formats.
+                  </p>
                   <Textarea
                     id="test-input"
-                    placeholder="Examples of suggested Inputs:
+                    placeholder="Examples of suggested inputs:
 • Prioritize passengers with connecting flights to minimize missed connections
 • Focus on cost-effective solutions that keep families together
 • Apply emergency protocols for medical passengers requiring immediate assistance"
