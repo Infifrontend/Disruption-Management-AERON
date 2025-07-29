@@ -67,9 +67,9 @@ export function Layout({ children }: LayoutProps) {
   const currentScreen = enabledScreens.find(s => location.pathname === `/${s.id}` || (location.pathname === '/' && s.id === 'dashboard'))
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="h-screen bg-background flex overflow-hidden">
       {/* Sidebar */}
-      <div className="w-52 min-w-[13rem] max-w-[13rem] bg-flydubai-blue text-white border-r border-blue-700 flex flex-col flex-shrink-0">
+      <div className="w-52 min-w-[13rem] max-w-[13rem] bg-flydubai-blue text-white border-r border-blue-700 flex flex-col flex-shrink-0 overflow-hidden">
         {/* Sidebar Header */}
         <div className="p-4 border-b border-blue-700 min-h-[120px] flex items-center justify-center">
           <div className="flex flex-col items-center gap-2 w-full">
@@ -152,9 +152,9 @@ export function Layout({ children }: LayoutProps) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <div className="bg-card border-b border-border px-6 py-4">
+        <div className="bg-card border-b border-border px-6 py-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-semibold">
@@ -178,8 +178,10 @@ export function Layout({ children }: LayoutProps) {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
-          {children}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 scrollable-content">
+          <div className="max-w-full">
+            {children}
+          </div>
         </div>
       </div>
     </div>
