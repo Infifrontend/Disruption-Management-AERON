@@ -81,7 +81,7 @@ export function FlightDisruptionList() {
   }, [])
 
   // Enhanced mock data with comprehensive disruption information
-  const disruptions = [
+  const mockDisruptions = [
     {
       id: 'DISR-2025-001',
       flightNumber: 'EK123',
@@ -372,7 +372,8 @@ export function FlightDisruptionList() {
     }
   ]
 
-  const filteredDisruptions = disruptions.filter(disruption => {
+  const dataToFilter = disruptions.length > 0 ? disruptions : mockDisruptions
+  const filteredDisruptions = dataToFilter.filter(disruption => {
     return (
       (filters.severity === 'all' || disruption.severity.toLowerCase() === filters.severity) &&
       (filters.type === 'all' || disruption.type.toLowerCase() === filters.type) &&
@@ -448,7 +449,7 @@ export function FlightDisruptionList() {
               <AlertTriangle className="h-5 w-5 text-red-600" />
               <div>
                 <p className="text-sm text-red-600">Active Disruptions</p>
-                <p className="text-2xl font-semibold text-red-900">{disruptions.filter(d => d.status === 'Active').length}</p>
+                <p className="text-2xl font-semibold text-red-900">{dataToFilter.filter(d => d.status === 'Active').length}</p>
                 <p className="text-xs text-red-600">Requiring attention</p>
               </div>
             </div>
@@ -462,7 +463,7 @@ export function FlightDisruptionList() {
               <div>
                 <p className="text-sm text-orange-600">Affected Passengers</p>
                 <p className="text-2xl font-semibold text-orange-900">
-                  {disruptions.reduce((sum, d) => sum + d.passengers, 0).toLocaleString()}
+                  {dataToFilter.reduce((sum, d) => sum + d.passengers, 0).toLocaleString()}
                 </p>
                 <p className="text-xs text-orange-600">Total impacted</p>
               </div>
@@ -477,7 +478,7 @@ export function FlightDisruptionList() {
               <div>
                 <p className="text-sm text-blue-600">Estimated Cost Impact</p>
                 <p className="text-2xl font-semibold text-blue-900">
-                  ${(disruptions.reduce((sum, d) => sum + d.impact.estimatedCost, 0) / 1000).toFixed(0)}K
+                  ${(dataToFilter.reduce((sum, d) => sum + d.impact.estimatedCost, 0) / 1000).toFixed(0)}K
                 </p>
                 <p className="text-xs text-blue-600">Recovery costs</p>
               </div>
@@ -492,7 +493,7 @@ export function FlightDisruptionList() {
               <div>
                 <p className="text-sm text-purple-600">AI Confidence</p>
                 <p className="text-2xl font-semibold text-purple-900">
-                  {(disruptions.reduce((sum, d) => sum + d.confidence, 0) / disruptions.length).toFixed(1)}%
+                  {dataToFilter.length > 0 ? (dataToFilter.reduce((sum, d) => sum + d.confidence, 0) / dataToFilter.length).toFixed(1) : 0}%
                 </p>
                 <p className="text-xs text-purple-600">Prediction accuracy</p>
               </div>
