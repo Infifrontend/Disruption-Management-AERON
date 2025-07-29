@@ -269,6 +269,356 @@ app.post('/api/settings/reset', async (req, res) => {
   }
 })
 
+// Flight Disruptions endpoints
+app.get('/api/disruptions', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT * FROM flight_disruptions 
+      ORDER BY created_at DESC
+    `)
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching disruptions:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/disruptions/:id', async (req, res) => {
+  try {
+    const { id } = req.params
+    const result = await pool.query(
+      'SELECT * FROM flight_disruptions WHERE id = $1',
+      [id]
+    )
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Disruption not found' })
+    }
+    
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error fetching disruption:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/disruptions', async (req, res) => {
+  try {
+    const {
+      flight_number, route, aircraft, scheduled_departure, estimated_departure,
+      delay_minutes, passengers, crew, severity, disruption_type, status, disruption_reason
+    } = req.body
+    
+    const result = await pool.query(`
+      INSERT INTO flight_disruptions (
+        flight_number, route, aircraft, scheduled_departure, estimated_departure,
+        delay_minutes, passengers, crew, severity, disruption_type, status, disruption_reason
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      RETURNING *
+    `, [
+      flight_number, route, aircraft, scheduled_departure, estimated_departure,
+      delay_minutes, passengers, crew, severity, disruption_type, status, disruption_reason
+    ])
+    
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error saving disruption:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Recovery Options endpoints
+app.get('/api/recovery-options/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+    const result = await pool.query(
+      'SELECT * FROM recovery_options WHERE disruption_id = $1 ORDER BY confidence DESC',
+      [disruptionId]
+    )
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching recovery options:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/recovery-options', async (req, res) => {
+  try {
+    const {
+      disruption_id, option_name, description, cost, duration_minutes,
+      confidence, passenger_impact, details
+    } = req.body
+    
+    const result = await pool.query(`
+      INSERT INTO recovery_options (
+        disruption_id, option_name, description, cost, duration_minutes,
+        confidence, passenger_impact, details
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+    `, [
+      disruption_id, option_name, description, cost, duration_minutes,
+      confidence, passenger_impact, JSON.stringify(details)
+    ])
+    
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error saving recovery option:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Passengers endpoints
+app.get('/api/passengers/flight/:flightNumber', async (req, res) => {
+  try {
+    const { flightNumber } = req.params
+    const result = await pool.query(
+      'SELECT * FROM passengers WHERE flight_number = $1',
+      [flightNumber]
+    )
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching passengers:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/passengers/pnr/:pnr', async (req, res) => {
+  try {
+    const { pnr } = req.params
+    const result = await pool.query(
+      'SELECT * FROM passengers WHERE pnr = $1',
+      [pnr]
+    )
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Passenger not found' })
+    }
+    
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error fetching passenger:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.put('/api/passengers/:pnr/rebooking', async (req, res) => {
+  try {
+    const { pnr } = req.params
+    const { rebooking_status, new_flight_number, new_seat_number } = req.body
+    
+    const result = await pool.query(`
+      UPDATE passengers 
+      SET rebooking_status = $1, new_flight_number = $2, new_seat_number = $3, updated_at = CURRENT_TIMESTAMP
+      WHERE pnr = $4
+      RETURNING *
+    `, [rebooking_status, new_flight_number, new_seat_number, pnr])
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Passenger not found' })
+    }
+    
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error updating passenger rebooking:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Crew endpoints
+app.get('/api/crew/available', async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM crew_members WHERE status = 'Available' ORDER BY name"
+    )
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching available crew:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/crew/flight/:flightNumber', async (req, res) => {
+  try {
+    const { flightNumber } = req.params
+    const result = await pool.query(
+      'SELECT * FROM crew_members WHERE current_flight = $1',
+      [flightNumber]
+    )
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching crew for flight:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Aircraft endpoints
+app.get('/api/aircraft', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM aircraft ORDER BY registration'
+    )
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching aircraft:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/aircraft/available', async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM aircraft WHERE status = 'Available' ORDER BY registration"
+    )
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching available aircraft:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.put('/api/aircraft/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+    
+    const result = await pool.query(`
+      UPDATE aircraft 
+      SET status = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+    `, [status, id])
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Aircraft not found' })
+    }
+    
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error updating aircraft status:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Hotel Bookings endpoints
+app.get('/api/hotel-bookings', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM hotel_bookings ORDER BY created_at DESC'
+    )
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching hotel bookings:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/hotel-bookings/disruption/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+    const result = await pool.query(
+      'SELECT * FROM hotel_bookings WHERE disruption_id = $1',
+      [disruptionId]
+    )
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching hotel bookings for disruption:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/hotel-bookings', async (req, res) => {
+  try {
+    const {
+      disruption_id, passenger_pnr, hotel_name, check_in, check_out,
+      cost, status, booking_reference
+    } = req.body
+    
+    const result = await pool.query(`
+      INSERT INTO hotel_bookings (
+        disruption_id, passenger_pnr, hotel_name, check_in, check_out,
+        cost, status, booking_reference
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+    `, [
+      disruption_id, passenger_pnr, hotel_name, check_in, check_out,
+      cost, status, booking_reference
+    ])
+    
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error creating hotel booking:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Analytics endpoints
+app.get('/api/analytics/kpi', async (req, res) => {
+  try {
+    // Return mock KPI data for now
+    const kpiData = {
+      totalDisruptions: 0,
+      activeDisruptions: 0,
+      resolvedDisruptions: 0,
+      avgResolutionTime: 0,
+      passengerImpact: 0,
+      costSavings: 0
+    }
+    
+    // Get actual data from database
+    const disruptionsResult = await pool.query(`
+      SELECT 
+        COUNT(*) as total,
+        COUNT(CASE WHEN status = 'Active' THEN 1 END) as active,
+        COUNT(CASE WHEN status = 'Resolved' THEN 1 END) as resolved,
+        SUM(passengers) as total_passengers
+      FROM flight_disruptions
+    `)
+    
+    if (disruptionsResult.rows.length > 0) {
+      const row = disruptionsResult.rows[0]
+      kpiData.totalDisruptions = parseInt(row.total) || 0
+      kpiData.activeDisruptions = parseInt(row.active) || 0
+      kpiData.resolvedDisruptions = parseInt(row.resolved) || 0
+      kpiData.passengerImpact = parseInt(row.total_passengers) || 0
+    }
+    
+    res.json(kpiData)
+  } catch (error) {
+    console.error('Error fetching KPI data:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/analytics/predictions', async (req, res) => {
+  try {
+    // Return mock prediction data for now
+    res.json({
+      delayProbability: 15.2,
+      weatherRisk: 'Low',
+      trafficRisk: 'Medium',
+      recommendations: [
+        'Monitor weather conditions at DXB',
+        'Consider crew standby activation'
+      ]
+    })
+  } catch (error) {
+    console.error('Error fetching prediction analytics:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/recovery-logs', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM recovery_logs ORDER BY date_created DESC LIMIT 100'
+    )
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching recovery logs:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Unhandled error:', error)
