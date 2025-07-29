@@ -1,4 +1,3 @@
-
 // Settings storage utility with PostgreSQL database integration and localStorage fallback
 import { databaseService } from '../services/databaseService'
 
@@ -24,17 +23,17 @@ class SettingsStorage {
     this.loadFromLocalStorage()
     this.initializeDefaults()
     this.saveToLocalStorage()
-    
+
     // Then try to connect to database asynchronously
     this.initializeStorage()
   }
 
   private async initializeStorage() {
     console.log('Initializing AERON Settings Storage...')
-    
+
     // Check database connectivity
     this.isDatabaseConnected = await databaseService.healthCheck()
-    
+
     if (this.isDatabaseConnected) {
       console.log('✅ Database connected - Loading settings from PostgreSQL')
       await this.loadFromDatabase()
@@ -50,7 +49,7 @@ class SettingsStorage {
     try {
       const settings = await databaseService.getAllSettings()
       console.log(`Loaded ${settings.length} settings from database`)
-      
+
       this.storage.clear()
       settings.forEach(setting => {
         this.storage.set(setting.id, setting)
@@ -72,56 +71,56 @@ class SettingsStorage {
       { category: 'operationalRules', key: 'maxOverbooking', value: 105, type: 'number' },
       { category: 'operationalRules', key: 'priorityRebookingTime', value: 15, type: 'number' },
       { category: 'operationalRules', key: 'hotacTriggerDelay', value: 240, type: 'number' },
-      
+
       // Recovery Constraints defaults
       { category: 'recoveryConstraints', key: 'maxAircraftSwaps', value: 3, type: 'number' },
       { category: 'recoveryConstraints', key: 'crewDutyTimeLimits', value: true, type: 'boolean' },
       { category: 'recoveryConstraints', key: 'maintenanceSlotProtection', value: true, type: 'boolean' },
       { category: 'recoveryConstraints', key: 'slotCoordinationRequired', value: false, type: 'boolean' },
       { category: 'recoveryConstraints', key: 'curfewCompliance', value: true, type: 'boolean' },
-      
+
       // Automation Settings defaults
       { category: 'automationSettings', key: 'autoApproveThreshold', value: 95, type: 'number' },
       { category: 'automationSettings', key: 'requireManagerApproval', value: false, type: 'boolean' },
       { category: 'automationSettings', key: 'enablePredictiveActions', value: true, type: 'boolean' },
       { category: 'automationSettings', key: 'autoNotifyPassengers', value: true, type: 'boolean' },
       { category: 'automationSettings', key: 'autoBookHotac', value: false, type: 'boolean' },
-      
+
       // Passenger Priority defaults
       { category: 'passengerPrioritization', key: 'loyaltyTier', value: 25, type: 'number' },
       { category: 'passengerPrioritization', key: 'ticketClass', value: 20, type: 'number' },
       { category: 'passengerPrioritization', key: 'specialNeeds', value: 30, type: 'number' },
       { category: 'passengerPrioritization', key: 'groupSize', value: 15, type: 'number' },
       { category: 'passengerPrioritization', key: 'connectionRisk', value: 10, type: 'number' },
-      
+
       // Recovery Options Ranking defaults
       { category: 'recoveryOptionsRanking', key: 'costWeight', value: 30, type: 'number' },
       { category: 'recoveryOptionsRanking', key: 'timeWeight', value: 25, type: 'number' },
       { category: 'recoveryOptionsRanking', key: 'passengerImpactWeight', value: 20, type: 'number' },
       { category: 'recoveryOptionsRanking', key: 'operationalComplexityWeight', value: 15, type: 'number' },
       { category: 'recoveryOptionsRanking', key: 'reputationWeight', value: 10, type: 'number' },
-      
+
       // Aircraft Selection Criteria defaults
       { category: 'aircraftSelectionCriteria', key: 'maintenanceStatus', value: 25, type: 'number' },
       { category: 'aircraftSelectionCriteria', key: 'fuelEfficiency', value: 20, type: 'number' },
       { category: 'aircraftSelectionCriteria', key: 'routeSuitability', value: 20, type: 'number' },
       { category: 'aircraftSelectionCriteria', key: 'passengerCapacity', value: 15, type: 'number' },
       { category: 'aircraftSelectionCriteria', key: 'availabilityWindow', value: 20, type: 'number' },
-      
+
       // Crew Assignment Criteria defaults  
       { category: 'crewAssignmentCriteria', key: 'dutyTimeRemaining', value: 30, type: 'number' },
       { category: 'crewAssignmentCriteria', key: 'qualifications', value: 25, type: 'number' },
       { category: 'crewAssignmentCriteria', key: 'baseLocation', value: 20, type: 'number' },
       { category: 'crewAssignmentCriteria', key: 'restRequirements', value: 15, type: 'number' },
       { category: 'crewAssignmentCriteria', key: 'languageSkills', value: 10, type: 'number' },
-      
+
       // Flight Prioritization defaults
       { category: 'flightPrioritization', key: 'airlinePreference', value: 20, type: 'number' },
       { category: 'flightPrioritization', key: 'onTimePerformance', value: 25, type: 'number' },
       { category: 'flightPrioritization', key: 'aircraftType', value: 15, type: 'number' },
       { category: 'flightPrioritization', key: 'departureTime', value: 20, type: 'number' },
       { category: 'flightPrioritization', key: 'connectionBuffer', value: 20, type: 'number' },
-      
+
       // Flight Scoring defaults
       { category: 'flightScoring', key: 'baseScore', value: 70, type: 'number' },
       { category: 'flightScoring', key: 'priorityBonus', value: 15, type: 'number' },
@@ -129,19 +128,19 @@ class SettingsStorage {
       { category: 'flightScoring', key: 'specialReqBonus', value: 8, type: 'number' },
       { category: 'flightScoring', key: 'loyaltyBonus', value: 8, type: 'number' },
       { category: 'flightScoring', key: 'groupBonus', value: 5, type: 'number' },
-      
+
       // Passenger Scoring defaults
       { category: 'passengerScoring', key: 'vipWeight', value: 40, type: 'number' },
       { category: 'passengerScoring', key: 'loyaltyWeight', value: 25, type: 'number' },
       { category: 'passengerScoring', key: 'specialNeedsWeight', value: 20, type: 'number' },
       { category: 'passengerScoring', key: 'revenueWeight', value: 15, type: 'number' },
-      
+
       // NLP Settings defaults
       { category: 'nlpSettings', key: 'enabled', value: true, type: 'boolean' },
       { category: 'nlpSettings', key: 'language', value: 'english', type: 'string' },
       { category: 'nlpSettings', key: 'confidence', value: 85, type: 'number' },
       { category: 'nlpSettings', key: 'autoApply', value: false, type: 'boolean' },
-      
+
       // Notification Settings defaults
       { category: 'notificationSettings', key: 'email', value: true, type: 'boolean' },
       { category: 'notificationSettings', key: 'sms', value: false, type: 'boolean' },
@@ -207,9 +206,9 @@ class SettingsStorage {
         updatedAt: new Date().toISOString(),
         updatedBy: userId
       }
-      
+
       console.log('Saving setting:', setting)
-      
+
       // Try to save to database first
       if (this.isDatabaseConnected) {
         const success = await databaseService.saveSetting(category, key, value, type, userId)
@@ -218,11 +217,11 @@ class SettingsStorage {
           this.isDatabaseConnected = false
         }
       }
-      
+
       // Always update local storage and memory
       this.storage.set(id, setting)
       this.saveToLocalStorage()
-      
+
       console.log('Setting saved successfully:', id)
     } catch (error) {
       console.error('Failed to save setting:', { category, key, value, type }, error)
@@ -232,7 +231,7 @@ class SettingsStorage {
 
   async getSetting(category: string, key: string): Promise<SettingsData | null> {
     const id = `${category}_${key}`
-    
+
     // Try database first if connected
     if (this.isDatabaseConnected) {
       try {
@@ -245,7 +244,7 @@ class SettingsStorage {
         console.warn('Database read failed, using local storage')
       }
     }
-    
+
     return this.storage.get(id) || null
   }
 
@@ -264,7 +263,7 @@ class SettingsStorage {
         console.warn('Database read failed, using local storage')
       }
     }
-    
+
     return Array.from(this.storage.values()).filter(setting => setting.category === category)
   }
 
@@ -284,13 +283,13 @@ class SettingsStorage {
         console.warn('Database read failed, using local storage')
       }
     }
-    
+
     return Array.from(this.storage.values())
   }
 
   async deleteSetting(category: string, key: string): Promise<boolean> {
     const id = `${category}_${key}`
-    
+
     // Try database first if connected
     if (this.isDatabaseConnected) {
       try {
@@ -302,7 +301,7 @@ class SettingsStorage {
         console.warn('Database delete failed:', error)
       }
     }
-    
+
     const result = this.storage.delete(id)
     if (result) {
       this.saveToLocalStorage()
@@ -318,7 +317,7 @@ class SettingsStorage {
   async importSettings(settingsJson: string): Promise<boolean> {
     try {
       const settings: SettingsData[] = JSON.parse(settingsJson)
-      
+
       if (this.isDatabaseConnected) {
         return await databaseService.importSettings(settingsJson)
       } else {
@@ -344,7 +343,7 @@ class SettingsStorage {
         console.warn('Database reset failed, using local reset')
       }
     }
-    
+
     this.storage.clear()
     this.initializeDefaults()
     this.saveToLocalStorage()

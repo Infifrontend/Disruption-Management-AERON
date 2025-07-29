@@ -37,7 +37,7 @@ class DatabaseService {
 
   constructor() {
     // Use API base URL for database operations
-    this.baseUrl = 'http://localhost:3001/api'
+    this.baseUrl = 'http://0.0.0.0:3001/api'
   }
 
   // Settings operations
