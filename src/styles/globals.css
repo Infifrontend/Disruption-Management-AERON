@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -31,6 +30,7 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 224 71.4% 4.1%;
     --foreground: 210 20% 98%;
@@ -63,6 +63,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -227,7 +228,8 @@
 }
 
 /* Global viewport and scroll fixes */
-html, body {
+html,
+body {
   height: 100%;
   overflow-x: hidden;
   scroll-behavior: smooth;
@@ -254,7 +256,7 @@ html, body {
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh);
 }
 
 /* Card and component responsive fixes */
@@ -279,7 +281,7 @@ html, body {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .responsive-flex {
     flex-direction: column;
     gap: 0.5rem;
@@ -291,7 +293,7 @@ html, body {
     width: 100%;
     max-width: 200px;
   }
-  
+
   .content-responsive {
     max-width: calc(100vw - 200px);
   }
