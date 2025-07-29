@@ -481,6 +481,33 @@ app.get('/api/recovery-logs', async (req, res) => {
   }
 })
 
+// Database initialization endpoint
+app.post('/api/init-database', async (req, res) => {
+  try {
+    console.log('Initializing database tables...')
+
+    // Read and execute schema file
+    const fs = require('fs')
+    const path = require('path')
+    const schemaPath = path.join(__dirname, '..', 'database', 'schema.sql')
+
+    if (!fs.existsSync(schemaPath)) {
+      return res.status(404).json({ error: 'Schema file not found' })
+    }
+
+    const schemaSQL = fs.readFileSync(schemaPath, 'utf8')
+
+    // Execute the schema
+    await pool.query(schemaSQL)
+
+    console.log('✅ Database tables initialized successfully')
+    res.json({ message: 'Database initialized successfully' })
+  } catch (error) {
+    console.error('❌ Database initialization failed:', error.message)
+    res.status(500).json({ error: `Database initialization failed: ${error.message}` })
+  }
+})
+
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Unhandled error:', error)
@@ -489,9 +516,4 @@ app.use((error, req, res, next) => {
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 AERON Settings Database API server running on http://0.0.0.0:${port}`)
-
-  // Test database connection
-  pool.query('SELECT 1')
-    .then(() => console.log('✅ PostgreSQL connected successfully'))
-    .catch(err => console.error('❌ PostgreSQL connection failed:', err.message))
 })
