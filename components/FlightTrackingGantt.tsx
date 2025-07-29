@@ -411,6 +411,7 @@ export function FlightTrackingGantt() {
   })
   const [currentTime, setCurrentTime] = useState(new Date())
   const [autoRefresh, setAutoRefresh] = useState(true)
+  const [flightData, setFlightData] = useState([]) // Added flightData state
 
   const ganttRef = useRef(null)
   const timelineRef = useRef(null)
@@ -428,7 +429,7 @@ export function FlightTrackingGantt() {
   // Generate time slots for the timeline based on selected time range
   const generateTimeSlots = () => {
     const slots = []
-    
+
     if (timeRange === '24h') {
       // 24h: 24 slots, each representing 1 hour
       for (let i = 0; i < 24; i++) {
@@ -463,7 +464,7 @@ export function FlightTrackingGantt() {
         const hourOfWeek = i * 6
         const day = Math.floor(hourOfWeek / 24)
         const hour = hourOfWeek % 24
-        
+
         slots.push({
           hour,
           day,
@@ -475,7 +476,7 @@ export function FlightTrackingGantt() {
         })
       }
     }
-    
+
     return slots
   }
 
@@ -489,7 +490,7 @@ export function FlightTrackingGantt() {
     if (filters.status !== 'all' && aircraft.status !== filters.status) return false
     if (filters.search && !aircraft.tailNumber.toLowerCase().includes(filters.search.toLowerCase()) && 
         !aircraft.type.toLowerCase().includes(filters.search.toLowerCase())) return false
-    
+
     // Route filter
     if (filters.route !== 'all') {
       const hasRoute = aircraft.flights.some(flight => 
@@ -501,13 +502,13 @@ export function FlightTrackingGantt() {
     // Advanced filters
     if (filters.crew !== 'all' && aircraft.crew !== filters.crew) return false
     if (filters.gate && !aircraft.gate.toLowerCase().includes(filters.gate.toLowerCase())) return false
-    
+
     // Capacity range filter
     if (aircraft.capacity < filters.capacityRange[0] || aircraft.capacity > filters.capacityRange[1]) return false
-    
+
     // Age range filter
     if (aircraft.age < filters.ageRange[0] || aircraft.age > filters.ageRange[1]) return false
-    
+
     // Utilization range filter
     if (aircraft.utilization < filters.utilizationRange[0] || aircraft.utilization > filters.utilizationRange[1]) return false
 
@@ -540,7 +541,7 @@ export function FlightTrackingGantt() {
       const hasPriorityFlight = aircraft.flights.some(flight => flight.priority === filters.priority)
       if (!hasPriorityFlight && aircraft.flights.length > 0) return false
     }
-    
+
     return true
   })
 
@@ -579,9 +580,9 @@ export function FlightTrackingGantt() {
     // Convert time to position percentage based on the time range
     const [hours, minutes] = departureTime.split(':').map(Number)
     const totalMinutes = hours * 60 + minutes
-    
+
     let startPos, width, totalTimeInHours
-    
+
     if (timeRange === '24h') {
       // 24h: Position based on 24-hour timeline
       totalTimeInHours = 24
@@ -598,7 +599,7 @@ export function FlightTrackingGantt() {
       startPos = (totalMinutes / (totalTimeInHours * 60)) * 100
       width = (duration / totalTimeInHours) * 100
     }
-    
+
     return { left: `${startPos}%`, width: `${Math.max(width, 1)}%` }
   }
 
@@ -648,327 +649,149 @@ export function FlightTrackingGantt() {
     return count
   }
 
+    // Placeholder FlightGanttRow component
+    const FlightGanttRow = ({ flight }) => {
+      return (
+          <div className="flex items-center py-2 border-b border-gray-200">
+              <div className="w-64 font-medium text-gray-700 flex-shrink-0">{flight.id}</div>
+              <div className="flex-1 grid grid-cols-24 gap-1">
+                  {Array.from({ length: 24 }, (_, i) => {
+                      const flightStart = 6; // Example flight start time
+                      const flightEnd = 18;   // Example flight end time
+                      const isActive = i >= flightStart && i < flightEnd;
+
+                      return (
+                          <div
+                              key={i}
+                              className={`h-4 rounded-sm ${isActive ? 'bg-green-200' : ''}`}
+                          />
+                      );
+                  })}
+              </div>
+          </div>
+      );
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header - flydubai themed */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold">Flydubai Flight Tracking Gantt</h2>
-          <p className="text-muted-foreground">Aircraft schedules by tail number with real-time flight tracking</p>
+    <div className="page-container">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="p-6 border-b border-gray-200">
+          <h1 className="text-2xl font-bold text-gray-900">Flight Tracking - Gantt View</h1>
+          <p className="text-gray-600 mt-2">Real-time flight status and timeline visualization</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant="outline" className={autoRefresh ? "bg-green-50 text-green-700" : "bg-gray-50 text-gray-700"}>
-            <div className={`w-2 h-2 rounded-full mr-2 ${autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
-            {autoRefresh ? 'Live Updates' : 'Manual'}
-          </Badge>
-          <Button variant="outline" size="sm" onClick={() => setAutoRefresh(!autoRefresh)}>
-            {autoRefresh ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          </Button>
-          <Button variant="outline" size="sm">
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-        </div>
-      </div>
 
-      {/* Flydubai Fleet Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Hash className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Total Aircraft</p>
-                <p className="text-xl font-semibold">{filteredAircraft.length}</p>
+        <div className="p-6 space-y-4">
+          {/* Controls */}
+          <div className="flex flex-wrap gap-4 items-center justify-between">
+            <div className="flex flex-wrap gap-4">
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-medium text-gray-700">Date Range:</label>
+                <select className="border border-gray-300 rounded-md px-3 py-1 text-sm">
+                  <option>Today</option>
+                  <option>Tomorrow</option>
+                  <option>Next 7 Days</option>
+                </select>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-medium text-gray-700">Route:</label>
+                <select className="border border-gray-300 rounded-md px-3 py-1 text-sm">
+                  <option>All Routes</option>
+                  <option>DXB - LHR</option>
+                  <option>DXB - BOM</option>
+                  <option>DXB - CAI</option>
+                </select>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-medium text-gray-700">Status:</label>
+                <select className="border border-gray-300 rounded-md px-3 py-1 text-sm">
+                  <option>All Status</option>
+                  <option>On Time</option>
+                  <option>Delayed</option>
+                  <option>Cancelled</option>
+                </select>
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Active</p>
-                <p className="text-xl font-semibold">{filteredAircraft.filter(a => a.status === 'active').length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Wrench className="h-5 w-5 text-orange-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Maintenance</p>
-                <p className="text-xl font-semibold">{filteredAircraft.filter(a => a.status === 'maintenance').length}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <Clock className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Avg Utilization</p>
-                <p className="text-xl font-semibold">
-                  {Math.round(filteredAircraft.reduce((sum, a) => sum + a.utilization, 0) / filteredAircraft.length)}%
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <AlertTriangle className="h-5 w-5 text-red-600" />
-              <div>
-                <p className="text-sm text-muted-foreground">Delayed Flights</p>
-                <p className="text-xl font-semibold">
-                  {filteredAircraft.reduce((sum, a) => sum + a.flights.filter(f => f.status === 'delayed').length, 0)}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Gantt Chart - flydubai styled */}
-      <Card className="overflow-hidden">
-        <CardHeader className="pb-2">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <CardTitle className="flex items-center gap-2">
-              <Hash className="h-5 w-5" />
-              Flydubai Aircraft Schedule by Tail Number
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs">
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-green-500 rounded"></div>
-                  <span>On Time</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-yellow-500 rounded"></div>
-                  <span>Delayed</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-red-500 rounded"></div>
-                  <span>Cancelled</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                  <span>Boarding</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-purple-500 rounded"></div>
-                  <span>Departed</span>
-                </div>
-              </div>
+            <div className="flex gap-2">
+              <button className="px-4 py-2 bg-flydubai-blue text-white rounded-md hover:bg-blue-700 text-sm">
+                Export
+              </button>
+              <button className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm">
+                Refresh
+              </button>
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="flex flex-col lg:flex-row max-h-[600px] min-h-[400px]">
-            {/* Tail Numbers List - flydubai A6-FE* format */}
-            <div className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r bg-green-50 flex-shrink-0 max-h-full overflow-hidden">
-              {/* Header */}
-              <div className="p-3 border-b bg-white flex-shrink-0">
-                <h4 className="font-medium flex items-center gap-2">
-                  <Hash className="h-4 w-4" />
-                  Flydubai Fleet (A6-FE*)
-                </h4>
-                <p className="text-sm text-muted-foreground">{filteredAircraft.length} aircraft</p>
+
+          {/* Timeline Headers */}
+          <div className="border-t pt-4">
+            <div className="flex items-center mb-4">
+              <div className="w-64 font-semibold text-gray-700 flex-shrink-0">Flight</div>
+              <div className="flex-1 grid grid-cols-24 gap-1 text-xs text-gray-600 min-w-0">
+                {Array.from({ length: 24 }, (_, i) => (
+                  <div key={i} className="text-center">
+                    {String(i).padStart(2, '0')}:00
+                  </div>
+                ))}
               </div>
-              
-              {/* Tail Numbers List - Scrollable */}
-              <div className="flex-1 overflow-y-auto max-h-[calc(600px-80px)]">
-                <div className="space-y-1 p-1">
+            </div>
+
+            {/* Gantt Chart */}
+            <div className="gantt-container">
+              <div className="gantt-content">
+                <div className="space-y-2">
                   {filteredAircraft.map((aircraft) => (
-                    <div
-                      key={aircraft.id}
-                      className={`p-2 rounded-md cursor-pointer transition-colors ${
-                        selectedTailNumbers.includes(aircraft.tailNumber) 
-                          ? 'bg-green-100 border-green-200' 
-                          : 'bg-white hover:bg-green-50'
-                      } border`}
-                      onClick={() => handleTailNumberSelection(aircraft.tailNumber)}
-                    >
-                      {/* Primary Tail Number Display */}
-                      <div className="flex items-center justify-between mb-1">
-                        <div className="flex items-center gap-2">
-                          <Hash className="h-3 w-3 text-green-600" />
-                          <div className="font-bold text-sm text-green-700">{aircraft.tailNumber}</div>
-                        </div>
-                        <Badge className={`text-xs px-1 py-0 ${getAircraftStatusColor(aircraft.status)}`}>
-                          {aircraft.status}
-                        </Badge>
-                      </div>
-                      
-                      {/* Aircraft Details - Compact */}
-                      <div className="text-xs text-muted-foreground space-y-0.5">
-                        <div className="flex items-center gap-1">
-                          <Plane className="h-2.5 w-2.5" />
-                          <span className="font-medium truncate">{aircraft.type}</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-1">
-                            <MapPin className="h-2.5 w-2.5" />
-                            <span>{aircraft.currentLocation}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Users className="h-2.5 w-2.5" />
-                            <span>{aircraft.capacity}</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Flight Count - Compact */}
-                      <div className="mt-1 pt-1 border-t border-gray-200">
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-muted-foreground">Flights:</span>
-                          <span className="font-semibold text-green-600">{aircraft.flights.length}</span>
-                        </div>
-                      </div>
-                    </div>
+                      <FlightGanttRow key={aircraft.id} flight={aircraft} />
                   ))}
                 </div>
               </div>
             </div>
-
-            {/* Timeline */}
-            <div className="flex-1 min-w-0 max-h-full overflow-hidden" ref={ganttRef}>
-              <div className="h-full max-h-[600px] overflow-x-auto overflow-y-auto">
-                <div 
-                  className="relative min-h-full" 
-                  ref={timelineRef}
-                  style={{ 
-                    minWidth: `${Math.max(timeSlots.length * 48, 800)}px`,
-                    width: 'max-content'
-                  }}
-                >
-                  {/* Time Header */}
-                  <div className="flex border-b bg-white sticky top-0 z-10 shadow-sm flex-shrink-0">
-                    {timeSlots.map((slot, index) => (
-                      <div
-                        key={index}
-                        className={`flex-shrink-0 w-12 p-2 text-center text-xs border-r ${
-                          slot.isCurrentHour ? 'bg-green-50 text-green-700' : ''
-                        }`}
-                      >
-                        <div className="font-medium whitespace-nowrap">{slot.label}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Flight Timeline Rows - One per Tail Number */}
-                  <div className="space-y-1 p-2 relative min-h-0">
-                    {filteredAircraft.map((aircraft) => (
-                      <div
-                        key={aircraft.id}
-                        className={`relative h-16 bg-white rounded border flex-shrink-0 ${
-                          selectedTailNumbers.includes(aircraft.tailNumber) ? 'ring-2 ring-green-300' : ''
-                        }`}
-                        style={{ minWidth: `${Math.max(timeSlots.length * 48, 800)}px` }}
-                      >
-                        {/* Flight Blocks for this Tail Number */}
-                        {aircraft.flights.map((flight, flightIndex) => {
-                          const position = calculateFlightPosition(flight.departure.time, flight.duration)
-                          return (
-                            <div
-                              key={flightIndex}
-                              className={`absolute top-1 h-14 rounded-md border-2 border-white shadow-sm cursor-pointer transition-transform hover:scale-105 ${getStatusColor(flight.status)}`}
-                              style={position}
-                              title={`${flight.id} - ${aircraft.tailNumber} - ${flight.route} - ${flight.status}`}
-                            >
-                              <div className="p-1 text-white text-xs overflow-hidden h-full flex flex-col justify-between">
-                                <div>
-                                  <div className="font-bold flex items-center gap-1 mb-1">
-                                    {getStatusIcon(flight.status)}
-                                    <span className="truncate font-mono">{flight.id}</span>
-                                  </div>
-                                  <div className="opacity-90 truncate text-xs">
-                                    <span className="font-mono">{aircraft.tailNumber}</span>
-                                  </div>
-                                </div>
-                                <div>
-                                  <div className="opacity-90 truncate text-xs">
-                                    {flight.departure.time} - {flight.arrival.time}
-                                  </div>
-                                  <div className="opacity-75 truncate text-xs">
-                                    {flight.route}
-                                  </div>
-                                  {flight.delay > 0 && (
-                                    <div className="text-yellow-200 truncate text-xs">
-                                      +{flight.delay}min
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          )
-                        })}
-
-                        {/* Empty state for aircraft with no flights */}
-                        {aircraft.flights.length === 0 && (
-                          <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-                            <div className="text-center">
-                              <Hash className="h-4 w-4 mx-auto mb-1 opacity-50" />
-                              <div className="font-medium text-xs">{aircraft.tailNumber}</div>
-                              <div className="text-xs">
-                                {aircraft.status === 'maintenance' ? 'In Maintenance' : 'No Flights'}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-
-                    {/* Current Time Line */}
-                    {timeRange === '24h' && (
-                      <div 
-                        className="absolute top-0 bottom-0 w-0.5 bg-green-500 z-30 pointer-events-none"
-                        style={{ 
-                          left: `${((currentTime.getHours() * 60 + currentTime.getMinutes()) / (24 * 60)) * (timeSlots.length * 48)}px`
-                        }}
-                      >
-                        <div className="absolute -top-6 -left-1 w-3 h-3 bg-green-500 rounded-full"></div>
-                        <div className="absolute -top-6 -left-8 text-xs text-green-600 font-medium whitespace-nowrap">
-                          Now
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Real-time Status - flydubai themed */}
-      <Alert>
-        <RefreshCw className="h-4 w-4" />
-        <AlertDescription>
-          <div className="flex items-center justify-between">
-            <span>
-              Last updated: {currentTime.toLocaleTimeString()} • 
-              Tracking {filteredAircraft.filter(a => a.status === 'active').length} active Flydubai aircraft •
-              {getActiveFiltersCount() > 0 && ` ${getActiveFiltersCount()} filters applied`}
-            </span>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={() => setCurrentTime(new Date())}>
-                <RefreshCw className="h-3 w-3" />
-              </Button>
-              <div className={`w-2 h-2 rounded-full ${autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
-            </div>
+      {/* Legend */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-6">
+        <h3 className="font-semibold text-gray-900 mb-4">Legend</h3>
+        <div className="flex flex-wrap gap-6">
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 bg-green-500 rounded"></div>
+            <span className="text-sm text-gray-700">On Time</span>
           </div>
-        </AlertDescription>
-      </Alert>
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 bg-yellow-500 rounded"></div>
+            <span className="text-sm text-gray-700">Minor Delay (&lt;30 min)</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 bg-orange-500 rounded"></div>
+            <span className="text-sm text-gray-700">Major Delay (&gt;30 min)</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 bg-red-500 rounded"></div>
+            <span className="text-sm text-gray-700">Cancelled</span>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-4 h-4 bg-gray-400 rounded"></div>
+            <span className="text-sm text-gray-700">Not Started</span>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
+
+const pageContainerStyle = {
+  minHeight: '100vh',
+  display: 'flex',
+  flexDirection: 'column',
+};
+
+const ganttContainerStyle = {
+  overflowX: 'auto',
+  overflowY: 'hidden',
+};
+
+const ganttContentStyle = {
+  minWidth: '1500px', // Adjust as necessary
+};
