@@ -1,7 +1,7 @@
 
 import React from 'react'
 import { useAppContext } from '../context/AppContext'
-import { SettingsPanel } from '../../components/SettingsPanel'
+import { SettingsPanel } from '../components/SettingsPanel'
 
 export function SettingsPage() {
   const { screenSettings, setScreenSettings } = useAppContext()
