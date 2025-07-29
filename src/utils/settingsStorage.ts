@@ -1,5 +1,7 @@
 
-// Settings storage utility for database operations
+// Settings storage utility with PostgreSQL database integration and localStorage fallback
+import { databaseService } from '../services/databaseService'
+
 export interface SettingsData {
   id: string
   category: string
@@ -10,16 +12,50 @@ export interface SettingsData {
   updatedBy: string
 }
 
-// Settings storage with localStorage persistence
+// Settings storage with PostgreSQL database and localStorage fallback
 class SettingsStorage {
   private storage = new Map<string, SettingsData>()
   private readonly STORAGE_KEY = 'aeron_settings_storage'
+  private isDatabaseConnected = false
 
-  // Initialize with default settings
+  // Initialize with database connection check and defaults
   constructor() {
-    this.loadFromLocalStorage()
-    this.initializeDefaults()
-    this.saveToLocalStorage()
+    this.initializeStorage()
+  }
+
+  private async initializeStorage() {
+    console.log('Initializing AERON Settings Storage...')
+    
+    // Check database connectivity
+    this.isDatabaseConnected = await databaseService.healthCheck()
+    
+    if (this.isDatabaseConnected) {
+      console.log('✅ Database connected - Loading settings from PostgreSQL')
+      await this.loadFromDatabase()
+    } else {
+      console.log('⚠️ Database unavailable - Using localStorage fallback')
+      this.loadFromLocalStorage()
+      this.initializeDefaults()
+      this.saveToLocalStorage()
+    }
+  }
+
+  private async loadFromDatabase(): Promise<void> {
+    try {
+      const settings = await databaseService.getAllSettings()
+      console.log(`Loaded ${settings.length} settings from database`)
+      
+      this.storage.clear()
+      settings.forEach(setting => {
+        this.storage.set(setting.id, setting)
+      })
+    } catch (error) {
+      console.error('Failed to load settings from database:', error)
+      console.log('Falling back to localStorage')
+      this.isDatabaseConnected = false
+      this.loadFromLocalStorage()
+      this.initializeDefaults()
+    }
   }
 
   private initializeDefaults() {
@@ -153,7 +189,7 @@ class SettingsStorage {
     }
   }
 
-  saveSetting(category: string, key: string, value: any, type: SettingsData['type'], userId: string = 'system'): void {
+  async saveSetting(category: string, key: string, value: any, type: SettingsData['type'], userId: string = 'system'): Promise<void> {
     try {
       const id = `${category}_${key}`
       const setting: SettingsData = {
@@ -166,9 +202,21 @@ class SettingsStorage {
         updatedBy: userId
       }
       
-      console.log('Saving setting to database:', setting)
+      console.log('Saving setting:', setting)
+      
+      // Try to save to database first
+      if (this.isDatabaseConnected) {
+        const success = await databaseService.saveSetting(category, key, value, type, userId)
+        if (!success) {
+          console.warn('Database save failed, falling back to localStorage')
+          this.isDatabaseConnected = false
+        }
+      }
+      
+      // Always update local storage and memory
       this.storage.set(id, setting)
       this.saveToLocalStorage()
+      
       console.log('Setting saved successfully:', id)
     } catch (error) {
       console.error('Failed to save setting:', { category, key, value, type }, error)
@@ -176,21 +224,79 @@ class SettingsStorage {
     }
   }
 
-  getSetting(category: string, key: string): SettingsData | null {
+  async getSetting(category: string, key: string): Promise<SettingsData | null> {
     const id = `${category}_${key}`
+    
+    // Try database first if connected
+    if (this.isDatabaseConnected) {
+      try {
+        const setting = await databaseService.getSetting(category, key)
+        if (setting) {
+          this.storage.set(id, setting)
+          return setting
+        }
+      } catch (error) {
+        console.warn('Database read failed, using local storage')
+      }
+    }
+    
     return this.storage.get(id) || null
   }
 
-  getSettingsByCategory(category: string): SettingsData[] {
+  async getSettingsByCategory(category: string): Promise<SettingsData[]> {
+    // Try database first if connected
+    if (this.isDatabaseConnected) {
+      try {
+        const settings = await databaseService.getSettingsByCategory(category)
+        if (settings.length > 0) {
+          settings.forEach(setting => {
+            this.storage.set(setting.id, setting)
+          })
+          return settings
+        }
+      } catch (error) {
+        console.warn('Database read failed, using local storage')
+      }
+    }
+    
     return Array.from(this.storage.values()).filter(setting => setting.category === category)
   }
 
-  getAllSettings(): SettingsData[] {
+  async getAllSettings(): Promise<SettingsData[]> {
+    // Try database first if connected
+    if (this.isDatabaseConnected) {
+      try {
+        const settings = await databaseService.getAllSettings()
+        if (settings.length > 0) {
+          this.storage.clear()
+          settings.forEach(setting => {
+            this.storage.set(setting.id, setting)
+          })
+          return settings
+        }
+      } catch (error) {
+        console.warn('Database read failed, using local storage')
+      }
+    }
+    
     return Array.from(this.storage.values())
   }
 
-  deleteSetting(category: string, key: string): boolean {
+  async deleteSetting(category: string, key: string): Promise<boolean> {
     const id = `${category}_${key}`
+    
+    // Try database first if connected
+    if (this.isDatabaseConnected) {
+      try {
+        const success = await databaseService.deleteSetting(category, key)
+        if (!success) {
+          console.warn('Database delete failed')
+        }
+      } catch (error) {
+        console.warn('Database delete failed:', error)
+      }
+    }
+    
     const result = this.storage.delete(id)
     if (result) {
       this.saveToLocalStorage()
@@ -198,29 +304,58 @@ class SettingsStorage {
     return result
   }
 
-  exportSettings(): string {
-    const settings = this.getAllSettings()
+  async exportSettings(): Promise<string> {
+    const settings = await this.getAllSettings()
     return JSON.stringify(settings, null, 2)
   }
 
-  importSettings(settingsJson: string): boolean {
+  async importSettings(settingsJson: string): Promise<boolean> {
     try {
       const settings: SettingsData[] = JSON.parse(settingsJson)
-      settings.forEach(setting => {
-        this.storage.set(setting.id, setting)
-      })
-      this.saveToLocalStorage()
-      return true
+      
+      if (this.isDatabaseConnected) {
+        return await databaseService.importSettings(settingsJson)
+      } else {
+        settings.forEach(setting => {
+          this.storage.set(setting.id, setting)
+        })
+        this.saveToLocalStorage()
+        return true
+      }
     } catch (error) {
       console.error('Failed to import settings:', error)
       return false
     }
   }
 
-  resetToDefaults(): void {
+  async resetToDefaults(): Promise<void> {
+    if (this.isDatabaseConnected) {
+      try {
+        await databaseService.resetToDefaults()
+        await this.loadFromDatabase()
+        return
+      } catch (error) {
+        console.warn('Database reset failed, using local reset')
+      }
+    }
+    
     this.storage.clear()
     this.initializeDefaults()
     this.saveToLocalStorage()
+  }
+
+  // Get database connection status
+  getDatabaseStatus(): boolean {
+    return this.isDatabaseConnected
+  }
+
+  // Retry database connection
+  async retryDatabaseConnection(): Promise<boolean> {
+    this.isDatabaseConnected = await databaseService.healthCheck()
+    if (this.isDatabaseConnected) {
+      await this.loadFromDatabase()
+    }
+    return this.isDatabaseConnected
   }
 }
 
@@ -237,6 +372,8 @@ export const useSettingsStorage = () => {
     deleteSetting: settingsStorage.deleteSetting.bind(settingsStorage),
     exportSettings: settingsStorage.exportSettings.bind(settingsStorage),
     importSettings: settingsStorage.importSettings.bind(settingsStorage),
-    resetToDefaults: settingsStorage.resetToDefaults.bind(settingsStorage)
+    resetToDefaults: settingsStorage.resetToDefaults.bind(settingsStorage),
+    getDatabaseStatus: settingsStorage.getDatabaseStatus.bind(settingsStorage),
+    retryDatabaseConnection: settingsStorage.retryDatabaseConnection.bind(settingsStorage)
   }
 }

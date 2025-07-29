@@ -87,6 +87,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const [activeTab, setActiveTab] = useState('screens')
   const [isLoading, setIsLoading] = useState(true)
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const [isDatabaseConnected, setIsDatabaseConnected] = useState(false)
   const settingsStore = useSettingsStorage()
 
   // Database-backed state
@@ -293,7 +294,13 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   // Load settings from database on component mount
   useEffect(() => {
     loadSettingsFromDatabase()
+    checkDatabaseConnection()
   }, [])
+
+  const checkDatabaseConnection = async () => {
+    const connected = settingsStore.getDatabaseStatus()
+    setIsDatabaseConnected(connected)
+  }
 
   const loadSettingsFromDatabase = async () => {
     setIsLoading(true)
@@ -1080,9 +1087,32 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           <h2 className="text-2xl font-semibold text-flydubai-navy">AERON Settings</h2>
           <div className="flex items-center gap-2">
             <p className="text-muted-foreground">Configure system preferences and operational parameters</p>
-            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
-              <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
-              Database Connected
+            <Badge 
+              variant="outline" 
+              className={`text-xs ${isDatabaseConnected 
+                ? 'bg-green-50 text-green-700 border-green-200' 
+                : 'bg-orange-50 text-orange-700 border-orange-200'
+              }`}
+            >
+              <div className={`w-2 h-2 rounded-full mr-1 ${isDatabaseConnected ? 'bg-green-500' : 'bg-orange-500'}`}></div>
+              {isDatabaseConnected ? 'PostgreSQL Connected' : 'Using LocalStorage'}
+              {!isDatabaseConnected && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={async () => {
+                    const reconnected = await settingsStore.retryDatabaseConnection()
+                    setIsDatabaseConnected(reconnected)
+                    if (reconnected) {
+                      loadSettingsFromDatabase()
+                    }
+                  }}
+                  className="ml-2 h-4 w-4 p-0"
+                  title="Retry database connection"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                </Button>
+              )}
             </Badge>
             {isLoading && (
               <div className="flex items-center gap-2 text-sm text-flydubai-blue">
