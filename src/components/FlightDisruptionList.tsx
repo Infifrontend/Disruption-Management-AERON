@@ -1,6 +1,7 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { databaseService } from '../services/databaseService'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
@@ -51,6 +52,8 @@ import {
 
 export function FlightDisruptionList() {
   const [selectedDisruption, setSelectedDisruption] = useState(null)
+  const [disruptions, setDisruptions] = useState([])
+  const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({
     severity: 'all',
     type: 'all',
@@ -58,6 +61,24 @@ export function FlightDisruptionList() {
     airport: 'all',
     search: ''
   })
+
+  useEffect(() => {
+    const fetchDisruptions = async () => {
+      try {
+        const data = await databaseService.getAllDisruptions()
+        setDisruptions(data)
+      } catch (error) {
+        console.error('Error fetching disruptions:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchDisruptions()
+    // Refresh every 30 seconds
+    const interval = setInterval(fetchDisruptions, 30000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Enhanced mock data with comprehensive disruption information
   const disruptions = [
