@@ -1,4 +1,3 @@
-
 -- AERON Settings Database Schema
 -- This schema supports hierarchical settings with categories, versioning, and audit trails
 

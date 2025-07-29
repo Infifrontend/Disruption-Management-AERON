@@ -114,8 +114,10 @@ class DatabaseService {
   private baseUrl: string
 
   constructor() {
-    // Use API base URL for database operations
-    this.baseUrl = 'http://localhost:3001/api'
+    // Use API base URL for database operations - use 0.0.0.0 for Replit compatibility
+    this.baseUrl = window.location.hostname === 'localhost' 
+      ? 'http://localhost:3001/api' 
+      : `http://${window.location.hostname}:3001/api`
   }
 
   // Settings operations
@@ -660,13 +662,52 @@ class DatabaseService {
     }
   }
 
-  // Health check
-  async healthCheck(): Promise<boolean> {
+  // Health check with retry logic
+  async healthCheck(retries: number = 3): Promise<boolean> {
+    for (let i = 0; i < retries; i++) {
+      try {
+        const response = await fetch(`${this.baseUrl}/health`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: AbortSignal.timeout(5000) // 5 second timeout
+        })
+        if (response.ok) {
+          return true
+        }
+      } catch (error) {
+        console.error(`Database health check attempt ${i + 1} failed:`, error)
+        if (i < retries - 1) {
+          // Wait before retry (exponential backoff)
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000))
+        }
+      }
+    }
+    return false
+  }
+
+  // Initialize database tables
+  async initializeDatabase(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/health`)
-      return response.ok
+      const response = await fetch(`${this.baseUrl}/init-database`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Database initialization failed:', errorText)
+        return false
+      }
+      
+      const result = await response.json()
+      console.log('Database initialization result:', result)
+      return true
     } catch (error) {
-      console.error('Database health check failed:', error)
+      console.error('Failed to initialize database:', error)
       return false
     }
   }

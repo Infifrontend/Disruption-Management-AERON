@@ -7,23 +7,53 @@ const app = express()
 const port = process.env.API_PORT || 3001
 
 // Middleware
-app.use(cors())
-app.use(express.json())
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}))
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: true }))
 
 // PostgreSQL connection with fallback
-let connectionString = process.env.DATABASE_URL || 'postgresql://localhost:5432/aeron_settings'
+let connectionString = process.env.DATABASE_URL || 'postgresql://0.0.0.0:5432/aeron_settings'
 
-// Add endpoint parameter for Neon compatibility if using Neon
-if (connectionString.includes('neon.tech') && !connectionString.includes('options=endpoint')) {
+// Clean up connection string and handle different formats
+if (connectionString) {
+  // Remove any malformed parameters
+  connectionString = connectionString.split('?')[0]
+  
+  // Add proper SSL and connection parameters
   const url = new URL(connectionString)
-  const endpointId = url.hostname.split('.')[0]
-  const separator = url.search ? '&' : '?'
-  connectionString += `${separator}options=endpoint%3D${endpointId}`
+  const params = new URLSearchParams()
+  
+  // Add SSL for production environments
+  if (process.env.NODE_ENV === 'production' || connectionString.includes('neon.tech')) {
+    params.set('sslmode', 'require')
+  }
+  
+  // Add endpoint parameter for Neon compatibility
+  if (connectionString.includes('neon.tech')) {
+    const endpointId = url.hostname.split('.')[0]
+    params.set('options', `endpoint=${endpointId}`)
+  }
+  
+  // Reconstruct URL with proper parameters
+  if (params.toString()) {
+    connectionString += '?' + params.toString()
+  }
 }
 
 const pool = new Pool({
   connectionString: connectionString,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+  ssl: process.env.NODE_ENV === 'production' || connectionString.includes('neon.tech') 
+    ? { rejectUnauthorized: false } 
+    : false,
+  max: 10, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection could not be established
+  maxUses: 7500, // Close a connection after it has been used this many times
 })
 
 // Test database connection on startup
