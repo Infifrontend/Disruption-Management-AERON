@@ -816,7 +816,8 @@ export function FlightDisruptionList() {
                     <CardContent>
                       <div className="space-y-3 text-sm">
                         <div>
-                          <Label className="text-xs text-muted-foreground">Scheduled Departure</Label                          <p className="font-medium">{selectedDisruption.scheduledDeparture}</p>
+                          <Label className="text-xs text-muted-foreground">Scheduled Departure</Label>
+                          <p className="font-medium">{selectedDisruption.scheduledDeparture}</p>
                         </div>
                         <div>
                           <Label className="text-xs text-muted-foreground">Estimated Departure</Label>
