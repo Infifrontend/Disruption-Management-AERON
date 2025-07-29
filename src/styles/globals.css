@@ -236,6 +236,30 @@
   transform: none !important;
 }
 
+/* Enhanced switch styles for better visibility */
+.switch-flydubai [data-state="checked"] {
+  background-color: #0066CC !important;
+}
+
+.switch-flydubai [data-state="unchecked"] {
+  background-color: #e2e8f0 !important;
+}
+
+.switch-flydubai [data-state="checked"] [data-radix-switch-thumb] {
+  background-color: white !important;
+  transform: translateX(18px) !important;
+}
+
+.switch-flydubai [data-state="unchecked"] [data-radix-switch-thumb] {
+  background-color: white !important;
+  transform: translateX(2px) !important;
+}
+
+.switch-flydubai:focus-visible {
+  outline: 2px solid #0066CC !important;
+  outline-offset: 2px !important;
+}
+
 .navigation-menu {
   display: flex;
   flex-wrap: wrap;
@@ -392,4 +416,65 @@ body {
 .form-responsive {
   max-width: 100%;
   overflow: hidden;
+}
+
+/* Custom button styles for settings panel */
+.btn-flydubai-primary {
+  background-color: #0066CC;
+  color: white;
+  border: 1px solid #0066CC;
+  transition: all 0.2s ease;
+}
+
+.btn-flydubai-primary:hover {
+  background-color: #001f3f;
+  border-color: #001f3f;
+  color: white;
+}
+
+.btn-flydubai-primary:disabled {
+  background-color: #94a3b8;
+  border-color: #94a3b8;
+  color: #f1f5f9;
+  cursor: not-allowed;
+}
+
+/* Spinner animation for loading states */
+.spinner-flydubai {
+  width: 16px;
+  height: 16px;
+  border: 2px solid #e2e8f0;
+  border-top: 2px solid #0066CC;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Custom rule priority badges */
+.priority-critical {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+}
+
+.priority-high {
+  background-color: #fef3c7;
+  color: #d97706;
+  border: 1px solid #fed7aa;
+}
+
+.priority-medium {
+  background-color: #dbeafe;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+.priority-low {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
 }
