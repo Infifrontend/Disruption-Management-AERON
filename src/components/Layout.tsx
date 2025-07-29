@@ -69,7 +69,7 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="h-screen bg-background flex overflow-hidden">
       {/* Sidebar */}
-      <div className="w-52 min-w-[13rem] max-w-[13rem] bg-flydubai-blue text-white border-r border-blue-700 flex flex-col flex-shrink-0 overflow-hidden">
+      <div className="w-52 min-w-[15rem] max-w-[15rem] bg-flydubai-blue text-white border-r border-blue-700 flex flex-col flex-shrink-0 overflow-hidden">
         {/* Sidebar Header */}
         <div className="p-4 border-b border-blue-700 min-h-[120px] flex items-center justify-center">
           <div className="flex flex-col items-center gap-2 w-full">
