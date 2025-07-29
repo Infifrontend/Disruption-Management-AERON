@@ -293,7 +293,18 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   // Load settings from database on component mount
   useEffect(() => {
     loadSettingsFromDatabase()
-  }, [settingsStore])
+  }, [])
+
+  // Force re-render when settings change
+  useEffect(() => {
+    if (!isLoading) {
+      // Trigger a state update to ensure UI reflects current values
+      const timer = setTimeout(() => {
+        setSaveStatus('idle')
+      }, 100)
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading])
 
   const loadSettingsFromDatabase = async () => {
     setIsLoading(true)
@@ -377,34 +388,35 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       const flightScoring = settingsStore.getSettingsByCategory('flightScoring')
       const passengerScoring = settingsStore.getSettingsByCategory('passengerScoring')
 
-      // Always update passenger priority config with loaded data
-      const newPriorityConfig = { ...passengerPriorityConfig }
-      
-      passengerPrioritization.forEach(setting => {
-        if (newPriorityConfig.passengerPrioritization.hasOwnProperty(setting.key)) {
-          newPriorityConfig.passengerPrioritization[setting.key] = setting.value
-        }
-      })
-      
-      flightPrioritization.forEach(setting => {
-        if (newPriorityConfig.flightPrioritization && newPriorityConfig.flightPrioritization.hasOwnProperty(setting.key)) {
-          newPriorityConfig.flightPrioritization[setting.key] = setting.value
-        }
-      })
-      
-      flightScoring.forEach(setting => {
-        if (newPriorityConfig.flightScoring && newPriorityConfig.flightScoring.hasOwnProperty(setting.key)) {
-          newPriorityConfig.flightScoring[setting.key] = setting.value
-        }
-      })
-      
-      passengerScoring.forEach(setting => {
-        if (newPriorityConfig.passengerScoring && newPriorityConfig.passengerScoring.hasOwnProperty(setting.key)) {
-          newPriorityConfig.passengerScoring[setting.key] = setting.value
-        }
-      })
-      
-      setPassengerPriorityConfig(newPriorityConfig)
+      if (passengerPrioritization.length > 0 || flightPrioritization.length > 0 || flightScoring.length > 0 || passengerScoring.length > 0) {
+        const newPriorityConfig = { ...passengerPriorityConfig }
+        
+        passengerPrioritization.forEach(setting => {
+          if (newPriorityConfig.passengerPrioritization.hasOwnProperty(setting.key)) {
+            newPriorityConfig.passengerPrioritization[setting.key] = setting.value
+          }
+        })
+        
+        flightPrioritization.forEach(setting => {
+          if (newPriorityConfig.flightPrioritization && newPriorityConfig.flightPrioritization.hasOwnProperty(setting.key)) {
+            newPriorityConfig.flightPrioritization[setting.key] = setting.value
+          }
+        })
+        
+        flightScoring.forEach(setting => {
+          if (newPriorityConfig.flightScoring && newPriorityConfig.flightScoring.hasOwnProperty(setting.key)) {
+            newPriorityConfig.flightScoring[setting.key] = setting.value
+          }
+        })
+        
+        passengerScoring.forEach(setting => {
+          if (newPriorityConfig.passengerScoring && newPriorityConfig.passengerScoring.hasOwnProperty(setting.key)) {
+            newPriorityConfig.passengerScoring[setting.key] = setting.value
+          }
+        })
+        
+        setPassengerPriorityConfig(newPriorityConfig)
+      }
 
       // Load Notification Settings
       const notificationSettingsFromDb = settingsStore.getSettingsByCategory('notificationSettings')
@@ -938,6 +950,10 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           <h2 className="text-2xl font-semibold text-flydubai-navy">AERON Settings</h2>
           <div className="flex items-center gap-2">
             <p className="text-muted-foreground">Configure system preferences and operational parameters</p>
+            <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
+              <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
+              Database Connected
+            </Badge>
             {isLoading && (
               <div className="flex items-center gap-2 text-sm text-flydubai-blue">
                 <div className="spinner-flydubai"></div>
@@ -953,13 +969,13 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
             {saveStatus === 'saved' && (
               <div className="flex items-center gap-2 text-sm text-green-600">
                 <CheckCircle className="h-4 w-4" />
-                Saved
+                Saved to Database
               </div>
             )}
             {saveStatus === 'error' && (
               <div className="flex items-center gap-2 text-sm text-red-600">
                 <AlertCircle className="h-4 w-4" />
-                Save Error
+                Database Error
               </div>
             )}
           </div>

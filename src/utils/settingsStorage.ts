@@ -10,13 +10,16 @@ export interface SettingsData {
   updatedBy: string
 }
 
-// Mock database simulation - in production, replace with actual database calls
+// Settings storage with localStorage persistence
 class SettingsStorage {
   private storage = new Map<string, SettingsData>()
+  private readonly STORAGE_KEY = 'aeron_settings_storage'
 
   // Initialize with default settings
   constructor() {
+    this.loadFromLocalStorage()
     this.initializeDefaults()
+    this.saveToLocalStorage()
   }
 
   private initializeDefaults() {
@@ -107,7 +110,44 @@ class SettingsStorage {
       { category: 'notificationSettings', key: 'systemAlerts', value: false, type: 'boolean' }
     ]
 
-    defaults.forEach(setting => this.saveSetting(setting.category, setting.key, setting.value, setting.type))
+    defaults.forEach(setting => {
+      const id = `${setting.category}_${setting.key}`
+      if (!this.storage.has(id)) {
+        const settingData: SettingsData = {
+          id,
+          category: setting.category,
+          key: setting.key,
+          value: setting.value,
+          type: setting.type,
+          updatedAt: new Date().toISOString(),
+          updatedBy: 'system'
+        }
+        this.storage.set(id, settingData)
+      }
+    })
+  }
+
+  private loadFromLocalStorage(): void {
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY)
+      if (stored) {
+        const data: SettingsData[] = JSON.parse(stored)
+        data.forEach(setting => {
+          this.storage.set(setting.id, setting)
+        })
+      }
+    } catch (error) {
+      console.warn('Failed to load settings from localStorage:', error)
+    }
+  }
+
+  private saveToLocalStorage(): void {
+    try {
+      const settings = Array.from(this.storage.values())
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(settings))
+    } catch (error) {
+      console.error('Failed to save settings to localStorage:', error)
+    }
   }
 
   saveSetting(category: string, key: string, value: any, type: SettingsData['type'], userId: string = 'system'): void {
@@ -122,6 +162,7 @@ class SettingsStorage {
       updatedBy: userId
     }
     this.storage.set(id, setting)
+    this.saveToLocalStorage()
   }
 
   getSetting(category: string, key: string): SettingsData | null {
@@ -139,7 +180,11 @@ class SettingsStorage {
 
   deleteSetting(category: string, key: string): boolean {
     const id = `${category}_${key}`
-    return this.storage.delete(id)
+    const result = this.storage.delete(id)
+    if (result) {
+      this.saveToLocalStorage()
+    }
+    return result
   }
 
   exportSettings(): string {
@@ -153,6 +198,7 @@ class SettingsStorage {
       settings.forEach(setting => {
         this.storage.set(setting.id, setting)
       })
+      this.saveToLocalStorage()
       return true
     } catch (error) {
       console.error('Failed to import settings:', error)
@@ -163,6 +209,7 @@ class SettingsStorage {
   resetToDefaults(): void {
     this.storage.clear()
     this.initializeDefaults()
+    this.saveToLocalStorage()
   }
 }
 
