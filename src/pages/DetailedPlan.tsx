@@ -1,7 +1,7 @@
 
 import React from 'react'
 import { useAppContext } from '../context/AppContext'
-import { DetailedRecoveryPlan } from '../../components/DetailedRecoveryPlan'
+import { DetailedRecoveryPlan } from '../components/DetailedRecoveryPlan'
 
 export function DetailedPlan() {
   const { selectedRecoveryPlan, selectedFlight } = useAppContext()

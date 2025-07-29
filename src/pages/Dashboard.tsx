@@ -1,14 +1,13 @@
-
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { Button } from '../../components/ui/button'
-import { Badge } from '../../components/ui/badge'
-import { Input } from '../../components/ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../components/ui/select'
-import { Alert, AlertDescription } from '../../components/ui/alert'
-import { WorldMap } from '../../components/WorldMap'
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Badge } from '../components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
+import { Alert, AlertDescription } from '../components/ui/alert'
+import { WorldMap } from '../components/WorldMap'
 import { 
   AlertTriangle, BarChart3, Filter, AlertCircle, Zap, UserCheck, 
   Plane, Fuel, Wrench, Hotel, ClockIcon, CheckSquare, Users, Calendar
@@ -17,7 +16,7 @@ import {
 export function Dashboard() {
   const navigate = useNavigate()
   const { filters, setFilters, screenSettings, setSelectedDisruption } = useAppContext()
-  
+
   const enabledScreens = screenSettings.filter(screen => screen.enabled)
 
   const handleCreateRecoveryPlan = (disruption: any) => {
