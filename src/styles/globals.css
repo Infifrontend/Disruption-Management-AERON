@@ -234,7 +234,8 @@ html, body {
 }
 
 #root {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* Prevent horizontal scroll on all containers */
@@ -243,13 +244,17 @@ html, body {
 }
 
 .page-container {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
 
 .scrollable-content {
+  overflow-y: auto;
+  overflow-x: hidden;
   flex: 1;
+  max-height: calc(100vh - 120px);
 }
 
 /* Card and component responsive fixes */
