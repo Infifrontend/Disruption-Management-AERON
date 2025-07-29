@@ -20,6 +20,12 @@ class SettingsStorage {
 
   // Initialize with database connection check and defaults
   constructor() {
+    // Initialize synchronously first with defaults
+    this.loadFromLocalStorage()
+    this.initializeDefaults()
+    this.saveToLocalStorage()
+    
+    // Then try to connect to database asynchronously
     this.initializeStorage()
   }
 

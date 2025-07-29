@@ -36,8 +36,8 @@ class DatabaseService {
   private baseUrl: string
 
   constructor() {
-    // Use Replit's built-in database URL or fallback to localhost
-    this.baseUrl = process.env.DATABASE_URL || 'http://localhost:3001/api'
+    // Use API base URL for database operations
+    this.baseUrl = 'http://localhost:3001/api'
   }
 
   // Settings operations
