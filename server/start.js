@@ -1,7 +1,7 @@
-
-const express = require('express')
-const { Pool } = require('pg')
-const cors = require('cors')
+import express from 'express'
+import cors from 'cors'
+import pkg from 'pg'
+const { Pool } = pkg
 
 const app = express()
 const port = process.env.API_PORT || 3001
@@ -57,11 +57,11 @@ app.get('/api/settings/:category/:key', async (req, res) => {
       'SELECT * FROM settings WHERE category = $1 AND key = $2 AND is_active = true',
       [category, key]
     )
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Setting not found' })
     }
-    
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error fetching setting:', error)
@@ -86,7 +86,7 @@ app.get('/api/settings/category/:category', async (req, res) => {
 app.post('/api/settings', async (req, res) => {
   try {
     const { category, key, value, type, updated_by = 'system' } = req.body
-    
+
     const result = await pool.query(`
       INSERT INTO settings (category, key, value, type, updated_by)
       VALUES ($1, $2, $3, $4, $5)
@@ -98,7 +98,7 @@ app.post('/api/settings', async (req, res) => {
         updated_at = CURRENT_TIMESTAMP
       RETURNING *
     `, [category, key, JSON.stringify(value), type, updated_by])
-    
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error saving setting:', error)
@@ -113,11 +113,11 @@ app.delete('/api/settings/:category/:key', async (req, res) => {
       'UPDATE settings SET is_active = false WHERE category = $1 AND key = $2 RETURNING *',
       [category, key]
     )
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Setting not found' })
     }
-    
+
     res.json({ message: 'Setting deleted successfully' })
   } catch (error) {
     console.error('Error deleting setting:', error)
@@ -130,7 +130,7 @@ app.post('/api/settings/reset', async (req, res) => {
   try {
     // Clear existing settings
     await pool.query('DELETE FROM settings')
-    
+
     // Insert default settings
     const defaults = [
       { category: 'operationalRules', key: 'maxDelayThreshold', value: 180, type: 'number' },
@@ -202,7 +202,7 @@ app.post('/api/settings/reset', async (req, res) => {
         [setting.category, setting.key, JSON.stringify(setting.value), setting.type, 'system']
       )
     }
-    
+
     res.json({ message: 'Settings reset to defaults successfully' })
   } catch (error) {
     console.error('Error resetting settings:', error)
@@ -220,4 +220,4 @@ app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 AERON Settings Database API server running on http://0.0.0.0:${port}`)
 })
 
-module.exports = app
+export default app

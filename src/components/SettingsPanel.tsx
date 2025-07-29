@@ -2507,86 +2507,375 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
         {/* Natural Language Processing */}
         <TabsContent value="nlp" className="space-y-6">
-          <Card>
+          {/* Header Section */}
+          <Card className="border-flydubai-blue bg-blue-50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageSquare className="h-5 w-5 text-flydubai-blue" />
-                Natural Language Configuration
+              <CardTitle className="flex items-center gap-2 text-flydubai-blue">
+                <Brain className="h-5 w-5" />
+                Natural Language
               </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Configure how AERON interprets and processes natural language inputs for recovery preferences.
+              <p className="text-sm text-blue-700">
+                Configure natural language processing and knowledge repository settings for enhanced decision-making capabilities.
               </p>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <Label className="text-base font-medium">Enable Natural Language Processing</Label>
-                  <p className="text-sm text-muted-foreground">Allow users to input recovery preferences in natural language</p>
+          </Card>
+
+          {/* Natural Language & Knowledge Repository */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-flydubai-navy">
+                <FileText className="h-5 w-5" />
+                Natural Language & Knowledge Repository
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Enhance AERON's decision-making capabilities by connecting natural language understanding with operational documents, operational procedures, and general policies to improve context-aware recommendations.
+              </p>
+            </CardHeader>
+          </Card>
+
+          {/* Knowledge Impacts */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-flydubai-navy">
+                <TrendingUp className="h-5 w-5" />
+                Knowledge Impacts
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Adjust how knowledge repository affects recovery recommendations accuracy and compliance.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Accuracy Enhancement</Label>
+                  <Badge className="bg-gray-100 text-gray-800">85%</Badge>
                 </div>
-                <Switch
-                  checked={nlpSettings.enabled}
-                  onCheckedChange={() => handleNlpToggle('enabled')}
-                  className="switch-flydubai"
+                <Slider
+                  value={[85]}
+                  max={100}
+                  min={0}
+                  step={5}
+                  className="w-full slider-flydubai"
                 />
               </div>
+              
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium">Compliance Weighting</Label>
+                  <Badge className="bg-gray-100 text-gray-800">75%</Badge>
+                </div>
+                <Slider
+                  value={[75]}
+                  max={100}
+                  min={0}
+                  step={5}
+                  className="w-full"
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-              {nlpSettings.enabled && (
-                <>
-                  <Separator />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Natural Language Processing */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-flydubai-navy">
+                  <MessageSquare className="h-5 w-5" />
+                  Natural Language Processing
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Configure basic NLP settings for input interpretation.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Enable NLP</Label>
+                    <p className="text-xs text-muted-foreground">Process natural language inputs</p>
+                  </div>
+                  <Switch
+                    checked={nlpSettings.enabled}
+                    onCheckedChange={() => handleNlpToggle('enabled')}
+                    className="switch-flydubai"
+                  />
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium">Primary Language</Label>
+                  <Select value={nlpSettings.language} onValueChange={(value) => handleNlpChange('language', value)}>
+                    <SelectTrigger className="w-full mt-2">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="english">English</SelectItem>
+                      <SelectItem value="arabic">العربية (Arabic)</SelectItem>
+                      <SelectItem value="hindi">हिन्दी (Hindi)</SelectItem>
+                      <SelectItem value="urdu">اردو (Urdu)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium">Confidence Threshold</Label>
+                  <div className="flex items-center gap-2 mt-2">
+                    <Slider
+                      value={[nlpSettings.confidence]}
+                      onValueChange={(value) => handleNlpChange('confidence', value[0])}
+                      max={100}
+                      min={50}
+                      step={5}
+                      className="flex-1"
+                    />
+                    <Badge className="bg-gray-100 text-gray-800 min-w-[50px]">
+                      {nlpSettings.confidence}%
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Auto-Apply Recommendations</Label>
+                    <p className="text-xs text-muted-foreground">Automatically apply high-confidence results</p>
+                  </div>
+                  <Switch
+                    checked={nlpSettings.autoApply}
+                    onCheckedChange={() => handleNlpToggle('autoApply')}
+                    className="switch-flydubai"
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Repository Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-flydubai-navy">
+                  <Package className="h-5 w-5" />
+                  Repository Status
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Current knowledge base statistics and training status.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm">Document Processing</span>
+                    <div className="flex items-center gap-2">
+                      <Progress value={75} className="w-20 h-2" />
+                      <span className="text-xs text-gray-600">75%</span>
+                    </div>
+                  </div>
                   
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium">Primary Language</Label>
-                      <Select value={nlpSettings.language} onValueChange={(value) => handleNlpChange('language', value)}>
-                        <SelectTrigger className="w-full mt-2">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="english">English</SelectItem>
-                          <SelectItem value="arabic">العربية (Arabic)</SelectItem>
-                          <SelectItem value="hindi">हिन्दी (Hindi)</SelectItem>
-                          <SelectItem value="urdu">اردو (Urdu)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Total Documents:</span>
+                    <Badge className="bg-blue-100 text-blue-800">247</Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Processed Documents:</span>
+                    <Badge className="bg-green-100 text-green-800">185</Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Last Updated:</span>
+                    <span className="text-gray-600">2 hours ago</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-                    <div>
-                      <Label className="text-sm font-medium">Confidence Threshold</Label>
-                      <p className="text-xs text-muted-foreground mb-2">
-                        Minimum confidence level required for automatic interpretation (Current: {nlpSettings.confidence}%)
-                      </p>
-                      <Slider
-                        value={[nlpSettings.confidence]}
-                        onValueChange={(value) => handleNlpChange('confidence', value[0])}
-                        max={100}
-                        min={50}
-                        step={5}
-                        className="w-full slider-flydubai"
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
+          {/* Document Repository */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-flydubai-navy">
+                    <FileText className="h-5 w-5" />
+                    Document Repository
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Manage documents that provide operational knowledge and procedural context for recovery operations.
+                  </p>
+                </div>
+                <Button className="btn-flydubai-primary">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Upload Document
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Document Items */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-4 w-4 text-blue-600" />
                       <div>
-                        <Label className="text-base font-medium">Auto-Apply Interpretations</Label>
-                        <p className="text-sm text-muted-foreground">Automatically apply high-confidence interpretations without confirmation</p>
+                        <p className="font-medium text-sm">Flexible Operations Manual 2024.pdf</p>
+                        <p className="text-xs text-gray-600">Operations • Emergency procedures and protocols</p>
                       </div>
-                      <Switch
-                        checked={nlpSettings.autoApply}
-                        onCheckedChange={() => handleNlpToggle('autoApply')}
-                        className="switch-flydubai"
-                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-green-100 text-green-800 text-xs">Processed</Badge>
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-600">
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
                     </div>
                   </div>
 
-                  <Alert className="border-blue-200 bg-blue-50">
-                    <Brain className="h-4 w-4 text-blue-600" />
-                    <AlertDescription className="text-blue-800">
-                      <strong>NLP Examples:</strong> "Prioritize families with children and VIP passengers" → Increases special needs and VIP weightings.
-                      "Focus on flydubai flights with good on-time performance" → Boosts airline preference and punctuality scores.
-                    </AlertDescription>
-                  </Alert>
-                </>
-              )}
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-4 w-4 text-orange-600" />
+                      <div>
+                        <p className="font-medium text-sm">Emergency Response Procedures.docx</p>
+                        <p className="text-xs text-gray-600">Emergency • Emergency response procedures and escalation protocols</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-orange-100 text-orange-800 text-xs">Processing</Badge>
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-600">
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-3 border rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-4 w-4 text-gray-600" />
+                      <div>
+                        <p className="font-medium text-sm">Weather Decision Guidelines.pdf</p>
+                        <p className="text-xs text-gray-600">Weather • Weather-related decision making guidelines and protocols</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-gray-100 text-gray-800 text-xs">Pending</Badge>
+                      <Button size="sm" variant="ghost" className="h-6 w-6 p-0 text-red-600">
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Manual Knowledge Entry */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-flydubai-navy">
+                <Edit className="h-5 w-5" />
+                Manual Knowledge Entry
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Add custom operational knowledge that enhances recovery recommendations and decisions.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="knowledge-title">Title</Label>
+                    <Input
+                      id="knowledge-title"
+                      placeholder="e.g., Special handling for Medical Emergencies"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="knowledge-category">Category</Label>
+                    <Select defaultValue="operations">
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="operations">Operations</SelectItem>
+                        <SelectItem value="emergency">Emergency</SelectItem>
+                        <SelectItem value="weather">Weather</SelectItem>
+                        <SelectItem value="passenger">Passenger Service</SelectItem>
+                        <SelectItem value="crew">Crew Management</SelectItem>
+                        <SelectItem value="maintenance">Maintenance</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="knowledge-source">Source</Label>
+                  <Textarea
+                    id="knowledge-source"
+                    placeholder="Provide the specific guidelines or decision criteria that should be considered during recovery operations..."
+                    rows={3}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="knowledge-tags">Tags</Label>
+                  <Input
+                    id="knowledge-tags"
+                    placeholder="Add tags like: VIP, Medical, Emergency, Weather..."
+                  />
+                </div>
+
+                <div className="flex justify-end">
+                  <Button className="btn-flydubai-primary">
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Entry
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Test Natural Language Input */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-flydubai-navy">
+                <Brain className="h-5 w-5" />
+                Test Natural Language Input
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Test how natural language inputs are processed using the current knowledge base and settings.
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="test-input">Sample Natural Language Input</Label>
+                  <Textarea
+                    id="test-input"
+                    placeholder="Examples of suggested Inputs:
+• Prioritize passengers with connecting flights to minimize missed connections
+• Focus on cost-effective solutions that keep families together
+• Apply emergency protocols for medical passengers requiring immediate assistance"
+                    rows={4}
+                    className="text-sm"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Best Input</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Enter a natural language query for AI processing with current knowledge base.
+                  </p>
+                  <Textarea
+                    placeholder="e.g., 'Due to severe weather, prioritize VIP passengers and families with infants for immediate rebooking on the next available flydubai flight to minimize disruption and provide hotel accommodation if delays exceed 4 hours'"
+                    rows={3}
+                    className="text-sm"
+                  />
+                </div>
+
+                <div className="flex justify-between items-center">
+                  <Button variant="outline">
+                    Cancel
+                  </Button>
+                  <Button className="btn-flydubai-primary">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Process with Knowledge Repository
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
