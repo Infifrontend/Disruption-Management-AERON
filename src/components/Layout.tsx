@@ -1,4 +1,3 @@
-
 import React, { useState, ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
@@ -152,9 +151,9 @@ export function Layout({ children }: LayoutProps) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col">
         {/* Top Header */}
-        <div className="bg-card border-b border-border px-6 py-4 flex-shrink-0">
+        <div className="bg-card border-b border-border px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-xl font-semibold">
