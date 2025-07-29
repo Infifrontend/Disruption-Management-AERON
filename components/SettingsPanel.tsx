@@ -295,150 +295,204 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     loadSettingsFromDatabase()
   }, [])
 
-  // Force re-render when settings change
-  useEffect(() => {
-    if (!isLoading) {
-      // Trigger a state update to ensure UI reflects current values
-      const timer = setTimeout(() => {
-        setSaveStatus('idle')
-      }, 100)
-      return () => clearTimeout(timer)
-    }
-  }, [isLoading])
-
   const loadSettingsFromDatabase = async () => {
     setIsLoading(true)
+    console.log('Loading settings from database...')
+    
     try {
-      // Load NLP settings
-      const nlpEnabled = settingsStore.getSetting('nlpSettings', 'enabled')
-      const nlpLanguage = settingsStore.getSetting('nlpSettings', 'language')
-      const nlpConfidence = settingsStore.getSetting('nlpSettings', 'confidence')
-      const nlpAutoApply = settingsStore.getSetting('nlpSettings', 'autoApply')
-
-      if (nlpEnabled || nlpLanguage || nlpConfidence || nlpAutoApply) {
-        setNlpSettings({
-          enabled: nlpEnabled?.value ?? true,
-          language: nlpLanguage?.value ?? 'english',
-          confidence: nlpConfidence?.value ?? 85,
-          autoApply: nlpAutoApply?.value ?? false
-        })
+      // Initialize fresh state objects
+      let newNlpSettings = { ...nlpSettings }
+      let newRuleConfig = { 
+        operationalRules: {
+          maxDelayThreshold: 180,
+          minConnectionTime: 45,
+          maxOverbooking: 105,
+          priorityRebookingTime: 15,
+          hotacTriggerDelay: 240
+        },
+        recoveryConstraints: {
+          maxAircraftSwaps: 3,
+          crewDutyTimeLimits: true,
+          maintenanceSlotProtection: true,
+          slotCoordinationRequired: false,
+          curfewCompliance: true
+        },
+        automationSettings: {
+          autoApproveThreshold: 95,
+          requireManagerApproval: false,
+          enablePredictiveActions: true,
+          autoNotifyPassengers: true,
+          autoBookHotac: false
+        }
       }
-
-      // Load Rule Configuration
-      const operationalRules = settingsStore.getSettingsByCategory('operationalRules')
-      const recoveryConstraints = settingsStore.getSettingsByCategory('recoveryConstraints')
-      const automationSettings = settingsStore.getSettingsByCategory('automationSettings')
-
-      if (operationalRules.length > 0 || recoveryConstraints.length > 0 || automationSettings.length > 0) {
-        const newRuleConfig = { ...ruleConfiguration }
-        
-        operationalRules.forEach(setting => {
-          if (newRuleConfig.operationalRules.hasOwnProperty(setting.key)) {
-            newRuleConfig.operationalRules[setting.key] = setting.value
-          }
-        })
-        
-        recoveryConstraints.forEach(setting => {
-          if (newRuleConfig.recoveryConstraints.hasOwnProperty(setting.key)) {
-            newRuleConfig.recoveryConstraints[setting.key] = setting.value
-          }
-        })
-        
-        automationSettings.forEach(setting => {
-          if (newRuleConfig.automationSettings.hasOwnProperty(setting.key)) {
-            newRuleConfig.automationSettings[setting.key] = setting.value
-          }
-        })
-        
-        setRuleConfiguration(newRuleConfig)
+      let newRecoveryConfig = {
+        recoveryOptionsRanking: {
+          costWeight: 30,
+          timeWeight: 25,
+          passengerImpactWeight: 20,
+          operationalComplexityWeight: 15,
+          reputationWeight: 10,
+          customParameters: []
+        },
+        aircraftSelectionCriteria: {
+          maintenanceStatus: 25,
+          fuelEfficiency: 20,
+          routeSuitability: 20,
+          passengerCapacity: 15,
+          availabilityWindow: 20,
+          customParameters: []
+        },
+        crewAssignmentCriteria: {
+          dutyTimeRemaining: 30,
+          qualifications: 25,
+          baseLocation: 20,
+          restRequirements: 15,
+          languageSkills: 10,
+          customParameters: []
+        }
       }
-
-      // Load Recovery Configuration
-      const recoveryOptionsRanking = settingsStore.getSettingsByCategory('recoveryOptionsRanking')
-      const aircraftSelectionCriteria = settingsStore.getSettingsByCategory('aircraftSelectionCriteria') 
-      const crewAssignmentCriteria = settingsStore.getSettingsByCategory('crewAssignmentCriteria')
-
-      if (recoveryOptionsRanking.length > 0 || aircraftSelectionCriteria.length > 0 || crewAssignmentCriteria.length > 0) {
-        const newRecoveryConfig = { ...recoveryConfiguration }
-        
-        recoveryOptionsRanking.forEach(setting => {
-          if (newRecoveryConfig.recoveryOptionsRanking.hasOwnProperty(setting.key)) {
-            newRecoveryConfig.recoveryOptionsRanking[setting.key] = setting.value
-          }
-        })
-        
-        aircraftSelectionCriteria.forEach(setting => {
-          if (newRecoveryConfig.aircraftSelectionCriteria.hasOwnProperty(setting.key)) {
-            newRecoveryConfig.aircraftSelectionCriteria[setting.key] = setting.value
-          }
-        })
-        
-        crewAssignmentCriteria.forEach(setting => {
-          if (newRecoveryConfig.crewAssignmentCriteria.hasOwnProperty(setting.key)) {
-            newRecoveryConfig.crewAssignmentCriteria[setting.key] = setting.value
-          }
-        })
-        
-        setRecoveryConfiguration(newRecoveryConfig)
+      let newPriorityConfig = {
+        passengerPrioritization: {
+          loyaltyTier: 25,
+          ticketClass: 20,
+          specialNeeds: 30,
+          groupSize: 15,
+          connectionRisk: 10
+        },
+        flightPrioritization: {
+          airlinePreference: 20,
+          onTimePerformance: 25,
+          aircraftType: 15,
+          departureTime: 20,
+          connectionBuffer: 20
+        },
+        flightScoring: {
+          baseScore: 70,
+          priorityBonus: 15,
+          airlineBonus: 10,
+          specialReqBonus: 8,
+          loyaltyBonus: 8,
+          groupBonus: 5
+        },
+        passengerScoring: {
+          vipWeight: 40,
+          loyaltyWeight: 25,
+          specialNeedsWeight: 20,
+          revenueWeight: 15
+        }
       }
+      let newNotificationSettings = { ...notificationSettings }
 
-      // Load Passenger Priority Configuration
-      const passengerPrioritization = settingsStore.getSettingsByCategory('passengerPrioritization')
-      const flightPrioritization = settingsStore.getSettingsByCategory('flightPrioritization')
-      const flightScoring = settingsStore.getSettingsByCategory('flightScoring')
-      const passengerScoring = settingsStore.getSettingsByCategory('passengerScoring')
+      // Load all settings from database
+      const allSettings = settingsStore.getAllSettings()
+      console.log('Retrieved settings from database:', allSettings.length, 'entries')
 
-      if (passengerPrioritization.length > 0 || flightPrioritization.length > 0 || flightScoring.length > 0 || passengerScoring.length > 0) {
-        const newPriorityConfig = { ...passengerPriorityConfig }
-        
-        passengerPrioritization.forEach(setting => {
-          if (newPriorityConfig.passengerPrioritization.hasOwnProperty(setting.key)) {
-            newPriorityConfig.passengerPrioritization[setting.key] = setting.value
-          }
-        })
-        
-        flightPrioritization.forEach(setting => {
-          if (newPriorityConfig.flightPrioritization && newPriorityConfig.flightPrioritization.hasOwnProperty(setting.key)) {
-            newPriorityConfig.flightPrioritization[setting.key] = setting.value
-          }
-        })
-        
-        flightScoring.forEach(setting => {
-          if (newPriorityConfig.flightScoring && newPriorityConfig.flightScoring.hasOwnProperty(setting.key)) {
-            newPriorityConfig.flightScoring[setting.key] = setting.value
-          }
-        })
-        
-        passengerScoring.forEach(setting => {
-          if (newPriorityConfig.passengerScoring && newPriorityConfig.passengerScoring.hasOwnProperty(setting.key)) {
-            newPriorityConfig.passengerScoring[setting.key] = setting.value
-          }
-        })
-        
-        setPassengerPriorityConfig(newPriorityConfig)
-      }
+      // Process settings by category
+      allSettings.forEach(setting => {
+        try {
+          switch (setting.category) {
+            case 'nlpSettings':
+              if (newNlpSettings.hasOwnProperty(setting.key)) {
+                newNlpSettings[setting.key] = setting.value
+              }
+              break
 
-      // Load Notification Settings
-      const notificationSettingsFromDb = settingsStore.getSettingsByCategory('notificationSettings')
-      if (notificationSettingsFromDb.length > 0) {
-        const newNotificationSettings = { ...notificationSettings }
-        notificationSettingsFromDb.forEach(setting => {
-          if (newNotificationSettings.hasOwnProperty(setting.key)) {
-            newNotificationSettings[setting.key] = setting.value
+            case 'operationalRules':
+              if (newRuleConfig.operationalRules.hasOwnProperty(setting.key)) {
+                newRuleConfig.operationalRules[setting.key] = setting.value
+              }
+              break
+
+            case 'recoveryConstraints':
+              if (newRuleConfig.recoveryConstraints.hasOwnProperty(setting.key)) {
+                newRuleConfig.recoveryConstraints[setting.key] = setting.value
+              }
+              break
+
+            case 'automationSettings':
+              if (newRuleConfig.automationSettings.hasOwnProperty(setting.key)) {
+                newRuleConfig.automationSettings[setting.key] = setting.value
+              }
+              break
+
+            case 'recoveryOptionsRanking':
+              if (newRecoveryConfig.recoveryOptionsRanking.hasOwnProperty(setting.key)) {
+                newRecoveryConfig.recoveryOptionsRanking[setting.key] = setting.value
+              }
+              break
+
+            case 'aircraftSelectionCriteria':
+              if (newRecoveryConfig.aircraftSelectionCriteria.hasOwnProperty(setting.key)) {
+                newRecoveryConfig.aircraftSelectionCriteria[setting.key] = setting.value
+              }
+              break
+
+            case 'crewAssignmentCriteria':
+              if (newRecoveryConfig.crewAssignmentCriteria.hasOwnProperty(setting.key)) {
+                newRecoveryConfig.crewAssignmentCriteria[setting.key] = setting.value
+              }
+              break
+
+            case 'passengerPrioritization':
+              if (newPriorityConfig.passengerPrioritization.hasOwnProperty(setting.key)) {
+                newPriorityConfig.passengerPrioritization[setting.key] = setting.value
+              }
+              break
+
+            case 'flightPrioritization':
+              if (newPriorityConfig.flightPrioritization.hasOwnProperty(setting.key)) {
+                newPriorityConfig.flightPrioritization[setting.key] = setting.value
+              }
+              break
+
+            case 'flightScoring':
+              if (newPriorityConfig.flightScoring.hasOwnProperty(setting.key)) {
+                newPriorityConfig.flightScoring[setting.key] = setting.value
+              }
+              break
+
+            case 'passengerScoring':
+              if (newPriorityConfig.passengerScoring.hasOwnProperty(setting.key)) {
+                newPriorityConfig.passengerScoring[setting.key] = setting.value
+              }
+              break
+
+            case 'notificationSettings':
+              if (newNotificationSettings.hasOwnProperty(setting.key)) {
+                newNotificationSettings[setting.key] = setting.value
+              }
+              break
+
+            default:
+              console.log('Unknown setting category:', setting.category)
           }
-        })
-        setNotificationSettings(newNotificationSettings)
-      }
+        } catch (settingError) {
+          console.error('Error processing setting:', setting, settingError)
+        }
+      })
+
+      // Update state with loaded settings
+      console.log('Updating component state with loaded settings...')
+      setNlpSettings(newNlpSettings)
+      setRuleConfiguration(newRuleConfig)
+      setRecoveryConfiguration(newRecoveryConfig)
+      setPassengerPriorityConfig(newPriorityConfig)
+      setNotificationSettings(newNotificationSettings)
+
+      console.log('Settings loaded successfully:', {
+        nlp: newNlpSettings,
+        rules: newRuleConfig,
+        recovery: newRecoveryConfig,
+        priority: newPriorityConfig,
+        notifications: newNotificationSettings
+      })
 
     } catch (error) {
       console.error('Failed to load settings from database:', error)
       setSaveStatus('error')
     } finally {
       setIsLoading(false)
-      // Force a re-render to ensure UI reflects loaded state
-      setTimeout(() => {
-        setSaveStatus('idle')
-      }, 100)
+      setSaveStatus('idle')
     }
   }
 
@@ -465,36 +519,65 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
   const handleNlpToggle = (setting) => {
     const newValue = !nlpSettings[setting]
+    console.log(`Toggling NLP setting ${setting} from ${nlpSettings[setting]} to ${newValue}`)
+    
     setNlpSettings(prev => ({
       ...prev,
       [setting]: newValue
     }))
-    settingsStore.saveSetting('nlpSettings', setting, newValue, 'boolean')
-    showSaveStatus()
+    
+    try {
+      settingsStore.saveSetting('nlpSettings', setting, newValue, 'boolean', 'user')
+      console.log(`Successfully saved NLP setting ${setting} = ${newValue}`)
+      showSaveStatus()
+    } catch (error) {
+      console.error(`Failed to save NLP setting ${setting}:`, error)
+      setSaveStatus('error')
+    }
   }
 
   const handleNlpChange = (setting, value) => {
+    console.log(`Changing NLP setting ${setting} to ${value}`)
+    
     setNlpSettings(prev => ({
       ...prev,
       [setting]: value
     }))
-    settingsStore.saveSetting('nlpSettings', setting, value, typeof value === 'number' ? 'number' : 'string')
-    showSaveStatus()
+    
+    try {
+      settingsStore.saveSetting('nlpSettings', setting, value, typeof value === 'number' ? 'number' : 'string', 'user')
+      console.log(`Successfully saved NLP setting ${setting} = ${value}`)
+      showSaveStatus()
+    } catch (error) {
+      console.error(`Failed to save NLP setting ${setting}:`, error)
+      setSaveStatus('error')
+    }
   }
 
   const handleNotificationToggle = (setting) => {
     const newValue = !notificationSettings[setting]
+    console.log(`Toggling notification setting ${setting} from ${notificationSettings[setting]} to ${newValue}`)
+    
     setNotificationSettings(prev => ({
       ...prev,
       [setting]: newValue
     }))
-    settingsStore.saveSetting('notificationSettings', setting, newValue, 'boolean')
-    showSaveStatus()
+    
+    try {
+      settingsStore.saveSetting('notificationSettings', setting, newValue, 'boolean', 'user')
+      console.log(`Successfully saved notification setting ${setting} = ${newValue}`)
+      showSaveStatus()
+    } catch (error) {
+      console.error(`Failed to save notification setting ${setting}:`, error)
+      setSaveStatus('error')
+    }
   }
 
   // Rule Configuration Handlers
   const handleRuleConfigChange = (category, parameter, value) => {
     const actualValue = Array.isArray(value) ? value[0] : value
+    console.log(`Changing rule config ${category}.${parameter} to ${actualValue}`)
+    
     setRuleConfiguration(prev => ({
       ...prev,
       [category]: {
@@ -502,12 +585,22 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         [parameter]: actualValue
       }
     }))
-    settingsStore.saveSetting(category, parameter, actualValue, 'number')
-    showSaveStatus()
+    
+    try {
+      settingsStore.saveSetting(category, parameter, actualValue, 'number', 'user')
+      console.log(`Successfully saved rule config ${category}.${parameter} = ${actualValue}`)
+      showSaveStatus()
+    } catch (error) {
+      console.error(`Failed to save rule config ${category}.${parameter}:`, error)
+      setSaveStatus('error')
+    }
   }
 
   const handleRuleToggle = (category, parameter) => {
-    const newValue = !ruleConfiguration[category][parameter]
+    const oldValue = ruleConfiguration[category][parameter]
+    const newValue = !oldValue
+    console.log(`Toggling rule config ${category}.${parameter} from ${oldValue} to ${newValue}`)
+    
     setRuleConfiguration(prev => ({
       ...prev,
       [category]: {
@@ -515,8 +608,15 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         [parameter]: newValue
       }
     }))
-    settingsStore.saveSetting(category, parameter, newValue, 'boolean')
-    showSaveStatus()
+    
+    try {
+      settingsStore.saveSetting(category, parameter, newValue, 'boolean', 'user')
+      console.log(`Successfully saved rule config ${category}.${parameter} = ${newValue}`)
+      showSaveStatus()
+    } catch (error) {
+      console.error(`Failed to save rule config ${category}.${parameter}:`, error)
+      setSaveStatus('error')
+    }
   }
 
   // Custom Rules Handlers
@@ -613,6 +713,8 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   // Recovery Configuration Handlers
   const handleRecoveryConfigChange = (section, parameter, value) => {
     const actualValue = value[0] // Slider returns array
+    console.log(`Changing recovery config ${section}.${parameter} to ${actualValue}`)
+    
     setRecoveryConfiguration(prev => ({
       ...prev,
       [section]: {
@@ -620,13 +722,22 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         [parameter]: actualValue
       }
     }))
-    settingsStore.saveSetting(section, parameter, actualValue, 'number')
-    showSaveStatus()
+    
+    try {
+      settingsStore.saveSetting(section, parameter, actualValue, 'number', 'user')
+      console.log(`Successfully saved recovery config ${section}.${parameter} = ${actualValue}`)
+      showSaveStatus()
+    } catch (error) {
+      console.error(`Failed to save recovery config ${section}.${parameter}:`, error)
+      setSaveStatus('error')
+    }
   }
 
   // Passenger Priority Configuration Handlers
   const handlePriorityConfigChange = (category, parameter, value) => {
     const actualValue = value[0] // Slider returns array
+    console.log(`Changing priority config ${category}.${parameter} to ${actualValue}`)
+    
     setPassengerPriorityConfig(prev => ({
       ...prev,
       [category]: {
@@ -634,8 +745,15 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         [parameter]: actualValue
       }
     }))
-    settingsStore.saveSetting(category, parameter, actualValue, 'number')
-    showSaveStatus()
+    
+    try {
+      settingsStore.saveSetting(category, parameter, actualValue, 'number', 'user')
+      console.log(`Successfully saved priority config ${category}.${parameter} = ${actualValue}`)
+      showSaveStatus()
+    } catch (error) {
+      console.error(`Failed to save priority config ${category}.${parameter}:`, error)
+      setSaveStatus('error')
+    }
   }
 
   const handleAddCustomParameter = () => {
@@ -678,8 +796,20 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
   const showSaveStatus = () => {
     setSaveStatus('saving')
-    setTimeout(() => setSaveStatus('saved'), 500)
-    setTimeout(() => setSaveStatus('idle'), 2000)
+    // Add slight delay to show saving status
+    setTimeout(() => {
+      setSaveStatus('saved')
+      // Verify the setting was actually saved by checking database
+      try {
+        const allSettings = settingsStore.getAllSettings()
+        console.log('Current database contains', allSettings.length, 'settings')
+      } catch (error) {
+        console.error('Database verification failed:', error)
+        setSaveStatus('error')
+      }
+    }, 300)
+    
+    setTimeout(() => setSaveStatus('idle'), 2500)
   }
 
   const handleSaveAllSettings = async () => {
