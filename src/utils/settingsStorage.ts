@@ -144,25 +144,36 @@ class SettingsStorage {
   private saveToLocalStorage(): void {
     try {
       const settings = Array.from(this.storage.values())
-      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(settings))
+      const serialized = JSON.stringify(settings)
+      localStorage.setItem(this.STORAGE_KEY, serialized)
+      console.log(`Saved ${settings.length} settings to localStorage`)
     } catch (error) {
       console.error('Failed to save settings to localStorage:', error)
+      throw error
     }
   }
 
   saveSetting(category: string, key: string, value: any, type: SettingsData['type'], userId: string = 'system'): void {
-    const id = `${category}_${key}`
-    const setting: SettingsData = {
-      id,
-      category,
-      key,
-      value,
-      type,
-      updatedAt: new Date().toISOString(),
-      updatedBy: userId
+    try {
+      const id = `${category}_${key}`
+      const setting: SettingsData = {
+        id,
+        category,
+        key,
+        value,
+        type,
+        updatedAt: new Date().toISOString(),
+        updatedBy: userId
+      }
+      
+      console.log('Saving setting to database:', setting)
+      this.storage.set(id, setting)
+      this.saveToLocalStorage()
+      console.log('Setting saved successfully:', id)
+    } catch (error) {
+      console.error('Failed to save setting:', { category, key, value, type }, error)
+      throw error
     }
-    this.storage.set(id, setting)
-    this.saveToLocalStorage()
   }
 
   getSetting(category: string, key: string): SettingsData | null {
