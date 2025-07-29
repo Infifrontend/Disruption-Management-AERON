@@ -1,7 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { useSettingsStorage } from '../src/utils/settingsStorage'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { Input } from './ui/input'
@@ -84,6 +85,11 @@ import {
 
 export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const [activeTab, setActiveTab] = useState('screens')
+  const [isLoading, setIsLoading] = useState(true)
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle')
+  const settingsStore = useSettingsStorage()
+
+  // Database-backed state
   const [nlpSettings, setNlpSettings] = useState({
     enabled: true,
     language: 'english',
@@ -284,6 +290,143 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     description: ''
   })
 
+  // Load settings from database on component mount
+  useEffect(() => {
+    loadSettingsFromDatabase()
+  }, [])
+
+  const loadSettingsFromDatabase = async () => {
+    setIsLoading(true)
+    try {
+      // Load NLP settings
+      const nlpEnabled = settingsStore.getSetting('nlpSettings', 'enabled')
+      const nlpLanguage = settingsStore.getSetting('nlpSettings', 'language')
+      const nlpConfidence = settingsStore.getSetting('nlpSettings', 'confidence')
+      const nlpAutoApply = settingsStore.getSetting('nlpSettings', 'autoApply')
+
+      if (nlpEnabled || nlpLanguage || nlpConfidence || nlpAutoApply) {
+        setNlpSettings({
+          enabled: nlpEnabled?.value ?? true,
+          language: nlpLanguage?.value ?? 'english',
+          confidence: nlpConfidence?.value ?? 85,
+          autoApply: nlpAutoApply?.value ?? false
+        })
+      }
+
+      // Load Rule Configuration
+      const operationalRules = settingsStore.getSettingsByCategory('operationalRules')
+      const recoveryConstraints = settingsStore.getSettingsByCategory('recoveryConstraints')
+      const automationSettings = settingsStore.getSettingsByCategory('automationSettings')
+
+      if (operationalRules.length > 0 || recoveryConstraints.length > 0 || automationSettings.length > 0) {
+        const newRuleConfig = { ...ruleConfiguration }
+        
+        operationalRules.forEach(setting => {
+          if (newRuleConfig.operationalRules.hasOwnProperty(setting.key)) {
+            newRuleConfig.operationalRules[setting.key] = setting.value
+          }
+        })
+        
+        recoveryConstraints.forEach(setting => {
+          if (newRuleConfig.recoveryConstraints.hasOwnProperty(setting.key)) {
+            newRuleConfig.recoveryConstraints[setting.key] = setting.value
+          }
+        })
+        
+        automationSettings.forEach(setting => {
+          if (newRuleConfig.automationSettings.hasOwnProperty(setting.key)) {
+            newRuleConfig.automationSettings[setting.key] = setting.value
+          }
+        })
+        
+        setRuleConfiguration(newRuleConfig)
+      }
+
+      // Load Recovery Configuration
+      const recoveryOptionsRanking = settingsStore.getSettingsByCategory('recoveryOptionsRanking')
+      const aircraftSelectionCriteria = settingsStore.getSettingsByCategory('aircraftSelectionCriteria')
+      const crewAssignmentCriteria = settingsStore.getSettingsByCategory('crewAssignmentCriteria')
+
+      if (recoveryOptionsRanking.length > 0 || aircraftSelectionCriteria.length > 0 || crewAssignmentCriteria.length > 0) {
+        const newRecoveryConfig = { ...recoveryConfiguration }
+        
+        recoveryOptionsRanking.forEach(setting => {
+          if (newRecoveryConfig.recoveryOptionsRanking.hasOwnProperty(setting.key)) {
+            newRecoveryConfig.recoveryOptionsRanking[setting.key] = setting.value
+          }
+        })
+        
+        aircraftSelectionCriteria.forEach(setting => {
+          if (newRecoveryConfig.aircraftSelectionCriteria.hasOwnProperty(setting.key)) {
+            newRecoveryConfig.aircraftSelectionCriteria[setting.key] = setting.value
+          }
+        })
+        
+        crewAssignmentCriteria.forEach(setting => {
+          if (newRecoveryConfig.crewAssignmentCriteria.hasOwnProperty(setting.key)) {
+            newRecoveryConfig.crewAssignmentCriteria[setting.key] = setting.value
+          }
+        })
+        
+        setRecoveryConfiguration(newRecoveryConfig)
+      }
+
+      // Load Passenger Priority Configuration
+      const passengerPrioritization = settingsStore.getSettingsByCategory('passengerPrioritization')
+      const flightPrioritization = settingsStore.getSettingsByCategory('flightPrioritization')
+      const flightScoring = settingsStore.getSettingsByCategory('flightScoring')
+      const passengerScoring = settingsStore.getSettingsByCategory('passengerScoring')
+
+      if (passengerPrioritization.length > 0 || flightPrioritization.length > 0 || flightScoring.length > 0 || passengerScoring.length > 0) {
+        const newPriorityConfig = { ...passengerPriorityConfig }
+        
+        passengerPrioritization.forEach(setting => {
+          if (newPriorityConfig.passengerPrioritization.hasOwnProperty(setting.key)) {
+            newPriorityConfig.passengerPrioritization[setting.key] = setting.value
+          }
+        })
+        
+        flightPrioritization.forEach(setting => {
+          if (newPriorityConfig.flightPrioritization.hasOwnProperty(setting.key)) {
+            newPriorityConfig.flightPrioritization[setting.key] = setting.value
+          }
+        })
+        
+        flightScoring.forEach(setting => {
+          if (newPriorityConfig.flightScoring.hasOwnProperty(setting.key)) {
+            newPriorityConfig.flightScoring[setting.key] = setting.value
+          }
+        })
+        
+        passengerScoring.forEach(setting => {
+          if (newPriorityConfig.passengerScoring.hasOwnProperty(setting.key)) {
+            newPriorityConfig.passengerScoring[setting.key] = setting.value
+          }
+        })
+        
+        setPassengerPriorityConfig(newPriorityConfig)
+      }
+
+      // Load Notification Settings
+      const notificationSettingsFromDb = settingsStore.getSettingsByCategory('notificationSettings')
+      if (notificationSettingsFromDb.length > 0) {
+        const newNotificationSettings = { ...notificationSettings }
+        notificationSettingsFromDb.forEach(setting => {
+          if (newNotificationSettings.hasOwnProperty(setting.key)) {
+            newNotificationSettings[setting.key] = setting.value
+          }
+        })
+        setNotificationSettings(newNotificationSettings)
+      }
+
+    } catch (error) {
+      console.error('Failed to load settings from database:', error)
+      setSaveStatus('error')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   // Notification settings
   const [notificationSettings, setNotificationSettings] = useState({
     email: true,
@@ -306,10 +449,13 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   }
 
   const handleNlpToggle = (setting) => {
+    const newValue = !nlpSettings[setting]
     setNlpSettings(prev => ({
       ...prev,
-      [setting]: !prev[setting]
+      [setting]: newValue
     }))
+    settingsStore.saveSetting('nlpSettings', setting, newValue, 'boolean')
+    showSaveStatus()
   }
 
   const handleNlpChange = (setting, value) => {
@@ -317,34 +463,45 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       ...prev,
       [setting]: value
     }))
+    settingsStore.saveSetting('nlpSettings', setting, value, typeof value === 'number' ? 'number' : 'string')
+    showSaveStatus()
   }
 
   const handleNotificationToggle = (setting) => {
+    const newValue = !notificationSettings[setting]
     setNotificationSettings(prev => ({
       ...prev,
-      [setting]: !prev[setting]
+      [setting]: newValue
     }))
+    settingsStore.saveSetting('notificationSettings', setting, newValue, 'boolean')
+    showSaveStatus()
   }
 
   // Rule Configuration Handlers
   const handleRuleConfigChange = (category, parameter, value) => {
+    const actualValue = Array.isArray(value) ? value[0] : value
     setRuleConfiguration(prev => ({
       ...prev,
       [category]: {
         ...prev[category],
-        [parameter]: Array.isArray(value) ? value[0] : value
+        [parameter]: actualValue
       }
     }))
+    settingsStore.saveSetting(category, parameter, actualValue, 'number')
+    showSaveStatus()
   }
 
   const handleRuleToggle = (category, parameter) => {
+    const newValue = !ruleConfiguration[category][parameter]
     setRuleConfiguration(prev => ({
       ...prev,
       [category]: {
         ...prev[category],
-        [parameter]: !prev[category][parameter]
+        [parameter]: newValue
       }
     }))
+    settingsStore.saveSetting(category, parameter, newValue, 'boolean')
+    showSaveStatus()
   }
 
   // Custom Rules Handlers
@@ -440,24 +597,30 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
   // Recovery Configuration Handlers
   const handleRecoveryConfigChange = (section, parameter, value) => {
+    const actualValue = value[0] // Slider returns array
     setRecoveryConfiguration(prev => ({
       ...prev,
       [section]: {
         ...prev[section],
-        [parameter]: value[0] // Slider returns array
+        [parameter]: actualValue
       }
     }))
+    settingsStore.saveSetting(section, parameter, actualValue, 'number')
+    showSaveStatus()
   }
 
   // Passenger Priority Configuration Handlers
   const handlePriorityConfigChange = (category, parameter, value) => {
+    const actualValue = value[0] // Slider returns array
     setPassengerPriorityConfig(prev => ({
       ...prev,
       [category]: {
         ...prev[category],
-        [parameter]: value[0] // Slider returns array
+        [parameter]: actualValue
       }
     }))
+    settingsStore.saveSetting(category, parameter, actualValue, 'number')
+    showSaveStatus()
   }
 
   const handleAddCustomParameter = () => {
@@ -498,7 +661,64 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     setCustomParameters(prev => prev.filter(p => p.id !== id))
   }
 
+  const showSaveStatus = () => {
+    setSaveStatus('saving')
+    setTimeout(() => setSaveStatus('saved'), 500)
+    setTimeout(() => setSaveStatus('idle'), 2000)
+  }
+
+  const handleSaveAllSettings = async () => {
+    setSaveStatus('saving')
+    try {
+      // Save all current settings to database
+      Object.entries(nlpSettings).forEach(([key, value]) => {
+        settingsStore.saveSetting('nlpSettings', key, value, typeof value === 'boolean' ? 'boolean' : typeof value === 'number' ? 'number' : 'string')
+      })
+
+      Object.entries(notificationSettings).forEach(([key, value]) => {
+        settingsStore.saveSetting('notificationSettings', key, value, 'boolean')
+      })
+
+      // Save rule configuration
+      Object.entries(ruleConfiguration).forEach(([category, settings]) => {
+        Object.entries(settings).forEach(([key, value]) => {
+          settingsStore.saveSetting(category, key, value, typeof value === 'boolean' ? 'boolean' : 'number')
+        })
+      })
+
+      // Save recovery configuration
+      Object.entries(recoveryConfiguration).forEach(([category, settings]) => {
+        if (typeof settings === 'object' && settings !== null && !Array.isArray(settings)) {
+          Object.entries(settings).forEach(([key, value]) => {
+            if (key !== 'customParameters') {
+              settingsStore.saveSetting(category, key, value, 'number')
+            }
+          })
+        }
+      })
+
+      // Save passenger priority configuration
+      Object.entries(passengerPriorityConfig).forEach(([category, settings]) => {
+        Object.entries(settings).forEach(([key, value]) => {
+          settingsStore.saveSetting(category, key, value, 'number')
+        })
+      })
+
+      setSaveStatus('saved')
+      setTimeout(() => setSaveStatus('idle'), 2000)
+    } catch (error) {
+      console.error('Failed to save settings:', error)
+      setSaveStatus('error')
+      setTimeout(() => setSaveStatus('idle'), 3000)
+    }
+  }
+
   const handleResetAllSettings = () => {
+    settingsStore.resetToDefaults()
+    loadSettingsFromDatabase()
+    setSaveStatus('saved')
+    setTimeout(() => setSaveStatus('idle'), 2000)
+    
     // Reset all configurations to defaults
     setRuleConfiguration({
       operationalRules: {
@@ -696,22 +916,59 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     system: { name: 'System', color: 'text-gray-600' }
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="spinner-flydubai mx-auto mb-4"></div>
+          <p className="text-flydubai-blue">Loading Settings...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-flydubai-navy">AERON Settings</h2>
-          <p className="text-muted-foreground">Configure system preferences and operational parameters</p>
+          <div className="flex items-center gap-2">
+            <p className="text-muted-foreground">Configure system preferences and operational parameters</p>
+            {isLoading && (
+              <div className="flex items-center gap-2 text-sm text-flydubai-blue">
+                <div className="spinner-flydubai"></div>
+                Loading...
+              </div>
+            )}
+            {saveStatus === 'saving' && (
+              <div className="flex items-center gap-2 text-sm text-blue-600">
+                <div className="spinner-flydubai"></div>
+                Saving...
+              </div>
+            )}
+            {saveStatus === 'saved' && (
+              <div className="flex items-center gap-2 text-sm text-green-600">
+                <CheckCircle className="h-4 w-4" />
+                Saved
+              </div>
+            )}
+            {saveStatus === 'error' && (
+              <div className="flex items-center gap-2 text-sm text-red-600">
+                <AlertCircle className="h-4 w-4" />
+                Save Error
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleResetAllSettings} className="border-orange-300 text-orange-700 hover:bg-orange-50">
+          <Button variant="outline" onClick={handleResetAllSettings} className="border-orange-300 text-orange-700 hover:bg-orange-50" disabled={isLoading}>
             <RotateCcw className="h-4 w-4 mr-2" />
             Reset All
           </Button>
-          <Button className="btn-flydubai-primary">
+          <Button onClick={handleSaveAllSettings} className="btn-flydubai-primary" disabled={isLoading || saveStatus === 'saving'}>
             <Save className="h-4 w-4 mr-2" />
-            Save Settings
+            {saveStatus === 'saving' ? 'Saving...' : 'Save Settings'}
           </Button>
         </div>
       </div>
@@ -848,7 +1105,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                         max={50}
                         min={0}
                         step={5}
-                        className="w-full"
+                        className="w-full slider-flydubai"
                       />
                     </div>
                   )
@@ -909,7 +1166,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                         max={50}
                         min={0}
                         step={5}
-                        className="w-full"
+                        className="w-full slider-flydubai"
                       />
                     </div>
                   )
@@ -1080,7 +1337,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     max={360}
                     min={60}
                     step={15}
-                    className="w-full"
+                    className="w-full slider-flydubai"
                   />
                 </div>
 
@@ -2125,7 +2382,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                         max={100}
                         min={50}
                         step={5}
-                        className="w-full"
+                        className="w-full slider-flydubai"
                       />
                     </div>
 

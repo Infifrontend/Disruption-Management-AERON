@@ -160,22 +160,80 @@
 
 /* Custom scrollbar for better UX */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
+  background: #f1f5f9;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
-  border-radius: 3px;
+  background: var(--flydubai-progress-blue);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: var(--flydubai-navy);
+}
+
+/* Enhanced slider styles with better visibility */
+.slider-flydubai [data-radix-range] {
+  background-color: #0066CC !important;
+  height: 6px !important;
+  border-radius: 3px !important;
+}
+
+.slider-flydubai [data-radix-track] {
+  background-color: #e2e8f0 !important;
+  height: 6px !important;
+  border-radius: 3px !important;
+  position: relative !important;
+}
+
+.slider-flydubai [data-radix-thumb] {
+  width: 20px !important;
+  height: 20px !important;
+  border: 2px solid #0066CC !important;
+  background-color: white !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.2s ease !important;
+}
+
+.slider-flydubai [data-radix-thumb]:hover {
+  border-color: #001f3f !important;
+  box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1) !important;
+  transform: scale(1.1) !important;
+}
+
+.slider-flydubai [data-radix-thumb]:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.2) !important;
+}
+
+/* Disabled slider styles */
+.slider-flydubai:has([data-disabled]) [data-radix-range] {
+  background-color: #cbd5e1 !important;
+}
+
+.slider-flydubai:has([data-disabled]) [data-radix-track] {
+  background-color: #f1f5f9 !important;
+  opacity: 0.6 !important;
+}
+
+.slider-flydubai:has([data-disabled]) [data-radix-thumb] {
+  border-color: #94a3b8 !important;
+  background-color: #f8fafc !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.slider-flydubai:has([data-disabled]) [data-radix-thumb]:hover {
+  border-color: #94a3b8 !important;
+  box-shadow: none !important;
+  transform: none !important;
 }
 
 .navigation-menu {
