@@ -293,7 +293,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   // Load settings from database on component mount
   useEffect(() => {
     loadSettingsFromDatabase()
-  }, [])
+  }, [settingsStore])
 
   const loadSettingsFromDatabase = async () => {
     setIsLoading(true)
@@ -344,7 +344,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
       // Load Recovery Configuration
       const recoveryOptionsRanking = settingsStore.getSettingsByCategory('recoveryOptionsRanking')
-      const aircraftSelectionCriteria = settingsStore.getSettingsByCategory('aircraftSelectionCriteria')
+      const aircraftSelectionCriteria = settingsStore.getSettingsByCategory('aircraftSelectionCriteria') 
       const crewAssignmentCriteria = settingsStore.getSettingsByCategory('crewAssignmentCriteria')
 
       if (recoveryOptionsRanking.length > 0 || aircraftSelectionCriteria.length > 0 || crewAssignmentCriteria.length > 0) {
@@ -377,35 +377,34 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       const flightScoring = settingsStore.getSettingsByCategory('flightScoring')
       const passengerScoring = settingsStore.getSettingsByCategory('passengerScoring')
 
-      if (passengerPrioritization.length > 0 || flightPrioritization.length > 0 || flightScoring.length > 0 || passengerScoring.length > 0) {
-        const newPriorityConfig = { ...passengerPriorityConfig }
-        
-        passengerPrioritization.forEach(setting => {
-          if (newPriorityConfig.passengerPrioritization.hasOwnProperty(setting.key)) {
-            newPriorityConfig.passengerPrioritization[setting.key] = setting.value
-          }
-        })
-        
-        flightPrioritization.forEach(setting => {
-          if (newPriorityConfig.flightPrioritization.hasOwnProperty(setting.key)) {
-            newPriorityConfig.flightPrioritization[setting.key] = setting.value
-          }
-        })
-        
-        flightScoring.forEach(setting => {
-          if (newPriorityConfig.flightScoring.hasOwnProperty(setting.key)) {
-            newPriorityConfig.flightScoring[setting.key] = setting.value
-          }
-        })
-        
-        passengerScoring.forEach(setting => {
-          if (newPriorityConfig.passengerScoring.hasOwnProperty(setting.key)) {
-            newPriorityConfig.passengerScoring[setting.key] = setting.value
-          }
-        })
-        
-        setPassengerPriorityConfig(newPriorityConfig)
-      }
+      // Always update passenger priority config with loaded data
+      const newPriorityConfig = { ...passengerPriorityConfig }
+      
+      passengerPrioritization.forEach(setting => {
+        if (newPriorityConfig.passengerPrioritization.hasOwnProperty(setting.key)) {
+          newPriorityConfig.passengerPrioritization[setting.key] = setting.value
+        }
+      })
+      
+      flightPrioritization.forEach(setting => {
+        if (newPriorityConfig.flightPrioritization && newPriorityConfig.flightPrioritization.hasOwnProperty(setting.key)) {
+          newPriorityConfig.flightPrioritization[setting.key] = setting.value
+        }
+      })
+      
+      flightScoring.forEach(setting => {
+        if (newPriorityConfig.flightScoring && newPriorityConfig.flightScoring.hasOwnProperty(setting.key)) {
+          newPriorityConfig.flightScoring[setting.key] = setting.value
+        }
+      })
+      
+      passengerScoring.forEach(setting => {
+        if (newPriorityConfig.passengerScoring && newPriorityConfig.passengerScoring.hasOwnProperty(setting.key)) {
+          newPriorityConfig.passengerScoring[setting.key] = setting.value
+        }
+      })
+      
+      setPassengerPriorityConfig(newPriorityConfig)
 
       // Load Notification Settings
       const notificationSettingsFromDb = settingsStore.getSettingsByCategory('notificationSettings')
@@ -424,6 +423,10 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       setSaveStatus('error')
     } finally {
       setIsLoading(false)
+      // Force a re-render to ensure UI reflects loaded state
+      setTimeout(() => {
+        setSaveStatus('idle')
+      }, 100)
     }
   }
 
@@ -2523,7 +2526,10 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                       <Label className="text-sm font-medium">High Performance Mode</Label>
                       <p className="text-xs text-muted-foreground">Enhanced processing for critical operations</p>
                     </div>
-                    <Switch className="switch-flydubai" />
+                    <Switch 
+                      checked={false}
+                      className="switch-flydubai" 
+                    />
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -2531,7 +2537,10 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                       <Label className="text-sm font-medium">Auto-Save Settings</Label>
                       <p className="text-xs text-muted-foreground">Automatically save configuration changes</p>
                     </div>
-                    <Switch defaultChecked className="switch-flydubai" />
+                    <Switch 
+                      checked={true}
+                      className="switch-flydubai" 
+                    />
                   </div>
                 </div>
               </div>

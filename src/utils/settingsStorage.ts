@@ -56,6 +56,41 @@ class SettingsStorage {
       { category: 'recoveryOptionsRanking', key: 'operationalComplexityWeight', value: 15, type: 'number' },
       { category: 'recoveryOptionsRanking', key: 'reputationWeight', value: 10, type: 'number' },
       
+      // Aircraft Selection Criteria defaults
+      { category: 'aircraftSelectionCriteria', key: 'maintenanceStatus', value: 25, type: 'number' },
+      { category: 'aircraftSelectionCriteria', key: 'fuelEfficiency', value: 20, type: 'number' },
+      { category: 'aircraftSelectionCriteria', key: 'routeSuitability', value: 20, type: 'number' },
+      { category: 'aircraftSelectionCriteria', key: 'passengerCapacity', value: 15, type: 'number' },
+      { category: 'aircraftSelectionCriteria', key: 'availabilityWindow', value: 20, type: 'number' },
+      
+      // Crew Assignment Criteria defaults  
+      { category: 'crewAssignmentCriteria', key: 'dutyTimeRemaining', value: 30, type: 'number' },
+      { category: 'crewAssignmentCriteria', key: 'qualifications', value: 25, type: 'number' },
+      { category: 'crewAssignmentCriteria', key: 'baseLocation', value: 20, type: 'number' },
+      { category: 'crewAssignmentCriteria', key: 'restRequirements', value: 15, type: 'number' },
+      { category: 'crewAssignmentCriteria', key: 'languageSkills', value: 10, type: 'number' },
+      
+      // Flight Prioritization defaults
+      { category: 'flightPrioritization', key: 'airlinePreference', value: 20, type: 'number' },
+      { category: 'flightPrioritization', key: 'onTimePerformance', value: 25, type: 'number' },
+      { category: 'flightPrioritization', key: 'aircraftType', value: 15, type: 'number' },
+      { category: 'flightPrioritization', key: 'departureTime', value: 20, type: 'number' },
+      { category: 'flightPrioritization', key: 'connectionBuffer', value: 20, type: 'number' },
+      
+      // Flight Scoring defaults
+      { category: 'flightScoring', key: 'baseScore', value: 70, type: 'number' },
+      { category: 'flightScoring', key: 'priorityBonus', value: 15, type: 'number' },
+      { category: 'flightScoring', key: 'airlineBonus', value: 10, type: 'number' },
+      { category: 'flightScoring', key: 'specialReqBonus', value: 8, type: 'number' },
+      { category: 'flightScoring', key: 'loyaltyBonus', value: 8, type: 'number' },
+      { category: 'flightScoring', key: 'groupBonus', value: 5, type: 'number' },
+      
+      // Passenger Scoring defaults
+      { category: 'passengerScoring', key: 'vipWeight', value: 40, type: 'number' },
+      { category: 'passengerScoring', key: 'loyaltyWeight', value: 25, type: 'number' },
+      { category: 'passengerScoring', key: 'specialNeedsWeight', value: 20, type: 'number' },
+      { category: 'passengerScoring', key: 'revenueWeight', value: 15, type: 'number' },
+      
       // NLP Settings defaults
       { category: 'nlpSettings', key: 'enabled', value: true, type: 'boolean' },
       { category: 'nlpSettings', key: 'language', value: 'english', type: 'string' },
