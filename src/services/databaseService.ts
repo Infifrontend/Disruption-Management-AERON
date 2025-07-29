@@ -423,7 +423,26 @@ class DatabaseService {
     try {
       const response = await fetch(`${this.baseUrl}/disruptions`)
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-      return await response.json()
+      const data = await response.json()
+      
+      // Transform database format to expected format
+      return data.map((disruption: any) => ({
+        id: disruption.id?.toString() || disruption.flight_number,
+        flightNumber: disruption.flight_number,
+        route: disruption.route,
+        aircraft: disruption.aircraft,
+        scheduledDeparture: disruption.scheduled_departure,
+        estimatedDeparture: disruption.estimated_departure,
+        delay: disruption.delay_minutes || 0,
+        passengers: disruption.passengers,
+        crew: disruption.crew,
+        severity: disruption.severity,
+        type: disruption.disruption_type,
+        status: disruption.status,
+        disruptionReason: disruption.disruption_reason,
+        createdAt: disruption.created_at,
+        updatedAt: disruption.updated_at
+      }))
     } catch (error) {
       console.error('Failed to fetch disruptions:', error)
       return []
