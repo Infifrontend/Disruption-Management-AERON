@@ -187,6 +187,8 @@ app.post('/api/settings/reset', async (req, res) => {
       { category: 'nlpSettings', key: 'language', value: 'english', type: 'string' },
       { category: 'nlpSettings', key: 'confidence', value: 85, type: 'number' },
       { category: 'nlpSettings', key: 'autoApply', value: false, type: 'boolean' },
+      { category: 'nlpSettings', key: 'accuracyEnhancement', value: 85, type: 'number' },
+      { category: 'nlpSettings', key: 'complianceWeighting', value: 75, type: 'number' },
       { category: 'notificationSettings', key: 'email', value: true, type: 'boolean' },
       { category: 'notificationSettings', key: 'sms', value: false, type: 'boolean' },
       { category: 'notificationSettings', key: 'push', value: true, type: 'boolean' },
