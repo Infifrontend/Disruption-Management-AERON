@@ -1,3 +1,4 @@
+
 import React, { useState, ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Button } from '../../components/ui/button'
@@ -66,7 +67,7 @@ export function Layout({ children }: LayoutProps) {
   const currentScreen = enabledScreens.find(s => location.pathname === `/${s.id}` || (location.pathname === '/' && s.id === 'dashboard'))
 
   return (
-    <div className="min-h-screen bg-background flex overflow-hidden"> {/* Added overflow-hidden to prevent body scrolling */}
+    <div className="min-h-screen bg-background flex">
       {/* Sidebar */}
       <div className="w-52 min-w-[13rem] max-w-[13rem] bg-flydubai-blue text-white border-r border-blue-700 flex flex-col flex-shrink-0">
         {/* Sidebar Header */}
@@ -151,7 +152,7 @@ export function Layout({ children }: LayoutProps) {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden"> {/* Added overflow-hidden to main content */}
+      <div className="flex-1 flex flex-col">
         {/* Top Header */}
         <div className="bg-card border-b border-border px-6 py-4">
           <div className="flex items-center justify-between">
@@ -177,7 +178,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6"> {/* Main content area with scroll */}
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-6">
           {children}
         </div>
       </div>
