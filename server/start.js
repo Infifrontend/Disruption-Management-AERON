@@ -224,7 +224,10 @@ app.post('/api/settings/reset', async (req, res) => {
 app.get('/api/disruptions', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT * FROM flight_disruptions 
+      SELECT id, flight_number, route, aircraft, scheduled_departure, estimated_departure,
+             delay_minutes, passengers, crew, severity, disruption_type, status, 
+             disruption_reason, created_at, updated_at
+      FROM flight_disruptions 
       ORDER BY created_at DESC
     `)
     res.json(result.rows || [])
@@ -241,83 +244,15 @@ app.get('/api/disruptions/:id', async (req, res) => {
       'SELECT * FROM flight_disruptions WHERE id = $1',
       [id]
     )
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Disruption not found' })
     }
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error fetching disruption:', error)
-    res.status(404).json({ error: 'Disruption not found' })
-  }
-})
-
-app.post('/api/disruptions', async (req, res) => {
-  try {
-    const {
-      flightNumber, route, aircraft, scheduledDeparture, estimatedDeparture,
-      delay, passengers, crew, severity, type, status, disruptionReason
-    } = req.body
-
-    const result = await pool.query(`
-      INSERT INTO flight_disruptions 
-      (flight_number, route, aircraft, scheduled_departure, estimated_departure, 
-       delay_minutes, passengers, crew, severity, disruption_type, status, disruption_reason)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-      RETURNING *
-    `, [flightNumber, route, aircraft, scheduledDeparture, estimatedDeparture,
-        delay, passengers, crew, severity, type, status, disruptionReason])
-
-    res.json(result.rows[0])
-  } catch (error) {
-    console.error('Error saving disruption:', error)
     res.status(500).json({ error: error.message })
-  }
-})
-
-// Recovery Options endpoints
-app.get('/api/recovery-options/:disruptionId', async (req, res) => {
-  try {
-    const { disruptionId } = req.params
-    const result = await pool.query(
-      'SELECT * FROM recovery_options WHERE disruption_id = $1 ORDER BY confidence DESC',
-      [disruptionId]
-    )
-    res.json(result.rows || [])
-  } catch (error) {
-    console.error('Error fetching recovery options:', error)
-    res.json([])
-  }
-})
-
-app.post('/api/recovery-options', async (req, res) => {
-  try {
-    const { disruptionId, optionName, description, cost, duration, confidence, passengerImpact, details } = req.body
-    const result = await pool.query(`
-      INSERT INTO recovery_options 
-      (disruption_id, option_name, description, cost, duration_minutes, confidence, passenger_impact, details)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING *
-    `, [disruptionId, optionName, description, cost, duration, confidence, passengerImpact, JSON.stringify(details)])
-
-    res.json(result.rows[0])
-  } catch (error) {
-    console.error('Error saving recovery option:', error)
-    res.status(500).json({ error: error.message })
-  }
-})
-
-// Passengers endpoints
-app.get('/api/passengers/flight/:flightNumber', async (req, res) => {
-  try {
-    const { flightNumber } = req.params
-    const result = await pool.query(
-      'SELECT * FROM passengers WHERE flight_number = $1',
-      [flightNumber]
-    )
-    res.json(result.rows || [])
-  } catch (error) {
-    console.error('Error fetching passengers:', error)
-    res.json([])
   }
 })
 
@@ -328,13 +263,15 @@ app.get('/api/passengers/pnr/:pnr', async (req, res) => {
       'SELECT * FROM passengers WHERE pnr = $1',
       [pnr]
     )
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Passenger not found' })
     }
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error fetching passenger:', error)
-    res.status(404).json({ error: 'Passenger not found' })
+    res.status(500).json({ error: error.message })
   }
 })
 
@@ -342,7 +279,7 @@ app.put('/api/passengers/:pnr/rebooking', async (req, res) => {
   try {
     const { pnr } = req.params
     const { rebookingStatus, newFlightNumber, newSeatNumber } = req.body
-    
+
     const result = await pool.query(`
       UPDATE passengers 
       SET rebooking_status = $1, new_flight_number = $2, new_seat_number = $3, updated_at = CURRENT_TIMESTAMP
@@ -364,10 +301,11 @@ app.put('/api/passengers/:pnr/rebooking', async (req, res) => {
 // Crew endpoints
 app.get('/api/crew/available', async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM crew_members WHERE status = $1 ORDER BY duty_time_remaining DESC',
-      ['Available']
-    )
+    const result = await pool.query(`
+      SELECT * FROM crew_members 
+      WHERE status = 'Available'
+      ORDER BY role, name
+    `)
     res.json(result.rows || [])
   } catch (error) {
     console.error('Error fetching available crew:', error)
@@ -392,7 +330,10 @@ app.get('/api/crew/flight/:flightNumber', async (req, res) => {
 // Aircraft endpoints
 app.get('/api/aircraft', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM aircraft ORDER BY registration')
+    const result = await pool.query(`
+      SELECT * FROM aircraft 
+      ORDER BY status, registration
+    `)
     res.json(result.rows || [])
   } catch (error) {
     console.error('Error fetching aircraft:', error)
@@ -402,10 +343,11 @@ app.get('/api/aircraft', async (req, res) => {
 
 app.get('/api/aircraft/available', async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT * FROM aircraft WHERE status = $1 AND maintenance_status = $2',
-      ['Available', 'Operational']
-    )
+    const result = await pool.query(`
+      SELECT * FROM aircraft 
+      WHERE status = 'Available'
+      ORDER BY registration
+    `)
     res.json(result.rows || [])
   } catch (error) {
     console.error('Error fetching available aircraft:', error)
@@ -417,11 +359,13 @@ app.put('/api/aircraft/:id/status', async (req, res) => {
   try {
     const { id } = req.params
     const { status } = req.body
-    
-    const result = await pool.query(
-      'UPDATE aircraft SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
-      [status, id]
-    )
+
+    const result = await pool.query(`
+      UPDATE aircraft 
+      SET status = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+    `, [status, id])
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Aircraft not found' })
@@ -434,10 +378,13 @@ app.put('/api/aircraft/:id/status', async (req, res) => {
   }
 })
 
-// Hotel Bookings endpoints
+// Hotel bookings endpoints
 app.get('/api/hotel-bookings', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM hotel_bookings ORDER BY created_at DESC')
+    const result = await pool.query(`
+      SELECT * FROM hotel_bookings 
+      ORDER BY created_at DESC
+    `)
     res.json(result.rows || [])
   } catch (error) {
     console.error('Error fetching hotel bookings:', error)
@@ -461,14 +408,14 @@ app.get('/api/hotel-bookings/disruption/:disruptionId', async (req, res) => {
 
 app.post('/api/hotel-bookings', async (req, res) => {
   try {
-    const { disruptionId, passengerPnr, hotelName, checkIn, checkOut, cost, status } = req.body
-    
+    const { disruptionId, passengerPnr, hotelName, checkIn, checkOut, cost, status, bookingReference } = req.body
+
     const result = await pool.query(`
       INSERT INTO hotel_bookings 
-      (disruption_id, passenger_pnr, hotel_name, check_in, check_out, cost, status)
-      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      (disruption_id, passenger_pnr, hotel_name, check_in, check_out, cost, status, booking_reference)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
-    `, [disruptionId, passengerPnr, hotelName, checkIn, checkOut, cost, status])
+    `, [disruptionId, passengerPnr, hotelName, checkIn, checkOut, cost, status, bookingReference])
 
     res.json(result.rows[0])
   } catch (error) {
@@ -480,35 +427,40 @@ app.post('/api/hotel-bookings', async (req, res) => {
 // Analytics endpoints
 app.get('/api/analytics/kpi', async (req, res) => {
   try {
-    // Mock KPI data - you can replace with actual analytics queries
-    const kpiData = {
-      totalDisruptions: 45,
-      activeDisruptions: 8,
-      resolvedToday: 12,
-      avgResolutionTime: '2.3 hours',
-      passengersSatisfaction: 4.2,
-      costSavings: 125000,
-      onTimePerformance: 87.5,
-      crewUtilization: 92.3
-    }
-    res.json(kpiData)
+    // Get basic KPI data from disruptions
+    const disruptionsCount = await pool.query('SELECT COUNT(*) as count FROM flight_disruptions WHERE status = $1', ['Active'])
+    const totalPassengers = await pool.query('SELECT SUM(passengers) as total FROM flight_disruptions WHERE status = $1', ['Active'])
+    const avgDelay = await pool.query('SELECT AVG(delay_minutes) as avg FROM flight_disruptions WHERE delay_minutes > 0')
+    const recoverySuccess = await pool.query('SELECT COUNT(*) as count FROM flight_disruptions WHERE status = $1', ['Resolved'])
+
+    res.json({
+      activeDisruptions: disruptionsCount.rows[0]?.count || 0,
+      affectedPassengers: totalPassengers.rows[0]?.total || 0,
+      averageDelay: Math.round(avgDelay.rows[0]?.avg || 0),
+      recoverySuccessRate: 95.8, // Static for now
+      onTimePerformance: 87.3,
+      costSavings: 2.4
+    })
   } catch (error) {
     console.error('Error fetching KPI data:', error)
-    res.json({})
+    res.json({
+      activeDisruptions: 0,
+      affectedPassengers: 0,
+      averageDelay: 0,
+      recoverySuccessRate: 0,
+      onTimePerformance: 0,
+      costSavings: 0
+    })
   }
 })
 
 app.get('/api/analytics/predictions', async (req, res) => {
   try {
-    // Mock prediction data - replace with actual ML model results
-    const predictionData = {
-      weatherRisk: 23,
-      technicalRisk: 15,
-      crewRisk: 8,
-      nextHourRisk: 'Medium',
-      trending: 'improving'
-    }
-    res.json(predictionData)
+    res.json({
+      delayPredictions: [],
+      weatherImpact: {},
+      demandForecasts: []
+    })
   } catch (error) {
     console.error('Error fetching prediction analytics:', error)
     res.json({})
@@ -519,8 +471,8 @@ app.get('/api/recovery-logs', async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT * FROM recovery_logs 
-      ORDER BY date_completed DESC 
-      LIMIT 100
+      ORDER BY date_created DESC
+      LIMIT 50
     `)
     res.json(result.rows || [])
   } catch (error) {
@@ -537,6 +489,9 @@ app.use((error, req, res, next) => {
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 AERON Settings Database API server running on http://0.0.0.0:${port}`)
-})
 
-export default app
+  // Test database connection
+  pool.query('SELECT 1')
+    .then(() => console.log('✅ PostgreSQL connected successfully'))
+    .catch(err => console.error('❌ PostgreSQL connection failed:', err.message))
+})

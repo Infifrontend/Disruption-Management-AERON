@@ -80,8 +80,8 @@ export function FlightDisruptionList() {
     return () => clearInterval(interval)
   }, [])
 
-  // Enhanced mock data with comprehensive disruption information
-  const mockDisruptions = [
+  // Enhanced mock data with comprehensive disruption information (fallback)
+    const mockDisruptions = [
     {
       id: 'DISR-2025-001',
       flightNumber: 'EK123',
@@ -817,7 +817,8 @@ export function FlightDisruptionList() {
                       <div className="space-y-3 text-sm">
                         <div>
                           <Label className="text-xs text-muted-foreground">Scheduled Departure</Label>
-                          <p className="font-medium">{selectedDisruption.scheduledDeparture}</p>
+                          <p```text
+className="font-medium">{selectedDisruption.scheduledDeparture}</p>
                         </div>
                         <div>
                           <Label className="text-xs text-muted-foreground">Estimated Departure</Label>
