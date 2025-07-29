@@ -2515,7 +2515,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 Natural Language & Knowledge Repository
               </CardTitle>
               <p className="text-sm text-blue-700">
-                Enhance AERON's decision-making capabilities by connecting natural language understanding with operational documents, operational procedures, and general policies to improve context-aware recommendations, accuracy and compliance.
+                Configure natural language understanding to enhance recovery recommendations accuracy through operational knowledge accessibility and general impact to recovery options.
               </p>
             </CardHeader>
             <CardContent>
@@ -2537,7 +2537,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   Natural Language Processing
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Configure basic NLP settings for input interpretation.
+                  Configure natural language recognition and interpretation settings.
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -2600,6 +2600,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 {/* Knowledge Impacts - Integrated */}
                 <div className="border-t pt-4">
                   <h4 className="text-sm font-medium text-flydubai-navy mb-3">Knowledge Impacts</h4>
+                  <p className="text-xs text-muted-foreground mb-3">
+                    Adjust how knowledge repository contributes to recovery recommendations.
+                  </p>
                   <div className="space-y-3">
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
@@ -2641,7 +2644,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   Repository Status
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Current knowledge base statistics and training status.
+                  Overview of knowledge repository status and processing statistics.
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -2689,7 +2692,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     Document Repository
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Manage operational knowledge and procedural documents for contextual decision-making.
+                    Manage operational knowledge and procedural documentation for recovery layoffs.
                   </p>
                 </div>
                 <Button className="btn-flydubai-primary">
@@ -2787,7 +2790,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     Manual Knowledge Entries
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Manage manually added knowledge entries that enhance recovery recommendations.
+                    Administer natural knowledge entries that have specifically organized and delivery problems.
                   </p>
                 </div>
                 <Button className="btn-flydubai-primary">
@@ -2806,11 +2809,11 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">VIP Passenger Handling Protocols</p>
-                          <Badge className="bg-purple-100 text-purple-800 text-xs">Manual</Badge>
+                          <p className="font-medium text-sm">VIP Passenger Handling Disruptions</p>
+                          <Badge className="bg-purple-100 text-purple-800 text-xs">Passage Source</Badge>
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">Passenger Service • Special handling procedures for VIP passengers</p>
-                        <p className="text-xs text-gray-500">Created: ops.manager@flydubai.com • 2 days ago</p>
+                        <p className="text-xs text-gray-600 mt-1">Passenger Service • Special handling procedures and enhanced controls</p>
+                        <p className="text-xs text-gray-500">Created: 2 days ago • By: ops.manager@flydubai.com</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -2830,11 +2833,35 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">Medical Emergency Response</p>
-                          <Badge className="bg-green-100 text-green-800 text-xs">Manual</Badge>
+                          <p className="font-medium text-sm">Emergency Response Procedures.docx</p>
+                          <Badge className="bg-green-100 text-green-800 text-xs">Passage Source</Badge>
                         </div>
-                        <p className="text-xs text-gray-600 mt-1">Emergency • Immediate response protocols for medical emergencies</p>
-                        <p className="text-xs text-gray-500">Created: medical.team@flydubai.com • 5 days ago</p>
+                        <p className="text-xs text-gray-600 mt-1">Emergency • Emergency response procedures and escalation protocols</p>
+                        <p className="text-xs text-gray-500">Created: 3 hours ago • By: emergency.team@flydubai.com</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-red-600">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 rounded">
+                        <FileText className="h-4 w-4 text-blue-600" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm">Aircraft Usage Decision Guidelines.pdf</p>
+                          <Badge className="bg-blue-100 text-blue-800 text-xs">Passage Source</Badge>
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Operations • Decision guidelines and maintenance strategies</p>
+                        <p className="text-xs text-gray-500">Created: 1 week ago • By: operations.team@flydubai.com</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -2851,7 +2878,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
             </CardContent>
           </Card>
 
-          {/* Manual Knowledge Entry Form - Updated Labels */}
+          {/* Manual Knowledge Entry Form */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-flydubai-navy">
@@ -2859,7 +2886,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 Add Manual Knowledge Entry
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Add custom operational knowledge that enhances recovery recommendations and decisions.
+                Add new manual knowledge entry to enhance recovery recommendations and decisions.
               </p>
             </CardHeader>
             <CardContent>
@@ -2908,7 +2935,10 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   />
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-3">
+                  <Button variant="outline">
+                    Cancel
+                  </Button>
                   <Button className="btn-flydubai-primary">
                     <Save className="h-4 w-4 mr-2" />
                     Save Entry
@@ -2918,7 +2948,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
             </CardContent>
           </Card>
 
-          {/* Test Natural Language Input - Updated Labels */}
+          {/* Test Natural Language Input */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-flydubai-navy">
@@ -2926,34 +2956,33 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 Test Natural Language Input
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Test how natural language inputs are processed using the current knowledge base and settings.
+                Testing natural language inputs for a pre-trained using the online knowledge standards.
               </p>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="test-input">Sample Natural Language Inputs</Label>
+                  <Label className="text-sm font-medium">Sample Natural Language Inputs</Label>
                   <p className="text-xs text-muted-foreground mb-2">
                     Examples of supported input formats.
                   </p>
-                  <Textarea
-                    id="test-input"
-                    placeholder="Examples of suggested inputs:
-• Prioritize passengers with connecting flights to minimize missed connections
-• Focus on cost-effective solutions that keep families together
-• Apply emergency protocols for medical passengers requiring immediate assistance"
-                    rows={4}
-                    className="text-sm"
-                  />
+                  <div className="bg-gray-50 p-3 rounded text-sm">
+                    <ul className="space-y-1 text-gray-700">
+                      <li>• Prioritize passengers who need special connectivity with delayed flights</li>
+                      <li>• Focus on cost-effective recovery options while keeping crew together</li>
+                      <li>• Apply emergency protocols for medical passengers requiring special assistance</li>
+                      <li>• Prioritize VIP passengers and send flight cancellation notice more than 30 minutes before departure</li>
+                    </ul>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Best Input</Label>
                   <p className="text-xs text-muted-foreground mb-2">
-                    Enter a natural language query for AI processing with current knowledge base.
+                    Enter a natural language query for AI processing with current knowledge standards.
                   </p>
                   <Textarea
-                    placeholder="e.g., 'Due to severe weather, prioritize VIP passengers and families with infants for immediate rebooking on the next available flydubai flight to minimize disruption and provide hotel accommodation if delays exceed 4 hours'"
+                    placeholder="e.g., 'Due to Emitab, ME Emergency, Departing passengers with infants for immediate rebooking on the next qualified flydubai flight to minimize disruption and provide hotel accommodation if delays exceed 4 hours'"
                     rows={3}
                     className="text-sm"
                   />
