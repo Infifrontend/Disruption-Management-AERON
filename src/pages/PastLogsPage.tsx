@@ -1,6 +1,13 @@
+
 import React from 'react'
-import { PastRecoveryLogs } from "../components/PastRecoveryLogs"
+import { PastRecoveryLogs } from '../components/PastRecoveryLogs'
 
 export function PastLogsPage() {
-  return <PastRecoveryLogs />
+  return (
+    <div className="w-full">
+      <PastRecoveryLogs />
+    </div>
+  )
 }
+
+export default PastLogsPage
