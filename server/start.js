@@ -16,32 +16,27 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 
-// PostgreSQL connection with fallback
+// PostgreSQL connection with fallback and proper Neon handling
 let connectionString = process.env.DATABASE_URL || 'postgresql://0.0.0.0:5432/aeron_settings'
 
-// Clean up connection string and handle different formats
-if (connectionString) {
-  // Remove any malformed parameters
-  connectionString = connectionString.split('?')[0]
-
-  // Add proper SSL and connection parameters
-  const url = new URL(connectionString)
-  const params = new URLSearchParams()
-
-  // Add SSL for production environments
-  if (process.env.NODE_ENV === 'production' || connectionString.includes('neon.tech')) {
-    params.set('sslmode', 'require')
-  }
-
-  // Add endpoint parameter for Neon compatibility
-  if (connectionString.includes('neon.tech')) {
+// Handle Neon database connection with proper endpoint parameter
+if (connectionString && connectionString.includes('neon.tech')) {
+  try {
+    const url = new URL(connectionString)
     const endpointId = url.hostname.split('.')[0]
-    params.set('options', `endpoint=${endpointId}`)
-  }
 
-  // Reconstruct URL with proper parameters
-  if (params.toString()) {
-    connectionString += '?' + params.toString()
+    // Add endpoint parameter for Neon compatibility
+    const params = new URLSearchParams(url.search)
+    params.set('options', `endpoint=${endpointId}`)
+    params.set('sslmode', 'require')
+
+    // Reconstruct URL with proper parameters
+    url.search = params.toString()
+    connectionString = url.toString()
+
+    console.log('🔧 Configured connection for Neon database with endpoint:', endpointId)
+  } catch (error) {
+    console.error('⚠️ Error configuring Neon connection:', error.message)
   }
 }
 
