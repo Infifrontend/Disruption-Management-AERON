@@ -658,6 +658,78 @@ app.post('/api/populate-sample-data', async (req, res) => {
   }
 })
 
+// Screen configurations endpoints
+app.get('/api/screen-configurations', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM screen_configurations ORDER BY display_order, screen_id')
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Failed to fetch screen configurations:', error)
+    res.status(500).json({ error: 'Failed to fetch screen configurations' })
+  }
+})
+
+app.put('/api/screen-configurations/:screenId', async (req, res) => {
+  const { screenId } = req.params
+  const { enabled, updated_by = 'system' } = req.body
+
+  try {
+    const result = await pool.query(
+      'UPDATE screen_configurations SET enabled = $1, updated_by = $2, updated_at = CURRENT_TIMESTAMP WHERE screen_id = $3 RETURNING *',
+      [enabled, updated_by, screenId]
+    )
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Screen configuration not found' })
+    }
+
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Failed to update screen configuration:', error)
+    res.status(500).json({ error: 'Failed to update screen configuration' })
+  }
+})
+
+app.post('/api/screen-configurations', async (req, res) => {
+  const {
+    screen_id,
+    name,
+    icon,
+    category,
+    enabled = true,
+    required = false,
+    display_order = 0,
+    description,
+    updated_by = 'system'
+  } = req.body
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO screen_configurations 
+       (screen_id, name, icon, category, enabled, required, display_order, description, updated_by) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+       ON CONFLICT (screen_id) 
+       DO UPDATE SET 
+         name = EXCLUDED.name,
+         icon = EXCLUDED.icon,
+         category = EXCLUDED.category,
+         enabled = EXCLUDED.enabled,
+         required = EXCLUDED.required,
+         display_order = EXCLUDED.display_order,
+         description = EXCLUDED.description,
+         updated_by = EXCLUDED.updated_by,
+         updated_at = CURRENT_TIMESTAMP
+       RETURNING *`,
+      [screen_id, name, icon, category, enabled, required, display_order, description, updated_by]
+    )
+
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Failed to save screen configuration:', error)
+    res.status(500).json({ error: 'Failed to save screen configuration' })
+  }
+})
+
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Unhandled error:', error)

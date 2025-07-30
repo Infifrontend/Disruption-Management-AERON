@@ -375,7 +375,7 @@ class SettingsStorage {
   // Screen Configuration Methods
   async getAllScreenConfigurations(): Promise<ScreenSettings[]> {
     const SCREEN_STORAGE_KEY = 'aeron_screen_configurations'
-    
+
     // Try database first if connected
     if (this.isDatabaseConnected) {
       try {
@@ -414,7 +414,7 @@ class SettingsStorage {
 
   async updateScreenConfiguration(screenId: string, enabled: boolean, userId: string = 'system'): Promise<boolean> {
     const SCREEN_STORAGE_KEY = 'aeron_screen_configurations'
-    
+
     try {
       // Try database first if connected
       if (this.isDatabaseConnected) {
