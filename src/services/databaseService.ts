@@ -114,10 +114,16 @@ class DatabaseService {
   private baseUrl: string
 
   constructor() {
-    // Use API base URL for database operations - use 0.0.0.0 for Replit compatibility
-    this.baseUrl = window.location.hostname === 'localhost' 
-      ? 'http://localhost:3001/api' 
-      : `http://${window.location.hostname}:3001/api`
+    // Use API base URL for database operations - use HTTPS in production to avoid Mixed Content errors
+    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:'
+    const hostname = window.location.hostname
+    
+    if (hostname === 'localhost') {
+      this.baseUrl = 'http://localhost:3001/api'
+    } else {
+      // For Replit production, use same protocol as the frontend
+      this.baseUrl = `${protocol}//${hostname}:3001/api`
+    }
   }
 
   // Settings operations
@@ -708,6 +714,31 @@ class DatabaseService {
       return true
     } catch (error) {
       console.error('Failed to initialize database:', error)
+      return false
+    }
+  }
+
+  // Populate sample data
+  async populateSampleData(): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/populate-sample-data`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Sample data population failed:', errorText)
+        return false
+      }
+      
+      const result = await response.json()
+      console.log('Sample data population result:', result)
+      return true
+    } catch (error) {
+      console.error('Failed to populate sample data:', error)
       return false
     }
   }
