@@ -204,6 +204,17 @@ INSERT INTO settings (category, key, value, type, description, updated_by) VALUE
 
 ON CONFLICT (category, key) DO NOTHING;
 
+-- Drop existing constraint if it exists
+DO $$
+BEGIN
+    -- Drop the problematic status check constraint
+    IF EXISTS (SELECT 1 FROM information_schema.table_constraints 
+               WHERE constraint_name = 'flight_disruptions_status_check' 
+               AND table_name = 'flight_disruptions') THEN
+        ALTER TABLE flight_disruptions DROP CONSTRAINT flight_disruptions_status_check;
+    END IF;
+END $$;
+
 -- Flight Disruptions table
 CREATE TABLE IF NOT EXISTS flight_disruptions (
     id SERIAL PRIMARY KEY,
@@ -221,7 +232,7 @@ CREATE TABLE IF NOT EXISTS flight_disruptions (
     crew INTEGER NOT NULL,
     severity VARCHAR(20) NOT NULL CHECK (severity IN ('Low', 'Medium', 'High', 'Critical')),
     disruption_type VARCHAR(50) NOT NULL,
-    status VARCHAR(20) NOT NULL CHECK (status IN ('Active', 'Resolved', 'Cancelled', 'Delayed', 'Diverted', 'On Hold', 'Pending', 'In Progress', 'Completed')),
+    status VARCHAR(20) NOT NULL,
     disruption_reason TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
