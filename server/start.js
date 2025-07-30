@@ -23,22 +23,22 @@ let connectionString = process.env.DATABASE_URL || 'postgresql://0.0.0.0:5432/ae
 if (connectionString) {
   // Remove any malformed parameters
   connectionString = connectionString.split('?')[0]
-  
+
   // Add proper SSL and connection parameters
   const url = new URL(connectionString)
   const params = new URLSearchParams()
-  
+
   // Add SSL for production environments
   if (process.env.NODE_ENV === 'production' || connectionString.includes('neon.tech')) {
     params.set('sslmode', 'require')
   }
-  
+
   // Add endpoint parameter for Neon compatibility
   if (connectionString.includes('neon.tech')) {
     const endpointId = url.hostname.split('.')[0]
     params.set('options', `endpoint=${endpointId}`)
   }
-  
+
   // Reconstruct URL with proper parameters
   if (params.toString()) {
     connectionString += '?' + params.toString()
@@ -570,6 +570,22 @@ app.post('/api/populate-sample-data', async (req, res) => {
     if (existingData.rows[0].count > 0) {
       return res.json({ message: 'Sample data already exists', count: existingData.rows[0].count })
     }
+
+    // Clear and insert sample data - Delete in correct order due to foreign key constraints
+    await pool.query('DELETE FROM hotel_bookings')
+    await pool.query('DELETE FROM recovery_options')
+    await pool.query('DELETE FROM passengers')
+    await pool.query('DELETE FROM crew_members')
+    await pool.query('DELETE FROM aircraft')
+    await pool.query('DELETE FROM flight_disruptions')
+
+    // Reset sequence counters
+    await pool.query('ALTER SEQUENCE flight_disruptions_id_seq RESTART WITH 1')
+    await pool.query('ALTER SEQUENCE recovery_options_id_seq RESTART WITH 1')
+    await pool.query('ALTER SEQUENCE passengers_id_seq RESTART WITH 1')
+    await pool.query('ALTER SEQUENCE crew_members_id_seq RESTART WITH 1')
+    await pool.query('ALTER SEQUENCE aircraft_id_seq RESTART WITH 1')
+    await pool.query('ALTER SEQUENCE hotel_bookings_id_seq RESTART WITH 1')
 
     // Insert sample flight disruptions
     const sampleDisruptions = [

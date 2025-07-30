@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS flight_disruptions (
     crew INTEGER NOT NULL,
     severity VARCHAR(20) NOT NULL CHECK (severity IN ('Low', 'Medium', 'High', 'Critical')),
     disruption_type VARCHAR(50) NOT NULL,
-    status VARCHAR(20) NOT NULL CHECK (status IN ('Active', 'Resolved', 'Cancelled')),
+    status VARCHAR(20) NOT NULL CHECK (status IN ('Active', 'Resolved', 'Cancelled', 'Delayed', 'Diverted')),
     disruption_reason TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

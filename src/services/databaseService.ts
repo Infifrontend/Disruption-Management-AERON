@@ -430,8 +430,19 @@ class DatabaseService {
   async getAllDisruptions(): Promise<FlightDisruption[]> {
     try {
       const response = await fetch(`${this.baseUrl}/disruptions`)
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log('No disruptions found in database')
+          return []
+        }
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
       const data = await response.json()
+      
+      if (!Array.isArray(data)) {
+        console.error('Invalid response format - expected array')
+        return []
+      }
       
       // Transform database format to expected format
       return data.map((disruption: any) => ({
