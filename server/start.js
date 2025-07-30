@@ -70,11 +70,33 @@ pool.connect()
 app.get('/api/health', async (req, res) => {
   try {
     await pool.query('SELECT 1')
-    res.json({ status: 'healthy', timestamp: new Date().toISOString() })
+    res.json({ 
+      status: 'healthy', 
+      timestamp: new Date().toISOString(),
+      protocol: req.protocol,
+      host: req.get('host')
+    })
   } catch (error) {
     console.error('Database health check failed:', error)
     res.status(500).json({ status: 'unhealthy', error: error.message })
   }
+})
+
+// Debug endpoint to check connection details
+app.get('/api/debug', (req, res) => {
+  res.json({
+    protocol: req.protocol,
+    host: req.get('host'),
+    originalUrl: req.originalUrl,
+    headers: {
+      'x-forwarded-proto': req.get('x-forwarded-proto'),
+      'x-forwarded-host': req.get('x-forwarded-host')
+    },
+    env: {
+      REPL_SLUG: process.env.REPL_SLUG,
+      REPLIT_DEV_DOMAIN: process.env.REPLIT_DEV_DOMAIN
+    }
+  })
 })
 
 // Settings endpoints
@@ -538,6 +560,93 @@ app.post('/api/init-database', async (req, res) => {
   }
 })
 
+// Populate sample data endpoint
+app.post('/api/populate-sample-data', async (req, res) => {
+  try {
+    console.log('Populating sample flight disruption data...')
+
+    // Check if data already exists
+    const existingData = await pool.query('SELECT COUNT(*) as count FROM flight_disruptions')
+    if (existingData.rows[0].count > 0) {
+      return res.json({ message: 'Sample data already exists', count: existingData.rows[0].count })
+    }
+
+    // Insert sample flight disruptions
+    const sampleDisruptions = [
+      {
+        flight_number: 'FZ215',
+        route: 'DXB-BOM',
+        aircraft: 'B737-800',
+        scheduled_departure: '2025-01-10T15:30:00Z',
+        estimated_departure: '2025-01-10T17:30:00Z',
+        delay_minutes: 120,
+        passengers: 189,
+        crew: 6,
+        severity: 'High',
+        disruption_type: 'Weather',
+        status: 'Active',
+        disruption_reason: 'Sandstorm at DXB'
+      },
+      {
+        flight_number: 'FZ203',
+        route: 'DXB-DEL',
+        aircraft: 'B737 MAX 8',
+        scheduled_departure: '2025-01-10T16:45:00Z',
+        estimated_departure: null,
+        delay_minutes: null,
+        passengers: 195,
+        crew: 6,
+        severity: 'Critical',
+        disruption_type: 'Weather',
+        status: 'Cancelled',
+        disruption_reason: 'Dense fog at DEL'
+      },
+      {
+        flight_number: 'FZ235',
+        route: 'KHI-DXB',
+        aircraft: 'A320-200',
+        scheduled_departure: '2025-01-10T14:20:00Z',
+        estimated_departure: '2025-01-10T15:50:00Z',
+        delay_minutes: 90,
+        passengers: 156,
+        crew: 5,
+        severity: 'Medium',
+        disruption_type: 'Technical',
+        status: 'Active',
+        disruption_reason: 'Aircraft maintenance issue'
+      }
+    ]
+
+    for (const disruption of sampleDisruptions) {
+      await pool.query(`
+        INSERT INTO flight_disruptions 
+        (flight_number, route, aircraft, scheduled_departure, estimated_departure, 
+         delay_minutes, passengers, crew, severity, disruption_type, status, disruption_reason)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+      `, [
+        disruption.flight_number,
+        disruption.route,
+        disruption.aircraft,
+        disruption.scheduled_departure,
+        disruption.estimated_departure,
+        disruption.delay_minutes,
+        disruption.passengers,
+        disruption.crew,
+        disruption.severity,
+        disruption.disruption_type,
+        disruption.status,
+        disruption.disruption_reason
+      ])
+    }
+
+    console.log('✅ Sample flight disruption data populated successfully')
+    res.json({ message: 'Sample data populated successfully', count: sampleDisruptions.length })
+  } catch (error) {
+    console.error('❌ Failed to populate sample data:', error.message)
+    res.status(500).json({ error: `Failed to populate sample data: ${error.message}` })
+  }
+})
+
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error('Unhandled error:', error)
@@ -546,4 +655,5 @@ app.use((error, req, res, next) => {
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 AERON Settings Database API server running on http://0.0.0.0:${port}`)
+  console.log(`🌐 External access: https://${process.env.REPL_SLUG}.${process.env.REPLIT_DEV_DOMAIN}:${port}`)
 })
