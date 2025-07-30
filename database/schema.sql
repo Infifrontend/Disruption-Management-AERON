@@ -393,7 +393,7 @@ INSERT INTO flight_disruptions (flight_number, route, origin, destination, origi
 ('FZ203', 'DXB → DEL', 'DXB', 'DEL', 'Dubai', 'Delhi', 'B737 MAX 8', '2025-01-10 16:45:00+00', NULL, 0, 195, 6, 'Critical', 'Weather', 'Cancelled', 'Dense fog at DEL'),
 ('FZ215', 'DXB → BOM', 'DXB', 'BOM', 'Dubai', 'Mumbai', 'B737-800', '2025-01-10 15:30:00+00', '2025-01-10 17:30:00+00', 120, 189, 6, 'High', 'Weather', 'Delayed', 'Sandstorm at DXB'),
 ('FZ235', 'KHI → DXB', 'KHI', 'DXB', 'Karachi', 'Dubai', 'B737-800', '2025-01-10 08:30:00+00', '2025-01-10 11:30:00+00', 180, 181, 6, 'High', 'Airport', 'Diverted', 'DXB runway closure'),
-('FZ329', 'DXB → KHI', 'DXB', 'KHI', 'Dubai', 'Karachi', 'B737 MAX 8', '2025-01-10 09:15:00+00', '2025-01-10 13:15:00+00', 240, 168, 6, 'High', 'Rotation', 'Delayed', 'Aircraft late from previous sector'),
+('FZ329', 'DXB → KHI', 'DXB', 'KHI', 'Dubai', 'Karachi', 'B737 MAX 8', '2025-01-10 09:15:00+00', '2025-01-10 13:15:00+00', 240, 168, 6, 'High', 'Technical', 'Delayed', 'Aircraft late from previous sector'),
 ('FZ147', 'IST → DXB', 'IST', 'DXB', 'Istanbul', 'Dubai', 'B737 MAX 8', '2025-01-10 21:15:00+00', '2025-01-10 22:00:00+00', 45, 189, 6, 'Medium', 'Technical', 'Delayed', 'Engine maintenance check'),
 ('FZ181', 'DXB → COK', 'DXB', 'COK', 'Dubai', 'Kochi', 'B737-800', '2025-01-10 14:20:00+00', '2025-01-10 15:50:00+00', 90, 175, 6, 'Medium', 'Crew', 'Delayed', 'Crew duty time breach'),
 ('FZ567', 'BOM → DXB', 'BOM', 'DXB', 'Mumbai', 'Dubai', 'B737-800', '2025-01-10 11:15:00+00', '2025-01-10 13:45:00+00', 150, 162, 6, 'High', 'Technical', 'Delayed', 'APU malfunction'),
