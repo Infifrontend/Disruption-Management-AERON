@@ -146,7 +146,7 @@ export function PastRecoveryLogs() {
     return sum + (estimated - actual)
   }, 0)
   const avgSatisfaction = totalLogs > 0 
-    ? filteredLogs.reduce((sum, log) => sum + (log.passenger_satisfaction || 0), 0) / totalLogs 
+    ? filteredLogs.reduce((sum, log) => sum + (Number(log.passenger_satisfaction) || 0), 0) / totalLogs 
     : 0
 
   if (loading) {
@@ -349,7 +349,7 @@ export function PastRecoveryLogs() {
                 </div>
                 <div>
                   <span className="text-muted-foreground">Satisfaction</span>
-                  <p className="font-medium">{(log.passenger_satisfaction || 0).toFixed(1)}/10</p>
+                  <p className="font-medium">{(Number(log.passenger_satisfaction) || 0).toFixed(1)}/10</p>
                 </div>
               </div>
 
@@ -415,6 +415,10 @@ export function PastRecoveryLogs() {
                 <div>
                   <Label className="text-sm font-medium">Actual Cost</Label>
                   <p className="font-medium">{formatCurrency(selectedLog.actual_cost || 0)}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Passenger Satisfaction</Label>
+                  <p className="font-medium">{(Number(selectedLog.passenger_satisfaction) || 0).toFixed(1)}/10</p>
                 </div>
               </div>
               
