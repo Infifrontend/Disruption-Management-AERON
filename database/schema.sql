@@ -4,7 +4,7 @@
 -- Settings table for storing all configuration parameters
 CREATE TABLE IF NOT EXISTS settings (
     id SERIAL PRIMARY KEY,
-    category VARCHAR(100) NOT NULL,
+    category VARCHAR(100) NOT NUThe Screen Settings tab in the Settings menu is still not loading dynamically. Please check the relevant component, such as AppContext.tsx, and verify that the database schema is correctly executed to store and retrieve the data properlyLL,
     key VARCHAR(100) NOT NULL,
     value JSONB NOT NULL,
     type VARCHAR(20) NOT NULL CHECK (type IN ('boolean', 'number', 'string', 'object', 'array')),
