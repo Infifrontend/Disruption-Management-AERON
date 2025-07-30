@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { useAppContext } from '../context/AppContext'
+import { databaseService } from '../services/databaseService'
 import { 
   TrendingUp, Calendar, AlertTriangle, Plane, FileText, Users, Brain, Target, 
   Activity, Shield, ClockIcon, CheckSquare, Wrench, UserCheck, Hotel, Fuel, 
@@ -29,6 +30,12 @@ export function Layout({ children }: LayoutProps) {
   const [sidebarOpen] = useState(true)
   const [isOnline, setIsOnline] = useState(navigator.onLine)
   const [currentDateTime, setCurrentDateTime] = useState(new Date())
+  const [flightStats, setFlightStats] = useState({
+    totalAffected: 0,
+    highPriority: 0,
+    activeFlights: 0,
+    totalPassengers: 0
+  })
 
   const enabledScreens = screenSettings.filter(screen => screen.enabled)
 
@@ -53,6 +60,38 @@ export function Layout({ children }: LayoutProps) {
     }, 1000)
 
     return () => clearInterval(timer)
+  }, [])
+
+  // Fetch real-time flight statistics
+  useEffect(() => {
+    const fetchFlightStats = async () => {
+      try {
+        const disruptions = await databaseService.getAllDisruptions()
+        
+        const totalAffected = disruptions.length
+        const highPriority = disruptions.filter(d => 
+          d.severity === 'Critical' || d.severity === 'High'
+        ).length
+        const activeFlights = disruptions.filter(d => 
+          d.status === 'Active' || d.status === 'Delayed'
+        ).length
+        const totalPassengers = disruptions.reduce((sum, d) => sum + (d.passengers || 0), 0)
+        
+        setFlightStats({
+          totalAffected,
+          highPriority,
+          activeFlights,
+          totalPassengers
+        })
+      } catch (error) {
+        console.error('Failed to fetch flight statistics:', error)
+      }
+    }
+
+    fetchFlightStats()
+    // Refresh stats every 30 seconds
+    const interval = setInterval(fetchFlightStats, 30000)
+    return () => clearInterval(interval)
   }, [])
 
   // Format date and time
@@ -91,17 +130,17 @@ export function Layout({ children }: LayoutProps) {
       case '/dashboard':
         return { icon: BarChart3, title: '89.3% Solution Adoption', subtitle: 'AED 5.2M Cost Savings', color: 'flydubai-blue' }
       case '/flight-tracking':
-        return { icon: Calendar, title: '47 Aircraft Active', subtitle: '89 Flights Tracked', color: 'flydubai-blue' }
+        return { icon: Calendar, title: `${flightStats.activeFlights} Aircraft Active`, subtitle: `${flightStats.totalAffected} Flights Tracked`, color: 'flydubai-blue' }
       case '/disruption':
-        return { icon: AlertTriangle, title: '18 Flights Affected', subtitle: '3 High Priority', color: 'flydubai-orange' }
+        return { icon: AlertTriangle, title: `${flightStats.totalAffected} Flights Affected`, subtitle: `${flightStats.highPriority} High Priority`, color: 'flydubai-orange' }
       case '/recovery':
         return { icon: Plane, title: '4 Options Generated', subtitle: '1 Recommended', color: 'flydubai-blue' }
       case '/prediction-dashboard':
         return { icon: Brain, title: '32 Disruptions Predicted', subtitle: '94.1% Accuracy Rate', color: 'flydubai-navy' }
       case '/passengers':
-        return { icon: UserCheck, title: '3,247 Passengers Processed', subtitle: '96.8% Self-Service Rate', color: 'flydubai-blue' }
+        return { icon: UserCheck, title: `${flightStats.totalPassengers.toLocaleString()} Passengers Affected`, subtitle: `${flightStats.totalAffected} Flights`, color: 'flydubai-blue' }
       case '/pending':
-        return { icon: ClockIcon, title: '8 Solutions Pending', subtitle: '2 High Priority', color: 'flydubai-orange' }
+        return { icon: ClockIcon, title: '8 Solutions Pending', subtitle: `${flightStats.highPriority} High Priority`, color: 'flydubai-orange' }
       default:
         return null
     }
