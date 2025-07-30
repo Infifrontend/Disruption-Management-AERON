@@ -70,6 +70,7 @@ import {
 } from "lucide-react";
 
 export function FlightDisruptionList() {
+  
   const [selectedDisruption, setSelectedDisruption] = useState(null);
   const [disruptions, setDisruptions] = useState([]);
   const [loading, setLoading] = useState(true);
