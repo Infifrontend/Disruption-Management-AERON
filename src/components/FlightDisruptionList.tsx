@@ -735,10 +735,14 @@ export function FlightDisruptionList() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3 text-muted-foreground" />
-                      <span className="font-medium">{disruption.delay}m</span>
-                    </div>
+                    {disruption.delay > 0 ? (
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3 text-muted-foreground" />
+                        <span className="font-medium">{disruption.delay}m</span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">On time</span>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
