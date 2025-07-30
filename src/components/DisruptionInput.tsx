@@ -56,29 +56,49 @@ import { databaseService, FlightDisruption } from '../services/databaseService';
 
 // Transform database flight disruption to the expected format for this component
 const transformFlightData = (disruption: FlightDisruption) => {
+  // Parse route properly - handle both "DXB → DEL" and "DXB-DEL" formats
+  let origin = 'DXB';
+  let destination = 'Unknown';
+  
+  if (disruption.route) {
+    if (disruption.route.includes('→')) {
+      const parts = disruption.route.split('→').map(p => p.trim());
+      origin = parts[0] || disruption.origin || 'DXB';
+      destination = parts[1] || disruption.destination || 'Unknown';
+    } else if (disruption.route.includes('-')) {
+      const parts = disruption.route.split('-');
+      origin = parts[0] || disruption.origin || 'DXB';
+      destination = parts[1] || disruption.destination || 'Unknown';
+    } else {
+      origin = disruption.origin || 'DXB';
+      destination = disruption.destination || 'Unknown';
+    }
+  }
+
   return {
     id: disruption.id,
     flightNumber: disruption.flightNumber,
-    origin: disruption.route.split('-')[0] || 'DXB',
-    destination: disruption.route.split('-')[1] || 'Unknown',
-    originCity: getLocationName(disruption.route.split('-')[0] || 'DXB'),
-    destinationCity: getLocationName(disruption.route.split('-')[1] || 'Unknown'),
+    origin: origin,
+    destination: destination,
+    originCity: disruption.originCity || getLocationName(origin),
+    destinationCity: disruption.destinationCity || getLocationName(destination),
     scheduledDeparture: disruption.scheduledDeparture,
-    scheduledArrival: addHours(disruption.scheduledDeparture, 3), // Estimate arrival
+    scheduledArrival: disruption.estimatedDeparture || addHours(disruption.scheduledDeparture, 3),
     currentStatus: disruption.status === 'Active' ? 'Delayed' : 
-                   disruption.status === 'Cancelled' ? 'Cancelled' : 'Delayed',
+                   disruption.status === 'Cancelled' ? 'Cancelled' : 
+                   disruption.status === 'Diverted' ? 'Diverted' : 'Delayed',
     delay: disruption.delay || 0,
     aircraft: disruption.aircraft,
     gate: `T2-${Math.random().toString(36).substr(2, 3).toUpperCase()}`, // Mock gate
     passengers: disruption.passengers,
     crew: disruption.crew,
-    disruptionType: disruption.type.toLowerCase(),
-    categorization: getCategorization(disruption.type),
-    disruptionReason: disruption.disruptionReason,
-    severity: disruption.severity.toLowerCase(),
-    impact: `Flight affected due to ${disruption.disruptionReason}`,
-    lastUpdate: getTimeAgo(disruption.updatedAt),
-    priority: disruption.severity,
+    disruptionType: disruption.type ? disruption.type.toLowerCase() : 'technical',
+    categorization: getCategorization(disruption.type || 'Technical'),
+    disruptionReason: disruption.disruptionReason || 'Unknown disruption',
+    severity: disruption.severity ? disruption.severity.toLowerCase() : 'medium',
+    impact: `Flight affected due to ${disruption.disruptionReason || 'operational issues'}`,
+    lastUpdate: getTimeAgo(disruption.updatedAt || disruption.createdAt),
+    priority: disruption.severity || 'Medium',
     connectionFlights: Math.floor(Math.random() * 10) + 3, // Mock connections
     vipPassengers: Math.floor(Math.random() * 5) + 1, // Mock VIP passengers
   };
@@ -367,17 +387,21 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
   const handleAddDisruption = async () => {
     const newFlightData = {
       flightNumber: newDisruption.flightNumber,
-      route: `${newDisruption.origin}-${newDisruption.destination}`,
+      route: `${newDisruption.originCity || getLocationName(newDisruption.origin)} → ${newDisruption.destinationCity || getLocationName(newDisruption.destination)}`,
+      origin: newDisruption.origin,
+      destination: newDisruption.destination, 
+      origin_city: newDisruption.originCity || getLocationName(newDisruption.origin),
+      destination_city: newDisruption.destinationCity || getLocationName(newDisruption.destination),
       aircraft: newDisruption.aircraft,
-      scheduledDeparture: newDisruption.scheduledDeparture,
-      estimatedDeparture: newDisruption.scheduledDeparture,
-      delay: newDisruption.delay ? parseInt(newDisruption.delay) : 0,
+      scheduled_departure: newDisruption.scheduledDeparture,
+      estimated_departure: newDisruption.scheduledArrival || addHours(newDisruption.scheduledDeparture, 3),
+      delay_minutes: newDisruption.delay ? parseInt(newDisruption.delay) : 0,
       passengers: parseInt(newDisruption.passengers),
       crew: parseInt(newDisruption.crew),
       severity: newDisruption.priority,
-      type: newDisruption.disruptionType.charAt(0).toUpperCase() + newDisruption.disruptionType.slice(1),
+      disruption_type: newDisruption.disruptionType.charAt(0).toUpperCase() + newDisruption.disruptionType.slice(1),
       status: newDisruption.currentStatus === 'Delayed' ? 'Active' : newDisruption.currentStatus,
-      disruptionReason: newDisruption.disruptionReason,
+      disruption_reason: newDisruption.disruptionReason,
     };
 
     try {
