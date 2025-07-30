@@ -70,7 +70,6 @@ import {
 } from "lucide-react";
 
 export function FlightDisruptionList() {
-  console.log("test");
   const [selectedDisruption, setSelectedDisruption] = useState(null);
   const [disruptions, setDisruptions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -81,7 +80,7 @@ export function FlightDisruptionList() {
     airport: "all",
     search: "",
   });
-
+  console.log("testing");
   useEffect(() => {
     const fetchDisruptions = async () => {
       try {
