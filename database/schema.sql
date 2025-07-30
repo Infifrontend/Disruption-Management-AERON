@@ -92,12 +92,12 @@ CREATE INDEX IF NOT EXISTS idx_screen_configurations_order ON screen_configurati
 
 -- Function to automatically update the updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $update_timestamp$
+RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
-$update_timestamp$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- Triggers for automatic timestamp updates
 DROP TRIGGER IF EXISTS update_settings_updated_at ON settings;
@@ -114,7 +114,7 @@ CREATE TRIGGER update_screen_configurations_updated_at BEFORE UPDATE ON screen_c
 
 -- Function to create audit trail
 CREATE OR REPLACE FUNCTION create_settings_audit()
-RETURNS TRIGGER AS $audit_trigger$
+RETURNS TRIGGER AS $$
 BEGIN
     IF TG_OP = 'INSERT' THEN
         INSERT INTO settings_audit (setting_id, category, key, old_value, new_value, change_type, changed_by, reason)
@@ -131,7 +131,7 @@ BEGIN
     END IF;
     RETURN NULL;
 END;
-$audit_trigger$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- Trigger for audit trail
 DROP TRIGGER IF EXISTS settings_audit_trigger ON settings;
