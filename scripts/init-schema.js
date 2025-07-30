@@ -1,9 +1,11 @@
 
-#!/usr/bin/env node
+import { Pool } from 'pg'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
-const { Pool } = require('pg')
-const fs = require('fs')
-const path = require('path')
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 async function initializeSchema() {
   let connectionString = process.env.DATABASE_URL
