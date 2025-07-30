@@ -206,6 +206,10 @@ CREATE TABLE IF NOT EXISTS flight_disruptions (
     id SERIAL PRIMARY KEY,
     flight_number VARCHAR(10) NOT NULL,
     route VARCHAR(50) NOT NULL,
+    origin VARCHAR(3) NOT NULL,
+    destination VARCHAR(3) NOT NULL,
+    origin_city VARCHAR(100),
+    destination_city VARCHAR(100),
     aircraft VARCHAR(50) NOT NULL,
     scheduled_departure TIMESTAMP WITH TIME ZONE NOT NULL,
     estimated_departure TIMESTAMP WITH TIME ZONE,
@@ -356,13 +360,17 @@ INSERT INTO custom_rules (rule_id, name, description, category, type, priority, 
 ON CONFLICT (rule_id) DO NOTHING;
 
 -- Insert sample flight disruptions
-INSERT INTO flight_disruptions (flight_number, route, aircraft, scheduled_departure, estimated_departure, delay_minutes, passengers, crew, severity, disruption_type, status, disruption_reason) VALUES
-('FZ203', 'DXB → DEL', 'B737 MAX 8', '2025-01-10 16:45:00+00', NULL, 0, 195, 6, 'Critical', 'Weather', 'Cancelled', 'Dense fog at DEL'),
-('FZ215', 'DXB → BOM', 'B737-800', '2025-01-10 15:30:00+00', '2025-01-10 17:30:00+00', 120, 189, 6, 'High', 'Weather', 'Delayed', 'Sandstorm at DXB'),
-('FZ235', 'KHI → DXB', 'B737-800', '2025-01-10 08:30:00+00', '2025-01-10 11:30:00+00', 180, 181, 6, 'High', 'Airport', 'Diverted', 'DXB runway closure'),
-('FZ329', 'DXB → KHI', 'B737 MAX 8', '2025-01-10 09:15:00+00', '2025-01-10 13:15:00+00', 240, 168, 6, 'High', 'Rotation', 'Delayed', 'Aircraft late from previous sector'),
-('FZ147', 'IST → DXB', 'B737 MAX 8', '2025-01-10 21:15:00+00', '2025-01-10 22:00:00+00', 45, 189, 6, 'Medium', 'Technical', 'Delayed', 'Engine maintenance check'),
-('FZ181', 'DXB → COK', 'B737-800', '2025-01-10 14:20:00+00', '2025-01-10 15:50:00+00', 90, 175, 6, 'Medium', 'Crew', 'Delayed', 'Crew duty time breach')
+INSERT INTO flight_disruptions (flight_number, route, origin, destination, origin_city, destination_city, aircraft, scheduled_departure, estimated_departure, delay_minutes, passengers, crew, severity, disruption_type, status, disruption_reason) VALUES
+('FZ203', 'DXB → DEL', 'DXB', 'DEL', 'Dubai', 'Delhi', 'B737 MAX 8', '2025-01-10 16:45:00+00', NULL, 0, 195, 6, 'Critical', 'Weather', 'Cancelled', 'Dense fog at DEL'),
+('FZ215', 'DXB → BOM', 'DXB', 'BOM', 'Dubai', 'Mumbai', 'B737-800', '2025-01-10 15:30:00+00', '2025-01-10 17:30:00+00', 120, 189, 6, 'High', 'Weather', 'Delayed', 'Sandstorm at DXB'),
+('FZ235', 'KHI → DXB', 'KHI', 'DXB', 'Karachi', 'Dubai', 'B737-800', '2025-01-10 08:30:00+00', '2025-01-10 11:30:00+00', 180, 181, 6, 'High', 'Airport', 'Diverted', 'DXB runway closure'),
+('FZ329', 'DXB → KHI', 'DXB', 'KHI', 'Dubai', 'Karachi', 'B737 MAX 8', '2025-01-10 09:15:00+00', '2025-01-10 13:15:00+00', 240, 168, 6, 'High', 'Rotation', 'Delayed', 'Aircraft late from previous sector'),
+('FZ147', 'IST → DXB', 'IST', 'DXB', 'Istanbul', 'Dubai', 'B737 MAX 8', '2025-01-10 21:15:00+00', '2025-01-10 22:00:00+00', 45, 189, 6, 'Medium', 'Technical', 'Delayed', 'Engine maintenance check'),
+('FZ181', 'DXB → COK', 'DXB', 'COK', 'Dubai', 'Kochi', 'B737-800', '2025-01-10 14:20:00+00', '2025-01-10 15:50:00+00', 90, 175, 6, 'Medium', 'Crew', 'Delayed', 'Crew duty time breach'),
+('FZ567', 'BOM → DXB', 'BOM', 'DXB', 'Mumbai', 'Dubai', 'B737-800', '2025-01-10 11:15:00+00', '2025-01-10 13:45:00+00', 150, 162, 6, 'High', 'Technical', 'Delayed', 'APU malfunction'),
+('FZ891', 'DEL → DXB', 'DEL', 'DXB', 'Delhi', 'Dubai', 'B737 MAX 8', '2025-01-10 12:30:00+00', '2025-01-10 14:00:00+00', 90, 188, 6, 'Medium', 'Airport', 'Delayed', 'Air traffic congestion'),
+('FZ432', 'DXB → AMM', 'DXB', 'AMM', 'Dubai', 'Amman', 'B737-800', '2025-01-10 18:45:00+00', NULL, 0, 156, 6, 'Critical', 'Weather', 'Cancelled', 'Severe thunderstorms'),
+('FZ654', 'CAI → DXB', 'CAI', 'DXB', 'Cairo', 'Dubai', 'B737 MAX 8', '2025-01-10 20:30:00+00', '2025-01-10 21:15:00+00', 45, 172, 6, 'Low', 'Technical', 'Delayed', 'Minor system check')
 ON CONFLICT DO NOTHING;
 
 -- Insert sample passengers

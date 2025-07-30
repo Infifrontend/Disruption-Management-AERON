@@ -35,6 +35,10 @@ export interface FlightDisruption {
   id: string
   flightNumber: string
   route: string
+  origin: string
+  destination: string
+  originCity: string
+  destinationCity: string
   aircraft: string
   scheduledDeparture: string
   estimatedDeparture: string
@@ -448,6 +452,10 @@ class DatabaseService {
         id: disruption.id?.toString() || disruption.flight_number,
         flightNumber: disruption.flight_number,
         route: disruption.route,
+        origin: disruption.origin,
+        destination: disruption.destination,
+        originCity: disruption.origin_city,
+        destinationCity: disruption.destination_city,
         aircraft: disruption.aircraft,
         scheduledDeparture: disruption.scheduled_departure,
         estimatedDeparture: disruption.estimated_departure,

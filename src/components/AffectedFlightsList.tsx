@@ -36,6 +36,8 @@ export function AffectedFlightsList() {
     status: 'all',
     severity: 'all',
     type: 'all',
+    origin: 'all',
+    destination: 'all',
     search: ''
   })
 
@@ -84,8 +86,12 @@ export function AffectedFlightsList() {
     if (filters.status !== 'all' && flight.status !== filters.status) return false
     if (filters.severity !== 'all' && flight.severity !== filters.severity) return false
     if (filters.type !== 'all' && flight.type !== filters.type) return false
+    if (filters.origin !== 'all' && flight.origin !== filters.origin) return false
+    if (filters.destination !== 'all' && flight.destination !== filters.destination) return false
     if (filters.search && !flight.flightNumber.toLowerCase().includes(filters.search.toLowerCase()) && 
-        !flight.route.toLowerCase().includes(filters.search.toLowerCase())) return false
+        !flight.route.toLowerCase().includes(filters.search.toLowerCase()) &&
+        !flight.originCity.toLowerCase().includes(filters.search.toLowerCase()) &&
+        !flight.destinationCity.toLowerCase().includes(filters.search.toLowerCase())) return false
     return true
   })
 
@@ -193,19 +199,47 @@ export function AffectedFlightsList() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-7 gap-4">
             <div>
               <Label htmlFor="search">Search</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="search"
-                  placeholder="Flight number or route"
+                  placeholder="Flight number or city"
                   className="pl-10"
                   value={filters.search}
                   onChange={(e) => setFilters({...filters, search: e.target.value})}
                 />
               </div>
+            </div>
+            <div>
+              <Label htmlFor="origin">Origin</Label>
+              <Select value={filters.origin} onValueChange={(value) => setFilters({...filters, origin: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All origins" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Origins</SelectItem>
+                  {[...new Set(flights.map(f => f.origin))].sort().map(origin => (
+                    <SelectItem key={origin} value={origin}>{origin}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="destination">Destination</Label>
+              <Select value={filters.destination} onValueChange={(value) => setFilters({...filters, destination: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All destinations" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Destinations</SelectItem>
+                  {[...new Set(flights.map(f => f.destination))].sort().map(dest => (
+                    <SelectItem key={dest} value={dest}>{dest}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
               <Label htmlFor="status">Status</Label>
@@ -218,6 +252,8 @@ export function AffectedFlightsList() {
                   <SelectItem value="Active">Active</SelectItem>
                   <SelectItem value="Resolved">Resolved</SelectItem>
                   <SelectItem value="Cancelled">Cancelled</SelectItem>
+                  <SelectItem value="Delayed">Delayed</SelectItem>
+                  <SelectItem value="Diverted">Diverted</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -247,14 +283,15 @@ export function AffectedFlightsList() {
                   <SelectItem value="Technical">Technical</SelectItem>
                   <SelectItem value="Weather">Weather</SelectItem>
                   <SelectItem value="Crew">Crew</SelectItem>
-                  <SelectItem value="ATC">ATC</SelectItem>
+                  <SelectItem value="Airport">Airport</SelectItem>
+                  <SelectItem value="Rotation">Rotation</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="flex items-end">
               <Button 
                 variant="outline" 
-                onClick={() => setFilters({status: 'all', severity: 'all', type: 'all', search: ''})}
+                onClick={() => setFilters({status: 'all', severity: 'all', type: 'all', origin: 'all', destination: 'all', search: ''})}
                 className="w-full"
               >
                 Clear Filters
@@ -324,8 +361,28 @@ export function AffectedFlightsList() {
           <CardTitle>Affected Flights ({filteredFlights.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {filteredFlights.map((flight) => (
+          {/* Group flights by route direction */}
+          {(() => {
+            const groupedFlights = filteredFlights.reduce((groups, flight) => {
+              const routeKey = `${flight.originCity} → ${flight.destinationCity}`
+              if (!groups[routeKey]) {
+                groups[routeKey] = []
+              }
+              groups[routeKey].push(flight)
+              return groups
+            }, {} as Record<string, typeof filteredFlights>)
+
+            return Object.entries(groupedFlights).map(([route, routeFlights]) => (
+              <div key={route} className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <MapPin className="h-4 w-4 text-flydubai-blue" />
+                  <h3 className="font-semibold text-lg text-flydubai-blue">{route}</h3>
+                  <Badge variant="outline" className="ml-auto">
+                    {routeFlights.length} flight{routeFlights.length !== 1 ? 's' : ''}
+                  </Badge>
+                </div>
+                <div className="space-y-3 pl-6 border-l-2 border-gray-100">
+                  {routeFlights.map((flight) => (
               <Card 
                 key={flight.id} 
                 className="cursor-pointer hover:shadow-md transition-shadow"
@@ -336,7 +393,7 @@ export function AffectedFlightsList() {
                     <div className="flex items-center space-x-4">
                       <div className="flex flex-col">
                         <span className="font-mono font-bold text-lg">{flight.flightNumber}</span>
-                        <span className="text-sm text-muted-foreground">{flight.route}</span>
+                        <span className="text-sm text-muted-foreground">{flight.originCity} ({flight.origin}) → {flight.destinationCity} ({flight.destination})</span>
                       </div>
                       <div className="flex flex-col">
                         <span className="text-sm font-medium">{flight.aircraft}</span>
@@ -368,11 +425,12 @@ export function AffectedFlightsList() {
                     <p className="text-sm text-muted-foreground mt-2">
                       {flight.disruptionReason}
                     </p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-            {filteredFlights.length === 0 && (
+                  )))}
+                </div>
+              </div>
+            ))
+          })()}
+          {filteredFlights.length === 0 && (
               <div className="text-center py-12">
                 <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                   <Plane className="h-8 w-8 text-gray-400" />
@@ -433,6 +491,14 @@ export function AffectedFlightsList() {
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Route:</span>
                         <span>{selectedFlight.route}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Origin:</span>
+                        <span>{selectedFlight.originCity} ({selectedFlight.origin})</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Destination:</span>
+                        <span>{selectedFlight.destinationCity} ({selectedFlight.destination})</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Aircraft:</span>

@@ -305,19 +305,22 @@ app.get('/api/disruptions/:id', async (req, res) => {
 app.post('/api/disruptions', async (req, res) => {
   try {
     const {
-      flight_number, route, aircraft, scheduled_departure, estimated_departure,
-      delay_minutes, passengers, crew, severity, disruption_type, status, disruption_reason
+      flight_number, route, origin, destination, origin_city, destination_city,
+      aircraft, scheduled_departure, estimated_departure, delay_minutes, 
+      passengers, crew, severity, disruption_type, status, disruption_reason
     } = req.body
     
     const result = await pool.query(`
       INSERT INTO flight_disruptions (
-        flight_number, route, aircraft, scheduled_departure, estimated_departure,
-        delay_minutes, passengers, crew, severity, disruption_type, status, disruption_reason
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        flight_number, route, origin, destination, origin_city, destination_city,
+        aircraft, scheduled_departure, estimated_departure, delay_minutes, 
+        passengers, crew, severity, disruption_type, status, disruption_reason
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
       RETURNING *
     `, [
-      flight_number, route, aircraft, scheduled_departure, estimated_departure,
-      delay_minutes, passengers, crew, severity, disruption_type, status, disruption_reason
+      flight_number, route, origin, destination, origin_city, destination_city,
+      aircraft, scheduled_departure, estimated_departure, delay_minutes,
+      passengers, crew, severity, disruption_type, status, disruption_reason
     ])
     
     res.json(result.rows[0])
