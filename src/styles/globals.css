@@ -160,7 +160,7 @@
 
 /* Custom scrollbar for better UX with hover visibility */
 ::-webkit-scrollbar {
-  width: 12px;
+  width: 8px;
   height: 12px;
   transition: all 0.3s ease;
 }
@@ -187,7 +187,7 @@
 
 /* Enhanced scrollbar visibility on hover */
 *:hover::-webkit-scrollbar {
-  width: 14px;
+  width: 8px;
   height: 14px;
 }
 
