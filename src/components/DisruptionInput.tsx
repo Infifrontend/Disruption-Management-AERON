@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -51,164 +52,90 @@ import {
   Save,
   X,
 } from "lucide-react";
+import { databaseService, FlightDisruption } from '../services/databaseService';
 
-// Mock flight data affected by disruptions
-const affectedFlights = [
-  {
-    id: "FL_001",
-    flightNumber: "FZ215",
-    origin: "DXB",
-    destination: "BOM",
-    originCity: "Dubai",
-    destinationCity: "Mumbai",
-    scheduledDeparture: "2025-01-10T15:30:00",
-    scheduledArrival: "2025-01-10T20:15:00",
-    currentStatus: "Delayed",
-    delay: 120,
-    aircraft: "B737-800",
-    gate: "T2-B12",
-    passengers: 189,
-    crew: 6,
-    disruptionType: "weather",
-    categorization: "ATC/weather delay",
-    disruptionReason: "Sandstorm at DXB",
-    severity: "high",
-    impact: "Departure delayed due to sandstorm at DXB",
-    lastUpdate: "2 mins ago",
-    priority: "High",
-    connectionFlights: 8,
-    vipPassengers: 4,
-  },
-  {
-    id: "FL_002",
-    flightNumber: "FZ203",
-    origin: "DXB",
-    destination: "DEL",
-    originCity: "Dubai",
-    destinationCity: "Delhi",
-    scheduledDeparture: "2025-01-10T16:45:00",
-    scheduledArrival: "2025-01-10T21:20:00",
-    currentStatus: "Cancelled",
-    delay: null,
-    aircraft: "B737 MAX 8",
-    gate: "T2-A08",
-    passengers: 195,
-    crew: 6,
-    disruptionType: "weather",
-    categorization: "ATC/weather delay",
-    disruptionReason: "Dense fog at DEL",
-    severity: "high",
-    impact: "Flight cancelled due to severe fog at DEL",
-    lastUpdate: "5 mins ago",
-    priority: "Critical",
-    connectionFlights: 5,
-    vipPassengers: 3,
-  },
-  {
-    id: "FL_003",
-    flightNumber: "FZ235",
-    origin: "KHI",
-    destination: "DXB",
-    originCity: "Karachi",
-    destinationCity: "Dubai",
-    scheduledDeparture: "2025-01-10T08:30:00",
-    scheduledArrival: "2025-01-10T11:45:00",
-    currentStatus: "Diverted",
-    delay: 180,
-    aircraft: "B737-800",
-    gate: "T2-C15",
-    passengers: 181,
-    crew: 6,
-    disruptionType: "airport",
-    categorization: "Airport curfew/ramp congestion",
-    disruptionReason: "DXB runway closure",
-    severity: "medium",
-    impact: "Diverted to AUH due to DXB closure",
-    lastUpdate: "8 mins ago",
-    priority: "High",
-    connectionFlights: 7,
-    vipPassengers: 2,
-  },
-  {
-    id: "FL_004",
-    flightNumber: "FZ147",
-    origin: "IST",
-    destination: "DXB",
-    originCity: "Istanbul",
-    destinationCity: "Dubai",
-    scheduledDeparture: "2025-01-10T21:15:00",
-    scheduledArrival: "2025-01-11T03:30:00",
-    currentStatus: "Delayed",
-    delay: 45,
-    aircraft: "B737 MAX 8",
-    gate: "T2-A15",
-    passengers: 189,
-    crew: 6,
-    disruptionType: "technical",
-    categorization: "Aircraft issue (e.g., AOG)",
-    disruptionReason: "Engine maintenance check",
-    severity: "medium",
-    impact: "Aircraft maintenance check delay",
-    lastUpdate: "12 mins ago",
-    priority: "Medium",
-    connectionFlights: 4,
-    vipPassengers: 2,
-  },
-  {
-    id: "FL_005",
-    flightNumber: "FZ181",
-    origin: "DXB",
-    destination: "COK",
-    originCity: "Dubai",
-    destinationCity: "Kochi",
-    scheduledDeparture: "2025-01-10T14:20:00",
-    scheduledArrival: "2025-01-10T19:45:00",
-    currentStatus: "Delayed",
-    delay: 90,
-    aircraft: "B737-800",
-    gate: "T2-B12",
-    passengers: 175,
-    crew: 6,
-    disruptionType: "crew",
-    categorization: "Crew issue (e.g., sick report, duty time breach)",
-    disruptionReason: "Crew duty time breach",
-    severity: "medium",
-    impact: "Crew duty time limitation",
-    lastUpdate: "15 mins ago",
-    priority: "Medium",
-    connectionFlights: 3,
-    vipPassengers: 1,
-  },
-  {
-    id: "FL_006",
-    flightNumber: "FZ329",
-    origin: "DXB",
-    destination: "KHI",
-    originCity: "Dubai",
-    destinationCity: "Karachi",
-    scheduledDeparture: "2025-01-10T09:15:00",
-    scheduledArrival: "2025-01-10T11:30:00",
-    currentStatus: "Delayed",
-    delay: 240,
-    aircraft: "B737 MAX 8",
-    gate: "T2-A22",
-    passengers: 168,
-    crew: 6,
-    disruptionType: "rotation",
-    categorization: "Rotation misalignment or maintenance hold",
-    disruptionReason: "Aircraft late from previous sector",
-    severity: "high",
-    impact: "Aircraft rotation schedule disrupted",
-    lastUpdate: "3 mins ago",
-    priority: "High",
-    connectionFlights: 6,
-    vipPassengers: 3,
-  },
-];
+// Transform database flight disruption to the expected format for this component
+const transformFlightData = (disruption: FlightDisruption) => {
+  return {
+    id: disruption.id,
+    flightNumber: disruption.flightNumber,
+    origin: disruption.route.split('-')[0] || 'DXB',
+    destination: disruption.route.split('-')[1] || 'Unknown',
+    originCity: getLocationName(disruption.route.split('-')[0] || 'DXB'),
+    destinationCity: getLocationName(disruption.route.split('-')[1] || 'Unknown'),
+    scheduledDeparture: disruption.scheduledDeparture,
+    scheduledArrival: addHours(disruption.scheduledDeparture, 3), // Estimate arrival
+    currentStatus: disruption.status === 'Active' ? 'Delayed' : 
+                   disruption.status === 'Cancelled' ? 'Cancelled' : 'Delayed',
+    delay: disruption.delay || 0,
+    aircraft: disruption.aircraft,
+    gate: `T2-${Math.random().toString(36).substr(2, 3).toUpperCase()}`, // Mock gate
+    passengers: disruption.passengers,
+    crew: disruption.crew,
+    disruptionType: disruption.type.toLowerCase(),
+    categorization: getCategorization(disruption.type),
+    disruptionReason: disruption.disruptionReason,
+    severity: disruption.severity.toLowerCase(),
+    impact: `Flight affected due to ${disruption.disruptionReason}`,
+    lastUpdate: getTimeAgo(disruption.updatedAt),
+    priority: disruption.severity,
+    connectionFlights: Math.floor(Math.random() * 10) + 3, // Mock connections
+    vipPassengers: Math.floor(Math.random() * 5) + 1, // Mock VIP passengers
+  };
+};
+
+// Helper functions
+const getLocationName = (code: string) => {
+  const locations: { [key: string]: string } = {
+    'DXB': 'Dubai',
+    'BOM': 'Mumbai',
+    'DEL': 'Delhi',
+    'KHI': 'Karachi',
+    'COK': 'Kochi',
+    'IST': 'Istanbul',
+    'AUH': 'Abu Dhabi',
+    'CMB': 'Colombo',
+    'BCN': 'Barcelona',
+    'PRG': 'Prague'
+  };
+  return locations[code] || code;
+};
+
+const getCategorization = (type: string) => {
+  const categorizations: { [key: string]: string } = {
+    'Technical': 'Aircraft issue (e.g., AOG)',
+    'Weather': 'ATC/weather delay',
+    'Crew': 'Crew issue (e.g., sick report, duty time breach)',
+    'ATC': 'ATC/weather delay'
+  };
+  return categorizations[type] || 'Aircraft issue (e.g., AOG)';
+};
+
+const addHours = (dateString: string, hours: number) => {
+  const date = new Date(dateString);
+  date.setHours(date.getHours() + hours);
+  return date.toISOString();
+};
+
+const getTimeAgo = (dateString: string) => {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} mins ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours} hours ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} days ago`;
+};
 
 export function DisruptionInput({ disruption, onSelectFlight }) {
   const [selectedFlight, setSelectedFlight] = useState(null);
-  const [flights, setFlights] = useState(affectedFlights);
+  const [flights, setFlights] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [filters, setFilters] = useState({
     status: "all",
@@ -242,6 +169,33 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     connectionFlights: "",
     vipPassengers: "",
   });
+
+  // Fetch flights from database
+  useEffect(() => {
+    fetchFlights();
+    const interval = setInterval(fetchFlights, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchFlights = async () => {
+    try {
+      setError(null);
+      setLoading(true);
+      const data = await databaseService.getAllDisruptions();
+      
+      // Transform database data to component format
+      const transformedFlights = data.map(transformFlightData);
+      setFlights(transformedFlights);
+      
+      console.log('Fetched and transformed flights:', transformedFlights);
+    } catch (error) {
+      console.error('Error fetching flights:', error);
+      setError('Failed to load flight data. Please check your connection and try again.');
+      setFlights([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -410,45 +364,59 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
   const impact = getSelectedFlightImpact();
 
   // Handle adding new disruption
-  const handleAddDisruption = () => {
-    const newFlight = {
-      id: `FL_${String(flights.length + 1).padStart(3, "0")}`,
-      ...newDisruption,
-      delay: newDisruption.delay ? parseInt(newDisruption.delay) : null,
+  const handleAddDisruption = async () => {
+    const newFlightData = {
+      flightNumber: newDisruption.flightNumber,
+      route: `${newDisruption.origin}-${newDisruption.destination}`,
+      aircraft: newDisruption.aircraft,
+      scheduledDeparture: newDisruption.scheduledDeparture,
+      estimatedDeparture: newDisruption.scheduledDeparture,
+      delay: newDisruption.delay ? parseInt(newDisruption.delay) : 0,
       passengers: parseInt(newDisruption.passengers),
       crew: parseInt(newDisruption.crew),
-      connectionFlights: parseInt(newDisruption.connectionFlights),
-      vipPassengers: parseInt(newDisruption.vipPassengers),
-      lastUpdate: "Just now",
+      severity: newDisruption.priority,
+      type: newDisruption.disruptionType.charAt(0).toUpperCase() + newDisruption.disruptionType.slice(1),
+      status: newDisruption.currentStatus === 'Delayed' ? 'Active' : newDisruption.currentStatus,
+      disruptionReason: newDisruption.disruptionReason,
     };
 
-    setFlights([...flights, newFlight]);
-    setIsAddDialogOpen(false);
-
-    // Reset form
-    setNewDisruption({
-      flightNumber: "",
-      origin: "",
-      destination: "",
-      originCity: "",
-      destinationCity: "",
-      scheduledDeparture: "",
-      scheduledArrival: "",
-      currentStatus: "Delayed",
-      delay: "",
-      aircraft: "",
-      gate: "",
-      passengers: "",
-      crew: 6,
-      disruptionType: "technical",
-      categorization: "Aircraft issue (e.g., AOG)",
-      disruptionReason: "",
-      severity: "medium",
-      impact: "",
-      priority: "Medium",
-      connectionFlights: "",
-      vipPassengers: "",
-    });
+    try {
+      const success = await databaseService.saveDisruption(newFlightData);
+      if (success) {
+        setIsAddDialogOpen(false);
+        // Reset form
+        setNewDisruption({
+          flightNumber: "",
+          origin: "",
+          destination: "",
+          originCity: "",
+          destinationCity: "",
+          scheduledDeparture: "",
+          scheduledArrival: "",
+          currentStatus: "Delayed",
+          delay: "",
+          aircraft: "",
+          gate: "",
+          passengers: "",
+          crew: 6,
+          disruptionType: "technical",
+          categorization: "Aircraft issue (e.g., AOG)",
+          disruptionReason: "",
+          severity: "medium",
+          impact: "",
+          priority: "Medium",
+          connectionFlights: "",
+          vipPassengers: "",
+        });
+        // Refresh the flights list
+        fetchFlights();
+      } else {
+        setError('Failed to add disruption. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error adding disruption:', error);
+      setError('Failed to add disruption. Please try again.');
+    }
   };
 
   // Handle input changes for new disruption form
@@ -458,6 +426,17 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       [field]: value,
     }));
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p>Loading affected flights...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -910,7 +889,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </div>
             </DialogContent>
           </Dialog>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={fetchFlights}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh Data
           </Button>
@@ -925,6 +904,20 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
             <strong>Disruption Context:</strong> {disruption.title} at{" "}
             {disruption.airport?.toUpperCase()} -{disruption.affectedFlights}{" "}
             flights impacted. Last updated {disruption.lastUpdate}.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Error Alert */}
+      {error && (
+        <Alert className="border-red-200 bg-red-50">
+          <AlertTriangle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800 flex items-center justify-between">
+            <span>{error}</span>
+            <Button variant="outline" size="sm" onClick={fetchFlights} className="ml-4">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
           </AlertDescription>
         </Alert>
       )}
@@ -1249,7 +1242,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       <Badge className={getStatusColor(flight.currentStatus)}>
                         {flight.currentStatus}
                       </Badge>
-                      {flight.delay && (
+                      {flight.delay && flight.delay > 0 && (
                         <div className="text-sm text-red-600 mt-1">
                           +{flight.delay}m
                         </div>
@@ -1317,6 +1310,30 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </TableBody>
             </Table>
           </div>
+
+          {/* No data state */}
+          {sortedFlights.length === 0 && !loading && (
+            <div className="text-center py-12">
+              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Plane className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No affected flights found</h3>
+              <p className="text-gray-500 mb-4">
+                {flights.length === 0 
+                  ? "There are currently no flight disruptions in the system."
+                  : "No flights match your current filter criteria."
+                }
+              </p>
+              {flights.length === 0 && (
+                <div className="flex justify-center gap-2">
+                  <Button variant="outline" onClick={fetchFlights} className="flex items-center gap-2">
+                    <RefreshCw className="h-4 w-4" />
+                    Refresh Data
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
 
