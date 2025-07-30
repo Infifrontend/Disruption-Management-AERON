@@ -35,7 +35,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     region: '',
     dateTime: ''
   })
-  const [screenSettings, setScreenSettings] = useState([
+  
+  // Initialize with default screen settings
+  const getDefaultScreenSettings = () => [
     { id: 'dashboard', name: 'Dashboard', icon: 'TrendingUp', category: 'main', enabled: true, required: true },
     { id: 'flight-tracking', name: 'Flight Tracking Gantt', icon: 'Calendar', category: 'operations', enabled: true, required: false },
     { id: 'disruption', name: 'Affected Flights', icon: 'AlertTriangle', category: 'operations', enabled: true, required: false },
@@ -54,7 +56,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     { id: 'fuel-optimization', name: 'Fuel Optimization', icon: 'Fuel', category: 'analytics', enabled: true, required: false },
     { id: 'reports', name: 'Reports & Analytics', icon: 'BarChart3', category: 'analytics', enabled: true, required: false },
     { id: 'settings', name: 'Settings', icon: 'Settings', category: 'system', enabled: true, required: true }
-  ])
+  ]
+  
+  const [screenSettings, setScreenSettings] = useState(getDefaultScreenSettings())
   const [isLoadingScreenSettings, setIsLoadingScreenSettings] = useState(true)
 
   // Load screen settings from database on mount
