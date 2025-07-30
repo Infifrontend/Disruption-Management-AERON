@@ -80,9 +80,11 @@ END;
 $$ language 'plpgsql';
 
 -- Triggers for automatic timestamp updates
+DROP TRIGGER IF EXISTS update_settings_updated_at ON settings;
 CREATE TRIGGER update_settings_updated_at BEFORE UPDATE ON settings
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_custom_rules_updated_at ON custom_rules;
 CREATE TRIGGER update_custom_rules_updated_at BEFORE UPDATE ON custom_rules
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -108,6 +110,7 @@ END;
 $$ language 'plpgsql';
 
 -- Trigger for audit trail
+DROP TRIGGER IF EXISTS settings_audit_trigger ON settings;
 CREATE TRIGGER settings_audit_trigger
     AFTER INSERT OR UPDATE OR DELETE ON settings
     FOR EACH ROW EXECUTE FUNCTION create_settings_audit();
