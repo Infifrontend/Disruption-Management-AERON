@@ -21,10 +21,8 @@ import {
   Calendar,
   User,
   Phone,
-  Mail,
-  Plus
+  Mail
 } from 'lucide-react'
-import { Alert, AlertDescription } from './ui/alert'
 import { databaseService, FlightDisruption, PassengerData } from '../services/databaseService'
 
 export function AffectedFlightsList() {
@@ -181,14 +179,6 @@ export function AffectedFlightsList() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            onClick={() => window.location.href = '/disruption'} 
-            className="flex items-center gap-2 border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
-          >
-            <Plus className="h-4 w-4" />
-            Add Disruption
-          </Button>
           <Button variant="outline" onClick={fetchFlights} className="flex items-center gap-2">
             <RefreshCw className="h-4 w-4" />
             Refresh

@@ -302,41 +302,6 @@ app.get('/api/disruptions/:id', async (req, res) => {
   }
 })
 
-// Get all flight disruptions
-app.get('/api/disruptions', async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT 
-        id,
-        flight_number,
-        route,
-        origin,
-        destination,
-        origin_city,
-        destination_city,
-        aircraft,
-        scheduled_departure,
-        estimated_departure,
-        delay_minutes,
-        passengers,
-        crew,
-        severity,
-        disruption_type,
-        status,
-        disruption_reason,
-        created_at,
-        updated_at
-      FROM flight_disruptions 
-      ORDER BY created_at DESC
-    `)
-    res.json(result.rows)
-  } catch (error) {
-    console.error('Error fetching disruptions:', error)
-    res.status(500).json({ error: error.message })
-  }
-})
-
-// Save new flight disruption
 app.post('/api/disruptions', async (req, res) => {
   try {
     const {

@@ -385,14 +385,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
   // Handle adding new disruption
   const handleAddDisruption = async () => {
-    // Validate required fields
-    if (!newDisruption.flightNumber || !newDisruption.origin || !newDisruption.destination || !newDisruption.passengers) {
-      setError('Please fill in all required fields.');
-      return;
-    }
-
     const newFlightData = {
-      flight_number: newDisruption.flightNumber,
+      flightNumber: newDisruption.flightNumber,
       route: `${newDisruption.originCity || getLocationName(newDisruption.origin)} → ${newDisruption.destinationCity || getLocationName(newDisruption.destination)}`,
       origin: newDisruption.origin,
       destination: newDisruption.destination, 
@@ -438,8 +432,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           connectionFlights: "",
           vipPassengers: "",
         });
-        // Clear any existing errors
-        setError(null);
         // Refresh the flights list
         fetchFlights();
       } else {
