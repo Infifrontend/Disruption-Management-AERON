@@ -98,9 +98,6 @@ BEGIN
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
 
 -- Triggers for automatic timestamp updates
 DROP TRIGGER IF EXISTS update_settings_updated_at ON settings;
