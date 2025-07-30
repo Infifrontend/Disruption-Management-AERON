@@ -539,7 +539,13 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
             variant="outline"
             className="bg-red-50 text-red-700 border-red-200"
           >
-            {sortedFlights.length} flights affected
+            {sortedFlights.length} Flights Affected
+          </Badge>
+          <Badge
+            variant="outline"
+            className="bg-orange-50 text-orange-700 border-orange-200"
+          >
+            {sortedFlights.filter(f => f.priority === "High" || f.priority === "Critical").length} High Priority
           </Badge>
           {selectedFlight && (
             <Badge
