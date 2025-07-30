@@ -20,7 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
-import { Alert, AlertDescription } from "./ui/alert";
+import { Alert, AlertDescription } from './ui/alert'
+import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog'
 import { Checkbox } from "./ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import {
@@ -154,7 +155,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+  const [showAlert, setShowAlert] = useState(false)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [filters, setFilters] = useState({
     status: "all",
@@ -412,39 +415,15 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     try {
       const success = await databaseService.saveDisruption(newFlightData);
       if (success) {
-        // Close dialog and reset form
-        setIsAddDialogOpen(false);
-        setNewDisruption({
-          flightNumber: "",
-          origin: "",
-          destination: "",
-          originCity: "",
-          destinationCity: "",
-          scheduledDeparture: "",
-          scheduledArrival: "",
-          currentStatus: "Delayed",
-          delay: "",
-          aircraft: "",
-          gate: "",
-          passengers: "",
-          crew: 6,
-          disruptionType: "technical",
-          categorization: "Aircraft issue (e.g., AOG)",
-          disruptionReason: "",
-          severity: "medium",
-          impact: "",
-          priority: "Medium",
-          connectionFlights: "",
-          vipPassengers: "",
-        });
-        // Clear any existing errors
+        // Clear any existing errors and show success
         setError(null);
-        // Refresh the flights list to show the new entry
-        await fetchFlights();
-        // Show success confirmation
-        alert('✅ Flight disruption has been successfully added to the affected flights list!');
+        setSuccess('Disruption added successfully!');
+        setShowAlert(true);
+        // Refresh the flights list
+        fetchFlights();
       } else {
-        alert('❌ Failed to add disruption. Please check your data and try again.');
+        setError('Failed to save disruption. Please check your data and try again.');
+        setShowAlert(true);
       }
     } catch (error) {
       console.error('Error adding disruption:', error);
@@ -1433,6 +1412,31 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           </CardContent>
         </Card>
       )}
+
+      {/* Success/Error Alert Dialog */}
+      <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {success ? 'Success' : 'Error'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {success || error}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction 
+              onClick={() => {
+                setShowAlert(false);
+                setSuccess(null);
+                setError(null);
+              }}
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
-  );
+  )
 }
