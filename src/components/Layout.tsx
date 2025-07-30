@@ -1,5 +1,5 @@
 
-import React, { useState, ReactNode } from 'react'
+import React, { useState, useEffect, ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
@@ -7,7 +7,7 @@ import { useAppContext } from '../context/AppContext'
 import { 
   TrendingUp, Calendar, AlertTriangle, Plane, FileText, Users, Brain, Target, 
   Activity, Shield, ClockIcon, CheckSquare, Wrench, UserCheck, Hotel, Fuel, 
-  BarChart3, Settings, RotateCcw
+  BarChart3, Settings, RotateCcw, Wifi, WifiOff
 } from 'lucide-react'
 
 const iconMap = {
@@ -27,8 +27,52 @@ export function Layout({ children }: LayoutProps) {
   const navigate = useNavigate()
   const { screenSettings } = useAppContext()
   const [sidebarOpen] = useState(true)
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
+  const [currentDateTime, setCurrentDateTime] = useState(new Date())
 
   const enabledScreens = screenSettings.filter(screen => screen.enabled)
+
+  // Update connectivity status
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true)
+    const handleOffline = () => setIsOnline(false)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
+  // Update current date and time every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date())
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [])
+
+  // Format date and time
+  const formatDateTime = (date: Date) => {
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    }
+    const dateStr = date.toLocaleDateString('en-US', options)
+    const timeStr = date.toLocaleTimeString('en-US', {
+      hour12: false,
+      hour: '2-digit',
+      minute: '2-digit'
+    })
+    return { dateStr, timeStr }
+  }
+
+  const { dateStr, timeStr } = formatDateTime(currentDateTime)
 
   const categories = {
     main: { name: 'Main', color: 'text-flydubai-blue' },
@@ -131,13 +175,25 @@ export function Layout({ children }: LayoutProps) {
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-blue-700 min-h-[80px]">
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-300 flex-shrink-0">
-              Online
+            <Badge 
+              variant="outline" 
+              className={`${
+                isOnline 
+                  ? 'bg-green-100 text-green-800 border-green-300' 
+                  : 'bg-red-100 text-red-800 border-red-300'
+              } flex-shrink-0 flex items-center gap-1`}
+            >
+              {isOnline ? (
+                <Wifi className="h-3 w-3" />
+              ) : (
+                <WifiOff className="h-3 w-3" />
+              )}
+              {isOnline ? 'Online' : 'Offline'}
             </Badge>
             {sidebarOpen && (
               <div className="text-right flex-1">
-                <p className="text-xs font-medium text-white">Friday, January 10, 2025</p>
-                <p className="text-xs text-blue-200">14:32 GST</p>
+                <p className="text-xs font-medium text-white">{dateStr}</p>
+                <p className="text-xs text-blue-200">{timeStr} GST</p>
               </div>
             )}
           </div>
