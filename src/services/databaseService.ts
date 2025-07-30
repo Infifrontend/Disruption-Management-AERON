@@ -488,12 +488,45 @@ class DatabaseService {
 
   async saveDisruption(disruption: Omit<FlightDisruption, 'id' | 'createdAt' | 'updatedAt'>): Promise<boolean> {
     try {
+      console.log('Saving disruption to database:', disruption)
+      
+      // Transform camelCase to snake_case for database
+      const dbData = {
+        flight_number: disruption.flightNumber,
+        route: disruption.route,
+        origin: disruption.origin,
+        destination: disruption.destination,
+        origin_city: disruption.originCity,
+        destination_city: disruption.destinationCity,
+        aircraft: disruption.aircraft,
+        scheduled_departure: disruption.scheduledDeparture,
+        estimated_departure: disruption.estimatedDeparture,
+        delay_minutes: disruption.delay,
+        passengers: disruption.passengers,
+        crew: disruption.crew,
+        severity: disruption.severity,
+        disruption_type: disruption.type,
+        status: disruption.status,
+        disruption_reason: disruption.disruptionReason
+      }
+      
+      console.log('Transformed data for database:', dbData)
+      
       const response = await fetch(`${this.baseUrl}/disruptions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(disruption)
+        body: JSON.stringify(dbData)
       })
-      return response.ok
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Server response error:', response.status, errorText)
+        throw new Error(`HTTP ${response.status}: ${errorText}`)
+      }
+      
+      const result = await response.json()
+      console.log('Successfully saved disruption:', result)
+      return true
     } catch (error) {
       console.error('Failed to save disruption:', error)
       return false

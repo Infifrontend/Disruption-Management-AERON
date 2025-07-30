@@ -284,6 +284,56 @@ app.get('/api/disruptions', async (req, res) => {
   }
 })
 
+// Save new flight disruption
+app.post('/api/disruptions', async (req, res) => {
+  try {
+    console.log('Received disruption data:', req.body)
+
+    const {
+      flight_number, flightNumber, route, origin, destination, origin_city, destination_city, originCity, destinationCity,
+      aircraft, scheduled_departure, scheduledDeparture, estimated_departure, estimatedDeparture, 
+      delay_minutes, delay, passengers, crew, severity, disruption_type, disruptionType, type, 
+      status, disruption_reason, disruptionReason
+    } = req.body
+
+    // Handle both camelCase and snake_case field names
+    const flightNum = flight_number || flightNumber
+    const origin_city_val = origin_city || originCity
+    const destination_city_val = destination_city || destinationCity
+    const scheduled_dep = scheduled_departure || scheduledDeparture
+    const estimated_dep = estimated_departure || estimatedDeparture
+    const delay_mins = delay_minutes || delay
+    const disruption_type_val = disruption_type || disruptionType || type
+    const disruption_reason_val = disruption_reason || disruptionReason
+
+    console.log('Processing disruption for flight:', flightNum)
+
+    const result = await pool.query(`
+      INSERT INTO flight_disruptions (
+        flight_number, route, origin, destination, origin_city, destination_city,
+        aircraft, scheduled_departure, estimated_departure, delay_minutes, 
+        passengers, crew, severity, disruption_type, status, disruption_reason
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+      RETURNING *
+    `, [
+      flightNum, route, origin, destination, origin_city_val, destination_city_val,
+      aircraft, scheduled_dep, estimated_dep, delay_mins,
+      passengers, crew, severity, disruption_type_val, status, disruption_reason_val
+    ])
+
+    console.log('Successfully saved disruption:', result.rows[0])
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error saving disruption:', error.message)
+    console.error('Error details:', error)
+    res.status(500).json({ 
+      error: 'Failed to save disruption', 
+      details: error.message,
+      code: error.code 
+    })
+  }
+})
+
 app.get('/api/disruptions/:id', async (req, res) => {
   try {
     const { id } = req.params
