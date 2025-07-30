@@ -221,7 +221,7 @@ CREATE TABLE IF NOT EXISTS flight_disruptions (
     crew INTEGER NOT NULL,
     severity VARCHAR(20) NOT NULL CHECK (severity IN ('Low', 'Medium', 'High', 'Critical')),
     disruption_type VARCHAR(50) NOT NULL,
-    status VARCHAR(20) NOT NULL CHECK (status IN ('Active', 'Resolved', 'Cancelled', 'Delayed', 'Diverted', 'On Hold')),
+    status VARCHAR(20) NOT NULL CHECK (status IN ('Active', 'Resolved', 'Cancelled', 'Delayed', 'Diverted', 'On Hold', 'Pending', 'In Progress', 'Completed')),
     disruption_reason TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -430,7 +430,7 @@ INSERT INTO aircraft (registration, aircraft_type, status, location, maintenance
 ('A6-FDB', 'Boeing 737-800', 'Maintenance', 'DXB Gate B12', 'In Progress', 45.5, '2025-01-20'),
 ('A6-FDC', 'Boeing 737-800', 'Available', 'DXB Gate C15', 'Operational', 89.2, '2025-02-15'),
 ('A6-FDE', 'Boeing 737 MAX 8', 'In Use', 'BOM Terminal 2', 'Operational', 67.8, '2025-01-25'),
-('A6-FDF', 'Boeing 737-800', 'Out ofService', 'DXB Maintenance Hangar', 'In Progress', 0.0, '2025-01-16'),
+('A6-FDF', 'Boeing 737-800', 'Out of Service', 'DXB Maintenance Hangar', 'In Progress', 0.0, '2025-01-16'),
 ('A6-FDG', 'Boeing 737 MAX 8', 'Available', 'DXB Gate A08', 'Operational', 92.5, '2025-02-10')
 ON CONFLICT (registration) DO NOTHING;
 
