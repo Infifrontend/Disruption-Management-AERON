@@ -20,8 +20,16 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
-import { Alert, AlertDescription } from './ui/alert'
-import { AlertDialog, AlertDialogAction, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog'
+import { Alert, AlertDescription } from "./ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 import { Checkbox } from "./ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import {
@@ -51,29 +59,29 @@ import {
   Plus,
   Save,
   X,
-  CheckCircle, 
-  AlertCircle
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
-import { databaseService, FlightDisruption } from '../services/databaseService';
+import { databaseService, FlightDisruption } from "../services/databaseService";
 
 // Transform database flight disruption to the expected format for this component
 const transformFlightData = (disruption: FlightDisruption) => {
   // Parse route properly - handle both "DXB → DEL" and "DXB-DEL" formats
-  let origin = 'DXB';
-  let destination = 'Unknown';
+  let origin = "DXB";
+  let destination = "Unknown";
 
   if (disruption.route) {
-    if (disruption.route.includes('→')) {
-      const parts = disruption.route.split('→').map(p => p.trim());
-      origin = parts[0] || disruption.origin || 'DXB';
-      destination = parts[1] || disruption.destination || 'Unknown';
-    } else if (disruption.route.includes('-')) {
-      const parts = disruption.route.split('-');
-      origin = parts[0] || disruption.origin || 'DXB';
-      destination = parts[1] || disruption.destination || 'Unknown';
+    if (disruption.route.includes("→")) {
+      const parts = disruption.route.split("→").map((p) => p.trim());
+      origin = parts[0] || disruption.origin || "DXB";
+      destination = parts[1] || disruption.destination || "Unknown";
+    } else if (disruption.route.includes("-")) {
+      const parts = disruption.route.split("-");
+      origin = parts[0] || disruption.origin || "DXB";
+      destination = parts[1] || disruption.destination || "Unknown";
     } else {
-      origin = disruption.origin || 'DXB';
-      destination = disruption.destination || 'Unknown';
+      origin = disruption.origin || "DXB";
+      destination = disruption.destination || "Unknown";
     }
   }
 
@@ -85,22 +93,33 @@ const transformFlightData = (disruption: FlightDisruption) => {
     originCity: disruption.originCity || getLocationName(origin),
     destinationCity: disruption.destinationCity || getLocationName(destination),
     scheduledDeparture: disruption.scheduledDeparture,
-    scheduledArrival: disruption.estimatedDeparture || addHours(disruption.scheduledDeparture, 3),
-    currentStatus: disruption.status === 'Active' ? 'Delayed' : 
-                   disruption.status === 'Cancelled' ? 'Cancelled' : 
-                   disruption.status === 'Diverted' ? 'Diverted' : 'Delayed',
+    scheduledArrival:
+      disruption.estimatedDeparture ||
+      addHours(disruption.scheduledDeparture, 3),
+    currentStatus:
+      disruption.status === "Active"
+        ? "Delayed"
+        : disruption.status === "Cancelled"
+          ? "Cancelled"
+          : disruption.status === "Diverted"
+            ? "Diverted"
+            : "Delayed",
     delay: disruption.delay || 0,
     aircraft: disruption.aircraft,
     gate: `T2-${Math.random().toString(36).substr(2, 3).toUpperCase()}`, // Mock gate
     passengers: disruption.passengers,
     crew: disruption.crew,
-    disruptionType: disruption.type ? disruption.type.toLowerCase() : 'technical',
-    categorization: getCategorization(disruption.type || 'Technical'),
-    disruptionReason: disruption.disruptionReason || 'Unknown disruption',
-    severity: disruption.severity ? disruption.severity.toLowerCase() : 'medium',
-    impact: `Flight affected due to ${disruption.disruptionReason || 'operational issues'}`,
+    disruptionType: disruption.type
+      ? disruption.type.toLowerCase()
+      : "technical",
+    categorization: getCategorization(disruption.type || "Technical"),
+    disruptionReason: disruption.disruptionReason || "Unknown disruption",
+    severity: disruption.severity
+      ? disruption.severity.toLowerCase()
+      : "medium",
+    impact: `Flight affected due to ${disruption.disruptionReason || "operational issues"}`,
     lastUpdate: getTimeAgo(disruption.updatedAt || disruption.createdAt),
-    priority: disruption.severity || 'Medium',
+    priority: disruption.severity || "Medium",
     connectionFlights: Math.floor(Math.random() * 10) + 3, // Mock connections
     vipPassengers: Math.floor(Math.random() * 5) + 1, // Mock VIP passengers
   };
@@ -109,28 +128,28 @@ const transformFlightData = (disruption: FlightDisruption) => {
 // Helper functions
 const getLocationName = (code: string) => {
   const locations: { [key: string]: string } = {
-    'DXB': 'Dubai',
-    'BOM': 'Mumbai',
-    'DEL': 'Delhi',
-    'KHI': 'Karachi',
-    'COK': 'Kochi',
-    'IST': 'Istanbul',
-    'AUH': 'Abu Dhabi',
-    'CMB': 'Colombo',
-    'BCN': 'Barcelona',
-    'PRG': 'Prague'
+    DXB: "Dubai",
+    BOM: "Mumbai",
+    DEL: "Delhi",
+    KHI: "Karachi",
+    COK: "Kochi",
+    IST: "Istanbul",
+    AUH: "Abu Dhabi",
+    CMB: "Colombo",
+    BCN: "Barcelona",
+    PRG: "Prague",
   };
   return locations[code] || code;
 };
 
 const getCategorization = (type: string) => {
   const categorizations: { [key: string]: string } = {
-    'Technical': 'Aircraft issue (e.g., AOG)',
-    'Weather': 'ATC/weather delay',
-    'Crew': 'Crew issue (e.g., sick report, duty time breach)',
-    'ATC': 'ATC/weather delay'
+    Technical: "Aircraft issue (e.g., AOG)",
+    Weather: "ATC/weather delay",
+    Crew: "Crew issue (e.g., sick report, duty time breach)",
+    ATC: "ATC/weather delay",
   };
-  return categorizations[type] || 'Aircraft issue (e.g., AOG)';
+  return categorizations[type] || "Aircraft issue (e.g., AOG)";
 };
 
 const addHours = (dateString: string, hours: number) => {
@@ -145,7 +164,7 @@ const getTimeAgo = (dateString: string) => {
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
 
-  if (diffMins < 1) return 'Just now';
+  if (diffMins < 1) return "Just now";
   if (diffMins < 60) return `${diffMins} mins ago`;
   const diffHours = Math.floor(diffMins / 60);
   if (diffHours < 24) return `${diffHours} hours ago`;
@@ -157,9 +176,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
-  const [showAlert, setShowAlert] = useState(false)
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [showAlert, setShowAlert] = useState(false);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [filters, setFilters] = useState({
     status: "all",
@@ -211,10 +230,12 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       const transformedFlights = data.map(transformFlightData);
       setFlights(transformedFlights);
 
-      console.log('Fetched and transformed flights:', transformedFlights);
+      console.log("Fetched and transformed flights:", transformedFlights);
     } catch (error) {
-      console.error('Error fetching flights:', error);
-      setError('Failed to load flight data. Please check your connection and try again.');
+      console.error("Error fetching flights:", error);
+      setError(
+        "Failed to load flight data. Please check your connection and try again.",
+      );
       setFlights([]);
     } finally {
       setLoading(false);
@@ -390,8 +411,18 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
   // Handle adding new disruption
   const handleAddDisruption = async () => {
     // Validate required fields
-    if (!newDisruption.flightNumber || !newDisruption.origin || !newDisruption.destination || !newDisruption.passengers || !newDisruption.scheduledDeparture || !newDisruption.aircraft || !newDisruption.disruptionReason) {
-      alert('Please fill in all required fields: Flight Number, Origin, Destination, Aircraft, Scheduled Departure, Passengers, and Disruption Reason.');
+    if (
+      !newDisruption.flightNumber ||
+      !newDisruption.origin ||
+      !newDisruption.destination ||
+      !newDisruption.passengers ||
+      !newDisruption.scheduledDeparture ||
+      !newDisruption.aircraft ||
+      !newDisruption.disruptionReason
+    ) {
+      alert(
+        "Please fill in all required fields: Flight Number, Origin, Destination, Aircraft, Scheduled Departure, Passengers, and Disruption Reason.",
+      );
       return;
     }
 
@@ -399,18 +430,28 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       flight_number: newDisruption.flightNumber,
       route: `${newDisruption.originCity || getLocationName(newDisruption.origin)} → ${newDisruption.destinationCity || getLocationName(newDisruption.destination)}`,
       origin: newDisruption.origin,
-      destination: newDisruption.destination, 
-      origin_city: newDisruption.originCity || getLocationName(newDisruption.origin),
-      destination_city: newDisruption.destinationCity || getLocationName(newDisruption.destination),
+      destination: newDisruption.destination,
+      origin_city:
+        newDisruption.originCity || getLocationName(newDisruption.origin),
+      destination_city:
+        newDisruption.destinationCity ||
+        getLocationName(newDisruption.destination),
       aircraft: newDisruption.aircraft,
       scheduled_departure: newDisruption.scheduledDeparture,
-      estimated_departure: newDisruption.scheduledArrival || addHours(newDisruption.scheduledDeparture, 3),
+      estimated_departure:
+        newDisruption.scheduledArrival ||
+        addHours(newDisruption.scheduledDeparture, 3),
       delay_minutes: newDisruption.delay ? parseInt(newDisruption.delay) : 0,
       passengers: parseInt(newDisruption.passengers),
       crew: parseInt(newDisruption.crew),
       severity: newDisruption.priority,
-      disruption_type: newDisruption.disruptionType.charAt(0).toUpperCase() + newDisruption.disruptionType.slice(1),
-      status: newDisruption.currentStatus === 'Delayed' ? 'Active' : newDisruption.currentStatus,
+      disruption_type:
+        newDisruption.disruptionType.charAt(0).toUpperCase() +
+        newDisruption.disruptionType.slice(1),
+      status:
+        newDisruption.currentStatus === "Delayed"
+          ? "Active"
+          : newDisruption.currentStatus,
       disruption_reason: newDisruption.disruptionReason,
     };
 
@@ -419,17 +460,21 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       if (success) {
         // Clear any existing errors and show success
         setError(null);
-        setSuccess('Disruption added successfully!');
+        setSuccess("Disruption added successfully!");
         setShowAlert(true);
         // Refresh the flights list
         fetchFlights();
       } else {
-        setError('Failed to save disruption. Please check your data and try again.');
+        setError(
+          "Failed to save disruption. Please check your data and try again.",
+        );
         setShowAlert(true);
       }
     } catch (error) {
-      console.error('Error adding disruption:', error);
-      alert('❌ An error occurred while adding the disruption. Please try again or contact support if the issue persists.');
+      console.error("Error adding disruption:", error);
+      alert(
+        "❌ An error occurred while adding the disruption. Please try again or contact support if the issue persists.",
+      );
     }
   };
 
@@ -888,18 +933,18 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                   Cancel
                 </Button>
                 <Button
-                    onClick={handleAddDisruption}
-                    className="bg-flydubai-orange hover:bg-orange-600 text-white"
-                    disabled={
-                      !newDisruption.flightNumber ||
-                      !newDisruption.origin ||
-                      !newDisruption.destination ||
-                      !newDisruption.passengers ||
-                      !newDisruption.scheduledDeparture ||
-                      !newDisruption.aircraft ||
-                      !newDisruption.disruptionReason
-                    }
-                  >
+                  onClick={handleAddDisruption}
+                  className="bg-flydubai-orange hover:bg-orange-600 text-white"
+                  disabled={
+                    !newDisruption.flightNumber ||
+                    !newDisruption.origin ||
+                    !newDisruption.destination ||
+                    !newDisruption.passengers ||
+                    !newDisruption.scheduledDeparture ||
+                    !newDisruption.aircraft ||
+                    !newDisruption.disruptionReason
+                  }
+                >
                   <Save className="h-4 w-4 mr-2" />
                   Add Disruption
                 </Button>
@@ -931,7 +976,12 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           <AlertTriangle className="h-4 w-4 text-red-600" />
           <AlertDescription className="text-red-800 flex items-center justify-between">
             <span>{error}</span>
-            <Button variant="outline" size="sm" onClick={fetchFlights} className="ml-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchFlights}
+              className="ml-4"
+            >
               <RefreshCw className="h-4 w-4 mr-2" />
               Retry
             </Button>
@@ -947,8 +997,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               : ""
           }
         >
-          ```text
-        <CardContent className="p-4">
+          <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <AlertTriangle className="h-5 w-5 text-red-600" />
               <div>
@@ -1334,16 +1383,21 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <Plane className="h-8 w-8 text-gray-400" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No affected flights found</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No affected flights found
+              </h3>
               <p className="text-gray-500 mb-4">
-                {flights.length === 0 
+                {flights.length === 0
                   ? "There are currently no flight disruptions in the system."
-                  : "No flights match your current filter criteria."
-                }
+                  : "No flights match your current filter criteria."}
               </p>
               {flights.length === 0 && (
                 <div className="flex justify-center gap-2">
-                  <Button variant="outline" onClick={fetchFlights} className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={fetchFlights}
+                    className="flex items-center gap-2"
+                  >
                     <RefreshCw className="h-4 w-4" />
                     Refresh Data
                   </Button>
@@ -1420,15 +1474,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {success ? 'Success' : 'Error'}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {success || error}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{success ? "Success" : "Error"}</AlertDialogTitle>
+            <AlertDialogDescription>{success || error}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={() => {
                 setShowAlert(false);
                 setSuccess(null);
@@ -1441,5 +1491,5 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }
