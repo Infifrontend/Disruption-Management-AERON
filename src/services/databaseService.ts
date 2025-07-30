@@ -1,4 +1,3 @@
-
 // Database service for PostgreSQL operations
 import { SettingsData } from '../utils/settingsStorage'
 
@@ -117,7 +116,7 @@ class DatabaseService {
     // Use API base URL for database operations - use HTTPS in production to avoid Mixed Content errors
     const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:'
     const hostname = window.location.hostname
-    
+
     if (hostname === 'localhost') {
       this.baseUrl = 'http://localhost:3001/api'
     } else {
@@ -134,7 +133,7 @@ class DatabaseService {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const data = await response.json()
-      
+
       // Transform database format to SettingsData format
       return data.map((setting: any) => ({
         id: `${setting.category}_${setting.key}`,
@@ -162,7 +161,7 @@ class DatabaseService {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const setting = await response.json()
-      
+
       return {
         id: `${setting.category}_${setting.key}`,
         category: setting.category,
@@ -185,7 +184,7 @@ class DatabaseService {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const data = await response.json()
-      
+
       return data.map((setting: any) => ({
         id: `${setting.category}_${setting.key}`,
         category: setting.category,
@@ -408,7 +407,7 @@ class DatabaseService {
   async importSettings(settingsJson: string): Promise<boolean> {
     try {
       const settings: SettingsData[] = JSON.parse(settingsJson)
-      
+
       for (const setting of settings) {
         await this.saveSetting(
           setting.category, 
@@ -418,7 +417,7 @@ class DatabaseService {
           setting.updatedBy
         )
       }
-      
+
       return true
     } catch (error) {
       console.error('Failed to import settings:', error)
@@ -438,12 +437,12 @@ class DatabaseService {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
       const data = await response.json()
-      
+
       if (!Array.isArray(data)) {
         console.error('Invalid response format - expected array')
         return []
       }
-      
+
       // Transform database format to expected format
       return data.map((disruption: any) => ({
         id: disruption.id?.toString() || disruption.flight_number,
@@ -668,6 +667,7 @@ class DatabaseService {
     }
   }
 
+  // Past Recovery Logs
   async getPastRecoveryLogs(): Promise<any[]> {
     try {
       const response = await fetch(`${this.baseUrl}/recovery-logs`)
@@ -713,13 +713,13 @@ class DatabaseService {
           'Content-Type': 'application/json',
         }
       })
-      
+
       if (!response.ok) {
         const errorText = await response.text()
         console.error('Database initialization failed:', errorText)
         return false
       }
-      
+
       const result = await response.json()
       console.log('Database initialization result:', result)
       return true
@@ -738,13 +738,13 @@ class DatabaseService {
           'Content-Type': 'application/json',
         }
       })
-      
+
       if (!response.ok) {
         const errorText = await response.text()
         console.error('Sample data population failed:', errorText)
         return false
       }
-      
+
       const result = await response.json()
       console.log('Sample data population result:', result)
       return true

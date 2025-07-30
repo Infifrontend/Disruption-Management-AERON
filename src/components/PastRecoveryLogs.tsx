@@ -1,4 +1,3 @@
-'use client'
 
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -91,14 +90,14 @@ export function PastRecoveryLogs() {
     }
   }
 
-  const statusColors = {
+  const statusColors: Record<string, string> = {
     'Successful': 'bg-green-100 text-green-800',
     'Partial': 'bg-yellow-100 text-yellow-800', 
     'Failed': 'bg-red-100 text-red-800',
     'Cancelled': 'bg-gray-100 text-gray-800'
   }
 
-const filteredLogs = recoveryLogs.filter(log => {
+  const filteredLogs = recoveryLogs.filter(log => {
     if (filters.status !== 'all' && log.status !== filters.status) return false
     if (filters.category !== 'all' && log.categorization !== filters.category) return false
     if (filters.priority !== 'all' && log.priority !== filters.priority) return false
@@ -107,7 +106,7 @@ const filteredLogs = recoveryLogs.filter(log => {
     return true
   })
 
-const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
@@ -139,7 +138,7 @@ const formatDate = (dateString: string) => {
     return duration
   }
 
-const totalLogs = filteredLogs.length
+  const totalLogs = filteredLogs.length
   const successfulLogs = filteredLogs.filter(log => log.status === 'Successful').length
   const totalSavings = filteredLogs.reduce((sum, log) => {
     const estimated = log.estimated_cost || 0
@@ -150,7 +149,7 @@ const totalLogs = filteredLogs.length
     ? filteredLogs.reduce((sum, log) => sum + (log.passenger_satisfaction || 0), 0) / totalLogs 
     : 0
 
-if (loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
@@ -308,76 +307,127 @@ if (loading) {
       {/* Log Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredLogs.map((log) => (
-              <Card 
-                key={log.solution_id} 
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => setSelectedLog(log)}
-              >
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex flex-col">
-                        <span className="font-mono font-bold text-lg">{log.flight_number}</span>
-                        <span className="text-sm text-muted-foreground">{log.route}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium">{formatDate(log.date_created)}</span>
-                        <span className="text-xs text-muted-foreground">{log.disruption_type}</span>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge className={statusColors[log.status] || 'bg-gray-100 text-gray-800'}>
-                        {log.status}
-                      </Badge>
-                      <Badge variant="outline">
-                        {log.priority}
-                      </Badge>
-                    </div>
+          <Card 
+            key={log.solution_id} 
+            className="cursor-pointer hover:shadow-md transition-shadow"
+            onClick={() => setSelectedLog(log)}
+          >
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-4">
+                  <div className="flex flex-col">
+                    <span className="font-mono font-bold text-lg">{log.flight_number}</span>
+                    <span className="text-sm text-muted-foreground">{log.route}</span>
                   </div>
-
-                  <div className="grid grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <span className="text-muted-foreground">Duration</span>
-                      <p className="font-medium">{formatDuration(log.duration)}</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Cost</span>
-                      <p className="font-medium">{formatCurrency(log.actual_cost || 0)}</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Passengers</span>
-                      <p className="font-medium">{log.affected_passengers}</p>
-                    </div>
-                    <div>
-                      <span className="text-muted-foreground">Satisfaction</span>
-                      <p className="font-medium">{(log.passenger_satisfaction || 0).toFixed(1)}/10</p>
-                    </div>
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{formatDate(log.date_created)}</span>
+                    <span className="text-xs text-muted-foreground">{log.disruption_type}</span>
                   </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Badge className={statusColors[log.status] || 'bg-gray-100 text-gray-800'}>
+                    {log.status}
+                  </Badge>
+                  <Badge variant="outline">
+                    {log.priority}
+                  </Badge>
+                </div>
+              </div>
 
-                  {log.solution_chosen && (
-                    <p className="text-sm text-muted-foreground mt-3">
-                      Solution: {log.solution_chosen}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+              <div className="grid grid-cols-4 gap-4 text-sm">
+                <div>
+                  <span className="text-muted-foreground">Duration</span>
+                  <p className="font-medium">{formatDuration(log.duration)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Cost</span>
+                  <p className="font-medium">{formatCurrency(log.actual_cost || 0)}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Passengers</span>
+                  <p className="font-medium">{log.affected_passengers}</p>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Satisfaction</span>
+                  <p className="font-medium">{(log.passenger_satisfaction || 0).toFixed(1)}/10</p>
+                </div>
+              </div>
+
+              {log.solution_chosen && (
+                <p className="text-sm text-muted-foreground mt-3">
+                  Solution: {log.solution_chosen}
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Detail Modal */}
       {selectedLog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <Card className="max-w-3xl w-full mx-4">
+          <Card className="max-w-3xl w-full mx-4 max-h-[80vh] overflow-y-auto">
             <CardHeader>
               <CardTitle className="text-lg font-bold">
                 Solution Details - {selectedLog.solution_id}
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p>Flight: {selectedLog.flight_number}</p>
-              <p>Route: {selectedLog.route}</p>
-              <p>Status: {selectedLog.status}</p>
-              <Button onClick={() => setSelectedLog(null)}>Close</Button>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Flight</Label>
+                  <p className="text-lg font-mono">{selectedLog.flight_number}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Route</Label>
+                  <p>{selectedLog.route}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Aircraft</Label>
+                  <p>{selectedLog.aircraft}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Status</Label>
+                  <Badge className={statusColors[selectedLog.status] || 'bg-gray-100 text-gray-800'}>
+                    {selectedLog.status}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Disruption Type</Label>
+                  <p>{selectedLog.disruption_type}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Priority</Label>
+                  <Badge variant="outline">{selectedLog.priority}</Badge>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Created</Label>
+                  <p>{formatDateTime(selectedLog.date_created)}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Duration</Label>
+                  <p>{formatDuration(selectedLog.duration)}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Affected Passengers</Label>
+                  <p>{selectedLog.affected_passengers}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Actual Cost</Label>
+                  <p className="font-medium">{formatCurrency(selectedLog.actual_cost || 0)}</p>
+                </div>
+              </div>
+              
+              {selectedLog.solution_chosen && (
+                <div>
+                  <Label className="text-sm font-medium">Solution Chosen</Label>
+                  <p className="mt-1 p-2 bg-gray-50 rounded">{selectedLog.solution_chosen}</p>
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <Button onClick={() => setSelectedLog(null)}>Close</Button>
+              </div>
             </CardContent>
           </Card>
         </div>
