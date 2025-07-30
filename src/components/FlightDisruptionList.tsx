@@ -105,7 +105,7 @@ export function FlightDisruptionList() {
     {
       id: "DISR-2025-001",
       flightNumber: "EK123",
-      route: "JFK → DXB",
+      route: "JFK → DXBdd",
       aircraft: "A321-001",
       aircraftType: "Airbus A321-200",
       scheduledDeparture: "2025-06-06 14:30",
