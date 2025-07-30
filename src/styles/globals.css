@@ -158,24 +158,75 @@
   }
 }
 
-/* Custom scrollbar for better UX */
+/* Custom scrollbar for better UX with hover visibility */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 12px;
+  height: 12px;
+  transition: all 0.3s ease;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 4px;
+  background: transparent;
+  border-radius: 6px;
+  transition: all 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--flydubai-progress-blue);
-  border-radius: 4px;
+  background: rgba(0, 102, 204, 0.3);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+  transition: all 0.3s ease;
+  min-height: 20px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--flydubai-navy);
+  background: rgba(0, 102, 204, 0.7);
+  border: 1px solid rgba(0, 102, 204, 0.2);
+}
+
+/* Enhanced scrollbar visibility on hover */
+*:hover::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+*:hover::-webkit-scrollbar-track {
+  background: rgba(241, 245, 249, 0.8);
+  border-radius: 7px;
+}
+
+*:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 102, 204, 0.6);
+  border: 1px solid rgba(0, 102, 204, 0.1);
+}
+
+*:hover::-webkit-scrollbar-thumb:hover {
+  background: #0066CC;
+  border: 1px solid rgba(0, 31, 63, 0.2);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark theme scrollbar support */
+.dark ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark *:hover::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.8);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+}
+
+.dark *:hover::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.6);
+}
+
+.dark *:hover::-webkit-scrollbar-thumb:hover {
+  background: rgba(203, 213, 225, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 /* Enhanced slider styles with better visibility */
@@ -411,6 +462,35 @@ body {
 .form-responsive {
   max-width: 100%;
   overflow: hidden;
+}
+
+/* Enhanced scrollable section utilities */
+.scrollable-section {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 102, 204, 0.3) transparent;
+  transition: scrollbar-color 0.3s ease;
+}
+
+.scrollable-section:hover {
+  scrollbar-color: rgba(0, 102, 204, 0.6) rgba(241, 245, 249, 0.8);
+}
+
+.dark .scrollable-section {
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+.dark .scrollable-section:hover {
+  scrollbar-color: rgba(148, 163, 184, 0.6) rgba(30, 41, 59, 0.8);
+}
+
+/* Firefox scrollbar support */
+.scrollable-section {
+  scrollbar-width: auto;
+  scrollbar-gutter: stable;
+}
+
+.scrollable-section:hover {
+  scrollbar-width: auto;
 }
 
 /* Custom button styles for settings panel */
