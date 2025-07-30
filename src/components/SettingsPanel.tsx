@@ -564,14 +564,38 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     systemAlerts: false,
   });
 
-  const handleScreenToggle = (screenId) => {
-    const updatedSettings = screenSettings.map((screen) => {
-      if (screen.id === screenId && !screen.required) {
-        return { ...screen, enabled: !screen.enabled };
+  const handleScreenToggle = async (screenId) => {
+    try {
+      const currentScreen = screenSettings.find(screen => screen.id === screenId);
+      if (!currentScreen || currentScreen.required) {
+        return; // Don't toggle required screens
       }
-      return screen;
-    });
-    onScreenSettingsChange(updatedSettings);
+
+      const newEnabledState = !currentScreen.enabled;
+      
+      // Update database
+      const success = await settingsStore.updateScreenConfiguration(screenId, newEnabledState, 'user');
+      
+      if (success) {
+        // Update local state
+        const updatedSettings = screenSettings.map((screen) => {
+          if (screen.id === screenId) {
+            return { ...screen, enabled: newEnabledState };
+          }
+          return screen;
+        });
+        onScreenSettingsChange(updatedSettings);
+        
+        console.log(`✅ Screen ${screenId} ${newEnabledState ? 'enabled' : 'disabled'}`);
+        showSaveStatus();
+      } else {
+        console.error(`Failed to update screen configuration for ${screenId}`);
+        setSaveStatus('error');
+      }
+    } catch (error) {
+      console.error('Error toggling screen setting:', error);
+      setSaveStatus('error');
+    }
   };
 
   const handleNlpToggle = (setting) => {

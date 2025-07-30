@@ -423,3 +423,55 @@ INSERT INTO recovery_logs (solution_id, disruption_id, flight_number, route, air
 ('SOL-2025-001', 'DIS-001', 'FZ181', 'DXB → COK', 'A6-FDC', 'Crew issue', 'Captain duty time breach', 'Medium', '2025-01-10 12:30:00+00', '2025-01-10 13:45:00+00', '2025-01-10 15:20:00+00', 'Successful', 175, 45000, 52000, -13.5, -0.5, 'Option A - Standby crew activation', 3, 'crew.manager@flydubai.com', 'ops.supervisor@flydubai.com', 8.8, 98.5, 'Crew issue (e.g., sick report, duty time breach)', true, 720, 29, 691, 'Crew', 95.9, 'Low', 1, '{"crew_swap": true, "delay_avoided": "11.5 hours"}'),
 ('SOL-2025-002', 'DIS-002', 'FZ425', 'DXB → DEL', 'A6-FDH', 'Technical', 'Engine oil pressure warning', 'High', '2025-01-09 08:15:00+00', '2025-01-09 09:30:00+00', '2025-01-09 11:45:00+00', 'Successful', 184, 28500, 35000, -18.6, -0.8, 'Option B - Aircraft substitution', 4, 'tech.supervisor@flydubai.com', 'ops.manager@flydubai.com', 9.1, 97.8, 'Aircraft issue (e.g., AOG)', true, 480, 75, 405, 'Technical', 93.7, 'Medium', 2, '{"aircraft_swap": "A6-FDK", "maintenance": "completed"}')
 ON CONFLICT (solution_id) DO NOTHING;
+
+-- Screen Configurations table for managing UI screen visibility and settings
+CREATE TABLE IF NOT EXISTS screen_configurations (
+    id SERIAL PRIMARY KEY,
+    screen_id VARCHAR(100) UNIQUE NOT NULL,
+    name VARCHAR(255) NOT NULL,
+    icon VARCHAR(100) NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    enabled BOOLEAN DEFAULT true,
+    required BOOLEAN DEFAULT false,
+    display_order INTEGER DEFAULT 0,
+    description TEXT,
+    updated_by VARCHAR(100) DEFAULT 'system',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for screen configurations
+CREATE INDEX IF NOT EXISTS idx_screen_configurations_category ON screen_configurations(category);
+CREATE INDEX IF NOT EXISTS idx_screen_configurations_enabled ON screen_configurations(enabled);
+CREATE INDEX IF NOT EXISTS idx_screen_configurations_order ON screen_configurations(display_order);
+
+-- Trigger for automatic timestamp updates on screen configurations
+DROP TRIGGER IF EXISTS update_screen_configurations_updated_at ON screen_configurations;
+CREATE TRIGGER update_screen_configurations_updated_at BEFORE UPDATE ON screen_configurations
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Insert default screen configurations
+INSERT INTO screen_configurations (screen_id, name, icon, category, enabled, required, display_order, description) VALUES
+('dashboard', 'Dashboard', 'TrendingUp', 'main', true, true, 1, 'Main dashboard with KPIs and overview'),
+('flight-tracking', 'Flight Tracking Gantt', 'Calendar', 'operations', true, false, 2, 'Gantt chart view of flight operations'),
+('disruption', 'Affected Flights', 'AlertTriangle', 'operations', true, false, 3, 'List of flights affected by disruptions'),
+('recovery', 'Recovery Options', 'Plane', 'operations', true, false, 4, 'Recovery options generation and selection'),
+('comparison', 'Comparison', 'FileText', 'operations', true, false, 5, 'Comparison matrix for recovery options'),
+('detailed', 'Recovery Plan', 'Users', 'operations', true, false, 6, 'Detailed recovery plan execution'),
+('prediction-dashboard', 'Prediction Dashboard', 'Brain', 'prediction', true, false, 7, 'AI-powered disruption predictions'),
+('flight-disruption-list', 'Flight Disruption List', 'Target', 'prediction', true, false, 8, 'Detailed list of predicted disruptions'),
+('prediction-analytics', 'Prediction Analytics', 'Activity', 'prediction', true, false, 9, 'Analytics and insights on predictions'),
+('risk-assessment', 'Risk Assessment', 'Shield', 'prediction', true, false, 10, 'Risk assessment and mitigation strategies'),
+('pending', 'Pending Solutions', 'ClockIcon', 'monitoring', true, false, 11, 'Solutions pending approval or execution'),
+('passengers', 'Passenger Services', 'UserCheck', 'services', true, false, 12, 'Passenger rebooking and service management'),
+('crew-tracking', 'Crew Tracking', 'Users2', 'services', true, false, 13, 'Crew management and tracking'),
+('hotac', 'HOTAC Management', 'Hotel', 'services', true, false, 14, 'Hotel accommodation management'),
+('voucher', 'Voucher Management', 'Package', 'services', true, false, 15, 'Voucher and compensation management'),
+('flight-rebooking', 'Flight Rebooking', 'Plane', 'services', true, false, 16, 'Flight rebooking operations'),
+('network-heatmap', 'Network Heatmap', 'BarChart3', 'analytics', true, false, 17, 'Network disruption heatmap'),
+('fuel-optimization', 'Fuel Optimization', 'Fuel', 'analytics', true, false, 18, 'Fuel optimization analytics'),
+('maintenance', 'Aircraft Maintenance', 'Wrench', 'analytics', true, false, 19, 'Aircraft maintenance tracking'),
+('past-logs', 'Past Recovery Logs', 'FileText', 'analytics', true, false, 20, 'Historical recovery data and logs'),
+('reports', 'Audit & Reporting', 'BarChart', 'analytics', true, false, 21, 'Audit reports and compliance'),
+('settings', 'Settings', 'Settings', 'system', true, true, 22, 'System configuration and preferences')
+ON CONFLICT (screen_id) DO NOTHING;

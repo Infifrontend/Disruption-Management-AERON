@@ -11,6 +11,15 @@ export interface SettingsData {
   updatedBy: string
 }
 
+export interface ScreenSettings {
+  id: string
+  name: string
+  icon: string
+  category: string
+  enabled: boolean
+  required: boolean
+}
+
 // Settings storage with PostgreSQL database and localStorage fallback
 class SettingsStorage {
   private storage = new Map<string, SettingsData>()
@@ -362,6 +371,105 @@ class SettingsStorage {
     }
     return this.isDatabaseConnected
   }
+
+  // Screen Configuration Methods
+  async getAllScreenConfigurations(): Promise<ScreenSettings[]> {
+    const SCREEN_STORAGE_KEY = 'aeron_screen_configurations'
+    
+    // Try database first if connected
+    if (this.isDatabaseConnected) {
+      try {
+        const configurations = await databaseService.getAllScreenConfigurations()
+        if (configurations.length > 0) {
+          // Cache in localStorage for offline access
+          const screenSettings = configurations.map(config => ({
+            id: config.id,
+            name: config.name,
+            icon: config.icon,
+            category: config.category,
+            enabled: config.enabled,
+            required: config.required
+          }))
+          localStorage.setItem(SCREEN_STORAGE_KEY, JSON.stringify(screenSettings))
+          return screenSettings
+        }
+      } catch (error) {
+        console.warn('Database read failed for screen configurations, using localStorage')
+      }
+    }
+
+    // Fallback to localStorage
+    try {
+      const stored = localStorage.getItem(SCREEN_STORAGE_KEY)
+      if (stored) {
+        return JSON.parse(stored)
+      }
+    } catch (error) {
+      console.warn('Failed to load screen configurations from localStorage:', error)
+    }
+
+    // Return default configurations if nothing is found
+    return this.getDefaultScreenConfigurations()
+  }
+
+  async updateScreenConfiguration(screenId: string, enabled: boolean, userId: string = 'system'): Promise<boolean> {
+    const SCREEN_STORAGE_KEY = 'aeron_screen_configurations'
+    
+    try {
+      // Try database first if connected
+      if (this.isDatabaseConnected) {
+        const success = await databaseService.updateScreenConfiguration(screenId, enabled, userId)
+        if (!success) {
+          console.warn('Database update failed for screen configuration, falling back to localStorage')
+          this.isDatabaseConnected = false
+        }
+      }
+
+      // Always update localStorage as backup
+      const stored = localStorage.getItem(SCREEN_STORAGE_KEY)
+      if (stored) {
+        const configurations: ScreenSettings[] = JSON.parse(stored)
+        const configIndex = configurations.findIndex(config => config.id === screenId)
+        if (configIndex !== -1) {
+          configurations[configIndex].enabled = enabled
+          localStorage.setItem(SCREEN_STORAGE_KEY, JSON.stringify(configurations))
+        }
+      }
+
+      console.log(`Screen configuration ${screenId} updated: enabled=${enabled}`)
+      return true
+    } catch (error) {
+      console.error('Failed to update screen configuration:', error)
+      return false
+    }
+  }
+
+  private getDefaultScreenConfigurations(): ScreenSettings[] {
+    return [
+      { id: 'dashboard', name: 'Dashboard', icon: 'TrendingUp', category: 'main', enabled: true, required: true },
+      { id: 'flight-tracking', name: 'Flight Tracking Gantt', icon: 'Calendar', category: 'operations', enabled: true, required: false },
+      { id: 'disruption', name: 'Affected Flights', icon: 'AlertTriangle', category: 'operations', enabled: true, required: false },
+      { id: 'recovery', name: 'Recovery Options', icon: 'Plane', category: 'operations', enabled: true, required: false },
+      { id: 'comparison', name: 'Comparison', icon: 'FileText', category: 'operations', enabled: true, required: false },
+      { id: 'detailed', name: 'Recovery Plan', icon: 'Users', category: 'operations', enabled: true, required: false },
+      { id: 'prediction-dashboard', name: 'Prediction Dashboard', icon: 'Brain', category: 'prediction', enabled: true, required: false },
+      { id: 'flight-disruption-list', name: 'Flight Disruption List', icon: 'Target', category: 'prediction', enabled: true, required: false },
+      { id: 'prediction-analytics', name: 'Prediction Analytics', icon: 'Activity', category: 'prediction', enabled: true, required: false },
+      { id: 'risk-assessment', name: 'Risk Assessment', icon: 'Shield', category: 'prediction', enabled: true, required: false },
+      { id: 'pending', name: 'Pending Solutions', icon: 'ClockIcon', category: 'monitoring', enabled: true, required: false },
+      { id: 'passengers', name: 'Passenger Services', icon: 'UserCheck', category: 'services', enabled: true, required: false },
+      { id: 'crew-tracking', name: 'Crew Tracking', icon: 'Users2', category: 'services', enabled: true, required: false },
+      { id: 'hotac', name: 'HOTAC Management', icon: 'Hotel', category: 'services', enabled: true, required: false },
+      { id: 'voucher', name: 'Voucher Management', icon: 'Package', category: 'services', enabled: true, required: false },
+      { id: 'flight-rebooking', name: 'Flight Rebooking', icon: 'Plane', category: 'services', enabled: true, required: false },
+      { id: 'network-heatmap', name: 'Network Heatmap', icon: 'BarChart3', category: 'analytics', enabled: true, required: false },
+      { id: 'fuel-optimization', name: 'Fuel Optimization', icon: 'Fuel', category: 'analytics', enabled: true, required: false },
+      { id: 'maintenance', name: 'Aircraft Maintenance', icon: 'Wrench', category: 'analytics', enabled: true, required: false },
+      { id: 'past-logs', name: 'Past Recovery Logs', icon: 'FileText', category: 'analytics', enabled: true, required: false },
+      { id: 'reports', name: 'Audit & Reporting', icon: 'BarChart', category: 'analytics', enabled: true, required: false },
+      { id: 'settings', name: 'Settings', icon: 'Settings', category: 'system', enabled: true, required: true }
+    ]
+  }
 }
 
 // Singleton instance
@@ -379,6 +487,8 @@ export const useSettingsStorage = () => {
     importSettings: settingsStorage.importSettings.bind(settingsStorage),
     resetToDefaults: settingsStorage.resetToDefaults.bind(settingsStorage),
     getDatabaseStatus: settingsStorage.getDatabaseStatus.bind(settingsStorage),
-    retryDatabaseConnection: settingsStorage.retryDatabaseConnection.bind(settingsStorage)
+    retryDatabaseConnection: settingsStorage.retryDatabaseConnection.bind(settingsStorage),
+    getAllScreenConfigurations: settingsStorage.getAllScreenConfigurations.bind(settingsStorage),
+    updateScreenConfiguration: settingsStorage.updateScreenConfiguration.bind(settingsStorage)
   }
 }
