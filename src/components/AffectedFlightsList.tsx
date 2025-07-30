@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
@@ -7,7 +6,7 @@ import { Input } from './ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Label } from './ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from './ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from './ui/dialog'
 import { 
   Plane, 
   Users, 
@@ -21,7 +20,8 @@ import {
   Calendar,
   User,
   Phone,
-  Mail
+  Mail,
+  Plus
 } from 'lucide-react'
 import { databaseService, FlightDisruption, PassengerData } from '../services/databaseService'
 
@@ -187,6 +187,38 @@ export function AffectedFlightsList() {
             <FileText className="h-4 w-4" />
             Export
           </Button>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2 border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
+              >
+                <Plus className="h-4 w-4" />
+                Add Disruption
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-flydubai-navy">
+                  Add New Flight Disruption
+                </DialogTitle>
+                <DialogDescription>
+                  Add a new flight disruption to the affected flights list
+                </DialogDescription>
+              </DialogHeader>
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">
+                  Please navigate to the Disruption page to add new flight disruptions.
+                </p>
+                <Button 
+                  onClick={() => window.location.href = '/disruption'} 
+                  className="mt-4 bg-flydubai-orange hover:bg-orange-600 text-white"
+                >
+                  Go to Disruption Page
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 

@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -59,7 +58,7 @@ const transformFlightData = (disruption: FlightDisruption) => {
   // Parse route properly - handle both "DXB → DEL" and "DXB-DEL" formats
   let origin = 'DXB';
   let destination = 'Unknown';
-  
+
   if (disruption.route) {
     if (disruption.route.includes('→')) {
       const parts = disruption.route.split('→').map(p => p.trim());
@@ -142,7 +141,7 @@ const getTimeAgo = (dateString: string) => {
   const date = new Date(dateString);
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
-  
+
   if (diffMins < 1) return 'Just now';
   if (diffMins < 60) return `${diffMins} mins ago`;
   const diffHours = Math.floor(diffMins / 60);
@@ -202,11 +201,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       setError(null);
       setLoading(true);
       const data = await databaseService.getAllDisruptions();
-      
+
       // Transform database data to component format
       const transformedFlights = data.map(transformFlightData);
       setFlights(transformedFlights);
-      
+
       console.log('Fetched and transformed flights:', transformedFlights);
     } catch (error) {
       console.error('Error fetching flights:', error);
@@ -385,8 +384,14 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
   // Handle adding new disruption
   const handleAddDisruption = async () => {
+    // Validate required fields
+    if (!newDisruption.flightNumber || !newDisruption.origin || !newDisruption.destination || !newDisruption.passengers || !newDisruption.scheduledDeparture || !newDisruption.aircraft || !newDisruption.disruptionReason) {
+      alert('Please fill in all required fields: Flight Number, Origin, Destination, Aircraft, Scheduled Departure, Passengers, and Disruption Reason.');
+      return;
+    }
+
     const newFlightData = {
-      flightNumber: newDisruption.flightNumber,
+      flight_number: newDisruption.flightNumber,
       route: `${newDisruption.originCity || getLocationName(newDisruption.origin)} → ${newDisruption.destinationCity || getLocationName(newDisruption.destination)}`,
       origin: newDisruption.origin,
       destination: newDisruption.destination, 
@@ -407,8 +412,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     try {
       const success = await databaseService.saveDisruption(newFlightData);
       if (success) {
+        // Close dialog and reset form
         setIsAddDialogOpen(false);
-        // Reset form
         setNewDisruption({
           flightNumber: "",
           origin: "",
@@ -432,14 +437,18 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           connectionFlights: "",
           vipPassengers: "",
         });
-        // Refresh the flights list
-        fetchFlights();
+        // Clear any existing errors
+        setError(null);
+        // Refresh the flights list to show the new entry
+        await fetchFlights();
+        // Show success confirmation
+        alert('✅ Flight disruption has been successfully added to the affected flights list!');
       } else {
-        setError('Failed to add disruption. Please try again.');
+        alert('❌ Failed to add disruption. Please check your data and try again.');
       }
     } catch (error) {
       console.error('Error adding disruption:', error);
-      setError('Failed to add disruption. Please try again.');
+      alert('❌ An error occurred while adding the disruption. Please try again or contact support if the issue persists.');
     }
   };
 
@@ -898,15 +907,18 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleAddDisruption}
-                  className="bg-flydubai-orange hover:bg-orange-600 text-white"
-                  disabled={
-                    !newDisruption.flightNumber ||
-                    !newDisruption.origin ||
-                    !newDisruption.destination ||
-                    !newDisruption.passengers
-                  }
-                >
+                    onClick={handleAddDisruption}
+                    className="bg-flydubai-orange hover:bg-orange-600 text-white"
+                    disabled={
+                      !newDisruption.flightNumber ||
+                      !newDisruption.origin ||
+                      !newDisruption.destination ||
+                      !newDisruption.passengers ||
+                      !newDisruption.scheduledDeparture ||
+                      !newDisruption.aircraft ||
+                      !newDisruption.disruptionReason
+                    }
+                  >
                   <Save className="h-4 w-4 mr-2" />
                   Add Disruption
                 </Button>
@@ -945,7 +957,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           </AlertDescription>
         </Alert>
       )}
-
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card
