@@ -296,17 +296,36 @@ app.post('/api/disruptions', async (req, res) => {
       status, disruption_reason, disruptionReason
     } = req.body
 
-    // Handle both camelCase and snake_case field names
+    // Handle both camelCase and snake_case field names with proper fallbacks
     const flightNum = flight_number || flightNumber
     const origin_city_val = origin_city || originCity
     const destination_city_val = destination_city || destinationCity
     const scheduled_dep = scheduled_departure || scheduledDeparture
     const estimated_dep = estimated_departure || estimatedDeparture
-    const delay_mins = delay_minutes || delay
+    const delay_mins = delay_minutes || delay || 0
     const disruption_type_val = disruption_type || disruptionType || type
     const disruption_reason_val = disruption_reason || disruptionReason
 
     console.log('Processing disruption for flight:', flightNum)
+
+    // Validate required fields
+    if (!flightNum || !aircraft || !scheduled_dep || !passengers || !crew) {
+      return res.status(400).json({ 
+        error: 'Missing required fields', 
+        details: 'flight_number, aircraft, scheduled_departure, passengers, and crew are required' 
+      })
+    }
+
+    // Use defaults for missing fields
+    const safeRoute = route || `${origin || 'UNK'} → ${destination || 'UNK'}`
+    const safeOrigin = origin || 'UNK'
+    const safeDestination = destination || 'UNK'
+    const safeOriginCity = origin_city_val || 'Unknown'
+    const safeDestinationCity = destination_city_val || 'Unknown'
+    const safeSeverity = severity || 'Medium'
+    const safeDisruptionType = disruption_type_val || 'Technical'
+    const safeStatus = status || 'Active'
+    const safeDisruptionReason = disruption_reason_val || 'No reason provided'
 
     const result = await pool.query(`
       INSERT INTO flight_disruptions (
@@ -316,9 +335,9 @@ app.post('/api/disruptions', async (req, res) => {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
       RETURNING *
     `, [
-      flightNum, route, origin, destination, origin_city_val, destination_city_val,
+      flightNum, safeRoute, safeOrigin, safeDestination, safeOriginCity, safeDestinationCity,
       aircraft, scheduled_dep, estimated_dep, delay_mins,
-      passengers, crew, severity, disruption_type_val, status, disruption_reason_val
+      passengers, crew, safeSeverity, safeDisruptionType, safeStatus, safeDisruptionReason
     ])
 
     console.log('Successfully saved disruption:', result.rows[0])

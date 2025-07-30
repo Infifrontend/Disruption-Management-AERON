@@ -427,32 +427,32 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     }
 
     const newFlightData = {
-      flight_number: newDisruption.flightNumber,
+      flightNumber: newDisruption.flightNumber,
       route: `${newDisruption.originCity || getLocationName(newDisruption.origin)} → ${newDisruption.destinationCity || getLocationName(newDisruption.destination)}`,
       origin: newDisruption.origin,
       destination: newDisruption.destination,
-      origin_city:
+      originCity:
         newDisruption.originCity || getLocationName(newDisruption.origin),
-      destination_city:
+      destinationCity:
         newDisruption.destinationCity ||
         getLocationName(newDisruption.destination),
       aircraft: newDisruption.aircraft,
-      scheduled_departure: newDisruption.scheduledDeparture,
-      estimated_departure:
+      scheduledDeparture: newDisruption.scheduledDeparture,
+      estimatedDeparture:
         newDisruption.scheduledArrival ||
         addHours(newDisruption.scheduledDeparture, 3),
-      delay_minutes: newDisruption.delay ? parseInt(newDisruption.delay) : 0,
+      delay: newDisruption.delay ? parseInt(newDisruption.delay) : 0,
       passengers: parseInt(newDisruption.passengers),
       crew: parseInt(newDisruption.crew),
       severity: newDisruption.priority,
-      disruption_type:
+      type:
         newDisruption.disruptionType.charAt(0).toUpperCase() +
         newDisruption.disruptionType.slice(1),
       status:
         newDisruption.currentStatus === "Delayed"
           ? "Active"
           : newDisruption.currentStatus,
-      disruption_reason: newDisruption.disruptionReason,
+      disruptionReason: newDisruption.disruptionReason,
     };
 
     try {
@@ -462,6 +462,32 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         setError(null);
         setSuccess("Disruption added successfully!");
         setShowAlert(true);
+        // Clear the form
+        setNewDisruption({
+          flightNumber: "",
+          origin: "",
+          destination: "",
+          originCity: "",
+          destinationCity: "",
+          scheduledDeparture: "",
+          scheduledArrival: "",
+          currentStatus: "Delayed",
+          delay: "",
+          aircraft: "",
+          gate: "",
+          passengers: "",
+          crew: 6,
+          disruptionType: "technical",
+          categorization: "Aircraft issue (e.g., AOG)",
+          disruptionReason: "",
+          severity: "medium",
+          impact: "",
+          priority: "Medium",
+          connectionFlights: "",
+          vipPassengers: "",
+        });
+        // Close the dialog
+        setIsAddDialogOpen(false);
         // Refresh the flights list
         fetchFlights();
       } else {
@@ -472,9 +498,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       }
     } catch (error) {
       console.error("Error adding disruption:", error);
-      alert(
+      setError(
         "❌ An error occurred while adding the disruption. Please try again or contact support if the issue persists.",
       );
+      setShowAlert(true);
     }
   };
 
