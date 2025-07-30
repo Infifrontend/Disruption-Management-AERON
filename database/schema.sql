@@ -230,12 +230,26 @@ CREATE TABLE IF NOT EXISTS flight_disruptions (
 -- Add missing columns if they don't exist (for existing databases)
 DO $$
 BEGIN
+    -- Add origin column if it doesn't exist
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'flight_disruptions' AND column_name = 'origin') THEN
         ALTER TABLE flight_disruptions ADD COLUMN origin VARCHAR(3);
+        UPDATE flight_disruptions SET origin = 'DXB' WHERE origin IS NULL;
     END IF;
     
+    -- Add destination column if it doesn't exist
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'flight_disruptions' AND column_name = 'destination') THEN
         ALTER TABLE flight_disruptions ADD COLUMN destination VARCHAR(3);
+        UPDATE flight_disruptions SET destination = 'BOM' WHERE destination IS NULL;
+    END IF;
+    
+    -- Add origin_city column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'flight_disruptions' AND column_name = 'origin_city') THEN
+        ALTER TABLE flight_disruptions ADD COLUMN origin_city VARCHAR(100);
+    END IF;
+    
+    -- Add destination_city column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'flight_disruptions' AND column_name = 'destination_city') THEN
+        ALTER TABLE flight_disruptions ADD COLUMN destination_city VARCHAR(100);
     END IF;
 END $$;
 

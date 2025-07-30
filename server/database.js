@@ -310,6 +310,19 @@ app.post('/api/disruptions', async (req, res) => {
       passengers, crew, severity, disruption_type, status, disruption_reason
     } = req.body
     
+    // Validate required fields
+    if (!flight_number || !aircraft || !scheduled_departure || !passengers || !crew) {
+      return res.status(400).json({ 
+        error: 'Missing required fields', 
+        details: 'flight_number, aircraft, scheduled_departure, passengers, and crew are required' 
+      })
+    }
+
+    // Use defaults for missing optional fields
+    const safeOrigin = origin || 'DXB'
+    const safeDestination = destination || 'Unknown'
+    const safeRoute = route || `${safeOrigin} → ${safeDestination}`
+    
     const result = await pool.query(`
       INSERT INTO flight_disruptions (
         flight_number, route, origin, destination, origin_city, destination_city,
@@ -318,15 +331,21 @@ app.post('/api/disruptions', async (req, res) => {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
       RETURNING *
     `, [
-      flight_number, route, origin, destination, origin_city, destination_city,
-      aircraft, scheduled_departure, estimated_departure, delay_minutes,
-      passengers, crew, severity, disruption_type, status, disruption_reason
+      flight_number, safeRoute, safeOrigin, safeDestination, origin_city, destination_city,
+      aircraft, scheduled_departure, estimated_departure, delay_minutes || 0,
+      passengers, crew, severity || 'Medium', disruption_type || 'Technical', 
+      status || 'Active', disruption_reason || 'Unknown disruption'
     ])
     
+    console.log('Successfully saved disruption:', result.rows[0])
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error saving disruption:', error)
-    res.status(500).json({ error: error.message })
+    res.status(500).json({ 
+      error: 'Failed to save disruption', 
+      details: error.message,
+      code: error.code 
+    })
   }
 })
 
