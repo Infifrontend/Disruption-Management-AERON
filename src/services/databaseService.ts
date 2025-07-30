@@ -113,6 +113,20 @@ export interface HotelBooking {
   createdAt: string
 }
 
+export interface ScreenConfiguration {
+  id: string
+  name: string
+  icon: string
+  category: string
+  enabled: boolean
+  required: boolean
+  displayOrder: number
+  description?: string
+  updatedBy: string
+  createdAt: string
+  updatedAt: string
+}
+
 class DatabaseService {
   private baseUrl: string
 
@@ -710,6 +724,92 @@ class DatabaseService {
       }
     }
     return false
+  }
+
+  // Screen Configurations
+  async getAllScreenConfigurations(): Promise<ScreenConfiguration[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/screen-configurations`)
+      if (!response.ok) {
+        console.warn('Screen configurations not found, using defaults')
+        return []
+      }
+      const data = await response.json()
+
+      // Transform database format to expected format
+      return data.map((config: any) => ({
+        id: config.screen_id,
+        name: config.name,
+        icon: config.icon,
+        category: config.category,
+        enabled: config.enabled,
+        required: config.required,
+        displayOrder: config.display_order,
+        description: config.description,
+        updatedBy: config.updated_by,
+        createdAt: config.created_at,
+        updatedAt: config.updated_at
+      }))
+    } catch (error) {
+      console.error('Failed to fetch screen configurations:', error)
+      return []
+    }
+  }
+
+  async updateScreenConfiguration(screenId: string, enabled: boolean, userId: string = 'system'): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/screen-configurations/${screenId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          enabled,
+          updated_by: userId
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      console.log(`Successfully updated screen configuration ${screenId} enabled=${enabled}`)
+      return true
+    } catch (error) {
+      console.error(`Failed to update screen configuration ${screenId}:`, error)
+      return false
+    }
+  }
+
+  async saveScreenConfiguration(config: Omit<ScreenConfiguration, 'createdAt' | 'updatedAt'>): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/screen-configurations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          screen_id: config.id,
+          name: config.name,
+          icon: config.icon,
+          category: config.category,
+          enabled: config.enabled,
+          required: config.required,
+          display_order: config.displayOrder,
+          description: config.description,
+          updated_by: config.updatedBy
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      return true
+    } catch (error) {
+      console.error('Failed to save screen configuration:', error)
+      return false
+    }
   }
 
   // Initialize database tables

@@ -1,24 +1,30 @@
-
-import React, { createContext, useContext, useState, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { useSettingsStorage } from '../utils/settingsStorage'
 
 interface AppContextType {
-  selectedDisruption: any
-  setSelectedDisruption: (disruption: any) => void
-  selectedFlight: any
-  setSelectedFlight: (flight: any) => void
-  selectedRecoveryPlan: any
-  setSelectedRecoveryPlan: (plan: any) => void
-  passengerServicesContext: any
-  setPassengerServicesContext: (context: any) => void
-  filters: any
-  setFilters: (filters: any) => void
-  screenSettings: any[]
-  setScreenSettings: (settings: any[]) => void
+  screenSettings: Array<{
+    id: string
+    name: string
+    icon: string
+    category: string
+    enabled: boolean
+    required: boolean
+  }>
+  setScreenSettings: React.Dispatch<React.SetStateAction<Array<{
+    id: string
+    name: string
+    icon: string
+    category: string
+    enabled: boolean
+    required: boolean
+  }>>>
+  isLoadingScreenSettings: boolean
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const settingsStore = useSettingsStorage()
   const [selectedDisruption, setSelectedDisruption] = useState(null)
   const [selectedFlight, setSelectedFlight] = useState(null)
   const [selectedRecoveryPlan, setSelectedRecoveryPlan] = useState(null)
@@ -29,7 +35,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     region: '',
     dateTime: ''
   })
-
   const [screenSettings, setScreenSettings] = useState([
     { id: 'dashboard', name: 'Dashboard', icon: 'TrendingUp', category: 'main', enabled: true, required: true },
     { id: 'flight-tracking', name: 'Flight Tracking Gantt', icon: 'Calendar', category: 'operations', enabled: true, required: false },
@@ -50,6 +55,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
     { id: 'reports', name: 'Reports & Analytics', icon: 'BarChart3', category: 'analytics', enabled: true, required: false },
     { id: 'settings', name: 'Settings', icon: 'Settings', category: 'system', enabled: true, required: true }
   ])
+  const [isLoadingScreenSettings, setIsLoadingScreenSettings] = useState(true)
+
+  // Load screen settings from database on mount
+  useEffect(() => {
+    const loadScreenSettings = async () => {
+      try {
+        console.log('Loading screen settings from database...')
+        const configurations = await settingsStore.getAllScreenConfigurations()
+        if (configurations.length > 0) {
+          console.log(`Loaded ${configurations.length} screen configurations from database`)
+          setScreenSettings(configurations)
+        } else {
+          console.log('No screen configurations found in database, using defaults')
+        }
+      } catch (error) {
+        console.error('Failed to load screen settings:', error)
+      } finally {
+        setIsLoadingScreenSettings(false)
+      }
+    }
+
+    loadScreenSettings()
+  }, [])
 
   return (
     <AppContext.Provider value={{
@@ -64,7 +92,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       filters,
       setFilters,
       screenSettings,
-      setScreenSettings
+      setScreenSettings,
+      isLoadingScreenSettings
     }}>
       {children}
     </AppContext.Provider>
