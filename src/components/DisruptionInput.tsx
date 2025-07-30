@@ -216,7 +216,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
   // Fetch flights from database
   useEffect(() => {
     fetchFlights();
-    const interval = setInterval(fetchFlights, 30000); // Refresh every 30 seconds
+    const interval = setInterval(fetchFlights, 120000); // Refresh every 120 seconds
     return () => clearInterval(interval);
   }, []);
 
