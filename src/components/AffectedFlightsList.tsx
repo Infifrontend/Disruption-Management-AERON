@@ -31,6 +31,7 @@ export function AffectedFlightsList() {
   const [passengers, setPassengers] = useState<PassengerData[]>([])
   const [loading, setLoading] = useState(true)
   const [loadingPassengers, setLoadingPassengers] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState({
     status: 'all',
     severity: 'all',
@@ -46,10 +47,16 @@ export function AffectedFlightsList() {
 
   const fetchFlights = async () => {
     try {
+      setError(null)
       const data = await databaseService.getAllDisruptions()
       setFlights(data)
+      if (data.length === 0) {
+        console.log('No flight disruptions found in database')
+      }
     } catch (error) {
       console.error('Error fetching flights:', error)
+      setError('Failed to load flight data. Please check your connection and try again.')
+      setFlights([])
     } finally {
       setLoading(false)
     }
@@ -126,6 +133,31 @@ export function AffectedFlightsList() {
           <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
           <p>Loading affected flights...</p>
         </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-semibold">Affected Flights</h2>
+            <p className="text-muted-foreground">
+              Monitor and manage flights affected by disruptions
+            </p>
+          </div>
+        </div>
+        <Alert>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription className="flex items-center justify-between">
+            <span>{error}</span>
+            <Button variant="outline" size="sm" onClick={fetchFlights} className="ml-4">
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
       </div>
     )
   }
@@ -341,9 +373,25 @@ export function AffectedFlightsList() {
               </Card>
             ))}
             {filteredFlights.length === 0 && (
-              <div className="text-center py-8">
-                <Plane className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground">No affected flights found</p>
+              <div className="text-center py-12">
+                <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <Plane className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No affected flights found</h3>
+                <p className="text-gray-500 mb-4">
+                  {flights.length === 0 
+                    ? "There are currently no flight disruptions in the system."
+                    : "No flights match your current filter criteria."
+                  }
+                </p>
+                {flights.length === 0 && (
+                  <div className="flex justify-center gap-2">
+                    <Button variant="outline" onClick={fetchFlights} className="flex items-center gap-2">
+                      <RefreshCw className="h-4 w-4" />
+                      Refresh Data
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
