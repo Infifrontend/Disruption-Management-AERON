@@ -1341,7 +1341,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       <Badge className={getStatusColor(flight.currentStatus)}>
                         {flight.currentStatus}
                       </Badge>
-                      {flight.delay && flight.delay > 0 && (
+                      {flight.delay > 0 && (
                         <div className="text-sm text-red-600 mt-1">
                           +{flight.delay}m
                         </div>
