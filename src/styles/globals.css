@@ -161,7 +161,7 @@
 /* Custom scrollbar for better UX with hover visibility */
 ::-webkit-scrollbar {
   width: 8px;
-  height: 12px;
+  height: 8px;
   transition: all 0.3s ease;
 }
 
@@ -188,7 +188,7 @@
 /* Enhanced scrollbar visibility on hover */
 *:hover::-webkit-scrollbar {
   width: 8px;
-  height: 14px;
+  height: 8px;
 }
 
 *:hover::-webkit-scrollbar-track {
@@ -525,8 +525,13 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* Custom rule priority badges */
