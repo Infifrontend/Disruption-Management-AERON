@@ -51,6 +51,8 @@ import {
   Plus,
   Save,
   X,
+  CheckCircle, 
+  AlertCircle
 } from "lucide-react";
 import { databaseService, FlightDisruption } from '../services/databaseService';
 
@@ -945,7 +947,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               : ""
           }
         >
-          <CardContent className="p-4">
+          ```text
+        <CardContent className="p-4">
             <div className="flex items-center gap-3">
               <AlertTriangle className="h-5 w-5 text-red-600" />
               <div>
