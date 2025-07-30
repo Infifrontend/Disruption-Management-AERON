@@ -1,11 +1,9 @@
 
-import { Pool } from 'pg'
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+#!/usr/bin/env node
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
+const { Pool } = require('pg')
+const fs = require('fs')
+const path = require('path')
 
 async function initializeSchema() {
   let connectionString = process.env.DATABASE_URL
@@ -58,38 +56,10 @@ async function initializeSchema() {
     const schemaSQL = fs.readFileSync(schemaPath, 'utf8')
     console.log('📖 Schema file loaded successfully')
 
-    // Execute schema with error handling for existing objects
+    // Execute schema
     console.log('🚀 Executing database schema...')
-    
-    // Split schema into individual statements and execute them one by one
-    // This allows us to handle errors for existing objects gracefully
-    const statements = schemaSQL
-      .split(';')
-      .map(stmt => stmt.trim())
-      .filter(stmt => stmt.length > 0)
-
-    let successCount = 0
-    let skipCount = 0
-    
-    for (const statement of statements) {
-      try {
-        await pool.query(statement)
-        successCount++
-      } catch (error) {
-        // Skip errors for objects that already exist
-        if (error.message.includes('already exists') || 
-            error.message.includes('duplicate key') ||
-            error.message.includes('relation') && error.message.includes('already exists')) {
-          skipCount++
-          console.log(`⚠️  Skipped: ${error.message.split(':')[1]?.trim() || 'Object already exists'}`)
-        } else {
-          // Re-throw other errors
-          throw error
-        }
-      }
-    }
-    
-    console.log(`✅ Database schema processed: ${successCount} executed, ${skipCount} skipped`)
+    await pool.query(schemaSQL)
+    console.log('✅ Database schema initialized successfully')
 
     // Verify tables were created
     const result = await pool.query(`
