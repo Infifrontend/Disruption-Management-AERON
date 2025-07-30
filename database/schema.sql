@@ -189,7 +189,7 @@ INSERT INTO settings (category, key, value, type, description, updated_by) VALUE
 
 -- NLP Settings
 ('nlpSettings', 'enabled', 'true', 'boolean', 'Enable natural language processing for user inputs', 'system'),
-('nlpSettings', 'language', 'english', 'string', 'Primary language for NLP processing', 'system'),
+('nlpSettings', 'language', '"english"', 'string', 'Primary language for NLP processing', 'system'),
 ('nlpSettings', 'confidence', '85', 'number', 'Minimum confidence threshold for NLP interpretations', 'system'),
 ('nlpSettings', 'autoApply', 'false', 'boolean', 'Automatically apply high-confidence NLP interpretations', 'system'),
 
