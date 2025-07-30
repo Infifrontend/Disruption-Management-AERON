@@ -77,7 +77,7 @@ BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
-$$ LANGUAGE 'plpgsql';
+$$ LANGUAGE plpgsql;
 
 -- Triggers for automatic timestamp updates
 DROP TRIGGER IF EXISTS update_settings_updated_at ON settings;
@@ -107,7 +107,7 @@ BEGIN
     END IF;
     RETURN NULL;
 END;
-$$ LANGUAGE 'plpgsql';
+$$ LANGUAGE plpgsql;
 
 -- Trigger for audit trail
 DROP TRIGGER IF EXISTS settings_audit_trigger ON settings;
