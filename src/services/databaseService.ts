@@ -45,6 +45,7 @@ export interface FlightDisruption {
   delay: number
   passengers: number
   crew: number
+  connectionFlights: number
   severity: string
   type: string
   status: string
@@ -462,14 +463,13 @@ class DatabaseService {
         delay: disruption.delay_minutes || 0,
         passengers: disruption.passengers || 0,
         crew: disruption.crew || 0,
+        connectionFlights: disruption.connection_flights || 0,
         severity: disruption.severity,
         type: disruption.disruption_type,
         status: disruption.status,
         disruptionReason: disruption.disruption_reason,
         createdAt: disruption.created_at,
-        updatedAt: disruption.updated_at,
-        connectionFlights: disruption.connection_flights || 0,
-        vipPassengers: disruption.vip_passengers || 0
+        updatedAt: disruption.updated_at
       }))
     } catch (error) {
       console.error('Failed to fetch disruptions:', error)
@@ -506,6 +506,7 @@ class DatabaseService {
         delay_minutes: disruption.delay,
         passengers: disruption.passengers,
         crew: disruption.crew,
+        connection_flights: disruption.connectionFlights,
         severity: disruption.severity,
         disruption_type: disruption.type,
         status: disruption.status,

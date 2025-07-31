@@ -307,7 +307,7 @@ app.post('/api/disruptions', async (req, res) => {
     const {
       flight_number, route, origin, destination, origin_city, destination_city,
       aircraft, scheduled_departure, estimated_departure, delay_minutes, 
-      passengers, crew, severity, disruption_type, status, disruption_reason
+      passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason
     } = req.body
     
     // Validate required fields
@@ -327,13 +327,13 @@ app.post('/api/disruptions', async (req, res) => {
       INSERT INTO flight_disruptions (
         flight_number, route, origin, destination, origin_city, destination_city,
         aircraft, scheduled_departure, estimated_departure, delay_minutes, 
-        passengers, crew, severity, disruption_type, status, disruption_reason
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
       RETURNING *
     `, [
       flight_number, safeRoute, safeOrigin, safeDestination, origin_city, destination_city,
       aircraft, scheduled_departure, estimated_departure, delay_minutes || 0,
-      passengers, crew, severity || 'Medium', disruption_type || 'Technical', 
+      passengers, crew, connection_flights || 0, severity || 'Medium', disruption_type || 'Technical', 
       status || 'Active', disruption_reason || 'Unknown disruption'
     ])
     
