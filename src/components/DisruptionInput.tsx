@@ -72,19 +72,33 @@ const transformFlightData = (disruption: FlightDisruption) => {
     origin: disruption.origin || "DXB",
     destination: disruption.destination || "Unknown",
     originCity: disruption.originCity || disruption.origin || "Dubai",
-    destinationCity: disruption.destinationCity || disruption.destination || "Unknown",
+    destinationCity:
+      disruption.destinationCity || disruption.destination || "Unknown",
     scheduledDeparture: disruption.scheduledDeparture,
-    scheduledArrival: disruption.estimatedDeparture || addHours(disruption.scheduledDeparture, 3),
-    currentStatus: disruption.status === "Active" ? "Delayed" : disruption.status === "Cancelled" ? "Cancelled" : disruption.status === "Diverted" ? "Diverted" : "Delayed",
+    scheduledArrival:
+      disruption.estimatedDeparture ||
+      addHours(disruption.scheduledDeparture, 3),
+    currentStatus:
+      disruption.status === "Active"
+        ? "Delayed"
+        : disruption.status === "Cancelled"
+          ? "Cancelled"
+          : disruption.status === "Diverted"
+            ? "Diverted"
+            : "Delayed",
     delay: disruption.delay || 0,
     aircraft: disruption.aircraft,
     gate: `T2-A${Math.floor(Math.random() * 30) + 1}`, // Generate consistent gate
     passengers: disruption.passengers || 0,
     crew: disruption.crew || 6,
-    disruptionType: disruption.type ? disruption.type.toLowerCase() : "technical",
+    disruptionType: disruption.type
+      ? disruption.type.toLowerCase()
+      : "technical",
     categorization: getCategorization(disruption.type || "Technical"),
     disruptionReason: disruption.disruptionReason || "Unknown disruption",
-    severity: disruption.severity ? disruption.severity.toLowerCase() : "medium",
+    severity: disruption.severity
+      ? disruption.severity.toLowerCase()
+      : "medium",
     impact: `Flight affected due to ${disruption.disruptionReason || "operational issues"}`,
     lastUpdate: getTimeAgo(disruption.updatedAt || disruption.createdAt),
     priority: disruption.severity || "Medium",
@@ -93,13 +107,11 @@ const transformFlightData = (disruption: FlightDisruption) => {
   };
 };
 
-
-
 // Helper function to get location names for display
 const getLocationName = (code: string) => {
   const locations: { [key: string]: string } = {
     DXB: "Dubai",
-    BOM: "Mumbai", 
+    BOM: "Mumbai",
     DEL: "Delhi",
     KHI: "Karachi",
     COK: "Kochi",
@@ -108,7 +120,7 @@ const getLocationName = (code: string) => {
     CMB: "Colombo",
     BCN: "Barcelona",
     PRG: "Prague",
-    SLL: "Salalah"
+    SLL: "Salalah",
   };
   return locations[code] || code;
 };
@@ -405,8 +417,12 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       originCity: newDisruption.originCity,
       destinationCity: newDisruption.destinationCity,
       gate: newDisruption.gate,
-      connectionFlights: newDisruption.connectionFlights ? parseInt(newDisruption.connectionFlights) : 0,
-      vipPassengers: newDisruption.vipPassengers ? parseInt(newDisruption.vipPassengers) : 0,
+      connectionFlights: newDisruption.connectionFlights
+        ? parseInt(newDisruption.connectionFlights)
+        : 0,
+      vipPassengers: newDisruption.vipPassengers
+        ? parseInt(newDisruption.vipPassengers)
+        : 0,
       aircraft: newDisruption.aircraft,
       scheduledDeparture: newDisruption.scheduledDeparture,
       estimatedDeparture:
@@ -739,7 +755,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     </div>
                   </div>
                 </div>
-
                 {/* Disruption Details */}
                 <div className="space-y-4">
                   <h3 className="font-medium text-flydubai-navy">
@@ -930,7 +945,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       />
                     </div>
                   </div>
-                </div>Code update to adjust newFlightData object structure in handleAddDisruption function.
+                </div>
+                Code update to adjust newFlightData object structure in
+                handleAddDisruption function.
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t">
@@ -1295,7 +1312,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{flight.origin}</span>
                         <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                        <span className="font-medium">{flight.destination}</span>
+                        <span className="font-medium">
+                          {flight.destination}
+                        </span>
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {flight.originCity} → {flight.destinationCity}
@@ -1309,11 +1328,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         <div className="text-sm text-muted-foreground">
                           {formatDate(flight.scheduledDeparture)}
                         </div>
-                        {flight.delay > 0 && (
-                          <div className="text-xs text-red-600 mt-1">
-                            +{flight.delay}m delay
-                          </div>
-                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -1349,8 +1363,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       <div>
                         <div className="font-medium">{flight.passengers}</div>
                         <div className="text-sm text-muted-foreground">
-                          {flight.connectionFlights > 0 
-                            ? `${flight.connectionFlights} connections` 
+                          {flight.connectionFlights > 0
+                            ? `${flight.connectionFlights} connections`
                             : "Direct flight"}
                         </div>
                       </div>
