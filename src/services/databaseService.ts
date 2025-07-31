@@ -460,14 +460,16 @@ class DatabaseService {
         scheduledDeparture: disruption.scheduled_departure,
         estimatedDeparture: disruption.estimated_departure,
         delay: disruption.delay_minutes || 0,
-        passengers: disruption.passengers,
-        crew: disruption.crew,
+        passengers: disruption.passengers || 0,
+        crew: disruption.crew || 0,
         severity: disruption.severity,
         type: disruption.disruption_type,
         status: disruption.status,
         disruptionReason: disruption.disruption_reason,
         createdAt: disruption.created_at,
-        updatedAt: disruption.updated_at
+        updatedAt: disruption.updated_at,
+        connectionFlights: disruption.connection_flights || 0,
+        vipPassengers: disruption.vip_passengers || 0
       }))
     } catch (error) {
       console.error('Failed to fetch disruptions:', error)

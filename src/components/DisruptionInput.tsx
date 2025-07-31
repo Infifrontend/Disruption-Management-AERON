@@ -66,65 +66,30 @@ import { databaseService, FlightDisruption } from "../services/databaseService";
 
 // Transform database flight disruption to the expected format for this component
 const transformFlightData = (disruption: FlightDisruption) => {
-  // Parse route properly - handle both "DXB → DEL" and "DXB-DEL" formats
-  let origin = "DXB";
-  let destination = "Unknown";
-
-  if (disruption.route) {
-    if (disruption.route.includes("→")) {
-      const parts = disruption.route.split("→").map((p) => p.trim());
-      origin = parts[0] || disruption.origin || "DXB";
-      destination = parts[1] || disruption.destination || "Unknown";
-    } else if (disruption.route.includes("-")) {
-      const parts = disruption.route.split("-");
-      origin = parts[0] || disruption.origin || "DXB";
-      destination = parts[1] || disruption.destination || "Unknown";
-    } else {
-      origin = disruption.origin || "DXB";
-      destination = disruption.destination || "Unknown";
-    }
-  }
-
   return {
     id: disruption.id,
     flightNumber: disruption.flightNumber,
-    origin: origin,
-    destination: destination,
-    originCity: disruption.originCity || getLocationName(origin),
-    destinationCity: disruption.destinationCity || getLocationName(destination),
+    origin: disruption.origin,
+    destination: disruption.destination,
+    originCity: disruption.originCity || getLocationName(disruption.origin),
+    destinationCity: disruption.destinationCity || getLocationName(disruption.destination),
     scheduledDeparture: disruption.scheduledDeparture,
-    scheduledArrival:
-      disruption.estimatedDeparture ||
-      addHours(disruption.scheduledDeparture, 3),
-    currentStatus:
-      disruption.status === "Active"
-        ? "Delayed"
-        : disruption.status === "Cancelled"
-          ? "Cancelled"
-          : disruption.status === "Diverted"
-            ? "Diverted"
-            : "Delayed",
+    scheduledArrival: disruption.estimatedDeparture || disruption.scheduledDeparture,
+    currentStatus: disruption.status === "Active" ? "Delayed" : disruption.status,
     delay: disruption.delay || 0,
     aircraft: disruption.aircraft,
-    gate: `T2-${Math.random().toString(36).substr(2, 3).toUpperCase()}`, // Mock gate
+    gate: null, // No gate data in database
     passengers: disruption.passengers,
     crew: disruption.crew,
-    disruptionType: disruption.type
-      ? disruption.type.toLowerCase()
-      : "technical",
+    disruptionType: disruption.type ? disruption.type.toLowerCase() : "technical",
     categorization: getCategorization(disruption.type || "Technical"),
     disruptionReason: disruption.disruptionReason || "Unknown disruption",
-    severity: disruption.severity
-      ? disruption.severity.toLowerCase()
-      : "medium",
+    severity: disruption.severity ? disruption.severity.toLowerCase() : "medium",
     impact: `Flight affected due to ${disruption.disruptionReason || "operational issues"}`,
     lastUpdate: getTimeAgo(disruption.updatedAt || disruption.createdAt),
     priority: disruption.severity || "Medium",
-    connectionFlights: getConsistentConnectionCount(
-      disruption.flightNumber,
-      disruption.passengers,
-    ),
-    vipPassengers: getConsistentVipCount(disruption.flightNumber),
+    connectionFlights: 0, // Use actual database value when available
+    vipPassengers: 0, // Use actual database value when available
   };
 };
 
@@ -145,33 +110,7 @@ const getLocationName = (code: string) => {
   return locations[code] || code;
 };
 
-// Generate consistent connection count based on flight number and passenger count
-const getConsistentConnectionCount = (
-  flightNumber: string,
-  passengers: number,
-) => {
-  // Create a simple hash from flight number for consistency
-  const hash = flightNumber
-    .split("")
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
 
-  // Base connection count on passenger load and route popularity
-  const baseConnections = Math.min(
-    Math.max(Math.floor(passengers * 0.05), 3),
-    15,
-  ); // 5% of passengers, min 3, max 15
-  const variation = hash % 5; // Add consistent variation based on flight number
-
-  return baseConnections + variation;
-};
-
-// Generate consistent VIP count based on flight number
-const getConsistentVipCount = (flightNumber: string) => {
-  const hash = flightNumber
-    .split("")
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return (hash % 4) + 1; // 1-4 VIP passengers based on flight number
-};
 
 const getCategorization = (type: string) => {
   const categorizations: { [key: string]: string } = {
@@ -183,11 +122,7 @@ const getCategorization = (type: string) => {
   return categorizations[type] || "Aircraft issue (e.g., AOG)";
 };
 
-const addHours = (dateString: string, hours: number) => {
-  const date = new Date(dateString);
-  date.setHours(date.getHours() + hours);
-  return date.toISOString();
-};
+
 
 const getTimeAgo = (dateString: string) => {
   const now = new Date();
@@ -1123,9 +1058,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                 </p>
                 <p className="text-lg font-semibold text-green-600">
                   {selectedFlight
-                    ? selectedFlight.connectionFlights
+                    ? selectedFlight.connectionFlights || 0
                     : sortedFlights.reduce(
-                        (sum, f) => sum + f.connectionFlights,
+                        (sum, f) => sum + (f.connectionFlights || 0),
                         0,
                       )}
                 </p>
@@ -1406,7 +1341,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       <div>
                         <div className="font-medium">{flight.passengers}</div>
                         <div className="text-sm text-muted-foreground">
-                          {flight.connectionFlights} connections
+                          {flight.connectionFlights === 0 ? "No connections" : `${flight.connectionFlights} connections`}
                         </div>
                       </div>
                     </TableCell>
