@@ -441,7 +441,8 @@ const generateRotationMisalignmentRecovery = (flight) => {
   return { options, steps }
 }
 
-export function generateRecoveryOptionsForDisruption(disruption) {
+// Main function to generate recovery options and steps
+function generateRecoveryOptionsForDisruption(disruption) {
   const flight = {
     flightNumber: disruption.flight_number,
     aircraft: disruption.aircraft,
@@ -479,8 +480,10 @@ export function generateRecoveryOptionsForDisruption(disruption) {
   return { options, steps }
 }
 
-// This function was moved to avoid duplication - using the more comprehensive one above
+// Export functions
+export { generateRecoveryOptionsForDisruption }
 
+// For backward compatibility, also export the steps function
 export function generateRecoveryStepsForDisruption(disruption) {
   return generateRecoveryOptionsForDisruption(disruption).steps
 }
