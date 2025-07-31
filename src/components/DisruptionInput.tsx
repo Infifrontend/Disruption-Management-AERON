@@ -65,75 +65,41 @@ import {
 import { databaseService, FlightDisruption } from "../services/databaseService";
 
 // Transform database flight disruption to the expected format for this component
-
 const transformFlightData = (disruption: FlightDisruption) => {
-  // Parse route properly - handle both "DXB → DEL" and "DXB-DEL" formats
-  let origin = "DXB";
-  let destination = "Unknown";
-
-  if (disruption.route) {
-    if (disruption.route.includes("→")) {
-      const parts = disruption.route.split("→").map((p) => p.trim());
-      origin = parts[0] || disruption.origin || "DXB";
-      destination = parts[1] || disruption.destination || "Unknown";
-    } else if (disruption.route.includes("-")) {
-      const parts = disruption.route.split("-");
-      origin = parts[0] || disruption.origin || "DXB";
-      destination = parts[1] || disruption.destination || "Unknown";
-    } else {
-      origin = disruption.origin || "DXB";
-      destination = disruption.destination || "Unknown";
-    }
-  }
-
   return {
     id: disruption.id,
     flightNumber: disruption.flightNumber,
-    origin: origin,
-    destination: destination,
-    originCity: disruption.originCity || getLocationName(origin),
-    destinationCity: disruption.destinationCity || getLocationName(destination),
+    origin: disruption.origin || "DXB",
+    destination: disruption.destination || "Unknown",
+    originCity: disruption.originCity || disruption.origin || "Dubai",
+    destinationCity: disruption.destinationCity || disruption.destination || "Unknown",
     scheduledDeparture: disruption.scheduledDeparture,
-    scheduledArrival:
-      disruption.estimatedDeparture ||
-      addHours(disruption.scheduledDeparture, 3),
-    currentStatus:
-      disruption.status === "Active"
-        ? "Delayed"
-        : disruption.status === "Cancelled"
-          ? "Cancelled"
-          : disruption.status === "Diverted"
-            ? "Diverted"
-            : "Delayed",
+    scheduledArrival: disruption.estimatedDeparture || addHours(disruption.scheduledDeparture, 3),
+    currentStatus: disruption.status === "Active" ? "Delayed" : disruption.status === "Cancelled" ? "Cancelled" : disruption.status === "Diverted" ? "Diverted" : "Delayed",
     delay: disruption.delay || 0,
     aircraft: disruption.aircraft,
-    gate: `T2-${Math.random().toString(36).substr(2, 3).toUpperCase()}`, // Mock gate
-    passengers: disruption.passengers,
-    crew: disruption.crew,
-    disruptionType: disruption.type
-      ? disruption.type.toLowerCase()
-      : "technical",
+    gate: `T2-A${Math.floor(Math.random() * 30) + 1}`, // Generate consistent gate
+    passengers: disruption.passengers || 0,
+    crew: disruption.crew || 6,
+    disruptionType: disruption.type ? disruption.type.toLowerCase() : "technical",
     categorization: getCategorization(disruption.type || "Technical"),
     disruptionReason: disruption.disruptionReason || "Unknown disruption",
-    severity: disruption.severity
-      ? disruption.severity.toLowerCase()
-      : "medium",
+    severity: disruption.severity ? disruption.severity.toLowerCase() : "medium",
     impact: `Flight affected due to ${disruption.disruptionReason || "operational issues"}`,
     lastUpdate: getTimeAgo(disruption.updatedAt || disruption.createdAt),
     priority: disruption.severity || "Medium",
-    connectionFlights: getConsistentConnectionCount(
-      disruption.flightNumber,
-      disruption.passengers,
-    ),
-    vipPassengers: getConsistentVipCount(disruption.flightNumber),
+    connectionFlights: disruption.connectionFlights || 0,
+    vipPassengers: Math.floor((disruption.passengers || 0) * 0.02) + 1, // 2% of passengers are VIP
   };
 };
 
-// Helper functions
+
+
+// Helper function to get location names for display
 const getLocationName = (code: string) => {
   const locations: { [key: string]: string } = {
     DXB: "Dubai",
-    BOM: "Mumbai",
+    BOM: "Mumbai", 
     DEL: "Delhi",
     KHI: "Karachi",
     COK: "Kochi",
@@ -142,36 +108,9 @@ const getLocationName = (code: string) => {
     CMB: "Colombo",
     BCN: "Barcelona",
     PRG: "Prague",
+    SLL: "Salalah"
   };
   return locations[code] || code;
-};
-
-// Generate consistent connection count based on flight number and passenger count
-const getConsistentConnectionCount = (
-  flightNumber: string,
-  passengers: number,
-) => {
-  // Create a simple hash from flight number for consistency
-  const hash = flightNumber
-    .split("")
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-
-  // Base connection count on passenger load and route popularity
-  const baseConnections = Math.min(
-    Math.max(Math.floor(passengers * 0.05), 3),
-    15,
-  ); // 5% of passengers, min 3, max 15
-  const variation = hash % 5; // Add consistent variation based on flight number
-
-  return baseConnections + variation;
-};
-
-// Generate consistent VIP count based on flight number
-const getConsistentVipCount = (flightNumber: string) => {
-  const hash = flightNumber
-    .split("")
-    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  return (hash % 4) + 1; // 1-4 VIP passengers based on flight number
 };
 
 const getCategorization = (type: string) => {
@@ -1356,9 +1295,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       <div className="flex items-center gap-2">
                         <span className="font-medium">{flight.origin}</span>
                         <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                        <span className="font-medium">
-                          {flight.destination}
-                        </span>
+                        <span className="font-medium">{flight.destination}</span>
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {flight.originCity} → {flight.destinationCity}
@@ -1410,9 +1347,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{flight.passengers || 0}</div>
+                        <div className="font-medium">{flight.passengers}</div>
                         <div className="text-sm text-muted-foreground">
-                          {(flight.connectionFlights || 0) > 0 
+                          {flight.connectionFlights > 0 
                             ? `${flight.connectionFlights} connections` 
                             : "Direct flight"}
                         </div>

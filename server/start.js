@@ -271,8 +271,9 @@ app.post('/api/settings/reset', async (req, res) => {
 app.get('/api/disruptions', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT id, flight_number, route, aircraft, scheduled_departure, estimated_departure,
-             delay_minutes, passengers, crew, severity, disruption_type, status, 
+      SELECT id, flight_number, route, origin, destination, origin_city, destination_city,
+             aircraft, scheduled_departure, estimated_departure, delay_minutes, 
+             passengers, crew, connection_flights, severity, disruption_type, status, 
              disruption_reason, created_at, updated_at
       FROM flight_disruptions 
       ORDER BY created_at DESC
