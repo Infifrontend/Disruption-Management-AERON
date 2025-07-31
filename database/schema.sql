@@ -272,7 +272,6 @@ END $$;
 CREATE TABLE IF NOT EXISTS recovery_options (
     id SERIAL PRIMARY KEY,
     disruption_id INTEGER REFERENCES flight_disruptions(id),
-    option_id VARCHAR(100) NOT NULL,
     title VARCHAR(255) NOT NULL,
     description TEXT,
     cost VARCHAR(50),
