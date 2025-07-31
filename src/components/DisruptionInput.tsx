@@ -67,7 +67,6 @@ import { databaseService, FlightDisruption } from "../services/databaseService";
 // Transform database flight disruption to the expected format for this component
 
 const transformFlightData = (disruption: FlightDisruption) => {
-  console.log(FlightDisruption);
   // Parse route properly - handle both "DXB → DEL" and "DXB-DEL" formats
   let origin = "DXB";
   let destination = "Unknown";
