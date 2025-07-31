@@ -719,7 +719,7 @@ class DatabaseService {
   }
 
   // Recovery Options methods
-  async getRecoveryOptions(disruptionId: number) {
+  async getRecoveryOptions(disruptionId: string | number) {
     try {
       const response = await fetch(`${this.baseUrl}/recovery-options/${disruptionId}`)
       if (!response.ok) return []
@@ -730,7 +730,7 @@ class DatabaseService {
     }
   }
 
-  async generateRecoveryOptions(disruptionId: number) {
+  async generateRecoveryOptions(disruptionId: string | number) {
     try {
       const response = await fetch(`${this.baseUrl}/generate-recovery-options/${disruptionId}`, {
         method: 'POST',
@@ -750,7 +750,7 @@ class DatabaseService {
     }
   }
 
-  async getRecoverySteps(disruptionId: number) {
+  async getRecoverySteps(disruptionId: string | number) {
     try {
       const response = await fetch(`${this.baseUrl}/recovery-steps/${disruptionId}`)
       if (!response.ok) return []

@@ -84,6 +84,7 @@ import { generateScheduleImpactAnalysis } from './schedule-impact-helpers'
 import { requiresPassengerReaccommodation, generateAffectedPassengers } from './passenger-data-helpers'
 import { generateRecoveryOptionDetails, calculateScenarioImpact, calculateImpact } from './what-if-simulation-helpers'
 import { CrewTrackingGantt } from './CrewTrackingGantt'
+import { databaseService } from '../services/databaseService'
 
 export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompare, onPassengerServices, onNavigateToPendingSolutions }) {
   const [selectedOption, setSelectedOption] = useState(null)
@@ -103,10 +104,95 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
   const [activeSimulation, setActiveSimulation] = useState(null)
   const [showExecuteConfirmation, setShowExecuteConfirmation] = useState(false)
   const [optionToExecute, setOptionToExecute] = useState(null)
-  const [useDatabaseData, setUseDatabaseData] = useState(false) // Added state for data source
+  const [useDatabaseData, setUseDatabaseData] = useState(true) // Use database by default
+  const [recoveryOptions, setRecoveryOptions] = useState([])
+  const [recoverySteps, setRecoverySteps] = useState([])
+  const [isLoadingOptions, setIsLoadingOptions] = useState(false)
+  const [loadingError, setLoadingError] = useState(null)
 
   // Handle both array and single flight selection
   const flight = Array.isArray(selectedFlight) ? selectedFlight[0] : selectedFlight
+
+  // Fetch recovery options from database
+  useEffect(() => {
+    const fetchRecoveryOptions = async () => {
+      if (!flight?.id || !useDatabaseData) return
+
+      setIsLoadingOptions(true)
+      setLoadingError(null)
+
+      try {
+        // First try to get existing options
+        let options = await databaseService.getRecoveryOptions(flight.id)
+        let steps = await databaseService.getRecoverySteps(flight.id)
+
+        // If no options exist, generate them
+        if (options.length === 0) {
+          console.log('No recovery options found, generating new ones...')
+          const result = await databaseService.generateRecoveryOptions(flight.id)
+          
+          if (result.optionsCount > 0) {
+            // Fetch the newly generated options
+            options = await databaseService.getRecoveryOptions(flight.id)
+            steps = await databaseService.getRecoverySteps(flight.id)
+          }
+        }
+
+        // Transform database format to component format
+        const transformedOptions = options.map(option => ({
+          id: option.option_id,
+          title: option.title,
+          description: option.description || 'Recovery option description',
+          cost: option.cost || 'TBD',
+          timeline: option.timeline || 'TBD',
+          confidence: option.confidence || 80,
+          impact: option.impact || 'Medium impact',
+          status: option.status === 'generated' ? 'recommended' : option.status,
+          advantages: Array.isArray(option.advantages) ? option.advantages : [],
+          considerations: Array.isArray(option.considerations) ? option.considerations : [],
+          metrics: option.metrics || {},
+          resourceRequirements: option.resource_requirements || [],
+          costBreakdown: option.cost_breakdown || [],
+          timelineDetails: option.timeline_details || [],
+          riskAssessment: option.risk_assessment || [],
+          technicalSpecs: option.technical_specs || {},
+          rotationPlan: option.rotation_plan || {}
+        }))
+
+        const transformedSteps = steps.map(step => ({
+          step: step.step_number,
+          title: step.title,
+          status: step.status || 'pending',
+          timestamp: step.timestamp || new Date().toLocaleTimeString(),
+          system: step.system || 'AERON System',
+          details: step.details || 'Processing...',
+          data: step.step_data || {}
+        }))
+
+        setRecoveryOptions(transformedOptions)
+        setRecoverySteps(transformedSteps)
+
+      } catch (error) {
+        console.error('Error fetching recovery options:', error)
+        setLoadingError(error.message)
+        
+        // Fallback to mock data if database fetch fails
+        try {
+          const scenarioData = getScenarioDataForFlight(flight?.categorization)
+          setRecoveryOptions(scenarioData.options || [])
+          setRecoverySteps(scenarioData.steps || [])
+        } catch (fallbackError) {
+          console.error('Fallback to mock data also failed:', fallbackError)
+          setRecoveryOptions([])
+          setRecoverySteps([])
+        }
+      } finally {
+        setIsLoadingOptions(false)
+      }
+    }
+
+    fetchRecoveryOptions()
+  }, [flight?.id, useDatabaseData])
 
   // Early return if no flight is selected
   if (!flight) {
@@ -141,7 +227,21 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
   // Get scenario-specific recovery data with fallback
   let scenarioData
   try {
-    scenarioData = getScenarioDataForFlight(flight?.categorization)
+    if (useDatabaseData && (recoveryOptions.length > 0 || recoverySteps.length > 0)) {
+      // Use database data when available
+      scenarioData = {
+        title: 'Database Recovery Options',
+        description: 'AI-generated flight recovery analysis',
+        priority: 'High',
+        estimatedTime: '1-3 hours',
+        icon: Plane,
+        steps: recoverySteps,
+        options: recoveryOptions
+      }
+    } else {
+      // Fallback to mock scenario data
+      scenarioData = getScenarioDataForFlight(flight?.categorization)
+    }
   } catch (error) {
     console.error('Error getting scenario data:', error)
     // Provide a fallback scenario data structure
@@ -151,8 +251,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       priority: 'Medium',
       estimatedTime: '2-4 hours',
       icon: Plane,
-      steps: [],
-      options: []
+      steps: recoverySteps || [],
+      options: recoveryOptions || []
     }
   }
 
@@ -164,17 +264,17 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       priority: 'Medium',
       estimatedTime: '2-4 hours',
       icon: Plane,
-      steps: [],
-      options: []
+      steps: recoverySteps || [],
+      options: recoveryOptions || []
     }
   }
 
   // Ensure steps and options are arrays
   if (!Array.isArray(scenarioData.steps)) {
-    scenarioData.steps = []
+    scenarioData.steps = recoverySteps || []
   }
   if (!Array.isArray(scenarioData.options)) {
-    scenarioData.options = []
+    scenarioData.options = recoveryOptions || []
   }
 
   // Handle edit mode changes
@@ -742,9 +842,21 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                 <Badge variant="outline" className="text-xs">
                   {flight?.categorization}
                 </Badge>
-                <Badge variant="outline" className={`text-xs ${useDatabaseData ? 'bg-green-50 text-green-700 border-green-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
-                  {useDatabaseData ? 'Database Generated' : 'Scenario Template'}
+                <Badge variant="outline" className={`text-xs ${useDatabaseData && recoveryOptions.length > 0 ? 'bg-green-50 text-green-700 border-green-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
+                  {useDatabaseData && recoveryOptions.length > 0 ? 'Database Generated' : 'Scenario Template'}
                 </Badge>
+                {isLoadingOptions && (
+                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
+                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                    Loading Options...
+                  </Badge>
+                )}
+                {loadingError && (
+                  <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    Error Loading
+                  </Badge>
+                )}
               </div>
               </div>
             </div>
@@ -810,11 +922,68 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5 text-flydubai-blue" />
             Recovery Options
+            {useDatabaseData && (
+              <div className="flex items-center gap-2 ml-auto">
+                <Switch
+                  checked={useDatabaseData}
+                  onCheckedChange={setUseDatabaseData}
+                  disabled={isLoadingOptions}
+                />
+                <span className="text-sm text-muted-foreground">Database Data</span>
+              </div>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {scenarioData.options.map((option, index) => (
+          {loadingError && (
+            <Alert className="mb-4 border-red-200 bg-red-50">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">
+                <strong>Error loading recovery options:</strong> {loadingError}. Falling back to scenario templates.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {isLoadingOptions ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-center p-8">
+                <RefreshCw className="h-6 w-6 text-flydubai-blue animate-spin mr-2" />
+                <span className="text-muted-foreground">Generating recovery options...</span>
+              </div>
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardHeader>
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="h-3 bg-gray-200 rounded w-full mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          ) : scenarioData.options.length === 0 ? (
+            <div className="text-center p-8">
+              <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">No Recovery Options Available</h3>
+              <p className="text-muted-foreground mb-4">
+                No recovery options found for this disruption. Try refreshing or contact support.
+              </p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="outline"
+                className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Refresh Options
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {scenarioData.options.map((option, index) => (
               <Card key={option.id} className={`transition-all hover:shadow-md ${selectedOption?.id === option.id ? 'border-flydubai-blue bg-blue-50' : ''}`}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -917,8 +1086,9 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   </div>
                 </CardContent>
               </Card>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
 
