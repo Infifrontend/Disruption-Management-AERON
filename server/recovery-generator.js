@@ -1,42 +1,5 @@
 
-const generateRecoveryOptionsForDisruption = (disruption) => {
-  const flight = {
-    flightNumber: disruption.flight_number,
-    aircraft: disruption.aircraft,
-    origin: disruption.origin,
-    destination: disruption.destination,
-    passengers: disruption.passengers,
-    crew: disruption.crew,
-    connectionFlights: disruption.connection_flights,
-    categorization: mapDisruptionTypeToCategory(disruption.disruption_type, disruption.disruption_reason)
-  }
-  
-  let options = []
-  let steps = []
-  
-  switch (flight.categorization) {
-    case 'Aircraft issue (e.g., AOG)':
-      ({ options, steps } = generateAircraftIssueRecovery(flight))
-      break
-    case 'Crew issue (e.g., sick report, duty time breach)':
-      ({ options, steps } = generateCrewIssueRecovery(flight))
-      break
-    case 'ATC/weather delay':
-      ({ options, steps } = generateWeatherDelayRecovery(flight))
-      break
-    case 'Airport curfew/ramp congestion':
-      ({ options, steps } = generateCurfewCongestionRecovery(flight))
-      break
-    case 'Rotation misalignment or maintenance hold':
-      ({ options, steps } = generateRotationMisalignmentRecovery(flight))
-      break
-    default:
-      ({ options, steps } = generateAircraftIssueRecovery(flight))
-  }
-  
-  return { options, steps }
-}
-
+// Helper functions for disruption type mapping and recovery generation
 const mapDisruptionTypeToCategory = (type, reason) => {
   const lowerType = type.toLowerCase()
   const lowerReason = reason.toLowerCase()
@@ -474,6 +437,44 @@ const generateRotationMisalignmentRecovery = (flight) => {
       }
     }
   ]
+  
+  return { options, steps }
+}
+
+export function generateRecoveryOptionsForDisruption(disruption) {
+  const flight = {
+    flightNumber: disruption.flight_number,
+    aircraft: disruption.aircraft,
+    origin: disruption.origin,
+    destination: disruption.destination,
+    passengers: disruption.passengers,
+    crew: disruption.crew,
+    connectionFlights: disruption.connection_flights,
+    categorization: mapDisruptionTypeToCategory(disruption.disruption_type, disruption.disruption_reason)
+  }
+  
+  let options = []
+  let steps = []
+  
+  switch (flight.categorization) {
+    case 'Aircraft issue (e.g., AOG)':
+      ({ options, steps } = generateAircraftIssueRecovery(flight))
+      break
+    case 'Crew issue (e.g., sick report, duty time breach)':
+      ({ options, steps } = generateCrewIssueRecovery(flight))
+      break
+    case 'ATC/weather delay':
+      ({ options, steps } = generateWeatherDelayRecovery(flight))
+      break
+    case 'Airport curfew/ramp congestion':
+      ({ options, steps } = generateCurfewCongestionRecovery(flight))
+      break
+    case 'Rotation misalignment or maintenance hold':
+      ({ options, steps } = generateRotationMisalignmentRecovery(flight))
+      break
+    default:
+      ({ options, steps } = generateAircraftIssueRecovery(flight))
+  }
   
   return { options, steps }
 }
