@@ -89,7 +89,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
   const [selectedOption, setSelectedOption] = useState(null)
   const [showDetails, setShowDetails] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
-  const [isExecuting, setIsExecuting] = useState(false)
+  const [isExecuting, setIsExecuting] = useState(isExecuting)
   const [showRotationPlan, setShowRotationPlan] = useState(false)
   const [selectedRotationData, setSelectedRotationData] = useState(null)
   const [scheduleImpactData, setScheduleImpactData] = useState(null)
@@ -103,6 +103,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
   const [activeSimulation, setActiveSimulation] = useState(null)
   const [showExecuteConfirmation, setShowExecuteConfirmation] = useState(false)
   const [optionToExecute, setOptionToExecute] = useState(null)
+  const [useDatabaseData, setUseDatabaseData] = useState(false) // Added state for data source
 
   // Handle both array and single flight selection
   const flight = Array.isArray(selectedFlight) ? selectedFlight[0] : selectedFlight
@@ -127,12 +128,12 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
   // Get scenario-specific recovery data
   const getScenarioDataForFlight = (categorization) => {
     const dataFunction = getScenarioData(categorization)
-    
+
     // For crew issues, we need to pass the flight data
     if (categorization === 'Crew issue (e.g., sick report, duty time breach)') {
       return getCrewIssueRecovery(flight)
     }
-    
+
     // For other scenarios, call the function if it's a function, otherwise return the data
     return typeof dataFunction === 'function' ? dataFunction() : dataFunction
   }
@@ -192,7 +193,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
     const baseOption = selectedOptionForDetails
     const editedParams = editedOption?.editedParameters || {}
     const result = calculateScenarioImpact(baseOption, scenario, editedParams)
-    
+
     setActiveSimulation({
       scenario,
       result,
@@ -256,7 +257,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
     setSelectedOption(optionToExecute)
     setIsExecuting(true)
     setShowExecuteConfirmation(false)
-    
+
     // Add to pending solutions (simulate adding to pending list)
     const pendingEntry = {
       id: `RP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000) + 1).padStart(3, '0')}`,
@@ -287,15 +288,15 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         costEfficiency: 92
       }
     }
-    
+
     // In a real implementation, this would make an API call to add the pending solution
     console.log('Added to pending solutions:', pendingEntry)
-    
+
     // Simulate execution process
     setTimeout(() => {
       setIsExecuting(false)
       onSelectPlan && onSelectPlan({ ...optionToExecute, flight: flight })
-      
+
       // Navigate to Pending Solutions after execution completes
       setTimeout(() => {
         onNavigateToPendingSolutions && onNavigateToPendingSolutions()
@@ -576,7 +577,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                           option.id?.includes('DELAY') ? 'delay' : 
                           option.id?.includes('REROUTE') || option.id?.includes('DIVERT') ? 'reroute' : 'general'
     }
-    
+
     onPassengerServices && onPassengerServices(context)
   }
 
@@ -594,7 +595,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               Please review the recovery plan details before submitting for approval and execution.
             </DialogDescription>
           </DialogHeader>
-          
+
           {optionToExecute && (
             <div className="space-y-6">
               {/* Recovery Plan Summary */}
@@ -708,7 +709,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               Interactive crew tracking Gantt chart with real-time impact analysis for recovery plan modifications
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="flex-1 overflow-hidden">
             <CrewTrackingGantt 
               recoveryOption={selectedOptionForDetails}
@@ -731,17 +732,20 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                 <CardTitle className="text-flydubai-navy">{scenarioData.title}</CardTitle>
                 <p className="text-sm text-muted-foreground">{scenarioData.description}</p>
                 <div className="flex items-center gap-4 mt-2">
-                  <Badge className={`priority-${scenarioData.priority.toLowerCase()}`}>
-                    {scenarioData.priority} PRIORITY
-                  </Badge>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Timer className="h-4 w-4" />
-                    Est. Resolution: {scenarioData.estimatedTime}
-                  </div>
-                  <Badge variant="outline" className="text-xs">
-                    {flight?.categorization}
-                  </Badge>
+                <Badge className={`priority-${scenarioData.priority.toLowerCase()}`}>
+                  {scenarioData.priority} PRIORITY
+                </Badge>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Timer className="h-4 w-4" />
+                  Est. Resolution: {scenarioData.estimatedTime}
                 </div>
+                <Badge variant="outline" className="text-xs">
+                  {flight?.categorization}
+                </Badge>
+                <Badge variant="outline" className={`text-xs ${useDatabaseData ? 'bg-green-50 text-green-700 border-green-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
+                  {useDatabaseData ? 'Database Generated' : 'Scenario Template'}
+                </Badge>
+              </div>
               </div>
             </div>
             <div className="text-right">
@@ -770,8 +774,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     {step.step}
                   </div>
                   {index < scenarioData.steps.length - 1 && (
-                    <div className="w-0.5 h-8 bg-gray-300 mt-2"></div>
-                  )}
+                    <div className="w-0.5 h-8 bg-gray-300 mt-2"></div>                  )}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
@@ -840,7 +843,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                             <span>{option.impact}</span>
                           </div>
                         </div>
-                        
+
                         {/* Passenger Re-accommodation Alert */}
                         {requiresPassengerReaccommodation(option) && (
                           <Alert className="mt-2 border-orange-200 bg-orange-50">
@@ -891,7 +894,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                       <FileText className="h-4 w-4 mr-2" />
                       View Recovery Option
                     </Button>
-                    
+
                     <Button 
                       variant="outline" 
                       onClick={() => handleViewRotationPlan(option)}
@@ -956,7 +959,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               </div>
             </div>
           </DialogHeader>
-          
+
           {selectedOptionForDetails && (
             <div className="space-y-6">
               {/* Edit Mode Controls */}
@@ -974,7 +977,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                         <div key={index} className="space-y-2">
                           <Label className="text-sm font-medium">{param.name}</Label>
                           <p className="text-xs text-gray-600">{param.description}</p>
-                          
+
                           {param.type === 'select' && (
                             <Select 
                               value={editedOption?.editedParameters?.[param.name] || param.value}
@@ -990,7 +993,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                               </SelectContent>
                             </Select>
                           )}
-                          
+
                           {param.type === 'slider' && (
                             <div className="space-y-2">
                               <Slider
@@ -1006,21 +1009,21 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                               </div>
                             </div>
                           )}
-                          
+
                           {param.type === 'switch' && (
                             <Switch
                               checked={editedOption?.editedParameters?.[param.name] || param.value}
                               onCheckedChange={(checked) => handleParameterChange(param.name, checked)}
                             />
                           )}
-                          
+
                           <Badge variant="outline" className="text-xs">
                             Affects: {param.impact}
                           </Badge>
                         </div>
                       ))}
                     </div>
-                    
+
                     <div className="flex justify-end gap-2 mt-4">
                       <Button variant="outline" onClick={() => setIsEditMode(false)}>
                         <RotateCcw className="h-4 w-4 mr-2" />
@@ -1044,7 +1047,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   <TabsTrigger value="risks">Risk Assessment</TabsTrigger>
                   <TabsTrigger value="technical">Technical Details</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="overview" className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Enhanced Detailed Description */}
@@ -1056,7 +1059,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                         <p className="text-sm text-gray-700 leading-relaxed">
                           {selectedOptionForDetails.detailedDescription || 'No detailed description available.'}
                         </p>
-                        
+
                         {/* Flight-specific details */}
                         <div className="mt-4 p-3 bg-blue-50 rounded-lg">
                           <h4 className="text-sm font-medium text-blue-800 mb-2">Flight Context</h4>
@@ -1117,7 +1120,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     </Card>
                   </div>
                 </TabsContent>
-                
+
                 <TabsContent value="costs" className="space-y-4">
                   <Card>
                     <CardHeader>
@@ -1158,7 +1161,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     </CardContent>
                   </Card>
                 </TabsContent>
-                
+
                 <TabsContent value="timeline" className="space-y-4">
                   <Card>
                     <CardHeader>
@@ -1205,7 +1208,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     </CardContent>
                   </Card>
                 </TabsContent>
-                
+
                 <TabsContent value="resources" className="space-y-4">
                   <Card>
                     <CardHeader>
@@ -1248,7 +1251,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     </CardContent>
                   </Card>
                 </TabsContent>
-                
+
                 <TabsContent value="risks" className="space-y-4">
                   <Card>
                     <CardHeader>
@@ -1290,7 +1293,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     </CardContent>
                   </Card>
                 </TabsContent>
-                
+
                 <TabsContent value="technical" className="space-y-4">
                   <Card>
                     <CardHeader>
@@ -1347,7 +1350,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               Original Aircraft: {flight?.aircraft}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="flex-1 overflow-y-auto dialog-scrollable">
             <Tabs defaultValue="aircraft" className="w-full">
               <TabsList className="grid w-full grid-cols-4 mb-6">
@@ -1356,7 +1359,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                 <TabsTrigger value="rotation">Rotation & Ops Impact</TabsTrigger>
                 <TabsTrigger value="cost">Cost & Delay Metrics</TabsTrigger>
               </TabsList>
-              
+
               {/* Tab 1: Alternate Aircraft Options */}
               <TabsContent value="aircraft" className="space-y-4">
                 <Card>
@@ -1384,7 +1387,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                         {(() => {
                           const rotationData = generateRotationPlanData(selectedRotationData, flight)
                           if (!rotationData) return null
-                          
+
                           return rotationData.aircraftOptions.map((aircraft, index) => (
                             <TableRow key={index} className={aircraft.recommended ? "bg-green-50" : 
                                                            aircraft.maintenance.status === 'aog' ? "bg-red-50" : 
@@ -1445,7 +1448,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                         {(() => {
                           const rotationData = generateRotationPlanData(selectedRotationData, flight)
                           if (!rotationData) return null
-                          
+
                           return rotationData.crewData.map((crew, index) => (
                             <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${
                               crew.status === 'Available' ? 'bg-green-50' : 
@@ -1473,7 +1476,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
@@ -1533,7 +1536,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                         {(() => {
                           const rotationData = generateRotationPlanData(selectedRotationData, flight)
                           if (!rotationData) return null
-                          
+
                           return rotationData.nextSectors.map((sector, index) => (
                             <div key={index} className={`p-3 border-l-4 rounded-lg ${
                               sector.impact === 'High Impact' ? 'border-red-500 bg-red-50' :
@@ -1562,7 +1565,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                       </div>
                     </CardContent>
                   </Card>
-                  
+
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
@@ -1575,7 +1578,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                         {(() => {
                           const rotationData = generateRotationPlanData(selectedRotationData, flight)
                           if (!rotationData) return null
-                          
+
                           return Object.entries(rotationData.operationalConstraints).map(([key, constraint]) => (
                             <div key={key}>
                               <Label className="text-sm font-medium flex items-center gap-2">
@@ -1615,7 +1618,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   {(() => {
                     const rotationData = generateRotationPlanData(selectedRotationData, flight)
                     if (!rotationData) return null
-                    
+
                     return (
                       <>
                         <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
@@ -1628,7 +1631,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                             <p className="text-xs text-red-600 mt-1">Including compensation</p>
                           </CardContent>
                         </Card>
-                        
+
                         <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
                           <CardContent className="p-4 text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
@@ -1639,7 +1642,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                             <p className="text-xs text-yellow-600 mt-1">vs original aircraft</p>
                           </CardContent>
                         </Card>
-                        
+
                         <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
                           <CardContent className="p-4 text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
@@ -1652,7 +1655,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                             <p className="text-xs text-blue-600 mt-1">Crew accommodation</p>
                           </CardContent>
                         </Card>
-                        
+
                         <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
                           <CardContent className="p-4 text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
@@ -1680,7 +1683,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     {(() => {
                       const rotationData = generateRotationPlanData(selectedRotationData, flight)
                       if (!rotationData) return null
-                      
+
                       return (
                         <>
                           <div className="mb-4 p-4 bg-green-100 border border-green-200 rounded-lg">
@@ -1692,7 +1695,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                               {rotationData.recommendation.reason}
                             </p>
                           </div>
-                          
+
                           <Table className="mb-4">
                             <TableHeader>
                               <TableRow>
@@ -1711,7 +1714,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                                 const crewScore = aircraft.recommended ? 95 : 65 - (index * 5)
                                 const fuelScore = aircraft.recommended ? 91 : 89 - (index * 14)
                                 const overallScore = Math.round((costScore + delayScore + crewScore + fuelScore) / 4)
-                                
+
                                 return (
                                   <TableRow key={index} className={aircraft.recommended ? "bg-green-50" : ""}>
                                     <TableCell className="font-medium">{aircraft.reg}</TableCell>
@@ -1725,7 +1728,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                               })}
                             </TableBody>
                           </Table>
-                          
+
                           <div>
                             <Label className="text-sm font-medium mb-2 block">Operations Comments</Label>
                             <Input 
