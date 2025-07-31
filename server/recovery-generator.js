@@ -481,3 +481,237 @@ const generateRotationMisalignmentRecovery = (flight) => {
 module.exports = {
   generateRecoveryOptionsForDisruption
 }
+export function generateRecoveryOptionsForDisruption(disruption) {
+  const options = []
+  const steps = []
+
+  // Generate recovery steps based on disruption type
+  const baseSteps = [
+    {
+      step: 1,
+      title: 'Disruption Analysis',
+      status: 'completed',
+      timestamp: '2025-01-11 09:15:00',
+      system: 'AERON Recovery Engine',
+      details: `Analyzed ${disruption.disruption_type} disruption for flight ${disruption.flight_number}`,
+      data: {
+        disruptionType: disruption.disruption_type,
+        severity: disruption.severity,
+        delay: disruption.delay_minutes
+      }
+    },
+    {
+      step: 2,
+      title: 'Resource Assessment',
+      status: 'completed',
+      timestamp: '2025-01-11 09:16:30',
+      system: 'Resource Management',
+      details: 'Checked available aircraft, crew, and slots',
+      data: {
+        aircraftAvailable: 3,
+        crewAvailable: 2,
+        slotsAvailable: true
+      }
+    },
+    {
+      step: 3,
+      title: 'Option Generation',
+      status: 'in_progress',
+      timestamp: '2025-01-11 09:18:00',
+      system: 'AERON AI Engine',
+      details: 'Generating recovery options based on available resources',
+      data: {
+        optionsGenerated: 0,
+        confidence: 0
+      }
+    }
+  ]
+
+  // Add disruption-specific steps
+  if (disruption.disruption_type === 'Weather') {
+    steps.push(...baseSteps, {
+      step: 4,
+      title: 'Weather Monitoring',
+      status: 'pending',
+      timestamp: '2025-01-11 09:20:00',
+      system: 'Weather Service',
+      details: 'Monitoring weather conditions for improvement',
+      data: {
+        weatherCondition: 'Improving',
+        estimatedClearance: '2025-01-11 11:00:00'
+      }
+    })
+  } else if (disruption.disruption_type === 'Technical') {
+    steps.push(...baseSteps, {
+      step: 4,
+      title: 'Technical Assessment',
+      status: 'pending',
+      timestamp: '2025-01-11 09:20:00',
+      system: 'Maintenance',
+      details: 'Technical team assessing repair requirements',
+      data: {
+        estimatedRepairTime: 120,
+        partsAvailable: true
+      }
+    })
+  }
+
+  // Generate recovery options based on disruption characteristics
+  if (disruption.disruption_type === 'Weather' && disruption.delay_minutes > 180) {
+    options.push({
+      id: 'WR-001',
+      title: 'Aircraft Substitution',
+      description: 'Replace aircraft with available backup to avoid extended weather delay',
+      cost: 'AED 45,000',
+      timeline: '90 minutes',
+      confidence: 92,
+      impact: `${disruption.passengers} passengers affected`,
+      status: 'recommended',
+      advantages: [
+        'Minimizes passenger delay',
+        'Maintains schedule integrity',
+        'Quick implementation'
+      ],
+      considerations: [
+        'Higher operational cost',
+        'Requires crew coordination',
+        'Weather conditions must improve'
+      ],
+      resourceRequirements: {
+        aircraft: 'Available backup aircraft',
+        crew: 'Current crew (if duty time permits)',
+        gates: 'Gate reassignment required'
+      },
+      costBreakdown: {
+        aircraftSwap: 25000,
+        crewCosts: 8000,
+        groundHandling: 5000,
+        passengerServices: 7000
+      },
+      timelineDetails: {
+        preparation: '30 minutes',
+        execution: '45 minutes',
+        boarding: '15 minutes'
+      },
+      riskAssessment: {
+        weatherRisk: 'Medium',
+        operationalRisk: 'Low',
+        costRisk: 'Medium'
+      }
+    })
+
+    options.push({
+      id: 'WR-002',
+      title: 'Schedule Delay & Passenger Services',
+      description: 'Delay flight and provide comprehensive passenger services',
+      cost: 'AED 28,000',
+      timeline: '4-6 hours',
+      confidence: 85,
+      impact: `${disruption.passengers} passengers, ${disruption.connection_flights || 0} connections`,
+      status: 'alternative',
+      advantages: [
+        'Lower operational cost',
+        'Uses original aircraft',
+        'Comprehensive passenger care'
+      ],
+      considerations: [
+        'Extended passenger delay',
+        'Potential missed connections',
+        'Network impact'
+      ]
+    })
+
+    if (disruption.delay_minutes > 240) {
+      options.push({
+        id: 'WR-003',
+        title: 'Cancel & Rebook with HOTAC',
+        description: 'Cancel flight and rebook passengers on alternative flights with hotel accommodation',
+        cost: 'AED 75,000',
+        timeline: '24 hours',
+        confidence: 95,
+        impact: `${disruption.passengers} passengers fully accommodated`,
+        status: 'contingency',
+        advantages: [
+          'Guaranteed passenger accommodation',
+          'Minimal aircraft/crew impact',
+          'Clear resolution'
+        ],
+        considerations: [
+          'Highest cost option',
+          '24-hour passenger impact',
+          'Reputation considerations'
+        ]
+      })
+    }
+  } else if (disruption.disruption_type === 'Technical') {
+    options.push({
+      id: 'TR-001',
+      title: 'Quick Technical Fix',
+      description: 'Perform immediate technical repair if feasible',
+      cost: 'AED 15,000',
+      timeline: '2 hours',
+      confidence: 75,
+      impact: `${disruption.passengers} passengers with 2-hour delay`,
+      status: 'recommended',
+      advantages: [
+        'Lowest cost option',
+        'Uses original aircraft',
+        'Minimal delay'
+      ],
+      considerations: [
+        'Repair success not guaranteed',
+        'Potential for extended delay',
+        'Safety considerations'
+      ]
+    })
+
+    options.push({
+      id: 'TR-002',
+      title: 'Aircraft Substitution',
+      description: 'Replace aircraft immediately with available backup',
+      cost: 'AED 38,000',
+      timeline: '90 minutes',
+      confidence: 88,
+      impact: `${disruption.passengers} passengers with minimal delay`,
+      status: 'alternative',
+      advantages: [
+        'Reliable solution',
+        'Quick implementation',
+        'Maintains schedule'
+      ],
+      considerations: [
+        'Higher cost than repair',
+        'Backup aircraft availability',
+        'Crew coordination needed'
+      ]
+    })
+  } else {
+    // Default options for other disruption types
+    options.push({
+      id: 'GR-001',
+      title: 'Standard Recovery Protocol',
+      description: 'Apply standard recovery procedures for this disruption type',
+      cost: 'AED 25,000',
+      timeline: '2 hours',
+      confidence: 80,
+      impact: `${disruption.passengers} passengers affected`,
+      status: 'recommended',
+      advantages: [
+        'Proven methodology',
+        'Balanced cost-benefit',
+        'Standard procedures'
+      ],
+      considerations: [
+        'May not be optimal for unique situations',
+        'Standard timeline may vary',
+        'Resource availability dependent'
+      ]
+    })
+  }
+
+  return { options, steps }
+}
+
+export function generateRecoveryStepsForDisruption(disruption) {
+  return generateRecoveryOptionsForDisruption(disruption).steps
+}

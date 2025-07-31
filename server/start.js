@@ -607,7 +607,7 @@ app.get('/api/recovery-options/:disruptionId', async (req, res) => {
     const result = await pool.query(`
       SELECT * FROM recovery_options 
       WHERE disruption_id = $1 
-      ORDER BY priority DESC, confidence DESC
+      ORDER BY confidence DESC, id ASC
     `, [disruptionId])
     res.json(result.rows || [])
   } catch (error) {
@@ -724,7 +724,8 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
     }
 
     // Generate recovery options based on disruption type
-    const { generateRecoveryOptionsForDisruption, generateRecoveryStepsForDisruption } = require('./recovery-generator.js')
+    const recoveryGenerator = await import('./recovery-generator.js')
+    const { generateRecoveryOptionsForDisruption, generateRecoveryStepsForDisruption } = recoveryGenerator
 
     const { options, steps } = generateRecoveryOptionsForDisruption(disruption)
 
