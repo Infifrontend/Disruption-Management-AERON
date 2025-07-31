@@ -1,4 +1,3 @@
-
 const express = require('express')
 const { Pool } = require('pg')
 const cors = require('cors')
@@ -47,11 +46,11 @@ app.get('/api/settings/:category/:key', async (req, res) => {
       'SELECT * FROM settings WHERE category = $1 AND key = $2 AND is_active = true',
       [category, key]
     )
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Setting not found' })
     }
-    
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error fetching setting:', error)
@@ -76,7 +75,7 @@ app.get('/api/settings/category/:category', async (req, res) => {
 app.post('/api/settings', async (req, res) => {
   try {
     const { category, key, value, type, updated_by = 'system' } = req.body
-    
+
     const result = await pool.query(`
       INSERT INTO settings (category, key, value, type, updated_by)
       VALUES ($1, $2, $3, $4, $5)
@@ -88,7 +87,7 @@ app.post('/api/settings', async (req, res) => {
         updated_at = CURRENT_TIMESTAMP
       RETURNING *
     `, [category, key, JSON.stringify(value), type, updated_by])
-    
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error saving setting:', error)
@@ -103,11 +102,11 @@ app.delete('/api/settings/:category/:key', async (req, res) => {
       'UPDATE settings SET is_active = false WHERE category = $1 AND key = $2 RETURNING *',
       [category, key]
     )
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Setting not found' })
     }
-    
+
     res.json({ message: 'Setting deleted successfully' })
   } catch (error) {
     console.error('Error deleting setting:', error)
@@ -131,13 +130,13 @@ app.get('/api/custom-rules', async (req, res) => {
 app.post('/api/custom-rules', async (req, res) => {
   try {
     const { rule_id, name, description, category, type, priority, overridable, conditions, actions, created_by } = req.body
-    
+
     const result = await pool.query(`
       INSERT INTO custom_rules (rule_id, name, description, category, type, priority, overridable, conditions, actions, created_by)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
     `, [rule_id, name, description, category, type, priority, overridable, conditions, actions, created_by])
-    
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error saving custom rule:', error)
@@ -149,12 +148,12 @@ app.put('/api/custom-rules/:ruleId', async (req, res) => {
   try {
     const { ruleId } = req.params
     const updates = req.body
-    
+
     // Build dynamic update query
     const updateFields = []
     const values = []
     let paramCounter = 1
-    
+
     Object.entries(updates).forEach(([key, value]) => {
       if (key !== 'id' && key !== 'rule_id' && key !== 'created_at') {
         updateFields.push(`${key} = $${paramCounter}`)
@@ -162,11 +161,11 @@ app.put('/api/custom-rules/:ruleId', async (req, res) => {
         paramCounter++
       }
     })
-    
+
     if (updateFields.length === 0) {
       return res.status(400).json({ error: 'No fields to update' })
     }
-    
+
     values.push(ruleId)
     const query = `
       UPDATE custom_rules 
@@ -174,13 +173,13 @@ app.put('/api/custom-rules/:ruleId', async (req, res) => {
       WHERE rule_id = $${paramCounter}
       RETURNING *
     `
-    
+
     const result = await pool.query(query, values)
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Custom rule not found' })
     }
-    
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error updating custom rule:', error)
@@ -195,11 +194,11 @@ app.delete('/api/custom-rules/:ruleId', async (req, res) => {
       'DELETE FROM custom_rules WHERE rule_id = $1 RETURNING *',
       [ruleId]
     )
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Custom rule not found' })
     }
-    
+
     res.json({ message: 'Custom rule deleted successfully' })
   } catch (error) {
     console.error('Error deleting custom rule:', error)
@@ -223,13 +222,13 @@ app.get('/api/custom-parameters', async (req, res) => {
 app.post('/api/custom-parameters', async (req, res) => {
   try {
     const { parameter_id, name, category, weight, description, created_by } = req.body
-    
+
     const result = await pool.query(`
       INSERT INTO custom_parameters (parameter_id, name, category, weight, description, created_by)
       VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `, [parameter_id, name, category, weight, description, created_by])
-    
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error saving custom parameter:', error)
@@ -244,11 +243,11 @@ app.delete('/api/custom-parameters/:parameterId', async (req, res) => {
       'UPDATE custom_parameters SET is_active = false WHERE parameter_id = $1 RETURNING *',
       [parameterId]
     )
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Custom parameter not found' })
     }
-    
+
     res.json({ message: 'Custom parameter deleted successfully' })
   } catch (error) {
     console.error('Error deleting custom parameter:', error)
@@ -290,11 +289,11 @@ app.get('/api/disruptions/:id', async (req, res) => {
       'SELECT * FROM flight_disruptions WHERE id = $1',
       [id]
     )
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Disruption not found' })
     }
-    
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error fetching disruption:', error)
@@ -307,9 +306,9 @@ app.post('/api/disruptions', async (req, res) => {
     const {
       flight_number, route, origin, destination, origin_city, destination_city,
       aircraft, scheduled_departure, estimated_departure, delay_minutes, 
-      passengers, crew, severity, disruption_type, status, disruption_reason
+      passengers, crew, severity, disruption_type, status, disruption_reason, connection_flights
     } = req.body
-    
+
     // Validate required fields
     if (!flight_number || !aircraft || !scheduled_departure || !passengers || !crew) {
       return res.status(400).json({ 
@@ -322,21 +321,21 @@ app.post('/api/disruptions', async (req, res) => {
     const safeOrigin = origin || 'DXB'
     const safeDestination = destination || 'Unknown'
     const safeRoute = route || `${safeOrigin} → ${safeDestination}`
-    
+
     const result = await pool.query(`
       INSERT INTO flight_disruptions (
         flight_number, route, origin, destination, origin_city, destination_city,
         aircraft, scheduled_departure, estimated_departure, delay_minutes, 
-        passengers, crew, severity, disruption_type, status, disruption_reason
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
       RETURNING *
     `, [
       flight_number, safeRoute, safeOrigin, safeDestination, origin_city, destination_city,
       aircraft, scheduled_departure, estimated_departure, delay_minutes || 0,
-      passengers, crew, severity || 'Medium', disruption_type || 'Technical', 
+      passengers, crew, connection_flights || 0, severity || 'Medium', disruption_type || 'Technical', 
       status || 'Active', disruption_reason || 'Unknown disruption'
     ])
-    
+
     console.log('Successfully saved disruption:', result.rows[0])
     res.json(result.rows[0])
   } catch (error) {
@@ -370,7 +369,7 @@ app.post('/api/recovery-options', async (req, res) => {
       disruption_id, option_name, description, cost, duration_minutes,
       confidence, passenger_impact, details
     } = req.body
-    
+
     const result = await pool.query(`
       INSERT INTO recovery_options (
         disruption_id, option_name, description, cost, duration_minutes,
@@ -381,7 +380,7 @@ app.post('/api/recovery-options', async (req, res) => {
       disruption_id, option_name, description, cost, duration_minutes,
       confidence, passenger_impact, JSON.stringify(details)
     ])
-    
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error saving recovery option:', error)
@@ -411,11 +410,11 @@ app.get('/api/passengers/pnr/:pnr', async (req, res) => {
       'SELECT * FROM passengers WHERE pnr = $1',
       [pnr]
     )
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Passenger not found' })
     }
-    
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error fetching passenger:', error)
@@ -427,18 +426,18 @@ app.put('/api/passengers/:pnr/rebooking', async (req, res) => {
   try {
     const { pnr } = req.params
     const { rebooking_status, new_flight_number, new_seat_number } = req.body
-    
+
     const result = await pool.query(`
       UPDATE passengers 
       SET rebooking_status = $1, new_flight_number = $2, new_seat_number = $3, updated_at = CURRENT_TIMESTAMP
       WHERE pnr = $4
       RETURNING *
     `, [rebooking_status, new_flight_number, new_seat_number, pnr])
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Passenger not found' })
     }
-    
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error updating passenger rebooking:', error)
@@ -502,18 +501,18 @@ app.put('/api/aircraft/:id/status', async (req, res) => {
   try {
     const { id } = req.params
     const { status } = req.body
-    
+
     const result = await pool.query(`
       UPDATE aircraft 
       SET status = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
       RETURNING *
     `, [status, id])
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Aircraft not found' })
     }
-    
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error updating aircraft status:', error)
@@ -554,7 +553,7 @@ app.post('/api/hotel-bookings', async (req, res) => {
       disruption_id, passenger_pnr, hotel_name, check_in, check_out,
       cost, status, booking_reference
     } = req.body
-    
+
     const result = await pool.query(`
       INSERT INTO hotel_bookings (
         disruption_id, passenger_pnr, hotel_name, check_in, check_out,
@@ -565,7 +564,7 @@ app.post('/api/hotel-bookings', async (req, res) => {
       disruption_id, passenger_pnr, hotel_name, check_in, check_out,
       cost, status, booking_reference
     ])
-    
+
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error creating hotel booking:', error)
@@ -585,7 +584,7 @@ app.get('/api/analytics/kpi', async (req, res) => {
       passengerImpact: 0,
       costSavings: 0
     }
-    
+
     // Get actual data from database
     const disruptionsResult = await pool.query(`
       SELECT 
@@ -595,7 +594,7 @@ app.get('/api/analytics/kpi', async (req, res) => {
         SUM(passengers) as total_passengers
       FROM flight_disruptions
     `)
-    
+
     if (disruptionsResult.rows.length > 0) {
       const row = disruptionsResult.rows[0]
       kpiData.totalDisruptions = parseInt(row.total) || 0
@@ -603,7 +602,7 @@ app.get('/api/analytics/kpi', async (req, res) => {
       kpiData.resolvedDisruptions = parseInt(row.resolved) || 0
       kpiData.passengerImpact = parseInt(row.total_passengers) || 0
     }
-    
+
     res.json(kpiData)
   } catch (error) {
     console.error('Error fetching KPI data:', error)

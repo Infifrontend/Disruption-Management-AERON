@@ -45,6 +45,7 @@ export interface FlightDisruption {
   delay: number
   passengers: number
   crew: number
+  connectionFlights: number
   severity: string
   type: string
   status: string
@@ -462,6 +463,7 @@ class DatabaseService {
         delay: disruption.delay_minutes || 0,
         passengers: disruption.passengers || 0,
         crew: disruption.crew || 6,
+        connectionFlights: disruption.connection_flights || 0,
         severity: disruption.severity,
         type: disruption.disruption_type,
         status: disruption.status,
