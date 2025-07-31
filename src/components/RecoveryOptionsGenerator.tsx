@@ -140,7 +140,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
 
         // Transform database format to component format
         const transformedOptions = options.map((option, index) => ({
-          id: option.option_id || option.id || `option_${index + 1}`,
+          id: option.id || `option_${index + 1}`,
           title: option.title,
           description: option.description || 'Recovery option description',
           cost: option.cost || 'TBD',
