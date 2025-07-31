@@ -1,5 +1,5 @@
 
-import React from 'react'
+import React, { Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { Dashboard } from './pages/Dashboard'
@@ -23,13 +23,24 @@ import { SettingsPage } from './pages/SettingsPage'
 import { AppProvider } from './context/AppContext'
 import './styles/globals.css'
 
+// Loading component
+const LoadingSpinner = () => (
+  <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <p className="text-gray-600">Loading Flydubai AERON...</p>
+    </div>
+  </div>
+)
+
 export default function App() {
   return (
     <AppProvider>
       <Router>
         <div className="min-h-screen bg-background">
-          <Layout>
-            <Routes>
+          <Suspense fallback={<LoadingSpinner />}>
+            <Layout>
+              <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/flight-tracking" element={<FlightTracking />} />
@@ -50,7 +61,8 @@ export default function App() {
               <Route path="/reports" element={<ReportsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Routes>
-          </Layout>
+            </Layout>
+          </Suspense>
         </div>
       </Router>
     </AppProvider>
