@@ -410,6 +410,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       delay: newDisruption.delay ? parseInt(newDisruption.delay) : 0,
       passengers: parseInt(newDisruption.passengers),
       crew: parseInt(newDisruption.crew),
+      connectionFlights: newDisruption.connectionFlights ? parseInt(newDisruption.connectionFlights) : 0,
       severity: newDisruption.priority,
       type:
         newDisruption.disruptionType.charAt(0).toUpperCase() +
