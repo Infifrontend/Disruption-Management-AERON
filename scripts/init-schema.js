@@ -56,6 +56,7 @@ async function initializeSchema() {
     }
 
     const schemaSQL = fs.readFileSync(schemaPath, 'utf8')
+
     console.log('📖 Schema file loaded successfully')
 
     // Execute schema
