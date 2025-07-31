@@ -1,32 +1,18 @@
 // Helper functions for generating affected passenger data
 
 export const requiresPassengerReaccommodation = (option) => {
-  if (!option) return false
-  
-  // Check option ID patterns that typically require re-accommodation
-  if (option.id?.includes('CANCEL') || option.title?.toLowerCase().includes('cancel')) {
-    return true
-  }
-  
-  // Check for long delays (typically > 3 hours)
-  if (option.id?.includes('DELAY') || option.title?.toLowerCase().includes('delay')) {
-    const timelineMatch = option.timeline?.match(/(\d+)/)
-    const hours = timelineMatch ? parseInt(timelineMatch[1]) : 0
-    if (hours >= 3) return true
-  }
-  
-  // Check for rerouting/diversion
-  if (option.id?.includes('REROUTE') || option.id?.includes('DIVERT') || 
-      option.title?.toLowerCase().includes('reroute') || option.title?.toLowerCase().includes('divert')) {
-    return true
-  }
-  
-  // Check if option mentions overnight delay
-  if (option.id?.includes('OVERNIGHT') || option.title?.toLowerCase().includes('overnight')) {
-    return true
-  }
-  
-  return false
+  // Define option IDs that require passenger reaccommodation
+  const reaccommodationOptions = [
+    'CANCEL_REBOOK',
+    'DELAY_4H_OVERNIGHT', 
+    'OVERNIGHT_DELAY',
+    'CANCEL_AND_REBOOK',
+    'ROUTE_DIVERSION'
+  ]
+
+  // Ensure option.id is a string before using includes
+  const optionId = String(option.id || '')
+  return reaccommodationOptions.some(id => optionId.includes(id))
 }
 
 // PNR group templates for realistic passenger data
@@ -336,25 +322,25 @@ export const getIndividualPNRTemplates = () => [
 export const generateAffectedPassengers = (flight, option) => {
   const totalPassengers = flight?.passengers || 167
   const passengers = []
-  
+
   // Get PNR group templates
   const pnrGroups = getPNRGroupTemplates()
   const individualPNRs = getIndividualPNRTemplates()
-  
+
   // Combine group and individual passengers
   const allPNRGroups = [...pnrGroups, ...individualPNRs]
-  
+
   let passengerCounter = 1
   let seatCounter = 1
   const seatRows = ['A', 'B', 'C', 'D', 'E', 'F']
-  
+
   // Generate passenger records from PNR groups
   allPNRGroups.forEach((pnrGroup) => {
     if (passengerCounter > totalPassengers) return
-    
+
     pnrGroup.passengers.forEach((passengerTemplate, index) => {
       if (passengerCounter > totalPassengers) return
-      
+
       // Determine seat assignment
       let seat
       if (passengerTemplate.seatPreference === 'Lap') {
@@ -365,11 +351,11 @@ export const generateAffectedPassengers = (flight, option) => {
         seat = `${seatRow}${seatLetter}`
         seatCounter++
       }
-      
+
       // Determine contact info
       const contactEmail = pnrGroup.baseContactEmail || passengerTemplate.contactEmail || `${passengerTemplate.name.toLowerCase().replace(/\s+/g, '.')}@email.com`
       const contactPhone = pnrGroup.baseContactPhone || passengerTemplate.contactPhone || '+971 50 000 0000'
-      
+
       // Determine status based on recovery option
       let status = 'Confirmed'
       if (requiresPassengerReaccommodation(option)) {
@@ -381,7 +367,7 @@ export const generateAffectedPassengers = (flight, option) => {
           status = Math.random() > 0.3 ? 'Rebooking Required' : 'Accommodation Needed'
         }
       }
-      
+
       const passenger = {
         id: `PAX-${String(passengerCounter).padStart(3, '0')}`,
         name: passengerTemplate.name,
@@ -405,11 +391,11 @@ export const generateAffectedPassengers = (flight, option) => {
         groupType: pnrGroup.groupType || 'individual',
         familySize: pnrGroup.passengers.length
       }
-      
+
       passengers.push(passenger)
       passengerCounter++
     })
   })
-  
+
   return passengers.slice(0, totalPassengers)
 }
