@@ -1348,11 +1348,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       <div className="text-sm text-muted-foreground">
                         {flight.originCity} → {flight.destinationCity}
                       </div>
-                      {flight.route && flight.route !== `${flight.origin} → ${flight.destination}` && (
-                        <div className="text-xs text-blue-600 mt-1">
-                          Route: {flight.route}
-                        </div>
-                      )}
                     </TableCell>
                     <TableCell>
                       <div>
@@ -1364,7 +1359,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         </div>
                         {flight.delay > 0 && (
                           <div className="text-xs text-red-600 mt-1">
-                            Est: {formatTime(flight.scheduledArrival)}
+                            +{flight.delay}m delay
                           </div>
                         )}
                       </div>
@@ -1373,11 +1368,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       <Badge className={getStatusColor(flight.currentStatus)}>
                         {flight.currentStatus}
                       </Badge>
-                      {flight.delay > 0 && (
-                        <div className="text-sm text-red-600 mt-1">
-                          +{flight.delay}m
-                        </div>
-                      )}
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
@@ -1388,9 +1378,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         >
                           {flight.categorization}
                         </Badge>
-                        <div className="text-sm text-muted-foreground">
-                          {flight.disruptionReason}
-                        </div>
+                        {flight.disruptionReason && flight.disruptionReason !== "Unknown disruption" && (
+                          <div className="text-sm text-muted-foreground truncate max-w-[200px]">
+                            {flight.disruptionReason}
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -1401,14 +1393,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     <TableCell>
                       <div>
                         <div className="font-medium">{flight.passengers || 0}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {(flight.connectionFlights || 0) === 0 
-                            ? "No connections" 
-                            : `${flight.connectionFlights} connections`}
-                        </div>
-                        {flight.crew && (
-                          <div className="text-xs text-gray-500">
-                            +{flight.crew} crew
+                        {(flight.connectionFlights || 0) > 0 && (
+                          <div className="text-sm text-muted-foreground">
+                            {flight.connectionFlights} connections
                           </div>
                         )}
                       </div>
