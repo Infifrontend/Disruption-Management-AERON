@@ -658,15 +658,19 @@ app.post('/api/recovery-options', async (req, res) => {
 app.get('/api/recovery-steps/:disruptionId', async (req, res) => {
   try {
     const { disruptionId } = req.params
+    console.log(`Fetching recovery steps for disruption ID: ${disruptionId}`)
+    
     const result = await pool.query(`
       SELECT * FROM recovery_steps 
       WHERE disruption_id = $1 
       ORDER BY step_number ASC
     `, [disruptionId])
+    
+    console.log(`Found ${result.rows.length} recovery steps for disruption ${disruptionId}`)
     res.json(result.rows || [])
   } catch (error) {
     console.error('Error fetching recovery steps:', error)
-    res.json([])
+    res.status(500).json({ error: error.message, rows: [] })
   }
 })
 
@@ -696,10 +700,25 @@ app.post('/api/recovery-steps', async (req, res) => {
   }
 })
 
+// Debug endpoint to check recovery steps table
+app.get('/api/debug/recovery-steps', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM recovery_steps ORDER BY disruption_id, step_number')
+    res.json({
+      totalSteps: result.rows.length,
+      steps: result.rows
+    })
+  } catch (error) {
+    console.error('Error fetching all recovery steps:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Generate and save recovery options for a disruption
 app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
   try {
     const { disruptionId } = req.params
+    console.log(`Generating recovery options for disruption ID: ${disruptionId}`)
 
     // First get the disruption details
     const disruptionResult = await pool.query(
@@ -712,25 +731,42 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
     }
 
     const disruption = disruptionResult.rows[0]
+    console.log('Found disruption:', disruption.flight_number)
 
-    // Check if recovery options already exist
+    // Check if recovery steps already exist (not just options)
+    const existingSteps = await pool.query(
+      'SELECT COUNT(*) as count FROM recovery_steps WHERE disruption_id = $1',
+      [disruptionId]
+    )
+
     const existingOptions = await pool.query(
       'SELECT COUNT(*) as count FROM recovery_options WHERE disruption_id = $1',
       [disruptionId]
     )
 
-    if (existingOptions.rows[0].count > 0) {
-      return res.json({ message: 'Recovery options already exist', exists: true })
+    if (existingOptions.rows[0].count > 0 && existingSteps.rows[0].count > 0) {
+      return res.json({ 
+        message: 'Recovery options and steps already exist', 
+        exists: true,
+        optionsCount: existingOptions.rows[0].count,
+        stepsCount: existingSteps.rows[0].count
+      })
     }
 
     // Generate recovery options based on disruption type
     const recoveryGenerator = await import('./recovery-generator.js')
-    const { generateRecoveryOptionsForDisruption, generateRecoveryStepsForDisruption } = recoveryGenerator
+    const { generateRecoveryOptionsForDisruption } = recoveryGenerator
 
     const { options, steps } = generateRecoveryOptionsForDisruption(disruption)
+    console.log(`Generated ${options.length} options and ${steps.length} steps`)
 
-    // Save recovery steps
+    // Clear existing data if partially generated
+    await pool.query('DELETE FROM recovery_steps WHERE disruption_id = $1', [disruptionId])
+    await pool.query('DELETE FROM recovery_options WHERE disruption_id = $1', [disruptionId])
+
+    // Save recovery steps first
     for (const step of steps) {
+      console.log(`Saving step ${step.step}: ${step.title}`)
       await pool.query(`
         INSERT INTO recovery_steps (
           disruption_id, step_number, title, status, timestamp,
@@ -746,6 +782,7 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
     // Save recovery options
     for (let i = 0; i < options.length; i++) {
       const option = options[i]
+      console.log(`Saving option ${i + 1}: ${option.title}`)
       await pool.query(`
         INSERT INTO recovery_options (
           disruption_id, option_id, title, description, cost, timeline,
@@ -769,7 +806,12 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
       ])
     }
 
-    res.json({ message: 'Recovery options generated successfully', optionsCount: options.length, stepsCount: steps.length })
+    console.log('Successfully saved all recovery options and steps')
+    res.json({ 
+      message: 'Recovery options generated successfully', 
+      optionsCount: options.length, 
+      stepsCount: steps.length 
+    })
   } catch (error) {
     console.error('Error generating recovery options:', error)
     res.status(500).json({ error: error.message })
