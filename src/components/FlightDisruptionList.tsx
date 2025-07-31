@@ -101,310 +101,8 @@ export function FlightDisruptionList() {
     return () => clearInterval(interval);
   }, []);
 
-  // Enhanced mock data with comprehensive disruption information (fallback)
-  const mockDisruptions = [
-    {
-      id: "DISR-2025-001",
-      flightNumber: "EK123",
-      route: "JFK → DXBdd",
-      aircraft: "A321-001",
-      aircraftType: "Airbus A321-200",
-      scheduledDeparture: "2025-06-06 14:30",
-      estimatedDeparture: "2025-06-06 16:45",
-      delay: 135,
-      passengers: 158,
-      crew: 8,
-      gate: "B12",
-      terminal: "4",
-      severity: "High",
-      type: "Technical",
-      status: "Active",
-      confidence: 94.2,
-      disruptionReason:
-        "Engine warning light - hydraulic system check required",
-      detailedDescription:
-        "Aircraft A321-001 experiencing intermittent hydraulic pressure warning during pre-flight checks. Maintenance team investigating. Passenger boarding suspended pending technical resolution.",
-      impact: {
-        passengers: 158,
-        connectingFlights: 12,
-        estimatedCost: 45200,
-        revenueAtRisk: 125000,
-        compensationRequired: 28000,
-      },
-      weather: {
-        condition: "Clear",
-        visibility: "10+ miles",
-        wind: "8 knots NE",
-        temperature: "72°F",
-      },
-      crewMembers: [
-        {
-          id: "CREW-001",
-          name: "Captain Sarah Johnson",
-          role: "Captain",
-          status: "Available",
-          dutyTime: "4h 30m",
-          restTime: "10h 15m",
-          phone: "+1-555-0123",
-          location: "JFK Crew Lounge",
-        },
-        {
-          id: "CREW-002",
-          name: "First Officer Mike Chen",
-          role: "First Officer",
-          status: "Available",
-          dutyTime: "3h 45m",
-          restTime: "11h 30m",
-          phone: "+1-555-0124",
-          location: "JFK Crew Lounge",
-        },
-        {
-          id: "CREW-003",
-          name: "Senior FA Lisa Martinez",
-          role: "Senior Flight Attendant",
-          status: "Available",
-          dutyTime: "2h 15m",
-          restTime: "12h 45m",
-          phone: "+1-555-0125",
-          location: "JFK Terminal 4",
-        },
-      ],
-      maintenance: {
-        issueReported: "2025-06-06 13:45",
-        technician: "Maintenance Team Alpha",
-        estimatedRepairTime: "90 minutes",
-        partsRequired: "Hydraulic seal kit",
-        workOrderNumber: "WO-2025-HYD-001",
-        status: "In Progress",
-      },
-      passengerServices: {
-        notifications: "Sent via SMS and email",
-        vouchers: "25 meal vouchers issued",
-        rebooking: "8 passengers rebooked on EK125",
-        customerServiceCalls: 14,
-        complaints: 2,
-      },
-      predictions: {
-        resolutionProbability: 87,
-        cascadeRisk: "Medium",
-        networkImpact: "Low",
-        aiRecommendation:
-          "Aircraft substitution recommended - A321-007 available in 45 minutes",
-      },
-      alternatives: [
-        {
-          option: "Aircraft Substitution",
-          aircraft: "A321-007",
-          cost: 28000,
-          delay: 45,
-          success: 95,
-          description:
-            "Use backup aircraft A321-007 currently in maintenance bay",
-        },
-        {
-          option: "Repair and Continue",
-          aircraft: "A321-001",
-          cost: 12000,
-          delay: 90,
-          success: 78,
-          description: "Complete hydraulic system repair on current aircraft",
-        },
-        {
-          option: "Cancel and Rebook",
-          aircraft: "Various",
-          cost: 65000,
-          delay: 240,
-          success: 100,
-          description:
-            "Cancel flight and rebook passengers on next available flights",
-        },
-      ],
-    },
-    {
-      id: "DISR-2025-002",
-      flightNumber: "EK456",
-      route: "LHR → DXB",
-      aircraft: "A330-012",
-      aircraftType: "Airbus A330-300",
-      scheduledDeparture: "2025-06-06 11:15",
-      estimatedDeparture: "2025-06-06 13:30",
-      delay: 195,
-      passengers: 295,
-      crew: 12,
-      gate: "A15",
-      terminal: "2",
-      severity: "Critical",
-      type: "Weather",
-      status: "Active",
-      confidence: 89.5,
-      disruptionReason: "Severe thunderstorms at departure airport",
-      detailedDescription:
-        "Heavy thunderstorm activity over London Heathrow causing ground stops. Multiple flights affected. Lightning strikes reported in terminal area. Ground crews suspended for safety.",
-      impact: {
-        passengers: 295,
-        connectingFlights: 23,
-        estimatedCost: 78000,
-        revenueAtRisk: 245000,
-        compensationRequired: 45000,
-      },
-      weather: {
-        condition: "Thunderstorms",
-        visibility: "2 miles",
-        wind: "25 knots gusting 40",
-        temperature: "68°F",
-      },
-      crewMembers: [
-        {
-          id: "CREW-004",
-          name: "Captain David Thompson",
-          role: "Captain",
-          status: "On Duty",
-          dutyTime: "6h 15m",
-          restTime: "8h 45m",
-          phone: "+44-20-555-0987",
-          location: "LHR Crew Rest",
-        },
-      ],
-      maintenance: {
-        issueReported: "N/A - Weather related",
-        technician: "N/A",
-        estimatedRepairTime: "Weather dependent",
-        partsRequired: "None",
-        workOrderNumber: "N/A",
-        status: "Weather Hold",
-      },
-      passengerServices: {
-        notifications: "Sent via mobile app and PA",
-        vouchers: "150 meal vouchers + 80 hotel vouchers",
-        rebooking: "45 passengers rebooked on multiple flights",
-        customerServiceCalls: 89,
-        complaints: 12,
-      },
-      predictions: {
-        resolutionProbability: 65,
-        cascadeRisk: "High",
-        networkImpact: "High",
-        aiRecommendation:
-          "Monitor weather patterns - consider delay until 15:00 when storms expected to clear",
-      },
-      alternatives: [
-        {
-          option: "Weather Delay",
-          aircraft: "A330-012",
-          cost: 45000,
-          delay: 180,
-          success: 85,
-          description:
-            "Wait for weather to clear, maintain current aircraft and crew",
-        },
-        {
-          option: "Route Diversion",
-          aircraft: "A330-012",
-          cost: 32000,
-          delay: 120,
-          success: 70,
-          description: "Divert to Gatwick for departure when weather clears",
-        },
-        {
-          option: "Next Day Departure",
-          aircraft: "A330-012",
-          cost: 125000,
-          delay: 1440,
-          success: 100,
-          description:
-            "Cancel today, rebook all passengers for tomorrow morning",
-        },
-      ],
-    },
-    {
-      id: "DISR-2025-003",
-      flightNumber: "EK789",
-      route: "DXB → SYD",
-      aircraft: "A380-001",
-      aircraftType: "Airbus A380-800",
-      scheduledDeparture: "2025-06-06 08:15",
-      estimatedDeparture: "2025-06-06 10:30",
-      delay: 135,
-      passengers: 425,
-      crew: 18,
-      gate: "C1",
-      terminal: "3",
-      severity: "Medium",
-      type: "Crew",
-      status: "Resolving",
-      confidence: 91.8,
-      disruptionReason: "Crew duty time limitation - replacement crew en route",
-      detailedDescription:
-        "Original crew exceeded maximum duty time due to previous flight delay. Reserve crew called in and en route to airport. Expected arrival in 45 minutes.",
-      impact: {
-        passengers: 425,
-        connectingFlights: 35,
-        estimatedCost: 52000,
-        revenueAtRisk: 180000,
-        compensationRequired: 22000,
-      },
-      weather: {
-        condition: "Clear",
-        visibility: "10+ miles",
-        wind: "12 knots SW",
-        temperature: "85°F",
-      },
-      crewMembers: [
-        {
-          id: "CREW-005",
-          name: "Captain Ahmed Al-Mansouri",
-          role: "Captain",
-          status: "Duty Time Exceeded",
-          dutyTime: "14h 30m",
-          restTime: "6h 15m",
-          phone: "+971-4-555-0234",
-          location: "DXB Crew Rest",
-        },
-      ],
-      maintenance: {
-        issueReported: "N/A - Crew related",
-        technician: "N/A",
-        estimatedRepairTime: "N/A",
-        partsRequired: "None",
-        workOrderNumber: "N/A",
-        status: "No Maintenance Required",
-      },
-      passengerServices: {
-        notifications: "Sent via app and gate announcements",
-        vouchers: "200 beverage vouchers issued",
-        rebooking: "12 passengers opted for later flights",
-        customerServiceCalls: 34,
-        complaints: 5,
-      },
-      predictions: {
-        resolutionProbability: 95,
-        cascadeRisk: "Low",
-        networkImpact: "Medium",
-        aiRecommendation:
-          "Fresh crew will resolve issue - minimal network impact expected",
-      },
-      alternatives: [
-        {
-          option: "Fresh Crew",
-          aircraft: "A380-001",
-          cost: 18000,
-          delay: 45,
-          success: 98,
-          description: "Use incoming reserve crew, maintain current aircraft",
-        },
-        {
-          option: "Crew Rest Override",
-          aircraft: "A380-001",
-          cost: 8000,
-          delay: 15,
-          success: 60,
-          description: "Apply for regulatory override - high risk of rejection",
-        },
-      ],
-    },
-  ];
-
-  const dataToFilter = disruptions.length > 0 ? disruptions : mockDisruptions;
+  // Use only database data - no mock data
+  const dataToFilter = disruptions;
   const filteredDisruptions = dataToFilter.filter((disruption) => {
     return (
       (filters.severity === "all" ||
@@ -688,14 +386,16 @@ export function FlightDisruptionList() {
             <TableHeader>
               <TableRow>
                 <TableHead>Flight</TableHead>
-                <TableHead>Route</TableHead>
+                <TableHead>Origin → Destination</TableHead>
+                <TableHead>Cities</TableHead>
                 <TableHead>Aircraft</TableHead>
+                <TableHead>Departure</TableHead>
                 <TableHead>Issue</TableHead>
                 <TableHead>Severity</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Delay</TableHead>
                 <TableHead>Passengers</TableHead>
-                <TableHead>AI Confidence</TableHead>
+                <TableHead>Connections</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -710,9 +410,40 @@ export function FlightDisruptionList() {
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell>{disruption.route}</TableCell>
+                  <TableCell>
+                    <div className="font-mono">
+                      {disruption.origin} → {disruption.destination}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <div>{disruption.originCity}</div>
+                      <div className="text-muted-foreground">↓</div>
+                      <div>{disruption.destinationCity}</div>
+                    </div>
+                  </TableCell>
                   <TableCell className="font-mono">
                     {disruption.aircraft}
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <div className="font-medium">
+                        {new Date(disruption.scheduledDeparture).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                      {disruption.estimatedDeparture && (
+                        <div className="text-red-600 text-xs">
+                          Est: {new Date(disruption.estimatedDeparture).toLocaleString('en-US', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </div>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <div className="max-w-48">
@@ -720,7 +451,7 @@ export function FlightDisruptionList() {
                         {disruption.disruptionReason}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Gate {disruption.gate} • Terminal {disruption.terminal}
+                        {disruption.type}
                       </p>
                     </div>
                   </TableCell>
@@ -751,14 +482,12 @@ export function FlightDisruptionList() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Progress
-                        value={disruption.confidence}
-                        className="w-16"
-                      />
-                      <span className="text-sm font-medium">
-                        {disruption.confidence}%
-                      </span>
+                    <div className="text-sm">
+                      {disruption.connectionFlights > 0 ? (
+                        <span className="font-medium">{disruption.connectionFlights} connections</span>
+                      ) : (
+                        <span className="text-muted-foreground">Direct</span>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
