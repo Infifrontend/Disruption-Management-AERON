@@ -619,7 +619,7 @@ app.get('/api/recovery-options/:disruptionId', async (req, res) => {
 app.post('/api/recovery-options', async (req, res) => {
   try {
     const {
-      disruption_id, option_id, title, description, cost, timeline,
+      disruption_id, title, description, cost, timeline,
       confidence, impact, status, priority, advantages, considerations,
       resource_requirements, cost_breakdown, timeline_details,
       risk_assessment, technical_specs, metrics, rotation_plan
@@ -627,14 +627,14 @@ app.post('/api/recovery-options', async (req, res) => {
 
     const result = await pool.query(`
       INSERT INTO recovery_options (
-        disruption_id, option_id, title, description, cost, timeline,
+        disruption_id, title, description, cost, timeline,
         confidence, impact, status, priority, advantages, considerations,
         resource_requirements, cost_breakdown, timeline_details,
         risk_assessment, technical_specs, metrics, rotation_plan
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       RETURNING *
     `, [
-      disruption_id, option_id, title, description, cost, timeline,
+      disruption_id, title, description, cost, timeline,
       confidence, impact, status || 'generated', priority || 0,
       advantages ? JSON.stringify(advantages) : null,
       considerations ? JSON.stringify(considerations) : null,
@@ -785,13 +785,13 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
       console.log(`Saving option ${i + 1}: ${option.title}`)
       await pool.query(`
         INSERT INTO recovery_options (
-          disruption_id, option_id, title, description, cost, timeline,
+          disruption_id, title, description, cost, timeline,
           confidence, impact, status, priority, advantages, considerations,
           resource_requirements, cost_breakdown, timeline_details,
           risk_assessment, technical_specs, metrics, rotation_plan
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       `, [
-        disruptionId, option.id, option.title, option.description,
+        disruptionId, option.title, option.description,
         option.cost, option.timeline, option.confidence, option.impact,
         option.status, i + 1, // priority based on order
         option.advantages ? JSON.stringify(option.advantages) : null,
