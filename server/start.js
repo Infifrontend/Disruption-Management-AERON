@@ -293,7 +293,7 @@ app.post('/api/disruptions', async (req, res) => {
     const {
       flight_number, flightNumber, route, origin, destination, origin_city, destination_city, originCity, destinationCity,
       aircraft, scheduled_departure, scheduledDeparture, estimated_departure, estimatedDeparture, 
-      delay_minutes, delay, passengers, crew, severity, disruption_type, disruptionType, type, 
+      delay_minutes, delay, passengers, crew, connection_flights, connectionFlights, severity, disruption_type, disruptionType, type, 
       status, disruption_reason, disruptionReason
     } = req.body
 
@@ -304,6 +304,7 @@ app.post('/api/disruptions', async (req, res) => {
     const scheduled_dep = scheduled_departure || scheduledDeparture
     const estimated_dep = estimated_departure || estimatedDeparture
     const delay_mins = delay_minutes || delay || 0
+    const connection_flights_val = connection_flights || connectionFlights || 0
     const disruption_type_val = disruption_type || disruptionType || type
     const disruption_reason_val = disruption_reason || disruptionReason
 
@@ -332,13 +333,13 @@ app.post('/api/disruptions', async (req, res) => {
       INSERT INTO flight_disruptions (
         flight_number, route, origin, destination, origin_city, destination_city,
         aircraft, scheduled_departure, estimated_departure, delay_minutes, 
-        passengers, crew, severity, disruption_type, status, disruption_reason
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+        passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
       RETURNING *
     `, [
       flightNum, safeRoute, safeOrigin, safeDestination, safeOriginCity, safeDestinationCity,
       aircraft, scheduled_dep, estimated_dep, delay_mins,
-      passengers, crew, safeSeverity, safeDisruptionType, safeStatus, safeDisruptionReason
+      passengers, crew, connection_flights_val, safeSeverity, safeDisruptionType, safeStatus, safeDisruptionReason
     ])
 
     console.log('Successfully saved disruption:', result.rows[0])

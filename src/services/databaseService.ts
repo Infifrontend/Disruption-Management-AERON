@@ -506,6 +506,7 @@ class DatabaseService {
         delay_minutes: disruption.delay,
         passengers: disruption.passengers,
         crew: disruption.crew,
+        connection_flights: disruption.connectionFlights || 0,
         severity: disruption.severity,
         disruption_type: disruption.type,
         status: disruption.status,
