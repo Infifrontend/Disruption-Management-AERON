@@ -1373,6 +1373,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         <div className="text-sm text-muted-foreground">
                           {formatDate(flight.scheduledDeparture)}
                         </div>
+                        {flight.delay > 0 && (
+                          <div className="text-xs text-red-600 mt-1">
+                            +{flight.delay}m delay
+                          </div>
+                        )}
                       </div>
                     </TableCell>
                     <TableCell>
@@ -1406,9 +1411,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{flight.passengers}</div>
+                        <div className="font-medium">{flight.passengers || 0}</div>
                         <div className="text-sm text-muted-foreground">
-                          {flight.connectionFlights} connections
+                          {(flight.connectionFlights || 0) > 0 
+                            ? `${flight.connectionFlights} connections` 
+                            : "Direct flight"}
                         </div>
                       </div>
                     </TableCell>
