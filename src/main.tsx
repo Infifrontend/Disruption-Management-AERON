@@ -1,12 +1,12 @@
 
 import React from 'react'
-import ReactDOM from 'react-dom/client'
+import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './styles/globals.css'
 
 // Error Boundary Component
-class ErrorBoundary extends React.Component {
-  constructor(props: any) {
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {
+  constructor(props: {children: React.ReactNode}) {
     super(props)
     this.state = { hasError: false, error: null }
   }
@@ -20,7 +20,7 @@ class ErrorBoundary extends React.Component {
   }
 
   render() {
-    if ((this.state as any).hasError) {
+    if (this.state.hasError) {
       return (
         <div style={{ 
           padding: '20px', 
@@ -47,32 +47,20 @@ class ErrorBoundary extends React.Component {
       )
     }
 
-    return (this.props as any).children
+    return this.props.children
   }
 }
 
-try {
-  const rootElement = document.getElementById('root')
-  if (!rootElement) {
-    throw new Error('Root element not found')
-  }
-
-  ReactDOM.createRoot(rootElement).render(
-    <React.StrictMode>
-      <ErrorBoundary>
-        <App />
-      </ErrorBoundary>
-    </React.StrictMode>,
-  )
-} catch (error) {
-  console.error('Failed to render application:', error)
-  document.body.innerHTML = `
-    <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
-      <h1>Application Failed to Load</h1>
-      <p>Please check the console for errors and refresh the page.</p>
-      <button onclick="window.location.reload()" style="padding: 10px 20px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
-        Refresh Page
-      </button>
-    </div>
-  `
+const rootElement = document.getElementById('root')
+if (!rootElement) {
+  throw new Error('Root element not found')
 }
+
+const root = createRoot(rootElement)
+root.render(
+  <React.StrictMode>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </React.StrictMode>
+)
