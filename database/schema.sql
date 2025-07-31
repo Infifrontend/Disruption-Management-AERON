@@ -328,16 +328,58 @@ CREATE TABLE IF NOT EXISTS aircraft (
 
 -- Hotel Bookings table
 CREATE TABLE IF NOT EXISTS hotel_bookings (
-    id SERIAL PRIMARY KEY,
-    disruption_id INTEGER REFERENCES flight_disruptions(id),
-    passenger_pnr VARCHAR(10) REFERENCES passengers(pnr),
-    hotel_name VARCHAR(255) NOT NULL,
-    check_in DATE NOT NULL,
-    check_out DATE NOT NULL,
-    cost DECIMAL(10,2) NOT NULL,
-    status VARCHAR(20) NOT NULL CHECK (status IN ('Booked', 'Confirmed', 'Cancelled', 'Completed')),
-    booking_reference VARCHAR(50),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  id SERIAL PRIMARY KEY,
+  disruption_id INTEGER REFERENCES flight_disruptions(id),
+  passenger_pnr VARCHAR(10),
+  hotel_name VARCHAR(255),
+  check_in TIMESTAMP,
+  check_out TIMESTAMP,
+  cost DECIMAL(10,2),
+  status VARCHAR(50) DEFAULT 'Pending',
+  booking_reference VARCHAR(100),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Recovery Options Table
+CREATE TABLE recovery_options (
+  id SERIAL PRIMARY KEY,
+  disruption_id INTEGER REFERENCES flight_disruptions(id),
+  option_id VARCHAR(100) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  cost VARCHAR(50),
+  timeline VARCHAR(100),
+  confidence INTEGER CHECK (confidence >= 0 AND confidence <= 100),
+  impact VARCHAR(255),
+  status VARCHAR(50) DEFAULT 'generated',
+  priority INTEGER DEFAULT 0,
+  advantages TEXT[],
+  considerations TEXT[],
+  resource_requirements JSONB,
+  cost_breakdown JSONB,
+  timeline_details JSONB,
+  risk_assessment JSONB,
+  technical_specs JSONB,
+  metrics JSONB,
+  rotation_plan JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Recovery Steps Table
+CREATE TABLE recovery_steps (
+  id SERIAL PRIMARY KEY,
+  disruption_id INTEGER REFERENCES flight_disruptions(id),
+  step_number INTEGER NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  status VARCHAR(50) DEFAULT 'pending',
+  timestamp VARCHAR(20),
+  system VARCHAR(100),
+  details TEXT,
+  step_data JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Recovery Logs table for historical data
@@ -388,6 +430,18 @@ CREATE INDEX IF NOT EXISTS idx_passengers_pnr ON passengers(pnr);
 CREATE INDEX IF NOT EXISTS idx_crew_status ON crew_members(status);
 CREATE INDEX IF NOT EXISTS idx_aircraft_status ON aircraft(status);
 CREATE INDEX IF NOT EXISTS idx_recovery_options_disruption ON recovery_options(disruption_id);
+
+-- Indexes for performance
+CREATE INDEX idx_flight_disruptions_status ON flight_disruptions(status);
+CREATE INDEX idx_flight_disruptions_created ON flight_disruptions(created_at);
+CREATE INDEX idx_passengers_flight ON passengers(flight_number);
+CREATE INDEX idx_crew_members_status ON crew_members(status);
+CREATE INDEX idx_aircraft_status ON aircraft(status);
+CREATE INDEX idx_hotel_bookings_disruption ON hotel_bookings(disruption_id);
+CREATE INDEX idx_recovery_options_disruption ON recovery_options(disruption_id);
+CREATE INDEX idx_recovery_steps_disruption ON recovery_steps(disruption_id);
+CREATE INDEX idx_recovery_options_status ON recovery_options(status);
+CREATE INDEX idx_recovery_steps_status ON recovery_steps(status);
 
 -- Insert sample custom rules
 INSERT INTO custom_rules (rule_id, name, description, category, type, priority, overridable, conditions, actions, created_by) VALUES

@@ -491,7 +491,7 @@ class DatabaseService {
   async saveDisruption(disruption: Omit<FlightDisruption, 'id' | 'createdAt' | 'updatedAt'>): Promise<boolean> {
     try {
       console.log('Saving disruption to database:', disruption)
-      
+
       // Transform camelCase to snake_case for database
       const dbData = {
         flight_number: disruption.flightNumber,
@@ -512,21 +512,21 @@ class DatabaseService {
         status: disruption.status,
         disruption_reason: disruption.disruptionReason
       }
-      
+
       console.log('Transformed data for database:', dbData)
-      
+
       const response = await fetch(`${this.baseUrl}/disruptions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dbData)
       })
-      
+
       if (!response.ok) {
         const errorText = await response.text()
         console.error('Server response error:', response.status, errorText)
         throw new Error(`HTTP ${response.status}: ${errorText}`)
       }
-      
+
       const result = await response.json()
       console.log('Successfully saved disruption:', result)
       return true
@@ -695,63 +695,33 @@ class DatabaseService {
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
       return await response.json()
     } catch (error) {
-      console.error('Failed to fetch KPI data:', error)
-      return {}
+      console.error('Error fetching KPI data:', error)
+      return {
+        activeDisruptions: 0,
+        affectedPassengers: 0,
+        averageDelay: 0,
+        recoverySuccessRate: 0,
+        onTimePerformance: 0,
+        costSavings: 0
+      }
     }
   }
 
-  async getPredictionAnalytics(): Promise<any> {
+  // Recovery Options methods
+  async getRecoveryOptions(disruptionId: number) {
     try {
-      const response = await fetch(`${this.baseUrl}/analytics/predictions`)
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      const response = await fetch(`${this.baseUrl}/recovery-options/${disruptionId}`)
+      if (!response.ok) return []
       return await response.json()
     } catch (error) {
-      console.error('Failed to fetch prediction analytics:', error)
-      return {}
-    }
-  }
-
-  // Past Recovery Logs
-  async getPastRecoveryLogs(): Promise<any[]> {
-    try {
-      const response = await fetch(`${this.baseUrl}/recovery-logs`)
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
-      return await response.json()
-    } catch (error) {
-      console.error('Failed to fetch past recovery logs:', error)
+      console.error('Error fetching recovery options:', error)
       return []
     }
   }
 
-  // Health check with retry logic
-  async healthCheck(retries: number = 3): Promise<boolean> {
-    for (let i = 0; i < retries; i++) {
-      try {
-        const response = await fetch(`${this.baseUrl}/health`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          signal: AbortSignal.timeout(5000) // 5 second timeout
-        })
-        if (response.ok) {
-          return true
-        }
-      } catch (error) {
-        console.error(`Database health check attempt ${i + 1} failed:`, error)
-        if (i < retries - 1) {
-          // Wait before retry (exponential backoff)
-          await new Promise(resolve => setTimeout(resolve, Math.pow(2, i) * 1000))
-        }
-      }
-    }
-    return false
-  }
-
-  // Initialize database tables
-  async initializeDatabase(): Promise<boolean> {
+  async generateRecoveryOptions(disruptionId: number) {
     try {
-      const response = await fetch(`${this.baseUrl}/init-database`, {
+      const response = await fetch(`${this.baseUrl}/generate-recovery-options/${disruptionId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -759,42 +729,45 @@ class DatabaseService {
       })
 
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Database initialization failed:', errorText)
-        return false
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const result = await response.json()
-      console.log('Database initialization result:', result)
-      return true
+      return await response.json()
     } catch (error) {
-      console.error('Failed to initialize database:', error)
-      return false
+      console.error('Error generating recovery options:', error)
+      throw error
     }
   }
 
-  // Populate sample data
-  async populateSampleData(): Promise<boolean> {
+  async getRecoverySteps(disruptionId: number) {
     try {
-      const response = await fetch(`${this.baseUrl}/populate-sample-data`, {
+      const response = await fetch(`${this.baseUrl}/recovery-steps/${disruptionId}`)
+      if (!response.ok) return []
+      return await response.json()
+    } catch (error) {
+      console.error('Error fetching recovery steps:', error)
+      return []
+    }
+  }
+
+  async saveRecoveryOption(recoveryOption: any) {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-options`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        body: JSON.stringify(recoveryOption)
       })
 
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Sample data population failed:', errorText)
-        return false
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
 
-      const result = await response.json()
-      console.log('Sample data population result:', result)
-      return true
+      return await response.json()
     } catch (error) {
-      console.error('Failed to populate sample data:', error)
-      return false
+      console.error('Error saving recovery option:', error)
+      throw error
     }
   }
 }

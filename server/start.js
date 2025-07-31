@@ -585,6 +585,7 @@ app.get('/api/analytics/predictions', async (req, res) => {
   }
 })
 
+// Recovery logs endpoint
 app.get('/api/recovery-logs', async (req, res) => {
   try {
     const result = await pool.query(`
@@ -599,133 +600,178 @@ app.get('/api/recovery-logs', async (req, res) => {
   }
 })
 
-// Database initialization endpoint
-app.post('/api/init-database', async (req, res) => {
+// Recovery Options endpoints
+app.get('/api/recovery-options/:disruptionId', async (req, res) => {
   try {
-    console.log('Initializing database tables...')
-
-    // Read and execute schema file
-    const fs = require('fs')
-    const path = require('path')
-    const schemaPath = path.join(__dirname, '..', 'database', 'schema.sql')
-
-    if (!fs.existsSync(schemaPath)) {
-      return res.status(404).json({ error: 'Schema file not found' })
-    }
-
-    const schemaSQL = fs.readFileSync(schemaPath, 'utf8')
-
-    // Execute the schema
-    await pool.query(schemaSQL)
-
-    console.log('✅ Database tables initialized successfully')
-    res.json({ message: 'Database initialized successfully' })
+    const { disruptionId } = req.params
+    const result = await pool.query(`
+      SELECT * FROM recovery_options 
+      WHERE disruption_id = $1 
+      ORDER BY priority DESC, confidence DESC
+    `, [disruptionId])
+    res.json(result.rows || [])
   } catch (error) {
-    console.error('❌ Database initialization failed:', error.message)
-    res.status(500).json({ error: `Database initialization failed: ${error.message}` })
+    console.error('Error fetching recovery options:', error)
+    res.json([])
   }
 })
 
-// Populate sample data endpoint
-app.post('/api/populate-sample-data', async (req, res) => {
+app.post('/api/recovery-options', async (req, res) => {
   try {
-    console.log('Populating sample flight disruption data...')
+    const {
+      disruption_id, option_id, title, description, cost, timeline,
+      confidence, impact, status, priority, advantages, considerations,
+      resource_requirements, cost_breakdown, timeline_details,
+      risk_assessment, technical_specs, metrics, rotation_plan
+    } = req.body
 
-    // Check if data already exists
-    const existingData = await pool.query('SELECT COUNT(*) as count FROM flight_disruptions')
-    if (existingData.rows[0].count > 0) {
-      return res.json({ message: 'Sample data already exists', count: existingData.rows[0].count })
+    const result = await pool.query(`
+      INSERT INTO recovery_options (
+        disruption_id, option_id, title, description, cost, timeline,
+        confidence, impact, status, priority, advantages, considerations,
+        resource_requirements, cost_breakdown, timeline_details,
+        risk_assessment, technical_specs, metrics, rotation_plan
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+      RETURNING *
+    `, [
+      disruption_id, option_id, title, description, cost, timeline,
+      confidence, impact, status || 'generated', priority || 0,
+      advantages ? JSON.stringify(advantages) : null,
+      considerations ? JSON.stringify(considerations) : null,
+      resource_requirements ? JSON.stringify(resource_requirements) : null,
+      cost_breakdown ? JSON.stringify(cost_breakdown) : null,
+      timeline_details ? JSON.stringify(timeline_details) : null,
+      risk_assessment ? JSON.stringify(risk_assessment) : null,
+      technical_specs ? JSON.stringify(technical_specs) : null,
+      metrics ? JSON.stringify(metrics) : null,
+      rotation_plan ? JSON.stringify(rotation_plan) : null
+    ])
+
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error saving recovery option:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Recovery Steps endpoints
+app.get('/api/recovery-steps/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+    const result = await pool.query(`
+      SELECT * FROM recovery_steps 
+      WHERE disruption_id = $1 
+      ORDER BY step_number ASC
+    `, [disruptionId])
+    res.json(result.rows || [])
+  } catch (error) {
+    console.error('Error fetching recovery steps:', error)
+    res.json([])
+  }
+})
+
+app.post('/api/recovery-steps', async (req, res) => {
+  try {
+    const {
+      disruption_id, step_number, title, status, timestamp,
+      system, details, step_data
+    } = req.body
+
+    const result = await pool.query(`
+      INSERT INTO recovery_steps (
+        disruption_id, step_number, title, status, timestamp,
+        system, details, step_data
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+    `, [
+      disruption_id, step_number, title, status || 'pending',
+      timestamp, system, details,
+      step_data ? JSON.stringify(step_data) : null
+    ])
+
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error saving recovery step:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Generate and save recovery options for a disruption
+app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+
+    // First get the disruption details
+    const disruptionResult = await pool.query(
+      'SELECT * FROM flight_disruptions WHERE id = $1',
+      [disruptionId]
+    )
+
+    if (disruptionResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Disruption not found' })
     }
 
-    // Clear and insert sample data - Delete in correct order due to foreign key constraints
-    await pool.query('DELETE FROM hotel_bookings')
-    await pool.query('DELETE FROM recovery_options')
-    await pool.query('DELETE FROM passengers')
-    await pool.query('DELETE FROM crew_members')
-    await pool.query('DELETE FROM aircraft')
-    await pool.query('DELETE FROM flight_disruptions')
+    const disruption = disruptionResult.rows[0]
 
-    // Reset sequence counters
-    await pool.query('ALTER SEQUENCE flight_disruptions_id_seq RESTART WITH 1')
-    await pool.query('ALTER SEQUENCE recovery_options_id_seq RESTART WITH 1')
-    await pool.query('ALTER SEQUENCE passengers_id_seq RESTART WITH 1')
-    await pool.query('ALTER SEQUENCE crew_members_id_seq RESTART WITH 1')
-    await pool.query('ALTER SEQUENCE aircraft_id_seq RESTART WITH 1')
-    await pool.query('ALTER SEQUENCE hotel_bookings_id_seq RESTART WITH 1')
+    // Check if recovery options already exist
+    const existingOptions = await pool.query(
+      'SELECT COUNT(*) as count FROM recovery_options WHERE disruption_id = $1',
+      [disruptionId]
+    )
 
-    // Insert sample flight disruptions
-    const sampleDisruptions = [
-      {
-        flight_number: 'FZ215',
-        route: 'DXB-BOM',
-        aircraft: 'B737-800',
-        scheduled_departure: '2025-01-10T15:30:00Z',
-        estimated_departure: '2025-01-10T17:30:00Z',
-        delay_minutes: 120,
-        passengers: 189,
-        crew: 6,
-        severity: 'High',
-        disruption_type: 'Weather',
-        status: 'Active',
-        disruption_reason: 'Sandstorm at DXB'
-      },
-      {
-        flight_number: 'FZ203',
-        route: 'DXB-DEL',
-        aircraft: 'B737 MAX 8',
-        scheduled_departure: '2025-01-10T16:45:00Z',
-        estimated_departure: null,
-        delay_minutes: null,
-        passengers: 195,
-        crew: 6,
-        severity: 'Critical',
-        disruption_type: 'Weather',
-        status: 'Cancelled',
-        disruption_reason: 'Dense fog at DEL'
-      },
-      {
-        flight_number: 'FZ235',
-        route: 'KHI-DXB',
-        aircraft: 'A320-200',
-        scheduled_departure: '2025-01-10T14:20:00Z',
-        estimated_departure: '2025-01-10T15:50:00Z',
-        delay_minutes: 90,
-        passengers: 156,
-        crew: 5,
-        severity: 'Medium',
-        disruption_type: 'Technical',
-        status: 'Active',
-        disruption_reason: 'Aircraft maintenance issue'
-      }
-    ]
+    if (existingOptions.rows[0].count > 0) {
+      return res.json({ message: 'Recovery options already exist', exists: true })
+    }
 
-    for (const disruption of sampleDisruptions) {
+    // Generate recovery options based on disruption type
+    const { generateRecoveryOptionsForDisruption, generateRecoveryStepsForDisruption } = require('./recovery-generator.js')
+
+    const { options, steps } = generateRecoveryOptionsForDisruption(disruption)
+
+    // Save recovery steps
+    for (const step of steps) {
       await pool.query(`
-        INSERT INTO flight_disruptions 
-        (flight_number, route, aircraft, scheduled_departure, estimated_departure, 
-         delay_minutes, passengers, crew, severity, disruption_type, status, disruption_reason)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        INSERT INTO recovery_steps (
+          disruption_id, step_number, title, status, timestamp,
+          system, details, step_data
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       `, [
-        disruption.flight_number,
-        disruption.route,
-        disruption.aircraft,
-        disruption.scheduled_departure,
-        disruption.estimated_departure,
-        disruption.delay_minutes,
-        disruption.passengers,
-        disruption.crew,
-        disruption.severity,
-        disruption.disruption_type,
-        disruption.status,
-        disruption.disruption_reason
+        disruptionId, step.step, step.title, step.status,
+        step.timestamp, step.system, step.details,
+        step.data ? JSON.stringify(step.data) : null
       ])
     }
 
-    console.log('✅ Sample flight disruption data populated successfully')
-    res.json({ message: 'Sample data populated successfully', count: sampleDisruptions.length })
+    // Save recovery options
+    for (let i = 0; i < options.length; i++) {
+      const option = options[i]
+      await pool.query(`
+        INSERT INTO recovery_options (
+          disruption_id, option_id, title, description, cost, timeline,
+          confidence, impact, status, priority, advantages, considerations,
+          resource_requirements, cost_breakdown, timeline_details,
+          risk_assessment, technical_specs, metrics, rotation_plan
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+      `, [
+        disruptionId, option.id, option.title, option.description,
+        option.cost, option.timeline, option.confidence, option.impact,
+        option.status, i + 1, // priority based on order
+        option.advantages ? JSON.stringify(option.advantages) : null,
+        option.considerations ? JSON.stringify(option.considerations) : null,
+        option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : null,
+        option.costBreakdown ? JSON.stringify(option.costBreakdown) : null,
+        option.timelineDetails ? JSON.stringify(option.timelineDetails) : null,
+        option.riskAssessment ? JSON.stringify(option.riskAssessment) : null,
+        option.technicalSpecs ? JSON.stringify(option.technicalSpecs) : null,
+        option.metrics ? JSON.stringify(option.metrics) : null,
+        option.rotationPlan ? JSON.stringify(option.rotationPlan) : null
+      ])
+    }
+
+    res.json({ message: 'Recovery options generated successfully', optionsCount: options.length, stepsCount: steps.length })
   } catch (error) {
-    console.error('❌ Failed to populate sample data:', error.message)
-    res.status(500).json({ error: `Failed to populate sample data: ${error.message}` })
+    console.error('Error generating recovery options:', error)
+    res.status(500).json({ error: error.message })
   }
 })
 
