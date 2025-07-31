@@ -460,14 +460,14 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
     const newFlightData = {
       flightNumber: newDisruption.flightNumber,
-      route: `${newDisruption.originCity || getLocationName(newDisruption.origin)} → ${newDisruption.destinationCity || getLocationName(newDisruption.destination)}`,
+      route: `${newDisruption.origin} → ${newDisruption.destination}`,
       origin: newDisruption.origin,
       destination: newDisruption.destination,
-      originCity:
-        newDisruption.originCity || getLocationName(newDisruption.origin),
-      destinationCity:
-        newDisruption.destinationCity ||
-        getLocationName(newDisruption.destination),
+      originCity: newDisruption.originCity,
+      destinationCity: newDisruption.destinationCity,
+      gate: newDisruption.gate,
+      connectionFlights: newDisruption.connectionFlights ? parseInt(newDisruption.connectionFlights) : 0,
+      vipPassengers: newDisruption.vipPassengers ? parseInt(newDisruption.vipPassengers) : 0,
       aircraft: newDisruption.aircraft,
       scheduledDeparture: newDisruption.scheduledDeparture,
       estimatedDeparture:
@@ -991,7 +991,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       />
                     </div>
                   </div>
-                </div>
+                </div>Code update to adjust newFlightData object structure in handleAddDisruption function.
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t">
