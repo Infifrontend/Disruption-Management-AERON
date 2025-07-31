@@ -352,33 +352,47 @@ app.post('/api/disruptions', async (req, res) => {
 app.get('/api/recovery-options/:disruptionId', async (req, res) => {
   try {
     const { disruptionId } = req.params
-    const result = await pool.query(
-      'SELECT * FROM recovery_options WHERE disruption_id = $1 ORDER BY confidence DESC',
-      [disruptionId]
-    )
-    res.json(result.rows)
+    const result = await pool.query(`
+      SELECT * FROM recovery_options 
+      WHERE disruption_id = $1 
+      ORDER BY confidence DESC, id ASC
+    `, [disruptionId])
+    res.json(result.rows || [])
   } catch (error) {
     console.error('Error fetching recovery options:', error)
-    res.status(500).json({ error: error.message })
+    res.json([])
   }
 })
 
 app.post('/api/recovery-options', async (req, res) => {
   try {
     const {
-      disruption_id, option_name, description, cost, duration_minutes,
-      confidence, passenger_impact, details
+      disruption_id, title, description, cost, timeline,
+      confidence, impact, status, priority, advantages, considerations,
+      resource_requirements, cost_breakdown, timeline_details,
+      risk_assessment, technical_specs, metrics, rotation_plan
     } = req.body
 
     const result = await pool.query(`
       INSERT INTO recovery_options (
-        disruption_id, option_name, description, cost, duration_minutes,
-        confidence, passenger_impact, details
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        disruption_id, title, description, cost, timeline,
+        confidence, impact, status, priority, advantages, considerations,
+        resource_requirements, cost_breakdown, timeline_details,
+        risk_assessment, technical_specs, metrics, rotation_plan
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       RETURNING *
     `, [
-      disruption_id, option_name, description, cost, duration_minutes,
-      confidence, passenger_impact, JSON.stringify(details)
+      disruption_id, title, description, cost, timeline,
+      confidence, impact, status || 'generated', priority || 0,
+      advantages ? JSON.stringify(advantages) : null,
+      considerations ? JSON.stringify(considerations) : null,
+      resource_requirements ? JSON.stringify(resource_requirements) : null,
+      cost_breakdown ? JSON.stringify(cost_breakdown) : null,
+      timeline_details ? JSON.stringify(timeline_details) : null,
+      risk_assessment ? JSON.stringify(risk_assessment) : null,
+      technical_specs ? JSON.stringify(technical_specs) : null,
+      metrics ? JSON.stringify(metrics) : null,
+      rotation_plan ? JSON.stringify(rotation_plan) : null
     ])
 
     res.json(result.rows[0])
