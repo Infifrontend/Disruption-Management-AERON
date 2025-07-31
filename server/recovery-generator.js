@@ -478,9 +478,6 @@ const generateRotationMisalignmentRecovery = (flight) => {
   return { options, steps }
 }
 
-module.exports = {
-  generateRecoveryOptionsForDisruption
-}
 export function generateRecoveryOptionsForDisruption(disruption) {
   const options = []
   const steps = []

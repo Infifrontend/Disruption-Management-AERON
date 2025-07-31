@@ -401,6 +401,21 @@ CREATE INDEX IF NOT EXISTS idx_crew_status ON crew_members(status);
 CREATE INDEX IF NOT EXISTS idx_aircraft_status ON aircraft(status);
 CREATE INDEX IF NOT EXISTS idx_recovery_options_disruption ON recovery_options(disruption_id);
 
+-- Recovery Steps table
+CREATE TABLE IF NOT EXISTS recovery_steps (
+    id SERIAL PRIMARY KEY,
+    disruption_id INTEGER REFERENCES flight_disruptions(id),
+    step_number INTEGER NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
+    timestamp VARCHAR(50),
+    system VARCHAR(100),
+    details TEXT,
+    step_data JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_flight_disruptions_created ON flight_disruptions(created_at);
 CREATE INDEX IF NOT EXISTS idx_hotel_bookings_disruption ON hotel_bookings(disruption_id);
