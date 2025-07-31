@@ -74,6 +74,7 @@ export function FlightDisruptionList() {
   const [selectedDisruption, setSelectedDisruption] = useState(null);
   const [disruptions, setDisruptions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     severity: "all",
     type: "all",
@@ -81,15 +82,27 @@ export function FlightDisruptionList() {
     airport: "all",
     search: "",
   });
-  console.log("testing");
+
   useEffect(() => {
     const fetchDisruptions = async () => {
       try {
+        setError(null);
+        setLoading(true);
+        console.log("Fetching disruptions from database...");
         const data = await databaseService.getAllDisruptions();
-        setDisruptions(data);
         console.log("Fetched disruptions:", data);
+        
+        if (Array.isArray(data)) {
+          setDisruptions(data);
+        } else {
+          console.error("Invalid data format received:", data);
+          setDisruptions([]);
+          setError("Invalid data format received from database");
+        }
       } catch (error) {
         console.error("Error fetching disruptions:", error);
+        setError("Failed to load flight disruptions. Please check database connection.");
+        setDisruptions([]);
       } finally {
         setLoading(false);
       }
@@ -404,23 +417,24 @@ export function FlightDisruptionList() {
     },
   ];
 
-  const dataToFilter = disruptions.length > 0 ? disruptions : mockDisruptions;
+  // Use real data if available, otherwise show empty state
+  const dataToFilter = disruptions.length > 0 ? disruptions : [];
+  
   const filteredDisruptions = dataToFilter.filter((disruption) => {
     return (
       (filters.severity === "all" ||
-        disruption.severity.toLowerCase() === filters.severity) &&
+        (disruption.severity && disruption.severity.toLowerCase() === filters.severity)) &&
       (filters.type === "all" ||
-        disruption.type.toLowerCase() === filters.type) &&
+        (disruption.type && disruption.type.toLowerCase() === filters.type)) &&
       (filters.status === "all" ||
-        disruption.status.toLowerCase() === filters.status) &&
+        (disruption.status && disruption.status.toLowerCase() === filters.status)) &&
       (filters.search === "" ||
-        disruption.flightNumber
-          .toLowerCase()
-          .includes(filters.search.toLowerCase()) ||
-        disruption.route.toLowerCase().includes(filters.search.toLowerCase()) ||
-        disruption.disruptionReason
-          .toLowerCase()
-          .includes(filters.search.toLowerCase()))
+        (disruption.flightNumber &&
+          disruption.flightNumber.toLowerCase().includes(filters.search.toLowerCase())) ||
+        (disruption.route &&
+          disruption.route.toLowerCase().includes(filters.search.toLowerCase())) ||
+        (disruption.disruptionReason &&
+          disruption.disruptionReason.toLowerCase().includes(filters.search.toLowerCase())))
     );
   });
 
@@ -678,10 +692,31 @@ export function FlightDisruptionList() {
         </CardContent>
       </Card>
 
+      {/* Error Alert */}
+      {error && (
+        <Alert className="border-red-200 bg-red-50">
+          <AlertTriangle className="h-4 w-4 text-red-600" />
+          <AlertDescription className="text-red-800">
+            {error}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="ml-2" 
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Disruptions Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Current Disruptions</CardTitle>
+          <CardTitle className="flex items-center justify-between">
+            Current Disruptions
+            {loading && <RefreshCw className="h-4 w-4 animate-spin" />}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -700,80 +735,118 @@ export function FlightDisruptionList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredDisruptions.map((disruption) => (
-                <TableRow key={disruption.id} className="hover:bg-muted/50">
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {getTypeIcon(disruption.type)}
-                      <span className="font-mono font-medium">
-                        {disruption.flightNumber}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{disruption.route}</TableCell>
-                  <TableCell className="font-mono">
-                    {disruption.aircraft}
-                  </TableCell>
-                  <TableCell>
-                    <div className="max-w-48">
-                      <p className="text-sm font-medium truncate">
-                        {disruption.disruptionReason}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Gate {disruption.gate} • Terminal {disruption.terminal}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getSeverityColor(disruption.severity)}>
-                      {disruption.severity}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(disruption.status)}>
-                      {disruption.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {disruption.delay > 0 ? (
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3 text-muted-foreground" />
-                        <span className="font-medium">{disruption.delay}m</span>
+              {loading ? (
+                // Loading skeleton
+                Array.from({ length: 3 }).map((_, index) => (
+                  <TableRow key={index}>
+                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
+                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
+                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
+                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
+                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
+                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
+                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
+                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
+                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
+                    <TableCell><div className="h-4 bg-gray-200 rounded animate-pulse"></div></TableCell>
+                  </TableRow>
+                ))
+              ) : filteredDisruptions.length > 0 ? (
+                filteredDisruptions.map((disruption) => (
+                  <TableRow key={disruption.id} className="hover:bg-muted/50">
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {getTypeIcon(disruption.type)}
+                        <span className="font-mono font-medium">
+                          {disruption.flightNumber || 'N/A'}
+                        </span>
                       </div>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">On time</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Users className="h-3 w-3 text-muted-foreground" />
-                      <span>{disruption.passengers}</span>
+                    </TableCell>
+                    <TableCell>{disruption.route || 'N/A'}</TableCell>
+                    <TableCell className="font-mono">
+                      {disruption.aircraft || 'N/A'}
+                    </TableCell>
+                    <TableCell>
+                      <div className="max-w-48">
+                        <p className="text-sm font-medium truncate">
+                          {disruption.disruptionReason || 'No reason specified'}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {disruption.origin && disruption.destination 
+                            ? `${disruption.origin} → ${disruption.destination}`
+                            : 'Route information not available'
+                          }
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getSeverityColor(disruption.severity || 'Medium')}>
+                        {disruption.severity || 'Medium'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(disruption.status || 'Active')}>
+                        {disruption.status || 'Active'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {disruption.delay && disruption.delay > 0 ? (
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-3 w-3 text-muted-foreground" />
+                          <span className="font-medium">{disruption.delay}m</span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">On time</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1">
+                        <Users className="h-3 w-3 text-muted-foreground" />
+                        <span>{disruption.passengers || 0}</span>
+                        {disruption.connectionFlights && disruption.connectionFlights > 0 && (
+                          <span className="text-xs text-muted-foreground ml-1">
+                            (+{disruption.connectionFlights} conn.)
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Progress
+                          value={disruption.confidence || 75}
+                          className="w-16"
+                        />
+                        <span className="text-sm font-medium">
+                          {disruption.confidence || 75}%
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleViewDetails(disruption)}
+                        className="flex items-center gap-1"
+                      >
+                        <Eye className="h-3 w-3" />
+                        Details
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={10} className="text-center py-8">
+                    <div className="flex flex-col items-center gap-2">
+                      <Plane className="h-8 w-8 text-gray-400" />
+                      <p className="text-lg font-medium text-gray-600">No disruptions found</p>
+                      <p className="text-sm text-gray-500">
+                        {error ? "Unable to load data from database" : "All flights are operating normally"}
+                      </p>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Progress
-                        value={disruption.confidence}
-                        className="w-16"
-                      />
-                      <span className="text-sm font-medium">
-                        {disruption.confidence}%
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewDetails(disruption)}
-                      className="flex items-center gap-1"
-                    >
-                      <Eye className="h-3 w-3" />
-                      Details
-                    </Button>
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>

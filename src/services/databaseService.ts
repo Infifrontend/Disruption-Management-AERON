@@ -433,47 +433,65 @@ class DatabaseService {
   // Flight Disruptions
   async getAllDisruptions(): Promise<FlightDisruption[]> {
     try {
+      console.log('Making request to:', `${this.baseUrl}/disruptions`)
       const response = await fetch(`${this.baseUrl}/disruptions`)
+      
       if (!response.ok) {
         if (response.status === 404) {
-          console.log('No disruptions found in database')
+          console.log('No disruptions found in database (404)')
           return []
         }
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text()
+        console.error('Server error response:', response.status, errorText)
+        throw new Error(`HTTP ${response.status}: ${errorText}`)
       }
+      
       const data = await response.json()
+      console.log('Raw database response:', data)
 
       if (!Array.isArray(data)) {
-        console.error('Invalid response format - expected array')
+        console.error('Invalid response format - expected array, got:', typeof data, data)
         return []
       }
 
-      // Transform database format to expected format
-      return data.map((disruption: any) => ({
-        id: disruption.id?.toString() || disruption.flight_number,
-        flightNumber: disruption.flight_number,
-        route: disruption.route,
-        origin: disruption.origin,
-        destination: disruption.destination,
-        originCity: disruption.origin_city,
-        destinationCity: disruption.destination_city,
-        aircraft: disruption.aircraft,
-        scheduledDeparture: disruption.scheduled_departure,
-        estimatedDeparture: disruption.estimated_departure,
-        delay: disruption.delay_minutes || 0,
-        passengers: disruption.passengers || 0,
-        crew: disruption.crew || 0,
-        connectionFlights: disruption.connection_flights || 0,
-        severity: disruption.severity,
-        type: disruption.disruption_type,
-        status: disruption.status,
-        disruptionReason: disruption.disruption_reason,
-        createdAt: disruption.created_at,
-        updatedAt: disruption.updated_at
-      }))
+      if (data.length === 0) {
+        console.log('Database returned empty array - no disruptions found')
+        return []
+      }
+
+      // Transform database format to expected format with proper null/undefined handling
+      const transformed = data.map((disruption: any) => {
+        const result = {
+          id: disruption.id?.toString() || disruption.flight_number || `temp-${Date.now()}`,
+          flightNumber: disruption.flight_number || 'Unknown',
+          route: disruption.route || `${disruption.origin || 'Unknown'} → ${disruption.destination || 'Unknown'}`,
+          origin: disruption.origin || 'Unknown',
+          destination: disruption.destination || 'Unknown',
+          originCity: disruption.origin_city || disruption.origin || 'Unknown',
+          destinationCity: disruption.destination_city || disruption.destination || 'Unknown',
+          aircraft: disruption.aircraft || 'Unknown Aircraft',
+          scheduledDeparture: disruption.scheduled_departure || new Date().toISOString(),
+          estimatedDeparture: disruption.estimated_departure || disruption.scheduled_departure || new Date().toISOString(),
+          delay: Number(disruption.delay_minutes) || 0,
+          passengers: Number(disruption.passengers) || 0,
+          crew: Number(disruption.crew) || 0,
+          connectionFlights: Number(disruption.connection_flights) || 0,
+          severity: disruption.severity || 'Medium',
+          type: disruption.disruption_type || 'Technical',
+          status: disruption.status || 'Active',
+          disruptionReason: disruption.disruption_reason || 'No reason specified',
+          createdAt: disruption.created_at || new Date().toISOString(),
+          updatedAt: disruption.updated_at || new Date().toISOString(),
+          confidence: 85 // Default AI confidence for real data
+        }
+        return result
+      })
+
+      console.log(`Successfully transformed ${transformed.length} disruptions`)
+      return transformed
     } catch (error) {
       console.error('Failed to fetch disruptions:', error)
-      return []
+      throw error // Re-throw to let the component handle the error
     }
   }
 

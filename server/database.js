@@ -272,14 +272,27 @@ app.post('/api/settings/reset', async (req, res) => {
 // Flight Disruptions endpoints
 app.get('/api/disruptions', async (req, res) => {
   try {
+    console.log('Fetching disruptions from database...')
     const result = await pool.query(`
       SELECT * FROM flight_disruptions 
       ORDER BY created_at DESC
     `)
+    console.log(`Found ${result.rows.length} disruptions in database`)
+    
+    if (result.rows.length === 0) {
+      console.log('No disruptions found - returning empty array')
+      return res.json([])
+    }
+    
+    console.log('Sample disruption data:', result.rows[0])
     res.json(result.rows)
   } catch (error) {
     console.error('Error fetching disruptions:', error)
-    res.status(500).json({ error: error.message })
+    res.status(500).json({ 
+      error: 'Failed to fetch disruptions', 
+      details: error.message,
+      timestamp: new Date().toISOString()
+    })
   }
 })
 
