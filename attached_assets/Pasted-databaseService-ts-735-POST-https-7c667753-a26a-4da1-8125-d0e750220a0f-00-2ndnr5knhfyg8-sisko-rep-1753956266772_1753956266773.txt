@@ -1,0 +1,46 @@
+databaseService.ts:735  POST https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev:3001/api/generate-recovery-options/35 500 (Internal Server Error)
+generateRecoveryOptions @ databaseService.ts:735
+fetchRecoveryOptions @ RecoveryOptionsGenerator.tsx:132
+await in fetchRecoveryOptions
+(anonymous) @ RecoveryOptionsGenerator.tsx:194
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=4ce189d2:16915
+invokePassiveEffectMountInDEV @ chunk-PJEEZAML.js?v=4ce189d2:18324
+invokeEffectsInDev @ chunk-PJEEZAML.js?v=4ce189d2:19701
+commitDoubleInvokeEffectsInDEV @ chunk-PJEEZAML.js?v=4ce189d2:19686
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=4ce189d2:19503
+flushPassiveEffects @ chunk-PJEEZAML.js?v=4ce189d2:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=4ce189d2:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=4ce189d2:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=4ce189d2:19432
+commitRoot @ chunk-PJEEZAML.js?v=4ce189d2:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=4ce189d2:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=4ce189d2:18718
+workLoop @ chunk-PJEEZAML.js?v=4ce189d2:197
+flushWork @ chunk-PJEEZAML.js?v=4ce189d2:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=4ce189d2:384Understand this error
+databaseService.ts:748 Error generating recovery options: Error: HTTP error! status: 500
+    at DatabaseService.generateRecoveryOptions (databaseService.ts:743:15)
+    at async fetchRecoveryOptions (RecoveryOptionsGenerator.tsx:132:26)
+generateRecoveryOptions @ databaseService.ts:748
+await in generateRecoveryOptions
+fetchRecoveryOptions @ RecoveryOptionsGenerator.tsx:132
+await in fetchRecoveryOptions
+(anonymous) @ RecoveryOptionsGenerator.tsx:194
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=4ce189d2:16915
+invokePassiveEffectMountInDEV @ chunk-PJEEZAML.js?v=4ce189d2:18324
+invokeEffectsInDev @ chunk-PJEEZAML.js?v=4ce189d2:19701
+commitDoubleInvokeEffectsInDEV @ chunk-PJEEZAML.js?v=4ce189d2:19686
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=4ce189d2:19503
+flushPassiveEffects @ chunk-PJEEZAML.js?v=4ce189d2:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=4ce189d2:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=4ce189d2:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=4ce189d2:19432
+commitRoot @ chunk-PJEEZAML.js?v=4ce189d2:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=4ce189d2:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=4ce189d2:18718
+workLoop @ chunk-PJEEZAML.js?v=4ce189d2:197
+flushWork @ chunk-PJEEZAML.js?v=4ce189d2:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=4ce189d2:384Understand this error
+RecoveryOptionsGenerator.tsx:176 Error fetching recovery options: Error: HTTP error! status: 500
+    at DatabaseService.generateRecoveryOptions (databaseService.ts:743:15)
+    at async fetchRecoveryOptions (RecoveryOptionsGenerator.tsx:132:26)
