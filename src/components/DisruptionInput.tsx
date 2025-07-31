@@ -1446,45 +1446,43 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         <Card className="border-blue-200 bg-blue-50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <Zap className="h-5 w-5 text-blue-600" />
-                  <h4 className="font-medium text-blue-800">
+                  <h4 className="font-semibold text-blue-800 whitespace-nowrap">
                     Selected Flight for Recovery Planning
                   </h4>
                 </div>
 
-                <div className="flex items-center gap-4 text-sm">
-                  <div>
-                    <span className="text-blue-600 font-medium">
+                <div className="w-px h-6 bg-blue-300 mx-2 flex-shrink-0"></div>
+
+                <div className="flex items-center gap-4 text-sm flex-1 min-w-0">
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <span className="text-blue-600 font-semibold">
                       {selectedFlight.flightNumber}
                     </span>
-                    <span className="text-blue-700 ml-1">selected</span>
+                    <span className="text-blue-700">selected</span>
                   </div>
-                  <div>
-                    <span className="text-blue-600 font-medium">
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <span className="text-blue-600 font-semibold">
                       {impact.passengers.toLocaleString()}
                     </span>
-                    <span className="text-blue-700 ml-1">
-                      passengers affected
-                    </span>
+                    <span className="text-blue-700">passengers affected</span>
                   </div>
-                  <div>
-                    <span className="text-blue-600 font-medium">
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <span className="text-blue-600 font-semibold">
                       {impact.connections}
                     </span>
-                    <span className="text-blue-700 ml-1">
-                      connections at risk
-                    </span>
+                    <span className="text-blue-700">connections at risk</span>
                   </div>
-                  <div>
-                    <span className="text-blue-600 font-medium">
+                  <div className="flex items-center gap-1 flex-shrink-0 max-w-48">
+                    <span className="text-blue-600 font-semibold truncate">
                       {selectedFlight.categorization}
                     </span>
-                    <span className="text-blue-700 ml-1">disruption type</span>
+                    <span className="text-blue-700">disruption type</span>
                   </div>
                   {selectedFlight.lastUpdate === "Just now" && (
-                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                    <Badge className="bg-green-100 text-green-800 border-green-200 flex-shrink-0">
                       Recently Added
                     </Badge>
                   )}
@@ -1493,7 +1491,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
               <Button
                 onClick={handleProceedToRecovery}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-blue-600 hover:bg-blue-700 ml-4 flex-shrink-0"
               >
                 <ArrowRight className="h-4 w-4 mr-2" />
                 Generate Recovery Options
