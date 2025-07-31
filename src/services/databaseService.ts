@@ -381,6 +381,17 @@ class DatabaseService {
     }
   }
 
+  // Health check method
+  async healthCheck(): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/health`)
+      return response.ok
+    } catch (error) {
+      console.error('Database health check failed:', error)
+      return false
+    }
+  }
+
   // Utility methods
   async resetToDefaults(): Promise<boolean> {
     try {

@@ -89,7 +89,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
   const [selectedOption, setSelectedOption] = useState(null)
   const [showDetails, setShowDetails] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
-  const [isExecuting, setIsExecuting] = useState(isExecuting)
+  const [isExecuting, setIsExecuting] = useState(false)
   const [showRotationPlan, setShowRotationPlan] = useState(false)
   const [selectedRotationData, setSelectedRotationData] = useState(null)
   const [scheduleImpactData, setScheduleImpactData] = useState(null)
@@ -774,8 +774,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     {step.step}
                   </div>
                   {index < scenarioData.steps.length - 1 && (
-                    <div className="w-0.5 h-8 bg-gray-300 mt-2"></div>                  )}
-                </div>
+                    <div className="w-0.5 h-8 bg-gray-300 mt-2"></div>                  )}                </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     {getStepStatusIcon(step.status)}
