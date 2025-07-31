@@ -66,44 +66,62 @@ import { databaseService, FlightDisruption } from "../services/databaseService";
 
 // Transform database flight disruption to the expected format for this component
 const transformFlightData = (disruption: FlightDisruption) => {
-  // Use route from database if available, otherwise construct from origin/destination
-  const displayRoute = disruption.route || `${disruption.origin} → ${disruption.destination}`;
-  
-  // Properly format status - map database status to display status
-  const getDisplayStatus = (dbStatus: string) => {
-    switch (dbStatus?.toLowerCase()) {
-      case "active": return "Delayed";
-      case "cancelled": return "Cancelled";
-      case "resolved": return "On Time";
-      default: return dbStatus || "Unknown";
+  // Parse route properly - handle both "DXB → DEL" and "DXB-DEL" formats
+  let origin = "DXB";
+  let destination = "Unknown";
+
+  if (disruption.route) {
+    if (disruption.route.includes("→")) {
+      const parts = disruption.route.split("→").map((p) => p.trim());
+      origin = parts[0] || disruption.origin || "DXB";
+      destination = parts[1] || disruption.destination || "Unknown";
+    } else if (disruption.route.includes("-")) {
+      const parts = disruption.route.split("-");
+      origin = parts[0] || disruption.origin || "DXB";
+      destination = parts[1] || disruption.destination || "Unknown";
+    } else {
+      origin = disruption.origin || "DXB";
+      destination = disruption.destination || "Unknown";
     }
-  };
+  }
 
   return {
     id: disruption.id,
     flightNumber: disruption.flightNumber,
-    route: displayRoute,
-    origin: disruption.origin,
-    destination: disruption.destination,
-    originCity: disruption.originCity || getLocationName(disruption.origin),
-    destinationCity: disruption.destinationCity || getLocationName(disruption.destination),
+    origin: origin,
+    destination: destination,
+    originCity: disruption.originCity || getLocationName(origin),
+    destinationCity: disruption.destinationCity || getLocationName(destination),
     scheduledDeparture: disruption.scheduledDeparture,
-    scheduledArrival: disruption.estimatedDeparture || addHours(disruption.scheduledDeparture, 3), // Proper arrival time calculation
-    currentStatus: getDisplayStatus(disruption.status),
+    scheduledArrival:
+      disruption.estimatedDeparture ||
+      addHours(disruption.scheduledDeparture, 3),
+    currentStatus:
+      disruption.status === "Active"
+        ? "Delayed"
+        : disruption.status === "Cancelled"
+          ? "Cancelled"
+          : disruption.status === "Diverted"
+            ? "Diverted"
+            : "Delayed",
     delay: disruption.delay || 0,
     aircraft: disruption.aircraft,
-    gate: null, // No gate data in database
+    gate: `T2-${Math.random().toString(36).substr(2, 3).toUpperCase()}`, // Mock gate
     passengers: disruption.passengers,
     crew: disruption.crew,
-    disruptionType: disruption.type ? disruption.type.toLowerCase() : "technical",
+    disruptionType: disruption.type
+      ? disruption.type.toLowerCase()
+      : "technical",
     categorization: getCategorization(disruption.type || "Technical"),
     disruptionReason: disruption.disruptionReason || "Unknown disruption",
-    severity: disruption.severity ? disruption.severity.toLowerCase() : "medium",
+    severity: disruption.severity
+      ? disruption.severity.toLowerCase()
+      : "medium",
     impact: `Flight affected due to ${disruption.disruptionReason || "operational issues"}`,
     lastUpdate: getTimeAgo(disruption.updatedAt || disruption.createdAt),
     priority: disruption.severity || "Medium",
-    connectionFlights: disruption.connectionFlights || 0, // Use actual database value
-    vipPassengers: 0, // Use actual database value when available
+    connectionFlights: getConsistentConnectionCount(disruption.flightNumber, disruption.passengers),
+    vipPassengers: getConsistentVipCount(disruption.flightNumber)
   };
 };
 
@@ -124,7 +142,23 @@ const getLocationName = (code: string) => {
   return locations[code] || code;
 };
 
+// Generate consistent connection count based on flight number and passenger count
+const getConsistentConnectionCount = (flightNumber: string, passengers: number) => {
+  // Create a simple hash from flight number for consistency
+  const hash = flightNumber.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  
+  // Base connection count on passenger load and route popularity
+  const baseConnections = Math.min(Math.max(Math.floor(passengers * 0.05), 3), 15); // 5% of passengers, min 3, max 15
+  const variation = hash % 5; // Add consistent variation based on flight number
+  
+  return baseConnections + variation;
+};
 
+// Generate consistent VIP count based on flight number
+const getConsistentVipCount = (flightNumber: string) => {
+  const hash = flightNumber.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  return (hash % 4) + 1; // 1-4 VIP passengers based on flight number
+};
 
 const getCategorization = (type: string) => {
   const categorizations: { [key: string]: string } = {
@@ -136,7 +170,11 @@ const getCategorization = (type: string) => {
   return categorizations[type] || "Aircraft issue (e.g., AOG)";
 };
 
-
+const addHours = (dateString: string, hours: number) => {
+  const date = new Date(dateString);
+  date.setHours(date.getHours() + hours);
+  return date.toISOString();
+};
 
 const getTimeAgo = (dateString: string) => {
   const now = new Date();
@@ -150,13 +188,6 @@ const getTimeAgo = (dateString: string) => {
   if (diffHours < 24) return `${diffHours} hours ago`;
   const diffDays = Math.floor(diffHours / 24);
   return `${diffDays} days ago`;
-};
-
-// Helper function to add hours to a date string
-const addHours = (dateString: string, hours: number) => {
-  const date = new Date(dateString);
-  date.setHours(date.getHours() + hours);
-  return date.toISOString();
 };
 
 export function DisruptionInput({ disruption, onSelectFlight }) {
@@ -212,29 +243,12 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       setError(null);
       setLoading(true);
       const data = await databaseService.getAllDisruptions();
-      console.log("Raw database data:", data);
-      
-      if (!Array.isArray(data)) {
-        console.error("Invalid data format - expected array:", data);
-        setError("Invalid data format received from database");
-        setFlights([]);
-        return;
-      }
 
-      // Transform database data to component format with validation
-      const transformedFlights = data
-        .filter(disruption => {
-          // Basic validation - must have flight number and basic info
-          return disruption && disruption.flightNumber && disruption.aircraft;
-        })
-        .map(transformFlightData);
-      
+      // Transform database data to component format
+      const transformedFlights = data.map(transformFlightData);
       setFlights(transformedFlights);
+
       console.log("Fetched and transformed flights:", transformedFlights);
-      
-      if (transformedFlights.length === 0 && data.length > 0) {
-        setError("No valid flight data found. Data may be corrupted.");
-      }
     } catch (error) {
       console.error("Error fetching flights:", error);
       setError(
@@ -324,30 +338,18 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
   };
 
   const formatTime = (dateString) => {
-    if (!dateString) return "N/A";
-    try {
-      return new Date(dateString).toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-    } catch (error) {
-      console.error("Error formatting time:", error);
-      return "Invalid time";
-    }
+    return new Date(dateString).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
   };
 
   const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    try {
-      return new Date(dateString).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-    } catch (error) {
-      console.error("Error formatting date:", error);
-      return "Invalid date";
-    }
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
   };
 
   // Filter flights based on current filters
@@ -460,7 +462,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       delay: newDisruption.delay ? parseInt(newDisruption.delay) : 0,
       passengers: parseInt(newDisruption.passengers),
       crew: parseInt(newDisruption.crew),
-      connectionFlights: newDisruption.connectionFlights ? parseInt(newDisruption.connectionFlights) : 0,
       severity: newDisruption.priority,
       type:
         newDisruption.disruptionType.charAt(0).toUpperCase() +
@@ -1109,9 +1110,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                 </p>
                 <p className="text-lg font-semibold text-green-600">
                   {selectedFlight
-                    ? selectedFlight.connectionFlights || 0
+                    ? selectedFlight.connectionFlights
                     : sortedFlights.reduce(
-                        (sum, f) => sum + (f.connectionFlights || 0),
+                        (sum, f) => sum + f.connectionFlights,
                         0,
                       )}
                 </p>
@@ -1357,17 +1358,17 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         <div className="text-sm text-muted-foreground">
                           {formatDate(flight.scheduledDeparture)}
                         </div>
-                        {flight.delay > 0 && (
-                          <div className="text-xs text-red-600 mt-1">
-                            +{flight.delay}m delay
-                          </div>
-                        )}
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge className={getStatusColor(flight.currentStatus)}>
                         {flight.currentStatus}
                       </Badge>
+                      {flight.delay > 0 && (
+                        <div className="text-sm text-red-600 mt-1">
+                          +{flight.delay}m
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
@@ -1378,11 +1379,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         >
                           {flight.categorization}
                         </Badge>
-                        {flight.disruptionReason && flight.disruptionReason !== "Unknown disruption" && (
-                          <div className="text-sm text-muted-foreground truncate max-w-[200px]">
-                            {flight.disruptionReason}
-                          </div>
-                        )}
+                        <div className="text-sm text-muted-foreground">
+                          {flight.disruptionReason}
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>
@@ -1392,12 +1391,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{flight.passengers || 0}</div>
-                        {(flight.connectionFlights || 0) > 0 && (
-                          <div className="text-sm text-muted-foreground">
-                            {flight.connectionFlights} connections
-                          </div>
-                        )}
+                        <div className="font-medium">{flight.passengers}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {flight.connectionFlights} connections
+                        </div>
                       </div>
                     </TableCell>
                     <TableCell>

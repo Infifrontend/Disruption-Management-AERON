@@ -272,27 +272,14 @@ app.post('/api/settings/reset', async (req, res) => {
 // Flight Disruptions endpoints
 app.get('/api/disruptions', async (req, res) => {
   try {
-    console.log('Fetching disruptions from database...')
     const result = await pool.query(`
       SELECT * FROM flight_disruptions 
       ORDER BY created_at DESC
     `)
-    console.log(`Found ${result.rows.length} disruptions in database`)
-    
-    if (result.rows.length === 0) {
-      console.log('No disruptions found - returning empty array')
-      return res.json([])
-    }
-    
-    console.log('Sample disruption data:', result.rows[0])
     res.json(result.rows)
   } catch (error) {
     console.error('Error fetching disruptions:', error)
-    res.status(500).json({ 
-      error: 'Failed to fetch disruptions', 
-      details: error.message,
-      timestamp: new Date().toISOString()
-    })
+    res.status(500).json({ error: error.message })
   }
 })
 
@@ -320,7 +307,7 @@ app.post('/api/disruptions', async (req, res) => {
     const {
       flight_number, route, origin, destination, origin_city, destination_city,
       aircraft, scheduled_departure, estimated_departure, delay_minutes, 
-      passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason
+      passengers, crew, severity, disruption_type, status, disruption_reason
     } = req.body
     
     // Validate required fields
@@ -340,13 +327,13 @@ app.post('/api/disruptions', async (req, res) => {
       INSERT INTO flight_disruptions (
         flight_number, route, origin, destination, origin_city, destination_city,
         aircraft, scheduled_departure, estimated_departure, delay_minutes, 
-        passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+        passengers, crew, severity, disruption_type, status, disruption_reason
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
       RETURNING *
     `, [
       flight_number, safeRoute, safeOrigin, safeDestination, origin_city, destination_city,
       aircraft, scheduled_departure, estimated_departure, delay_minutes || 0,
-      passengers, crew, connection_flights || 0, severity || 'Medium', disruption_type || 'Technical', 
+      passengers, crew, severity || 'Medium', disruption_type || 'Technical', 
       status || 'Active', disruption_reason || 'Unknown disruption'
     ])
     
