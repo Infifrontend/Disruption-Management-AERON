@@ -120,8 +120,11 @@ const transformFlightData = (disruption: FlightDisruption) => {
     impact: `Flight affected due to ${disruption.disruptionReason || "operational issues"}`,
     lastUpdate: getTimeAgo(disruption.updatedAt || disruption.createdAt),
     priority: disruption.severity || "Medium",
-    connectionFlights: getConsistentConnectionCount(disruption.flightNumber, disruption.passengers),
-    vipPassengers: getConsistentVipCount(disruption.flightNumber)
+    connectionFlights: getConsistentConnectionCount(
+      disruption.flightNumber,
+      disruption.passengers,
+    ),
+    vipPassengers: getConsistentVipCount(disruption.flightNumber),
   };
 };
 
@@ -143,20 +146,30 @@ const getLocationName = (code: string) => {
 };
 
 // Generate consistent connection count based on flight number and passenger count
-const getConsistentConnectionCount = (flightNumber: string, passengers: number) => {
+const getConsistentConnectionCount = (
+  flightNumber: string,
+  passengers: number,
+) => {
   // Create a simple hash from flight number for consistency
-  const hash = flightNumber.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  
+  const hash = flightNumber
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+
   // Base connection count on passenger load and route popularity
-  const baseConnections = Math.min(Math.max(Math.floor(passengers * 0.05), 3), 15); // 5% of passengers, min 3, max 15
+  const baseConnections = Math.min(
+    Math.max(Math.floor(passengers * 0.05), 3),
+    15,
+  ); // 5% of passengers, min 3, max 15
   const variation = hash % 5; // Add consistent variation based on flight number
-  
+
   return baseConnections + variation;
 };
 
 // Generate consistent VIP count based on flight number
 const getConsistentVipCount = (flightNumber: string) => {
-  const hash = flightNumber.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const hash = flightNumber
+    .split("")
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
   return (hash % 4) + 1; // 1-4 VIP passengers based on flight number
 };
 
@@ -243,7 +256,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       setError(null);
       setLoading(true);
       const data = await databaseService.getAllDisruptions();
-
+      console.log("test", data);
       // Transform database data to component format
       const transformedFlights = data.map(transformFlightData);
       setFlights(transformedFlights);
