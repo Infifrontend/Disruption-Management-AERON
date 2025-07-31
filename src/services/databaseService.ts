@@ -551,10 +551,26 @@ class DatabaseService {
   async getRecoveryOptions(disruptionId: string): Promise<RecoveryOption[]> {
     try {
       const response = await fetch(`${this.baseUrl}/recovery-options/${disruptionId}`)
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
       return await response.json()
     } catch (error) {
-      console.error('Failed to fetch recovery options:', error)
+      console.error('Error fetching recovery options:', error)
+      return []
+    }
+  }
+
+  // Get recovery steps for a disruption
+  async getRecoverySteps(disruptionId: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-steps/${disruptionId}`)
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return await response.json()
+    } catch (error) {
+      console.error('Error fetching recovery steps:', error)
       return []
     }
   }
