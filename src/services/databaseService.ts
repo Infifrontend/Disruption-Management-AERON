@@ -57,12 +57,13 @@ export interface FlightDisruption {
 export interface RecoveryOption {
   id: string
   disruptionId: string
-  optionName: string
+  title: string
   description: string
-  cost: number
-  duration: number
+  cost: string
+  timeline: string
   confidence: number
-  passengerImpact: number
+  impact: string
+  status: string
   createdAt: string
   details: any
 }

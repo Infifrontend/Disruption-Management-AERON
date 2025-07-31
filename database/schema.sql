@@ -499,11 +499,11 @@ INSERT INTO hotel_bookings (disruption_id, passenger_pnr, hotel_name, check_in, 
 ON CONFLICT DO NOTHING;
 
 -- Insert sample recovery options
-INSERT INTO recovery_options (disruption_id, option_name, description, cost, duration_minutes, confidence, passenger_impact, details) VALUES
-(1, 'Aircraft Swap', 'Replace A6-FDB with available A6-FDC', 25000.00, 120, 95.5, 158, '{"aircraft": "A6-FDC", "gate": "C15", "crew_required": false}'),
-(1, 'Delay & Repair', 'Complete hydraulic system check and repair', 8500.00, 180, 85.2, 158, '{"repair_time": "3 hours", "parts_available": true}'),
-(1, 'Cancel & Rebook', 'Cancel flight and rebook passengers on next available flights', 45000.00, 60, 100.0, 158, '{"next_flights": ["FZ125", "EK201"], "compensation": 400}'),
-(4, 'Emergency Aircraft', 'Deploy backup aircraft A6-FDG', 35000.00, 90, 92.0, 162, '{"aircraft": "A6-FDG", "crew_ready": true, "slots_available": true}')
+INSERT INTO recovery_options (disruption_id, title, description, cost, timeline, confidence, impact, status, details) VALUES
+(1, 'Aircraft Swap', 'Replace A6-FDB with available A6-FDC', 'AED 25,000', '120 minutes', 95, 'Medium', 'generated', '{"aircraft": "A6-FDC", "gate": "C15", "crew_required": false}'),
+(1, 'Delay & Repair', 'Complete hydraulic system check and repair', 'AED 8,500', '180 minutes', 85, 'Medium', 'generated', '{"repair_time": "3 hours", "parts_available": true}'),
+(1, 'Cancel & Rebook', 'Cancel flight and rebook passengers on next available flights', 'AED 45,000', '60 minutes', 100, 'High', 'generated', '{"next_flights": ["FZ125", "EK201"], "compensation": 400}'),
+(4, 'Emergency Aircraft', 'Deploy backup aircraft A6-FDG', 'AED 35,000', '90 minutes', 92, 'Medium', 'generated', '{"aircraft": "A6-FDG", "crew_ready": true, "slots_available": true}')
 ON CONFLICT DO NOTHING;
 
 -- Insert sample recovery logs
