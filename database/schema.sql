@@ -269,7 +269,8 @@ BEGIN
 END $$;
 
 -- Recovery Options table
-CREATE TABLE IF NOT EXISTS recovery_options (
+DROP TABLE IF EXISTS recovery_options CASCADE;
+CREATE TABLE recovery_options (
     id SERIAL PRIMARY KEY,
     disruption_id INTEGER REFERENCES flight_disruptions(id),
     title VARCHAR(255) NOT NULL,

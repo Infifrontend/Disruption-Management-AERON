@@ -783,6 +783,27 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
     for (let i = 0; i < options.length; i++) {
       const option = options[i]
       console.log(`Saving option ${i + 1}: ${option.title}`)
+      
+      // Ensure all required fields have defaults
+      const optionData = {
+        title: option.title || option.option_name || `Recovery Option ${i + 1}`,
+        description: option.description || 'Recovery option details',
+        cost: option.cost || 'TBD',
+        timeline: option.timeline || option.duration_minutes ? `${option.duration_minutes} minutes` : 'TBD',
+        confidence: option.confidence || 80,
+        impact: option.impact || option.passenger_impact || 'Medium',
+        status: option.status || 'generated',
+        advantages: option.advantages || [],
+        considerations: option.considerations || [],
+        resourceRequirements: option.resourceRequirements || option.resource_requirements || {},
+        costBreakdown: option.costBreakdown || option.cost_breakdown || {},
+        timelineDetails: option.timelineDetails || option.timeline_details || {},
+        riskAssessment: option.riskAssessment || option.risk_assessment || {},
+        technicalSpecs: option.technicalSpecs || option.technical_specs || {},
+        metrics: option.metrics || {},
+        rotationPlan: option.rotationPlan || option.rotation_plan || {}
+      }
+
       await pool.query(`
         INSERT INTO recovery_options (
           disruption_id, title, description, cost, timeline,
@@ -791,18 +812,24 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
           risk_assessment, technical_specs, metrics, rotation_plan
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       `, [
-        disruptionId, option.title, option.description,
-        option.cost, option.timeline, option.confidence, option.impact,
-        option.status, i + 1, // priority based on order
-        option.advantages ? JSON.stringify(option.advantages) : null,
-        option.considerations ? JSON.stringify(option.considerations) : null,
-        option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : null,
-        option.costBreakdown ? JSON.stringify(option.costBreakdown) : null,
-        option.timelineDetails ? JSON.stringify(option.timelineDetails) : null,
-        option.riskAssessment ? JSON.stringify(option.riskAssessment) : null,
-        option.technicalSpecs ? JSON.stringify(option.technicalSpecs) : null,
-        option.metrics ? JSON.stringify(option.metrics) : null,
-        option.rotationPlan ? JSON.stringify(option.rotationPlan) : null
+        disruptionId, 
+        optionData.title,
+        optionData.description,
+        optionData.cost, 
+        optionData.timeline, 
+        optionData.confidence, 
+        optionData.impact,
+        optionData.status, 
+        i + 1, // priority based on order
+        Array.isArray(optionData.advantages) ? optionData.advantages : [],
+        Array.isArray(optionData.considerations) ? optionData.considerations : [],
+        JSON.stringify(optionData.resourceRequirements),
+        JSON.stringify(optionData.costBreakdown),
+        JSON.stringify(optionData.timelineDetails),
+        JSON.stringify(optionData.riskAssessment),
+        JSON.stringify(optionData.technicalSpecs),
+        JSON.stringify(optionData.metrics),
+        JSON.stringify(optionData.rotationPlan)
       ])
     }
 
