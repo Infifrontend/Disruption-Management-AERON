@@ -290,6 +290,7 @@ CREATE TABLE recovery_options (
     technical_specs JSONB,
     metrics JSONB,
     rotation_plan JSONB,
+    details JSONB,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -499,11 +500,27 @@ INSERT INTO hotel_bookings (disruption_id, passenger_pnr, hotel_name, check_in, 
 ON CONFLICT DO NOTHING;
 
 -- Insert sample recovery options
-INSERT INTO recovery_options (disruption_id, title, description, cost, timeline, confidence, impact, status, details) VALUES
-(1, 'Aircraft Swap', 'Replace A6-FDB with available A6-FDC', 'AED 25,000', '120 minutes', 95, 'Medium', 'generated', '{"aircraft": "A6-FDC", "gate": "C15", "crew_required": false}'),
-(1, 'Delay & Repair', 'Complete hydraulic system check and repair', 'AED 8,500', '180 minutes', 85, 'Medium', 'generated', '{"repair_time": "3 hours", "parts_available": true}'),
-(1, 'Cancel & Rebook', 'Cancel flight and rebook passengers on next available flights', 'AED 45,000', '60 minutes', 100, 'High', 'generated', '{"next_flights": ["FZ125", "EK201"], "compensation": 400}'),
-(4, 'Emergency Aircraft', 'Deploy backup aircraft A6-FDG', 'AED 35,000', '90 minutes', 92, 'Medium', 'generated', '{"aircraft": "A6-FDG", "crew_ready": true, "slots_available": true}')
+INSERT INTO recovery_options (disruption_id, title, description, cost, timeline, confidence, impact, status, advantages, considerations, metrics, details) VALUES
+(1, 'Aircraft Swap', 'Replace A6-FDB with available A6-FDC', 'AED 25,000', '120 minutes', 95, 'Medium', 'generated', 
+ ARRAY['Same aircraft type - no passenger impact', 'Available immediately', 'Maintains 97% of schedule integrity'], 
+ ARRAY['Crew briefing required for aircraft change', 'Passenger transfer time: 30 minutes'],
+ '{"totalCost": 25000, "otpScore": 95, "aircraftSwaps": 1, "crewViolations": 0, "paxAccommodated": 100, "regulatoryRisk": "Low", "delayMinutes": 120, "confidenceScore": 95, "networkImpact": "Low"}',
+ '{"aircraft": "A6-FDC", "gate": "C15", "crew_required": false}'),
+(1, 'Delay & Repair', 'Complete hydraulic system check and repair', 'AED 8,500', '180 minutes', 85, 'Medium', 'generated',
+ ARRAY['Original aircraft maintained', 'No aircraft swap complexity'],
+ ARRAY['Repair ETA uncertain', 'Massive passenger accommodation needed'],
+ '{"totalCost": 8500, "otpScore": 70, "aircraftSwaps": 0, "crewViolations": 0, "paxAccommodated": 85, "regulatoryRisk": "Medium", "delayMinutes": 180, "confidenceScore": 85, "networkImpact": "Medium"}',
+ '{"repair_time": "3 hours", "parts_available": true}'),
+(1, 'Cancel & Rebook', 'Cancel flight and rebook passengers on next available flights', 'AED 45,000', '60 minutes', 100, 'High', 'generated',
+ ARRAY['Stops cascade disruption immediately', 'Quick passenger rebooking process'],
+ ARRAY['Complete revenue loss for sector', 'High passenger compensation costs'],
+ '{"totalCost": 45000, "otpScore": 0, "aircraftSwaps": 0, "crewViolations": 0, "paxAccommodated": 75, "regulatoryRisk": "High", "delayMinutes": 0, "confidenceScore": 100, "networkImpact": "Low"}',
+ '{"next_flights": ["FZ125", "EK201"], "compensation": 400}'),
+(4, 'Emergency Aircraft', 'Deploy backup aircraft A6-FDG', 'AED 35,000', '90 minutes', 92, 'Medium', 'generated',
+ ARRAY['Alternative aircraft immediately available', 'Zero passenger impact'],
+ ARRAY['Alternative flight delayed 60 minutes', 'Crew briefing for aircraft change'],
+ '{"totalCost": 35000, "otpScore": 88, "aircraftSwaps": 1, "crewViolations": 0, "paxAccommodated": 100, "regulatoryRisk": "Low", "delayMinutes": 90, "confidenceScore": 92, "networkImpact": "Medium"}',
+ '{"aircraft": "A6-FDG", "crew_ready": true, "slots_available": true}')
 ON CONFLICT DO NOTHING;
 
 -- Insert sample recovery logs
