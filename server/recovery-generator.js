@@ -1,4 +1,3 @@
-
 // Helper functions for disruption type mapping and recovery generation
 const mapDisruptionTypeToCategory = (type, reason) => {
   const lowerType = type.toLowerCase()
@@ -442,41 +441,265 @@ const generateRotationMisalignmentRecovery = (flight) => {
 }
 
 // Main function to generate recovery options and steps
-function generateRecoveryOptionsForDisruption(disruption) {
-  const flight = {
-    flightNumber: disruption.flight_number,
-    aircraft: disruption.aircraft,
-    origin: disruption.origin,
-    destination: disruption.destination,
-    passengers: disruption.passengers,
-    crew: disruption.crew,
-    connectionFlights: disruption.connection_flights,
-    categorization: mapDisruptionTypeToCategory(disruption.disruption_type, disruption.disruption_reason)
-  }
-  
+//function generateRecoveryOptionsForDisruption(disruption) {
+//  const flight = {
+//    flightNumber: disruption.flight_number,
+//    aircraft: disruption.aircraft,
+//    origin: disruption.origin,
+//    destination: disruption.destination,
+//    passengers: disruption.passengers,
+//    crew: disruption.crew,
+//    connectionFlights: disruption.connection_flights,
+//    categorization: mapDisruptionTypeToCategory(disruption.disruption_type, disruption.disruption_reason)
+//  }
+//  
+//  let options = []
+//  let steps = []
+//  
+//  switch (flight.categorization) {
+//    case 'Aircraft issue (e.g., AOG)':
+//      ({ options, steps } = generateAircraftIssueRecovery(flight))
+//      break
+//    case 'Crew issue (e.g., sick report, duty time breach)':
+//      ({ options, steps } = generateCrewIssueRecovery(flight))
+//      break
+//    case 'ATC/weather delay':
+//      ({ options, steps } = generateWeatherDelayRecovery(flight))
+//      break
+//    case 'Airport curfew/ramp congestion':
+//      ({ options, steps } = generateCurfewCongestionRecovery(flight))
+//      break
+//    case 'Rotation misalignment or maintenance hold':
+//      ({ options, steps } = generateRotationMisalignmentRecovery(flight))
+//      break
+//    default:
+//      ({ options, steps } = generateAircraftIssueRecovery(flight))
+//  }
+//  
+//  return { options, steps }
+//}
+
+// Recovery generator for different disruption types
+export function generateRecoveryOptionsForDisruption(disruption) {
+  const { disruption_type, severity, delay_minutes, passengers, aircraft } = disruption
+
   let options = []
   let steps = []
-  
-  switch (flight.categorization) {
-    case 'Aircraft issue (e.g., AOG)':
-      ({ options, steps } = generateAircraftIssueRecovery(flight))
+
+  // Generate recovery steps based on disruption type
+  switch (disruption_type?.toLowerCase()) {
+    case 'weather':
+      steps = [
+        {
+          step: 1,
+          title: 'Weather Trigger Received',
+          status: 'completed',
+          timestamp: '12:30 PM',
+          system: 'Weather Monitoring',
+          details: 'Severe weather alert received for departure airport',
+          data: { severity: severity, impact: 'High' }
+        }
+      ]
+
+      options = [
+        {
+          title: 'Delay for Weather Clearance',
+          description: 'Wait for weather conditions to improve before departure',
+          cost: 'AED 15,000',
+          timeline: '2-4 hours',
+          confidence: 85,
+          impact: `${passengers} passengers affected`,
+          status: 'recommended',
+          advantages: ['Lower cost option', 'Maintains original flight plan'],
+          considerations: ['Passenger accommodation needed', 'Potential crew duty time issues'],
+          resourceRequirements: { crew: 'Current crew', aircraft: aircraft, gates: '1' },
+          costBreakdown: { delay: 'AED 8,000', passenger_care: 'AED 7,000' },
+          timelineDetails: { waiting_time: '2-4 hours', preparation: '30 minutes' },
+          riskAssessment: { weather_risk: 'Medium', operational_risk: 'Low' },
+          technicalSpecs: { fuel_burn: 'Minimal', maintenance_impact: 'None' },
+          metrics: { cost_per_passenger: Math.round(15000 / passengers) },
+          rotationPlan: { next_flight_impact: 'Delayed by same duration' }
+        },
+        {
+          title: 'Cancel and Rebook Passengers',
+          description: 'Cancel current flight and rebook passengers on alternative flights',
+          cost: 'AED 45,000',
+          timeline: '4-6 hours',
+          confidence: 95,
+          impact: `${passengers} passengers need rebooking`,
+          status: 'alternative',
+          advantages: ['Eliminates weather risk', 'Better passenger experience'],
+          considerations: ['Higher cost', 'Limited seat availability'],
+          resourceRequirements: { rebooking_agents: '5', alternative_flights: '3-4' },
+          costBreakdown: { compensation: 'AED 30,000', rebooking: 'AED 15,000' },
+          timelineDetails: { rebooking_time: '4-6 hours', notification: '1 hour' },
+          riskAssessment: { operational_risk: 'Low', customer_satisfaction: 'Medium' },
+          technicalSpecs: { systems_required: 'Reservation system, SMS/Email' },
+          metrics: { cost_per_passenger: Math.round(45000 / passengers) },
+          rotationPlan: { aircraft_freed: 'Available for other routes' }
+        }
+      ]
       break
-    case 'Crew issue (e.g., sick report, duty time breach)':
-      ({ options, steps } = generateCrewIssueRecovery(flight))
+
+    case 'technical':
+      steps = [
+        {
+          step: 1,
+          title: 'Technical Issue Identified',
+          status: 'completed',
+          timestamp: '11:45 AM',
+          system: 'Maintenance Control',
+          details: 'Aircraft technical issue reported by flight crew',
+          data: { issue_type: 'Engine', severity: severity }
+        }
+      ]
+
+      options = [
+        {
+          title: 'Aircraft Substitution',
+          description: 'Replace current aircraft with available backup aircraft',
+          cost: 'AED 25,000',
+          timeline: '90-120 minutes',
+          confidence: 90,
+          impact: `${passengers} passengers delayed`,
+          status: 'recommended',
+          advantages: ['Quick resolution', 'Maintains route schedule'],
+          considerations: ['Backup aircraft availability', 'Crew qualification check'],
+          resourceRequirements: { backup_aircraft: '1', ground_crew: '8', fueling: 'Required' },
+          costBreakdown: { aircraft_positioning: 'AED 15,000', ground_handling: 'AED 10,000' },
+          timelineDetails: { positioning: '60 minutes', passenger_transfer: '30 minutes' },
+          riskAssessment: { technical_risk: 'Low', schedule_risk: 'Medium' },
+          technicalSpecs: { aircraft_type: 'B737-800', fuel_required: '12,000 kg' },
+          metrics: { delay_minutes: 90, cost_per_passenger: Math.round(25000 / passengers) },
+          rotationPlan: { original_aircraft: 'Out of service for maintenance' }
+        },
+        {
+          title: 'Maintenance Repair',
+          description: 'Repair the technical issue on current aircraft',
+          cost: 'AED 8,000',
+          timeline: '3-4 hours',
+          confidence: 70,
+          impact: `${passengers} passengers significantly delayed`,
+          status: 'alternative',
+          advantages: ['Lower direct cost', 'Aircraft remains in rotation'],
+          considerations: ['Extended delay', 'Repair complexity unknown'],
+          resourceRequirements: { maintenance_crew: '3', spare_parts: 'TBD', hangar_space: '1' },
+          costBreakdown: { labor: 'AED 5,000', parts: 'AED 3,000' },
+          timelineDetails: { diagnosis: '60 minutes', repair: '2-3 hours' },
+          riskAssessment: { repair_success: 'Medium', passenger_satisfaction: 'Low' },
+          technicalSpecs: { maintenance_type: 'Line maintenance', certification: 'Required' },
+          metrics: { delay_minutes: 240, cost_per_passenger: Math.round(8000 / passengers) },
+          rotationPlan: { downstream_impact: 'Significant delays' }
+        }
+      ]
       break
-    case 'ATC/weather delay':
-      ({ options, steps } = generateWeatherDelayRecovery(flight))
+
+    case 'crew':
+      steps = [
+        {
+          step: 1,
+          title: 'Crew Issue Reported',
+          status: 'completed',
+          timestamp: '10:30 AM',
+          system: 'Crew Control',
+          details: 'Crew duty time or availability issue identified',
+          data: { issue_type: 'Duty time', crew_affected: '2' }
+        }
+      ]
+
+      options = [
+        {
+          title: 'Standby Crew Activation',
+          description: 'Deploy standby crew to operate the flight',
+          cost: 'AED 12,000',
+          timeline: '60-90 minutes',
+          confidence: 85,
+          impact: `${passengers} passengers minimal delay`,
+          status: 'recommended',
+          advantages: ['Quick resolution', 'Minimal passenger impact'],
+          considerations: ['Standby crew availability', 'Positioning time'],
+          resourceRequirements: { standby_crew: '2-4', transportation: 'Ground transport' },
+          costBreakdown: { crew_costs: 'AED 8,000', transportation: 'AED 4,000' },
+          timelineDetails: { crew_positioning: '45 minutes', briefing: '15 minutes' },
+          riskAssessment: { availability_risk: 'Low', operational_risk: 'Low' },
+          technicalSpecs: { crew_qualifications: 'Current on type', rest_requirements: 'Met' },
+          metrics: { delay_minutes: 75, cost_per_passenger: Math.round(12000 / passengers) },
+          rotationPlan: { original_crew: 'Removed from rotation' }
+        }
+      ]
       break
-    case 'Airport curfew/ramp congestion':
-      ({ options, steps } = generateCurfewCongestionRecovery(flight))
+
+    case 'airport':
+      steps = [
+        {
+          step: 1,
+          title: 'Airport Disruption Notified',
+          status: 'completed',
+          timestamp: '09:15 AM',
+          system: 'Airport Operations',
+          details: 'Airport infrastructure or operational issue affecting flights',
+          data: { airport: disruption.origin, issue_type: 'Runway closure' }
+        }
+      ]
+
+      options = [
+        {
+          title: 'Alternative Airport Routing',
+          description: 'Divert to alternative airport and arrange ground transport',
+          cost: 'AED 35,000',
+          timeline: '4-5 hours',
+          confidence: 80,
+          impact: `${passengers} passengers diverted`,
+          status: 'recommended',
+          advantages: ['Avoids airport closure', 'Maintains service'],
+          considerations: ['Ground transport arrangements', 'Extended travel time'],
+          resourceRequirements: { alternative_airport: '1', buses: '4-5', coordination: 'Ground handling' },
+          costBreakdown: { diversion: 'AED 20,000', ground_transport: 'AED 15,000' },
+          timelineDetails: { flight_time: '2 hours', ground_transport: '2-3 hours' },
+          riskAssessment: { weather_risk: 'Low', logistics_risk: 'Medium' },
+          technicalSpecs: { alternate_airport: 'Approved alternate', fuel_planning: 'Additional 2000kg' },
+          metrics: { total_time: 300, cost_per_passenger: Math.round(35000 / passengers) },
+          rotationPlan: { aircraft_positioning: 'Required back to base' }
+        }
+      ]
       break
-    case 'Rotation misalignment or maintenance hold':
-      ({ options, steps } = generateRotationMisalignmentRecovery(flight))
-      break
+
     default:
-      ({ options, steps } = generateAircraftIssueRecovery(flight))
+      // Generic options for unknown disruption types
+      steps = [
+        {
+          step: 1,
+          title: 'Disruption Assessment',
+          status: 'completed',
+          timestamp: '12:00 PM',
+          system: 'Operations Control',
+          details: 'General disruption assessment and impact analysis',
+          data: { type: disruption_type, severity: severity }
+        }
+      ]
+
+      options = [
+        {
+          title: 'Standard Recovery Procedure',
+          description: 'Apply standard recovery procedures based on disruption type',
+          cost: 'AED 20,000',
+          timeline: '2-3 hours',
+          confidence: 75,
+          impact: `${passengers} passengers affected`,
+          status: 'recommended',
+          advantages: ['Proven procedure', 'Balanced approach'],
+          considerations: ['May not be optimal', 'Generic solution'],
+          resourceRequirements: { operations_team: '3', coordination: 'Multiple departments' },
+          costBreakdown: { operational: 'AED 15,000', contingency: 'AED 5,000' },
+          timelineDetails: { assessment: '30 minutes', execution: '2-2.5 hours' },
+          riskAssessment: { success_probability: 'Medium', impact: 'Medium' },
+          technicalSpecs: { resources: 'Standard recovery resources' },
+          metrics: { estimated_delay: 150, cost_per_passenger: Math.round(20000 / passengers) },
+          rotationPlan: { impact_assessment: 'Under review' }
+        }
+      ]
   }
-  
+
   return { options, steps }
 }
 
