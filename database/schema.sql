@@ -261,6 +261,11 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'flight_disruptions' AND column_name = 'destination_city') THEN
         ALTER TABLE flight_disruptions ADD COLUMN destination_city VARCHAR(100);
     END IF;
+
+    -- Add connection_flights column if it doesn't exist
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'flight_disruptions' AND column_name = 'connection_flights') THEN
+        ALTER TABLE flight_disruptions ADD COLUMN connection_flights INTEGER DEFAULT 0;
+    END IF;
 END $$;
 
 -- Recovery Options table
@@ -288,6 +293,14 @@ CREATE TABLE IF NOT EXISTS recovery_options (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Add status column if it doesn't exist (for existing databases)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'recovery_options' AND column_name = 'status') THEN
+        ALTER TABLE recovery_options ADD COLUMN status VARCHAR(50) DEFAULT 'generated';
+    END IF;
+END $$;
 
 -- Passengers table
 CREATE TABLE IF NOT EXISTS passengers (
