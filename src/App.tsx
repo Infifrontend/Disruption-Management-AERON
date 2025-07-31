@@ -41,26 +41,26 @@ export default function App() {
           <Suspense fallback={<LoadingSpinner />}>
             <Layout>
               <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/flight-tracking" element={<FlightTracking />} />
-              <Route path="/disruption" element={<DisruptionPage />} />
-              <Route path="/recovery" element={<RecoveryOptions />} />
-              <Route path="/comparison" element={<ComparisonPage />} />
-              <Route path="/detailed" element={<DetailedPlan />} />
-              <Route path="/prediction-dashboard" element={<PredictionDashboard />} />
-              <Route path="/flight-disruption-list" element={<FlightDisruptionListPage />} />
-              <Route path="/prediction-analytics" element={<PredictionAnalyticsPage />} />
-              <Route path="/risk-assessment" element={<RiskAssessmentPage />} />
-              <Route path="/pending" element={<PendingSolutionsPage />} />
-              <Route path="/past-logs" element={<PastLogsPage />} />
-              <Route path="/maintenance" element={<MaintenancePage />} />
-              <Route path="/passengers" element={<PassengerServicesPage />} />
-              <Route path="/hotac" element={<HOTACPage />} />
-              <Route path="/fuel-optimization" element={<FuelOptimizationPage />} />
-              <Route path="/reports" element={<ReportsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-            </Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/flight-tracking" element={<FlightTracking />} />
+                <Route path="/disruption" element={<DisruptionPage />} />
+                <Route path="/recovery" element={<RecoveryOptions />} />
+                <Route path="/comparison" element={<ComparisonPage />} />
+                <Route path="/detailed" element={<DetailedPlan />} />
+                <Route path="/prediction-dashboard" element={<PredictionDashboard />} />
+                <Route path="/flight-disruption-list" element={<FlightDisruptionListPage />} />
+                <Route path="/prediction-analytics" element={<PredictionAnalyticsPage />} />
+                <Route path="/risk-assessment" element={<RiskAssessmentPage />} />
+                <Route path="/pending" element={<PendingSolutionsPage />} />
+                <Route path="/past-logs" element={<PastLogsPage />} />
+                <Route path="/maintenance" element={<MaintenancePage />} />
+                <Route path="/passengers" element={<PassengerServicesPage />} />
+                <Route path="/hotac" element={<HOTACPage />} />
+                <Route path="/fuel-optimization" element={<FuelOptimizationPage />} />
+                <Route path="/reports" element={<ReportsPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </Routes>
             </Layout>
           </Suspense>
         </div>
