@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react'
 
 interface AppContextType {
@@ -18,7 +17,9 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | undefined>(undefined)
 
-export function AppProvider({ children }: { children: ReactNode }) {
+export function AppProvider({ children }: { children: React.ReactNode }) {
+  // Add error handling for context initialization
+  try {
   const [selectedDisruption, setSelectedDisruption] = useState(null)
   const [selectedFlight, setSelectedFlight] = useState(null)
   const [selectedRecoveryPlan, setSelectedRecoveryPlan] = useState(null)
@@ -52,23 +53,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
   ])
 
   return (
-    <AppContext.Provider value={{
-      selectedDisruption,
-      setSelectedDisruption,
-      selectedFlight,
-      setSelectedFlight,
-      selectedRecoveryPlan,
-      setSelectedRecoveryPlan,
-      passengerServicesContext,
-      setPassengerServicesContext,
-      filters,
-      setFilters,
-      screenSettings,
-      setScreenSettings
-    }}>
-      {children}
-    </AppContext.Provider>
-  )
+      <AppContext.Provider
+        value={{
+          selectedDisruption,
+          setSelectedDisruption,
+          selectedFlight,
+          setSelectedFlight,
+          selectedRecoveryPlan,
+          setSelectedRecoveryPlan,
+          passengerServicesContext,
+          setPassengerServicesContext,
+          filters,
+          setFilters,
+          screenSettings,
+          setScreenSettings
+        }}
+      >
+        {children}
+      </AppContext.Provider>
+    )
+  } catch (error) {
+    console.error('AppProvider initialization error:', error)
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h2>Context Provider Error</h2>
+        <p>Failed to initialize application context.</p>
+        <button onClick={() => window.location.reload()}>Refresh</button>
+      </div>
+    )
+  }
 }
 
 export function useAppContext() {
