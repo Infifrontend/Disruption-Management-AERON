@@ -414,23 +414,23 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       route: `${newDisruption.origin} → ${newDisruption.destination}`,
       origin: newDisruption.origin,
       destination: newDisruption.destination,
-      originCity: newDisruption.originCity,
-      destinationCity: newDisruption.destinationCity,
+      originCity: newDisruption.originCity || getLocationName(newDisruption.origin),
+      destinationCity: newDisruption.destinationCity || getLocationName(newDisruption.destination),
       gate: newDisruption.gate,
-      connectionFlights: newDisruption.connectionFlights
-        ? parseInt(newDisruption.connectionFlights)
+      connectionFlights: newDisruption.connectionFlights 
+        ? parseInt(newDisruption.connectionFlights.toString()) 
         : 0,
       vipPassengers: newDisruption.vipPassengers
-        ? parseInt(newDisruption.vipPassengers)
+        ? parseInt(newDisruption.vipPassengers.toString())
         : 0,
       aircraft: newDisruption.aircraft,
       scheduledDeparture: newDisruption.scheduledDeparture,
       estimatedDeparture:
         newDisruption.scheduledArrival ||
         addHours(newDisruption.scheduledDeparture, 3),
-      delay: newDisruption.delay ? parseInt(newDisruption.delay) : 0,
-      passengers: parseInt(newDisruption.passengers),
-      crew: parseInt(newDisruption.crew),
+      delay: newDisruption.delay ? parseInt(newDisruption.delay.toString()) : 0,
+      passengers: parseInt(newDisruption.passengers.toString()),
+      crew: parseInt(newDisruption.crew.toString()),
       severity: newDisruption.priority,
       type:
         newDisruption.disruptionType.charAt(0).toUpperCase() +
@@ -443,6 +443,12 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     };
 
     try {
+      console.log('Form data before submission:', {
+        connectionFlights: newDisruption.connectionFlights,
+        connectionFlightsType: typeof newDisruption.connectionFlights,
+        newFlightDataConnectionFlights: newFlightData.connectionFlights
+      });
+      
       const success = await databaseService.saveDisruption(newFlightData);
       if (success) {
         // Clear any existing errors and show success
@@ -925,6 +931,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       <Input
                         id="connectionFlights"
                         type="number"
+                        min="0"
                         placeholder="8"
                         value={newDisruption.connectionFlights}
                         onChange={(e) =>
