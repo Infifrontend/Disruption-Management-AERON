@@ -545,7 +545,12 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
             variant="outline"
             className="bg-orange-50 text-orange-700 border-orange-200"
           >
-            {sortedFlights.filter(f => f.priority === "High" || f.priority === "Critical").length} High Priority
+            {
+              sortedFlights.filter(
+                (f) => f.priority === "High" || f.priority === "Critical",
+              ).length
+            }{" "}
+            High Priority
           </Badge>
           {selectedFlight && (
             <Badge
@@ -1485,10 +1490,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     </span>
                     <span className="text-blue-700">connections at risk</span>
                   </div>
-                </div>
-
-                {/* Row 2: Disruption Type and Status Badge */}
-                <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-1">
                     <span className="text-blue-600 font-semibold">
                       {selectedFlight.categorization}
