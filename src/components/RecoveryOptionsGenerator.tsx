@@ -439,19 +439,6 @@ export function RecoveryOptionsGenerator({
       options: [],
     };
   }
-  } catch (error) {
-    console.error("Error getting scenario data:", error);
-    // Final fallback
-    scenarioData = {
-      title: "Recovery Options",
-      description: "Flight recovery analysis",
-      priority: "Medium",
-      estimatedTime: "2-4 hours",
-      icon: Plane,
-      steps: [],
-      options: [],
-    };
-  }
 
   // Ensure scenarioData has required properties with fallbacks
   if (!scenarioData || typeof scenarioData !== "object") {
