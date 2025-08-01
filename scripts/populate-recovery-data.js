@@ -1,5 +1,5 @@
 
-const { Pool } = require('pg');
+import { Pool } from 'pg';
 
 // Database connection
 const pool = new Pool({
@@ -383,7 +383,7 @@ async function populateRecoveryData() {
 }
 
 // Run the population script
-if (require.main === module) {
+if (process.argv[1] === new URL(import.meta.url).pathname) {
   populateRecoveryData()
     .then(() => {
       console.log('🎉 Recovery data population script completed');
@@ -395,4 +395,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { populateRecoveryData };
+export { populateRecoveryData };
