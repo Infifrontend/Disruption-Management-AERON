@@ -119,16 +119,17 @@ class DatabaseService {
   private baseUrl: string
 
   constructor() {
-    // Use API base URL for database operations - use HTTPS in production to avoid Mixed Content errors
-    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:'
+    // Use API base URL for database operations
     const hostname = window.location.hostname
+    const protocol = window.location.protocol
 
     if (hostname === 'localhost') {
       this.baseUrl = 'http://localhost:3001/api'
     } else {
-      // For Replit production, use same protocol as the frontend
-      this.baseUrl = `${protocol}//${hostname}:3001/api`
+      // For Replit production, construct the correct URL
+      this.baseUrl = `${protocol}//${hostname.replace('-00-', '-00-').replace('.replit.dev', '.replit.dev')}:3001/api`
     }
+    console.log('Database service initialized with baseUrl:', this.baseUrl)
   }
 
   // Settings operations
@@ -385,8 +386,16 @@ class DatabaseService {
   // Health check method
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/health`)
-      return response.ok
+      console.log('Performing health check at:', `${this.baseUrl}/health`)
+      const response = await fetch(`${this.baseUrl}/health`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      const isHealthy = response.ok
+      console.log('Health check result:', isHealthy ? 'HEALTHY' : 'UNHEALTHY', response.status)
+      return isHealthy
     } catch (error) {
       console.error('Database health check failed:', error)
       return false
