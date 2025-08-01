@@ -203,21 +203,17 @@ export function RecoveryOptionsGenerator({
         // If no options exist, generate them
         if (options.length === 0) {
           console.log("No recovery options found, generating new ones...");
-          try {
-            const result = await databaseService.generateRecoveryOptions(flightId);
-            console.log("Generation result:", result);
+          const result = await databaseService.generateRecoveryOptions(flightId);
+          console.log("Generation result:", result);
 
-            if (result.optionsCount > 0) {
-              // Wait a moment and fetch the newly generated options
-              await new Promise(resolve => setTimeout(resolve, 1000));
-              options = await databaseService.getRecoveryOptions(flightId);
-              steps = await databaseService.getRecoverySteps(flightId);
-              console.log(`After generation: ${options.length} options, ${steps.length} steps`);
-            }
-          } catch (generateError) {
-            console.error("Error generating recovery options:", generateError);
-            // Don't throw here, fall back to scenario data
-            console.log("Falling back to scenario data due to generation error");
+          if (result.optionsCount > 0) {
+            // Wait a moment and fetch the newly generated options
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            options = await databaseService.getRecoveryOptions(flightId);
+            steps = await databaseService.getRecoverySteps(flightId);
+            console.log(`After generation: ${options.length} options, ${steps.length} steps`);
+          } else {
+            console.log("No options generated, falling back to scenario data");
             setUseDatabaseData(false);
             return;
           }
@@ -626,16 +622,25 @@ export function RecoveryOptionsGenerator({
 
   // Generate rotation plan data based on selected recovery option
   const generateRotationPlanData = (option, flight) => {
-    if (!option?.id || typeof option.id !== 'string') return null;
-
-    if (!option || !flight) {
-      console.warn('Missing option or flight data for rotation plan generation');
+    // Enhanced null checks
+    if (!option?.id || typeof option.id !== 'string' || !flight) {
+      console.warn('Missing option or flight data for rotation plan generation', { option: !!option, flight: !!flight });
       return {
         aircraftOptions: [],
         crewData: [],
         nextSectors: [],
-        operationalConstraints: {},
-        costBreakdown: {},
+        operationalConstraints: {
+          gateCompatibility: { status: 'Unknown', details: 'Data unavailable' },
+          slotCapacity: { status: 'Unknown', details: 'Data unavailable' },
+          curfewViolation: { status: 'Unknown', details: 'Data unavailable' },
+          passengerConnections: { status: 'Unknown', details: 'Data unavailable' }
+        },
+        costBreakdown: {
+          delayCost: 0,
+          fuelEfficiency: 'N/A',
+          hotelTransport: 0,
+          eu261Risk: 'Unknown'
+        },
         recommendation: { aircraft: 'N/A', reason: 'Data unavailable' }
       };
     }
@@ -2491,7 +2496,7 @@ export function RecoveryOptionsGenerator({
                           if (!rotationData) return null;
 
                           return Object.entries(
-                            rotationData.operationalConstraints,
+                            rotationData?.operationalConstraints || {},
                           ).map(([key, constraint]) => (
                             <div key={key}>
                               <Label className="text-sm font-medium flex items-center gap-2">
@@ -2513,26 +2518,26 @@ export function RecoveryOptionsGenerator({
                               </Label>
                               <div
                                 className={`mt-2 p-3 rounded-lg ${
-                                  constraint.status.includes("Risk") ||
-                                  constraint.status.includes("Major")
+                                  (constraint?.status || '').includes("Risk") ||
+                                  (constraint?.status || '').includes("Major")
                                     ? "bg-red-50"
-                                    : constraint.status.includes("Required") ||
-                                        constraint.status.includes("Affected")
+                                    : (constraint?.status || '').includes("Required") ||
+                                        (constraint?.status || '').includes("Affected")
                                       ? "bg-yellow-50"
                                       : "bg-green-50"
                                 }`}
                               >
                                 <p className="text-sm flex items-center gap-2">
-                                  {constraint.status.includes("Risk") ||
-                                  constraint.status.includes("Major") ? (
+                                  {(constraint?.status || '').includes("Risk") ||
+                                  (constraint?.status || '').includes("Major") ? (
                                     <XCircle className="h-4 w-4 text-red-600" />
-                                  ) : constraint.status.includes("Required") ||
-                                    constraint.status.includes("Affected") ? (
+                                  ) : (constraint?.status || '').includes("Required") ||
+                                    (constraint?.status || '').includes("Affected") ? (
                                     <AlertTriangle className="h-4 w-4 text-yellow-600" />
                                   ) : (
                                     <CheckCircle className="h-4 w-4 text-green-600" />
                                   )}
-                                  {constraint.details}
+                                  {constraint?.details || 'No details available'}
                                 </p>
                               </div>
                             </div>
@@ -2548,14 +2553,27 @@ export function RecoveryOptionsGenerator({
               <TabsContent value="cost" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                   {(() => {
-                    const rotationData = generateRotationPlanData(
-                      selectedRotationData,
-                      flight,
-                    );
-                    if (!rotationData || !rotationData.costBreakdown) return null;
+                    try {
+                      const rotationData = generateRotationPlanData(
+                        selectedRotationData,
+                        flight,
+                      );
+                      
+                      // Enhanced validation
+                      if (!rotationData || 
+                          !rotationData.costBreakdown || 
+                          typeof rotationData.costBreakdown !== 'object') {
+                        console.warn('Invalid rotation data structure:', rotationData);
+                        return (
+                          <div className="text-center p-4 text-gray-500">
+                            <p>Unable to load cost breakdown data</p>
+                            <p className="text-xs mt-1">Please try refreshing or contact support</p>
+                          </div>
+                        );
+                      }
 
-                    return (
-                      <>
+                      return (
+                        <>
                         <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
                           <CardContent className="p-4 text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
@@ -2566,7 +2584,7 @@ export function RecoveryOptionsGenerator({
                             </div>
                             <p className="text-2xl font-bold text-red-800">
                               $
-                              {(rotationData.costBreakdown.delayCost || 0).toLocaleString()}
+                              {(rotationData?.costBreakdown?.delayCost || 0).toLocaleString()}
                             </p>
                             <p className="text-xs text-red-600 mt-1">
                               Including compensation
@@ -2583,7 +2601,7 @@ export function RecoveryOptionsGenerator({
                               </p>
                             </div>
                             <p className="text-2xl font-bold text-yellow-800">
-                              {rotationData.costBreakdown.fuelEfficiency}
+                              {rotationData?.costBreakdown?.fuelEfficiency || 'N/A'}
                             </p>
                             <p className="text-xs text-yellow-600 mt-1">
                               vs original aircraft
@@ -2600,9 +2618,9 @@ export function RecoveryOptionsGenerator({
                               </p>
                             </div>
                             <p className="text-2xl font-bold text-blue-800">
-                              {rotationData.costBreakdown.hotelTransport === 0
+                              {(rotationData?.costBreakdown?.hotelTransport || 0) === 0
                                 ? "N/A"
-                                : `$${(rotationData.costBreakdown.hotelTransport || 0).toLocaleString()}`}
+                                : `$${(rotationData?.costBreakdown?.hotelTransport || 0).toLocaleString()}`}
                             </p>
                             <p className="text-xs text-blue-600 mt-1">
                               Crew accommodation
@@ -2619,7 +2637,7 @@ export function RecoveryOptionsGenerator({
                               </p>
                             </div>
                             <p className="text-2xl font-bold text-orange-800">
-                              {rotationData.costBreakdown.eu261Risk}
+                              {rotationData?.costBreakdown?.eu261Risk || 'Unknown'}
                             </p>
                             <p className="text-xs text-orange-600 mt-1">
                               €600 per passenger
@@ -2654,11 +2672,11 @@ export function RecoveryOptionsGenerator({
                               <CheckCircle className="h-5 w-5 text-green-600" />
                               <p className="font-medium text-green-800">
                                 Recommended Option: Aircraft{" "}
-                                {rotationData.recommendation.aircraft}
+                                {rotationData?.recommendation?.aircraft || 'N/A'}
                               </p>
                             </div>
                             <p className="text-sm text-green-700">
-                              {rotationData.recommendation.reason}
+                              {rotationData?.recommendation?.reason || 'No recommendation details available'}
                             </p>
                           </div>
 
@@ -2674,7 +2692,7 @@ export function RecoveryOptionsGenerator({
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {rotationData.aircraftOptions
+                              {(rotationData?.aircraftOptions || [])
                                 .slice(0, 3)
                                 .map((aircraft, index) => {
                                   const costScore = aircraft.recommended
@@ -2791,7 +2809,16 @@ export function RecoveryOptionsGenerator({
                           </div>
                         </>
                       );
-                    })()}
+                    } catch (error) {
+                      console.error('Error rendering rotation cost data:', error);
+                      return (
+                        <div className="text-center p-4 text-red-500">
+                          <p>Error loading cost data</p>
+                          <p className="text-xs mt-1">Error: {error.message}</p>
+                        </div>
+                      );
+                    }
+                  })()}
                   </CardContent>
                 </Card>
               </TabsContent>
