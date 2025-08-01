@@ -130,7 +130,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         if (options.length === 0) {
           console.log('No recovery options found, generating new ones...')
           const result = await databaseService.generateRecoveryOptions(flight.id)
-          
+
           if (result.optionsCount > 0) {
             // Fetch the newly generated options
             options = await databaseService.getRecoveryOptions(flight.id)
@@ -175,7 +175,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       } catch (error) {
         console.error('Error fetching recovery options:', error)
         setLoadingError(error.message)
-        
+
         // Fallback to mock data if database fetch fails
         try {
           const scenarioData = getScenarioDataForFlight(flight?.categorization)
@@ -943,7 +943,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               </AlertDescription>
             </Alert>
           )}
-          
+
           {isLoadingOptions ? (
             <div className="space-y-4">
               <div className="flex items-center justify-center p-8">
@@ -1129,7 +1129,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
             </div>
           </DialogHeader>
 
-          {selectedOptionForDetails && (
+          {selectedOptionForDetails ? (
             <div className="space-y-6">
               {/* Edit Mode Controls */}
               {isEditMode && (
@@ -1498,6 +1498,13 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                 </TabsContent>
               </Tabs>
             </div>
+          ) : (
+            <div className="flex items-center justify-center p-8">
+              <div className="text-center">
+                <RefreshCw className="h-8 w-8 text-flydubai-blue animate-spin mx-auto mb-4" />
+                <p className="text-muted-foreground">Loading recovery option details...</p>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
@@ -1531,8 +1538,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
 
               {/* Tab 1: Alternate Aircraft Options */}
               <TabsContent value="aircraft" className="space-y-4">
-                <Card>
-                  <CardHeader>
+                <Card>                  <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Plane className="h-5 w-5 text-flydubai-blue" />
                       Available Aircraft Options - {selectedRotationData?.title}

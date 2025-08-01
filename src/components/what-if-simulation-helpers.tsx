@@ -120,20 +120,58 @@ export const calculateImpact = (changes) => {
   }
 }
 
+// Import all helper functions
+import { 
+  getDetailedDescription, 
+  getCostBreakdown, 
+  getTimelineDetails, 
+  getResourceRequirements, 
+  getRiskAssessment, 
+  getHistoricalData, 
+  getAlternativeConsiderations, 
+  getTechnicalSpecs, 
+  getStakeholderImpact, 
+  getEditableParameters, 
+  getWhatIfScenarios 
+} from './recovery-option-helpers'
+
 // Generate recovery options with contextual details
 export const generateRecoveryOptionDetails = (option, flight) => {
-  return {
-    ...option,
-    detailedDescription: getDetailedDescription(option, flight),
-    costBreakdown: getCostBreakdown(option, flight),
-    timelineDetails: getTimelineDetails(option),
-    resourceRequirements: getResourceRequirements(option),
-    riskAssessment: getRiskAssessment(option),
-    historicalData: getHistoricalData(option),
-    alternativeConsiderations: getAlternativeConsiderations(option, flight),
-    technicalSpecs: getTechnicalSpecs(option),
-    stakeholderImpact: getStakeholderImpact(option, flight),
-    editableParameters: getEditableParameters(option),
-    whatIfScenarios: getWhatIfScenarios(option)
+  if (!option) {
+    console.warn('No option provided to generateRecoveryOptionDetails')
+    return {}
+  }
+
+  try {
+    return {
+      ...option,
+      detailedDescription: getDetailedDescription(option, flight),
+      costBreakdown: getCostBreakdown(option, flight),
+      timelineDetails: getTimelineDetails(option),
+      resourceRequirements: getResourceRequirements(option),
+      riskAssessment: getRiskAssessment(option),
+      historicalData: getHistoricalData(option),
+      alternativeConsiderations: getAlternativeConsiderations(option, flight),
+      technicalSpecs: getTechnicalSpecs(option),
+      stakeholderImpact: getStakeholderImpact(option, flight),
+      editableParameters: getEditableParameters(option),
+      whatIfScenarios: getWhatIfScenarios(option)
+    }
+  } catch (error) {
+    console.error('Error generating recovery option details:', error)
+    return {
+      ...option,
+      detailedDescription: option.description || 'No description available',
+      costBreakdown: [],
+      timelineDetails: [],
+      resourceRequirements: [],
+      riskAssessment: [],
+      historicalData: {},
+      alternativeConsiderations: [],
+      technicalSpecs: {},
+      stakeholderImpact: {},
+      editableParameters: [],
+      whatIfScenarios: []
+    }
   }
 }
