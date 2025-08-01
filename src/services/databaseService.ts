@@ -551,11 +551,18 @@ class DatabaseService {
   // Recovery Options
   async getRecoveryOptions(disruptionId: string): Promise<RecoveryOption[]> {
     try {
+      console.log(`Fetching recovery options for disruption ${disruptionId}`);
       const response = await fetch(`${this.baseUrl}/recovery-options/${disruptionId}`)
       if (!response.ok) {
+        if (response.status === 404) {
+          console.log(`No recovery options found for disruption ${disruptionId}`);
+          return [];
+        }
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return await response.json()
+      const options = await response.json()
+      console.log(`Found ${options.length} recovery options for disruption ${disruptionId}`);
+      return options
     } catch (error) {
       console.error('Error fetching recovery options:', error)
       return []
@@ -565,23 +572,27 @@ class DatabaseService {
   // Generate recovery options for a disruption
   async generateRecoveryOptions(disruptionId: string): Promise<{ optionsCount: number, stepsCount: number }> {
     try {
+      console.log(`Generating recovery options for disruption ${disruptionId}`);
       const response = await fetch(`${this.baseUrl}/recovery-options/generate/${disruptionId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text();
+        console.error(`Generation failed: ${response.status} - ${errorText}`);
+        throw new Error(`Failed to generate recovery options: ${response.status} - ${errorText}`)
       }
       
       const result = await response.json()
+      console.log('Generation successful:', result);
       return {
         optionsCount: result.optionsCount || 0,
         stepsCount: result.stepsCount || 0
       }
     } catch (error) {
       console.error('Error generating recovery options:', error)
-      return { optionsCount: 0, stepsCount: 0 }
+      throw error; // Re-throw to let the caller handle it
     }
   }
 
