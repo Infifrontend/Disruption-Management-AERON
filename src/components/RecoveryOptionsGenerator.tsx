@@ -1,27 +1,46 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Button } from './ui/button'
-import { Badge } from './ui/badge'
-import { Progress } from './ui/progress'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
-import { Separator } from './ui/separator'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import { Alert, AlertDescription } from './ui/alert'
-import { Input } from './ui/input'
-import { Label } from './ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
-import { Slider } from './ui/slider'
-import { Switch } from './ui/switch'
-import { 
-  Plane, 
-  AlertTriangle, 
-  CheckCircle, 
-  Clock, 
-  Users, 
-  Calendar, 
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { Progress } from "./ui/progress";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+import { Separator } from "./ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Alert, AlertDescription } from "./ui/alert";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Slider } from "./ui/slider";
+import { Switch } from "./ui/switch";
+import {
+  Plane,
+  AlertTriangle,
+  CheckCircle,
+  Clock,
+  Users,
+  Calendar,
   Wrench,
   Target,
   ArrowRight,
@@ -75,66 +94,85 @@ import {
   Layers,
   Filter,
   Sliders,
-  BarChart2
-} from 'lucide-react'
+  BarChart2,
+} from "lucide-react";
 
 // Import helper functions
-import { getScenarioData, getCrewIssueRecovery } from './recovery-scenarios'
-import { generateScheduleImpactAnalysis } from './schedule-impact-helpers'
-import { requiresPassengerReaccommodation, generateAffectedPassengers } from './passenger-data-helpers'
-import { generateRecoveryOptionDetails, calculateScenarioImpact, calculateImpact } from './what-if-simulation-helpers'
-import { CrewTrackingGantt } from './CrewTrackingGantt'
-import { databaseService } from '../services/databaseService'
+import { getScenarioData, getCrewIssueRecovery } from "./recovery-scenarios";
+import { generateScheduleImpactAnalysis } from "./schedule-impact-helpers";
+import {
+  requiresPassengerReaccommodation,
+  generateAffectedPassengers,
+} from "./passenger-data-helpers";
+import {
+  generateRecoveryOptionDetails,
+  calculateScenarioImpact,
+  calculateImpact,
+} from "./what-if-simulation-helpers";
+import { CrewTrackingGantt } from "./CrewTrackingGantt";
+import { databaseService } from "../services/databaseService";
 
-export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompare, onPassengerServices, onNavigateToPendingSolutions }) {
-  const [selectedOption, setSelectedOption] = useState(null)
-  const [showDetails, setShowDetails] = useState(false)
-  const [currentStep, setCurrentStep] = useState(0)
-  const [isExecuting, setIsExecuting] = useState(false)
-  const [showRotationPlan, setShowRotationPlan] = useState(false)
-  const [selectedRotationData, setSelectedRotationData] = useState(null)
-  const [scheduleImpactData, setScheduleImpactData] = useState(null)
-  const [showRecoveryOptionDetails, setShowRecoveryOptionDetails] = useState(false)
-  const [selectedOptionForDetails, setSelectedOptionForDetails] = useState(null)
-  const [isEditMode, setIsEditMode] = useState(false)
-  const [editedOption, setEditedOption] = useState(null)
-  const [showWhatIfSimulation, setShowWhatIfSimulation] = useState(false)
-  const [showCrewTrackingGantt, setShowCrewTrackingGantt] = useState(false)
-  const [simulationScenarios, setSimulationScenarios] = useState([])
-  const [activeSimulation, setActiveSimulation] = useState(null)
-  const [showExecuteConfirmation, setShowExecuteConfirmation] = useState(false)
-  const [optionToExecute, setOptionToExecute] = useState(null)
-  const [useDatabaseData, setUseDatabaseData] = useState(true) // Use database by default
-  const [recoveryOptions, setRecoveryOptions] = useState([])
-  const [recoverySteps, setRecoverySteps] = useState([])
-  const [isLoadingOptions, setIsLoadingOptions] = useState(false)
-  const [loadingError, setLoadingError] = useState(null)
+export function RecoveryOptionsGenerator({
+  selectedFlight,
+  onSelectPlan,
+  onCompare,
+  onPassengerServices,
+  onNavigateToPendingSolutions,
+}) {
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isExecuting, setIsExecuting] = useState(false);
+  const [showRotationPlan, setShowRotationPlan] = useState(false);
+  const [selectedRotationData, setSelectedRotationData] = useState(null);
+  const [scheduleImpactData, setScheduleImpactData] = useState(null);
+  const [showRecoveryOptionDetails, setShowRecoveryOptionDetails] =
+    useState(false);
+  const [selectedOptionForDetails, setSelectedOptionForDetails] =
+    useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editedOption, setEditedOption] = useState(null);
+  const [showWhatIfSimulation, setShowWhatIfSimulation] = useState(false);
+  const [showCrewTrackingGantt, setShowCrewTrackingGantt] = useState(false);
+  const [simulationScenarios, setSimulationScenarios] = useState([]);
+  const [activeSimulation, setActiveSimulation] = useState(null);
+  const [showExecuteConfirmation, setShowExecuteConfirmation] = useState(false);
+  const [optionToExecute, setOptionToExecute] = useState(null);
+  const [useDatabaseData, setUseDatabaseData] = useState(true); // Use database by default
+  const [recoveryOptions, setRecoveryOptions] = useState([]);
+  const [recoverySteps, setRecoverySteps] = useState([]);
+  const [isLoadingOptions, setIsLoadingOptions] = useState(false);
+  const [loadingError, setLoadingError] = useState(null);
 
   // Handle both array and single flight selection
-  const flight = Array.isArray(selectedFlight) ? selectedFlight[0] : selectedFlight
+  const flight = Array.isArray(selectedFlight)
+    ? selectedFlight[0]
+    : selectedFlight;
 
   // Fetch recovery options from database
   useEffect(() => {
     const fetchRecoveryOptions = async () => {
-      if (!flight?.id || !useDatabaseData) return
+      if (!flight?.id || !useDatabaseData) return;
 
-      setIsLoadingOptions(true)
-      setLoadingError(null)
+      setIsLoadingOptions(true);
+      setLoadingError(null);
 
       try {
         // First try to get existing options
-        let options = await databaseService.getRecoveryOptions(flight.id)
-        let steps = await databaseService.getRecoverySteps(flight.id)
+        let options = await databaseService.getRecoveryOptions(flight.id);
+        let steps = await databaseService.getRecoverySteps(flight.id);
 
         // If no options exist, generate them
         if (options.length === 0) {
-          console.log('No recovery options found, generating new ones...')
-          const result = await databaseService.generateRecoveryOptions(flight.id)
+          console.log("No recovery options found, generating new ones...");
+          const result = await databaseService.generateRecoveryOptions(
+            flight.id,
+          );
 
           if (result.optionsCount > 0) {
             // Fetch the newly generated options
-            options = await databaseService.getRecoveryOptions(flight.id)
-            steps = await databaseService.getRecoverySteps(flight.id)
+            options = await databaseService.getRecoveryOptions(flight.id);
+            steps = await databaseService.getRecoverySteps(flight.id);
           }
         }
 
@@ -142,57 +180,58 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         const transformedOptions = options.map((option, index) => ({
           id: option.id || `option_${index + 1}`,
           title: option.title,
-          description: option.description || 'Recovery option description',
-          cost: option.cost || 'TBD',
-          timeline: option.timeline || 'TBD',
+          description: option.description || "Recovery option description",
+          cost: option.cost || "TBD",
+          timeline: option.timeline || "TBD",
           confidence: option.confidence || 80,
-          impact: option.impact || 'Medium impact',
-          status: option.status === 'generated' ? 'recommended' : option.status,
+          impact: option.impact || "Medium impact",
+          status: option.status === "generated" ? "recommended" : option.status,
           advantages: Array.isArray(option.advantages) ? option.advantages : [],
-          considerations: Array.isArray(option.considerations) ? option.considerations : [],
+          considerations: Array.isArray(option.considerations)
+            ? option.considerations
+            : [],
           metrics: option.metrics || {},
           resourceRequirements: option.resource_requirements || [],
           costBreakdown: option.cost_breakdown || [],
           timelineDetails: option.timeline_details || [],
           riskAssessment: option.risk_assessment || [],
           technicalSpecs: option.technical_specs || {},
-          rotationPlan: option.rotation_plan || {}
-        }))
+          rotationPlan: option.rotation_plan || {},
+        }));
 
-        const transformedSteps = steps.map(step => ({
+        const transformedSteps = steps.map((step) => ({
           step: step.step_number,
           title: step.title,
-          status: step.status || 'pending',
+          status: step.status || "pending",
           timestamp: step.timestamp || new Date().toLocaleTimeString(),
-          system: step.system || 'AERON System',
-          details: step.details || 'Processing...',
-          data: step.step_data || {}
-        }))
+          system: step.system || "AERON System",
+          details: step.details || "Processing...",
+          data: step.step_data || {},
+        }));
 
-        setRecoveryOptions(transformedOptions)
-        setRecoverySteps(transformedSteps)
-
+        setRecoveryOptions(transformedOptions);
+        setRecoverySteps(transformedSteps);
       } catch (error) {
-        console.error('Error fetching recovery options:', error)
-        setLoadingError(error.message)
+        console.error("Error fetching recovery options:", error);
+        setLoadingError(error.message);
 
         // Fallback to mock data if database fetch fails
         try {
-          const scenarioData = getScenarioDataForFlight(flight?.categorization)
-          setRecoveryOptions(scenarioData.options || [])
-          setRecoverySteps(scenarioData.steps || [])
+          const scenarioData = getScenarioDataForFlight(flight?.categorization);
+          setRecoveryOptions(scenarioData.options || []);
+          setRecoverySteps(scenarioData.steps || []);
         } catch (fallbackError) {
-          console.error('Fallback to mock data also failed:', fallbackError)
-          setRecoveryOptions([])
-          setRecoverySteps([])
+          console.error("Fallback to mock data also failed:", fallbackError);
+          setRecoveryOptions([]);
+          setRecoverySteps([]);
         }
       } finally {
-        setIsLoadingOptions(false)
+        setIsLoadingOptions(false);
       }
-    }
+    };
 
-    fetchRecoveryOptions()
-  }, [flight?.id, useDatabaseData])
+    fetchRecoveryOptions();
+  }, [flight?.id, useDatabaseData]);
 
   // Early return if no flight is selected
   if (!flight) {
@@ -201,449 +240,552 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         <Card className="border-flydubai-blue">
           <CardContent className="p-8 text-center">
             <Plane className="h-12 w-12 text-flydubai-blue mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-flydubai-navy mb-2">No Flight Selected</h3>
+            <h3 className="text-lg font-semibold text-flydubai-navy mb-2">
+              No Flight Selected
+            </h3>
             <p className="text-muted-foreground">
-              Please select a flight from the Affected Flights screen to generate recovery options.
+              Please select a flight from the Affected Flights screen to
+              generate recovery options.
             </p>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   // Get scenario-specific recovery data
   const getScenarioDataForFlight = (categorization) => {
-    const dataFunction = getScenarioData(categorization)
+    console.log("categorization", categorization);
+    const dataFunction = getScenarioData(categorization);
 
     // For crew issues, we need to pass the flight data
-    if (categorization === 'Crew issue (e.g., sick report, duty time breach)') {
-      return getCrewIssueRecovery(flight)
+    if (categorization === "Crew issue (e.g., sick report, duty time breach)") {
+      return getCrewIssueRecovery(flight);
     }
 
     // For other scenarios, call the function if it's a function, otherwise return the data
-    return typeof dataFunction === 'function' ? dataFunction() : dataFunction
-  }
+    return typeof dataFunction === "function" ? dataFunction() : dataFunction;
+  };
 
   // Get scenario-specific recovery data with fallback
-  let scenarioData
+  let scenarioData;
   try {
-    if (useDatabaseData && (recoveryOptions.length > 0 || recoverySteps.length > 0)) {
+    if (
+      useDatabaseData &&
+      (recoveryOptions.length > 0 || recoverySteps.length > 0)
+    ) {
       // Use database data when available
       scenarioData = {
-        title: 'Database Recovery Options',
-        description: 'AI-generated flight recovery analysis',
-        priority: 'High',
-        estimatedTime: '1-3 hours',
+        title: "Database Recovery Options",
+        description: "AI-generated flight recovery analysis",
+        priority: "High",
+        estimatedTime: "1-3 hours",
         icon: Plane,
         steps: recoverySteps,
-        options: recoveryOptions
-      }
+        options: recoveryOptions,
+      };
     } else {
       // Fallback to mock scenario data
-      scenarioData = getScenarioDataForFlight(flight?.categorization)
+      scenarioData = getScenarioDataForFlight(flight?.categorization);
     }
   } catch (error) {
-    console.error('Error getting scenario data:', error)
+    console.error("Error getting scenario data:", error);
     // Provide a fallback scenario data structure
     scenarioData = {
-      title: 'Recovery Options',
-      description: 'Flight recovery analysis',
-      priority: 'Medium',
-      estimatedTime: '2-4 hours',
+      title: "Recovery Options",
+      description: "Flight recovery analysis",
+      priority: "Medium",
+      estimatedTime: "2-4 hours",
       icon: Plane,
       steps: recoverySteps || [],
-      options: recoveryOptions || []
-    }
+      options: recoveryOptions || [],
+    };
   }
 
   // Ensure scenarioData has required properties with fallbacks
-  if (!scenarioData || typeof scenarioData !== 'object') {
+  if (!scenarioData || typeof scenarioData !== "object") {
     scenarioData = {
-      title: 'Recovery Options',
-      description: 'Flight recovery analysis',
-      priority: 'Medium',
-      estimatedTime: '2-4 hours',
+      title: "Recovery Options",
+      description: "Flight recovery analysis",
+      priority: "Medium",
+      estimatedTime: "2-4 hours",
       icon: Plane,
       steps: recoverySteps || [],
-      options: recoveryOptions || []
-    }
+      options: recoveryOptions || [],
+    };
   }
 
   // Ensure steps and options are arrays
   if (!Array.isArray(scenarioData.steps)) {
-    scenarioData.steps = recoverySteps || []
+    scenarioData.steps = recoverySteps || [];
   }
   if (!Array.isArray(scenarioData.options)) {
-    scenarioData.options = recoveryOptions || []
+    scenarioData.options = recoveryOptions || [];
   }
 
   // Handle edit mode changes
   const handleParameterChange = (paramName, newValue) => {
-    setEditedOption(prev => ({
+    setEditedOption((prev) => ({
       ...prev,
       editedParameters: {
         ...prev?.editedParameters,
-        [paramName]: newValue
-      }
-    }))
-  }
+        [paramName]: newValue,
+      },
+    }));
+  };
 
   // Handle what-if simulation
   const runWhatIfSimulation = (scenario) => {
-    const baseOption = selectedOptionForDetails
-    const editedParams = editedOption?.editedParameters || {}
-    const result = calculateScenarioImpact(baseOption, scenario, editedParams)
+    const baseOption = selectedOptionForDetails;
+    const editedParams = editedOption?.editedParameters || {};
+    const result = calculateScenarioImpact(baseOption, scenario, editedParams);
 
     setActiveSimulation({
       scenario,
       result,
       baseOption,
-      editedParams
-    })
-  }
+      editedParams,
+    });
+  };
 
   // Save edited recovery option
   const saveEditedOption = () => {
     // In a real implementation, this would save to backend
-    console.log('Saving edited recovery option:', editedOption)
-    setIsEditMode(false)
+    console.log("Saving edited recovery option:", editedOption);
+    setIsEditMode(false);
     // You could trigger a refresh of the recovery options here
-  }
+  };
 
   // UI Helper functions
   const getStatusColor = (status) => {
     switch (status) {
-      case 'recommended': return 'bg-green-100 text-green-800 border-green-200'
-      case 'caution': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'warning': return 'bg-red-100 text-red-800 border-red-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      case "recommended":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "caution":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "warning":
+        return "bg-red-100 text-red-800 border-red-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  }
+  };
 
   const getStatusIcon = (status) => {
     switch (status) {
-      case 'recommended': return <CheckCircle className="h-4 w-4 text-green-600" />
-      case 'caution': return <AlertTriangle className="h-4 w-4 text-yellow-600" />
-      case 'warning': return <AlertCircle className="h-4 w-4 text-red-600" />
-      default: return <Info className="h-4 w-4 text-gray-600" />
+      case "recommended":
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case "caution":
+        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+      case "warning":
+        return <AlertCircle className="h-4 w-4 text-red-600" />;
+      default:
+        return <Info className="h-4 w-4 text-gray-600" />;
     }
-  }
+  };
 
   const getStepStatusIcon = (status) => {
     switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4 text-green-600" />
-      case 'completed_with_cautions': return <AlertTriangle className="h-4 w-4 text-yellow-600" />
-      case 'standby': return <Clock className="h-4 w-4 text-blue-600" />
-      default: return <AlertCircle className="h-4 w-4 text-gray-400" />
+      case "completed":
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case "completed_with_cautions":
+        return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+      case "standby":
+        return <Clock className="h-4 w-4 text-blue-600" />;
+      default:
+        return <AlertCircle className="h-4 w-4 text-gray-400" />;
     }
-  }
+  };
 
   const getRiskColor = (probability) => {
     switch (probability.toLowerCase()) {
-      case 'low': return 'text-green-600 bg-green-50'
-      case 'medium': return 'text-yellow-600 bg-yellow-50'
-      case 'high': return 'text-red-600 bg-red-50'
-      default: return 'text-gray-600 bg-gray-50'
+      case "low":
+        return "text-green-600 bg-green-50";
+      case "medium":
+        return "text-yellow-600 bg-yellow-50";
+      case "high":
+        return "text-red-600 bg-red-50";
+      default:
+        return "text-gray-600 bg-gray-50";
     }
-  }
+  };
 
   // Event handlers
   const handleExecuteOption = (option) => {
-    setOptionToExecute(option)
-    setShowExecuteConfirmation(true)
-  }
+    setOptionToExecute(option);
+    setShowExecuteConfirmation(true);
+  };
 
   const confirmExecuteOption = () => {
-    setSelectedOption(optionToExecute)
-    setIsExecuting(true)
-    setShowExecuteConfirmation(false)
+    setSelectedOption(optionToExecute);
+    setIsExecuting(true);
+    setShowExecuteConfirmation(false);
 
     // Add to pending solutions (simulate adding to pending list)
     const pendingEntry = {
-      id: `RP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000) + 1).padStart(3, '0')}`,
+      id: `RP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 1000) + 1).padStart(3, "0")}`,
       title: optionToExecute.title,
       flightNumber: flight?.flightNumber,
       route: `${flight?.origin} → ${flight?.destination}`,
       aircraft: flight?.aircraft,
-      submittedAt: new Date().toISOString().replace('T', ' ').substring(0, 19),
-      submittedBy: 'aeron.system@flydubai.com',
-      submitterName: 'AERON System',
-      priority: optionToExecute.status === 'recommended' ? 'High' : 'Medium',
-      status: 'Pending Approval',
-      estimatedCost: parseInt(optionToExecute.cost.replace(/[^0-9]/g, '')) || 0,
-      estimatedDelay: parseInt(optionToExecute.timeline.replace(/[^0-9]/g, '')) || 0,
+      submittedAt: new Date().toISOString().replace("T", " ").substring(0, 19),
+      submittedBy: "aeron.system@flydubai.com",
+      submitterName: "AERON System",
+      priority: optionToExecute.status === "recommended" ? "High" : "Medium",
+      status: "Pending Approval",
+      estimatedCost: parseInt(optionToExecute.cost.replace(/[^0-9]/g, "")) || 0,
+      estimatedDelay:
+        parseInt(optionToExecute.timeline.replace(/[^0-9]/g, "")) || 0,
       affectedPassengers: flight?.passengers || 0,
       confidence: optionToExecute.confidence,
       disruptionReason: flight?.categorization,
       steps: 4,
       timeline: optionToExecute.timeline,
-      approvalRequired: 'Operations Manager',
-      slaDeadline: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString().replace('T', ' ').substring(0, 19), // 2 hours from now
-      timeRemaining: '2h 0m',
-      tags: [optionToExecute.status === 'recommended' ? 'Recommended' : 'Alternative', 'AERON Generated'],
+      approvalRequired: "Operations Manager",
+      slaDeadline: new Date(Date.now() + 2 * 60 * 60 * 1000)
+        .toISOString()
+        .replace("T", " ")
+        .substring(0, 19), // 2 hours from now
+      timeRemaining: "2h 0m",
+      tags: [
+        optionToExecute.status === "recommended"
+          ? "Recommended"
+          : "Alternative",
+        "AERON Generated",
+      ],
       metrics: {
         successProbability: optionToExecute.confidence,
         customerSatisfaction: 85,
         onTimePerformance: 90,
-        costEfficiency: 92
-      }
-    }
+        costEfficiency: 92,
+      },
+    };
 
     // In a real implementation, this would make an API call to add the pending solution
-    console.log('Added to pending solutions:', pendingEntry)
+    console.log("Added to pending solutions:", pendingEntry);
 
     // Simulate execution process
     setTimeout(() => {
-      setIsExecuting(false)
-      onSelectPlan && onSelectPlan({ ...optionToExecute, flight: flight })
+      setIsExecuting(false);
+      onSelectPlan && onSelectPlan({ ...optionToExecute, flight: flight });
 
       // Navigate to Pending Solutions after execution completes
       setTimeout(() => {
-        onNavigateToPendingSolutions && onNavigateToPendingSolutions()
-      }, 500)
-    }, 2000)
-  }
+        onNavigateToPendingSolutions && onNavigateToPendingSolutions();
+      }, 500);
+    }, 2000);
+  };
 
   const handleViewRotationPlan = (option) => {
-    setSelectedRotationData(option)
-    const scheduleImpact = generateScheduleImpactAnalysis(option, flight, scenarioData)
-    setScheduleImpactData(scheduleImpact)
-    setShowRotationPlan(true)
-  }
+    setSelectedRotationData(option);
+    const scheduleImpact = generateScheduleImpactAnalysis(
+      option,
+      flight,
+      scenarioData,
+    );
+    setScheduleImpactData(scheduleImpact);
+    setShowRotationPlan(true);
+  };
 
   // Generate rotation plan data based on selected recovery option
   const generateRotationPlanData = (option, flight) => {
-    if (!option || !flight) return null
+    if (!option || !flight) return null;
 
-    const isAircraftSwap = option.id?.includes('AIRCRAFT_SWAP') || option.title?.includes('Aircraft Swap')
-    const isDelayOption = option.id?.includes('DELAY') || option.title?.includes('Delay')
-    const isCancellation = option.id?.includes('CANCEL') || option.title?.includes('Cancel')
-    const isCrewIssue = flight?.categorization?.includes('Crew issue')
-    const isMaintenanceIssue = flight?.categorization?.includes('technical issue')
-    const isWeatherIssue = flight?.categorization?.includes('Weather')
+    const isAircraftSwap =
+      option.id?.includes("AIRCRAFT_SWAP") ||
+      option.title?.includes("Aircraft Swap");
+    const isDelayOption =
+      option.id?.includes("DELAY") || option.title?.includes("Delay");
+    const isCancellation =
+      option.id?.includes("CANCEL") || option.title?.includes("Cancel");
+    const isCrewIssue = flight?.categorization?.includes("Crew issue");
+    const isMaintenanceIssue =
+      flight?.categorization?.includes("technical issue");
+    const isWeatherIssue = flight?.categorization?.includes("Weather");
 
     // Aircraft options based on recovery option type
-    const aircraftOptions = isAircraftSwap ? [
-      {
-        reg: 'A6-FED',
-        type: 'B737-800 (189Y)',
-        etops: { status: 'available', value: '180min' },
-        cabinMatch: { status: 'exact', value: 'Exact' },
-        availability: 'Available Now',
-        assigned: { status: 'none', value: 'None' },
-        turnaround: '45 min',
-        maintenance: { status: 'current', value: 'Current' },
-        recommended: true
-      },
-      {
-        reg: 'A6-FEL',
-        type: 'B737-MAX8 (189Y)',
-        etops: { status: 'available', value: '180min' },
-        cabinMatch: { status: 'similar', value: 'Similar' },
-        availability: 'Available 14:30',
-        assigned: { status: 'assigned', value: 'FZ892' },
-        turnaround: '60 min',
-        maintenance: { status: 'current', value: 'Current' },
-        recommended: false
-      },
-      {
-        reg: 'A6-FGH',
-        type: 'B737-800 (164Y)',
-        etops: { status: 'available', value: '180min' },
-        cabinMatch: { status: 'reduced', value: 'Reduced' },
-        availability: 'Available 16:00',
-        assigned: { status: 'none', value: 'None' },
-        turnaround: '50 min',
-        maintenance: { status: 'due', value: 'Due A-Check' },
-        recommended: false
-      },
-      {
-        reg: 'A6-FIJ',
-        type: 'B737-MAX8 (189Y)',
-        etops: { status: 'none', value: 'None' },
-        cabinMatch: { status: 'exact', value: 'Exact' },
-        availability: 'Available 18:00',
-        assigned: { status: 'assigned', value: 'FZ445' },
-        turnaround: '75 min',
-        maintenance: { status: 'aog', value: 'AOG Issue' },
-        recommended: false
-      }
-    ] : [
-      {
-        reg: flight?.aircraft || 'A6-FDZ',
-        type: 'B737-800 (189Y)',
-        etops: { status: 'available', value: '180min' },
-        cabinMatch: { status: 'exact', value: 'Exact' },
-        availability: isDelayOption ? `Delayed ${option.timeline || '2h'}` : 'Original Aircraft',
-        assigned: { status: 'none', value: 'None' },
-        turnaround: isDelayOption ? '30 min' : '45 min',
-        maintenance: isMaintenanceIssue ? { status: 'aog', value: 'Under Maintenance' } : { status: 'current', value: 'Current' },
-        recommended: true
-      }
-    ]
+    const aircraftOptions = isAircraftSwap
+      ? [
+          {
+            reg: "A6-FED",
+            type: "B737-800 (189Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "exact", value: "Exact" },
+            availability: "Available Now",
+            assigned: { status: "none", value: "None" },
+            turnaround: "45 min",
+            maintenance: { status: "current", value: "Current" },
+            recommended: true,
+          },
+          {
+            reg: "A6-FEL",
+            type: "B737-MAX8 (189Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "similar", value: "Similar" },
+            availability: "Available 14:30",
+            assigned: { status: "assigned", value: "FZ892" },
+            turnaround: "60 min",
+            maintenance: { status: "current", value: "Current" },
+            recommended: false,
+          },
+          {
+            reg: "A6-FGH",
+            type: "B737-800 (164Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "reduced", value: "Reduced" },
+            availability: "Available 16:00",
+            assigned: { status: "none", value: "None" },
+            turnaround: "50 min",
+            maintenance: { status: "due", value: "Due A-Check" },
+            recommended: false,
+          },
+          {
+            reg: "A6-FIJ",
+            type: "B737-MAX8 (189Y)",
+            etops: { status: "none", value: "None" },
+            cabinMatch: { status: "exact", value: "Exact" },
+            availability: "Available 18:00",
+            assigned: { status: "assigned", value: "FZ445" },
+            turnaround: "75 min",
+            maintenance: { status: "aog", value: "AOG Issue" },
+            recommended: false,
+          },
+        ]
+      : [
+          {
+            reg: flight?.aircraft || "A6-FDZ",
+            type: "B737-800 (189Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "exact", value: "Exact" },
+            availability: isDelayOption
+              ? `Delayed ${option.timeline || "2h"}`
+              : "Original Aircraft",
+            assigned: { status: "none", value: "None" },
+            turnaround: isDelayOption ? "30 min" : "45 min",
+            maintenance: isMaintenanceIssue
+              ? { status: "aog", value: "Under Maintenance" }
+              : { status: "current", value: "Current" },
+            recommended: true,
+          },
+        ];
 
     // Crew data based on recovery option
-    const crewData = isCrewIssue ? [
-      {
-        name: 'Capt. Ahmed Al-Mansouri',
-        role: 'Captain',
-        type: 'B737 Type Rating',
-        status: 'Available',
-        issue: 'Replacement for fatigued crew'
-      },
-      {
-        name: 'FO Sarah Johnson',
-        role: 'First Officer',
-        type: 'B737/MAX Type Rating',
-        status: 'Available',
-        issue: null
-      },
-      {
-        name: 'SSCC Lisa Martinez',
-        role: 'Senior Cabin Crew',
-        type: 'Senior Cabin Crew',
-        status: 'Duty Limit 6h',
-        issue: 'Approaching duty limit'
-      },
-      {
-        name: 'CC Maria Santos',
-        role: 'Cabin Crew',
-        type: 'Cabin Crew',
-        status: 'Standby',
-        issue: 'Standby replacement'
-      }
-    ] : [
-      {
-        name: 'Capt. Ahmed Al-Mansouri',
-        role: 'Captain',
-        type: 'B737 Type Rating',
-        status: 'Available',
-        issue: null
-      },
-      {
-        name: 'FO Sarah Johnson',
-        role: 'First Officer',
-        type: 'B737/MAX Type Rating',
-        status: 'Available',
-        issue: null
-      },
-      {
-        name: 'SSCC Lisa Martinez',
-        role: 'Senior Cabin Crew',
-        type: 'Senior Cabin Crew',
-        status: isCancellation ? 'Reassigned' : 'Available',
-        issue: isCancellation ? 'Reassigned to FZ891' : null
-      },
-      {
-        name: 'CC Maria Santos',
-        role: 'Cabin Crew',
-        type: 'Cabin Crew',
-        status: 'Available',
-        issue: null
-      }
-    ]
+    const crewData = isCrewIssue
+      ? [
+          {
+            name: "Capt. Ahmed Al-Mansouri",
+            role: "Captain",
+            type: "B737 Type Rating",
+            status: "Available",
+            issue: "Replacement for fatigued crew",
+          },
+          {
+            name: "FO Sarah Johnson",
+            role: "First Officer",
+            type: "B737/MAX Type Rating",
+            status: "Available",
+            issue: null,
+          },
+          {
+            name: "SSCC Lisa Martinez",
+            role: "Senior Cabin Crew",
+            type: "Senior Cabin Crew",
+            status: "Duty Limit 6h",
+            issue: "Approaching duty limit",
+          },
+          {
+            name: "CC Maria Santos",
+            role: "Cabin Crew",
+            type: "Cabin Crew",
+            status: "Standby",
+            issue: "Standby replacement",
+          },
+        ]
+      : [
+          {
+            name: "Capt. Ahmed Al-Mansouri",
+            role: "Captain",
+            type: "B737 Type Rating",
+            status: "Available",
+            issue: null,
+          },
+          {
+            name: "FO Sarah Johnson",
+            role: "First Officer",
+            type: "B737/MAX Type Rating",
+            status: "Available",
+            issue: null,
+          },
+          {
+            name: "SSCC Lisa Martinez",
+            role: "Senior Cabin Crew",
+            type: "Senior Cabin Crew",
+            status: isCancellation ? "Reassigned" : "Available",
+            issue: isCancellation ? "Reassigned to FZ891" : null,
+          },
+          {
+            name: "CC Maria Santos",
+            role: "Cabin Crew",
+            type: "Cabin Crew",
+            status: "Available",
+            issue: null,
+          },
+        ];
 
     // Next sectors impact based on recovery option
-    const nextSectors = isAircraftSwap ? [
-      {
-        flight: 'FZ456 DXB-BOM',
-        departure: 'Dep: 18:30 → 19:45 (+75min)',
-        impact: 'High Impact',
-        reason: 'Aircraft swap delay'
-      },
-      {
-        flight: 'FZ457 BOM-DXB',
-        departure: 'Dep: 22:15 → 23:00 (+45min)',
-        impact: 'Medium Impact',
-        reason: 'Knock-on delay'
-      },
-      {
-        flight: 'FZ890 DXB-DEL',
-        departure: 'Dep: 08:30 (Next Day)',
-        impact: 'Low Impact',
-        reason: 'Overnight recovery'
-      }
-    ] : isDelayOption ? [
-      {
-        flight: 'FZ456 DXB-BOM',
-        departure: `Dep: 18:30 → ${new Date(Date.now() + parseInt(option.timeline.replace(/[^0-9]/g, '')) * 60000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })} (+${option.timeline})`,
-        impact: 'Medium Impact',
-        reason: 'Direct delay impact'
-      },
-      {
-        flight: 'FZ457 BOM-DXB',
-        departure: 'Dep: 22:15 (On Time)',
-        impact: 'Low Impact',
-        reason: 'Sufficient turnaround'
-      },
-      {
-        flight: 'FZ890 DXB-DEL',
-        departure: 'Dep: 08:30 (Next Day)',
-        impact: 'No Impact',
-        reason: 'Overnight recovery'
-      }
-    ] : [
-      {
-        flight: 'FZ456 DXB-BOM',
-        departure: 'Cancelled',
-        impact: 'High Impact',
-        reason: 'Flight cancellation'
-      },
-      {
-        flight: 'FZ457 BOM-DXB',
-        departure: 'Cancelled',
-        impact: 'High Impact',
-        reason: 'Route cancellation'
-      },
-      {
-        flight: 'FZ890 DXB-DEL',
-        departure: 'Dep: 08:30 (Next Day)',
-        impact: 'No Impact',
-        reason: 'Different aircraft'
-      }
-    ]
+    const nextSectors = isAircraftSwap
+      ? [
+          {
+            flight: "FZ456 DXB-BOM",
+            departure: "Dep: 18:30 → 19:45 (+75min)",
+            impact: "High Impact",
+            reason: "Aircraft swap delay",
+          },
+          {
+            flight: "FZ457 BOM-DXB",
+            departure: "Dep: 22:15 → 23:00 (+45min)",
+            impact: "Medium Impact",
+            reason: "Knock-on delay",
+          },
+          {
+            flight: "FZ890 DXB-DEL",
+            departure: "Dep: 08:30 (Next Day)",
+            impact: "Low Impact",
+            reason: "Overnight recovery",
+          },
+        ]
+      : isDelayOption
+        ? [
+            {
+              flight: "FZ456 DXB-BOM",
+              departure: `Dep: 18:30 → ${new Date(Date.now() + parseInt(option.timeline.replace(/[^0-9]/g, "")) * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} (+${option.timeline})`,
+              impact: "Medium Impact",
+              reason: "Direct delay impact",
+            },
+            {
+              flight: "FZ457 BOM-DXB",
+              departure: "Dep: 22:15 (On Time)",
+              impact: "Low Impact",
+              reason: "Sufficient turnaround",
+            },
+            {
+              flight: "FZ890 DXB-DEL",
+              departure: "Dep: 08:30 (Next Day)",
+              impact: "No Impact",
+              reason: "Overnight recovery",
+            },
+          ]
+        : [
+            {
+              flight: "FZ456 DXB-BOM",
+              departure: "Cancelled",
+              impact: "High Impact",
+              reason: "Flight cancellation",
+            },
+            {
+              flight: "FZ457 BOM-DXB",
+              departure: "Cancelled",
+              impact: "High Impact",
+              reason: "Route cancellation",
+            },
+            {
+              flight: "FZ890 DXB-DEL",
+              departure: "Dep: 08:30 (Next Day)",
+              impact: "No Impact",
+              reason: "Different aircraft",
+            },
+          ];
 
     // Operational constraints based on recovery option
     const operationalConstraints = {
       gateCompatibility: {
-        status: isAircraftSwap ? 'Compatible' : 'Original Gate',
-        details: isAircraftSwap ? 'All gates compatible with B737-800' : 'Same gate assignment maintained'
+        status: isAircraftSwap ? "Compatible" : "Original Gate",
+        details: isAircraftSwap
+          ? "All gates compatible with B737-800"
+          : "Same gate assignment maintained",
       },
       slotCapacity: {
-        status: isDelayOption ? 'Coordination Required' : isAircraftSwap ? 'Coordination Required' : 'No Issues',
-        details: isDelayOption ? `${flight?.destination || 'BOM'} slot coordination required` : 
-                 isAircraftSwap ? 'New departure slot needed' : 'Original slots maintained'
+        status: isDelayOption
+          ? "Coordination Required"
+          : isAircraftSwap
+            ? "Coordination Required"
+            : "No Issues",
+        details: isDelayOption
+          ? `${flight?.destination || "BOM"} slot coordination required`
+          : isAircraftSwap
+            ? "New departure slot needed"
+            : "Original slots maintained",
       },
       curfewViolation: {
-        status: (isDelayOption && parseInt(option.timeline.replace(/[^0-9]/g, '')) > 180) ? 'Risk' : 'No Risk',
-        details: (isDelayOption && parseInt(option.timeline.replace(/[^0-9]/g, '')) > 180) ? 
-                 `${flight?.destination || 'BOM'} arrival may violate 23:00 curfew` : 
-                 'Within curfew limits'
+        status:
+          isDelayOption &&
+          parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
+            ? "Risk"
+            : "No Risk",
+        details:
+          isDelayOption &&
+          parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
+            ? `${flight?.destination || "BOM"} arrival may violate 23:00 curfew`
+            : "Within curfew limits",
       },
       passengerConnections: {
-        status: isCancellation ? 'Major Impact' : isDelayOption ? 'Affected' : 'Minimal Impact',
-        details: isCancellation ? `${flight?.passengers || 167} passengers need rebooking` :
-                 isDelayOption ? `${Math.floor((flight?.passengers || 167) * 0.28)} passengers miss onward connections` :
-                 'No significant connection issues'
-      }
-    }
+        status: isCancellation
+          ? "Major Impact"
+          : isDelayOption
+            ? "Affected"
+            : "Minimal Impact",
+        details: isCancellation
+          ? `${flight?.passengers || 167} passengers need rebooking`
+          : isDelayOption
+            ? `${Math.floor((flight?.passengers || 167) * 0.28)} passengers miss onward connections`
+            : "No significant connection issues",
+      },
+    };
 
     // Cost breakdown based on recovery option
     const costBreakdown = {
-      delayCost: isCancellation ? 89200 : isDelayOption ? (parseInt(option.timeline.replace(/[^0-9]/g, '')) * 280) : isAircraftSwap ? 34200 : 5200,
-      fuelEfficiency: isAircraftSwap ? '+2.1%' : isDelayOption ? '+0.8%' : isCancellation ? 'N/A' : '+0.3%',
-      hotelTransport: isCancellation ? 24500 : isDelayOption && parseInt(option.timeline.replace(/[^0-9]/g, '')) > 180 ? 8450 : isAircraftSwap ? 8450 : 0,
-      eu261Risk: isCancellation ? 'Critical' : isDelayOption && parseInt(option.timeline.replace(/[^0-9]/g, '')) > 180 ? 'High' : isAircraftSwap ? 'Medium' : 'Low'
-    }
+      delayCost: isCancellation
+        ? 89200
+        : isDelayOption
+          ? parseInt(option.timeline.replace(/[^0-9]/g, "")) * 280
+          : isAircraftSwap
+            ? 34200
+            : 5200,
+      fuelEfficiency: isAircraftSwap
+        ? "+2.1%"
+        : isDelayOption
+          ? "+0.8%"
+          : isCancellation
+            ? "N/A"
+            : "+0.3%",
+      hotelTransport: isCancellation
+        ? 24500
+        : isDelayOption &&
+            parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
+          ? 8450
+          : isAircraftSwap
+            ? 8450
+            : 0,
+      eu261Risk: isCancellation
+        ? "Critical"
+        : isDelayOption &&
+            parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
+          ? "High"
+          : isAircraftSwap
+            ? "Medium"
+            : "Low",
+    };
 
     // Decision support recommendation
     const recommendation = {
-      aircraft: isAircraftSwap ? 'A6-FED' : flight?.aircraft || 'A6-FDZ',
-      reason: isAircraftSwap ? 'Optimal balance across cost (92%), delay minimization (88%), crew impact (95%), and fuel efficiency (91%). Immediate availability with exact cabin configuration match.' :
-              isDelayOption ? `Manageable delay impact with ${option.confidence}% confidence. Maintains operational continuity with minimal crew changes.` :
-              isCancellation ? 'Cancellation minimizes further network disruption. Prioritizes passenger re-accommodation and crew availability for alternative flights.' :
-              'Maintains current operational plan with minimal adjustments required.'
-    }
+      aircraft: isAircraftSwap ? "A6-FED" : flight?.aircraft || "A6-FDZ",
+      reason: isAircraftSwap
+        ? "Optimal balance across cost (92%), delay minimization (88%), crew impact (95%), and fuel efficiency (91%). Immediate availability with exact cabin configuration match."
+        : isDelayOption
+          ? `Manageable delay impact with ${option.confidence}% confidence. Maintains operational continuity with minimal crew changes.`
+          : isCancellation
+            ? "Cancellation minimizes further network disruption. Prioritizes passenger re-accommodation and crew availability for alternative flights."
+            : "Maintains current operational plan with minimal adjustments required.",
+    };
 
     return {
       aircraftOptions,
@@ -651,40 +793,47 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       nextSectors,
       operationalConstraints,
       costBreakdown,
-      recommendation
-    }
-  }
+      recommendation,
+    };
+  };
 
   const handleViewRecoveryOption = (option) => {
-    const detailedOption = generateRecoveryOptionDetails(option, flight)
-    setSelectedOptionForDetails(detailedOption)
-    setEditedOption(detailedOption)
-    setIsEditMode(false)
-    setShowWhatIfSimulation(false)
-    setShowCrewTrackingGantt(false)
-    setActiveSimulation(null)
-    setShowRecoveryOptionDetails(true)
-  }
+    const detailedOption = generateRecoveryOptionDetails(option, flight);
+    setSelectedOptionForDetails(detailedOption);
+    setEditedOption(detailedOption);
+    setIsEditMode(false);
+    setShowWhatIfSimulation(false);
+    setShowCrewTrackingGantt(false);
+    setActiveSimulation(null);
+    setShowRecoveryOptionDetails(true);
+  };
 
   const handlePassengerServicesNavigation = (option) => {
-    const passengers = generateAffectedPassengers(flight, option)
+    const passengers = generateAffectedPassengers(flight, option);
     const context = {
       flight: flight,
       recoveryOption: option,
       passengers: passengers,
       totalPassengers: flight?.passengers || 167,
-      reaccommodationType: option.id?.includes('CANCEL') ? 'cancellation' : 
-                          option.id?.includes('DELAY') ? 'delay' : 
-                          option.id?.includes('REROUTE') || option.id?.includes('DIVERT') ? 'reroute' : 'general'
-    }
+      reaccommodationType: option.id?.includes("CANCEL")
+        ? "cancellation"
+        : option.id?.includes("DELAY")
+          ? "delay"
+          : option.id?.includes("REROUTE") || option.id?.includes("DIVERT")
+            ? "reroute"
+            : "general",
+    };
 
-    onPassengerServices && onPassengerServices(context)
-  }
+    onPassengerServices && onPassengerServices(context);
+  };
 
   return (
     <div className="space-y-6">
       {/* Execute Confirmation Dialog */}
-      <Dialog open={showExecuteConfirmation} onOpenChange={setShowExecuteConfirmation}>
+      <Dialog
+        open={showExecuteConfirmation}
+        onOpenChange={setShowExecuteConfirmation}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -692,7 +841,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               Confirm Recovery Plan Execution
             </DialogTitle>
             <DialogDescription>
-              Please review the recovery plan details before submitting for approval and execution.
+              Please review the recovery plan details before submitting for
+              approval and execution.
             </DialogDescription>
           </DialogHeader>
 
@@ -704,7 +854,9 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   <CardTitle className="text-lg text-flydubai-navy">
                     {optionToExecute.title}
                   </CardTitle>
-                  <p className="text-sm text-gray-600">{optionToExecute.description}</p>
+                  <p className="text-sm text-gray-600">
+                    {optionToExecute.description}
+                  </p>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-2 gap-4">
@@ -712,34 +864,49 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                       <div className="flex items-center gap-2">
                         <Plane className="h-4 w-4 text-flydubai-blue" />
                         <span className="text-sm font-medium">Flight:</span>
-                        <span className="text-sm">{flight?.flightNumber} ({flight?.origin}-{flight?.destination})</span>
+                        <span className="text-sm">
+                          {flight?.flightNumber} ({flight?.origin}-
+                          {flight?.destination})
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <DollarSign className="h-4 w-4 text-flydubai-blue" />
-                        <span className="text-sm font-medium">Estimated Cost:</span>
-                        <span className="text-sm font-semibold text-flydubai-orange">{optionToExecute.cost}</span>
+                        <span className="text-sm font-medium">
+                          Estimated Cost:
+                        </span>
+                        <span className="text-sm font-semibold text-flydubai-orange">
+                          {optionToExecute.cost}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-flydubai-blue" />
                         <span className="text-sm font-medium">Timeline:</span>
-                        <span className="text-sm">{optionToExecute.timeline}</span>
+                        <span className="text-sm">
+                          {optionToExecute.timeline}
+                        </span>
                       </div>
                     </div>
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
                         <Users className="h-4 w-4 text-flydubai-blue" />
                         <span className="text-sm font-medium">Passengers:</span>
-                        <span className="text-sm">{flight?.passengers || 0} affected</span>
+                        <span className="text-sm">
+                          {flight?.passengers || 0} affected
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Target className="h-4 w-4 text-flydubai-blue" />
                         <span className="text-sm font-medium">Confidence:</span>
-                        <span className="text-sm font-semibold text-green-600">{optionToExecute.confidence}%</span>
+                        <span className="text-sm font-semibold text-green-600">
+                          {optionToExecute.confidence}%
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Activity className="h-4 w-4 text-flydubai-blue" />
                         <span className="text-sm font-medium">Impact:</span>
-                        <span className="text-sm">{optionToExecute.impact}</span>
+                        <span className="text-sm">
+                          {optionToExecute.impact}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -750,8 +917,10 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               <Alert>
                 <Info className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Next Steps:</strong> This recovery plan will be submitted to the pending solutions queue for Operations Manager approval. 
-                  You will receive a confirmation once the plan is approved and execution begins.
+                  <strong>Next Steps:</strong> This recovery plan will be
+                  submitted to the pending solutions queue for Operations
+                  Manager approval. You will receive a confirmation once the
+                  plan is approved and execution begins.
                 </AlertDescription>
               </Alert>
 
@@ -760,8 +929,9 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                 <Alert className="border-orange-200 bg-orange-50">
                   <Users className="h-4 w-4 text-orange-600" />
                   <AlertDescription className="text-orange-800">
-                    <strong>Passenger Services Required:</strong> This plan requires passenger re-accommodation services. 
-                    The Passenger Services team will be automatically notified upon approval.
+                    <strong>Passenger Services Required:</strong> This plan
+                    requires passenger re-accommodation services. The Passenger
+                    Services team will be automatically notified upon approval.
                   </AlertDescription>
                 </Alert>
               )}
@@ -798,7 +968,10 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       </Dialog>
 
       {/* Crew Tracking Gantt Dialog */}
-      <Dialog open={showCrewTrackingGantt} onOpenChange={setShowCrewTrackingGantt}>
+      <Dialog
+        open={showCrewTrackingGantt}
+        onOpenChange={setShowCrewTrackingGantt}
+      >
         <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -806,12 +979,13 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               Crew Tracking & What-If Analysis
             </DialogTitle>
             <DialogDescription>
-              Interactive crew tracking Gantt chart with real-time impact analysis for recovery plan modifications
+              Interactive crew tracking Gantt chart with real-time impact
+              analysis for recovery plan modifications
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 overflow-hidden">
-            <CrewTrackingGantt 
+            <CrewTrackingGantt
               recoveryOption={selectedOptionForDetails}
               flight={flight}
               onClose={() => setShowCrewTrackingGantt(false)}
@@ -826,44 +1000,69 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-flydubai-blue rounded-lg">
-                {React.createElement(scenarioData.icon, { className: "h-6 w-6 text-white" })}
+                {React.createElement(scenarioData.icon, {
+                  className: "h-6 w-6 text-white",
+                })}
               </div>
               <div>
-                <CardTitle className="text-flydubai-navy">{scenarioData.title}</CardTitle>
-                <p className="text-sm text-muted-foreground">{scenarioData.description}</p>
+                <CardTitle className="text-flydubai-navy">
+                  {scenarioData.title}
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {scenarioData.description}
+                </p>
                 <div className="flex items-center gap-4 mt-2">
-                <Badge className={`priority-${scenarioData.priority.toLowerCase()}`}>
-                  {scenarioData.priority} PRIORITY
-                </Badge>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Timer className="h-4 w-4" />
-                  Est. Resolution: {scenarioData.estimatedTime}
+                  <Badge
+                    className={`priority-${scenarioData.priority.toLowerCase()}`}
+                  >
+                    {scenarioData.priority} PRIORITY
+                  </Badge>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Timer className="h-4 w-4" />
+                    Est. Resolution: {scenarioData.estimatedTime}
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {flight?.categorization}
+                  </Badge>
+                  <Badge
+                    variant="outline"
+                    className={`text-xs ${useDatabaseData && recoveryOptions.length > 0 ? "bg-green-50 text-green-700 border-green-200" : "bg-blue-50 text-blue-700 border-blue-200"}`}
+                  >
+                    {useDatabaseData && recoveryOptions.length > 0
+                      ? "Database Generated"
+                      : "Scenario Template"}
+                  </Badge>
+                  {isLoadingOptions && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200"
+                    >
+                      <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                      Loading Options...
+                    </Badge>
+                  )}
+                  {loadingError && (
+                    <Badge
+                      variant="outline"
+                      className="text-xs bg-red-50 text-red-700 border-red-200"
+                    >
+                      <AlertTriangle className="h-3 w-3 mr-1" />
+                      Error Loading
+                    </Badge>
+                  )}
                 </div>
-                <Badge variant="outline" className="text-xs">
-                  {flight?.categorization}
-                </Badge>
-                <Badge variant="outline" className={`text-xs ${useDatabaseData && recoveryOptions.length > 0 ? 'bg-green-50 text-green-700 border-green-200' : 'bg-blue-50 text-blue-700 border-blue-200'}`}>
-                  {useDatabaseData && recoveryOptions.length > 0 ? 'Database Generated' : 'Scenario Template'}
-                </Badge>
-                {isLoadingOptions && (
-                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">
-                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
-                    Loading Options...
-                  </Badge>
-                )}
-                {loadingError && (
-                  <Badge variant="outline" className="text-xs bg-red-50 text-red-700 border-red-200">
-                    <AlertTriangle className="h-3 w-3 mr-1" />
-                    Error Loading
-                  </Badge>
-                )}
-              </div>
               </div>
             </div>
             <div className="text-right">
-              <div className="text-sm text-muted-foreground">Flight Information</div>
-              <div className="font-medium">{flight?.flightNumber} • {flight?.origin}-{flight?.destination}</div>
-              <div className="text-sm text-muted-foreground">{flight?.aircraft} • {flight?.passengers} passengers</div>
+              <div className="text-sm text-muted-foreground">
+                Flight Information
+              </div>
+              <div className="font-medium">
+                {flight?.flightNumber} • {flight?.origin}-{flight?.destination}
+              </div>
+              <div className="text-sm text-muted-foreground">
+                {flight?.aircraft} • {flight?.passengers} passengers
+              </div>
             </div>
           </div>
         </CardHeader>
@@ -880,13 +1079,18 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         <CardContent>
           <div className="space-y-4 max-h-96 overflow-y-auto">
             {scenarioData.steps.map((step, index) => (
-              <div key={index} className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg">
+              <div
+                key={index}
+                className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg"
+              >
                 <div className="flex flex-col items-center">
                   <div className="w-8 h-8 bg-flydubai-blue text-white rounded-full flex items-center justify-center text-sm font-medium">
                     {step.step}
                   </div>
                   {index < scenarioData.steps.length - 1 && (
-                    <div className="w-0.5 h-8 bg-gray-300 mt-2"></div>                  )}                </div>
+                    <div className="w-0.5 h-8 bg-gray-300 mt-2"></div>
+                  )}{" "}
+                </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     {getStepStatusIcon(step.status)}
@@ -895,7 +1099,9 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                       {step.timestamp}
                     </Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground mb-2">{step.details}</p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {step.details}
+                  </p>
                   <div className="text-xs text-flydubai-blue">
                     System: {step.system}
                   </div>
@@ -903,7 +1109,12 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                       {Object.entries(step.data).map(([key, value]) => (
                         <div key={key} className="flex justify-between">
-                          <span className="text-gray-600">{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:</span>
+                          <span className="text-gray-600">
+                            {key
+                              .replace(/([A-Z])/g, " $1")
+                              .replace(/^./, (str) => str.toUpperCase())}
+                            :
+                          </span>
                           <span className="font-medium">{value}</span>
                         </div>
                       ))}
@@ -929,7 +1140,9 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   onCheckedChange={setUseDatabaseData}
                   disabled={isLoadingOptions}
                 />
-                <span className="text-sm text-muted-foreground">Database Data</span>
+                <span className="text-sm text-muted-foreground">
+                  Database Data
+                </span>
               </div>
             )}
           </CardTitle>
@@ -939,7 +1152,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
             <Alert className="mb-4 border-red-200 bg-red-50">
               <AlertTriangle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
-                <strong>Error loading recovery options:</strong> {loadingError}. Falling back to scenario templates.
+                <strong>Error loading recovery options:</strong> {loadingError}.
+                Falling back to scenario templates.
               </AlertDescription>
             </Alert>
           )}
@@ -948,7 +1162,9 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
             <div className="space-y-4">
               <div className="flex items-center justify-center p-8">
                 <RefreshCw className="h-6 w-6 text-flydubai-blue animate-spin mr-2" />
-                <span className="text-muted-foreground">Generating recovery options...</span>
+                <span className="text-muted-foreground">
+                  Generating recovery options...
+                </span>
               </div>
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
@@ -968,12 +1184,15 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           ) : scenarioData.options.length === 0 ? (
             <div className="text-center p-8">
               <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-600 mb-2">No Recovery Options Available</h3>
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">
+                No Recovery Options Available
+              </h3>
               <p className="text-muted-foreground mb-4">
-                No recovery options found for this disruption. Try refreshing or contact support.
+                No recovery options found for this disruption. Try refreshing or
+                contact support.
               </p>
-              <Button 
-                onClick={() => window.location.reload()} 
+              <Button
+                onClick={() => window.location.reload()}
                 variant="outline"
                 className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
               >
@@ -984,108 +1203,129 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           ) : (
             <div className="space-y-4">
               {scenarioData.options.map((option, index) => (
-              <Card key={option.id} className={`transition-all hover:shadow-md ${selectedOption?.id === option.id ? 'border-flydubai-blue bg-blue-50' : ''}`}>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="flex flex-col items-center">
-                        {getStatusIcon(option.status)}
-                        <div className="text-xs font-medium mt-1">
-                          {option.confidence}%
-                        </div>
-                      </div>
-                      <div>
-                        <CardTitle className="text-flydubai-navy">{option.title}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{option.description}</p>
-                        <div className="flex items-center gap-6 mt-2 text-sm">
-                          <div className="flex items-center gap-1">
-                            <DollarSign className="h-4 w-4 text-muted-foreground" />
-                            <span>{option.cost}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4 text-muted-foreground" />
-                            <span>{option.timeline}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Activity className="h-4 w-4 text-muted-foreground" />
-                            <span>{option.impact}</span>
+                <Card
+                  key={option.id}
+                  className={`transition-all hover:shadow-md ${selectedOption?.id === option.id ? "border-flydubai-blue bg-blue-50" : ""}`}
+                >
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="flex flex-col items-center">
+                          {getStatusIcon(option.status)}
+                          <div className="text-xs font-medium mt-1">
+                            {option.confidence}%
                           </div>
                         </div>
+                        <div>
+                          <CardTitle className="text-flydubai-navy">
+                            {option.title}
+                          </CardTitle>
+                          <p className="text-sm text-muted-foreground">
+                            {option.description}
+                          </p>
+                          <div className="flex items-center gap-6 mt-2 text-sm">
+                            <div className="flex items-center gap-1">
+                              <DollarSign className="h-4 w-4 text-muted-foreground" />
+                              <span>{option.cost}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                              <span>{option.timeline}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Activity className="h-4 w-4 text-muted-foreground" />
+                              <span>{option.impact}</span>
+                            </div>
+                          </div>
 
-                        {/* Passenger Re-accommodation Alert */}
-                        {requiresPassengerReaccommodation(option) && (
-                          <Alert className="mt-2 border-orange-200 bg-orange-50">
-                            <Users className="h-4 w-4 text-orange-600" />
-                            <AlertDescription className="text-orange-800 text-xs">
-                              <strong>Passenger Re-accommodation Required:</strong> {flight?.passengers || 167} passengers need rebooking or accommodation services.
-                            </AlertDescription>
-                          </Alert>
-                        )}
+                          {/* Passenger Re-accommodation Alert */}
+                          {requiresPassengerReaccommodation(option) && (
+                            <Alert className="mt-2 border-orange-200 bg-orange-50">
+                              <Users className="h-4 w-4 text-orange-600" />
+                              <AlertDescription className="text-orange-800 text-xs">
+                                <strong>
+                                  Passenger Re-accommodation Required:
+                                </strong>{" "}
+                                {flight?.passengers || 167} passengers need
+                                rebooking or accommodation services.
+                              </AlertDescription>
+                            </Alert>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className={getStatusColor(option.status)}>
+                          {option.status.toUpperCase()}
+                        </Badge>
+                        <div className="text-right">
+                          <div className="text-lg font-bold text-flydubai-blue">
+                            {option.confidence}%
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Confidence
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={getStatusColor(option.status)}>
-                        {option.status.toUpperCase()}
-                      </Badge>
-                      <div className="text-right">
-                        <div className="text-lg font-bold text-flydubai-blue">{option.confidence}%</div>
-                        <div className="text-xs text-muted-foreground">Confidence</div>
-                      </div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex gap-3 flex-wrap">
-                    <Button 
-                      onClick={() => handleExecuteOption(option)}
-                      disabled={isExecuting}
-                      className={option.status === 'recommended' ? 'btn-flydubai-primary' : 'btn-flydubai-secondary'}
-                    >
-                      {isExecuting && selectedOption?.id === option.id ? (
-                        <>
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Executing...
-                        </>
-                      ) : (
-                        <>
-                          <PlayCircle className="h-4 w-4 mr-2" />
-                          Execute Option
-                        </>
-                      )}
-                    </Button>
-
-                    <Button 
-                      variant="outline" 
-                      onClick={() => handleViewRecoveryOption(option)}
-                      className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                    >
-                      <FileText className="h-4 w-4 mr-2" />
-                      View Recovery Option
-                    </Button>
-
-                    <Button 
-                      variant="outline" 
-                      onClick={() => handleViewRotationPlan(option)}
-                      className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View Rotation Plan
-                    </Button>
-
-                    {/* Passenger Services Button - only show when re-accommodation is needed */}
-                    {requiresPassengerReaccommodation(option) && (
-                      <Button 
-                        variant="outline" 
-                        onClick={() => handlePassengerServicesNavigation(option)}
-                        className="border-orange-500 text-orange-700 hover:bg-orange-50"
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex gap-3 flex-wrap">
+                      <Button
+                        onClick={() => handleExecuteOption(option)}
+                        disabled={isExecuting}
+                        className={
+                          option.status === "recommended"
+                            ? "btn-flydubai-primary"
+                            : "btn-flydubai-secondary"
+                        }
                       >
-                        <UserCheck className="h-4 w-4 mr-2" />
-                        Passenger Services
+                        {isExecuting && selectedOption?.id === option.id ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            Executing...
+                          </>
+                        ) : (
+                          <>
+                            <PlayCircle className="h-4 w-4 mr-2" />
+                            Execute Option
+                          </>
+                        )}
                       </Button>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+
+                      <Button
+                        variant="outline"
+                        onClick={() => handleViewRecoveryOption(option)}
+                        className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        View Recovery Option
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        onClick={() => handleViewRotationPlan(option)}
+                        className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                      >
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Rotation Plan
+                      </Button>
+
+                      {/* Passenger Services Button - only show when re-accommodation is needed */}
+                      {requiresPassengerReaccommodation(option) && (
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            handlePassengerServicesNavigation(option)
+                          }
+                          className="border-orange-500 text-orange-700 hover:bg-orange-50"
+                        >
+                          <UserCheck className="h-4 w-4 mr-2" />
+                          Passenger Services
+                        </Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           )}
@@ -1093,7 +1333,10 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       </Card>
 
       {/* Enhanced Recovery Option Details Dialog */}
-      <Dialog open={showRecoveryOptionDetails} onOpenChange={setShowRecoveryOptionDetails}>
+      <Dialog
+        open={showRecoveryOptionDetails}
+        onOpenChange={setShowRecoveryOptionDetails}
+      >
         <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <div className="flex items-center justify-between">
@@ -1103,7 +1346,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   Recovery Option Analysis - {selectedOptionForDetails?.title}
                 </DialogTitle>
                 <DialogDescription>
-                  Comprehensive analysis with edit capabilities and crew tracking what-if simulation
+                  Comprehensive analysis with edit capabilities and crew
+                  tracking what-if simulation
                 </DialogDescription>
               </div>
               <div className="flex items-center gap-2">
@@ -1111,10 +1355,10 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   variant="outline"
                   size="sm"
                   onClick={() => setIsEditMode(!isEditMode)}
-                  className={isEditMode ? 'bg-blue-50 border-blue-300' : ''}
+                  className={isEditMode ? "bg-blue-50 border-blue-300" : ""}
                 >
                   <Edit className="h-4 w-4 mr-2" />
-                  {isEditMode ? 'View Mode' : 'Edit Mode'}
+                  {isEditMode ? "View Mode" : "Edit Mode"}
                 </Button>
                 <Button
                   variant="outline"
@@ -1142,63 +1386,98 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {(selectedOptionForDetails.editableParameters || [])?.map((param, index) => (
-                        <div key={index} className="space-y-2">
-                          <Label className="text-sm font-medium">{param.name}</Label>
-                          <p className="text-xs text-gray-600">{param.description}</p>
+                      {(selectedOptionForDetails.editableParameters || [])?.map(
+                        (param, index) => (
+                          <div key={index} className="space-y-2">
+                            <Label className="text-sm font-medium">
+                              {param.name}
+                            </Label>
+                            <p className="text-xs text-gray-600">
+                              {param.description}
+                            </p>
 
-                          {param.type === 'select' && (
-                            <Select 
-                              value={editedOption?.editedParameters?.[param.name] || param.value}
-                              onValueChange={(value) => handleParameterChange(param.name, value)}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {(param.options || []).map(option => (
-                                  <SelectItem key={option} value={option}>{option}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          )}
+                            {param.type === "select" && (
+                              <Select
+                                value={
+                                  editedOption?.editedParameters?.[
+                                    param.name
+                                  ] || param.value
+                                }
+                                onValueChange={(value) =>
+                                  handleParameterChange(param.name, value)
+                                }
+                              >
+                                <SelectTrigger>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {(param.options || []).map((option) => (
+                                    <SelectItem key={option} value={option}>
+                                      {option}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
 
-                          {param.type === 'slider' && (
-                            <div className="space-y-2">
-                              <Slider
-                                value={[editedOption?.editedParameters?.[param.name] || param.value]}
-                                onValueChange={(value) => handleParameterChange(param.name, value[0])}
-                                min={param.min}
-                                max={param.max}
-                                step={1}
-                                className="w-full"
-                              />
-                              <div className="text-xs text-center">
-                                {editedOption?.editedParameters?.[param.name] || param.value} {param.unit}
+                            {param.type === "slider" && (
+                              <div className="space-y-2">
+                                <Slider
+                                  value={[
+                                    editedOption?.editedParameters?.[
+                                      param.name
+                                    ] || param.value,
+                                  ]}
+                                  onValueChange={(value) =>
+                                    handleParameterChange(param.name, value[0])
+                                  }
+                                  min={param.min}
+                                  max={param.max}
+                                  step={1}
+                                  className="w-full"
+                                />
+                                <div className="text-xs text-center">
+                                  {editedOption?.editedParameters?.[
+                                    param.name
+                                  ] || param.value}{" "}
+                                  {param.unit}
+                                </div>
                               </div>
-                            </div>
-                          )}
+                            )}
 
-                          {param.type === 'switch' && (
-                            <Switch
-                              checked={editedOption?.editedParameters?.[param.name] || param.value}
-                              onCheckedChange={(checked) => handleParameterChange(param.name, checked)}
-                            />
-                          )}
+                            {param.type === "switch" && (
+                              <Switch
+                                checked={
+                                  editedOption?.editedParameters?.[
+                                    param.name
+                                  ] || param.value
+                                }
+                                onCheckedChange={(checked) =>
+                                  handleParameterChange(param.name, checked)
+                                }
+                              />
+                            )}
 
-                          <Badge variant="outline" className="text-xs">
-                            Affects: {param.impact}
-                          </Badge>
-                        </div>
-                      ))}
+                            <Badge variant="outline" className="text-xs">
+                              Affects: {param.impact}
+                            </Badge>
+                          </div>
+                        ),
+                      )}
                     </div>
 
                     <div className="flex justify-end gap-2 mt-4">
-                      <Button variant="outline" onClick={() => setIsEditMode(false)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsEditMode(false)}
+                      >
                         <RotateCcw className="h-4 w-4 mr-2" />
                         Cancel
                       </Button>
-                      <Button onClick={saveEditedOption} className="btn-flydubai-primary">
+                      <Button
+                        onClick={saveEditedOption}
+                        className="btn-flydubai-primary"
+                      >
                         <Save className="h-4 w-4 mr-2" />
                         Save Changes
                       </Button>
@@ -1222,32 +1501,45 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     {/* Enhanced Detailed Description */}
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-sm">Contextual Recovery Analysis</CardTitle>
+                        <CardTitle className="text-sm">
+                          Contextual Recovery Analysis
+                        </CardTitle>
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-gray-700 leading-relaxed">
-                          {selectedOptionForDetails.detailedDescription || 'No detailed description available.'}
+                          {selectedOptionForDetails.detailedDescription ||
+                            "No detailed description available."}
                         </p>
 
                         {/* Flight-specific details */}
                         <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                          <h4 className="text-sm font-medium text-blue-800 mb-2">Flight Context</h4>
+                          <h4 className="text-sm font-medium text-blue-800 mb-2">
+                            Flight Context
+                          </h4>
                           <div className="grid grid-cols-2 gap-2 text-xs">
                             <div>
                               <span className="text-gray-600">Aircraft:</span>
-                              <span className="font-medium ml-1">{flight?.aircraft} {flight?.registration}</span>
+                              <span className="font-medium ml-1">
+                                {flight?.aircraft} {flight?.registration}
+                              </span>
                             </div>
                             <div>
                               <span className="text-gray-600">Route:</span>
-                              <span className="font-medium ml-1">{flight?.origin} → {flight?.destination}</span>
+                              <span className="font-medium ml-1">
+                                {flight?.origin} → {flight?.destination}
+                              </span>
                             </div>
                             <div>
                               <span className="text-gray-600">Passengers:</span>
-                              <span className="font-medium ml-1">{flight?.passengers || 167}</span>
+                              <span className="font-medium ml-1">
+                                {flight?.passengers || 167}
+                              </span>
                             </div>
                             <div>
                               <span className="text-gray-600">Disruption:</span>
-                              <span className="font-medium ml-1">{flight?.disruptionReason || 'Technical issue'}</span>
+                              <span className="font-medium ml-1">
+                                {flight?.disruptionReason || "Technical issue"}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -1257,33 +1549,64 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     {/* Enhanced Key Metrics */}
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-sm">Performance Metrics</CardTitle>
+                        <CardTitle className="text-sm">
+                          Performance Metrics
+                        </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-3">
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Confidence Score:</span>
+                          <span className="text-sm text-gray-600">
+                            Confidence Score:
+                          </span>
                           <div className="flex items-center gap-2">
-                            <Progress value={selectedOptionForDetails.confidence || 0} className="w-16 h-2" />
-                            <Badge className="bg-green-100 text-green-800">{selectedOptionForDetails.confidence || 0}%</Badge>
+                            <Progress
+                              value={selectedOptionForDetails.confidence || 0}
+                              className="w-16 h-2"
+                            />
+                            <Badge className="bg-green-100 text-green-800">
+                              {selectedOptionForDetails.confidence || 0}%
+                            </Badge>
                           </div>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Total Cost:</span>
-                          <span className="font-semibold text-flydubai-orange">{selectedOptionForDetails.cost || 'TBD'}</span>
+                          <span className="text-sm text-gray-600">
+                            Total Cost:
+                          </span>
+                          <span className="font-semibold text-flydubai-orange">
+                            {selectedOptionForDetails.cost || "TBD"}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Implementation Time:</span>
-                          <span className="font-medium">{selectedOptionForDetails.timeline || 'TBD'}</span>
+                          <span className="text-sm text-gray-600">
+                            Implementation Time:
+                          </span>
+                          <span className="font-medium">
+                            {selectedOptionForDetails.timeline || "TBD"}
+                          </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Impact Level:</span>
-                          <Badge className={getStatusColor(selectedOptionForDetails.status)}>
+                          <span className="text-sm text-gray-600">
+                            Impact Level:
+                          </span>
+                          <Badge
+                            className={getStatusColor(
+                              selectedOptionForDetails.status,
+                            )}
+                          >
                             {selectedOptionForDetails.impact}
                           </Badge>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Success Rate (Historical):</span>
-                          <Badge className="bg-blue-100 text-blue-800">{selectedOptionForDetails.historicalData.successRate}%</Badge>
+                          <span className="text-sm text-gray-600">
+                            Success Rate (Historical):
+                          </span>
+                          <Badge className="bg-blue-100 text-blue-800">
+                            {
+                              selectedOptionForDetails.historicalData
+                                .successRate
+                            }
+                            %
+                          </Badge>
                         </div>
                       </CardContent>
                     </Card>
@@ -1300,32 +1623,51 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {(selectedOptionForDetails.costBreakdown || []).map((item, index) => (
-                          <div key={index} className="space-y-3 p-4 border rounded-lg">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium">{item.category}</span>
-                              <span className="font-semibold text-flydubai-orange">{item.amount}</span>
+                        {(selectedOptionForDetails.costBreakdown || []).map(
+                          (item, index) => (
+                            <div
+                              key={index}
+                              className="space-y-3 p-4 border rounded-lg"
+                            >
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-medium">
+                                  {item.category}
+                                </span>
+                                <span className="font-semibold text-flydubai-orange">
+                                  {item.amount}
+                                </span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div
+                                  className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
+                                  style={{ width: `${item.percentage}%` }}
+                                ></div>
+                              </div>
+                              <div className="flex justify-between items-center text-xs">
+                                <span className="text-gray-600">
+                                  {item.percentage}% of total cost
+                                </span>
+                                <span className="text-blue-600">
+                                  {item.description}
+                                </span>
+                              </div>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div 
-                                className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
-                                style={{ width: `${item.percentage}%` }}
-                              ></div>
-                            </div>
-                            <div className="flex justify-between items-center text-xs">
-                              <span className="text-gray-600">{item.percentage}% of total cost</span>
-                              <span className="text-blue-600">{item.description}</span>
-                            </div>
-                          </div>
-                        ))}
+                          ),
+                        )}
                       </div>
                       <Separator className="my-4" />
                       <div className="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
                         <div>
-                          <span className="font-semibold">Total Estimated Cost:</span>
-                          <p className="text-xs text-gray-600">Including all operational expenses</p>
+                          <span className="font-semibold">
+                            Total Estimated Cost:
+                          </span>
+                          <p className="text-xs text-gray-600">
+                            Including all operational expenses
+                          </p>
                         </div>
-                        <span className="text-xl font-bold text-flydubai-orange">{selectedOptionForDetails.cost}</span>
+                        <span className="text-xl font-bold text-flydubai-orange">
+                          {selectedOptionForDetails.cost}
+                        </span>
                       </div>
                     </CardContent>
                   </Card>
@@ -1341,38 +1683,59 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {(selectedOptionForDetails.timelineDetails || []).map((step, index) => (
-                          <div key={index} className="flex items-start gap-4 p-4 border rounded-lg">
-                            <div className="flex flex-col items-center">
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
-                                step.status === 'completed' ? 'bg-green-100 text-green-800' :
-                                step.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
-                                'bg-gray-100 text-gray-600'
-                              }`}>
-                                {index + 1}
-                              </div>
-                              {index < (selectedOptionForDetails.timelineDetails || []).length - 1 && (
-                                <div className="w-0.5 h-12 bg-gray-200 mt-2"></div>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex justify-between items-start mb-2">
-                                <div>
-                                  <h4 className="font-medium text-sm">{step.step}</h4>
-                                  <p className="text-xs text-gray-600">{step.details}</p>
+                        {(selectedOptionForDetails.timelineDetails || []).map(
+                          (step, index) => (
+                            <div
+                              key={index}
+                              className="flex items-start gap-4 p-4 border rounded-lg"
+                            >
+                              <div className="flex flex-col items-center">
+                                <div
+                                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                                    step.status === "completed"
+                                      ? "bg-green-100 text-green-800"
+                                      : step.status === "in-progress"
+                                        ? "bg-blue-100 text-blue-800"
+                                        : "bg-gray-100 text-gray-600"
+                                  }`}
+                                >
+                                  {index + 1}
                                 </div>
-                                <div className="text-right">
-                                  <Badge variant="outline" className="text-xs mb-1">
-                                    {step.duration}
-                                  </Badge>
-                                  <div className="text-xs text-gray-500">
-                                    {step.startTime} - {step.endTime}
+                                {index <
+                                  (
+                                    selectedOptionForDetails.timelineDetails ||
+                                    []
+                                  ).length -
+                                    1 && (
+                                  <div className="w-0.5 h-12 bg-gray-200 mt-2"></div>
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex justify-between items-start mb-2">
+                                  <div>
+                                    <h4 className="font-medium text-sm">
+                                      {step.step}
+                                    </h4>
+                                    <p className="text-xs text-gray-600">
+                                      {step.details}
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs mb-1"
+                                    >
+                                      {step.duration}
+                                    </Badge>
+                                    <div className="text-xs text-gray-500">
+                                      {step.startTime} - {step.endTime}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          ),
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -1388,20 +1751,31 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {(selectedOptionForDetails.resourceRequirements || []).map((resource, index) => (
+                        {(
+                          selectedOptionForDetails.resourceRequirements || []
+                        ).map((resource, index) => (
                           <div key={index} className="p-4 border rounded-lg">
                             <div className="flex justify-between items-start mb-2">
                               <div>
-                                <h4 className="font-medium text-sm">{resource.type}</h4>
-                                <p className="text-sm text-gray-700">{resource.resource}</p>
+                                <h4 className="font-medium text-sm">
+                                  {resource.type}
+                                </h4>
+                                <p className="text-sm text-gray-700">
+                                  {resource.resource}
+                                </p>
                               </div>
                               <div className="flex flex-col gap-1">
-                                <Badge className={
-                                  resource.availability === 'Available' ? 'bg-green-100 text-green-800' :
-                                  resource.availability === 'Confirmed' ? 'bg-blue-100 text-blue-800' :
-                                  resource.availability === 'En Route' ? 'bg-yellow-100 text-yellow-800' :
-                                  'bg-gray-100 text-gray-800'
-                                }>
+                                <Badge
+                                  className={
+                                    resource.availability === "Available"
+                                      ? "bg-green-100 text-green-800"
+                                      : resource.availability === "Confirmed"
+                                        ? "bg-blue-100 text-blue-800"
+                                        : resource.availability === "En Route"
+                                          ? "bg-yellow-100 text-yellow-800"
+                                          : "bg-gray-100 text-gray-800"
+                                  }
+                                >
                                   {resource.availability}
                                 </Badge>
                                 <Badge variant="outline" className="text-xs">
@@ -1410,9 +1784,15 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                               </div>
                             </div>
                             <div className="text-xs text-gray-600 space-y-1">
-                              <div><strong>Location:</strong> {resource.location}</div>
-                              <div><strong>ETA:</strong> {resource.eta}</div>
-                              <div><strong>Details:</strong> {resource.details}</div>
+                              <div>
+                                <strong>Location:</strong> {resource.location}
+                              </div>
+                              <div>
+                                <strong>ETA:</strong> {resource.eta}
+                              </div>
+                              <div>
+                                <strong>Details:</strong> {resource.details}
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -1431,33 +1811,48 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {(selectedOptionForDetails.riskAssessment || []).map((riskItem, index) => (
-                          <div key={index} className="p-4 border rounded-lg">
-                            <div className="flex justify-between items-start mb-2">
-                              <h4 className="font-medium text-sm">{riskItem.risk}</h4>
-                              <div className="flex gap-2">
-                                <Badge className={getRiskColor(riskItem.probability)} variant="outline">
-                                  {riskItem.probability}
-                                </Badge>
-                                <Badge className={getRiskColor(riskItem.impact)} variant="outline">
-                                  {riskItem.impact}
-                                </Badge>
-                                <Badge 
-                                  className={`${
-                                    riskItem.riskScore <= 2 ? 'bg-green-100 text-green-800' :
-                                    riskItem.riskScore <= 4 ? 'bg-yellow-100 text-yellow-800' :
-                                    'bg-red-100 text-red-800'
-                                  }`}
-                                >
-                                  Score: {riskItem.riskScore}
-                                </Badge>
+                        {(selectedOptionForDetails.riskAssessment || []).map(
+                          (riskItem, index) => (
+                            <div key={index} className="p-4 border rounded-lg">
+                              <div className="flex justify-between items-start mb-2">
+                                <h4 className="font-medium text-sm">
+                                  {riskItem.risk}
+                                </h4>
+                                <div className="flex gap-2">
+                                  <Badge
+                                    className={getRiskColor(
+                                      riskItem.probability,
+                                    )}
+                                    variant="outline"
+                                  >
+                                    {riskItem.probability}
+                                  </Badge>
+                                  <Badge
+                                    className={getRiskColor(riskItem.impact)}
+                                    variant="outline"
+                                  >
+                                    {riskItem.impact}
+                                  </Badge>
+                                  <Badge
+                                    className={`${
+                                      riskItem.riskScore <= 2
+                                        ? "bg-green-100 text-green-800"
+                                        : riskItem.riskScore <= 4
+                                          ? "bg-yellow-100 text-yellow-800"
+                                          : "bg-red-100 text-red-800"
+                                    }`}
+                                  >
+                                    Score: {riskItem.riskScore}
+                                  </Badge>
+                                </div>
                               </div>
+                              <p className="text-sm text-gray-700">
+                                <strong>Mitigation:</strong>{" "}
+                                {riskItem.mitigation}
+                              </p>
                             </div>
-                            <p className="text-sm text-gray-700">
-                              <strong>Mitigation:</strong> {riskItem.mitigation}
-                            </p>
-                          </div>
-                        ))}
+                          ),
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -1473,15 +1868,22 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {Object.entries(selectedOptionForDetails.technicalSpecs).map(([key, value]) => (
+                        {Object.entries(
+                          selectedOptionForDetails.technicalSpecs,
+                        ).map(([key, value]) => (
                           <div key={key} className="p-3 border rounded-lg">
                             <h4 className="font-medium text-sm capitalize mb-2">
-                              {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                              {key
+                                .replace(/([A-Z])/g, " $1")
+                                .replace(/^./, (str) => str.toUpperCase())}
                             </h4>
                             {Array.isArray(value) ? (
                               <ul className="text-sm text-gray-700 space-y-1">
                                 {(value || []).map((item, index) => (
-                                  <li key={index} className="flex items-start gap-2">
+                                  <li
+                                    key={index}
+                                    className="flex items-start gap-2"
+                                  >
                                     <div className="w-2 h-2 bg-flydubai-blue rounded-full mt-1.5 flex-shrink-0"></div>
                                     {item}
                                   </li>
@@ -1502,7 +1904,9 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
             <div className="flex items-center justify-center p-8">
               <div className="text-center">
                 <RefreshCw className="h-8 w-8 text-flydubai-blue animate-spin mx-auto mb-4" />
-                <p className="text-muted-foreground">Loading recovery option details...</p>
+                <p className="text-muted-foreground">
+                  Loading recovery option details...
+                </p>
               </div>
             </div>
           )}
@@ -1518,27 +1922,50 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               View Rotation Plan
             </DialogTitle>
             <DialogDescription className="text-base">
-              Disruption Type: {flight?.categorization === 'Aircraft technical issue (e.g., AOG, maintenance)' ? 'AOG' : 
-                              flight?.categorization === 'Weather disruption (e.g., storms, fog)' ? 'Weather' :
-                              flight?.categorization === 'Crew issue (e.g., sick report, duty time breach)' ? 'Crew Issue' :
-                              flight?.categorization === 'Air traffic control restrictions' ? 'ATC' : 'Operational'} | 
-              Date: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })} | 
-              Original Aircraft: {flight?.aircraft}
+              Disruption Type:{" "}
+              {flight?.categorization ===
+              "Aircraft technical issue (e.g., AOG, maintenance)"
+                ? "AOG"
+                : flight?.categorization ===
+                    "Weather disruption (e.g., storms, fog)"
+                  ? "Weather"
+                  : flight?.categorization ===
+                      "Crew issue (e.g., sick report, duty time breach)"
+                    ? "Crew Issue"
+                    : flight?.categorization ===
+                        "Air traffic control restrictions"
+                      ? "ATC"
+                      : "Operational"}{" "}
+              | Date:{" "}
+              {new Date().toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric",
+              })}{" "}
+              | Original Aircraft: {flight?.aircraft}
             </DialogDescription>
           </DialogHeader>
 
           <div className="flex-1 overflow-y-auto dialog-scrollable">
             <Tabs defaultValue="aircraft" className="w-full">
               <TabsList className="grid w-full grid-cols-4 mb-6">
-                <TabsTrigger value="aircraft">Alternate Aircraft Options</TabsTrigger>
-                <TabsTrigger value="crew">Crew Availability & Constraints</TabsTrigger>
-                <TabsTrigger value="rotation">Rotation & Ops Impact</TabsTrigger>
+                <TabsTrigger value="aircraft">
+                  Alternate Aircraft Options
+                </TabsTrigger>
+                <TabsTrigger value="crew">
+                  Crew Availability & Constraints
+                </TabsTrigger>
+                <TabsTrigger value="rotation">
+                  Rotation & Ops Impact
+                </TabsTrigger>
                 <TabsTrigger value="cost">Cost & Delay Metrics</TabsTrigger>
               </TabsList>
 
               {/* Tab 1: Alternate Aircraft Options */}
               <TabsContent value="aircraft" className="space-y-4">
-                <Card>                  <CardHeader>
+                <Card>
+                  {" "}
+                  <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Plane className="h-5 w-5 text-flydubai-blue" />
                       Available Aircraft Options - {selectedRotationData?.title}
@@ -1560,47 +1987,99 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                       </TableHeader>
                       <TableBody>
                         {(() => {
-                          const rotationData = generateRotationPlanData(selectedRotationData, flight)
-                          if (!rotationData) return null
+                          const rotationData = generateRotationPlanData(
+                            selectedRotationData,
+                            flight,
+                          );
+                          if (!rotationData) return null;
 
-                          return rotationData.aircraftOptions.map((aircraft, index) => (
-                            <TableRow key={index} className={aircraft.recommended ? "bg-green-50" : 
-                                                           aircraft.maintenance.status === 'aog' ? "bg-red-50" : 
-                                                           aircraft.assigned.status === 'assigned' ? "bg-yellow-50" : ""}>
-                              <TableCell className="font-medium">{aircraft.reg}</TableCell>
-                              <TableCell>{aircraft.type}</TableCell>
-                              <TableCell>
-                                {aircraft.etops.status === 'available' ? 
-                                  <><CheckCircle className="h-4 w-4 text-green-600" /> {aircraft.etops.value}</> :
-                                  <><XCircle className="h-4 w-4 text-red-600" /> {aircraft.etops.value}</>
+                          return rotationData.aircraftOptions.map(
+                            (aircraft, index) => (
+                              <TableRow
+                                key={index}
+                                className={
+                                  aircraft.recommended
+                                    ? "bg-green-50"
+                                    : aircraft.maintenance.status === "aog"
+                                      ? "bg-red-50"
+                                      : aircraft.assigned.status === "assigned"
+                                        ? "bg-yellow-50"
+                                        : ""
                                 }
-                              </TableCell>
-                              <TableCell>
-                                {aircraft.cabinMatch.status === 'exact' ? 
-                                  <><CheckCircle className="h-4 w-4 text-green-600" /> {aircraft.cabinMatch.value}</> :
-                                  aircraft.cabinMatch.status === 'similar' || aircraft.cabinMatch.status === 'reduced' ?
-                                  <><AlertTriangle className="h-4 w-4 text-yellow-600" /> {aircraft.cabinMatch.value}</> :
-                                  <><XCircle className="h-4 w-4 text-red-600" /> {aircraft.cabinMatch.value}</>
-                                }
-                              </TableCell>
-                              <TableCell>{aircraft.availability}</TableCell>
-                              <TableCell>
-                                {aircraft.assigned.status === 'none' ? 
-                                  <><XCircle className="h-4 w-4 text-green-600" /> {aircraft.assigned.value}</> :
-                                  <><AlertTriangle className="h-4 w-4 text-yellow-600" /> {aircraft.assigned.value}</>
-                                }
-                              </TableCell>
-                              <TableCell>{aircraft.turnaround}</TableCell>
-                              <TableCell>
-                                {aircraft.maintenance.status === 'current' ? 
-                                  <><CheckCircle className="h-4 w-4 text-green-600" /> {aircraft.maintenance.value}</> :
-                                  aircraft.maintenance.status === 'due' ?
-                                  <><AlertTriangle className="h-4 w-4 text-yellow-600" /> {aircraft.maintenance.value}</> :
-                                  <><XCircle className="h-4 w-4 text-red-600" /> {aircraft.maintenance.value}</>
-                                }
-                              </TableCell>
-                            </TableRow>
-                          ))
+                              >
+                                <TableCell className="font-medium">
+                                  {aircraft.reg}
+                                </TableCell>
+                                <TableCell>{aircraft.type}</TableCell>
+                                <TableCell>
+                                  {aircraft.etops.status === "available" ? (
+                                    <>
+                                      <CheckCircle className="h-4 w-4 text-green-600" />{" "}
+                                      {aircraft.etops.value}
+                                    </>
+                                  ) : (
+                                    <>
+                                      <XCircle className="h-4 w-4 text-red-600" />{" "}
+                                      {aircraft.etops.value}
+                                    </>
+                                  )}
+                                </TableCell>
+                                <TableCell>
+                                  {aircraft.cabinMatch.status === "exact" ? (
+                                    <>
+                                      <CheckCircle className="h-4 w-4 text-green-600" />{" "}
+                                      {aircraft.cabinMatch.value}
+                                    </>
+                                  ) : aircraft.cabinMatch.status ===
+                                      "similar" ||
+                                    aircraft.cabinMatch.status === "reduced" ? (
+                                    <>
+                                      <AlertTriangle className="h-4 w-4 text-yellow-600" />{" "}
+                                      {aircraft.cabinMatch.value}
+                                    </>
+                                  ) : (
+                                    <>
+                                      <XCircle className="h-4 w-4 text-red-600" />{" "}
+                                      {aircraft.cabinMatch.value}
+                                    </>
+                                  )}
+                                </TableCell>
+                                <TableCell>{aircraft.availability}</TableCell>
+                                <TableCell>
+                                  {aircraft.assigned.status === "none" ? (
+                                    <>
+                                      <XCircle className="h-4 w-4 text-green-600" />{" "}
+                                      {aircraft.assigned.value}
+                                    </>
+                                  ) : (
+                                    <>
+                                      <AlertTriangle className="h-4 w-4 text-yellow-600" />{" "}
+                                      {aircraft.assigned.value}
+                                    </>
+                                  )}
+                                </TableCell>
+                                <TableCell>{aircraft.turnaround}</TableCell>
+                                <TableCell>
+                                  {aircraft.maintenance.status === "current" ? (
+                                    <>
+                                      <CheckCircle className="h-4 w-4 text-green-600" />{" "}
+                                      {aircraft.maintenance.value}
+                                    </>
+                                  ) : aircraft.maintenance.status === "due" ? (
+                                    <>
+                                      <AlertTriangle className="h-4 w-4 text-yellow-600" />{" "}
+                                      {aircraft.maintenance.value}
+                                    </>
+                                  ) : (
+                                    <>
+                                      <XCircle className="h-4 w-4 text-red-600" />{" "}
+                                      {aircraft.maintenance.value}
+                                    </>
+                                  )}
+                                </TableCell>
+                              </TableRow>
+                            ),
+                          );
                         })()}
                       </TableBody>
                     </Table>
@@ -1621,32 +2100,51 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     <CardContent>
                       <div className="space-y-3">
                         {(() => {
-                          const rotationData = generateRotationPlanData(selectedRotationData, flight)
-                          if (!rotationData) return null
+                          const rotationData = generateRotationPlanData(
+                            selectedRotationData,
+                            flight,
+                          );
+                          if (!rotationData) return null;
 
                           return rotationData.crewData.map((crew, index) => (
-                            <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${
-                              crew.status === 'Available' ? 'bg-green-50' : 
-                              crew.status.includes('Limit') ? 'bg-yellow-50' : 
-                              crew.status === 'Reassigned' ? 'bg-blue-50' : 'bg-green-50'
-                            }`}>
+                            <div
+                              key={index}
+                              className={`flex items-center justify-between p-3 rounded-lg ${
+                                crew.status === "Available"
+                                  ? "bg-green-50"
+                                  : crew.status.includes("Limit")
+                                    ? "bg-yellow-50"
+                                    : crew.status === "Reassigned"
+                                      ? "bg-blue-50"
+                                      : "bg-green-50"
+                              }`}
+                            >
                               <div>
                                 <p className="font-medium">{crew.name}</p>
-                                <p className="text-sm text-gray-600">{crew.type}</p>
+                                <p className="text-sm text-gray-600">
+                                  {crew.type}
+                                </p>
                                 {crew.issue && (
-                                  <p className="text-xs text-orange-600 mt-1">⚠️ {crew.issue}</p>
+                                  <p className="text-xs text-orange-600 mt-1">
+                                    ⚠️ {crew.issue}
+                                  </p>
                                 )}
                               </div>
-                              <Badge className={
-                                crew.status === 'Available' ? 'bg-green-100 text-green-700' :
-                                crew.status.includes('Limit') ? 'bg-yellow-100 text-yellow-700' :
-                                crew.status === 'Reassigned' ? 'bg-blue-100 text-blue-700' :
-                                'bg-green-100 text-green-700'
-                              }>
+                              <Badge
+                                className={
+                                  crew.status === "Available"
+                                    ? "bg-green-100 text-green-700"
+                                    : crew.status.includes("Limit")
+                                      ? "bg-yellow-100 text-yellow-700"
+                                      : crew.status === "Reassigned"
+                                        ? "bg-blue-100 text-blue-700"
+                                        : "bg-green-100 text-green-700"
+                                }
+                              >
                                 {crew.status}
                               </Badge>
                             </div>
-                          ))
+                          ));
                         })()}
                       </div>
                     </CardContent>
@@ -1662,32 +2160,52 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     <CardContent>
                       <div className="space-y-4">
                         <div>
-                          <Label className="text-sm font-medium">Duty Time Remaining</Label>
+                          <Label className="text-sm font-medium">
+                            Duty Time Remaining
+                          </Label>
                           <Progress value={75} className="mt-2" />
-                          <p className="text-xs text-gray-600 mt-1">6h 15m of 8h 20m limit</p>
+                          <p className="text-xs text-gray-600 mt-1">
+                            6h 15m of 8h 20m limit
+                          </p>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium">Rest Requirement</Label>
+                          <Label className="text-sm font-medium">
+                            Rest Requirement
+                          </Label>
                           <div className="mt-2 p-3 bg-blue-50 rounded-lg">
-                            <p className="text-sm">Min 12h rest required after duty</p>
-                            <p className="text-xs text-gray-600">Next availability: Tomorrow 08:00</p>
+                            <p className="text-sm">
+                              Min 12h rest required after duty
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              Next availability: Tomorrow 08:00
+                            </p>
                           </div>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium">Deadhead Needs</Label>
+                          <Label className="text-sm font-medium">
+                            Deadhead Needs
+                          </Label>
                           <div className="mt-2 p-3 bg-orange-50 rounded-lg">
-                            <p className="text-sm">2 crew members need positioning to DXB</p>
-                            <p className="text-xs text-gray-600">Commercial flights available</p>
+                            <p className="text-sm">
+                              2 crew members need positioning to DXB
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              Commercial flights available
+                            </p>
                           </div>
                         </div>
                         <div>
-                          <Label className="text-sm font-medium">Fatigue Report Flags</Label>
+                          <Label className="text-sm font-medium">
+                            Fatigue Report Flags
+                          </Label>
                           <div className="mt-2 p-3 bg-red-50 rounded-lg">
                             <p className="text-sm flex items-center gap-2">
                               <AlertTriangle className="h-4 w-4 text-red-600" />
                               1 crew member reported fatigue
                             </p>
-                            <p className="text-xs text-gray-600">Replacement required</p>
+                            <p className="text-xs text-gray-600">
+                              Replacement required
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -1709,33 +2227,55 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     <CardContent>
                       <div className="space-y-3">
                         {(() => {
-                          const rotationData = generateRotationPlanData(selectedRotationData, flight)
-                          if (!rotationData) return null
+                          const rotationData = generateRotationPlanData(
+                            selectedRotationData,
+                            flight,
+                          );
+                          if (!rotationData) return null;
 
-                          return rotationData.nextSectors.map((sector, index) => (
-                            <div key={index} className={`p-3 border-l-4 rounded-lg ${
-                              sector.impact === 'High Impact' ? 'border-red-500 bg-red-50' :
-                              sector.impact === 'Medium Impact' ? 'border-yellow-500 bg-yellow-50' :
-                              sector.impact === 'Low Impact' ? 'border-green-500 bg-green-50' :
-                              'border-gray-500 bg-gray-50'
-                            }`}>
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <p className="font-medium">{sector.flight}</p>
-                                  <p className="text-sm text-gray-600">{sector.departure}</p>
-                                  <p className="text-xs text-gray-500 mt-1">{sector.reason}</p>
+                          return rotationData.nextSectors.map(
+                            (sector, index) => (
+                              <div
+                                key={index}
+                                className={`p-3 border-l-4 rounded-lg ${
+                                  sector.impact === "High Impact"
+                                    ? "border-red-500 bg-red-50"
+                                    : sector.impact === "Medium Impact"
+                                      ? "border-yellow-500 bg-yellow-50"
+                                      : sector.impact === "Low Impact"
+                                        ? "border-green-500 bg-green-50"
+                                        : "border-gray-500 bg-gray-50"
+                                }`}
+                              >
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="font-medium">
+                                      {sector.flight}
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                      {sector.departure}
+                                    </p>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      {sector.reason}
+                                    </p>
+                                  </div>
+                                  <Badge
+                                    className={
+                                      sector.impact === "High Impact"
+                                        ? "bg-red-100 text-red-700"
+                                        : sector.impact === "Medium Impact"
+                                          ? "bg-yellow-100 text-yellow-700"
+                                          : sector.impact === "Low Impact"
+                                            ? "bg-green-100 text-green-700"
+                                            : "bg-gray-100 text-gray-700"
+                                    }
+                                  >
+                                    {sector.impact}
+                                  </Badge>
                                 </div>
-                                <Badge className={
-                                  sector.impact === 'High Impact' ? 'bg-red-100 text-red-700' :
-                                  sector.impact === 'Medium Impact' ? 'bg-yellow-100 text-yellow-700' :
-                                  sector.impact === 'Low Impact' ? 'bg-green-100 text-green-700' :
-                                  'bg-gray-100 text-gray-700'
-                                }>
-                                  {sector.impact}
-                                </Badge>
                               </div>
-                            </div>
-                          ))
+                            ),
+                          );
                         })()}
                       </div>
                     </CardContent>
@@ -1751,35 +2291,59 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     <CardContent>
                       <div className="space-y-4">
                         {(() => {
-                          const rotationData = generateRotationPlanData(selectedRotationData, flight)
-                          if (!rotationData) return null
+                          const rotationData = generateRotationPlanData(
+                            selectedRotationData,
+                            flight,
+                          );
+                          if (!rotationData) return null;
 
-                          return Object.entries(rotationData.operationalConstraints).map(([key, constraint]) => (
+                          return Object.entries(
+                            rotationData.operationalConstraints,
+                          ).map(([key, constraint]) => (
                             <div key={key}>
                               <Label className="text-sm font-medium flex items-center gap-2">
-                                {key === 'gateCompatibility' && <Building className="h-4 w-4" />}
-                                {key === 'slotCapacity' && <Calendar className="h-4 w-4" />}
-                                {key === 'curfewViolation' && <Timer className="h-4 w-4" />}
-                                {key === 'passengerConnections' && <Users className="h-4 w-4" />}
-                                {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                                {key === "gateCompatibility" && (
+                                  <Building className="h-4 w-4" />
+                                )}
+                                {key === "slotCapacity" && (
+                                  <Calendar className="h-4 w-4" />
+                                )}
+                                {key === "curfewViolation" && (
+                                  <Timer className="h-4 w-4" />
+                                )}
+                                {key === "passengerConnections" && (
+                                  <Users className="h-4 w-4" />
+                                )}
+                                {key
+                                  .replace(/([A-Z])/g, " $1")
+                                  .replace(/^./, (str) => str.toUpperCase())}
                               </Label>
-                              <div className={`mt-2 p-3 rounded-lg ${
-                                constraint.status.includes('Risk') || constraint.status.includes('Major') ? 'bg-red-50' :
-                                constraint.status.includes('Required') || constraint.status.includes('Affected') ? 'bg-yellow-50' :
-                                'bg-green-50'
-                              }`}>
+                              <div
+                                className={`mt-2 p-3 rounded-lg ${
+                                  constraint.status.includes("Risk") ||
+                                  constraint.status.includes("Major")
+                                    ? "bg-red-50"
+                                    : constraint.status.includes("Required") ||
+                                        constraint.status.includes("Affected")
+                                      ? "bg-yellow-50"
+                                      : "bg-green-50"
+                                }`}
+                              >
                                 <p className="text-sm flex items-center gap-2">
-                                  {constraint.status.includes('Risk') || constraint.status.includes('Major') ? 
-                                    <XCircle className="h-4 w-4 text-red-600" /> :
-                                    constraint.status.includes('Required') || constraint.status.includes('Affected') ? 
-                                    <AlertTriangle className="h-4 w-4 text-yellow-600" /> :
+                                  {constraint.status.includes("Risk") ||
+                                  constraint.status.includes("Major") ? (
+                                    <XCircle className="h-4 w-4 text-red-600" />
+                                  ) : constraint.status.includes("Required") ||
+                                    constraint.status.includes("Affected") ? (
+                                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                                  ) : (
                                     <CheckCircle className="h-4 w-4 text-green-600" />
-                                  }
+                                  )}
                                   {constraint.details}
                                 </p>
                               </div>
                             </div>
-                          ))
+                          ));
                         })()}
                       </div>
                     </CardContent>
@@ -1791,8 +2355,11 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               <TabsContent value="cost" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                   {(() => {
-                    const rotationData = generateRotationPlanData(selectedRotationData, flight)
-                    if (!rotationData) return null
+                    const rotationData = generateRotationPlanData(
+                      selectedRotationData,
+                      flight,
+                    );
+                    if (!rotationData) return null;
 
                     return (
                       <>
@@ -1800,10 +2367,17 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                           <CardContent className="p-4 text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
                               <DollarSign className="h-5 w-5 text-red-600" />
-                              <p className="text-sm font-medium text-red-700">Estimated Delay Cost</p>
+                              <p className="text-sm font-medium text-red-700">
+                                Estimated Delay Cost
+                              </p>
                             </div>
-                            <p className="text-2xl font-bold text-red-800">${rotationData.costBreakdown.delayCost.toLocaleString()}</p>
-                            <p className="text-xs text-red-600 mt-1">Including compensation</p>
+                            <p className="text-2xl font-bold text-red-800">
+                              $
+                              {rotationData.costBreakdown.delayCost.toLocaleString()}
+                            </p>
+                            <p className="text-xs text-red-600 mt-1">
+                              Including compensation
+                            </p>
                           </CardContent>
                         </Card>
 
@@ -1811,10 +2385,16 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                           <CardContent className="p-4 text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
                               <Activity className="h-5 w-5 text-yellow-600" />
-                              <p className="text-sm font-medium text-yellow-700">Fuel Efficiency Diff</p>
+                              <p className="text-sm font-medium text-yellow-700">
+                                Fuel Efficiency Diff
+                              </p>
                             </div>
-                            <p className="text-2xl font-bold text-yellow-800">{rotationData.costBreakdown.fuelEfficiency}</p>
-                            <p className="text-xs text-yellow-600 mt-1">vs original aircraft</p>
+                            <p className="text-2xl font-bold text-yellow-800">
+                              {rotationData.costBreakdown.fuelEfficiency}
+                            </p>
+                            <p className="text-xs text-yellow-600 mt-1">
+                              vs original aircraft
+                            </p>
                           </CardContent>
                         </Card>
 
@@ -1822,12 +2402,18 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                           <CardContent className="p-4 text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
                               <Users className="h-5 w-5 text-blue-600" />
-                              <p className="text-sm font-medium text-blue-700">Hotel/Transport Cost</p>
+                              <p className="text-sm font-medium text-blue-700">
+                                Hotel/Transport Cost
+                              </p>
                             </div>
                             <p className="text-2xl font-bold text-blue-800">
-                              {rotationData.costBreakdown.hotelTransport === 0 ? 'N/A' : `${rotationData.costBreakdown.hotelTransport.toLocaleString()}`}
+                              {rotationData.costBreakdown.hotelTransport === 0
+                                ? "N/A"
+                                : `${rotationData.costBreakdown.hotelTransport.toLocaleString()}`}
                             </p>
-                            <p className="text-xs text-blue-600 mt-1">Crew accommodation</p>
+                            <p className="text-xs text-blue-600 mt-1">
+                              Crew accommodation
+                            </p>
                           </CardContent>
                         </Card>
 
@@ -1835,14 +2421,20 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                           <CardContent className="p-4 text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
                               <AlertTriangle className="h-5 w-5 text-orange-600" />
-                              <p className="text-sm font-medium text-orange-700">EU261 Risk</p>
+                              <p className="text-sm font-medium text-orange-700">
+                                EU261 Risk
+                              </p>
                             </div>
-                            <p className="text-2xl font-bold text-orange-800">{rotationData.costBreakdown.eu261Risk}</p>
-                            <p className="text-xs text-orange-600 mt-1">€600 per passenger</p>
+                            <p className="text-2xl font-bold text-orange-800">
+                              {rotationData.costBreakdown.eu261Risk}
+                            </p>
+                            <p className="text-xs text-orange-600 mt-1">
+                              €600 per passenger
+                            </p>
                           </CardContent>
                         </Card>
                       </>
-                    )
+                    );
                   })()}
                 </div>
 
@@ -1856,15 +2448,21 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   </CardHeader>
                   <CardContent>
                     {(() => {
-                      const rotationData = generateRotationPlanData(selectedRotationData, flight)
-                      if (!rotationData) return null
+                      const rotationData = generateRotationPlanData(
+                        selectedRotationData,
+                        flight,
+                      );
+                      if (!rotationData) return null;
 
                       return (
                         <>
                           <div className="mb-4 p-4 bg-green-100 border border-green-200 rounded-lg">
                             <div className="flex items-center gap-2 mb-2">
                               <CheckCircle className="h-5 w-5 text-green-600" />
-                              <p className="font-medium text-green-800">Recommended Option: Aircraft {rotationData.recommendation.aircraft}</p>
+                              <p className="font-medium text-green-800">
+                                Recommended Option: Aircraft{" "}
+                                {rotationData.recommendation.aircraft}
+                              </p>
                             </div>
                             <p className="text-sm text-green-700">
                               {rotationData.recommendation.reason}
@@ -1883,36 +2481,123 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {rotationData.aircraftOptions.slice(0, 3).map((aircraft, index) => {
-                                const costScore = aircraft.recommended ? 92 : 78 - (index * 13)
-                                const delayScore = aircraft.recommended ? 88 : 72 - (index * 17)
-                                const crewScore = aircraft.recommended ? 95 : 65 - (index * 5)
-                                const fuelScore = aircraft.recommended ? 91 : 89 - (index * 14)
-                                const overallScore = Math.round((costScore + delayScore + crewScore + fuelScore) / 4)
+                              {rotationData.aircraftOptions
+                                .slice(0, 3)
+                                .map((aircraft, index) => {
+                                  const costScore = aircraft.recommended
+                                    ? 92
+                                    : 78 - index * 13;
+                                  const delayScore = aircraft.recommended
+                                    ? 88
+                                    : 72 - index * 17;
+                                  const crewScore = aircraft.recommended
+                                    ? 95
+                                    : 65 - index * 5;
+                                  const fuelScore = aircraft.recommended
+                                    ? 91
+                                    : 89 - index * 14;
+                                  const overallScore = Math.round(
+                                    (costScore +
+                                      delayScore +
+                                      crewScore +
+                                      fuelScore) /
+                                      4,
+                                  );
 
-                                return (
-                                  <TableRow key={index} className={aircraft.recommended ? "bg-green-50" : ""}>
-                                    <TableCell className="font-medium">{aircraft.reg}</TableCell>
-                                    <TableCell><Badge className={overallScore >= 85 ? "bg-green-100 text-green-700" : overallScore >= 70 ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}>{costScore}%</Badge></TableCell>
-                                    <TableCell><Badge className={overallScore >= 85 ? "bg-green-100 text-green-700" : overallScore >= 70 ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}>{delayScore}%</Badge></TableCell>
-                                    <TableCell><Badge className={overallScore >= 85 ? "bg-green-100 text-green-700" : overallScore >= 70 ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}>{crewScore}%</Badge></TableCell>
-                                    <TableCell><Badge className={overallScore >= 85 ? "bg-green-100 text-green-700" : overallScore >= 70 ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}>{fuelScore}%</Badge></TableCell>
-                                    <TableCell><Badge className={overallScore >= 85 ? "bg-green-100 text-green-700" : overallScore >= 70 ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-700"}>{overallScore}%</Badge></TableCell>
-                                  </TableRow>
-                                )
-                              })}
+                                  return (
+                                    <TableRow
+                                      key={index}
+                                      className={
+                                        aircraft.recommended
+                                          ? "bg-green-50"
+                                          : ""
+                                      }
+                                    >
+                                      <TableCell className="font-medium">
+                                        {aircraft.reg}
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge
+                                          className={
+                                            overallScore >= 85
+                                              ? "bg-green-100 text-green-700"
+                                              : overallScore >= 70
+                                                ? "bg-yellow-100 text-yellow-700"
+                                                : "bg-red-100 text-red-700"
+                                          }
+                                        >
+                                          {costScore}%
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge
+                                          className={
+                                            overallScore >= 85
+                                              ? "bg-green-100 text-green-700"
+                                              : overallScore >= 70
+                                                ? "bg-yellow-100 text-yellow-700"
+                                                : "bg-red-100 text-red-700"
+                                          }
+                                        >
+                                          {delayScore}%
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge
+                                          className={
+                                            overallScore >= 85
+                                              ? "bg-green-100 text-green-700"
+                                              : overallScore >= 70
+                                                ? "bg-yellow-100 text-yellow-700"
+                                                : "bg-red-100 text-red-700"
+                                          }
+                                        >
+                                          {crewScore}%
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge
+                                          className={
+                                            overallScore >= 85
+                                              ? "bg-green-100 text-green-700"
+                                              : overallScore >= 70
+                                                ? "bg-yellow-100 text-yellow-700"
+                                                : "bg-red-100 text-red-700"
+                                          }
+                                        >
+                                          {fuelScore}%
+                                        </Badge>
+                                      </TableCell>
+                                      <TableCell>
+                                        <Badge
+                                          className={
+                                            overallScore >= 85
+                                              ? "bg-green-100 text-green-700"
+                                              : overallScore >= 70
+                                                ? "bg-yellow-100 text-yellow-700"
+                                                : "bg-red-100 text-red-700"
+                                          }
+                                        >
+                                          {overallScore}%
+                                        </Badge>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                })}
                             </TableBody>
                           </Table>
 
                           <div>
-                            <Label className="text-sm font-medium mb-2 block">Operations Comments</Label>
-                            <Input 
+                            <Label className="text-sm font-medium mb-2 block">
+                              Operations Comments
+                            </Label>
+                            <Input
                               placeholder="Add your comments or override reasoning..."
                               className="w-full"
                             />
                           </div>
                         </>
-                      )
+                      );
                     })()}
                   </CardContent>
                 </Card>
@@ -1923,16 +2608,16 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           {/* Footer Action Buttons */}
           <div className="flex justify-between items-center pt-4 border-t">
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                 onClick={() => setShowRotationPlan(false)}
               >
                 <Eye className="h-4 w-4 mr-2" />
                 View All Alternate Options
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 className="border-gray-300 hover:bg-gray-50"
               >
                 <FileText className="h-4 w-4 mr-2" />
@@ -1940,20 +2625,26 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               </Button>
             </div>
             <div className="flex gap-2">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   // Refresh suggestions logic
-                  console.log('Refreshing suggestions for:', selectedRotationData)
+                  console.log(
+                    "Refreshing suggestions for:",
+                    selectedRotationData,
+                  );
                 }}
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh Suggestions
               </Button>
-              <Button 
+              <Button
                 onClick={() => {
-                  console.log('Confirming rotation plan:', selectedRotationData)
-                  setShowRotationPlan(false)
+                  console.log(
+                    "Confirming rotation plan:",
+                    selectedRotationData,
+                  );
+                  setShowRotationPlan(false);
                 }}
                 className="btn-flydubai-primary"
               >
@@ -1965,5 +2656,5 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
