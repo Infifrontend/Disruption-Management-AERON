@@ -269,20 +269,19 @@ BEGIN
 END $$;
 
 -- Recovery Options table
-DROP TABLE IF EXISTS recovery_options CASCADE;
-CREATE TABLE recovery_options (
+CREATE TABLE IF NOT EXISTS recovery_options (
     id SERIAL PRIMARY KEY,
-    disruption_id INTEGER REFERENCES flight_disruptions(id),
+    disruption_id INTEGER REFERENCES flight_disruptions(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    cost VARCHAR(50),
+    cost VARCHAR(100),
     timeline VARCHAR(100),
-    confidence INTEGER CHECK (confidence >= 0 AND confidence <= 100),
-    impact VARCHAR(255),
+    confidence INTEGER DEFAULT 0,
+    impact TEXT,
     status VARCHAR(50) DEFAULT 'generated',
     priority INTEGER DEFAULT 0,
-    advantages TEXT[],
-    considerations TEXT[],
+    advantages JSONB,
+    considerations JSONB,
     resource_requirements JSONB,
     cost_breakdown JSONB,
     timeline_details JSONB,
@@ -290,18 +289,26 @@ CREATE TABLE recovery_options (
     technical_specs JSONB,
     metrics JSONB,
     rotation_plan JSONB,
-    details JSONB,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(disruption_id, title)
 );
 
--- Add status column if it doesn't exist (for existing databases)
-DO $$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'recovery_options' AND column_name = 'status') THEN
-        ALTER TABLE recovery_options ADD COLUMN status VARCHAR(50) DEFAULT 'generated';
-    END IF;
-END $$;
+-- Recovery Steps table
+CREATE TABLE IF NOT EXISTS recovery_steps (
+    id SERIAL PRIMARY KEY,
+    disruption_id INTEGER REFERENCES flight_disruptions(id) ON DELETE CASCADE,
+    step_number INTEGER NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending',
+    timestamp VARCHAR(100),
+    system VARCHAR(255),
+    details TEXT,
+    step_data JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(disruption_id, step_number)
+);
 
 -- Passengers table
 CREATE TABLE IF NOT EXISTS passengers (
