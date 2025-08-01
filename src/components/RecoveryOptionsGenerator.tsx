@@ -134,7 +134,7 @@ export function RecoveryOptionsGenerator({
   const [selectedOption, setSelectedOption] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [isExecuting, setIsExecuting] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(isExecuting);
   const [showRotationPlan, setShowRotationPlan] = useState(false);
   const [selectedRotationData, setSelectedRotationData] = useState(null);
   const [scheduleImpactData, setScheduleImpactData] = useState(null);
@@ -187,13 +187,13 @@ export function RecoveryOptionsGenerator({
 
       try {
         console.log(`Fetching recovery options for flight ID: ${flightId}`);
-        
+
         // Check database connectivity first
         const isHealthy = await databaseService.healthCheck();
         if (!isHealthy) {
           throw new Error("Database connection failed");
         }
-        
+
         // First try to get existing options
         let options = await databaseService.getRecoveryOptions(flightId);
         let steps = await databaseService.getRecoverySteps(flightId);
@@ -261,7 +261,7 @@ export function RecoveryOptionsGenerator({
 
         setRecoveryOptions(transformedOptions);
         setRecoverySteps(transformedSteps);
-        
+
         if (transformedOptions.length === 0) {
           setLoadingError("No recovery options available for this disruption type");
         }
@@ -320,7 +320,7 @@ export function RecoveryOptionsGenerator({
     } else {
       // Fallback to scenario-based data when database is disabled, failed, or loading
       console.log("Using fallback scenario data for flight categorization:", flight?.categorization);
-      
+
       // Import scenario recovery functions
       const getScenarioDataForFlight = (categorization) => {
         const generateMockOptions = (type) => {
@@ -626,6 +626,8 @@ export function RecoveryOptionsGenerator({
 
   // Generate rotation plan data based on selected recovery option
   const generateRotationPlanData = (option, flight) => {
+    if (!option?.id || typeof option.id !== 'string') return null;
+
     if (!option || !flight) {
       console.warn('Missing option or flight data for rotation plan generation');
       return {
