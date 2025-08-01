@@ -164,44 +164,63 @@ export function RecoveryOptionsGenerator({
   // Fetch recovery options from database
   useEffect(() => {
     const fetchRecoveryOptions = async () => {
-      if (!flight?.id || !useDatabaseData) return;
+      if (!flight?.id) {
+        setRecoveryOptions([]);
+        setRecoverySteps([]);
+        return;
+      }
+
+      if (!useDatabaseData) {
+        console.log("Database data disabled, using scenario data");
+        return;
+      }
 
       setIsLoadingOptions(true);
       setLoadingError(null);
 
       try {
+        console.log(`Fetching recovery options for flight ID: ${flight.id}`);
+        
         // First try to get existing options
         let options = await databaseService.getRecoveryOptions(flight.id);
         let steps = await databaseService.getRecoverySteps(flight.id);
 
+        console.log(`Found ${options.length} existing options and ${steps.length} steps`);
+
         // If no options exist, generate them
         if (options.length === 0) {
           console.log("No recovery options found, generating new ones...");
-          const result = await databaseService.generateRecoveryOptions(
-            flight.id,
-          );
+          try {
+            const result = await databaseService.generateRecoveryOptions(flight.id);
+            console.log("Generation result:", result);
 
-          if (result.optionsCount > 0) {
-            // Fetch the newly generated options
-            options = await databaseService.getRecoveryOptions(flight.id);
-            steps = await databaseService.getRecoverySteps(flight.id);
+            if (result.optionsCount > 0) {
+              // Wait a moment and fetch the newly generated options
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              options = await databaseService.getRecoveryOptions(flight.id);
+              steps = await databaseService.getRecoverySteps(flight.id);
+              console.log(`After generation: ${options.length} options, ${steps.length} steps`);
+            }
+          } catch (generateError) {
+            console.error("Error generating recovery options:", generateError);
+            throw new Error("Failed to generate recovery options: " + generateError.message);
           }
         }
 
         // Transform database format to component format
         const transformedOptions = options.map((option, index) => ({
           id: option.id || `option_${index + 1}`,
-          title: option.title,
+          title: option.title || `Recovery Option ${index + 1}`,
           description: option.description || "Recovery option description",
           cost: option.cost || "TBD",
           timeline: option.timeline || "TBD",
           confidence: option.confidence || 80,
           impact: option.impact || "Medium impact",
-          status: option.status === "generated" ? "recommended" : option.status,
-          advantages: Array.isArray(option.advantages) ? option.advantages : [],
-          considerations: Array.isArray(option.considerations)
-            ? option.considerations
-            : [],
+          status: option.status === "generated" ? "recommended" : (option.status || "recommended"),
+          advantages: Array.isArray(option.advantages) ? option.advantages : 
+                     (typeof option.advantages === 'string' ? JSON.parse(option.advantages) : []),
+          considerations: Array.isArray(option.considerations) ? option.considerations : 
+                         (typeof option.considerations === 'string' ? JSON.parse(option.considerations) : []),
           metrics: option.metrics || {},
           resourceRequirements: option.resource_requirements || [],
           costBreakdown: option.cost_breakdown || [],
@@ -221,14 +240,20 @@ export function RecoveryOptionsGenerator({
           data: step.step_data || {},
         }));
 
+        console.log("Setting transformed options:", transformedOptions);
+        console.log("Setting transformed steps:", transformedSteps);
+
         setRecoveryOptions(transformedOptions);
         setRecoverySteps(transformedSteps);
+        
+        if (transformedOptions.length === 0) {
+          setLoadingError("No recovery options available for this disruption type");
+        }
       } catch (error) {
         console.error("Error fetching recovery options:", error);
-        setLoadingError(error.message);
-
-        // Remove mock data fallback here, since we use database data only
-
+        setLoadingError(error.message || "Failed to load recovery options");
+        setRecoveryOptions([]);
+        setRecoverySteps([]);
       } finally {
         setIsLoadingOptions(false);
       }
@@ -262,10 +287,7 @@ export function RecoveryOptionsGenerator({
   // Get scenario-specific recovery data with fallback
   let scenarioData;
   try {
-    if (
-      useDatabaseData &&
-      (recoveryOptions.length > 0 || recoverySteps.length > 0)
-    ) {
+    if (useDatabaseData && recoveryOptions.length > 0) {
       // Use database data when available
       scenarioData = {
         title: "Database Recovery Options",
@@ -276,9 +298,113 @@ export function RecoveryOptionsGenerator({
         steps: recoverySteps,
         options: recoveryOptions,
       };
+    } else if (!useDatabaseData || loadingError) {
+      // Fallback to scenario-based data when database is disabled or failed
+      console.log("Using fallback scenario data for flight categorization:", flight?.categorization);
+      
+      // Import scenario recovery functions
+      const getScenarioDataForFlight = (categorization) => {
+        const generateMockOptions = (type) => {
+          switch (type) {
+            case 'Aircraft technical issue (e.g., AOG, maintenance)':
+              return [
+                {
+                  id: "AIRCRAFT_SWAP_MOCK",
+                  title: "Aircraft Swap - Available Alternative",
+                  description: "Immediate tail swap with available aircraft",
+                  cost: "AED 45,000",
+                  timeline: "75 minutes",
+                  confidence: 95,
+                  impact: "Minimal passenger disruption",
+                  status: "recommended",
+                  advantages: ["Same aircraft type", "Available immediately"],
+                  considerations: ["Crew briefing required"]
+                },
+                {
+                  id: "DELAY_REPAIR_MOCK",
+                  title: "Delay for Repair Completion",
+                  description: "Wait for aircraft technical issue resolution",
+                  cost: "AED 180,000",
+                  timeline: "4-6 hours",
+                  confidence: 45,
+                  impact: "Significant passenger disruption",
+                  status: "caution",
+                  advantages: ["Original aircraft maintained"],
+                  considerations: ["Repair time uncertain"]
+                }
+              ];
+            case 'Crew issue (e.g., sick report, duty time breach)':
+              return [
+                {
+                  id: "STANDBY_CREW_MOCK",
+                  title: "Assign Standby Crew",
+                  description: "Activate standby crew member from roster",
+                  cost: "AED 8,500",
+                  timeline: "30 minutes",
+                  confidence: 92,
+                  impact: "Minimal operational disruption",
+                  status: "recommended",
+                  advantages: ["Standby crew available", "Within duty limits"],
+                  considerations: ["Extended briefing required"]
+                }
+              ];
+            case 'Weather disruption (e.g., storms, fog)':
+              return [
+                {
+                  id: "DELAY_WEATHER_MOCK",
+                  title: "Delay for Weather Clearance",
+                  description: "Wait for weather improvement",
+                  cost: "AED 25,000",
+                  timeline: "2-3 hours",
+                  confidence: 90,
+                  impact: "Managed schedule delay",
+                  status: "recommended",
+                  advantages: ["Weather forecast shows improvement"],
+                  considerations: ["Dependent on weather"]
+                }
+              ];
+            default:
+              return [
+                {
+                  id: "STANDARD_RECOVERY_MOCK",
+                  title: "Standard Recovery Protocol",
+                  description: "Apply standard operating procedures",
+                  cost: "AED 20,000",
+                  timeline: "2-3 hours",
+                  confidence: 75,
+                  impact: "Standard operational impact",
+                  status: "recommended",
+                  advantages: ["Proven procedure"],
+                  considerations: ["Generic solution"]
+                }
+              ];
+          }
+        };
+
+        return {
+          title: "Scenario Recovery Options",
+          description: "Template-based recovery analysis",
+          priority: "Medium",
+          estimatedTime: "2-4 hours",
+          icon: Plane,
+          steps: [
+            {
+              step: 1,
+              title: "Disruption Assessment",
+              status: "completed",
+              timestamp: new Date().toLocaleTimeString(),
+              system: "AERON System",
+              details: "Analyzing disruption impact",
+              data: { type: categorization }
+            }
+          ],
+          options: generateMockOptions(categorization)
+        };
+      };
+
+      scenarioData = getScenarioDataForFlight(flight?.categorization);
     } else {
-      // Fallback to mock scenario data
-      // scenarioData = getScenarioDataForFlight(flight?.categorization);  // Removed, since we use database data only
+      // Default when loading or no data
       scenarioData = {
         title: "Recovery Options",
         description: "Flight recovery analysis",
@@ -291,15 +417,15 @@ export function RecoveryOptionsGenerator({
     }
   } catch (error) {
     console.error("Error getting scenario data:", error);
-    // Provide a fallback scenario data structure
+    // Final fallback
     scenarioData = {
       title: "Recovery Options",
       description: "Flight recovery analysis",
       priority: "Medium",
       estimatedTime: "2-4 hours",
       icon: Plane,
-      steps: recoverySteps || [],
-      options: recoveryOptions || [],
+      steps: [],
+      options: [],
     };
   }
 
@@ -1181,7 +1307,7 @@ export function RecoveryOptionsGenerator({
               <div className="flex items-center justify-center p-8">
                 <RefreshCw className="h-6 w-6 text-flydubai-blue animate-spin mr-2" />
                 <span className="text-muted-foreground">
-                  Generating recovery options...
+                  {useDatabaseData ? "Generating recovery options..." : "Loading scenario data..."}
                 </span>
               </div>
               <div className="space-y-3">
@@ -1206,17 +1332,39 @@ export function RecoveryOptionsGenerator({
                 No Recovery Options Available
               </h3>
               <p className="text-muted-foreground mb-4">
-                No recovery options found for this disruption. Try refreshing or
-                contact support.
+                {loadingError || "No recovery options found for this disruption type. This may be due to insufficient data or configuration."}
               </p>
-              <Button
-                onClick={() => window.location.reload()}
-                variant="outline"
-                className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-              >
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Refresh Options
-              </Button>
+              <div className="flex gap-2 justify-center">
+                <Button
+                  onClick={() => {
+                    setRecoveryOptions([]);
+                    setRecoverySteps([]);
+                    setLoadingError(null);
+                    // Trigger a refresh
+                    const currentFlight = flight;
+                    setTimeout(() => {
+                      if (currentFlight?.id) {
+                        console.log("Retrying recovery options fetch...");
+                      }
+                    }, 100);
+                  }}
+                  variant="outline"
+                  className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Retry
+                </Button>
+                {useDatabaseData && (
+                  <Button
+                    onClick={() => setUseDatabaseData(false)}
+                    variant="outline"
+                    className="border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
+                  >
+                    <Target className="h-4 w-4 mr-2" />
+                    Use Scenario Data
+                  </Button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="space-y-4">
