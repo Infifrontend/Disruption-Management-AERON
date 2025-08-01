@@ -2550,7 +2550,7 @@ export function RecoveryOptionsGenerator({
                       selectedRotationData,
                       flight,
                     );
-                    if (!rotationData) return null;
+                    if (!rotationData || !rotationData.costBreakdown) return null;
 
                     return (
                       <>
@@ -2564,7 +2564,7 @@ export function RecoveryOptionsGenerator({
                             </div>
                             <p className="text-2xl font-bold text-red-800">
                               $
-                              {rotationData.costBreakdown.delayCost.toLocaleString()}
+                              {(rotationData.costBreakdown.delayCost || 0).toLocaleString()}
                             </p>
                             <p className="text-xs text-red-600 mt-1">
                               Including compensation
@@ -2600,7 +2600,7 @@ export function RecoveryOptionsGenerator({
                             <p className="text-2xl font-bold text-blue-800">
                               {rotationData.costBreakdown.hotelTransport === 0
                                 ? "N/A"
-                                : `${rotationData.costBreakdown.hotelTransport.toLocaleString()}`}
+                                : `$${(rotationData.costBreakdown.hotelTransport || 0).toLocaleString()}`}
                             </p>
                             <p className="text-xs text-blue-600 mt-1">
                               Crew accommodation
