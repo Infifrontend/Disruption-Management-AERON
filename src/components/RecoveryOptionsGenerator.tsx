@@ -134,7 +134,7 @@ export function RecoveryOptionsGenerator({
   const [selectedOption, setSelectedOption] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [isExecuting, setIsExecuting] = useState(isExecuting);
+  const [isExecuting, setIsExecuting] = useState(false);
   const [showRotationPlan, setShowRotationPlan] = useState(false);
   const [selectedRotationData, setSelectedRotationData] = useState(null);
   const [scheduleImpactData, setScheduleImpactData] = useState(null);
