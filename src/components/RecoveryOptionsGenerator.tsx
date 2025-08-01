@@ -925,12 +925,11 @@ export function RecoveryOptionsGenerator({
             parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
           ? 8450
           : isAircraftSwap
-                        ? 8450
+            ? 8450
             : 0,
       eu261Risk: isCancellation
         ? "Critical"
-        :<previous_generation>
-isDelayOption &&
+        : isDelayOption &&
             parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
           ? "High"
           : isAircraftSwap
