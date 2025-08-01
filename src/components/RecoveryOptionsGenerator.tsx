@@ -98,19 +98,31 @@ import {
 } from "lucide-react";
 
 // Import helper functions
-import { getScenarioData, getCrewIssueRecovery } from "./recovery-scenarios";
-import { generateScheduleImpactAnalysis } from "./schedule-impact-helpers";
+import {
+  generateRecoveryOptionDetails,
+  calculateScenarioImpact,
+} from "./what-if-simulation-helpers";
+import { CrewTrackingGantt } from "./CrewTrackingGantt";
+import { databaseService } from "../services/databaseService";
+import {
+  getDetailedDescription,
+  getCostBreakdown,
+  getTimelineDetails,
+  getResourceRequirements,
+  getRiskAssessment,
+  getHistoricalData,
+  getAlternativeConsiderations,
+  getTechnicalSpecs,
+  getStakeholderImpact,
+  getEditableParameters,
+  getWhatIfScenarios,
+} from "./recovery-option-helpers";
+
 import {
   requiresPassengerReaccommodation,
   generateAffectedPassengers,
 } from "./passenger-data-helpers";
-import {
-  generateRecoveryOptionDetails,
-  calculateScenarioImpact,
-  calculateImpact,
-} from "./what-if-simulation-helpers";
-import { CrewTrackingGantt } from "./CrewTrackingGantt";
-import { databaseService } from "../services/databaseService";
+import { generateScheduleImpactAnalysis } from "./schedule-impact-helpers";
 
 export function RecoveryOptionsGenerator({
   selectedFlight,
@@ -215,16 +227,8 @@ export function RecoveryOptionsGenerator({
         console.error("Error fetching recovery options:", error);
         setLoadingError(error.message);
 
-        // Fallback to mock data if database fetch fails
-        try {
-          const scenarioData = getScenarioDataForFlight(flight?.categorization);
-          setRecoveryOptions(scenarioData.options || []);
-          setRecoverySteps(scenarioData.steps || []);
-        } catch (fallbackError) {
-          console.error("Fallback to mock data also failed:", fallbackError);
-          setRecoveryOptions([]);
-          setRecoverySteps([]);
-        }
+        // Remove mock data fallback here, since we use database data only
+
       } finally {
         setIsLoadingOptions(false);
       }
@@ -253,19 +257,7 @@ export function RecoveryOptionsGenerator({
     );
   }
 
-  // Get scenario-specific recovery data
-  const getScenarioDataForFlight = (categorization) => {
-    console.log("categorization", categorization);
-    const dataFunction = getScenarioData(categorization);
-
-    // For crew issues, we need to pass the flight data
-    if (categorization === "Crew issue (e.g., sick report, duty time breach)") {
-      return getCrewIssueRecovery(flight);
-    }
-
-    // For other scenarios, call the function if it's a function, otherwise return the data
-    return typeof dataFunction === "function" ? dataFunction() : dataFunction;
-  };
+  // Removed redundant fallback function
 
   // Get scenario-specific recovery data with fallback
   let scenarioData;
@@ -286,7 +278,16 @@ export function RecoveryOptionsGenerator({
       };
     } else {
       // Fallback to mock scenario data
-      scenarioData = getScenarioDataForFlight(flight?.categorization);
+      // scenarioData = getScenarioDataForFlight(flight?.categorization);  // Removed, since we use database data only
+      scenarioData = {
+        title: "Recovery Options",
+        description: "Flight recovery analysis",
+        priority: "Medium",
+        estimatedTime: "2-4 hours",
+        icon: Plane,
+        steps: recoverySteps || [],
+        options: recoveryOptions || [],
+      };
     }
   } catch (error) {
     console.error("Error getting scenario data:", error);
@@ -927,7 +928,7 @@ export function RecoveryOptionsGenerator({
               {/* Passenger Re-accommodation Warning */}
               {requiresPassengerReaccommodation(optionToExecute) && (
                 <Alert className="border-orange-200 bg-orange-50">
-                  <Users className="h-4 w-4 text-orange-600" />
+                  <Users className="h-4 w-4 text-orange-6000" />
                   <AlertDescription className="text-orange-800">
                     <strong>Passenger Services Required:</strong> This plan
                     requires passenger re-accommodation services. The Passenger
