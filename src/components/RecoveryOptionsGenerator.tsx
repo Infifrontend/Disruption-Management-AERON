@@ -925,7 +925,7 @@ export function RecoveryOptionsGenerator({
             parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
           ? 8450
           : isAircraftSwap
-            ? 8450
+                        ? 8450
             : 0,
       eu261Risk: isCancellation
         ? "Critical"
@@ -2655,7 +2655,16 @@ export function RecoveryOptionsGenerator({
                           </div>
                         );
                       }
-                    })()}
+                    } catch (error) {
+                      console.error('Error rendering rotation cost data:', error);
+                      return (
+                        <div className="text-center p-4 text-red-500">
+                          <p>Error loading cost data</p>
+                          <p className="text-xs mt-1">Error: {error.message}</p>
+                        </div>
+                      );
+                    }
+                  })()}
                 </div>
 
                 {/* Decision Support Panel */}
@@ -2715,8 +2724,7 @@ export function RecoveryOptionsGenerator({
                                     : 65 - index * 5;
                                   const fuelScore = aircraft.recommended
                                     ? 91
-                                    : 89 - index * 14;
-                                  const overallScore = Math.round(
+                                    : 89 - index * 14;                                  const overallScore = Math.round(
                                     (costScore +
                                       delayScore +
                                       crewScore +
