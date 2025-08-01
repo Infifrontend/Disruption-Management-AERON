@@ -2552,28 +2552,28 @@ export function RecoveryOptionsGenerator({
               {/* Tab 4: Cost & Delay Metrics */}
               <TabsContent value="cost" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  {(() => {
-                    try {
-                      const rotationData = generateRotationPlanData(
-                        selectedRotationData,
-                        flight,
-                      );
-                      
-                      // Enhanced validation
-                      if (!rotationData || 
-                          !rotationData.costBreakdown || 
-                          typeof rotationData.costBreakdown !== 'object') {
-                        console.warn('Invalid rotation data structure:', rotationData);
-                        return (
-                          <div className="text-center p-4 text-gray-500">
-                            <p>Unable to load cost breakdown data</p>
-                            <p className="text-xs mt-1">Please try refreshing or contact support</p>
-                          </div>
+                    {(() => {
+                      try {
+                        const rotationData = generateRotationPlanData(
+                          selectedRotationData,
+                          flight,
                         );
-                      }
 
-                      return (
-                        <>
+                        // Enhanced validation
+                        if (!rotationData || 
+                            !rotationData.costBreakdown || 
+                            typeof rotationData.costBreakdown !== 'object') {
+                          console.warn('Invalid rotation data structure:', rotationData);
+                          return (
+                            <div className="text-center p-4 text-gray-500">
+                              <p>Unable to load cost breakdown data</p>
+                              <p className="text-xs mt-1">Please try refreshing or contact support</p>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <>
                         <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
                           <CardContent className="p-4 text-center">
                             <div className="flex items-center justify-center gap-2 mb-2">
@@ -2646,7 +2646,16 @@ export function RecoveryOptionsGenerator({
                         </Card>
                       </>
                     );
-                  })()}
+                      } catch (error) {
+                        console.error('Error rendering rotation cost data:', error);
+                        return (
+                          <div className="text-center p-4 text-red-500">
+                            <p>Error loading cost data</p>
+                            <p className="text-xs mt-1">Error: {error.message}</p>
+                          </div>
+                        );
+                      }
+                    })()}
                 </div>
 
                 {/* Decision Support Panel */}
