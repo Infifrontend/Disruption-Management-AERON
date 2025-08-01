@@ -489,19 +489,36 @@ export function RecoveryOptionsGenerator({
 
   // Generate rotation plan data based on selected recovery option
   const generateRotationPlanData = (option, flight) => {
-    if (!option || !flight) return null;
+    if (!option || !flight) {
+      console.warn('Missing option or flight data for rotation plan generation');
+      return {
+        aircraftOptions: [],
+        crewData: [],
+        nextSectors: [],
+        operationalConstraints: {},
+        costBreakdown: {},
+        recommendation: { aircraft: 'N/A', reason: 'Data unavailable' }
+      };
+    }
 
     const isAircraftSwap =
       option.id?.includes("AIRCRAFT_SWAP") ||
-      option.title?.includes("Aircraft Swap");
+      option.id?.includes("SWAP") ||
+      option.title?.includes("Aircraft Swap") ||
+      option.title?.includes("Swap");
     const isDelayOption =
-      option.id?.includes("DELAY") || option.title?.includes("Delay");
+      option.id?.includes("DELAY") || 
+      option.title?.includes("Delay");
     const isCancellation =
-      option.id?.includes("CANCEL") || option.title?.includes("Cancel");
-    const isCrewIssue = flight?.categorization?.includes("Crew issue");
+      option.id?.includes("CANCEL") || 
+      option.title?.includes("Cancel");
+    const isCrewIssue = flight?.categorization?.includes("Crew issue") ||
+      flight?.disruptionReason?.includes("crew");
     const isMaintenanceIssue =
-      flight?.categorization?.includes("technical issue");
-    const isWeatherIssue = flight?.categorization?.includes("Weather");
+      flight?.categorization?.includes("technical issue") ||
+      flight?.disruptionReason?.includes("maintenance");
+    const isWeatherIssue = flight?.categorization?.includes("Weather") ||
+      flight?.disruptionReason?.includes("weather");
 
     // Aircraft options based on recovery option type
     const aircraftOptions = isAircraftSwap
@@ -1992,7 +2009,15 @@ export function RecoveryOptionsGenerator({
                             selectedRotationData,
                             flight,
                           );
-                          if (!rotationData) return null;
+                          if (!rotationData || !rotationData.aircraftOptions) {
+                            return (
+                              <TableRow>
+                                <TableCell colSpan={8} className="text-center text-gray-500">
+                                  No aircraft data available
+                                </TableCell>
+                              </TableRow>
+                            );
+                          }
 
                           return rotationData.aircraftOptions.map(
                             (aircraft, index) => (
@@ -2105,7 +2130,13 @@ export function RecoveryOptionsGenerator({
                             selectedRotationData,
                             flight,
                           );
-                          if (!rotationData) return null;
+                          if (!rotationData || !rotationData.crewData) {
+                            return (
+                              <div className="text-center text-gray-500 p-4">
+                                No crew data available
+                              </div>
+                            );
+                          }
 
                           return rotationData.crewData.map((crew, index) => (
                             <div

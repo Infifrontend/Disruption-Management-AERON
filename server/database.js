@@ -364,6 +364,119 @@ app.get('/api/recovery-options/:disruptionId', async (req, res) => {
   }
 })
 
+// Recovery Steps endpoint
+app.get('/api/recovery-steps/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+    console.log(`Fetching recovery steps for disruption ID: ${disruptionId}`)
+    
+    const result = await pool.query(`
+      SELECT * FROM recovery_steps 
+      WHERE disruption_id = $1 
+      ORDER BY step_number ASC, id ASC
+    `, [disruptionId])
+    
+    console.log(`Found ${result.rows.length} recovery steps for disruption ${disruptionId}`)
+    res.json(result.rows || [])
+  } catch (error) {
+    console.error('Error fetching recovery steps:', error)
+    res.json([])
+  }
+})
+
+// Generate recovery options endpoint
+app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+    console.log(`Generating recovery options for disruption ID: ${disruptionId}`)
+    
+    // Get the disruption details first
+    const disruptionResult = await pool.query(
+      'SELECT * FROM flight_disruptions WHERE id = $1',
+      [disruptionId]
+    )
+    
+    if (disruptionResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Disruption not found' })
+    }
+    
+    const disruption = disruptionResult.rows[0]
+    
+    // Import the recovery generator
+    const { generateRecoveryOptionsForDisruption } = await import('./recovery-generator.js')
+    
+    // Generate recovery options and steps
+    const { options, steps } = generateRecoveryOptionsForDisruption(disruption)
+    
+    // Save recovery options to database
+    let savedOptionsCount = 0
+    for (const option of options) {
+      try {
+        await pool.query(`
+          INSERT INTO recovery_options (
+            disruption_id, title, description, cost, timeline,
+            confidence, impact, status, priority, advantages, considerations,
+            resource_requirements, cost_breakdown, timeline_details,
+            risk_assessment, technical_specs, metrics, rotation_plan
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+          ON CONFLICT (disruption_id, title) DO NOTHING
+        `, [
+          disruptionId, option.title, option.description, option.cost, option.timeline,
+          option.confidence, option.impact, option.status || 'generated', option.priority || 0,
+          option.advantages ? JSON.stringify(option.advantages) : null,
+          option.considerations ? JSON.stringify(option.considerations) : null,
+          option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : null,
+          option.costBreakdown ? JSON.stringify(option.costBreakdown) : null,
+          option.timelineDetails ? JSON.stringify(option.timelineDetails) : null,
+          option.riskAssessment ? JSON.stringify(option.riskAssessment) : null,
+          option.technicalSpecs ? JSON.stringify(option.technicalSpecs) : null,
+          option.metrics ? JSON.stringify(option.metrics) : null,
+          option.rotationPlan ? JSON.stringify(option.rotationPlan) : null
+        ])
+        savedOptionsCount++
+      } catch (optionError) {
+        console.error('Error saving recovery option:', optionError)
+      }
+    }
+    
+    // Save recovery steps to database
+    let savedStepsCount = 0
+    for (const step of steps) {
+      try {
+        await pool.query(`
+          INSERT INTO recovery_steps (
+            disruption_id, step_number, title, status, timestamp,
+            system, details, step_data
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          ON CONFLICT (disruption_id, step_number) DO NOTHING
+        `, [
+          disruptionId, step.step, step.title, step.status, step.timestamp,
+          step.system, step.details, step.data ? JSON.stringify(step.data) : null
+        ])
+        savedStepsCount++
+      } catch (stepError) {
+        console.error('Error saving recovery step:', stepError)
+      }
+    }
+    
+    console.log(`Generated and saved ${savedOptionsCount} options and ${savedStepsCount} steps for disruption ${disruptionId}`)
+    
+    res.json({
+      success: true,
+      optionsCount: savedOptionsCount,
+      stepsCount: savedStepsCount,
+      message: `Generated ${savedOptionsCount} recovery options and ${savedStepsCount} steps`
+    })
+    
+  } catch (error) {
+    console.error('Error generating recovery options:', error)
+    res.status(500).json({ 
+      error: 'Failed to generate recovery options', 
+      details: error.message 
+    })
+  }
+})
+
 app.post('/api/recovery-options', async (req, res) => {
   try {
     const {

@@ -735,69 +735,7 @@ class DatabaseService {
     }
   }
 
-  // Recovery Options methods
-  async getRecoveryOptions(disruptionId: string | number) {
-    try {
-      const response = await fetch(`${this.baseUrl}/recovery-options/${disruptionId}`)
-      if (!response.ok) return []
-      return await response.json()
-    } catch (error) {
-      console.error('Error fetching recovery options:', error)
-      return []
-    }
-  }
-
-  async generateRecoveryOptions(disruptionId: string | number) {
-    try {
-      const response = await fetch(`${this.baseUrl}/generate-recovery-options/${disruptionId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      return await response.json()
-    } catch (error) {
-      console.error('Error generating recovery options:', error)
-      throw error
-    }
-  }
-
-  async getRecoverySteps(disruptionId: string | number) {
-    try {
-      const response = await fetch(`${this.baseUrl}/recovery-steps/${disruptionId}`)
-      if (!response.ok) return []
-      return await response.json()
-    } catch (error) {
-      console.error('Error fetching recovery steps:', error)
-      return []
-    }
-  }
-
-  async saveRecoveryOption(recoveryOption: any) {
-    try {
-      const response = await fetch(`${this.baseUrl}/recovery-options`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(recoveryOption)
-      })
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-
-      return await response.json()
-    } catch (error) {
-      console.error('Error saving recovery option:', error)
-      throw error
-    }
-  }
+  
 }
 
 // Singleton instance
