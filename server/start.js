@@ -616,6 +616,121 @@ app.get('/api/recovery-options/:disruptionId', async (req, res) => {
   }
 })
 
+// Generate recovery options endpoint
+app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+    
+    // Get disruption details
+    const disruptionResult = await pool.query(`
+      SELECT * FROM flight_disruptions WHERE id = $1
+    `, [disruptionId])
+    
+    if (disruptionResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Disruption not found' })
+    }
+    
+    const disruption = disruptionResult.rows[0]
+    
+    // Generate recovery options using the recovery generator
+    const { generateRecoveryOptionsForDisruption } = require('./recovery-generator')
+    const { options, steps } = generateRecoveryOptionsForDisruption(disruption)
+    
+    // Insert recovery options into database
+    let optionsCount = 0
+    for (const option of options) {
+      try {
+        await pool.query(`
+          INSERT INTO recovery_options (
+            disruption_id, title, description, cost, timeline, confidence, 
+            impact, status, priority, advantages, considerations, 
+            resource_requirements, cost_breakdown, timeline_details, 
+            risk_assessment, technical_specs, metrics, rotation_plan
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+          ON CONFLICT (disruption_id, title) DO UPDATE SET
+            description = EXCLUDED.description,
+            cost = EXCLUDED.cost,
+            timeline = EXCLUDED.timeline,
+            confidence = EXCLUDED.confidence,
+            impact = EXCLUDED.impact,
+            status = EXCLUDED.status,
+            updated_at = CURRENT_TIMESTAMP
+        `, [
+          disruptionId, option.title, option.description, option.cost, 
+          option.timeline, option.confidence, option.impact, option.status,
+          option.priority || 0, JSON.stringify(option.advantages || []),
+          JSON.stringify(option.considerations || []), 
+          JSON.stringify(option.resourceRequirements || []),
+          JSON.stringify(option.costBreakdown || []),
+          JSON.stringify(option.timelineDetails || []),
+          JSON.stringify(option.riskAssessment || []),
+          JSON.stringify(option.technicalSpecs || {}),
+          JSON.stringify(option.metrics || {}),
+          JSON.stringify(option.rotationPlan || {})
+        ])
+        optionsCount++
+      } catch (insertError) {
+        console.error('Error inserting recovery option:', insertError)
+      }
+    }
+    
+    // Insert recovery steps into database
+    let stepsCount = 0
+    for (const step of steps) {
+      try {
+        await pool.query(`
+          INSERT INTO recovery_steps (
+            disruption_id, step_number, title, status, timestamp, 
+            system, details, step_data
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          ON CONFLICT (disruption_id, step_number) DO UPDATE SET
+            title = EXCLUDED.title,
+            status = EXCLUDED.status,
+            timestamp = EXCLUDED.timestamp,
+            system = EXCLUDED.system,
+            details = EXCLUDED.details,
+            step_data = EXCLUDED.step_data,
+            updated_at = CURRENT_TIMESTAMP
+        `, [
+          disruptionId, step.step, step.title, step.status,
+          step.timestamp, step.system, step.details,
+          JSON.stringify(step.data || {})
+        ])
+        stepsCount++
+      } catch (insertError) {
+        console.error('Error inserting recovery step:', insertError)
+      }
+    }
+    
+    res.json({ 
+      success: true, 
+      optionsCount, 
+      stepsCount,
+      message: `Generated ${optionsCount} recovery options and ${stepsCount} steps`
+    })
+    
+  } catch (error) {
+    console.error('Error generating recovery options:', error)
+    res.status(500).json({ error: 'Failed to generate recovery options' })
+  }
+})
+
+// Recovery Steps endpoints
+app.get('/api/recovery-steps/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+    const result = await pool.query(`
+      SELECT * FROM recovery_steps 
+      WHERE disruption_id = $1 
+      ORDER BY step_number ASC
+    `, [disruptionId])
+    res.json(result.rows || [])
+  } catch (error) {
+    console.error('Error fetching recovery steps:', error)
+    res.json([])
+  }
+})
+
 app.post('/api/recovery-options', async (req, res) => {
   try {
     const {

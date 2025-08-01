@@ -562,6 +562,29 @@ class DatabaseService {
     }
   }
 
+  // Generate recovery options for a disruption
+  async generateRecoveryOptions(disruptionId: string): Promise<{ optionsCount: number, stepsCount: number }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-options/generate/${disruptionId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const result = await response.json()
+      return {
+        optionsCount: result.optionsCount || 0,
+        stepsCount: result.stepsCount || 0
+      }
+    } catch (error) {
+      console.error('Error generating recovery options:', error)
+      return { optionsCount: 0, stepsCount: 0 }
+    }
+  }
+
   // Get recovery steps for a disruption
   async getRecoverySteps(disruptionId: string): Promise<any[]> {
     try {
