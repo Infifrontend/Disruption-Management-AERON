@@ -633,7 +633,7 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
     const disruption = disruptionResult.rows[0]
     
     // Generate recovery options using the recovery generator
-    const { generateRecoveryOptionsForDisruption } = require('./recovery-generator')
+    const { generateRecoveryOptionsForDisruption } = await import('./recovery-generator.js')
     const { options, steps } = generateRecoveryOptionsForDisruption(disruption)
     
     // Insert recovery options into database
@@ -869,8 +869,7 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
     }
 
     // Generate recovery options based on disruption type
-    const recoveryGenerator = await import('./recovery-generator.js')
-    const { generateRecoveryOptionsForDisruption } = recoveryGenerator
+    const { generateRecoveryOptionsForDisruption } = await import('./recovery-generator.js')
 
     const { options, steps } = generateRecoveryOptionsForDisruption(disruption)
     console.log(`Generated ${options.length} options and ${steps.length} steps`)
