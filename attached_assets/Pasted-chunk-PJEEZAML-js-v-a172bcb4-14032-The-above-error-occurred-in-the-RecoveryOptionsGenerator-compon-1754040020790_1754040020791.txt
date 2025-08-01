@@ -1,0 +1,33 @@
+chunk-PJEEZAML.js?v=a172bcb4:14032 The above error occurred in the <RecoveryOptionsGenerator> component:
+
+    at RecoveryOptionsGenerator (https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/src/components/RecoveryOptionsGenerator.tsx?t=1754039900302:97:3)
+    at RecoveryOptions (https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/src/pages/RecoveryOptions.tsx?t=1754039900302:23:20)
+    at RenderedRoute (https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=a172bcb4:5525:26)
+    at Routes (https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=a172bcb4:6261:3)
+    at div
+    at div
+    at div
+    at div
+    at Layout (https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/src/components/Layout.tsx:67:26)
+    at Suspense
+    at div
+    at Router (https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=a172bcb4:6204:13)
+    at BrowserRouter (https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=a172bcb4:9273:3)
+    at AppProvider (https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/src/context/AppContext.tsx:20:31)
+    at App
+    at ErrorBoundary (https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/src/main.tsx?t=1754039900302:10:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+logCapturedError @ chunk-PJEEZAML.js?v=a172bcb4:14032Understand this error
+main.tsx:19 Application Error: TypeError: Cannot read properties of undefined (reading 'toLocaleString')
+    at RecoveryOptionsGenerator.tsx:2567:69
+    at RecoveryOptionsGenerator (RecoveryOptionsGenerator.tsx:2629:19)
+    at renderWithHooks (chunk-PJEEZAML.js?v=a172bcb4:11548:26)
+    at mountIndeterminateComponent (chunk-PJEEZAML.js?v=a172bcb4:14926:21)
+    at beginWork (chunk-PJEEZAML.js?v=a172bcb4:15914:22)
+    at beginWork$1 (chunk-PJEEZAML.js?v=a172bcb4:19753:22)
+    at performUnitOfWork (chunk-PJEEZAML.js?v=a172bcb4:19198:20)
+    at workLoopSync (chunk-PJEEZAML.js?v=a172bcb4:19137:13)
+    at renderRootSync (chunk-PJEEZAML.js?v=a172bcb4:19116:15)
+    at recoverFromConcurrentError (chunk-PJEEZAML.js?v=a172bcb4:18736:28) Object
+componentDidCatch @ main.tsx:19Understand this error
