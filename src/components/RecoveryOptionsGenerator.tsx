@@ -929,7 +929,8 @@ export function RecoveryOptionsGenerator({
             : 0,
       eu261Risk: isCancellation
         ? "Critical"
-        : isDelayOption &&
+        :<previous_generation>
+isDelayOption &&
             parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
           ? "High"
           : isAircraftSwap
@@ -1848,8 +1849,7 @@ export function RecoveryOptionsGenerator({
                           <p className="text-xs text-gray-600">
                             Including all operational expenses
                           </p>
-                        </div>
-                        <span className="text-xl font-bold text-flydubai-orange">
+                        </div>                        <span className="text-xl font-bold text-flydubai-orange">
                           {selectedOptionForDetails.cost}
                         </span>
                       </div>
@@ -2655,16 +2655,7 @@ export function RecoveryOptionsGenerator({
                           </div>
                         );
                       }
-                    } catch (error) {
-                      console.error('Error rendering rotation cost data:', error);
-                      return (
-                        <div className="text-center p-4 text-red-500">
-                          <p>Error loading cost data</p>
-                          <p className="text-xs mt-1">Error: {error.message}</p>
-                        </div>
-                      );
-                    }
-                  })()}
+                    })()}
                 </div>
 
                 {/* Decision Support Panel */}
@@ -2826,16 +2817,7 @@ export function RecoveryOptionsGenerator({
                           </div>
                         </>
                       );
-                    } catch (error) {
-                      console.error('Error rendering rotation cost data:', error);
-                      return (
-                        <div className="text-center p-4 text-red-500">
-                          <p>Error loading cost data</p>
-                          <p className="text-xs mt-1">Error: {error.message}</p>
-                        </div>
-                      );
-                    }
-                  })()}
+                    } )()}
                   </CardContent>
                 </Card>
               </TabsContent>
