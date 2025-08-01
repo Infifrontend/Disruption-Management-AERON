@@ -650,6 +650,7 @@ export const getCrewIssueRecovery = (flight) => {
 
 // Weather Delay Recovery - 6-Step Process
 export const getWeatherDelayRecovery = () => {
+  console.log("test");
   return {
     title: "Weather Delay Recovery",
     description: "Heavy thunderstorms at DEL - Low visibility 800m",
