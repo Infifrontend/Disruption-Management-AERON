@@ -616,26 +616,34 @@ app.get('/api/recovery-options/:disruptionId', async (req, res) => {
   }
 })
 
-// Generate recovery options endpoint
+// Generate and save recovery options for a disruption
 app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
   try {
     const { disruptionId } = req.params
-    
-    // Get disruption details
-    const disruptionResult = await pool.query(`
-      SELECT * FROM flight_disruptions WHERE id = $1
-    `, [disruptionId])
-    
-    if (disruptionResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Disruption not found' })
+    console.log(`Generating recovery options for disruption ID: ${disruptionId}`)
+
+    // Validate disruptionId
+    if (!disruptionId || disruptionId === 'undefined' || disruptionId === 'null') {
+      return res.status(400).json({ error: 'Invalid disruption ID', optionsCount: 0, stepsCount: 0 })
     }
-    
+
+    // First get the disruption details
+    const disruptionResult = await pool.query(
+      'SELECT * FROM flight_disruptions WHERE id = $1 OR flight_number = $1',
+      [disruptionId]
+    )
+
+    if (disruptionResult.rows.length === 0) {
+      console.log(`No disruption found for ID: ${disruptionId}, returning empty results`)
+      return res.status(200).json({ error: 'Disruption not found', optionsCount: 0, stepsCount: 0 })
+    }
+
     const disruption = disruptionResult.rows[0]
-    
+
     // Generate recovery options using the recovery generator
     const { generateRecoveryOptionsForDisruption } = await import('./recovery-generator.js')
     const { options, steps } = generateRecoveryOptionsForDisruption(disruption)
-    
+
     // Insert recovery options into database
     let optionsCount = 0
     for (const option of options) {
@@ -673,7 +681,7 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
         console.error('Error inserting recovery option:', insertError)
       }
     }
-    
+
     // Insert recovery steps into database
     let stepsCount = 0
     for (const step of steps) {
@@ -701,14 +709,14 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
         console.error('Error inserting recovery step:', insertError)
       }
     }
-    
+
     res.json({ 
       success: true, 
       optionsCount, 
       stepsCount,
       message: `Generated ${optionsCount} recovery options and ${stepsCount} steps`
     })
-    
+
   } catch (error) {
     console.error('Error generating recovery options:', error)
     res.status(500).json({ error: 'Failed to generate recovery options' })
@@ -774,13 +782,13 @@ app.get('/api/recovery-steps/:disruptionId', async (req, res) => {
   try {
     const { disruptionId } = req.params
     console.log(`Fetching recovery steps for disruption ID: ${disruptionId}`)
-    
+
     const result = await pool.query(`
       SELECT * FROM recovery_steps 
       WHERE disruption_id = $1 
       ORDER BY step_number ASC
     `, [disruptionId])
-    
+
     console.log(`Found ${result.rows.length} recovery steps for disruption ${disruptionId}`)
     res.json(result.rows || [])
   } catch (error) {
@@ -897,7 +905,7 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
     for (let i = 0; i < options.length; i++) {
       const option = options[i]
       console.log(`Saving option ${i + 1}: ${option.title}`)
-      
+
       // Ensure all required fields have defaults
       const optionData = {
         title: option.title || option.option_name || `Recovery Option ${i + 1}`,

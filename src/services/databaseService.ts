@@ -582,14 +582,29 @@ class DatabaseService {
   async generateRecoveryOptions(disruptionId: string): Promise<{ optionsCount: number, stepsCount: number }> {
     try {
       console.log(`Generating recovery options for disruption ${disruptionId}`);
+      
+      // Add timeout to prevent hanging requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      
       const response = await fetch(`${this.baseUrl}/recovery-options/generate/${disruptionId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      })
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal
+      });
+      
+      clearTimeout(timeoutId);
       
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Generation failed: ${response.status} - ${errorText}`);
+        
+        // Return empty results instead of throwing for 404 or server errors
+        if (response.status === 404 || response.status >= 500) {
+          console.warn('Generation failed, returning empty results');
+          return { optionsCount: 0, stepsCount: 0 };
+        }
+        
         throw new Error(`Failed to generate recovery options: ${response.status} - ${errorText}`)
       }
       
@@ -600,8 +615,14 @@ class DatabaseService {
         stepsCount: result.stepsCount || 0
       }
     } catch (error) {
+      if (error.name === 'AbortError') {
+        console.error('Recovery options generation timed out');
+        return { optionsCount: 0, stepsCount: 0 };
+      }
+      
       console.error('Error generating recovery options:', error)
-      throw error; // Re-throw to let the caller handle it
+      // Return empty results instead of throwing to prevent crashes
+      return { optionsCount: 0, stepsCount: 0 };
     }
   }
 
