@@ -301,6 +301,22 @@ CREATE TABLE IF NOT EXISTS recovery_steps (
     step_number INTEGER NOT NULL,
     title VARCHAR(255) NOT NULL,
     status VARCHAR(50) DEFAULT 'pending',
+    timestamp VARCHAR(50),
+    system VARCHAR(100),
+    details TEXT,
+    step_data JSONB,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(disruption_id, step_number)
+);
+
+-- Recovery Steps table
+CREATE TABLE IF NOT EXISTS recovery_steps (
+    id SERIAL PRIMARY KEY,
+    disruption_id INTEGER REFERENCES flight_disruptions(id) ON DELETE CASCADE,
+    step_number INTEGER NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending',
     timestamp VARCHAR(100),
     system VARCHAR(255),
     details TEXT,
