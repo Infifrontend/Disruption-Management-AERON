@@ -164,14 +164,21 @@ export function RecoveryOptionsGenerator({
   // Fetch recovery options from database
   useEffect(() => {
     const fetchRecoveryOptions = async () => {
-      if (!flight?.id) {
+      if (!flight) {
+        console.log("No flight selected");
         setRecoveryOptions([]);
         setRecoverySteps([]);
         return;
       }
 
+      // Use flight number as ID if no specific ID exists
+      const flightId = flight.id || flight.flightNumber || 'unknown';
+      console.log("Processing flight:", flight, "with ID:", flightId);
+
       if (!useDatabaseData) {
         console.log("Database data disabled, using scenario data");
+        setRecoveryOptions([]);
+        setRecoverySteps([]);
         return;
       }
 
@@ -179,11 +186,17 @@ export function RecoveryOptionsGenerator({
       setLoadingError(null);
 
       try {
-        console.log(`Fetching recovery options for flight ID: ${flight.id}`);
+        console.log(`Fetching recovery options for flight ID: ${flightId}`);
+        
+        // Check database connectivity first
+        const isHealthy = await databaseService.healthCheck();
+        if (!isHealthy) {
+          throw new Error("Database connection failed");
+        }
         
         // First try to get existing options
-        let options = await databaseService.getRecoveryOptions(flight.id);
-        let steps = await databaseService.getRecoverySteps(flight.id);
+        let options = await databaseService.getRecoveryOptions(flightId);
+        let steps = await databaseService.getRecoverySteps(flightId);
 
         console.log(`Found ${options.length} existing options and ${steps.length} steps`);
 
@@ -191,19 +204,22 @@ export function RecoveryOptionsGenerator({
         if (options.length === 0) {
           console.log("No recovery options found, generating new ones...");
           try {
-            const result = await databaseService.generateRecoveryOptions(flight.id);
+            const result = await databaseService.generateRecoveryOptions(flightId);
             console.log("Generation result:", result);
 
             if (result.optionsCount > 0) {
               // Wait a moment and fetch the newly generated options
               await new Promise(resolve => setTimeout(resolve, 1000));
-              options = await databaseService.getRecoveryOptions(flight.id);
-              steps = await databaseService.getRecoverySteps(flight.id);
+              options = await databaseService.getRecoveryOptions(flightId);
+              steps = await databaseService.getRecoverySteps(flightId);
               console.log(`After generation: ${options.length} options, ${steps.length} steps`);
             }
           } catch (generateError) {
             console.error("Error generating recovery options:", generateError);
-            throw new Error("Failed to generate recovery options: " + generateError.message);
+            // Don't throw here, fall back to scenario data
+            console.log("Falling back to scenario data due to generation error");
+            setUseDatabaseData(false);
+            return;
           }
         }
 
@@ -254,13 +270,16 @@ export function RecoveryOptionsGenerator({
         setLoadingError(error.message || "Failed to load recovery options");
         setRecoveryOptions([]);
         setRecoverySteps([]);
+        // Automatically fall back to scenario data on database errors
+        console.log("Automatically switching to scenario data due to database error");
+        setUseDatabaseData(false);
       } finally {
         setIsLoadingOptions(false);
       }
     };
 
     fetchRecoveryOptions();
-  }, [flight?.id, useDatabaseData]);
+  }, [flight, useDatabaseData]);
 
   // Early return if no flight is selected
   if (!flight) {
@@ -287,7 +306,7 @@ export function RecoveryOptionsGenerator({
   // Get scenario-specific recovery data with fallback
   let scenarioData;
   try {
-    if (useDatabaseData && recoveryOptions.length > 0) {
+    if (useDatabaseData && recoveryOptions.length > 0 && !isLoadingOptions) {
       // Use database data when available
       scenarioData = {
         title: "Database Recovery Options",
@@ -298,13 +317,14 @@ export function RecoveryOptionsGenerator({
         steps: recoverySteps,
         options: recoveryOptions,
       };
-    } else if (!useDatabaseData || loadingError) {
-      // Fallback to scenario-based data when database is disabled or failed
+    } else {
+      // Fallback to scenario-based data when database is disabled, failed, or loading
       console.log("Using fallback scenario data for flight categorization:", flight?.categorization);
       
       // Import scenario recovery functions
       const getScenarioDataForFlight = (categorization) => {
         const generateMockOptions = (type) => {
+          console.log("Generating mock options for type:", type);
           switch (type) {
             case 'Aircraft technical issue (e.g., AOG, maintenance)':
               return [
@@ -381,7 +401,7 @@ export function RecoveryOptionsGenerator({
           }
         };
 
-        return {
+        const result = {
           title: "Scenario Recovery Options",
           description: "Template-based recovery analysis",
           priority: "Medium",
@@ -395,14 +415,16 @@ export function RecoveryOptionsGenerator({
               timestamp: new Date().toLocaleTimeString(),
               system: "AERON System",
               details: "Analyzing disruption impact",
-              data: { type: categorization }
+              data: { type: categorization || "Unknown" }
             }
           ],
           options: generateMockOptions(categorization)
         };
+        console.log("Generated scenario data:", result);
+        return result;
       };
 
-      scenarioData = getScenarioDataForFlight(flight?.categorization);
+      scenarioData = getScenarioDataForFlight(flight?.categorization || "Unknown disruption");
     } else {
       // Default when loading or no data
       scenarioData = {
