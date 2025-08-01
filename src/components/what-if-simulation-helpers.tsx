@@ -120,21 +120,6 @@ export const calculateImpact = (changes) => {
   }
 }
 
-// Import all helper functions
-import { 
-  getDetailedDescription, 
-  getCostBreakdown, 
-  getTimelineDetails, 
-  getResourceRequirements, 
-  getRiskAssessment, 
-  getHistoricalData, 
-  getAlternativeConsiderations, 
-  getTechnicalSpecs, 
-  getStakeholderImpact, 
-  getEditableParameters, 
-  getWhatIfScenarios 
-} from './recovery-option-helpers'
-
 // Generate recovery options with contextual details
 export const generateRecoveryOptionDetails = (option, flight) => {
   if (!option) {
