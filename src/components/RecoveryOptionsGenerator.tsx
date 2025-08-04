@@ -1298,11 +1298,10 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5 text-flydubai-blue" />
-            Recovery Options</CardTitle>
+            Recovery Options
             {useDatabaseData && (
               <div className="flex items-center gap-2 ml-auto">
-                <Switch
-                  checked={useDatabaseData}
+                checked={useDatabaseData}
                   onCheckedChange={setUseDatabaseData}
                   disabled={isLoadingOptions}
                 />
