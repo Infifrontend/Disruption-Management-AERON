@@ -535,7 +535,7 @@ class DatabaseService {
     }
   }
 
-  async saveDisruption(disruption: Omit<FlightDisruption, 'id' | 'createdAt' | 'updatedAt'>): Promise<boolean> {
+  async saveDisruption(disruption: Omit<FlightDisruption, 'id' | 'createdAt' | 'updatedAt'> & { crewMembers?: any[] }): Promise<boolean> {
     try {
       console.log('Saving disruption to database:', disruption)
 
@@ -557,7 +557,8 @@ class DatabaseService {
         severity: disruption.severity,
         disruption_type: disruption.type,
         status: disruption.status,
-        disruption_reason: disruption.disruptionReason
+        disruption_reason: disruption.disruptionReason,
+        crew_members: disruption.crewMembers || []
       }
 
       console.log('Transformed data for database:', dbData)
@@ -579,6 +580,46 @@ class DatabaseService {
       return true
     } catch (error) {
       console.error('Failed to save disruption:', error)
+      return false
+    }
+  }
+
+  // Crew Members specific operations
+  async saveCrewMember(crewMember: Omit<CrewMember, 'id'>): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/crew-members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(crewMember)
+      })
+      return response.ok
+    } catch (error) {
+      console.error('Failed to save crew member:', error)
+      return false
+    }
+  }
+
+  async getCrewMember(employeeId: string): Promise<CrewMember | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/crew-members/${employeeId}`)
+      if (!response.ok) return null
+      return await response.json()
+    } catch (error) {
+      console.error(`Failed to fetch crew member ${employeeId}:`, error)
+      return null
+    }
+  }
+
+  async updateCrewMemberStatus(employeeId: string, status: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/crew-members/${employeeId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status })
+      })
+      return response.ok
+    } catch (error) {
+      console.error('Failed to update crew member status:', error)
       return false
     }
   }
