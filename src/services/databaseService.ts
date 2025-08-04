@@ -624,6 +624,39 @@ class DatabaseService {
     }
   }
 
+  // Crew Disruption Mapping operations
+  async getCrewDisruptionMapping(disruptionId: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/crew-disruption-mapping/${disruptionId}`)
+      if (!response.ok) return []
+      return await response.json()
+    } catch (error) {
+      console.error('Failed to fetch crew disruption mapping:', error)
+      return []
+    }
+  }
+
+  async saveCrewDisruptionMapping(mapping: {
+    disruption_id: string,
+    crew_member_id: string,
+    disruption_reason?: string,
+    resolution_status?: string,
+    replacement_crew_id?: string,
+    notes?: string
+  }): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/crew-disruption-mapping`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(mapping)
+      })
+      return response.ok
+    } catch (error) {
+      console.error('Failed to save crew disruption mapping:', error)
+      return false
+    }
+  }
+
   // Recovery Options
   async getRecoveryOptions(disruptionId: string): Promise<RecoveryOption[]> {
     try {

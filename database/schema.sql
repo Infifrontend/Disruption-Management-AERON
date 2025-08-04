@@ -360,6 +360,21 @@ CREATE TABLE IF NOT EXISTS crew_members (
     updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
 );
 
+-- Crew Disruption Mapping table - links crew members to flight disruptions
+CREATE TABLE IF NOT EXISTS crew_disruption_mapping (
+    id SERIAL PRIMARY KEY,
+    disruption_id INTEGER REFERENCES flight_disruptions(id) ON DELETE CASCADE,
+    crew_member_id INTEGER REFERENCES crew_members(id) ON DELETE CASCADE,
+    disruption_reason TEXT,
+    affected_date TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    resolution_status VARCHAR(50) DEFAULT 'Pending',
+    replacement_crew_id INTEGER REFERENCES crew_members(id),
+    notes TEXT,
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    UNIQUE(disruption_id, crew_member_id)
+);
+
 -- Aircraft table
 CREATE TABLE IF NOT EXISTS aircraft (
     id SERIAL PRIMARY KEY,
@@ -437,6 +452,9 @@ CREATE INDEX IF NOT EXISTS idx_passengers_pnr ON passengers(pnr);
 CREATE INDEX IF NOT EXISTS idx_crew_status ON crew_members(status);
 CREATE INDEX IF NOT EXISTS idx_aircraft_status ON aircraft(status);
 CREATE INDEX IF NOT EXISTS idx_recovery_options_disruption ON recovery_options(disruption_id);
+CREATE INDEX IF NOT EXISTS idx_crew_disruption_mapping_disruption ON crew_disruption_mapping(disruption_id);
+CREATE INDEX IF NOT EXISTS idx_crew_disruption_mapping_crew ON crew_disruption_mapping(crew_member_id);
+CREATE INDEX IF NOT EXISTS idx_crew_employee_id ON crew_members(employee_id);
 
 -- Recovery Steps table
 CREATE TABLE IF NOT EXISTS recovery_steps (
