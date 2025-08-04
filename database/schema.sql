@@ -185,7 +185,7 @@ INSERT INTO settings (category, key, value, type, description, updated_by) VALUE
 ('passengerScoring', 'vipWeight', '40', 'number', 'Weight percentage for VIP status in passenger scoring', 'system'),
 ('passengerScoring', 'loyaltyWeight', '25', 'number', 'Weight percentage for loyalty tier in passenger scoring', 'system'),
 ('passengerScoring', 'specialNeedsWeight', '20', 'number', 'Weight percentage for special needs in passenger scoring', 'system'),
-('revenueWeight', '15', 'number', 'Weight percentage for ticket revenue in passenger scoring', 'system'),
+('passengerScoring', 'revenueWeight', '15', 'number', 'Weight percentage for ticket revenue in passenger scoring', 'system'),
 
 -- NLP Settings
 ('nlpSettings', 'enabled', 'true', 'boolean', 'Enable natural language processing for user inputs', 'system'),
