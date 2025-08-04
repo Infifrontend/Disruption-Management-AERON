@@ -62,6 +62,7 @@ import {
   CheckCircle,
   AlertCircle,
   Trash2,
+  FileText,
 } from "lucide-react";
 import { databaseService, FlightDisruption } from "../services/databaseService";
 
@@ -196,7 +197,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     connectionFlights: "",
     vipPassengers: "",
   });
-  
+
   const [crewMembers, setCrewMembers] = useState([
     { id: 1, name: "", role: "", employeeCode: "" }
   ]);
@@ -546,6 +547,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     }
   };
 
+  const showCrewSection = newDisruption.categorization === "Crew issue (e.g., sick report, duty time breach)";
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -894,43 +897,70 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     </Select>
                   </div>
 
-                  {/* Crew Members Section - Only show when Crew issue is selected */}
-                  {newDisruption.categorization === "Crew issue (e.g., sick report, duty time breach)" && (
-                    <div className="col-span-2">
-                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-xl border border-blue-200 shadow-sm">
-                        {/* Header Section */}
-                        <div className="flex items-center justify-between mb-8">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center shadow-inner">
-                              <Users className="h-6 w-6 text-blue-600" />
-                            </div>
+                  {/* Affected Crew Members Section - Only show when Crew issue is selected */}
+                  {showCrewSection && (
+                        <div className="w-full space-y-8">
+                          <div className="flex items-center justify-between w-full">
                             <div>
-                              <h4 className="text-xl font-bold text-flydubai-navy mb-1">Affected Crew Members</h4>
-                              <p className="text-gray-600">Specify crew members affected by this disruption</p>
+                              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-3">
+                                <Users className="h-6 w-6 text-blue-600" />
+                                Affected Crew Members
+                              </h3>
+                              <p className="text-base text-gray-600 mt-2">
+                                Add crew members affected by this disruption
+                              </p>
                             </div>
+                            <Button
+                              type="button"
+                              onClick={addCrewMember}
+                              className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3"
+                            >
+                              <Plus className="h-5 w-5 mr-3" />
+                              Add Crew Member
+                            </Button>
                           </div>
-                          <Button
-                            type="button"
-                            variant="default"
-                            size="default"
-                            onClick={addCrewMember}
-                            className="bg-flydubai-orange hover:bg-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3"
-                          >
-                            <Plus className="h-4 w-4 mr-3" />
-                            Add Crew Member
-                          </Button>
-                        </div>
-                        
+
+                          {/* Crew Summary Stats */}
+                          {crewMembers.length > 0 && (
+                            <div className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-xl border border-blue-200 shadow-sm">
+                              <div className="flex items-center justify-between w-full">
+                                <div>
+                                  <h4 className="text-xl font-bold text-blue-900 mb-3">Crew Summary</h4>
+                                  <p className="text-base text-blue-700">
+                                    {crewMembers.length} crew member{crewMembers.length !== 1 ? 's' : ''} affected
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                  {crewMembers.filter(m => m.role === 'Captain').length > 0 && (
+                                    <Badge className="px-4 py-2 bg-red-100 text-red-800 border border-red-300 font-semibold text-sm">
+                                      {crewMembers.filter(m => m.role === 'Captain').length} Captain(s)
+                                    </Badge>
+                                  )}
+                                  {crewMembers.filter(m => m.role === 'First Officer').length > 0 && (
+                                    <Badge className="px-4 py-2 bg-orange-100 text-orange-800 border border-orange-300 font-semibold text-sm">
+                                      {crewMembers.filter(m => m.role === 'First Officer').length} FO(s)
+                                    </Badge>
+                                  )}
+                                  {crewMembers.filter(m => m.role.includes('Cabin')).length > 0 && (
+                                    <Badge className="px-4 py-2 bg-green-100 text-green-800 border border-green-300 font-semibold text-sm">
+                                      {crewMembers.filter(m => m.role.includes('Cabin')).length} Cabin Crew
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                         {/* Crew Members Grid */}
-                        <div className="space-y-6">
+                        <div className="w-full space-y-8">
                           {crewMembers.map((member, index) => (
-                            <div key={member.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-200">
+                            <div key={member.id} className="w-full bg-white p-8 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-200">
                               {/* Form Grid */}
-                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full">
                                 {/* Crew Name - 4 columns */}
-                                <div className="lg:col-span-4 space-y-3">
-                                  <Label htmlFor={`crewName-${index}`} className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                                    <Users className="h-4 w-4 text-blue-600" />
+                                <div className="lg:col-span-4 space-y-4">
+                                  <Label htmlFor={`crewName-${index}`} className="text-base font-bold text-gray-800 flex items-center gap-3">
+                                    <Users className="h-5 w-5 text-blue-600" />
                                     Crew Name*
                                   </Label>
                                   <Input
@@ -938,73 +968,71 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                     placeholder="Enter full name"
                                     value={member.name}
                                     onChange={(e) => handleCrewMemberChange(index, 'name', e.target.value)}
-                                    className="h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-lg text-gray-800 font-medium"
+                                    className="h-14 border-2 border-gray-200 focus:border-blue-500 rounded-lg text-base px-4"
+                                  />
+                                </div>
+
+                                {/* Employee Code - 3 columns */}
+                                <div className="lg:col-span-3 space-y-4">
+                                  <Label htmlFor={`employeeCode-${index}`} className="text-base font-bold text-gray-800 flex items-center gap-3">
+                                    <FileText className="h-5 w-5 text-blue-600" />
+                                    Employee Code*
+                                  </Label>
+                                  <Input
+                                    id={`employeeCode-${index}`}
+                                    placeholder="e.g., FZ1234"
+                                    value={member.employeeCode}
+                                    onChange={(e) => handleCrewMemberChange(index, 'employeeCode', e.target.value)}
+                                    className="h-14 border-2 border-gray-200 focus:border-blue-500 rounded-lg text-base px-4"
                                   />
                                 </div>
 
                                 {/* Crew Role - 4 columns */}
-                                <div className="lg:col-span-4 space-y-3">
-                                  <Label htmlFor={`crewRole-${index}`} className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                                    <Badge className="w-4 h-4 rounded-full bg-blue-600" />
+                                <div className="lg:col-span-4 space-y-4">
+                                  <Label htmlFor={`crewRole-${index}`} className="text-base font-bold text-gray-800 flex items-center gap-3">
+                                    <Badge className="w-5 h-5 rounded-full bg-blue-600" />
                                     Crew Role*
                                   </Label>
                                   <Select
                                     value={member.role}
                                     onValueChange={(value) => handleCrewMemberChange(index, 'role', value)}
                                   >
-                                    <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-lg">
+                                    <SelectTrigger className="h-14 border-2 border-gray-200 focus:border-blue-500 rounded-lg">
                                       <SelectValue placeholder="Select role" />
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="Captain">
-                                        <div className="flex items-center gap-3 py-1">
-                                          <div className="w-3 h-3 bg-red-500 rounded-full shadow-sm"></div>
-                                          <span className="font-medium">Captain</span>
+                                        <div className="flex items-center gap-3 py-2">
+                                          <div className="w-4 h-4 bg-red-500 rounded-full shadow-sm"></div>
+                                          <span className="font-medium text-base">Captain</span>
                                         </div>
                                       </SelectItem>
                                       <SelectItem value="First Officer">
-                                        <div className="flex items-center gap-3 py-1">
-                                          <div className="w-3 h-3 bg-orange-500 rounded-full shadow-sm"></div>
-                                          <span className="font-medium">First Officer</span>
+                                        <div className="flex items-center gap-3 py-2">
+                                          <div className="w-4 h-4 bg-orange-500 rounded-full shadow-sm"></div>
+                                          <span className="font-medium text-base">First Officer</span>
                                         </div>
                                       </SelectItem>
                                       <SelectItem value="Senior Cabin Crew">
-                                        <div className="flex items-center gap-3 py-1">
-                                          <div className="w-3 h-3 bg-blue-500 rounded-full shadow-sm"></div>
-                                          <span className="font-medium">Senior Cabin Crew</span>
+                                        <div className="flex items-center gap-3 py-2">
+                                          <div className="w-4 h-4 bg-green-500 rounded-full shadow-sm"></div>
+                                          <span className="font-medium text-base">Senior Cabin Crew</span>
                                         </div>
                                       </SelectItem>
                                       <SelectItem value="Cabin Crew">
-                                        <div className="flex items-center gap-3 py-1">
-                                          <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm"></div>
-                                          <span className="font-medium">Cabin Crew</span>
+                                        <div className="flex items-center gap-3 py-2">
+                                          <div className="w-4 h-4 bg-purple-500 rounded-full shadow-sm"></div>
+                                          <span className="font-medium text-base">Cabin Crew</span>
                                         </div>
                                       </SelectItem>
-                                      <SelectItem value="Flight Engineer">
-                                        <div className="flex items-center gap-3 py-1">
-                                          <div className="w-3 h-3 bg-purple-500 rounded-full shadow-sm"></div>
-                                          <span className="font-medium">Flight Engineer</span>
+                                      <SelectItem value="Purser">
+                                        <div className="flex items-center gap-3 py-2">
+                                          <div className="w-4 h-4 bg-blue-500 rounded-full shadow-sm"></div>
+                                          <span className="font-medium text-base">Purser</span>
                                         </div>
                                       </SelectItem>
                                     </SelectContent>
                                   </Select>
-                                </div>
-
-                                {/* Employee ID - 3 columns */}
-                                <div className="lg:col-span-3 space-y-3">
-                                  <Label htmlFor={`employeeCode-${index}`} className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                                    <div className="w-4 h-4 bg-purple-600 rounded flex items-center justify-center">
-                                      <span className="text-white text-xs font-bold">ID</span>
-                                    </div>
-                                    Employee ID*
-                                  </Label>
-                                  <Input
-                                    id={`employeeCode-${index}`}
-                                    placeholder="EMP####"
-                                    value={member.employeeCode}
-                                    onChange={(e) => handleCrewMemberChange(index, 'employeeCode', e.target.value)}
-                                    className="h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-lg text-gray-800 font-medium"
-                                  />
                                 </div>
 
                                 {/* Actions - 1 column */}
@@ -1015,13 +1043,13 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                     size="sm"
                                     onClick={() => removeCrewMember(index)}
                                     disabled={crewMembers.length === 1}
-                                    className="w-12 h-12 border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                                    className="w-14 h-14 border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
                                   >
-                                    <Trash2 className="h-5 w-5" />
+                                    <Trash2 className="h-6 w-6" />
                                   </Button>
                                 </div>
                               </div>
-                              
+
                               {/* Crew Member Summary Card */}
                               {member.name && member.role && member.employeeCode && (
                                 <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
@@ -1045,53 +1073,25 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                               )}
                             </div>
                           ))}
-                          
+
                           {/* Empty State */}
                           {crewMembers.length === 0 && (
-                            <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
-                              <Users className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-                              <h3 className="text-lg font-semibold text-gray-600 mb-2">No crew members added yet</h3>
-                              <p className="text-gray-500">Click "Add Crew Member" to get started</p>
+                            <div className="w-full text-center py-16 bg-white rounded-xl border-2 border-dashed border-gray-300">
+                              <Users className="h-20 w-20 text-gray-400 mx-auto mb-6" />
+                              <h3 className="text-2xl font-bold text-gray-600 mb-4">No Crew Members Added</h3>
+                              <p className="text-lg text-gray-500 mb-8 max-w-md mx-auto">Add affected crew members to track their status during this disruption.</p>
+                              <Button
+                                type="button"
+                                onClick={addCrewMember}
+                                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-4 text-lg"
+                              >
+                                <Plus className="h-5 w-5 mr-3" />
+                                Add First Crew Member
+                              </Button>
                             </div>
                           )}
                         </div>
-                        
-                        {/* Enhanced Summary Footer */}
-                        {crewMembers.length > 0 && (
-                          <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 shadow-inner">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center gap-4">
-                                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                                  <span className="text-white font-bold text-sm">{crewMembers.length}</span>
-                                </div>
-                                <span className="text-blue-800 font-bold text-lg">
-                                  Total Affected Crew: {crewMembers.length}
-                                </span>
-                              </div>
-                              
-                              <div className="flex gap-3">
-                                {crewMembers.filter(m => m.role === 'Captain').length > 0 && (
-                                  <Badge className="px-3 py-1 bg-red-100 text-red-800 border border-red-300 font-semibold">
-                                    {crewMembers.filter(m => m.role === 'Captain').length} Captain(s)
-                                  </Badge>
-                                )}
-                                {crewMembers.filter(m => m.role === 'First Officer').length > 0 && (
-                                  <Badge className="px-3 py-1 bg-orange-100 text-orange-800 border border-orange-300 font-semibold">
-                                    {crewMembers.filter(m => m.role === 'First Officer').length} FO(s)
-                                  </Badge>
-                                )}
-                                {crewMembers.filter(m => m.role.includes('Cabin')).length > 0 && (
-                                  <Badge className="px-3 py-1 bg-green-100 text-green-800 border border-green-300 font-semibold">
-                                    {crewMembers.filter(m => m.role.includes('Cabin')).length} Cabin Crew
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                      )}
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
