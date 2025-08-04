@@ -18,12 +18,18 @@ export default defineConfig({
     ],
     hmr: {
       port: 5173,
-      clientPort: 443
+      clientPort: 443,
+      overlay: false
     },
     watch: {
-      usePolling: false,
-      useFsEvents: true
-    }
+      usePolling: true,
+      interval: 1000,
+      useFsEvents: false,
+      ignored: ['**/node_modules/**', '**/.git/**']
+    },
+    cors: true,
+    strictPort: false,
+    force: true
   },
   optimizeDeps: {
     exclude: ['fsevents']
