@@ -61,6 +61,7 @@ import {
   X,
   CheckCircle,
   AlertCircle,
+  Trash2,
 } from "lucide-react";
 import { databaseService, FlightDisruption } from "../services/databaseService";
 
@@ -195,6 +196,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     connectionFlights: "",
     vipPassengers: "",
   });
+  
+  const [crewMembers, setCrewMembers] = useState([
+    { id: 1, name: "", role: "", employeeCode: "" }
+  ]);
 
   // Fetch flights from database
   useEffect(() => {
@@ -440,6 +445,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           ? "Active"
           : newDisruption.currentStatus,
       disruptionReason: newDisruption.disruptionReason,
+      crewMembers: newDisruption.categorization === "Crew issue (e.g., sick report, duty time breach)" 
+        ? crewMembers.filter(member => member.name && member.role && member.employeeCode)
+        : [],
     };
 
     try {
@@ -479,6 +487,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           connectionFlights: "",
           vipPassengers: "",
         });
+        // Reset crew members
+        setCrewMembers([{ id: 1, name: "", role: "", employeeCode: "" }]);
         // Close the dialog
         setIsAddDialogOpen(false);
         // Refresh the flights list
@@ -504,6 +514,28 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       ...prev,
       [field]: value,
     }));
+  };
+
+  // Handle crew member changes
+  const handleCrewMemberChange = (index, field, value) => {
+    setCrewMembers(prev => prev.map((member, i) => 
+      i === index ? { ...member, [field]: value } : member
+    ));
+  };
+
+  // Add new crew member
+  const addCrewMember = () => {
+    setCrewMembers(prev => [
+      ...prev, 
+      { id: Date.now(), name: "", role: "", employeeCode: "" }
+    ]);
+  };
+
+  // Remove crew member
+  const removeCrewMember = (index) => {
+    if (crewMembers.length > 1) {
+      setCrewMembers(prev => prev.filter((_, i) => i !== index));
+    }
   };
 
   if (loading) {
@@ -853,6 +885,80 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {/* Crew Members Section - Only show when Crew issue is selected */}
+                  {newDisruption.categorization === "Crew issue (e.g., sick report, duty time breach)" && (
+                    <div className="col-span-2 p-4 border rounded-lg bg-gray-50">
+                      <div className="flex items-center justify-between mb-4">
+                        <h4 className="font-medium text-flydubai-navy">Affected Crew Members</h4>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={addCrewMember}
+                          className="border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
+                        >
+                          <Plus className="h-4 w-4 mr-2" />
+                          Add Crew Member
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        {crewMembers.map((member, index) => (
+                          <div key={member.id} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end p-3 border rounded bg-white">
+                            <div>
+                              <Label htmlFor={`crewName-${index}`}>Crew Name*</Label>
+                              <Input
+                                id={`crewName-${index}`}
+                                placeholder="Enter crew name"
+                                value={member.name}
+                                onChange={(e) => handleCrewMemberChange(index, 'name', e.target.value)}
+                              />
+                            </div>
+                            <div>
+                              <Label htmlFor={`crewRole-${index}`}>Crew Role*</Label>
+                              <Select
+                                value={member.role}
+                                onValueChange={(value) => handleCrewMemberChange(index, 'role', value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select role" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Captain">Captain</SelectItem>
+                                  <SelectItem value="First Officer">First Officer</SelectItem>
+                                  <SelectItem value="Senior Cabin Crew">Senior Cabin Crew</SelectItem>
+                                  <SelectItem value="Cabin Crew">Cabin Crew</SelectItem>
+                                  <SelectItem value="Flight Engineer">Flight Engineer</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div>
+                              <Label htmlFor={`employeeCode-${index}`}>Employee Code*</Label>
+                              <Input
+                                id={`employeeCode-${index}`}
+                                placeholder="Employee ID"
+                                value={member.employeeCode}
+                                onChange={(e) => handleCrewMemberChange(index, 'employeeCode', e.target.value)}
+                              />
+                            </div>
+                            <div>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => removeCrewMember(index)}
+                                disabled={crewMembers.length === 1}
+                                className="border-red-200 text-red-600 hover:bg-red-50"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
