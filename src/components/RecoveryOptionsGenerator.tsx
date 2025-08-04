@@ -2727,8 +2727,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                                       4,
                                   );
 
-                                  return (                                    <TableRow
-                                      key={index}
+                                  return (                                    <TableRow                                      key={index}
                                       className={
                                         aircraft.recommended
                                          ? "bg-green-50"
