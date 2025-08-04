@@ -17,7 +17,7 @@ class SettingsStorage {
   private readonly STORAGE_KEY = 'aeron_settings_storage'
   private isDatabaseConnected = false
   private saveTimeout: NodeJS.Timeout | null = null
-  private readonly SAVE_DEBOUNCE_MS = 3000 // 3 second debounce - reduced frequency
+  private readonly SAVE_DEBOUNCE_MS = 1000 // 1 second debounce
 
   // Initialize with database connection check and defaults
   constructor() {
@@ -33,27 +33,14 @@ class SettingsStorage {
   private async initializeStorage() {
     console.log('Initializing AERON Settings Storage...')
 
-    try {
-      // Check database connectivity with timeout
-      const healthCheckPromise = databaseService.healthCheck()
-      const timeoutPromise = new Promise<boolean>((resolve) => {
-        setTimeout(() => resolve(false), 8000) // 8 second timeout
-      })
+    // Check database connectivity
+    this.isDatabaseConnected = await databaseService.healthCheck()
 
-      this.isDatabaseConnected = await Promise.race([healthCheckPromise, timeoutPromise])
-
-      if (this.isDatabaseConnected) {
-        console.log('✅ Database connected - Loading settings from PostgreSQL')
-        await this.loadFromDatabase()
-      } else {
-        console.log('⚠️ Database unavailable - Using localStorage fallback')
-        this.loadFromLocalStorage()
-        this.initializeDefaults()
-        this.saveToLocalStorage()
-      }
-    } catch (error) {
-      console.error('Storage initialization failed:', error)
-      this.isDatabaseConnected = false
+    if (this.isDatabaseConnected) {
+      console.log('✅ Database connected - Loading settings from PostgreSQL')
+      await this.loadFromDatabase()
+    } else {
+      console.log('⚠️ Database unavailable - Using localStorage fallback')
       this.loadFromLocalStorage()
       this.initializeDefaults()
       this.saveToLocalStorage()
