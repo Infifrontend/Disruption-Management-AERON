@@ -50,7 +50,6 @@ import {
   Info
 } from 'lucide-react'
 import { format } from 'date-fns'
-import { utcToZonedTime, format as formatTZ } from 'date-fns-tz'
 
 // Mock data
 const maintenanceSchedule = [
@@ -227,9 +226,16 @@ export function AircraftMaintenance() {
     // Function to format date in IST
     const formatInIST = (dateStr) => {
         try {
-            const timeZone = 'Asia/Kolkata';
-            const zonedDate = utcToZonedTime(dateStr, timeZone);
-            return formatTZ(zonedDate, 'yyyy-MM-dd HH:mm', { timeZone });  // Consistent format
+            const date = new Date(dateStr);
+            return date.toLocaleString('en-IN', {
+                timeZone: 'Asia/Kolkata',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
         } catch (error) {
             console.error("Error formatting date:", error);
             return 'Invalid Date';
