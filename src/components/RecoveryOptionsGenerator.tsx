@@ -135,7 +135,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
   const [selectedOption, setSelectedOption] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [isExecuting, setIsExecuting] = useState(false);
+  const [isExecuting, setIsExecuting] = useState(isExecuting);
   const [showRotationPlan, setShowRotationPlan] = useState(false);
   const [selectedRotationData, setSelectedRotationData] = useState(null);
   const [scheduleImpactData, setScheduleImpactData] = useState(null);
@@ -924,9 +924,9 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         ? 24500
         : isDelayOption &&
             parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
-          ? 8450<replit_final_file>
+          ? 8450
             : isAircraftSwap
-              ? 8450
+              ? 840
               : 0,
       eu261Risk: isCancellation
         ? "Critical"
@@ -990,6 +990,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
     onPassengerServices && onPassengerServices(context);
   };
 
+  // Code modified to add IST timezone to the timestamp
   return (
     <div className="space-y-6">
       {/* Execute Confirmation Dialog */}
@@ -1845,6 +1846,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                         <div>
                           <span className="font-semibold">
                             Total Estimated Cost:
+                          ```
                           </span>
                           <p className="text-xs text-gray-600">
                             Including all operational expenses

@@ -510,19 +510,19 @@ export function PendingSolutions() {
     const matchesSubmitter = filters.submitter === 'all' || plan.submittedBy.includes(filters.submitter)
     const matchesFlightNumber = !filters.flightNumber || plan.flightNumber.toLowerCase().includes(filters.flightNumber.toLowerCase())
     const matchesPlanId = !filters.planId || plan.id.toLowerCase().includes(filters.planId.toLowerCase())
-    
+
     const matchesTab = activeTab === 'all' || 
                      (activeTab === 'pending' && ['Pending Approval', 'Under Review'].includes(plan.status)) ||
                      (activeTab === 'approved' && plan.status === 'Approved') ||
                      (activeTab === 'rejected' && plan.status === 'Rejected') ||
                      (activeTab === 'critical' && plan.priority === 'Critical')
-    
+
     return matchesPriority && matchesSubmitter && matchesFlightNumber && matchesPlanId && matchesTab
   })
 
   const sortedPlans = filteredPlans.sort((a, b) => {
     let aValue, bValue
-    
+
     switch (sortBy) {
       case 'submitted':
         aValue = new Date(a.submittedAt)
@@ -545,7 +545,7 @@ export function PendingSolutions() {
         aValue = a.submittedAt
         bValue = b.submittedAt
     }
-    
+
     if (sortOrder === 'asc') {
       return aValue > bValue ? 1 : -1
     } else {
@@ -613,6 +613,12 @@ export function PendingSolutions() {
   const handleViewDetails = (plan) => {
     setSelectedPlan(plan)
   }
+
+  // Function to format date in IST
+  const formatIST = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+  };
 
   return (
     <div className="space-y-6">
@@ -838,7 +844,7 @@ export function PendingSolutions() {
                           </div>
                           <div>
                             <Label className="text-xs text-muted-foreground">Submitted</Label>
-                            <p className="font-medium">{plan.submittedAt}</p>
+                            <p className="font-medium">{formatIST(plan.submittedAt)}</p>
                             <p className="text-sm text-muted-foreground">by {plan.submitterName}</p>
                           </div>
                           <div>
@@ -898,7 +904,7 @@ export function PendingSolutions() {
                           <Eye className="h-4 w-4" />
                           View Details
                         </Button>
-                        
+
                         {['Pending Approval', 'Under Review'].includes(plan.status) && (
                           <>
                             <Button
@@ -920,7 +926,7 @@ export function PendingSolutions() {
                             </Button>
                           </>
                         )}
-                        
+
                         {plan.status === 'Approved' && (
                           <Button
                             size="sm"
@@ -963,7 +969,7 @@ export function PendingSolutions() {
                 Comprehensive view of recovery plan for Flight {selectedPlan.flightNumber}
               </DialogDescription>
             </DialogHeader>
-            
+
             <Tabs defaultValue="overview" className="w-full">
               <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -1002,7 +1008,7 @@ export function PendingSolutions() {
                         </div>
                         <div className="flex justify-between">
                           <span>Submitted:</span>
-                          <span className="font-medium">{selectedPlan.submittedAt}</span>
+                          <span className="font-medium">{formatIST(selectedPlan.submittedAt)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span>By:</span>
@@ -1196,13 +1202,13 @@ export function PendingSolutions() {
                             <p className="text-sm text-red-700">{selectedPlan.disruptionReason}</p>
                           </div>
                         </div>
-                        
+
                         <div>
                           <h4 className="font-medium mb-2">Timeline Constraints</h4>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span>SLA Deadline:</span>
-                              <span className="font-medium">{selectedPlan.slaDeadline}</span>
+                              <span className="font-medium">{formatIST(selectedPlan.slaDeadline)}</span>
                             </div>
                             <div className="flex justify-between">
                               <span>Time Remaining:</span>

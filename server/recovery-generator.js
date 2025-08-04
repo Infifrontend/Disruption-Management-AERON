@@ -707,7 +707,7 @@ function generateRecoveryOptionsForDisruption(disruption) {
           step: 1,
           title: 'Disruption Detected',
           status: 'completed',
-          timestamp: new Date().toLocaleTimeString(),
+          timestamp: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }),
           system: 'AERON System',
           details: 'Operational disruption identified and classified',
           data: { type: disruption_type, severity: severity }
@@ -716,7 +716,7 @@ function generateRecoveryOptionsForDisruption(disruption) {
           step: 2,
           title: 'Impact Analysis',
           status: 'completed',
-          timestamp: new Date(Date.now() + 5 * 60000).toLocaleTimeString(),
+          timestamp: new Date(Date.now() + 5 * 60000).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }),
           system: 'Analytics Engine',
           details: 'Analyzing disruption impact on network and passengers',
           data: { affectedFlights: 1, affectedPassengers: passengers || 167 }
@@ -725,7 +725,7 @@ function generateRecoveryOptionsForDisruption(disruption) {
           step: 3,
           title: 'Solution Generation',
           status: 'standby',
-          timestamp: new Date(Date.now() + 10 * 60000).toLocaleTimeString(),
+          timestamp: new Date(Date.now() + 10 * 60000).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }),
           system: 'Recovery Engine',
           details: 'Generating recovery options and recommendations',
           data: { status: 'processing' }

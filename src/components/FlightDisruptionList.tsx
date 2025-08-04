@@ -746,7 +746,7 @@ export function FlightDisruptionList() {
                             Scheduled Departure
                           </Label>
                           <p className="font-medium">
-                            {selectedDisruption.scheduledDeparture}
+                            {new Date(selectedDisruption.scheduledDeparture).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
                           </p>
                         </div>
                         <div>
@@ -754,7 +754,7 @@ export function FlightDisruptionList() {
                             Estimated Departure
                           </Label>
                           <p className="font-medium text-red-600">
-                            {selectedDisruption.estimatedDeparture}
+                            {new Date(selectedDisruption.estimatedDeparture).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
                           </p>
                         </div>
                         <div>
@@ -829,8 +829,8 @@ export function FlightDisruptionList() {
                             selectedDisruption.predictions.networkImpact ===
                             "High"
                               ? "bg-red-100 text-red-700"
-                              : selectedDisruption.predictions.networkImpact ===
-                                  "Medium"
+                              : selectedDisruption.predictions
+                                      .networkImpact === "Medium"
                                 ? "bg-yellow-100 text-yellow-700"
                                 : "bg-green-100 text-green-700"
                           }
@@ -915,9 +915,9 @@ export function FlightDisruptionList() {
                               "In Progress"
                                 ? "bg-blue-100 text-blue-700"
                                 : selectedDisruption.maintenance.status ===
-                                    "Completed"
-                                  ? "bg-green-100 text-green-700"
-                                  : "bg-yellow-100 text-yellow-700"
+                                  "Completed"
+                                ? "bg-green-100 text-green-700"
+                                : "bg-yellow-100 text-yellow-700"
                             }
                           >
                             {selectedDisruption.maintenance.status}
@@ -966,8 +966,8 @@ export function FlightDisruptionList() {
                                 member.status === "Available"
                                   ? "bg-green-100 text-green-700"
                                   : member.status === "On Duty"
-                                    ? "bg-blue-100 text-blue-700"
-                                    : "bg-red-100 text-red-700"
+                                  ? "bg-blue-100 text-blue-700"
+                                  : "bg-red-100 text-red-700"
                               }
                             >
                               {member.status}

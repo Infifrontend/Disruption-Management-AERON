@@ -409,7 +409,10 @@ export function FlightTrackingGantt() {
     utilizationRange: [0, 100],
     gate: ''
   })
-  const [currentTime, setCurrentTime] = useState(new Date())
+  const [currentTime] = useState(() => {
+    const istTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"})
+    return new Date(istTime)
+  })
   const [autoRefresh, setAutoRefresh] = useState(true)
 
   const ganttRef = useRef(null)
@@ -428,7 +431,7 @@ export function FlightTrackingGantt() {
   // Generate time slots for the timeline based on selected time range
   const generateTimeSlots = () => {
     const slots = []
-    
+
     if (timeRange === '24h') {
       // 24h: 24 slots, each representing 1 hour
       for (let i = 0; i < 24; i++) {
@@ -436,7 +439,7 @@ export function FlightTrackingGantt() {
           hour: i,
           day: 0,
           time: `${i.toString().padStart(2, '0')}:00`,
-          label: `${i.toString().padStart(2, '0')}:00`,
+          label: `${i.toString().padStart(2, '0')}:00 IST`,
           isCurrentHour: i === currentTime.getHours(),
           startHour: i,
           duration: 1
@@ -451,7 +454,7 @@ export function FlightTrackingGantt() {
           hour,
           day,
           time: `${hour.toString().padStart(2, '0')}:00`,
-          label: day === 0 ? `${hour.toString().padStart(2, '0')}:00` : `${hour.toString().padStart(2, '0')}:00+${day}d`,
+          label: day === 0 ? `${hour.toString().padStart(2, '0')}:00 IST` : `${hour.toString().padStart(2, '0')}:00+${day}d IST`,
           isCurrentHour: hour === currentTime.getHours() && day === 0,
           startHour: i * 2,
           duration: 2
@@ -463,19 +466,19 @@ export function FlightTrackingGantt() {
         const hourOfWeek = i * 6
         const day = Math.floor(hourOfWeek / 24)
         const hour = hourOfWeek % 24
-        
+
         slots.push({
           hour,
           day,
           time: `${hour.toString().padStart(2, '0')}:00`,
-          label: `D${day + 1} ${hour.toString().padStart(2, '0')}:00`,
+          label: `D${day + 1} ${hour.toString().padStart(2, '0')}:00 IST`,
           isCurrentHour: day === 0 && Math.floor(currentTime.getHours() / 6) === Math.floor(hour / 6),
           startHour: hourOfWeek,
           duration: 6
         })
       }
     }
-    
+
     return slots
   }
 
@@ -489,7 +492,7 @@ export function FlightTrackingGantt() {
     if (filters.status !== 'all' && aircraft.status !== filters.status) return false
     if (filters.search && !aircraft.tailNumber.toLowerCase().includes(filters.search.toLowerCase()) && 
         !aircraft.type.toLowerCase().includes(filters.search.toLowerCase())) return false
-    
+
     // Route filter
     if (filters.route !== 'all') {
       const hasRoute = aircraft.flights.some(flight => 
@@ -501,13 +504,13 @@ export function FlightTrackingGantt() {
     // Advanced filters
     if (filters.crew !== 'all' && aircraft.crew !== filters.crew) return false
     if (filters.gate && !aircraft.gate.toLowerCase().includes(filters.gate.toLowerCase())) return false
-    
+
     // Capacity range filter
     if (aircraft.capacity < filters.capacityRange[0] || aircraft.capacity > filters.capacityRange[1]) return false
-    
+
     // Age range filter
     if (aircraft.age < filters.ageRange[0] || aircraft.age > filters.ageRange[1]) return false
-    
+
     // Utilization range filter
     if (aircraft.utilization < filters.utilizationRange[0] || aircraft.utilization > filters.utilizationRange[1]) return false
 
@@ -540,7 +543,7 @@ export function FlightTrackingGantt() {
       const hasPriorityFlight = aircraft.flights.some(flight => flight.priority === filters.priority)
       if (!hasPriorityFlight && aircraft.flights.length > 0) return false
     }
-    
+
     return true
   })
 
@@ -579,9 +582,9 @@ export function FlightTrackingGantt() {
     // Convert time to position percentage based on the time range
     const [hours, minutes] = departureTime.split(':').map(Number)
     const totalMinutes = hours * 60 + minutes
-    
+
     let startPos, width, totalTimeInHours
-    
+
     if (timeRange === '24h') {
       // 24h: Position based on 24-hour timeline
       totalTimeInHours = 24
@@ -598,7 +601,7 @@ export function FlightTrackingGantt() {
       startPos = (totalMinutes / (totalTimeInHours * 60)) * 100
       width = (duration / totalTimeInHours) * 100
     }
-    
+
     return { left: `${startPos}%`, width: `${Math.max(width, 1)}%` }
   }
 
@@ -784,7 +787,7 @@ export function FlightTrackingGantt() {
                 </h4>
                 <p className="text-sm text-muted-foreground">{filteredAircraft.length} aircraft</p>
               </div>
-              
+
               {/* Tail Numbers List - Scrollable */}
               <div className="flex-1 overflow-y-auto">
                 <div className="space-y-1 p-1">
@@ -808,7 +811,7 @@ export function FlightTrackingGantt() {
                           {aircraft.status}
                         </Badge>
                       </div>
-                      
+
                       {/* Aircraft Details - Compact */}
                       <div className="text-xs text-muted-foreground space-y-0.5">
                         <div className="flex items-center gap-1">
@@ -826,7 +829,7 @@ export function FlightTrackingGantt() {
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Flight Count - Compact */}
                       <div className="mt-1 pt-1 border-t border-gray-200">
                         <div className="flex items-center justify-between text-xs">

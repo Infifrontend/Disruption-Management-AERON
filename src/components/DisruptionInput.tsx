@@ -178,8 +178,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     destination: "",
     originCity: "",
     destinationCity: "",
-    scheduledDeparture: "",
-    scheduledArrival: "",
+    scheduledDeparture: new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Kolkata' }).slice(0, 16),
+    scheduledArrival: new Date(Date.now() + 2 * 60 * 60 * 1000).toLocaleString('sv-SE', { timeZone: 'Asia/Kolkata' }).slice(0, 16),
     currentStatus: "Delayed",
     delay: "",
     aircraft: "",
@@ -448,7 +448,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         connectionFlightsType: typeof newDisruption.connectionFlights,
         newFlightDataConnectionFlights: newFlightData.connectionFlights
       });
-      
+
       const success = await databaseService.saveDisruption(newFlightData);
       if (success) {
         // Clear any existing errors and show success
@@ -990,7 +990,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           </Button>
         </div>
       </div>
-
       {/* Context Alert */}
       {disruption && (
         <Alert className="border-orange-200 bg-orange-50">
