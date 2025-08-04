@@ -124,13 +124,14 @@ import {
 } from "./passenger-data-helpers";
 import { generateScheduleImpactAnalysis } from "./schedule-impact-helpers";
 
-export function RecoveryOptionsGenerator({
-  selectedFlight,
-  onSelectPlan,
-  onCompare,
-  onPassengerServices,
-  onNavigateToPendingSolutions,
-}) {
+export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompare, onPassengerServices, onNavigateToPendingSolutions }) {
+  const [isMounted, setIsMounted] = useState(true)
+
+  useEffect(() => {
+    return () => {
+      setIsMounted(false)
+    }
+  }, [])
   const [selectedOption, setSelectedOption] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -923,10 +924,10 @@ export function RecoveryOptionsGenerator({
         ? 24500
         : isDelayOption &&
             parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
-          ? 8450
-          : isAircraftSwap
-            ? 8450
-            : 0,
+          ? 8450<replit_final_file>
+            : isAircraftSwap
+              ? 8450
+              : 0,
       eu261Risk: isCancellation
         ? "Critical"
         : isDelayOption &&
@@ -2727,7 +2728,7 @@ export function RecoveryOptionsGenerator({
                                       key={index}
                                       className={
                                         aircraft.recommended
-                                          ? "bg-green-50"
+                                         ? "bg-green-50"
                                           : ""
                                       }
                                     >

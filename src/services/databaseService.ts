@@ -117,6 +117,8 @@ export interface HotelBooking {
 
 class DatabaseService {
   private baseUrl: string
+  private healthCheckCache: { status: boolean; timestamp: number } | null = null
+  private readonly HEALTH_CHECK_CACHE_DURATION = 30000 // 30 seconds
 
   constructor() {
     // Use API base URL for database operations
@@ -130,6 +132,11 @@ class DatabaseService {
       this.baseUrl = `${protocol}//${hostname.replace('-00-', '-00-').replace('.replit.dev', '.replit.dev')}:3001/api`
     }
     console.log('Database service initialized with baseUrl:', this.baseUrl)
+  }
+
+  private isCacheValid(): boolean {
+    if (!this.healthCheckCache) return false
+    return Date.now() - this.healthCheckCache.timestamp < this.HEALTH_CHECK_CACHE_DURATION
   }
 
   // Settings operations
@@ -385,19 +392,38 @@ class DatabaseService {
 
   // Health check method
   async healthCheck(): Promise<boolean> {
+    // Return cached result if valid
+    if (this.isCacheValid()) {
+      return this.healthCheckCache!.status
+    }
+
     try {
       console.log('Performing health check at:', `${this.baseUrl}/health`)
       const response = await fetch(`${this.baseUrl}/health`, {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json'
-        }
+          'Content-Type': 'application/json',
+        },
+        signal: AbortSignal.timeout(3000), // Reduced to 3 second timeout for faster response
       })
+
       const isHealthy = response.ok
+
+      // Cache the result
+      this.healthCheckCache = {
+        status: isHealthy,
+        timestamp: Date.now()
+      }
+
       console.log('Health check result:', isHealthy ? 'HEALTHY' : 'UNHEALTHY', response.status)
       return isHealthy
     } catch (error) {
-      console.error('Database health check failed:', error)
+      console.error('Health check failed:', error)
+      // Cache the failure result
+      this.healthCheckCache = {
+        status: false,
+        timestamp: Date.now()
+      }
       return false
     }
   }
@@ -582,32 +608,32 @@ class DatabaseService {
   async generateRecoveryOptions(disruptionId: string): Promise<{ optionsCount: number, stepsCount: number }> {
     try {
       console.log(`Generating recovery options for disruption ${disruptionId}`);
-      
+
       // Add timeout to prevent hanging requests
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-      
+
       const response = await fetch(`${this.baseUrl}/recovery-options/generate/${disruptionId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: controller.signal
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`Generation failed: ${response.status} - ${errorText}`);
-        
+
         // Return empty results instead of throwing for 404 or server errors
         if (response.status === 404 || response.status >= 500) {
           console.warn('Generation failed, returning empty results');
           return { optionsCount: 0, stepsCount: 0 };
         }
-        
+
         throw new Error(`Failed to generate recovery options: ${response.status} - ${errorText}`)
       }
-      
+
       const result = await response.json()
       console.log('Generation successful:', result);
       return {
@@ -619,7 +645,7 @@ class DatabaseService {
         console.error('Recovery options generation timed out');
         return { optionsCount: 0, stepsCount: 0 };
       }
-      
+
       console.error('Error generating recovery options:', error)
       // Return empty results instead of throwing to prevent crashes
       return { optionsCount: 0, stepsCount: 0 };
@@ -799,7 +825,7 @@ class DatabaseService {
     }
   }
 
-  
+
 }
 
 // Singleton instance

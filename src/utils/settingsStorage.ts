@@ -16,6 +16,8 @@ class SettingsStorage {
   private storage = new Map<string, SettingsData>()
   private readonly STORAGE_KEY = 'aeron_settings_storage'
   private isDatabaseConnected = false
+  private saveTimeout: NodeJS.Timeout | null = null
+  private readonly SAVE_DEBOUNCE_MS = 1000 // 1 second debounce
 
   // Initialize with database connection check and defaults
   constructor() {
@@ -361,6 +363,31 @@ class SettingsStorage {
       await this.loadFromDatabase()
     }
     return this.isDatabaseConnected
+  }
+
+  private debouncedSaveToDatabase(): void {
+    if (this.saveTimeout) {
+      clearTimeout(this.saveTimeout)
+    }
+
+    this.saveTimeout = setTimeout(async () => {
+      try {
+        // Convert the Map to a plain JavaScript object before saving
+        const settingsObject: Record<string, any> = {};
+        this.storage.forEach((value, key) => {
+          settingsObject[key] = value;
+        });
+
+        await databaseService.saveSettings(settingsObject)
+        console.log('Settings saved to database')
+      } catch (error) {
+        console.error('Failed to save settings to database:', error)
+      }
+    }, this.SAVE_DEBOUNCE_MS)
+  }
+
+  async saveToDatabase(): Promise<void> {
+    this.debouncedSaveToDatabase()
   }
 }
 
