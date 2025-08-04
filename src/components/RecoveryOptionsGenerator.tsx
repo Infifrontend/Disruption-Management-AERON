@@ -1298,7 +1298,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5 text-flydubai-blue" />
-            Recovery Options
+            Recovery Options</CardTitle>
             {useDatabaseData && (
               <div className="flex items-center gap-2 ml-auto">
                 <Switch
