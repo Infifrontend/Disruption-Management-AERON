@@ -1233,7 +1233,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       </Card>
 
       {/* Recovery Steps */}
-      <Card>
+      <Card style={{ display: 'none' }}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Workflow className="h-5 w-5 text-flydubai-blue" />
