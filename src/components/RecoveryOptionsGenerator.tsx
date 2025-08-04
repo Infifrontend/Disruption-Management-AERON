@@ -1301,7 +1301,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
             Recovery Options
             {useDatabaseData && (
               <div className="flex items-center gap-2 ml-auto">
-                checked={useDatabaseData}
+                <Switch
+                  checked={useDatabaseData}
                   onCheckedChange={setUseDatabaseData}
                   disabled={isLoadingOptions}
                 />
