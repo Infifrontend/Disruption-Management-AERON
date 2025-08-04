@@ -1232,8 +1232,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         </CardHeader>
       </Card>
 
-      {/* Recovery Steps - Hidden as requested */}
-      {/* 
+      {/* Recovery Steps */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -1291,7 +1290,6 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           </div>
         </CardContent>
       </Card>
-      */
 
       {/* Recovery Options */}
       <Card>
