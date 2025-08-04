@@ -64,9 +64,13 @@ export function Layout({ children }: LayoutProps) {
 
   // Fetch real-time flight statistics
   useEffect(() => {
+    let isMounted = true
+    
     const fetchFlightStats = async () => {
       try {
         const disruptions = await databaseService.getAllDisruptions()
+        
+        if (!isMounted) return // Prevent state update if component unmounted
         
         const totalAffected = disruptions.length
         const highPriority = disruptions.filter(d => 
@@ -84,14 +88,20 @@ export function Layout({ children }: LayoutProps) {
           totalPassengers
         })
       } catch (error) {
-        console.error('Failed to fetch flight statistics:', error)
+        if (isMounted) {
+          console.error('Failed to fetch flight statistics:', error)
+        }
       }
     }
 
     fetchFlightStats()
-    // Refresh stats every 30 seconds
-    const interval = setInterval(fetchFlightStats, 30000)
-    return () => clearInterval(interval)
+    // Refresh stats every 60 seconds (increased from 30 to reduce load)
+    const interval = setInterval(fetchFlightStats, 60000)
+    
+    return () => {
+      isMounted = false
+      clearInterval(interval)
+    }
   }, [])
 
   // Format date and time
