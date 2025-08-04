@@ -350,7 +350,8 @@ app.post('/api/disruptions', async (req, res) => {
         for (const member of crew_members) {
           if (member.name && member.role && member.employeeCode) {
             try {
-              await client.query(`
+              // Insert or update crew member
+              const crewResult = await client.query(`
                 INSERT INTO crew_members (
                   employee_id, name, role, qualifications, duty_time_remaining, 
                   base_location, status, current_flight, contact_info
@@ -361,6 +362,7 @@ app.post('/api/disruptions', async (req, res) => {
                   status = EXCLUDED.status,
                   current_flight = EXCLUDED.current_flight,
                   updated_at = CURRENT_TIMESTAMP
+                RETURNING id
               `, [
                 member.employeeCode, // employee_id
                 member.name, // name
@@ -372,7 +374,23 @@ app.post('/api/disruptions', async (req, res) => {
                 flight_number, // current_flight
                 JSON.stringify({ disruption_id: disruptionId }) // contact_info
               ])
-              console.log(`Inserted/updated crew member: ${member.name} (${member.employeeCode})`)
+
+              const crewMemberId = crewResult.rows[0].id
+
+              // Create crew disruption mapping
+              await client.query(`
+                INSERT INTO crew_disruption_mapping (
+                  disruption_id, crew_member_id, disruption_reason, resolution_status
+                ) VALUES ($1, $2, $3, $4)
+                ON CONFLICT (disruption_id, crew_member_id) DO NOTHING
+              `, [
+                disruptionId,
+                crewMemberId,
+                disruption_reason || `Crew member affected by disruption: ${flight_number}`,
+                'Pending'
+              ])
+
+              console.log(`Inserted/updated crew member: ${member.name} (${member.employeeCode}) and created mapping`)
             } catch (crewError) {
               console.error('Error inserting crew member:', member, crewError)
               // Continue with other crew members even if one fails
@@ -766,6 +784,59 @@ app.get('/api/crew-members', async (req, res) => {
     res.json(result.rows)
   } catch (error) {
     console.error('Error fetching crew members:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Crew Disruption Mapping endpoints
+app.get('/api/crew-disruption-mapping/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+    const client = await pool.connect()
+    const result = await client.query(`
+      SELECT 
+        cdm.*, 
+        cm.name as crew_name, 
+        cm.role as crew_role,
+        cm.employee_id,
+        rcm.name as replacement_name,
+        rcm.role as replacement_role
+      FROM crew_disruption_mapping cdm
+      JOIN crew_members cm ON cdm.crew_member_id = cm.id
+      LEFT JOIN crew_members rcm ON cdm.replacement_crew_id = rcm.id
+      WHERE cdm.disruption_id = $1
+      ORDER BY cdm.created_at
+    `, [disruptionId])
+    client.release()
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching crew disruption mapping:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/crew-disruption-mapping', async (req, res) => {
+  try {
+    const {
+      disruption_id, crew_member_id, disruption_reason, 
+      resolution_status, replacement_crew_id, notes
+    } = req.body
+
+    const client = await pool.connect()
+    const result = await client.query(`
+      INSERT INTO crew_disruption_mapping (
+        disruption_id, crew_member_id, disruption_reason,
+        resolution_status, replacement_crew_id, notes
+      ) VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *
+    `, [
+      disruption_id, crew_member_id, disruption_reason,
+      resolution_status || 'Pending', replacement_crew_id, notes
+    ])
+    client.release()
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error creating crew disruption mapping:', error)
     res.status(500).json({ error: error.message })
   }
 })

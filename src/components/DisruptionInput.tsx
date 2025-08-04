@@ -896,36 +896,41 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
                   {/* Crew Members Section - Only show when Crew issue is selected */}
                   {newDisruption.categorization === "Crew issue (e.g., sick report, duty time breach)" && (
-                    <div className="col-span-2 space-y-4">
-                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
-                        <div className="flex items-center justify-between mb-6">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                              <Users className="h-5 w-5 text-blue-600" />
+                    <div className="col-span-2">
+                      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-xl border border-blue-200 shadow-sm">
+                        {/* Header Section */}
+                        <div className="flex items-center justify-between mb-8">
+                          <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center shadow-inner">
+                              <Users className="h-6 w-6 text-blue-600" />
                             </div>
                             <div>
-                              <h4 className="text-lg font-semibold text-flydubai-navy">Affected Crew Members</h4>
-                              <p className="text-sm text-gray-600">Specify crew members affected by this disruption</p>
+                              <h4 className="text-xl font-bold text-flydubai-navy mb-1">Affected Crew Members</h4>
+                              <p className="text-gray-600">Specify crew members affected by this disruption</p>
                             </div>
                           </div>
                           <Button
                             type="button"
                             variant="default"
-                            size="sm"
+                            size="default"
                             onClick={addCrewMember}
-                            className="bg-flydubai-orange hover:bg-orange-600 text-white shadow-md"
+                            className="bg-flydubai-orange hover:bg-orange-600 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3"
                           >
-                            <Plus className="h-4 w-4 mr-2" />
+                            <Plus className="h-4 w-4 mr-3" />
                             Add Crew Member
                           </Button>
                         </div>
                         
-                        <div className="space-y-4">
+                        {/* Crew Members Grid */}
+                        <div className="space-y-6">
                           {crewMembers.map((member, index) => (
-                            <div key={member.id} className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-                              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                                <div className="space-y-2">
-                                  <Label htmlFor={`crewName-${index}`} className="text-sm font-medium text-gray-700">
+                            <div key={member.id} className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-200">
+                              {/* Form Grid */}
+                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                                {/* Crew Name - 4 columns */}
+                                <div className="lg:col-span-4 space-y-3">
+                                  <Label htmlFor={`crewName-${index}`} className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                                    <Users className="h-4 w-4 text-blue-600" />
                                     Crew Name*
                                   </Label>
                                   <Input
@@ -933,126 +938,150 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                     placeholder="Enter full name"
                                     value={member.name}
                                     onChange={(e) => handleCrewMemberChange(index, 'name', e.target.value)}
-                                    className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                    className="h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-lg text-gray-800 font-medium"
                                   />
                                 </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor={`crewRole-${index}`} className="text-sm font-medium text-gray-700">
+
+                                {/* Crew Role - 4 columns */}
+                                <div className="lg:col-span-4 space-y-3">
+                                  <Label htmlFor={`crewRole-${index}`} className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                                    <Badge className="w-4 h-4 rounded-full bg-blue-600" />
                                     Crew Role*
                                   </Label>
                                   <Select
                                     value={member.role}
                                     onValueChange={(value) => handleCrewMemberChange(index, 'role', value)}
                                   >
-                                    <SelectTrigger className="border-gray-300 focus:border-blue-500">
+                                    <SelectTrigger className="h-12 border-2 border-gray-200 focus:border-blue-500 rounded-lg">
                                       <SelectValue placeholder="Select role" />
                                     </SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="Captain">
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                                          Captain
+                                        <div className="flex items-center gap-3 py-1">
+                                          <div className="w-3 h-3 bg-red-500 rounded-full shadow-sm"></div>
+                                          <span className="font-medium">Captain</span>
                                         </div>
                                       </SelectItem>
                                       <SelectItem value="First Officer">
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                          First Officer
+                                        <div className="flex items-center gap-3 py-1">
+                                          <div className="w-3 h-3 bg-orange-500 rounded-full shadow-sm"></div>
+                                          <span className="font-medium">First Officer</span>
                                         </div>
                                       </SelectItem>
                                       <SelectItem value="Senior Cabin Crew">
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                          Senior Cabin Crew
+                                        <div className="flex items-center gap-3 py-1">
+                                          <div className="w-3 h-3 bg-blue-500 rounded-full shadow-sm"></div>
+                                          <span className="font-medium">Senior Cabin Crew</span>
                                         </div>
                                       </SelectItem>
                                       <SelectItem value="Cabin Crew">
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                          Cabin Crew
+                                        <div className="flex items-center gap-3 py-1">
+                                          <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm"></div>
+                                          <span className="font-medium">Cabin Crew</span>
                                         </div>
                                       </SelectItem>
                                       <SelectItem value="Flight Engineer">
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                                          Flight Engineer
+                                        <div className="flex items-center gap-3 py-1">
+                                          <div className="w-3 h-3 bg-purple-500 rounded-full shadow-sm"></div>
+                                          <span className="font-medium">Flight Engineer</span>
                                         </div>
                                       </SelectItem>
                                     </SelectContent>
                                   </Select>
                                 </div>
-                                <div className="space-y-2">
-                                  <Label htmlFor={`employeeCode-${index}`} className="text-sm font-medium text-gray-700">
-                                    Employee Code*
+
+                                {/* Employee ID - 3 columns */}
+                                <div className="lg:col-span-3 space-y-3">
+                                  <Label htmlFor={`employeeCode-${index}`} className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                                    <div className="w-4 h-4 bg-purple-600 rounded flex items-center justify-center">
+                                      <span className="text-white text-xs font-bold">ID</span>
+                                    </div>
+                                    Employee ID*
                                   </Label>
                                   <Input
                                     id={`employeeCode-${index}`}
                                     placeholder="EMP####"
                                     value={member.employeeCode}
                                     onChange={(e) => handleCrewMemberChange(index, 'employeeCode', e.target.value)}
-                                    className="border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                    className="h-12 border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 rounded-lg text-gray-800 font-medium"
                                   />
                                 </div>
-                                <div className="flex flex-col items-center gap-2">
-                                  <div className="text-xs text-gray-500 mb-1">Actions</div>
+
+                                {/* Actions - 1 column */}
+                                <div className="lg:col-span-1 flex flex-col items-center justify-end h-full">
                                   <Button
                                     type="button"
                                     variant="outline"
                                     size="sm"
                                     onClick={() => removeCrewMember(index)}
                                     disabled={crewMembers.length === 1}
-                                    className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 disabled:opacity-50"
+                                    className="w-12 h-12 border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
                                   >
-                                    <Trash2 className="h-4 w-4" />
+                                    <Trash2 className="h-5 w-5" />
                                   </Button>
                                 </div>
                               </div>
                               
-                              {/* Crew member summary */}
+                              {/* Crew Member Summary Card */}
                               {member.name && member.role && member.employeeCode && (
-                                <div className="mt-3 p-3 bg-gray-50 rounded-md">
-                                  <div className="flex items-center gap-2 text-sm">
-                                    <Badge variant="secondary" className="text-xs">
-                                      {member.role}
-                                    </Badge>
-                                    <span className="text-gray-700">{member.name}</span>
-                                    <span className="text-gray-500">•</span>
-                                    <span className="text-gray-600">ID: {member.employeeCode}</span>
+                                <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                      <Badge 
+                                        variant="secondary" 
+                                        className="px-3 py-1 text-sm font-semibold bg-blue-100 text-blue-800 border border-blue-200"
+                                      >
+                                        {member.role}
+                                      </Badge>
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-gray-800 font-semibold text-lg">{member.name}</span>
+                                        <span className="text-gray-400">•</span>
+                                        <span className="text-gray-600 font-medium">ID: {member.employeeCode}</span>
+                                      </div>
+                                    </div>
+                                    <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm animate-pulse"></div>
                                   </div>
                                 </div>
                               )}
                             </div>
                           ))}
                           
+                          {/* Empty State */}
                           {crewMembers.length === 0 && (
-                            <div className="text-center py-8 text-gray-500">
-                              <Users className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                              <p>No crew members added yet</p>
-                              <p className="text-sm">Click "Add Crew Member" to get started</p>
+                            <div className="text-center py-12 bg-white rounded-xl border-2 border-dashed border-gray-300">
+                              <Users className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+                              <h3 className="text-lg font-semibold text-gray-600 mb-2">No crew members added yet</h3>
+                              <p className="text-gray-500">Click "Add Crew Member" to get started</p>
                             </div>
                           )}
                         </div>
                         
-                        {/* Summary footer */}
+                        {/* Enhanced Summary Footer */}
                         {crewMembers.length > 0 && (
-                          <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                            <div className="flex items-center justify-between text-sm">
-                              <span className="text-blue-700 font-medium">
-                                Total Affected Crew: {crewMembers.length}
-                              </span>
-                              <div className="flex gap-2">
+                          <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200 shadow-inner">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                  <span className="text-white font-bold text-sm">{crewMembers.length}</span>
+                                </div>
+                                <span className="text-blue-800 font-bold text-lg">
+                                  Total Affected Crew: {crewMembers.length}
+                                </span>
+                              </div>
+                              
+                              <div className="flex gap-3">
                                 {crewMembers.filter(m => m.role === 'Captain').length > 0 && (
-                                  <Badge variant="outline" className="text-xs border-red-300 text-red-700">
+                                  <Badge className="px-3 py-1 bg-red-100 text-red-800 border border-red-300 font-semibold">
                                     {crewMembers.filter(m => m.role === 'Captain').length} Captain(s)
                                   </Badge>
                                 )}
                                 {crewMembers.filter(m => m.role === 'First Officer').length > 0 && (
-                                  <Badge variant="outline" className="text-xs border-orange-300 text-orange-700">
+                                  <Badge className="px-3 py-1 bg-orange-100 text-orange-800 border border-orange-300 font-semibold">
                                     {crewMembers.filter(m => m.role === 'First Officer').length} FO(s)
                                   </Badge>
                                 )}
                                 {crewMembers.filter(m => m.role.includes('Cabin')).length > 0 && (
-                                  <Badge variant="outline" className="text-xs border-blue-300 text-blue-700">
+                                  <Badge className="px-3 py-1 bg-green-100 text-green-800 border border-green-300 font-semibold">
                                     {crewMembers.filter(m => m.role.includes('Cabin')).length} Cabin Crew
                                   </Badge>
                                 )}
