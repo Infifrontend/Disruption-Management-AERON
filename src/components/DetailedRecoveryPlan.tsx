@@ -121,24 +121,24 @@ export function DetailedRecoveryPlan({ plan, flight }) {
       case 'aircraft-swap':
       case 'aircraft-substitution':
         return getAircraftSwapPlanData(plan, flight, disruptionType)
-      
+
       case 'crew-pairing':
       case 'crew-change':
         return getCrewPairingPlanData(plan, flight, disruptionType)
-      
+
       case 'schedule-adjustment':
       case 'flight-reschedule':
         return getScheduleAdjustmentPlanData(plan, flight, disruptionType)
-      
+
       case 'passenger-reaccommodation':
         return getPassengerReaccommodationPlanData(plan, flight, disruptionType)
-      
+
       case 'route-optimization':
         return getRouteOptimizationPlanData(plan, flight, disruptionType)
-      
+
       case 'maintenance-recovery':
         return getMaintenanceRecoveryPlanData(plan, flight, disruptionType)
-      
+
       default:
         return getAircraftSwapPlanData(plan, flight, disruptionType)
     }
@@ -157,7 +157,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
       type: 'Aircraft Swap',
       priority: disruptionType === 'aircraft-issue' ? 'Critical' : 'High',
       status: 'Ready for Execution',
-      
+
       summary: {
         description: `Swap ${originalAircraft} (${originalType}) with ${replacementAircraft} (${replacementType}) for ${flight.flightNumber} ${flight.route}`,
         estimatedDelay: plan.delay || '35 minutes',
@@ -236,7 +236,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
       type: 'Crew Pairing',
       priority: disruptionType === 'crew-issue' ? 'Critical' : 'High',
       status: 'Ready for Execution',
-      
+
       summary: {
         description: `Assign backup crew for ${flight.flightNumber} ${flight.route} due to ${disruptionType === 'crew-issue' ? 'crew sick report' : 'crew unavailability'}`,
         estimatedDelay: plan.delay || '25 minutes',
@@ -314,7 +314,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
       type: 'Schedule Adjustment',
       priority: disruptionType === 'weather' ? 'High' : 'Medium',
       status: 'Ready for Execution',
-      
+
       summary: {
         description: `Reschedule ${flight.flightNumber} ${flight.route} due to ${disruptionType === 'weather' ? 'adverse weather conditions' : 'operational constraints'}`,
         estimatedDelay: plan.delay || '90 minutes',
@@ -390,7 +390,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
       type: 'Passenger Reaccommodation',
       priority: 'High',
       status: 'Ready for Execution',
-      
+
       summary: {
         description: `Reaccommodate passengers from ${flight.flightNumber} ${flight.route} on alternative flights due to ${disruptionType}`,
         estimatedDelay: 'Various (2-8 hours)',
@@ -467,7 +467,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
       type: 'Route Optimization',
       priority: 'Medium',
       status: 'Ready for Execution',
-      
+
       summary: {
         description: `Optimize flight path for ${flight.flightNumber} ${flight.route} to minimize delay impact due to ${disruptionType}`,
         estimatedDelay: plan.delay || '15 minutes',
@@ -542,7 +542,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
       type: 'Maintenance Recovery',
       priority: 'Critical',
       status: 'Ready for Execution',
-      
+
       summary: {
         description: `Execute maintenance recovery for ${flight.flightNumber} ${flight.route} following ${disruptionType}`,
         estimatedDelay: plan.delay || '120 minutes',
@@ -621,7 +621,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
       type: 'General Recovery',
       priority: 'Medium',
       status: 'Template',
-      
+
       summary: {
         description: 'Please select a recovery option to view detailed plan',
         estimatedDelay: 'N/A',
@@ -640,6 +640,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
   }
 
   const [planData, setPlanData] = useState(generateRecoveryPlanData())
+  const [currentTime] = useState(new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }))
 
   useEffect(() => {
     const newPlanData = generateRecoveryPlanData()
@@ -720,11 +721,11 @@ export function DetailedRecoveryPlan({ plan, flight }) {
   // Run what-if simulation
   const runResourceSimulation = () => {
     setResourceSimulationRunning(true)
-    
+
     setTimeout(() => {
       const violations = analyzeViolations()
       const costs = calculateCostImpact()
-      
+
       setViolationAnalysis(violations)
       setCostAnalysis(costs)
       setResourceSimulationRunning(false)
@@ -733,7 +734,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
 
   const analyzeViolations = () => {
     const violations = []
-    
+
     // Aircraft violations
     if (modifiedResources?.aircraft?.replacement) {
       const aircraft = availableAircraft.find(a => a.tail === modifiedResources.aircraft.replacement.tail)
@@ -877,7 +878,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
 
   const runSimulation = () => {
     setSimulationRunning(true)
-    
+
     // Simulate analysis time
     setTimeout(() => {
       const simulationData = {
@@ -894,7 +895,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
           'Coordinate with ground handling for expedited service'
         ]
       }
-      
+
       setSimulationResults(simulationData)
       setSimulationRunning(false)
     }, 3000)
@@ -930,7 +931,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
             {planData.type} • {planData.status} • {planData.planId}
           </p>
         </div>
-        
+
         <div className="flex items-center gap-4">
           <Badge className={`${
             planData.priority === 'Critical' ? 'bg-red-100 text-red-700 border-red-200' :
@@ -939,7 +940,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
           }`}>
             {planData.priority} Priority
           </Badge>
-          
+
           <div className="flex gap-2">
             <Button 
               variant="outline"
@@ -949,7 +950,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
               {editMode ? <Save className="h-4 w-4 mr-2" /> : <Edit className="h-4 w-4 mr-2" />}
               {editMode ? 'Save Changes' : 'Edit Plan'}
             </Button>
-            
+
             <Button 
               onClick={runSimulation}
               disabled={simulationRunning}
@@ -979,7 +980,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -991,7 +992,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -1003,7 +1004,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -1039,7 +1040,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
               </CardHeader>
               <CardContent>
                 <p className="text-muted-foreground mb-4">{planData.summary.description}</p>
-                
+
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm font-medium">Plan Type:</span>
@@ -1179,7 +1180,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                 <Edit className="h-4 w-4 mr-2" />
                 {resourceEditMode ? 'View Mode' : 'Edit Resources'}
               </Button>
-              
+
               {resourceEditMode && (
                 <Button
                   onClick={runResourceSimulation}
@@ -1270,7 +1271,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                           {costAnalysis.variance >= 0 ? '+' : ''}AED {costAnalysis.variance.toLocaleString()}
                         </span>
                       </div>
-                      
+
                       <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                         <h4 className="font-medium mb-2">Cost Breakdown:</h4>
                         <div className="space-y-1 text-sm">
@@ -1359,7 +1360,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                             </div>
                           )}
                         </div>
-                        
+
                         {/* Aircraft Details */}
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div>
@@ -1428,7 +1429,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                             </div>
                           )}
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div>
                             <span className="text-muted-foreground">Status:</span>
@@ -1465,7 +1466,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                           <label className="text-sm font-medium mb-2 block">Position</label>
                           <Badge variant="outline">{member.role}</Badge>
                         </div>
-                        
+
                         <div>
                           <label className="text-sm font-medium mb-2 block">Crew Member</label>
                           {resourceEditMode ? (
@@ -1505,7 +1506,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                             </div>
                           )}
                         </div>
-                        
+
                         <div className="space-y-2 text-sm">
                           <div>
                             <span className="text-muted-foreground">Status:</span>
@@ -1580,17 +1581,17 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                               <div className="font-medium">{support.name}</div>
                             )}
                           </div>
-                          
+
                           <div>
                             <span className="text-sm text-muted-foreground">Type:</span>
                             <div className="font-medium">{support.type}</div>
                           </div>
-                          
+
                           <div>
                             <span className="text-sm text-muted-foreground">Personnel:</span>
                             <div className="font-medium">{support.personnel || 'N/A'}</div>
                           </div>
-                          
+
                           <div>
                             <span className="text-sm text-muted-foreground">Status:</span>
                             <Badge className={`${
@@ -1602,7 +1603,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                             </Badge>
                           </div>
                         </div>
-                        
+
                         {resourceEditMode && (
                           <Button
                             variant="outline"
@@ -1616,7 +1617,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                       </div>
                     </div>
                   ))}
-                  
+
                   {resourceEditMode && (
                     <Button
                       variant="outline"
@@ -1674,7 +1675,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                     </div>
                     <Progress value={85} className="h-3" />
                   </div>
-                  
+
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-medium">Passenger Satisfaction</span>
@@ -1682,7 +1683,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                     </div>
                     <Progress value={78} className="h-3" />
                   </div>
-                  
+
                   <div>
                     <div className="flex justify-between mb-2">
                       <span className="text-sm font-medium">Operational Efficiency</span>
@@ -1726,7 +1727,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                         </div>
                         <span className="text-sm font-medium">{risk.probability}</span>
                       </div>
-                      
+
                       <h4 className="font-medium mb-2">{risk.description}</h4>
                       <p className="text-sm text-muted-foreground">
                         <span className="font-medium">Mitigation:</span> {risk.mitigation}
@@ -1771,7 +1772,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                           </SelectContent>
                         </Select>
                       </div>
-                      
+
                       <div>
                         <label className="text-sm font-medium mb-2 block">Airport Congestion</label>
                         <Select 
@@ -1788,7 +1789,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                           </SelectContent>
                         </Select>
                       </div>
-                      
+
                       <div>
                         <label className="text-sm font-medium mb-2 block">Resource Availability</label>
                         <Select 
@@ -1822,7 +1823,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                     )}
                     {simulationRunning ? 'Running Simulation...' : 'Run Chain Reaction Analysis'}
                   </Button>
-                  
+
                   {simulationRunning && (
                     <div className="flex items-center gap-2">
                       <div className="w-4 h-4 border-2 border-flydubai-orange border-t-transparent rounded-full animate-spin"></div>
@@ -1839,7 +1840,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                         Simulation completed successfully. {simulationResults.chainReactionsDetected} chain reactions detected with {simulationResults.riskFactors} risk factors.
                       </AlertDescription>
                     </Alert>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <Card>
                         <CardHeader>
@@ -1856,7 +1857,7 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                           </ul>
                         </CardContent>
                       </Card>
-                      
+
                       <Card>
                         <CardHeader>
                           <CardTitle className="text-base">Optimization Suggestions</CardTitle>

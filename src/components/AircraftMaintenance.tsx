@@ -50,6 +50,7 @@ import {
   Info
 } from 'lucide-react'
 import { format } from 'date-fns'
+import { utcToZonedTime, format as formatTZ } from 'date-fns-tz'
 
 // Mock data
 const maintenanceSchedule = [
@@ -223,6 +224,18 @@ export function AircraftMaintenance() {
     )
   })
 
+    // Function to format date in IST
+    const formatInIST = (dateStr) => {
+        try {
+            const timeZone = 'Asia/Kolkata';
+            const zonedDate = utcToZonedTime(dateStr, timeZone);
+            return formatTZ(zonedDate, 'yyyy-MM-dd HH:mm', { timeZone });  // Consistent format
+        } catch (error) {
+            console.error("Error formatting date:", error);
+            return 'Invalid Date';
+        }
+    };
+
   return (
     <TooltipProvider>
       <div className="space-y-6">
@@ -345,6 +358,7 @@ export function AircraftMaintenance() {
               filteredMaintenanceSchedule={filteredMaintenanceSchedule}
               getStatusColor={getStatusColor}
               setShowUploadModal={setShowUploadModal}
+              formatInIST={formatInIST}
             />
           </TabsContent>
 
@@ -354,6 +368,7 @@ export function AircraftMaintenance() {
               getSeverityColor={getSeverityColor}
               getStatusColor={getStatusColor}
               setShowIncidentModal={setShowIncidentModal}
+                formatInIST={formatInIST}
             />
           </TabsContent>
 
@@ -361,11 +376,12 @@ export function AircraftMaintenance() {
             <MaintenanceTimeline 
               maintenanceSchedule={maintenanceSchedule}
               unscheduledMaintenance={unscheduledMaintenance}
+                formatInIST={formatInIST}
             />
           </TabsContent>
 
           <TabsContent value="health">
-            <FleetHealthSummary />
+            <FleetHealthSummary formatInIST={formatInIST}/>
           </TabsContent>
         </Tabs>
 
@@ -558,7 +574,8 @@ function ScheduledMaintenanceView({
   setFilters, 
   filteredMaintenanceSchedule, 
   getStatusColor,
-  setShowUploadModal 
+  setShowUploadModal,
+    formatInIST
 }) {
   return (
     <Card>
@@ -568,7 +585,7 @@ function ScheduledMaintenanceView({
             <CalendarIcon className="h-5 w-5" />
             Scheduled Maintenance View
           </CardTitle>
-          
+
           <div className="flex items-center gap-2">
             <div className="flex bg-muted rounded-lg p-1">
               <Button
@@ -590,12 +607,12 @@ function ScheduledMaintenanceView({
                 Table
               </Button>
             </div>
-            
+
             <Button onClick={() => setShowUploadModal(true)} className="flex items-center gap-2">
               <Upload className="h-4 w-4" />
               Upload Plan
             </Button>
-            
+
             <Tooltip>
               <TooltipTrigger asChild>
                 <Button variant="outline" className="flex items-center gap-2">
@@ -610,7 +627,7 @@ function ScheduledMaintenanceView({
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         {/* Filters */}
         <Card className="border-blue-200 bg-blue-50">
@@ -624,7 +641,7 @@ function ScheduledMaintenanceView({
                   onChange={(e) => setFilters({...filters, tailNumber: e.target.value})}
                 />
               </div>
-              
+
               <div>
                 <Label>Date Range</Label>
                 <Input 
@@ -633,7 +650,7 @@ function ScheduledMaintenanceView({
                   onChange={(e) => setFilters({...filters, dateRange: e.target.value})}
                 />
               </div>
-              
+
               <div>
                 <Label>Maintenance Type</Label>
                 <Select value={filters.maintenanceType} onValueChange={(value) => setFilters({...filters, maintenanceType: value})}>
@@ -650,7 +667,7 @@ function ScheduledMaintenanceView({
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <Label>Location</Label>
                 <Select value={filters.location} onValueChange={(value) => setFilters({...filters, location: value})}>
@@ -696,8 +713,8 @@ function ScheduledMaintenanceView({
                         {item.maintenanceType}
                       </Badge>
                     </TableCell>
-                    <TableCell className="font-mono text-sm">{item.startTime}</TableCell>
-                    <TableCell className="font-mono text-sm">{item.endTime}</TableCell>
+                    <TableCell className="font-mono text-sm">{formatInIST(item.startTime)}</TableCell>
+                    <TableCell className="font-mono text-sm">{formatInIST(item.endTime)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <MapPin className="h-3 w-3 text-muted-foreground" />
@@ -758,7 +775,7 @@ function ScheduledMaintenanceView({
                       <p className="text-sm text-muted-foreground mb-2">{item.description}</p>
                       <div className="flex items-center gap-4 text-xs text-muted-foreground">
                         <span>📍 {item.location}</span>
-                        <span>🕒 {item.startTime} - {item.endTime}</span>
+                        <span>🕒 {formatInIST(item.startTime)} - {formatInIST(item.endTime)}</span>
                         <span>👥 {item.technicianTeam}</span>
                       </div>
                     </CardContent>
@@ -773,7 +790,7 @@ function ScheduledMaintenanceView({
   )
 }
 
-function UnscheduledMaintenanceReporting({ unscheduledMaintenance, getSeverityColor, getStatusColor, setShowIncidentModal }) {
+function UnscheduledMaintenanceReporting({ unscheduledMaintenance, getSeverityColor, getStatusColor, setShowIncidentModal, formatInIST }) {
   return (
     <Card>
       <CardHeader>
@@ -788,7 +805,7 @@ function UnscheduledMaintenanceReporting({ unscheduledMaintenance, getSeverityCo
           </Button>
         </div>
       </CardHeader>
-      
+
       <CardContent>
         <div className="space-y-4">
           {unscheduledMaintenance.map((incident) => (
@@ -808,13 +825,13 @@ function UnscheduledMaintenanceReporting({ unscheduledMaintenance, getSeverityCo
                     {incident.status}
                   </Badge>
                 </div>
-                
+
                 <p className="text-sm mb-3">{incident.description}</p>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs text-muted-foreground">
                   <div>
                     <span className="font-medium">Reported:</span>
-                    <div>{incident.dateTime}</div>
+                    <div>{formatInIST(incident.dateTime)}</div>
                     <div>By: {incident.reportedBy}</div>
                   </div>
                   <div>
@@ -826,7 +843,7 @@ function UnscheduledMaintenanceReporting({ unscheduledMaintenance, getSeverityCo
                     <div>{incident.partRequired}</div>
                   </div>
                 </div>
-                
+
                 {incident.attachments && incident.attachments.length > 0 && (
                   <div className="mt-3">
                     <span className="text-xs font-medium text-muted-foreground">Attachments:</span>
@@ -839,7 +856,7 @@ function UnscheduledMaintenanceReporting({ unscheduledMaintenance, getSeverityCo
                     </div>
                   </div>
                 )}
-                
+
                 <div className="flex justify-end gap-2 mt-3">
                   <Button variant="outline" size="sm">
                     <Eye className="h-3 w-3 mr-1" />
@@ -859,7 +876,7 @@ function UnscheduledMaintenanceReporting({ unscheduledMaintenance, getSeverityCo
   )
 }
 
-function MaintenanceTimeline({ maintenanceSchedule, unscheduledMaintenance }) {
+function MaintenanceTimeline({ maintenanceSchedule, unscheduledMaintenance, formatInIST }) {
   return (
     <Card>
       <CardHeader>
@@ -868,7 +885,7 @@ function MaintenanceTimeline({ maintenanceSchedule, unscheduledMaintenance }) {
           Maintenance Timeline
         </CardTitle>
       </CardHeader>
-      
+
       <CardContent>
         <div className="space-y-6">
           {/* Legend */}
@@ -899,7 +916,7 @@ function MaintenanceTimeline({ maintenanceSchedule, unscheduledMaintenance }) {
                   <div className="font-mono font-medium">{item.tailNumber}</div>
                   <div className="text-xs text-muted-foreground">{item.aircraftType}</div>
                 </div>
-                
+
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <Badge className={
@@ -912,7 +929,7 @@ function MaintenanceTimeline({ maintenanceSchedule, unscheduledMaintenance }) {
                     <span className="font-medium">{item.maintenanceType}</span>
                     <span className="text-sm text-muted-foreground">at {item.location}</span>
                   </div>
-                  
+
                   <div className="relative">
                     <div className="h-2 bg-gray-200 rounded-full">
                       <div 
@@ -928,13 +945,13 @@ function MaintenanceTimeline({ maintenanceSchedule, unscheduledMaintenance }) {
                       ></div>
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                    <span>{item.startTime}</span>
-                    <span>{item.endTime}</span>
+                    <span>{formatInIST(item.startTime)}</span>
+                    <span>{formatInIST(item.endTime)}</span>
                   </div>
                 </div>
-                
+
                 <div className="text-right">
                   <div className="font-medium text-sm">${(item.estimatedCost / 1000).toFixed(0)}K</div>
                   <div className="text-xs text-muted-foreground">{item.technicianTeam}</div>
@@ -948,7 +965,7 @@ function MaintenanceTimeline({ maintenanceSchedule, unscheduledMaintenance }) {
   )
 }
 
-function FleetHealthSummary() {
+function FleetHealthSummary({formatInIST}) {
   const healthMetrics = [
     { metric: 'Fleet Availability', value: 94.2, target: 95, unit: '%', trend: 'up' },
     { metric: 'On-Time Completion', value: 87.5, target: 90, unit: '%', trend: 'down' },
@@ -990,7 +1007,7 @@ function FleetHealthSummary() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="flex items-baseline gap-2 mb-2">
                     <span className="text-2xl font-semibold">
                       {metric.unit === '$' ? '$' : ''}{metric.value.toLocaleString()}{metric.unit !== '$' ? metric.unit : ''}
@@ -999,7 +1016,7 @@ function FleetHealthSummary() {
                       Target: {metric.unit === '$' ? '$' : ''}{metric.target.toLocaleString()}{metric.unit !== '$' ? metric.unit : ''}
                     </span>
                   </div>
-                  
+
                   <Progress 
                     value={(metric.value / metric.target) * 100} 
                     className="h-2"
@@ -1027,7 +1044,7 @@ function FleetHealthSummary() {
                   <div className="font-mono font-medium">{aircraft.tailNumber}</div>
                   <div className="text-xs text-muted-foreground">{aircraft.type}</div>
                 </div>
-                
+
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-sm font-medium">Health Score</span>
@@ -1039,15 +1056,15 @@ function FleetHealthSummary() {
                       {aircraft.healthScore}%
                     </Badge>
                   </div>
-                  
+
                   <Progress value={aircraft.healthScore} className="h-2 mb-2" />
-                  
+
                   <div className="flex justify-between text-xs text-muted-foreground">
                     <span>Next Check: {aircraft.nextCheck}</span>
                     <span>{aircraft.hoursToCheck} hours remaining</span>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm">
                     <Eye className="h-3 w-3 mr-1" />

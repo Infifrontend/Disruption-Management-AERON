@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS settings (
     value JSONB NOT NULL,
     type VARCHAR(20) NOT NULL CHECK (type IN ('boolean', 'number', 'string', 'object', 'array')),
     description TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
     updated_by VARCHAR(100) DEFAULT 'system',
     is_active BOOLEAN DEFAULT true,
     UNIQUE(category, key)
@@ -44,9 +44,9 @@ CREATE TABLE IF NOT EXISTS custom_rules (
     actions TEXT,
     status VARCHAR(20) DEFAULT 'Active' CHECK (status IN ('Active', 'Inactive', 'Draft')),
     created_by VARCHAR(100) NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
     updated_by VARCHAR(100),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
 );
 
 -- Custom parameters table for recovery configuration
@@ -185,7 +185,7 @@ INSERT INTO settings (category, key, value, type, description, updated_by) VALUE
 ('passengerScoring', 'vipWeight', '40', 'number', 'Weight percentage for VIP status in passenger scoring', 'system'),
 ('passengerScoring', 'loyaltyWeight', '25', 'number', 'Weight percentage for loyalty tier in passenger scoring', 'system'),
 ('passengerScoring', 'specialNeedsWeight', '20', 'number', 'Weight percentage for special needs in passenger scoring', 'system'),
-('passengerScoring', 'revenueWeight', '15', 'number', 'Weight percentage for ticket revenue in passenger scoring', 'system'),
+('revenueWeight', '15', 'number', 'Weight percentage for ticket revenue in passenger scoring', 'system'),
 
 -- NLP Settings
 ('nlpSettings', 'enabled', 'true', 'boolean', 'Enable natural language processing for user inputs', 'system'),
@@ -233,8 +233,8 @@ CREATE TABLE IF NOT EXISTS flight_disruptions (
     disruption_type VARCHAR(50) NOT NULL,
     status VARCHAR(20) NOT NULL,
     disruption_reason TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
 );
 
 -- Add missing columns if they don't exist (for existing databases)
@@ -340,8 +340,8 @@ CREATE TABLE IF NOT EXISTS passengers (
     rebooking_status VARCHAR(50),
     new_flight_number VARCHAR(10),
     new_seat_number VARCHAR(10),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
 );
 
 -- Crew Members table
@@ -356,8 +356,8 @@ CREATE TABLE IF NOT EXISTS crew_members (
     status VARCHAR(20) NOT NULL CHECK (status IN ('Available', 'On Duty', 'Rest', 'Unavailable')),
     current_flight VARCHAR(10),
     contact_info JSONB,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
 );
 
 -- Aircraft table
@@ -370,8 +370,8 @@ CREATE TABLE IF NOT EXISTS aircraft (
     maintenance_status VARCHAR(20) NOT NULL CHECK (maintenance_status IN ('Operational', 'Due', 'In Progress')),
     fuel_level DECIMAL(5,2),
     next_maintenance DATE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
 );
 
 -- Hotel Bookings table
@@ -385,8 +385,8 @@ CREATE TABLE IF NOT EXISTS hotel_bookings (
   cost DECIMAL(10,2),
   status VARCHAR(50) DEFAULT 'Pending',
   booking_reference VARCHAR(100),
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+  updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
 );
 
 -- Recovery Logs table for historical data
@@ -426,7 +426,7 @@ CREATE TABLE IF NOT EXISTS recovery_logs (
     network_impact VARCHAR(20),
     downstream_flights_affected INTEGER,
     details JSONB,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
 );
 
 -- Indexes for better performance
@@ -449,8 +449,8 @@ CREATE TABLE IF NOT EXISTS recovery_steps (
     system VARCHAR(100),
     details TEXT,
     step_data JSONB,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Indexes for performance

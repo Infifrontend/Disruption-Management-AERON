@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
@@ -107,7 +106,8 @@ export function PastRecoveryLogs() {
   })
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
+    return new Date(dateString).toLocaleDateString('en-IN', {
+      timeZone: 'Asia/Kolkata',
       month: 'short',
       day: 'numeric',
       year: 'numeric'
@@ -115,7 +115,8 @@ export function PastRecoveryLogs() {
   }
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString('en-US', {
+    return new Date(dateString).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
@@ -421,7 +422,7 @@ export function PastRecoveryLogs() {
                   <p className="font-medium">{(Number(selectedLog.passenger_satisfaction) || 0).toFixed(1)}/10</p>
                 </div>
               </div>
-              
+
               {selectedLog.solution_chosen && (
                 <div>
                   <Label className="text-sm font-medium">Solution Chosen</Label>

@@ -3897,11 +3897,14 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
                   <div>
                     <Label className="text-sm font-medium">Time Zone</Label>
-                    <Select defaultValue="gulf-standard">
+                    <Select defaultValue="indian-standard">
                       <SelectTrigger className="w-full mt-2">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        <SelectItem value="indian-standard">
+                          Indian Standard Time (IST)
+                        </SelectItem>
                         <SelectItem value="gulf-standard">
                           Gulf Standard Time (GST)
                         </SelectItem>
