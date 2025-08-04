@@ -162,7 +162,7 @@ class SettingsStorage {
           key: setting.key,
           value: setting.value,
           type: setting.type,
-          updatedAt: new Date().toISOString(),
+          updatedAt: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
           updatedBy: 'system'
         }
         this.storage.set(id, settingData)
@@ -205,7 +205,7 @@ class SettingsStorage {
         key,
         value,
         type,
-        updatedAt: new Date().toISOString(),
+        updatedAt: new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }),
         updatedBy: userId
       }
 
