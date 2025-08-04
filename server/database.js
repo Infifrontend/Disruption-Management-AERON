@@ -306,7 +306,7 @@ app.post('/api/disruptions', async (req, res) => {
     const {
       flight_number, route, origin, destination, origin_city, destination_city,
       aircraft, scheduled_departure, estimated_departure, delay_minutes, 
-      passengers, crew, severity, disruption_type, status, disruption_reason, connection_flights
+      passengers, crew, severity, disruption_type, status, disruption_reason, connection_flights, crew_members
     } = req.body
 
     // Validate required fields
@@ -322,29 +322,81 @@ app.post('/api/disruptions', async (req, res) => {
     const safeDestination = destination || 'Unknown'
     const safeRoute = route || `${safeOrigin} → ${safeDestination}`
 
-    const result = await pool.query(`
-      INSERT INTO flight_disruptions (
-        flight_number, route, origin, destination, origin_city, destination_city,
-        aircraft, scheduled_departure, estimated_departure, delay_minutes, 
-        passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-      RETURNING *
-    `, [
-      flight_number, safeRoute, safeOrigin, safeDestination, origin_city, destination_city,
-      aircraft, scheduled_departure, estimated_departure, delay_minutes || 0,
-      passengers, crew, connection_flights || 0, severity || 'Medium', disruption_type || 'Technical', 
-      status || 'Active', disruption_reason || 'Unknown disruption'
-    ])
+    const client = await pool.connect()
+    try {
+      await client.query('BEGIN')
 
-    console.log('Successfully saved disruption:', result.rows[0])
-    res.json(result.rows[0])
+      const result = await client.query(`
+        INSERT INTO flight_disruptions (
+          flight_number, route, origin, destination, origin_city, destination_city,
+          aircraft, scheduled_departure, estimated_departure, delay_minutes, 
+          passengers, crew, severity, disruption_type, status, disruption_reason, connection_flights
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+        RETURNING *
+      `, [
+        flight_number, safeRoute, safeOrigin, safeDestination, origin_city, destination_city,
+        aircraft, scheduled_departure, estimated_departure, delay_minutes || 0,
+        passengers, crew, connection_flights || 0, severity || 'Medium', disruption_type || 'Technical', 
+        status || 'Active', disruption_reason || 'Unknown disruption'
+      ])
+
+      const disruptionId = result.rows[0].id
+      console.log('Successfully inserted disruption:', result.rows[0])
+
+      // Insert crew members if provided
+      if (crew_members && Array.isArray(crew_members) && crew_members.length > 0) {
+        console.log('Inserting crew members:', crew_members)
+
+        for (const member of crew_members) {
+          if (member.name && member.role && member.employeeCode) {
+            try {
+              await client.query(`
+                INSERT INTO crew_members (
+                  employee_id, name, role, qualifications, duty_time_remaining, 
+                  base_location, status, current_flight, contact_info
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+                ON CONFLICT (employee_id) DO UPDATE SET
+                  name = EXCLUDED.name,
+                  role = EXCLUDED.role,
+                  status = EXCLUDED.status,
+                  current_flight = EXCLUDED.current_flight,
+                  updated_at = CURRENT_TIMESTAMP
+              `, [
+                member.employeeCode, // employee_id
+                member.name, // name
+                member.role, // role
+                [member.role], // qualifications array
+                480, // duty_time_remaining (8 hours default)
+                'DXB', // base_location default
+                'Unavailable', // status (affected by disruption)
+                flight_number, // current_flight
+                JSON.stringify({ disruption_id: disruptionId }) // contact_info
+              ])
+              console.log(`Inserted/updated crew member: ${member.name} (${member.employeeCode})`)
+            } catch (crewError) {
+              console.error('Error inserting crew member:', member, crewError)
+              // Continue with other crew members even if one fails
+            }
+          }
+        }
+      }
+      await client.query('COMMIT')
+      res.json(result.rows[0])
+
+    } catch (error) {
+      await client.query('ROLLBACK')
+      console.error('Error saving disruption or related data:', error)
+      res.status(500).json({ 
+        error: 'Failed to save disruption', 
+        details: error.message,
+        code: error.code 
+      })
+    } finally {
+      client.release()
+    }
   } catch (error) {
-    console.error('Error saving disruption:', error)
-    res.status(500).json({ 
-      error: 'Failed to save disruption', 
-      details: error.message,
-      code: error.code 
-    })
+    console.error('Error connecting to database:', error)
+    res.status(500).json({ error: 'Database connection error', details: error.message })
   }
 })
 
@@ -369,13 +421,13 @@ app.get('/api/recovery-steps/:disruptionId', async (req, res) => {
   try {
     const { disruptionId } = req.params
     console.log(`Fetching recovery steps for disruption ID: ${disruptionId}`)
-    
+
     const result = await pool.query(`
       SELECT * FROM recovery_steps 
       WHERE disruption_id = $1 
       ORDER BY step_number ASC, id ASC
     `, [disruptionId])
-    
+
     console.log(`Found ${result.rows.length} recovery steps for disruption ${disruptionId}`)
     res.json(result.rows || [])
   } catch (error) {
@@ -389,25 +441,25 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
   try {
     const { disruptionId } = req.params
     console.log(`Generating recovery options for disruption ID: ${disruptionId}`)
-    
+
     // Get the disruption details first
     const disruptionResult = await pool.query(
       'SELECT * FROM flight_disruptions WHERE id = $1',
       [disruptionId]
     )
-    
+
     if (disruptionResult.rows.length === 0) {
       return res.status(404).json({ error: 'Disruption not found' })
     }
-    
+
     const disruption = disruptionResult.rows[0]
-    
+
     // Import the recovery generator
     const { generateRecoveryOptionsForDisruption } = await import('./recovery-generator.js')
-    
+
     // Generate recovery options and steps
     const { options, steps } = generateRecoveryOptionsForDisruption(disruption)
-    
+
     // Save recovery options to database
     let savedOptionsCount = 0
     for (const option of options) {
@@ -438,7 +490,7 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
         console.error('Error saving recovery option:', optionError)
       }
     }
-    
+
     // Save recovery steps to database
     let savedStepsCount = 0
     for (const step of steps) {
@@ -458,16 +510,16 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
         console.error('Error saving recovery step:', stepError)
       }
     }
-    
+
     console.log(`Generated and saved ${savedOptionsCount} options and ${savedStepsCount} steps for disruption ${disruptionId}`)
-    
+
     res.json({
       success: true,
       optionsCount: savedOptionsCount,
       stepsCount: savedStepsCount,
       message: `Generated ${savedOptionsCount} recovery options and ${savedStepsCount} steps`
     })
-    
+
   } catch (error) {
     console.error('Error generating recovery options:', error)
     res.status(500).json({ 
@@ -699,38 +751,132 @@ app.post('/api/hotel-bookings', async (req, res) => {
   }
 })
 
+// Crew Members endpoints
+app.get('/api/crew-members', async (req, res) => {
+  try {
+    const client = await pool.connect()
+    const result = await client.query(`
+      SELECT 
+        id, employee_id, name, role, qualifications, duty_time_remaining,
+        base_location, status, current_flight, contact_info, created_at, updated_at
+      FROM crew_members 
+      ORDER BY name
+    `)
+    client.release()
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching crew members:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/crew-members/:employeeId', async (req, res) => {
+  try {
+    const { employeeId } = req.params
+    const client = await pool.connect()
+    const result = await client.query(`
+      SELECT 
+        id, employee_id, name, role, qualifications, duty_time_remaining,
+        base_location, status, current_flight, contact_info, created_at, updated_at
+      FROM crew_members 
+      WHERE employee_id = $1
+    `, [employeeId])
+    client.release()
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Crew member not found' })
+    }
+
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error fetching crew member:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/crew-members', async (req, res) => {
+  try {
+    const {
+      employee_id, name, role, qualifications, duty_time_remaining,
+      base_location, status, current_flight, contact_info
+    } = req.body
+
+    const client = await pool.connect()
+    const result = await client.query(`
+      INSERT INTO crew_members (
+        employee_id, name, role, qualifications, duty_time_remaining,
+        base_location, status, current_flight, contact_info
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *
+    `, [
+      employee_id, name, role, qualifications || [role], duty_time_remaining || 480,
+      base_location || 'DXB', status || 'Available', current_flight, 
+      contact_info || {}
+    ])
+    client.release()
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error creating crew member:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.put('/api/crew-members/:employeeId/status', async (req, res) => {
+  try {
+    const { employeeId } = req.params
+    const { status } = req.body
+
+    const client = await pool.connect()
+    const result = await client.query(`
+            UPDATE crew_members 
+      SET status = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE employee_id = $2
+      RETURNING *
+    `, [status, employeeId])
+    client.release()
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Crew member not found' })
+    }
+
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error('Error updating crew member status:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
 // Analytics endpoints
 app.get('/api/analytics/kpi', async (req, res) => {
   try {
-    // Return mock KPI data for now
-    const kpiData = {
-      totalDisruptions: 0,
-      activeDisruptions: 0,
-      resolvedDisruptions: 0,
-      avgResolutionTime: 0,
-      passengerImpact: 0,
-      costSavings: 0
-    }
+    const client = await pool.connect()
 
-    // Get actual data from database
-    const disruptionsResult = await pool.query(`
-      SELECT 
-        COUNT(*) as total,
-        COUNT(CASE WHEN status = 'Active' THEN 1 END) as active,
-        COUNT(CASE WHEN status = 'Resolved' THEN 1 END) as resolved,
-        SUM(passengers) as total_passengers
-      FROM flight_disruptions
+    // Get basic KPI metrics
+    const activeDisruptions = await client.query(`
+      SELECT COUNT(*) as count FROM flight_disruptions 
+      WHERE status IN ('Active', 'Delayed', 'Diverted')
     `)
 
-    if (disruptionsResult.rows.length > 0) {
-      const row = disruptionsResult.rows[0]
-      kpiData.totalDisruptions = parseInt(row.total) || 0
-      kpiData.activeDisruptions = parseInt(row.active) || 0
-      kpiData.resolvedDisruptions = parseInt(row.resolved) || 0
-      kpiData.passengerImpact = parseInt(row.total_passengers) || 0
+    const resolvedDisruptions = await client.query(`
+      SELECT COUNT(*) as count FROM flight_disruptions 
+      WHERE status = 'Resolved'
+    `)
+
+    const totalPassengersImpacted = await client.query(`
+      SELECT SUM(passengers) as total FROM flight_disruptions
+    `)
+
+    client.release()
+
+    const kpiData = {
+      activeDisruptions: parseInt(activeDisruptions.rows[0].count) || 0,
+      resolvedDisruptions: parseInt(resolvedDisruptions.rows[0].count) || 0,
+      totalPassengersImpacted: parseInt(totalPassengersImpacted.rows[0].total) || 0,
+      averageResolutionTime: 24 // Mock data for now
     }
 
     res.json(kpiData)
+
   } catch (error) {
     console.error('Error fetching KPI data:', error)
     res.status(500).json({ error: error.message })
