@@ -924,7 +924,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         ? 24500
         : isDelayOption &&
             parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
-          ? 8450
+            ? 8450
             : isAircraftSwap
               ? 840
               : 0,
@@ -2727,8 +2727,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                                       4,
                                   );
 
-                                  return (
-                                    <TableRow
+                                  return (                                    <TableRow
                                       key={index}
                                       className={
                                         aircraft.recommended
