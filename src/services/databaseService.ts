@@ -116,6 +116,54 @@ export interface HotelBooking {
   createdAt: string
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 
+  (typeof window !== 'undefined' && window.location.hostname.includes('replit.dev') 
+    ? `https://${window.location.hostname.replace(':5173', '')}:3001/api`
+    : 'http://localhost:3001/api')
+
+const fetchWithFallback = async (url: string, options: RequestInit = {}) => {
+  return connectionManager.handleConnectionError(
+    async () => {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+
+      try {
+        const response = await fetch(url, {
+          ...options,
+          signal: controller.signal,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache',
+            ...options.headers,
+          },
+        })
+
+        clearTimeout(timeoutId)
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        }
+
+        return response
+      } catch (error) {
+        clearTimeout(timeoutId)
+        if (error.name === 'AbortError') {
+          throw new Error('Request timeout')
+        }
+        throw error
+      }
+    },
+    () => {
+      console.warn('Using fallback response for:', url)
+      return new Response(JSON.stringify([]), { 
+        status: 200, 
+        headers: { 'Content-Type': 'application/json' } 
+      })
+    },
+    `fetch ${url}`
+  )
+}
+
 class DatabaseService {
   private baseUrl: string
   private healthCheckCache: { status: boolean; timestamp: number } | null = null
@@ -422,7 +470,7 @@ class DatabaseService {
       if (retryCount === 0) {
         console.log('Health check result:', isHealthy ? 'HEALTHY' : 'UNHEALTHY', response.status)
       }
-      
+
       return isHealthy
     } catch (error) {
       // Retry once on failure
