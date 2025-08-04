@@ -70,7 +70,6 @@ import {
 } from "lucide-react";
 
 export function FlightDisruptionList() {
-  
   const [selectedDisruption, setSelectedDisruption] = useState(null);
   const [disruptions, setDisruptions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -428,18 +427,26 @@ export function FlightDisruptionList() {
                   <TableCell>
                     <div className="text-sm">
                       <div className="font-medium">
-                        {new Date(disruption.scheduledDeparture).toLocaleString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
+                        {new Date(disruption.scheduledDeparture).toLocaleString(
+                          "en-GB",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            hour12: true,
+                            timeZone: "Asia/Kolkata",
+                          },
+                        )}
                       </div>
                       {disruption.estimatedDeparture && (
                         <div className="text-red-600 text-xs">
-                          Est: {new Date(disruption.estimatedDeparture).toLocaleString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit'
+                          Est:{" "}
+                          {new Date(
+                            disruption.estimatedDeparture,
+                          ).toLocaleString("en-US", {
+                            hour: "2-digit",
+                            minute: "2-digit",
                           })}
                         </div>
                       )}
@@ -472,7 +479,9 @@ export function FlightDisruptionList() {
                         <span className="font-medium">{disruption.delay}m</span>
                       </div>
                     ) : (
-                      <span className="text-muted-foreground text-sm">On time</span>
+                      <span className="text-muted-foreground text-sm">
+                        On time
+                      </span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -484,7 +493,9 @@ export function FlightDisruptionList() {
                   <TableCell>
                     <div className="text-sm">
                       {disruption.connectionFlights > 0 ? (
-                        <span className="font-medium">{disruption.connectionFlights} connections</span>
+                        <span className="font-medium">
+                          {disruption.connectionFlights} connections
+                        </span>
                       ) : (
                         <span className="text-muted-foreground">Direct</span>
                       )}
