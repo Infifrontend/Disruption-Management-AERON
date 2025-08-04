@@ -924,7 +924,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         ? 24500
         : isDelayOption &&
             parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
-            ? 8450
+          ? 8450
             : isAircraftSwap
               ? 840
               : 0,
@@ -1232,8 +1232,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         </CardHeader>
       </Card>
 
-      {/* Recovery Steps - Hidden as requested */}
-      {/* 
+      {/* Recovery Steps */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -1291,7 +1290,6 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           </div>
         </CardContent>
       </Card>
-      */
 
       {/* Recovery Options */}
       <Card>
@@ -2727,7 +2725,9 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                                       4,
                                   );
 
-                                  return (                                    <TableRow                                      key={index}
+                                  return (
+                                    <TableRow
+                                      key={index}
                                       className={
                                         aircraft.recommended
                                          ? "bg-green-50"
