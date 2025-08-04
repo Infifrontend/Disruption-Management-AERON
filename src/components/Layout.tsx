@@ -104,19 +104,24 @@ export function Layout({ children }: LayoutProps) {
     }
   }, [])
 
-  // Format date and time
+  // Format date and time in IST (Indian Standard Time)
   const formatDateTime = (date: Date) => {
+    // Convert to IST
+    const istDate = new Date(date.toLocaleString("en-US", {timeZone: "Asia/Kolkata"}))
+    
     const options: Intl.DateTimeFormatOptions = {
       weekday: 'long',
       year: 'numeric',
       month: 'long',
-      day: 'numeric'
+      day: 'numeric',
+      timeZone: 'Asia/Kolkata'
     }
-    const dateStr = date.toLocaleDateString('en-US', options)
-    const timeStr = date.toLocaleTimeString('en-US', {
-      hour12: false,
+    const dateStr = istDate.toLocaleDateString('en-IN', options)
+    const timeStr = istDate.toLocaleTimeString('en-IN', {
+      hour12: true,
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      timeZone: 'Asia/Kolkata'
     })
     return { dateStr, timeStr }
   }
@@ -242,7 +247,7 @@ export function Layout({ children }: LayoutProps) {
             {sidebarOpen && (
               <div className="text-right flex-1">
                 <p className="text-xs font-medium text-white">{dateStr}</p>
-                <p className="text-xs text-blue-200">{timeStr} GST</p>
+                <p className="text-xs text-blue-200">{timeStr} IST</p>
               </div>
             )}
           </div>
