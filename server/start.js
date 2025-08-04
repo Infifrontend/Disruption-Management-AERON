@@ -45,12 +45,10 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' || connectionString.includes('neon.tech') 
     ? { rejectUnauthorized: false } 
     : false,
-  max: 5, // Reduced pool size to prevent connection issues
-  idleTimeoutMillis: 60000, // Increased idle timeout
-  connectionTimeoutMillis: 10000, // Increased connection timeout
-  maxUses: 5000, // Reduced max uses
-  keepAlive: true, // Enable keep-alive
-  keepAliveInitialDelayMillis: 0,
+  max: 10, // Maximum number of clients in the pool
+  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
+  connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection could not be established
+  maxUses: 7500, // Close a connection after it has been used this many times
 })
 
 // Test database connection on startup

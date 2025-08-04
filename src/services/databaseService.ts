@@ -1,6 +1,5 @@
 // Database service for PostgreSQL operations
 import { SettingsData } from '../utils/settingsStorage'
-import { connectionManager } from '../utils/connectionStability'
 
 export interface CustomRule {
   id: number
@@ -119,7 +118,7 @@ export interface HotelBooking {
 class DatabaseService {
   private baseUrl: string
   private healthCheckCache: { status: boolean; timestamp: number } | null = null
-  private readonly HEALTH_CHECK_CACHE_DURATION = 120000 // 2 minutes - reduced frequency
+  private readonly HEALTH_CHECK_CACHE_DURATION = 30000 // 30 seconds
 
   constructor() {
     // Use API base URL for database operations
@@ -391,26 +390,23 @@ class DatabaseService {
     }
   }
 
-  // Health check method with retry logic
-  async healthCheck(retryCount = 0): Promise<boolean> {
+  // Health check method
+  async healthCheck(): Promise<boolean> {
     // Return cached result if valid
     if (this.isCacheValid()) {
       return this.healthCheckCache!.status
     }
 
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 5000) // Increased timeout
-
+      console.log('Performing health check at:', `${this.baseUrl}/health`)
       const response = await fetch(`${this.baseUrl}/health`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        signal: controller.signal,
+        signal: AbortSignal.timeout(3000), // Reduced to 3 second timeout for faster response
       })
 
-      clearTimeout(timeoutId)
       const isHealthy = response.ok
 
       // Cache the result
@@ -419,20 +415,10 @@ class DatabaseService {
         timestamp: Date.now()
       }
 
-      if (retryCount === 0) {
-        console.log('Health check result:', isHealthy ? 'HEALTHY' : 'UNHEALTHY', response.status)
-      }
-      
+      console.log('Health check result:', isHealthy ? 'HEALTHY' : 'UNHEALTHY', response.status)
       return isHealthy
     } catch (error) {
-      // Retry once on failure
-      if (retryCount < 1 && error.name !== 'AbortError') {
-        console.warn('Health check failed, retrying...', error.message)
-        await new Promise(resolve => setTimeout(resolve, 1000)) // Wait 1 second
-        return await this.healthCheck(retryCount + 1)
-      }
-
-      console.error('Health check failed after retry:', error.message)
+      console.error('Health check failed:', error)
       // Cache the failure result
       this.healthCheckCache = {
         status: false,
