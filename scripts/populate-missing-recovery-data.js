@@ -76,12 +76,13 @@ async function populateMissingRecoveryData() {
             console.log(`    Advantages raw: ${JSON.stringify(option.advantages)}`)
             console.log(`    Considerations raw: ${JSON.stringify(option.considerations)}`)
             
-            // Validate and sanitize data before insertion
-            const sanitizedAdvantages = sanitizeForJsonb(option.advantages)
-            const sanitizedConsiderations = sanitizeForJsonb(option.considerations)
+            // Handle PostgreSQL array columns properly
+            const sanitizedAdvantages = Array.isArray(option.advantages) ? option.advantages : []
+            const sanitizedConsiderations = Array.isArray(option.considerations) ? option.considerations : []
             
-            console.log(`    Sanitized advantages: ${sanitizedAdvantages}`)
-            console.log(`    Sanitized considerations: ${sanitizedConsiderations}`)
+            console.log(`    Advantages array: ${JSON.stringify(sanitizedAdvantages)}`)
+            console.log(`    Considerations array: ${JSON.stringify(sanitizedConsiderations)}`)
+            
             await client.query(`
               INSERT INTO recovery_options (
                 disruption_id, title, description, cost, timeline, confidence,
@@ -99,7 +100,7 @@ async function populateMissingRecoveryData() {
               option.impact, 
               option.status,
               option.priority || 1,
-              // Use pre-sanitized data
+              // Pass arrays directly for PostgreSQL array columns
               sanitizedAdvantages,
               sanitizedConsiderations,
               sanitizeForJsonb(option.resourceRequirements),
