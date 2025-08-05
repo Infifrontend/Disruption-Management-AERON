@@ -248,9 +248,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     vipPassengers: "",
   });
 
-  const [crewMembers, setCrewMembers] = useState([
-    { id: 1, name: "", role: "", employeeCode: "" }
-  ]);
+  
 
   // Fetch flights from database
   useEffect(() => {
@@ -608,17 +606,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           ? "Active"
           : newDisruption.currentStatus,
       disruptionReason: newDisruption.disruptionReason,
-      crewMembers: newDisruption.categorization === "Crew issue (e.g., sick report, duty time breach)" 
-        ? crewMembers.filter(member => member.name && member.role && member.employeeCode).map(member => ({
-            name: member.name,
-            role: member.role,
-            employeeCode: member.employeeCode,
-            status: 'Unavailable', // Mark as unavailable due to disruption
-            baseLocation: 'DXB',
-            dutyTime: '8h 30m',
-            contactInfo: {}
-          }))
-        : [],
+      
     };
 
     try {
@@ -662,8 +650,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           vipPassengers: "",
         });
 
-        // Reset crew members
-        setCrewMembers([{ id: 1, name: "", role: "", employeeCode: "" }]);
+        
 
         // Close the dialog
         setIsAddDialogOpen(false);
@@ -695,29 +682,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     }));
   };
 
-  // Handle crew member changes
-  const handleCrewMemberChange = (index, field, value) => {
-    setCrewMembers(prev => prev.map((member, i) => 
-      i === index ? { ...member, [field]: value } : member
-    ));
-  };
-
-  // Add new crew member
-  const addCrewMember = () => {
-    setCrewMembers(prev => [
-      ...prev, 
-      { id: Date.now(), name: "", role: "", employeeCode: "" }
-    ]);
-  };
-
-  // Remove crew member
-  const removeCrewMember = (index) => {
-    if (crewMembers.length > 1) {
-      setCrewMembers(prev => prev.filter((_, i) => i !== index));
-    }
-  };
-
-  const showCrewSection = newDisruption.categorization === "Crew issue (e.g., sick report, duty time breach)";
+  
 
   if (loading) {
     return (
@@ -1067,202 +1032,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     </Select>
                   </div>
 
-                  {/* Affected Crew Members Section - Only show when Crew issue is selected */}
-                  {showCrewSection && (
-                        <div className="w-full space-y-8">
-                          <div className="flex items-center justify-between w-full">
-                            <div>
-                              <h3 className="text-xl font-bold text-gray-900 flex items-center gap-3">
-                                <Users className="h-6 w-6 text-blue-600" />
-                                Affected Crew Members
-                              </h3>
-                              <p className="text-base text-gray-600 mt-2">
-                                Add crew members affected by this disruption
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              onClick={addCrewMember}
-                              className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-6 py-3"
-                            >
-                              <Plus className="h-5 w-5 mr-3" />
-                              Add Crew Member
-                            </Button>
-                          </div>
-
-                          {/* Crew Summary Stats */}
-                          {crewMembers.length > 0 && (
-                            <div className="w-full bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-xl border border-blue-200 shadow-sm">
-                              <div className="flex items-center justify-between w-full">
-                                <div>
-                                  <h4 className="text-xl font-bold text-blue-900 mb-3">Crew Summary</h4>
-                                  <p className="text-base text-blue-700">
-                                    {crewMembers.length} crew member{crewMembers.length !== 1 ? 's' : ''} affected
-                                  </p>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                  {crewMembers.filter(m => m.role === 'Captain').length > 0 && (
-                                    <Badge className="px-4 py-2 bg-red-100 text-red-800 border border-red-300 font-semibold text-sm">
-                                      {crewMembers.filter(m => m.role === 'Captain').length} Captain(s)
-                                    </Badge>
-                                  )}
-                                  {crewMembers.filter(m => m.role === 'First Officer').length > 0 && (
-                                    <Badge className="px-4 py-2 bg-orange-100 text-orange-800 border border-orange-300 font-semibold text-sm">
-                                      {crewMembers.filter(m => m.role === 'First Officer').length} FO(s)
-                                    </Badge>
-                                  )}
-                                  {crewMembers.filter(m => m.role.includes('Cabin')).length > 0 && (
-                                    <Badge className="px-4 py-2 bg-green-100 text-green-800 border border-green-300 font-semibold text-sm">
-                                      {crewMembers.filter(m => m.role.includes('Cabin')).length} Cabin Crew
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          )}
-
-                        {/* Crew Members Grid */}
-                        <div className="w-full space-y-8">
-                          {crewMembers.map((member, index) => (
-                            <div key={member.id} className="w-full bg-white p-8 rounded-xl border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-200">
-                              {/* Form Grid */}
-                              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full">
-                                {/* Crew Name - 4 columns */}
-                                <div className="lg:col-span-4 space-y-4">
-                                  <Label htmlFor={`crewName-${index}`} className="text-base font-bold text-gray-800 flex items-center gap-3">
-                                    <Users className="h-5 w-5 text-blue-600" />
-                                    Crew Name*
-                                  </Label>
-                                  <Input
-                                    id={`crewName-${index}`}
-                                    placeholder="Enter full name"
-                                    value={member.name}
-                                    onChange={(e) => handleCrewMemberChange(index, 'name', e.target.value)}
-                                    className="h-14 border-2 border-gray-200 focus:border-blue-500 rounded-lg text-base px-4"
-                                  />
-                                </div>
-
-                                {/* Employee Code - 3 columns */}
-                                <div className="lg:col-span-3 space-y-4">
-                                  <Label htmlFor={`employeeCode-${index}`} className="text-base font-bold text-gray-800 flex items-center gap-3">
-                                    <FileText className="h-5 w-5 text-blue-600" />
-                                    Employee Code*
-                                  </Label>
-                                  <Input
-                                    id={`employeeCode-${index}`}
-                                    placeholder="e.g., FZ1234"
-                                    value={member.employeeCode}
-                                    onChange={(e) => handleCrewMemberChange(index, 'employeeCode', e.target.value)}
-                                    className="h-14 border-2 border-gray-200 focus:border-blue-500 rounded-lg text-base px-4"
-                                  />
-                                </div>
-
-                                {/* Crew Role - 4 columns */}
-                                <div className="lg:col-span-4 space-y-4">
-                                  <Label htmlFor={`crewRole-${index}`} className="text-base font-bold text-gray-800 flex items-center gap-3">
-                                    <Badge className="w-5 h-5 rounded-full bg-blue-600" />
-                                    Crew Role*
-                                  </Label>
-                                  <Select
-                                    value={member.role}
-                                    onValueChange={(value) => handleCrewMemberChange(index, 'role', value)}
-                                  >
-                                    <SelectTrigger className="h-14 border-2 border-gray-200 focus:border-blue-500 rounded-lg">
-                                      <SelectValue placeholder="Select role" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      <SelectItem value="Captain">
-                                        <div className="flex items-center gap-3 py-2">
-                                          <div className="w-4 h-4 bg-red-500 rounded-full shadow-sm"></div>
-                                          <span className="font-medium text-base">Captain</span>
-                                        </div>
-                                      </SelectItem>
-                                      <SelectItem value="First Officer">
-                                        <div className="flex items-center gap-3 py-2">
-                                          <div className="w-4 h-4 bg-orange-500 rounded-full shadow-sm"></div>
-                                          <span className="font-medium text-base">First Officer</span>
-                                        </div>
-                                      </SelectItem>
-                                      <SelectItem value="Senior Cabin Crew">
-                                        <div className="flex items-center gap-3 py-2">
-                                          <div className="w-4 h-4 bg-green-500 rounded-full shadow-sm"></div>
-                                          <span className="font-medium text-base">Senior Cabin Crew</span>
-                                        </div>
-                                      </SelectItem>
-                                      <SelectItem value="Cabin Crew">
-                                        <div className="flex items-center gap-3 py-2">
-                                          <div className="w-4 h-4 bg-purple-500 rounded-full shadow-sm"></div>
-                                          <span className="font-medium text-base">Cabin Crew</span>
-                                        </div>
-                                      </SelectItem>
-                                      <SelectItem value="Purser">
-                                        <div className="flex items-center gap-3 py-2">
-                                          <div className="w-4 h-4 bg-blue-500 rounded-full shadow-sm"></div>
-                                          <span className="font-medium text-base">Purser</span>
-                                        </div>
-                                      </SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-
-                                {/* Actions - 1 column */}
-                                <div className="lg:col-span-1 flex flex-col items-center justify-end h-full">
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => removeCrewMember(index)}
-                                    disabled={crewMembers.length === 1}
-                                    className="w-14 h-14 border-2 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 disabled:opacity-30 disabled:cursor-not-allowed rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
-                                  >
-                                    <Trash2 className="h-6 w-6" />
-                                  </Button>
-                                </div>
-                              </div>
-
-                              {/* Crew Member Summary Card */}
-                              {member.name && member.role && member.employeeCode && (
-                                <div className="mt-6 p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                      <Badge 
-                                        variant="secondary" 
-                                        className="px-3 py-1 text-sm font-semibold bg-blue-100 text-blue-800 border border-blue-200"
-                                      >
-                                        {member.role}
-                                      </Badge>
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-gray-800 font-semibold text-lg">{member.name}</span>
-                                        <span className="text-gray-400">•</span>
-                                        <span className="text-gray-600 font-medium">ID: {member.employeeCode}</span>
-                                      </div>
-                                    </div>
-                                    <div className="w-3 h-3 bg-green-500 rounded-full shadow-sm animate-pulse"></div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-
-                          {/* Empty State */}
-                          {crewMembers.length === 0 && (
-                            <div className="w-full text-center py-16 bg-white rounded-xl border-2 border-dashed border-gray-300">
-                              <Users className="h-20 w-20 text-gray-400 mx-auto mb-6" />
-                              <h3 className="text-2xl font-bold text-gray-600 mb-4">No Crew Members Added</h3>
-                              <p className="text-lg text-gray-500 mb-8 max-w-md mx-auto">Add affected crew members to track their status during this disruption.</p>
-                              <Button
-                                type="button"
-                                onClick={addCrewMember}
-                                className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-200 px-8 py-4 text-lg"
-                              >
-                                <Plus className="h-5 w-5 mr-3" />
-                                Add First Crew Member
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
+                  
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
