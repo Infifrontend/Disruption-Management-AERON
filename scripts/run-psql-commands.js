@@ -1,6 +1,4 @@
 
-#!/usr/bin/env node
-
 import { execSync } from 'child_process';
 import { formatNeonConnectionString } from '../server/database-utils.js';
 
