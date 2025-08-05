@@ -1733,12 +1733,12 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="font-mono font-semibold">
-                            {flight.id && flight.id.startsWith('UNKNOWN-') 
+                            {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') 
                               ? (flight.flightNumber || '-')
                               : flight.flightNumber}
                           </span>
                           {flight.status === "Incomplete" && 
-                           !(flight.id && flight.id.startsWith('UNKNOWN-') && !flight.flightNumber) && (
+                           !(flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') && !flight.flightNumber) && (
                             <Badge className="bg-orange-100 text-orange-800 border-orange-200">
                               Incomplete
                             </Badge>

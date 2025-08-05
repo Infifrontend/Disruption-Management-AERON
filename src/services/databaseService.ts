@@ -602,7 +602,7 @@ class DatabaseService {
       // Transform database format to component format
         const transformedFlights = data.map((flight) => {
           // Handle unknown IDs by using flight_number as display value
-          const isUnknownId = flight.id && flight.id.toString().startsWith('UNKNOWN-');
+          const isUnknownId = flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-');
           const displayFlightNumber = isUnknownId 
             ? (flight.flight_number || '-')
             : flight.flight_number;
