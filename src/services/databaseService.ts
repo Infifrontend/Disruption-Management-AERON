@@ -475,7 +475,7 @@ class DatabaseService {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000); // Reduced timeout for faster fallback
+      const timeoutId = setTimeout(() => controller.abort(), 2000); // Further reduced timeout
 
       const response = await fetch(`${this.baseUrl}/health`, {
         method: "GET",
@@ -486,7 +486,18 @@ class DatabaseService {
       });
 
       clearTimeout(timeoutId);
-      const isHealthy = response.ok;
+      
+      // Check if response is ok and has expected content
+      let isHealthy = false;
+      if (response.ok) {
+        try {
+          const data = await response.json();
+          isHealthy = data.status === 'healthy' || response.status === 200;
+        } catch (jsonError) {
+          // If JSON parsing fails but response is ok, consider it healthy
+          isHealthy = true;
+        }
+      }
 
       // Cache the result
       this.healthCheckCache = {
@@ -497,6 +508,7 @@ class DatabaseService {
       if (isHealthy) {
         this.onDatabaseSuccess();
       } else {
+        console.warn(`Health check failed: ${response.status} ${response.statusText}`);
         this.onDatabaseFailure();
       }
 
@@ -508,7 +520,7 @@ class DatabaseService {
       // Cache the failure result with shorter duration
       this.healthCheckCache = {
         status: false,
-        timestamp: Date.now() - (this.HEALTH_CHECK_CACHE_DURATION - 10000), // Cache for only 10s on failure
+        timestamp: Date.now() - (this.HEALTH_CHECK_CACHE_DURATION - 15000), // Cache for only 5s on failure
       };
       return false;
     } finally {
@@ -1065,11 +1077,38 @@ class DatabaseService {
 
   private async checkApiHealth(): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/health`)
-      return response.ok
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2000);
+
+      const response = await fetch(`${this.baseUrl}/health`, {
+        signal: controller.signal,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      clearTimeout(timeoutId);
+      
+      if (response.ok) {
+        try {
+          const data = await response.json();
+          return data.status === 'healthy' || response.status === 200;
+        } catch (jsonError) {
+          // If JSON parsing fails but response is ok, consider it healthy
+          return true;
+        }
+      }
+      
+      console.warn(`API health check failed: ${response.status} ${response.statusText}`);
+      return false;
     } catch (error) {
-      console.warn('API health check failed:', error)
-      return false
+      if (error.name === 'AbortError') {
+        console.warn('API health check timed out');
+      } else {
+        console.warn('API health check failed:', error.message || 'Unknown error');
+      }
+      return false;
     }
   }
 
