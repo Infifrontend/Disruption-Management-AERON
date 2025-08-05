@@ -442,13 +442,22 @@ const generateRotationMisalignmentRecovery = (flight) => {
 
 // Recovery generator for different disruption types
 function generateRecoveryOptionsForDisruption(disruption) {
-  const { disruption_type, severity, delay_minutes, passengers, aircraft } = disruption
+  console.log('Generating recovery options for disruption:', disruption)
+  
+  const { disruption_type, severity, delay_minutes, passengers, aircraft, flight_number } = disruption
 
   let options = []
   let steps = []
 
+  // Ensure we have valid disruption data
+  if (!disruption_type) {
+    console.warn('No disruption type provided, using default')
+  }
+
   // Generate recovery steps based on disruption type
-  switch (disruption_type?.toLowerCase()) {
+  const disruptionTypeKey = (disruption_type || 'technical').toLowerCase()
+  
+  switch (disruptionTypeKey) {
     case 'weather':
       steps = [
         {
@@ -701,61 +710,109 @@ function generateRecoveryOptionsForDisruption(disruption) {
       break
 
     default:
+      console.log(`Using default recovery generation for disruption type: ${disruptionTypeKey}`)
+      
       // General disruption handling
       steps = [
         {
           step: 1,
           title: 'Disruption Detected',
           status: 'completed',
-          timestamp: new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }),
+          timestamp: new Date().toLocaleTimeString('en-GB', { hour12: false }),
           system: 'AERON System',
-          details: 'Operational disruption identified and classified',
-          data: { type: disruption_type, severity: severity }
+          details: `Operational disruption identified for flight ${flight_number || 'Unknown'}`,
+          data: { 
+            type: disruption_type || 'Unknown', 
+            severity: severity || 'Medium',
+            flightNumber: flight_number || 'Unknown'
+          }
         },
         {
           step: 2,
           title: 'Impact Analysis',
           status: 'completed',
-          timestamp: new Date(Date.now() + 5 * 60000).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }),
+          timestamp: new Date(Date.now() + 5 * 60000).toLocaleTimeString('en-GB', { hour12: false }),
           system: 'Analytics Engine',
           details: 'Analyzing disruption impact on network and passengers',
-          data: { affectedFlights: 1, affectedPassengers: passengers || 167 }
+          data: { 
+            affectedFlights: 1, 
+            affectedPassengers: passengers || 167,
+            aircraft: aircraft || 'Unknown'
+          }
         },
         {
           step: 3,
           title: 'Solution Generation',
-          status: 'standby',
-          timestamp: new Date(Date.now() + 10 * 60000).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true }),
+          status: 'in-progress',
+          timestamp: new Date(Date.now() + 10 * 60000).toLocaleTimeString('en-GB', { hour12: false }),
           system: 'Recovery Engine',
           details: 'Generating recovery options and recommendations',
-          data: { status: 'processing' }
+          data: { status: 'processing', optionsTarget: 3 }
         }
       ]
 
       options = [
         {
           title: 'Standard Recovery Protocol',
-          description: 'Apply standard operating procedures for disruption recovery',
-          cost: '$18,500',
+          description: `Apply standard operating procedures for ${disruptionTypeKey} disruption recovery`,
+          cost: 'AED 18,500',
           timeline: '2-3 hours',
           confidence: 80,
           impact: 'Standard operational impact',
           status: 'recommended',
-          priority: 1
+          priority: 1,
+          advantages: ['Proven methodology', 'Standard resource allocation', 'Established procedures'],
+          considerations: ['Generic approach', 'May not optimize for specific conditions'],
+          resourceRequirements: { crew: 'Current crew', aircraft: aircraft || 'Current', gates: '1' },
+          costBreakdown: { operational: 'AED 12,000', contingency: 'AED 6,500' },
+          timelineDetails: { assessment: '30 minutes', execution: '2-2.5 hours' },
+          riskAssessment: { probability: 'Low', impact: 'Medium', mitigation: 'Standard protocols' },
+          technicalSpecs: { systems: 'Standard recovery systems', requirements: 'Basic operational resources' },
+          metrics: { cost_per_passenger: Math.round(18500 / (passengers || 167)) },
+          rotationPlan: { impact: 'Minimal disruption to network' }
         },
         {
-          title: 'Alternative Recovery Plan',
-          description: 'Implement alternative recovery strategy based on available resources',
-          cost: '$24,700',
+          title: 'Enhanced Recovery Strategy',
+          description: 'Implement optimized recovery strategy with additional resource coordination',
+          cost: 'AED 24,700',
           timeline: '1-2 hours',
-          confidence: 72,
-          impact: 'Moderate operational complexity',
-          status: 'caution',
-          priority: 2
+          confidence: 85,
+          impact: 'Optimized operational response',
+          status: 'alternative',
+          priority: 2,
+          advantages: ['Faster resolution', 'Resource optimization', 'Network protection'],
+          considerations: ['Higher initial cost', 'Requires coordination'],
+          resourceRequirements: { crew: 'Enhanced crew support', aircraft: 'Backup aircraft on standby', gates: '2' },
+          costBreakdown: { enhanced_operations: 'AED 18,000', coordination: 'AED 6,700' },
+          timelineDetails: { rapid_assessment: '15 minutes', execution: '1-1.5 hours' },
+          riskAssessment: { probability: 'Low', impact: 'Low', mitigation: 'Enhanced monitoring' },
+          technicalSpecs: { systems: 'Advanced recovery systems', requirements: 'Enhanced operational resources' },
+          metrics: { cost_per_passenger: Math.round(24700 / (passengers || 167)) },
+          rotationPlan: { impact: 'Network protection maintained' }
+        },
+        {
+          title: 'Contingency Recovery Plan',
+          description: 'Comprehensive contingency approach for complex disruption scenarios',
+          cost: 'AED 35,200',
+          timeline: '3-4 hours',
+          confidence: 92,
+          impact: 'Comprehensive recovery solution',
+          status: 'contingency',
+          priority: 3,
+          advantages: ['Comprehensive coverage', 'High success rate', 'Full passenger protection'],
+          considerations: ['Highest cost option', 'Longer implementation time'],
+          resourceRequirements: { crew: 'Full contingency crew', aircraft: 'Multiple backup options', gates: 'Flexible gate allocation' },
+          costBreakdown: { comprehensive_ops: 'AED 25,000', passenger_care: 'AED 10,200' },
+          timelineDetails: { full_assessment: '45 minutes', comprehensive_execution: '2.5-3 hours' },
+          riskAssessment: { probability: 'Very Low', impact: 'Very Low', mitigation: 'Comprehensive backup systems' },
+          technicalSpecs: { systems: 'Full recovery infrastructure', requirements: 'Complete operational backup' },
+          metrics: { cost_per_passenger: Math.round(35200 / (passengers || 167)) },
+          rotationPlan: { impact: 'Full network protection and recovery' }
         }
       ]
   }
 
+  console.log(`Generated ${options.length} options and ${steps.length} steps for disruption type: ${disruptionTypeKey}`)
   return { options, steps }
 }
 
