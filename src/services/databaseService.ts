@@ -670,6 +670,7 @@ class DatabaseService {
         disruption_type: disruption.type,
         status: disruption.status,
         disruption_reason: disruption.disruptionReason,
+        categorization: disruption.categorization,
         crew_members: disruption.crewMembers || [],
       };
 

@@ -504,7 +504,7 @@ app.post('/api/disruptions', async (req, res) => {
       flight_number, flightNumber, route, origin, destination, origin_city, destination_city, originCity, destinationCity,
       aircraft, scheduled_departure, scheduledDeparture, estimated_departure, estimatedDeparture,
       delay_minutes, delay, passengers, crew, connection_flights, connectionFlights, severity, disruption_type, disruptionType, type,
-      status, disruption_reason, disruptionReason
+      status, disruption_reason, disruptionReason, categorization
     } = req.body
 
     // Handle both camelCase and snake_case field names with proper fallbacks
@@ -544,8 +544,8 @@ app.post('/api/disruptions', async (req, res) => {
       INSERT INTO flight_disruptions (
         flight_number, route, origin, destination, origin_city, destination_city,
         aircraft, scheduled_departure, estimated_departure, delay_minutes,
-        passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+        passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason, categorization
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       ON CONFLICT (flight_number, scheduled_departure)
       DO UPDATE SET
         route = EXCLUDED.route,
@@ -568,7 +568,7 @@ app.post('/api/disruptions', async (req, res) => {
     `, [
       flightNum, safeRoute, safeOrigin, safeDestination, safeOriginCity, safeDestinationCity,
       aircraft, scheduled_dep, estimated_dep, delay_mins,
-      passengers, crew, connection_flights_val, safeSeverity, safeDisruptionType, safeStatus, safeDisruptionReason
+      passengers, crew, connection_flights_val, safeSeverity, safeDisruptionType, safeStatus, safeDisruptionReason, categorization
     ])
 
     console.log('Successfully saved/updated disruption:', result.rows[0])
