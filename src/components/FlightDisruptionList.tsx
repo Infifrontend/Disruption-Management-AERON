@@ -83,88 +83,86 @@ export function FlightDisruptionList() {
   useEffect(() => {
     const fetchDisruptions = async () => {
       try {
-        // First sync from external API to prevent duplicates
-        const syncResult = await databaseService.syncDisruptionsFromExternalAPI();
-        console.log('External API sync result:', syncResult);
-
-        // Then fetch all current disruptions
+        // Fetch only actual database records
         const data = await databaseService.getAllDisruptions();
 
-        // Transform and enrich data with missing properties for UI
-        const enrichedData = data.map(disruption => ({
+        // Filter out records with unknown or incomplete data
+        const validDisruptions = data.filter(disruption => {
+          // Remove records that are clearly incomplete or unknown
+          const hasValidFlightNumber = disruption.flightNumber && 
+            !disruption.flightNumber.includes('UNKNOWN-') &&
+            disruption.flightNumber.trim() !== '';
+          
+          const hasValidRoute = disruption.route && 
+            disruption.route.trim() !== '' &&
+            !disruption.route.includes('UNK');
+            
+          const hasValidDisruptionReason = disruption.disruptionReason && 
+            disruption.disruptionReason.trim() !== '' &&
+            disruption.disruptionReason !== 'API sync' &&
+            disruption.disruptionReason !== 'Unknown disruption';
+
+          return hasValidFlightNumber && hasValidRoute && hasValidDisruptionReason;
+        });
+
+        // Add minimal required properties for UI without creating fake data
+        const processedData = validDisruptions.map(disruption => ({
           ...disruption,
-          // Add missing properties with sensible defaults
-          impact: disruption.impact || {
-            estimatedCost: Math.floor(Math.random() * 100000) + 50000,
-            revenueAtRisk: Math.floor(Math.random() * 200000) + 100000,
-            compensationRequired: Math.floor(Math.random() * 50000) + 25000,
+          impact: {
+            estimatedCost: 0,
+            revenueAtRisk: 0,
+            compensationRequired: 0,
             passengers: disruption.passengers || 0,
             connectingFlights: disruption.connectionFlights || 0
           },
-          confidence: disruption.confidence || Math.floor(Math.random() * 20) + 80, // 80-100%
-          weather: disruption.weather || {
-            condition: 'Clear',
-            visibility: '10km',
-            wind: '5 knots',
-            temperature: '28°C'
+          confidence: 85, // Fixed confidence value
+          weather: {
+            condition: 'Unknown',
+            visibility: 'N/A',
+            wind: 'N/A',
+            temperature: 'N/A'
           },
-          aircraftType: disruption.aircraftType || disruption.aircraft,
-          terminal: disruption.terminal || 'T2',
-          gate: disruption.gate || `A${Math.floor(Math.random() * 30) + 1}`,
-          detailedDescription: disruption.detailedDescription || disruption.disruptionReason,
-          maintenance: disruption.maintenance || {
-            issueReported: disruption.disruptionReason || 'System check',
-            technician: 'Maintenance Team',
-            workOrderNumber: `WO-${Math.floor(Math.random() * 10000)}`,
-            estimatedRepairTime: '2-4 hours',
-            partsRequired: 'Standard components',
-            status: 'In Progress'
+          aircraftType: disruption.aircraft || 'Unknown',
+          terminal: 'T2',
+          gate: 'TBD',
+          detailedDescription: disruption.disruptionReason,
+          maintenance: {
+            issueReported: disruption.disruptionReason || 'Under investigation',
+            technician: 'Assigned',
+            workOrderNumber: 'Pending',
+            estimatedRepairTime: 'TBD',
+            partsRequired: 'Under assessment',
+            status: 'Active'
           },
-          predictions: disruption.predictions || {
-            resolutionProbability: Math.floor(Math.random() * 30) + 70,
-            cascadeRisk: ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)],
-            networkImpact: ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)],
-            aiRecommendation: 'Implement aircraft swap with standby fleet'
+          predictions: {
+            resolutionProbability: 75,
+            cascadeRisk: 'Medium',
+            networkImpact: 'Medium',
+            aiRecommendation: 'Monitor situation and assess recovery options'
           },
-          alternatives: disruption.alternatives || [
-            {
-              option: 'Aircraft Swap',
-              aircraft: 'A6-FDB (B737-800)',
-              cost: Math.floor(Math.random() * 50000) + 25000,
-              delay: Math.floor(Math.random() * 60) + 30,
-              success: Math.floor(Math.random() * 20) + 80,
-              description: 'Replace with available standby aircraft'
-            }
-          ],
-          passengerServices: disruption.passengerServices || {
-            notifications: `${disruption.passengers || 0} passengers notified`,
-            vouchers: Math.floor((disruption.passengers || 0) * 0.3),
+          alternatives: [],
+          passengerServices: {
+            notifications: `${disruption.passengers || 0} passengers affected`,
+            vouchers: 0,
             rebooking: 'In progress',
-            customerServiceCalls: Math.floor(Math.random() * 20) + 5,
-            complaints: Math.floor(Math.random() * 10) + 2
+            customerServiceCalls: 0,
+            complaints: 0
           },
-          crewMembers: disruption.crewMembers || []
+          crewMembers: []
         }));
 
-        setDisruptions(enrichedData);
-        console.log("Fetched and enriched disruptions:", enrichedData.length, "total");
+        setDisruptions(processedData);
+        console.log("Fetched valid disruptions:", processedData.length, "of", data.length, "total records");
       } catch (error) {
         console.error("Error fetching disruptions:", error);
-        // Fallback to local data if sync fails
-        try {
-          const data = await databaseService.getAllDisruptions();
-          setDisruptions(data);
-        } catch (fallbackError) {
-          console.error("Fallback fetch also failed:", fallbackError);
-          setDisruptions([]); // Set empty array if all fails
-        }
+        setDisruptions([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchDisruptions();
-    // Refresh every 2 minutes with external API sync
+    // Refresh every 2 minutes without external API sync
     const interval = setInterval(fetchDisruptions, 120000);
     return () => clearInterval(interval);
   }, []);
