@@ -12,47 +12,6 @@ export interface CustomRule {
   overridable: boolean
   conditions?: string
   actions?: string
-
-  private circuitBreakerOpen = false
-  private circuitBreakerTimeout: NodeJS.Timeout | null = null
-  private failureCount = 0
-  private readonly MAX_FAILURES = 5
-  private readonly CIRCUIT_BREAKER_TIMEOUT = 60000 // 1 minute
-
-  private checkCircuitBreaker(): boolean {
-    if (this.circuitBreakerOpen) {
-      console.log('Circuit breaker is open, skipping database call')
-      return false
-    }
-    return true
-  }
-
-  private onDatabaseSuccess() {
-    this.failureCount = 0
-    if (this.circuitBreakerOpen) {
-      console.log('Circuit breaker closed - database connection restored')
-      this.circuitBreakerOpen = false
-      if (this.circuitBreakerTimeout) {
-        clearTimeout(this.circuitBreakerTimeout)
-        this.circuitBreakerTimeout = null
-      }
-    }
-  }
-
-  private onDatabaseFailure() {
-    this.failureCount++
-    if (this.failureCount >= this.MAX_FAILURES && !this.circuitBreakerOpen) {
-      console.log('Circuit breaker opened due to multiple failures')
-      this.circuitBreakerOpen = true
-      this.circuitBreakerTimeout = setTimeout(() => {
-        console.log('Circuit breaker half-open - attempting to reconnect')
-        this.circuitBreakerOpen = false
-        this.failureCount = 0
-      }, this.CIRCUIT_BREAKER_TIMEOUT)
-    }
-  }
-
-
   status: 'Active' | 'Inactive' | 'Draft'
   created_by: string
   created_at: string
@@ -161,6 +120,13 @@ class DatabaseService {
   private healthCheckCache: { status: boolean; timestamp: number } | null = null
   private readonly HEALTH_CHECK_CACHE_DURATION = 120000 // 2 minutes instead of 30 seconds
   private isHealthChecking = false
+  
+  // Circuit breaker implementation
+  private circuitBreakerOpen = false
+  private circuitBreakerTimeout: NodeJS.Timeout | null = null
+  private failureCount = 0
+  private readonly MAX_FAILURES = 5
+  private readonly CIRCUIT_BREAKER_TIMEOUT = 60000 // 1 minute
 
   constructor() {
     // Use API base URL for database operations
@@ -174,6 +140,39 @@ class DatabaseService {
       this.baseUrl = `${protocol}//${hostname.replace('-00-', '-00-').replace('.replit.dev', '.replit.dev')}:3001/api`
     }
     console.log('Database service initialized with baseUrl:', this.baseUrl)
+  }
+
+  private checkCircuitBreaker(): boolean {
+    if (this.circuitBreakerOpen) {
+      console.log('Circuit breaker is open, skipping database call')
+      return false
+    }
+    return true
+  }
+
+  private onDatabaseSuccess() {
+    this.failureCount = 0
+    if (this.circuitBreakerOpen) {
+      console.log('Circuit breaker closed - database connection restored')
+      this.circuitBreakerOpen = false
+      if (this.circuitBreakerTimeout) {
+        clearTimeout(this.circuitBreakerTimeout)
+        this.circuitBreakerTimeout = null
+      }
+    }
+  }
+
+  private onDatabaseFailure() {
+    this.failureCount++
+    if (this.failureCount >= this.MAX_FAILURES && !this.circuitBreakerOpen) {
+      console.log('Circuit breaker opened due to multiple failures')
+      this.circuitBreakerOpen = true
+      this.circuitBreakerTimeout = setTimeout(() => {
+        console.log('Circuit breaker half-open - attempting to reconnect')
+        this.circuitBreakerOpen = false
+        this.failureCount = 0
+      }, this.CIRCUIT_BREAKER_TIMEOUT)
+    }
   }
 
   private isCacheValid(): boolean {
