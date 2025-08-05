@@ -272,9 +272,8 @@ app.post('/api/disruptions/bulk-update', async (req, res) => {
       try {
         const {
           flight_number, flightNumber, route, origin, destination, origin_city, destination_city,
-          aircraft, scheduled_departure, scheduledDeparture, estimated_departure, estimatedDeparture,
-          delay_minutes, delay, passengers, crew, connection_flights, connectionFlights,
-          severity, disruption_type, disruptionType, type, status, disruption_reason, disruptionReason
+          aircraft, scheduled_departure, estimated_departure, delay_minutes,
+          passengers, crew, connection_flights, severity, disruption_type, type, status, disruption_reason
         } = disruption
 
         // Handle field name variations
@@ -947,11 +946,11 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
         delay_minutes: 0,
         disruption_reason: 'System generated recovery options'
       }
-      
+
       console.log('Creating recovery options for placeholder disruption')
       const { generateRecoveryOptionsForDisruption } = await import('./recovery-generator.js')
       const { options, steps } = generateRecoveryOptionsForDisruption(placeholderDisruption)
-      
+
       return res.json({
         success: true,
         optionsCount: options.length,
@@ -994,10 +993,10 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
           option.timeline, option.confidence, option.impact, option.status,
           option.priority || 0, JSON.stringify(option.advantages || []),
           JSON.stringify(option.considerations || []),
-          JSON.stringify(option.resourceRequirements || []),
-          JSON.stringify(option.costBreakdown || []),
+          JSON.stringify(option.resourceRequirements || {}),
+          JSON.stringify(option.costBreakdown || {}),
           JSON.stringify(option.timelineDetails || []),
-          JSON.stringify(option.riskAssessment || []),
+          JSON.stringify(option.riskAssessment || {}),
           JSON.stringify(option.technicalSpecs || {}),
           JSON.stringify(option.metrics || {}),
           JSON.stringify(option.rotationPlan || {})
