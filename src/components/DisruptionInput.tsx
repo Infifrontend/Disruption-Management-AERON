@@ -643,7 +643,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           ? "Active"
           : newDisruption.currentStatus,
       disruptionReason: newDisruption.disruptionReason,
-      categorization: newDisruption.categorization,
+      categorization: newDisruption.categorization || "Manual Entry",
+      crew_members: newDisruption.crewMembers || [],
     };
 
     try {

@@ -105,9 +105,30 @@ export function FlightDisruptionList() {
           return hasValidFlightNumber && hasValidRoute && hasValidDisruptionReason;
         });
 
-        // Add minimal required properties for UI without creating fake data
+        // Transform database data to component format with all dynamic fields
         const processedData = validDisruptions.map(disruption => ({
-          ...disruption,
+          id: disruption.id,
+          flightNumber: disruption.flightNumber,
+          route: disruption.route,
+          origin: disruption.origin,
+          destination: disruption.destination,
+          originCity: disruption.originCity,
+          destinationCity: disruption.destinationCity,
+          aircraft: disruption.aircraft,
+          scheduledDeparture: disruption.scheduledDeparture,
+          estimatedDeparture: disruption.estimatedDeparture,
+          delay: disruption.delay || 0,
+          passengers: disruption.passengers || 0,
+          crew: disruption.crew || 0,
+          connectionFlights: disruption.connectionFlights || 0,
+          severity: disruption.severity || 'Medium',
+          type: disruption.type || 'Unknown',
+          status: disruption.status || 'Active',
+          disruptionReason: disruption.disruptionReason,
+          categorization: disruption.categorization || 'Uncategorized',
+          createdAt: disruption.createdAt,
+          updatedAt: disruption.updatedAt,
+          // Add minimal required properties for UI components
           impact: {
             estimatedCost: 0,
             revenueAtRisk: 0,
@@ -115,7 +136,7 @@ export function FlightDisruptionList() {
             passengers: disruption.passengers || 0,
             connectingFlights: disruption.connectionFlights || 0
           },
-          confidence: 85, // Fixed confidence value
+          confidence: 85,
           weather: {
             condition: 'Unknown',
             visibility: 'N/A',
@@ -468,10 +489,12 @@ export function FlightDisruptionList() {
                 <TableHead>Aircraft</TableHead>
                 <TableHead>Departure</TableHead>
                 <TableHead>Issue</TableHead>
+                <TableHead>Categorization</TableHead>
                 <TableHead>Severity</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Delay</TableHead>
                 <TableHead>Passengers</TableHead>
+                <TableHead>Crew</TableHead>
                 <TableHead>Connections</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -541,6 +564,13 @@ export function FlightDisruptionList() {
                     </div>
                   </TableCell>
                   <TableCell>
+                    <div className="text-sm">
+                      <Badge variant="outline" className="text-xs">
+                        {disruption.categorization}
+                      </Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell>
                     <Badge className={getSeverityColor(disruption.severity)}>
                       {disruption.severity}
                     </Badge>
@@ -566,6 +596,12 @@ export function FlightDisruptionList() {
                     <div className="flex items-center gap-1">
                       <Users className="h-3 w-3 text-muted-foreground" />
                       <span>{disruption.passengers}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Users className="h-3 w-3 text-blue-500" />
+                      <span>{disruption.crew}</span>
                     </div>
                   </TableCell>
                   <TableCell>
