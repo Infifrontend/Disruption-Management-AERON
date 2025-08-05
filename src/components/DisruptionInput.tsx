@@ -68,18 +68,27 @@ import { databaseService, FlightDisruption } from "../services/databaseService";
 
 // Transform database flight disruption to the expected format for this component
 const transformFlightData = (disruption: FlightDisruption) => {
+  // Ensure we have a valid scheduled departure time
+  const scheduledDeparture = disruption.scheduledDeparture || new Date().toISOString();
+  
+  // Calculate scheduled arrival with proper fallback
+  let scheduledArrival;
+  if (disruption.estimatedDeparture) {
+    scheduledArrival = disruption.estimatedDeparture;
+  } else {
+    scheduledArrival = addHours(scheduledDeparture, 3);
+  }
+
   return {
     id: disruption.id,
-    flightNumber: disruption.flightNumber,
+    flightNumber: disruption.flightNumber || "Unknown",
     origin: disruption.origin || "DXB",
     destination: disruption.destination || "Unknown",
     originCity: disruption.originCity || disruption.origin || "Dubai",
     destinationCity:
       disruption.destinationCity || disruption.destination || "Unknown",
-    scheduledDeparture: disruption.scheduledDeparture,
-    scheduledArrival:
-      disruption.estimatedDeparture ||
-      addHours(disruption.scheduledDeparture, 3),
+    scheduledDeparture: scheduledDeparture,
+    scheduledArrival: scheduledArrival,
     currentStatus:
       disruption.status === "Active"
         ? "Delayed"
@@ -89,7 +98,7 @@ const transformFlightData = (disruption: FlightDisruption) => {
             ? "Diverted"
             : "Delayed",
     delay: disruption.delay || 0,
-    aircraft: disruption.aircraft,
+    aircraft: disruption.aircraft || "Unknown",
     gate: `T2-A${Math.floor(Math.random() * 30) + 1}`, // Generate consistent gate
     passengers: disruption.passengers || 0,
     crew: disruption.crew || 6,
@@ -138,14 +147,35 @@ const getCategorization = (type: string) => {
 };
 
 const addHours = (dateString: string, hours: number) => {
+  if (!dateString) {
+    // If no date provided, use current time plus hours
+    const date = new Date();
+    date.setHours(date.getHours() + hours);
+    return date.toISOString();
+  }
+  
   const date = new Date(dateString);
+  if (isNaN(date.getTime())) {
+    // If invalid date, use current time plus hours
+    const fallbackDate = new Date();
+    fallbackDate.setHours(fallbackDate.getHours() + hours);
+    return fallbackDate.toISOString();
+  }
+  
   date.setHours(date.getHours() + hours);
   return date.toISOString();
 };
 
 const getTimeAgo = (dateString: string) => {
+  if (!dateString) return "Unknown";
+  
   const now = new Date();
   const date = new Date(dateString);
+  
+  if (isNaN(date.getTime())) {
+    return "Unknown";
+  }
+  
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
 
