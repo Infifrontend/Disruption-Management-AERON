@@ -1057,47 +1057,14 @@ class DatabaseService {
     }
   }
 
-  // Sync disruptions from external API
+  // Sync disruptions from external API - disabled to prevent unknown records
   async syncDisruptionsFromExternalAPI(): Promise<{ inserted: number; updated: number }> {
     try {
-      console.log('Starting sync from external API...')
-
-      // Check if API server is available first
-      const healthCheck = await this.checkApiHealth()
-      if (!healthCheck) {
-        console.warn('API server not available, skipping sync')
-        return { inserted: 0, updated: 0 }
-      }
-
-      // Generate mock external API data
-      const mockExternalData = this.generateMockExternalData()
-
-      console.log(`Syncing ${mockExternalData.length} disruptions from external API`)
-
-      const response = await fetch(`${this.baseUrl}/disruptions/bulk-update`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ disruptions: mockExternalData })
-      })
-
-      if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Bulk update failed: ${response.status} - ${errorText}`)
-      }
-
-      const result = await response.json()
-      console.log('Sync completed:', result)
-
-      // Return the result with fallback values if properties are missing
-      return {
-        inserted: result.inserted || 0,
-        updated: result.updated || 0
-      }
+      console.log('External API sync disabled to prevent unknown records')
+      // Return immediately without syncing to prevent creating unknown records
+      return { inserted: 0, updated: 0 }
     } catch (error) {
-      console.error('Error syncing from external API:', error)
-      // Return default values instead of throwing to prevent app crash
+      console.error('Error in sync function:', error)
       return { inserted: 0, updated: 0 }
     }
   }
@@ -1166,80 +1133,11 @@ class DatabaseService {
     }
   }
 
-  // Generate mock external API data for testing
+  // Generate mock external API data for testing - disabled to prevent unknown records
   private generateMockExternalData(): any[] {
-    const currentTime = new Date();
-    const mockData = [];
-
-    // Generate 5-8 realistic flight disruptions
-    const flightNumbers = ['FZ502', 'FZ751', 'FZ1244', 'FZ368', 'FZ901', 'FZ1066', 'FZ445'];
-    const routes = [
-      { origin: 'DXB', destination: 'BOM', originCity: 'Dubai', destinationCity: 'Mumbai' },
-      { origin: 'DXB', destination: 'DEL', originCity: 'Dubai', destinationCity: 'Delhi' },
-      { origin: 'DXB', destination: 'KHI', originCity: 'Dubai', destinationCity: 'Karachi' },
-      { origin: 'DXB', destination: 'COK', originCity: 'Dubai', destinationCity: 'Kochi' },
-      { origin: 'DXB', destination: 'IST', originCity: 'Dubai', destinationCity: 'Istanbul' },
-      { origin: 'DXB', destination: 'CMB', originCity: 'Dubai', destinationCity: 'Colombo' },
-      { origin: 'DXB', destination: 'BCN', originCity: 'Dubai', destinationCity: 'Barcelona' }
-    ];
-    const aircraftTypes = ['B737-800', 'B737 MAX 8', 'B737-900ER'];
-    const disruptionTypes = ['Technical', 'Weather', 'Crew', 'ATC'];
-    const severities = ['Critical', 'High', 'Medium', 'Low'];
-    const statuses = ['Active', 'Resolving'];
-
-    const disruptionReasons = [
-      'Engine maintenance check required',
-      'Hydraulic system malfunction detected',
-      'Severe thunderstorms at destination',
-      'Crew duty time limitations exceeded',
-      'Air traffic control delays',
-      'Aircraft positioning delay',
-      'Ground equipment failure',
-      'Passenger medical emergency',
-      'Security screening delays',
-      'Fuel system inspection needed'
-    ];
-
-    const numDisruptions = Math.floor(Math.random() * 4) + 5; // 5-8 disruptions
-
-    for (let i = 0; i < numDisruptions; i++) {
-      const flight = flightNumbers[i % flightNumbers.length];
-      const route = routes[i % routes.length];
-      const aircraft = aircraftTypes[Math.floor(Math.random() * aircraftTypes.length)];
-      const disruptionType = disruptionTypes[Math.floor(Math.random() * disruptionTypes.length)];
-      const severity = severities[Math.floor(Math.random() * severities.length)];
-      const status = statuses[Math.floor(Math.random() * statuses.length)];
-      const reason = disruptionReasons[Math.floor(Math.random() * disruptionReasons.length)];
-
-      // Generate realistic departure times (next 2-8 hours)
-      const departureTime = new Date(currentTime.getTime() + (Math.random() * 6 + 2) * 60 * 60 * 1000);
-      const estimatedTime = new Date(departureTime.getTime() + (Math.random() * 180 + 30) * 60 * 1000); // 30-210 min delay
-
-      const disruption = {
-        flight_number: flight,
-        route: `${route.origin} → ${route.destination}`,
-        origin: route.origin,
-        destination: route.destination,
-        origin_city: route.originCity,
-        destination_city: route.destinationCity,
-        aircraft: aircraft,
-        scheduled_departure: departureTime.toISOString(),
-        estimated_departure: estimatedTime.toISOString(),
-        delay_minutes: Math.floor((estimatedTime.getTime() - departureTime.getTime()) / 60000),
-        passengers: Math.floor(Math.random() * 100) + 150, // 150-250 passengers
-        crew: Math.floor(Math.random() * 3) + 6, // 6-8 crew
-        connection_flights: Math.floor(Math.random() * 15), // 0-14 connections
-        severity: severity,
-        disruption_type: disruptionType,
-        status: status,
-        disruption_reason: reason
-      };
-
-      mockData.push(disruption);
-    }
-
-    console.log(`Generated ${mockData.length} mock disruptions for sync`);
-    return mockData;
+    // Return empty array to stop generating mock data that creates unknown records
+    console.log('Mock data generation disabled to prevent unknown records');
+    return [];
   }
 }
 
