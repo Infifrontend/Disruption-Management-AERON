@@ -147,23 +147,32 @@ const getCategorization = (type: string) => {
 };
 
 const addHours = (dateString: string, hours: number) => {
-  if (!dateString) {
-    // If no date provided, use current time plus hours
-    const date = new Date();
+  try {
+    if (!dateString) {
+      // If no date provided, use current time plus hours
+      const date = new Date();
+      date.setHours(date.getHours() + hours);
+      return date.toISOString();
+    }
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      // If invalid date, use current time plus hours
+      console.warn(`Invalid date string: ${dateString}, using current time + ${hours}h`);
+      const fallbackDate = new Date();
+      fallbackDate.setHours(fallbackDate.getHours() + hours);
+      return fallbackDate.toISOString();
+    }
+    
     date.setHours(date.getHours() + hours);
     return date.toISOString();
-  }
-  
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) {
-    // If invalid date, use current time plus hours
+  } catch (error) {
+    console.error("Error in addHours:", error, "dateString:", dateString);
+    // Fallback to current time plus hours
     const fallbackDate = new Date();
     fallbackDate.setHours(fallbackDate.getHours() + hours);
     return fallbackDate.toISOString();
   }
-  
-  date.setHours(date.getHours() + hours);
-  return date.toISOString();
 };
 
 const getTimeAgo = (dateString: string) => {
@@ -252,42 +261,67 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       // Then fetch all current disruptions from database
       const data = await databaseService.getAllDisruptions();
 
-      // Transform database data to component format
-      const transformedFlights = data.map(transformFlightData);
+      // Validate and transform database data to component format
+      const validData = data.filter(disruption => {
+        // Basic validation to ensure required fields exist
+        return disruption && 
+               disruption.flightNumber && 
+               disruption.scheduledDeparture &&
+               disruption.origin &&
+               disruption.destination;
+      });
+
+      const transformedFlights = validData.map(transformFlightData);
       setFlights(transformedFlights);
 
       console.log("Fetched and transformed flights:", transformedFlights.length, "flights");
       
       // Show sync results in success message if any data was synced
-      if (syncResult.inserted > 0 || syncResult.updated > 0) {
+      if (syncResult && (syncResult.inserted > 0 || syncResult.updated > 0)) {
         setSuccess(`✅ Data refreshed successfully! ${syncResult.inserted} new disruptions added, ${syncResult.updated} updated.`);
         setTimeout(() => setSuccess(null), 5000);
       }
       
-      // If we got here successfully, clear any previous errors
-      if (transformedFlights.length === 0) {
-        setError("No flight disruptions found. The system may be experiencing connectivity issues, but you can still add new disruptions.");
+      // Clear any previous errors if we have valid data
+      if (transformedFlights.length === 0 && data.length === 0) {
+        setError("No flight disruptions found. Add new disruptions using the 'Add Disruption' button.");
+      } else if (transformedFlights.length === 0 && data.length > 0) {
+        setError("Flight data validation failed. Some disruptions may have incomplete information.");
       }
     } catch (error) {
       console.error("Error fetching flights:", error);
       
       // Check if it's a connectivity issue
-      const isHealthy = await databaseService.healthCheck();
-      if (!isHealthy) {
+      try {
+        const isHealthy = await databaseService.healthCheck();
+        if (!isHealthy) {
+          setError(
+            "🔄 Database connection is temporarily unavailable. You can still add new disruptions, and they will be synced when the connection is restored."
+          );
+        } else {
+          setError(
+            "⚠️ Failed to load flight data. The database connection is working, but there may be data issues. You can still add new disruptions manually."
+          );
+        }
+      } catch (healthError) {
         setError(
-          "Database connection is temporarily unavailable. You can still add new disruptions, and they will be synced when the connection is restored."
-        );
-      } else {
-        setError(
-          "Failed to load flight data. The system may be experiencing connectivity issues, but you can still add new disruptions manually."
+          "🔌 System connectivity issues detected. You can add new disruptions offline, and they will be synced when the connection is restored."
         );
       }
       
       // Try to load existing data from database as fallback
       try {
         const fallbackData = await databaseService.getAllDisruptions();
-        const transformedFlights = fallbackData.map(transformFlightData);
-        setFlights(transformedFlights);
+        if (fallbackData && fallbackData.length > 0) {
+          const validFallbackData = fallbackData.filter(disruption => 
+            disruption && disruption.flightNumber && disruption.scheduledDeparture
+          );
+          const transformedFlights = validFallbackData.map(transformFlightData);
+          setFlights(transformedFlights);
+          console.log("Loaded fallback data:", transformedFlights.length, "flights");
+        } else {
+          setFlights([]);
+        }
       } catch (fallbackError) {
         console.error("Fallback fetch also failed:", fallbackError);
         setFlights([]);

@@ -11,12 +11,12 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
+
     // Allow all localhost and replit.dev origins
     if (origin.includes('localhost') || origin.includes('replit.dev') || origin.includes('sisko.replit.dev')) {
       return callback(null, true);
     }
-    
+
     // Allow all other origins for now (can be restricted later)
     return callback(null, true);
   },
@@ -32,7 +32,7 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With')
   res.header('Access-Control-Allow-Credentials', 'true')
-  
+
   if (req.method === 'OPTIONS') {
     res.sendStatus(200)
   } else {
@@ -268,43 +268,71 @@ app.post('/api/disruptions/bulk-update', async (req, res) => {
         const safeSeverity = severity || 'Medium'
         const safeStatus = status || 'Active'
 
-        const result = await pool.query(`
-          INSERT INTO flight_disruptions (
-            flight_number, route, origin, destination, origin_city, destination_city,
-            aircraft, scheduled_departure, estimated_departure, delay_minutes, 
-            passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-          ON CONFLICT (flight_number, scheduled_departure) 
-          DO UPDATE SET 
-            route = EXCLUDED.route,
-            origin = EXCLUDED.origin,
-            destination = EXCLUDED.destination,
-            origin_city = EXCLUDED.origin_city,
-            destination_city = EXCLUDED.destination_city,
-            aircraft = EXCLUDED.aircraft,
-            estimated_departure = EXCLUDED.estimated_departure,
-            delay_minutes = EXCLUDED.delay_minutes,
-            passengers = EXCLUDED.passengers,
-            crew = EXCLUDED.crew,
-            connection_flights = EXCLUDED.connection_flights,
-            severity = EXCLUDED.severity,
-            disruption_type = EXCLUDED.disruption_type,
-            status = EXCLUDED.status,
-            disruption_reason = EXCLUDED.disruption_reason,
-            updated_at = CURRENT_TIMESTAMP
-          RETURNING *, (xmax = 0) AS was_inserted
-        `, [
-          flightNum, safeRoute, origin || 'UNK', destination || 'UNK',
-          origin_city || destination_city || 'Unknown', destination_city || origin_city || 'Unknown',
-          aircraft || 'Unknown', scheduled_dep, estimated_dep, delay_mins,
-          passengers || 0, crew || 6, connection_flights_val, safeSeverity, 
-          disruption_type_val, safeStatus, disruption_reason_val
-        ])
+        // Use a transaction for each batch of operations for atomicity
+        const client = await pool.connect()
+        try {
+          await client.query('BEGIN')
 
-        if (result.rows[0].was_inserted) {
-          inserted++
-        } else {
-          updated++
+          // First check if record exists
+          const existingQuery = `
+            SELECT id FROM flight_disruptions 
+            WHERE flight_number = $1 AND DATE(scheduled_departure) = DATE($2)
+          `
+
+          const existingResult = await client.query(existingQuery, [flightNum, scheduled_dep])
+
+          let query, params
+          if (existingResult.rows.length > 0) {
+            // Update existing record
+            query = `
+              UPDATE flight_disruptions SET
+                route = $3, origin = $4, destination = $5, origin_city = $6, destination_city = $7,
+                aircraft = $8, estimated_departure = $9, delay_minutes = $10,
+                passengers = $11, crew = $12, connection_flights = $13, severity = $14,
+                disruption_type = $15, status = $16, disruption_reason = $17, updated_at = NOW()
+              WHERE flight_number = $1 AND DATE(scheduled_departure) = DATE($2)
+              RETURNING id
+            `
+            params = [
+              flightNum, scheduled_dep, safeRoute, origin || 'UNK', destination || 'UNK',
+              origin_city || 'Unknown', destination_city || 'Unknown',
+              aircraft || 'Unknown', estimated_dep, delay_mins, passengers || 0, crew || 6,
+              connection_flights_val, safeSeverity, disruption_type_val, safeStatus, disruption_reason_val
+            ]
+            updated++
+          } else {
+            // Insert new record
+            query = `
+              INSERT INTO flight_disruptions (
+                flight_number, route, origin, destination, origin_city, destination_city,
+                aircraft, scheduled_departure, estimated_departure, delay_minutes,
+                passengers, crew, connection_flights, severity, disruption_type,
+                status, disruption_reason, created_at, updated_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW(), NOW())
+              RETURNING id
+            `
+            params = [
+              flightNum, safeRoute, origin || 'UNK', destination || 'UNK',
+              origin_city || 'Unknown', destination_city || 'Unknown',
+              aircraft || 'Unknown', scheduled_dep, estimated_dep, delay_mins, passengers || 0, crew || 6,
+              connection_flights_val, safeSeverity, disruption_type_val, safeStatus, disruption_reason_val
+            ]
+            inserted++
+          }
+
+          const result = await client.query(query, params)
+
+          if (result.rows.length === 0) {
+            console.warn(`No rows affected for flight ${flightNum}`)
+            errors++
+          }
+          await client.query('COMMIT')
+        } catch (txErr) {
+          await client.query('ROLLBACK')
+          console.error('Error processing disruption transaction:', txErr.message)
+          errors++
+        } finally {
+          client.release()
         }
 
       } catch (error) {
