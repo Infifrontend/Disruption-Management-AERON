@@ -84,18 +84,30 @@ export function FlightDisruptionList() {
   useEffect(() => {
     const fetchDisruptions = async () => {
       try {
+        // First sync from external API to prevent duplicates
+        const syncResult = await databaseService.syncDisruptionsFromExternalAPI();
+        console.log('External API sync result:', syncResult);
+        
+        // Then fetch all current disruptions
         const data = await databaseService.getAllDisruptions();
         setDisruptions(data);
-        console.log("Fetched disruptions:", data);
+        console.log("Fetched disruptions:", data.length, "total");
       } catch (error) {
         console.error("Error fetching disruptions:", error);
+        // Fallback to local data if sync fails
+        try {
+          const data = await databaseService.getAllDisruptions();
+          setDisruptions(data);
+        } catch (fallbackError) {
+          console.error("Fallback fetch also failed:", fallbackError);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchDisruptions();
-    // Refresh every 2 minutes to reduce load
+    // Refresh every 2 minutes with external API sync
     const interval = setInterval(fetchDisruptions, 120000);
     return () => clearInterval(interval);
   }, []);

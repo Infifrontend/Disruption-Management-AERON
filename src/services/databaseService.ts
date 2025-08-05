@@ -955,6 +955,89 @@ class DatabaseService {
     }
   }
 
+  // Sync disruptions from external API
+  async syncDisruptionsFromExternalAPI(): Promise<{ inserted: number, updated: number, errors: number }> {
+    try {
+      console.log('Fetching disruptions from external API...')
+      
+      // Fetch from external API
+      const externalResponse = await fetch('https://dev-genai.infinitisoftware.net/mock-api/js/sheets/AERON_FZ/flight_disruptions/', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        signal: AbortSignal.timeout(15000), // 15 second timeout
+      })
+
+      if (!externalResponse.ok) {
+        throw new Error(`External API error: ${externalResponse.status}`)
+      }
+
+      const externalData = await externalResponse.json()
+      
+      if (!Array.isArray(externalData) || externalData.length === 0) {
+        console.log('No disruptions found in external API')
+        return { inserted: 0, updated: 0, errors: 0 }
+      }
+
+      console.log(`Found ${externalData.length} disruptions from external API`)
+
+      // Send to our bulk update endpoint
+      const bulkResponse = await fetch(`${this.baseUrl}/disruptions/bulk-update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ disruptions: externalData })
+      })
+
+      if (!bulkResponse.ok) {
+        throw new Error(`Bulk update failed: ${bulkResponse.status}`)
+      }
+
+      const result = await bulkResponse.json()
+      console.log('External API sync completed:', result)
+      
+      this.onDatabaseSuccess()
+      return {
+        inserted: result.inserted || 0,
+        updated: result.updated || 0,
+        errors: result.errors || 0
+      }
+
+    } catch (error) {
+      console.error('Error syncing from external API:', error)
+      this.onDatabaseFailure()
+      return { inserted: 0, updated: 0, errors: 1 }
+    }
+  }
+
+  // Bulk update disruptions (alternative method)
+  async bulkUpdateDisruptions(disruptions: any[]): Promise<{ inserted: number, updated: number, errors: number }> {
+    try {
+      const response = await fetch(`${this.baseUrl}/disruptions/bulk-update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ disruptions })
+      })
+
+      if (!response.ok) {
+        throw new Error(`Bulk update failed: ${response.status}`)
+      }
+
+      const result = await response.json()
+      this.onDatabaseSuccess()
+      return result
+
+    } catch (error) {
+      console.error('Error in bulk update:', error)
+      this.onDatabaseFailure()
+      return { inserted: 0, updated: 0, errors: 1 }
+    }
+  }
+
 
 }
 
