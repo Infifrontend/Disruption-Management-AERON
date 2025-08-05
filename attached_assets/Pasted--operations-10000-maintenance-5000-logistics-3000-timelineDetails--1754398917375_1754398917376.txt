@@ -1,0 +1,937 @@
+"operations": 10000,
+    "maintenance": 5000,
+    "logistics": 3000
+  },
+  "timelineDetails": [
+    {
+      "phase": "Planning",
+      "duration": "20 min",
+      "description": "Detailed recovery planning"
+    },
+    {
+      "phase": "Preparation",
+      "duration": "30 min",
+      "description": "Resource preparation"
+    },
+    {
+      "phase": "Implementation",
+      "duration": "40 min",
+      "description": "Execute recovery plan"
+    }
+  ],
+  "riskAssessment": {
+    "operational": "Medium",
+    "financial": "Low",
+    "passenger": "Medium"
+  },
+  "technicalSpecs": {
+    "aircraft_required": "B737-900ER",
+    "crew_required": 6
+  },
+  "metrics": {
+    "passenger_impact_score": 25,
+    "cost_efficiency": 90,
+    "time_efficiency": 75
+  }
+}
+❌ Error inserting option "Contingency Recovery Plan" for disruption 229: malformed array literal: "["Guaranteed solution","Comprehensive coverage","High success rate"]"
+Option data: {
+  "title": "Contingency Recovery Plan",
+  "description": "Backup recovery solution for FZ751 if primary options fail",
+  "cost": "AED 35,000",
+  "timeline": "120 minutes",
+  "confidence": 95,
+  "impact": "High",
+  "status": "generated",
+  "priority": 3,
+  "advantages": [
+    "Guaranteed solution",
+    "Comprehensive coverage",
+    "High success rate"
+  ],
+  "considerations": [
+    "Higher cost",
+    "Extended timeline",
+    "Significant resource commitment"
+  ],
+  "resourceRequirements": [
+    "Senior operations team",
+    "Multiple crew sets",
+    "Customer service team"
+  ],
+  "costBreakdown": {
+    "operations": 20000,
+    "crew": 10000,
+    "passenger_services": 5000
+  },
+  "timelineDetails": [
+    {
+      "phase": "Comprehensive assessment",
+      "duration": "30 min",
+      "description": "Full situation analysis"
+    },
+    {
+      "phase": "Resource mobilization",
+      "duration": "45 min",
+      "description": "Deploy all necessary resources"
+    },
+    {
+      "phase": "Recovery execution",
+      "duration": "45 min",
+      "description": "Full recovery implementation"
+    }
+  ],
+  "riskAssessment": {
+    "operational": "Low",
+    "financial": "High",
+    "passenger": "Low"
+  },
+  "technicalSpecs": {
+    "aircraft_required": "Backup available",
+    "crew_required": 12
+  },
+  "metrics": {
+    "passenger_impact_score": 40,
+    "cost_efficiency": 60,
+    "time_efficiency": 65
+  }
+}
+✅ Created 3 options and 5 steps for FZ751
+Generating recovery data for disruption 231 - FZ368
+Generating recovery options for flight FZ368, type: ATC
+Handling disruption type: atc, generating comprehensive options
+Generated 3 options and 5 steps for disruption type: atc
+❌ Error inserting option "Immediate Recovery Action" for disruption 231: malformed array literal: "["Quick resolution","Minimal passenger impact","Maintains schedule integrity"]"
+Option data: {
+  "title": "Immediate Recovery Action",
+  "description": "Address ATC disruption with priority response for FZ368",
+  "cost": "AED 25,000",
+  "timeline": "60 minutes",
+  "confidence": 85,
+  "impact": "Low",
+  "status": "generated",
+  "priority": 1,
+  "advantages": [
+    "Quick resolution",
+    "Minimal passenger impact",
+    "Maintains schedule integrity"
+  ],
+  "considerations": [
+    "Requires immediate resource allocation",
+    "Higher operational cost"
+  ],
+  "resourceRequirements": [
+    "Operations team",
+    "Ground crew",
+    "Customer service"
+  ],
+  "costBreakdown": {
+    "operations": 15000,
+    "crew": 5000,
+    "passenger_services": 5000
+  },
+  "timelineDetails": [
+    {
+      "phase": "Assessment",
+      "duration": "10 min",
+      "description": "Evaluate situation and options"
+    },
+    {
+      "phase": "Resource allocation",
+      "duration": "20 min",
+      "description": "Assign teams and equipment"
+    },
+    {
+      "phase": "Execution",
+      "duration": "30 min",
+      "description": "Implement recovery plan"
+    }
+  ],
+  "riskAssessment": {
+    "operational": "Low",
+    "financial": "Medium",
+    "passenger": "Low"
+  },
+  "technicalSpecs": {
+    "aircraft_required": "B737 MAX 8",
+    "crew_required": 6
+  },
+  "metrics": {
+    "passenger_impact_score": 15,
+    "cost_efficiency": 85,
+    "time_efficiency": 90
+  }
+}
+❌ Error inserting option "Alternative Recovery Approach" for disruption 231: malformed array literal: "["Cost-effective","Resource efficient","Proven approach"]"
+Option data: {
+  "title": "Alternative Recovery Approach",
+  "description": "Secondary recovery option for FZ368 with resource optimization",
+  "cost": "AED 18,000",
+  "timeline": "90 minutes",
+  "confidence": 80,
+  "impact": "Medium",
+  "status": "generated",
+  "priority": 2,
+  "advantages": [
+    "Cost-effective",
+    "Resource efficient",
+    "Proven approach"
+  ],
+  "considerations": [
+    "Longer timeline",
+    "May affect downstream flights"
+  ],
+  "resourceRequirements": [
+    "Operations team",
+    "Maintenance crew"
+  ],
+  "costBreakdown": {
+    "operations": 10000,
+    "maintenance": 5000,
+    "logistics": 3000
+  },
+  "timelineDetails": [
+    {
+      "phase": "Planning",
+      "duration": "20 min",
+      "description": "Detailed recovery planning"
+    },
+    {
+      "phase": "Preparation",
+      "duration": "30 min",
+      "description": "Resource preparation"
+    },
+    {
+      "phase": "Implementation",
+      "duration": "40 min",
+      "description": "Execute recovery plan"
+    }
+  ],
+  "riskAssessment": {
+    "operational": "Medium",
+    "financial": "Low",
+    "passenger": "Medium"
+  },
+  "technicalSpecs": {
+    "aircraft_required": "B737 MAX 8",
+    "crew_required": 6
+  },
+  "metrics": {
+    "passenger_impact_score": 25,
+    "cost_efficiency": 90,
+    "time_efficiency": 75
+  }
+}
+❌ Error inserting option "Contingency Recovery Plan" for disruption 231: malformed array literal: "["Guaranteed solution","Comprehensive coverage","High success rate"]"
+Option data: {
+  "title": "Contingency Recovery Plan",
+  "description": "Backup recovery solution for FZ368 if primary options fail",
+  "cost": "AED 35,000",
+  "timeline": "120 minutes",
+  "confidence": 95,
+  "impact": "High",
+  "status": "generated",
+  "priority": 3,
+  "advantages": [
+    "Guaranteed solution",
+    "Comprehensive coverage",
+    "High success rate"
+  ],
+  "considerations": [
+    "Higher cost",
+    "Extended timeline",
+    "Significant resource commitment"
+  ],
+  "resourceRequirements": [
+    "Senior operations team",
+    "Multiple crew sets",
+    "Customer service team"
+  ],
+  "costBreakdown": {
+    "operations": 20000,
+    "crew": 10000,
+    "passenger_services": 5000
+  },
+  "timelineDetails": [
+    {
+      "phase": "Comprehensive assessment",
+      "duration": "30 min",
+      "description": "Full situation analysis"
+    },
+    {
+      "phase": "Resource mobilization",
+      "duration": "45 min",
+      "description": "Deploy all necessary resources"
+    },
+    {
+      "phase": "Recovery execution",
+      "duration": "45 min",
+      "description": "Full recovery implementation"
+    }
+  ],
+  "riskAssessment": {
+    "operational": "Low",
+    "financial": "High",
+    "passenger": "Low"
+  },
+  "technicalSpecs": {
+    "aircraft_required": "Backup available",
+    "crew_required": 12
+  },
+  "metrics": {
+    "passenger_impact_score": 40,
+    "cost_efficiency": 60,
+    "time_efficiency": 65
+  }
+}
+✅ Created 3 options and 5 steps for FZ368
+Generating recovery data for disruption 232 - FZ901
+Generating recovery options for flight FZ901, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error inserting option "Weather Delay with Re-routing" for disruption 232: malformed array literal: "["Maintains original aircraft","Lower cost option","High success probability"]"
+Option data: {
+  "title": "Weather Delay with Re-routing",
+  "description": "Wait for weather conditions to improve with alternate routing",
+  "cost": "$12,500",
+  "timeline": "2-3 hours",
+  "confidence": 85,
+  "impact": "Medium delay impact",
+  "status": "recommended",
+  "priority": 1,
+  "advantages": [
+    "Maintains original aircraft",
+    "Lower cost option",
+    "High success probability"
+  ],
+  "considerations": [
+    "Weather dependency",
+    "Potential for further delays",
+    "Passenger accommodation required"
+  ],
+  "resourceRequirements": [
+    {
+      "type": "Aircraft",
+      "resource": "B737-900ER",
+      "availability": "Available",
+      "status": "On ground",
+      "location": "DXB",
+      "eta": "Immediate",
+      "details": "Original aircraft available"
+    }
+  ],
+  "costBreakdown": [
+    {
+      "category": "Delay Costs",
+      "amount": "$8,500",
+      "percentage": 68,
+      "description": "Passenger compensation and handling"
+    },
+    {
+      "category": "Fuel & Operations",
+      "amount": "$2,500",
+      "percentage": 20,
+      "description": "Additional fuel for re-routing"
+    },
+    {
+      "category": "Crew Overtime",
+      "amount": "$1,500",
+      "percentage": 12,
+      "description": "Extended duty time compensation"
+    }
+  ],
+  "timelineDetails": [
+    {
+      "step": "Weather Monitoring",
+      "duration": "30 min",
+      "startTime": "12:30",
+      "endTime": "13:00",
+      "details": "Continuous weather tracking",
+      "status": "in-progress"
+    },
+    {
+      "step": "Route Planning",
+      "duration": "45 min",
+      "startTime": "13:00",
+      "endTime": "13:45",
+      "details": "Alternate route calculation",
+      "status": "pending"
+    },
+    {
+      "step": "Passenger Notification",
+      "duration": "15 min",
+      "startTime": "13:45",
+      "endTime": "14:00",
+      "details": "Inform passengers of delay",
+      "status": "pending"
+    },
+    {
+      "step": "Departure Clearance",
+      "duration": "30 min",
+      "startTime": "14:00",
+      "endTime": "14:30",
+      "details": "Weather clearance and takeoff",
+      "status": "pending"
+    }
+  ],
+  "riskAssessment": [
+    {
+      "risk": "Weather deterioration",
+      "probability": "Low",
+      "impact": "High",
+      "riskScore": 2,
+      "mitigation": "Continuous monitoring with backup plans ready"
+    },
+    {
+      "risk": "Passenger dissatisfaction",
+      "probability": "Medium",
+      "impact": "Medium",
+      "riskScore": 4,
+      "mitigation": "Proactive communication and compensation"
+    }
+  ],
+  "technicalSpecs": {
+    "weatherMinimums": [
+      "Visibility: 1000m minimum",
+      "Ceiling: 200ft minimum",
+      "Wind: 25kt crosswind limit"
+    ],
+    "alternateAirports": [
+      "SHJ - Sharjah (45km)",
+      "AUH - Abu Dhabi (120km)"
+    ],
+    "fuelConsiderations": [
+      "Additional 800kg for alternate routing",
+      "Weather contingency fuel: 1200kg"
+    ]
+  },
+  "metrics": {
+    "costEfficiency": 92,
+    "timeEfficiency": 78,
+    "passengerSatisfaction": 75
+  },
+  "rotationPlan": {
+    "nextFlight": "FZ456",
+    "impact": "Minimal",
+    "adjustments": "None required"
+  }
+}
+❌ Error inserting option "Aircraft Swap" for disruption 232: malformed array literal: "["Faster departure","Weather avoidance","Network protection"]"
+Option data: {
+  "title": "Aircraft Swap",
+  "description": "Switch to available aircraft to avoid weather delays",
+  "cost": "$18,750",
+  "timeline": "1-2 hours",
+  "confidence": 75,
+  "impact": "Moderate operational complexity",
+  "status": "caution",
+  "priority": 2,
+  "advantages": [
+    "Faster departure",
+    "Weather avoidance",
+    "Network protection"
+  ],
+  "considerations": [
+    "Higher operational cost",
+    "Aircraft availability dependent"
+  ],
+  "resourceRequirements": [
+    {
+      "type": "Aircraft",
+      "resource": "A6-FED",
+      "availability": "Available 14:30",
+      "status": "Maintenance complete",
+      "location": "DXB",
+      "eta": "14:30",
+      "details": "B737-800 ready for service"
+    }
+  ],
+  "costBreakdown": [
+    {
+      "category": "Aircraft Positioning",
+      "amount": "$12,000",
+      "percentage": 64,
+      "description": "Aircraft swap and positioning costs"
+    },
+    {
+      "category": "Passenger Handling",
+      "amount": "$4,250",
+      "percentage": 23,
+      "description": "Gate change and boarding"
+    },
+    {
+      "category": "Crew Coordination",
+      "amount": "$2,500",
+      "percentage": 13,
+      "description": "Crew briefing and preparation"
+    }
+  ]
+}
+❌ Error inserting option "Flight Cancellation with Rebooking" for disruption 232: malformed array literal: "["Guaranteed resolution","Network stability","Crew rest compliance"]"
+Option data: {
+  "title": "Flight Cancellation with Rebooking",
+  "description": "Cancel FZ901 and rebook passengers on next available flights",
+  "cost": "$45,200",
+  "timeline": "4-6 hours",
+  "confidence": 95,
+  "impact": "High passenger impact",
+  "status": "warning",
+  "priority": 3,
+  "advantages": [
+    "Guaranteed resolution",
+    "Network stability",
+    "Crew rest compliance"
+  ],
+  "considerations": [
+    "High passenger compensation",
+    "Reputation impact",
+    "Hotel costs"
+  ],
+  "resourceRequirements": [
+    {
+      "type": "Passenger Services",
+      "resource": "Rebooking Team",
+      "availability": "Available",
+      "status": "On standby",
+      "location": "DXB T2",
+      "eta": "Immediate",
+      "details": "6 agents available for rebooking"
+    }
+  ],
+  "costBreakdown": [
+    {
+      "category": "EU261 Compensation",
+      "amount": "$28,200",
+      "percentage": 62,
+      "description": "€600 per passenger compensation"
+    },
+    {
+      "category": "Hotel & Meals",
+      "amount": "$12,500",
+      "percentage": 28,
+      "description": "Overnight accommodation"
+    },
+    {
+      "category": "Rebooking Costs",
+      "amount": "$4,500",
+      "percentage": 10,
+      "description": "Alternative flight arrangements"
+    }
+  ]
+}
+✅ Created 3 options and 4 steps for FZ901
+Generating recovery data for disruption 233 - FZ1066
+Generating recovery options for flight FZ1066, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error inserting option "Weather Delay with Re-routing" for disruption 233: malformed array literal: "["Maintains original aircraft","Lower cost option","High success probability"]"
+Option data: {
+  "title": "Weather Delay with Re-routing",
+  "description": "Wait for weather conditions to improve with alternate routing",
+  "cost": "$12,500",
+  "timeline": "2-3 hours",
+  "confidence": 85,
+  "impact": "Medium delay impact",
+  "status": "recommended",
+  "priority": 1,
+  "advantages": [
+    "Maintains original aircraft",
+    "Lower cost option",
+    "High success probability"
+  ],
+  "considerations": [
+    "Weather dependency",
+    "Potential for further delays",
+    "Passenger accommodation required"
+  ],
+  "resourceRequirements": [
+    {
+      "type": "Aircraft",
+      "resource": "B737-900ER",
+      "availability": "Available",
+      "status": "On ground",
+      "location": "DXB",
+      "eta": "Immediate",
+      "details": "Original aircraft available"
+    }
+  ],
+  "costBreakdown": [
+    {
+      "category": "Delay Costs",
+      "amount": "$8,500",
+      "percentage": 68,
+      "description": "Passenger compensation and handling"
+    },
+    {
+      "category": "Fuel & Operations",
+      "amount": "$2,500",
+      "percentage": 20,
+      "description": "Additional fuel for re-routing"
+    },
+    {
+      "category": "Crew Overtime",
+      "amount": "$1,500",
+      "percentage": 12,
+      "description": "Extended duty time compensation"
+    }
+  ],
+  "timelineDetails": [
+    {
+      "step": "Weather Monitoring",
+      "duration": "30 min",
+      "startTime": "12:30",
+      "endTime": "13:00",
+      "details": "Continuous weather tracking",
+      "status": "in-progress"
+    },
+    {
+      "step": "Route Planning",
+      "duration": "45 min",
+      "startTime": "13:00",
+      "endTime": "13:45",
+      "details": "Alternate route calculation",
+      "status": "pending"
+    },
+    {
+      "step": "Passenger Notification",
+      "duration": "15 min",
+      "startTime": "13:45",
+      "endTime": "14:00",
+      "details": "Inform passengers of delay",
+      "status": "pending"
+    },
+    {
+      "step": "Departure Clearance",
+      "duration": "30 min",
+      "startTime": "14:00",
+      "endTime": "14:30",
+      "details": "Weather clearance and takeoff",
+      "status": "pending"
+    }
+  ],
+  "riskAssessment": [
+    {
+      "risk": "Weather deterioration",
+      "probability": "Low",
+      "impact": "High",
+      "riskScore": 2,
+      "mitigation": "Continuous monitoring with backup plans ready"
+    },
+    {
+      "risk": "Passenger dissatisfaction",
+      "probability": "Medium",
+      "impact": "Medium",
+      "riskScore": 4,
+      "mitigation": "Proactive communication and compensation"
+    }
+  ],
+  "technicalSpecs": {
+    "weatherMinimums": [
+      "Visibility: 1000m minimum",
+      "Ceiling: 200ft minimum",
+      "Wind: 25kt crosswind limit"
+    ],
+    "alternateAirports": [
+      "SHJ - Sharjah (45km)",
+      "AUH - Abu Dhabi (120km)"
+    ],
+    "fuelConsiderations": [
+      "Additional 800kg for alternate routing",
+      "Weather contingency fuel: 1200kg"
+    ]
+  },
+  "metrics": {
+    "costEfficiency": 92,
+    "timeEfficiency": 78,
+    "passengerSatisfaction": 75
+  },
+  "rotationPlan": {
+    "nextFlight": "FZ456",
+    "impact": "Minimal",
+    "adjustments": "None required"
+  }
+}
+❌ Error inserting option "Aircraft Swap" for disruption 233: malformed array literal: "["Faster departure","Weather avoidance","Network protection"]"
+Option data: {
+  "title": "Aircraft Swap",
+  "description": "Switch to available aircraft to avoid weather delays",
+  "cost": "$18,750",
+  "timeline": "1-2 hours",
+  "confidence": 75,
+  "impact": "Moderate operational complexity",
+  "status": "caution",
+  "priority": 2,
+  "advantages": [
+    "Faster departure",
+    "Weather avoidance",
+    "Network protection"
+  ],
+  "considerations": [
+    "Higher operational cost",
+    "Aircraft availability dependent"
+  ],
+  "resourceRequirements": [
+    {
+      "type": "Aircraft",
+      "resource": "A6-FED",
+      "availability": "Available 14:30",
+      "status": "Maintenance complete",
+      "location": "DXB",
+      "eta": "14:30",
+      "details": "B737-800 ready for service"
+    }
+  ],
+  "costBreakdown": [
+    {
+      "category": "Aircraft Positioning",
+      "amount": "$12,000",
+      "percentage": 64,
+      "description": "Aircraft swap and positioning costs"
+    },
+    {
+      "category": "Passenger Handling",
+      "amount": "$4,250",
+      "percentage": 23,
+      "description": "Gate change and boarding"
+    },
+    {
+      "category": "Crew Coordination",
+      "amount": "$2,500",
+      "percentage": 13,
+      "description": "Crew briefing and preparation"
+    }
+  ]
+}
+❌ Error inserting option "Flight Cancellation with Rebooking" for disruption 233: malformed array literal: "["Guaranteed resolution","Network stability","Crew rest compliance"]"
+Option data: {
+  "title": "Flight Cancellation with Rebooking",
+  "description": "Cancel FZ1066 and rebook passengers on next available flights",
+  "cost": "$45,200",
+  "timeline": "4-6 hours",
+  "confidence": 95,
+  "impact": "High passenger impact",
+  "status": "warning",
+  "priority": 3,
+  "advantages": [
+    "Guaranteed resolution",
+    "Network stability",
+    "Crew rest compliance"
+  ],
+  "considerations": [
+    "High passenger compensation",
+    "Reputation impact",
+    "Hotel costs"
+  ],
+  "resourceRequirements": [
+    {
+      "type": "Passenger Services",
+      "resource": "Rebooking Team",
+      "availability": "Available",
+      "status": "On standby",
+      "location": "DXB T2",
+      "eta": "Immediate",
+      "details": "6 agents available for rebooking"
+    }
+  ],
+  "costBreakdown": [
+    {
+      "category": "EU261 Compensation",
+      "amount": "$28,200",
+      "percentage": 62,
+      "description": "€600 per passenger compensation"
+    },
+    {
+      "category": "Hotel & Meals",
+      "amount": "$12,500",
+      "percentage": 28,
+      "description": "Overnight accommodation"
+    },
+    {
+      "category": "Rebooking Costs",
+      "amount": "$4,500",
+      "percentage": 10,
+      "description": "Alternative flight arrangements"
+    }
+  ]
+}
+✅ Created 3 options and 4 steps for FZ1066
+Generating recovery data for disruption 236 - IX-133
+Generating recovery options for flight IX-133, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error inserting option "Weather Delay with Re-routing" for disruption 236: malformed array literal: "["Maintains original aircraft","Lower cost option","High success probability"]"
+Option data: {
+  "title": "Weather Delay with Re-routing",
+  "description": "Wait for weather conditions to improve with alternate routing",
+  "cost": "$12,500",
+  "timeline": "2-3 hours",
+  "confidence": 85,
+  "impact": "Medium delay impact",
+  "status": "recommended",
+  "priority": 1,
+  "advantages": [
+    "Maintains original aircraft",
+    "Lower cost option",
+    "High success probability"
+  ],
+  "considerations": [
+    "Weather dependency",
+    "Potential for further delays",
+    "Passenger accommodation required"
+  ],
+  "resourceRequirements": [
+    {
+      "type": "Aircraft",
+      "resource": "A320",
+      "availability": "Available",
+      "status": "On ground",
+      "location": "DXB",
+      "eta": "Immediate",
+      "details": "Original aircraft available"
+    }
+  ],
+  "costBreakdown": [
+    {
+      "category": "Delay Costs",
+      "amount": "$8,500",
+      "percentage": 68,
+      "description": "Passenger compensation and handling"
+    },
+    {
+      "category": "Fuel & Operations",
+      "amount": "$2,500",
+      "percentage": 20,
+      "description": "Additional fuel for re-routing"
+    },
+    {
+      "category": "Crew Overtime",
+      "amount": "$1,500",
+      "percentage": 12,
+      "description": "Extended duty time compensation"
+    }
+  ],
+  "timelineDetails": [
+    {
+      "step": "Weather Monitoring",
+      "duration": "30 min",
+      "startTime": "12:30",
+      "endTime": "13:00",
+      "details": "Continuous weather tracking",
+      "status": "in-progress"
+    },
+    {
+      "step": "Route Planning",
+      "duration": "45 min",
+      "startTime": "13:00",
+      "endTime": "13:45",
+      "details": "Alternate route calculation",
+      "status": "pending"
+    },
+    {
+      "step": "Passenger Notification",
+      "duration": "15 min",
+      "startTime": "13:45",
+      "endTime": "14:00",
+      "details": "Inform passengers of delay",
+      "status": "pending"
+    },
+    {
+      "step": "Departure Clearance",
+      "duration": "30 min",
+      "startTime": "14:00",
+      "endTime": "14:30",
+      "details": "Weather clearance and takeoff",
+      "status": "pending"
+    }
+  ],
+  "riskAssessment": [
+    {
+      "risk": "Weather deterioration",
+      "probability": "Low",
+      "impact": "High",
+      "riskScore": 2,
+      "mitigation": "Continuous monitoring with backup plans ready"
+    },
+    {
+      "risk": "Passenger dissatisfaction",
+      "probability": "Medium",
+      "impact": "Medium",
+      "riskScore": 4,
+      "mitigation": "Proactive communication and compensation"
+    }
+  ],
+  "technicalSpecs": {
+    "weatherMinimums": [
+      "Visibility: 1000m minimum",
+      "Ceiling: 200ft minimum",
+      "Wind: 25kt crosswind limit"
+    ],
+    "alternateAirports": [
+      "SHJ - Sharjah (45km)",
+      "AUH - Abu Dhabi (120km)"
+    ],
+    "fuelConsiderations": [
+      "Additional 800kg for alternate routing",
+      "Weather contingency fuel: 1200kg"
+    ]
+  },
+  "metrics": {
+    "costEfficiency": 92,
+    "timeEfficiency": 78,
+    "passengerSatisfaction": 75
+  },
+  "rotationPlan": {
+    "nextFlight": "FZ456",
+    "impact": "Minimal",
+    "adjustments": "None required"
+  }
+}
+❌ Error inserting option "Aircraft Swap" for disruption 236: malformed array literal: "["Faster departure","Weather avoidance","Network protection"]"
+Option data: {
+  "title": "Aircraft Swap",
+  "description": "Switch to available aircraft to avoid weather delays",
+  "cost": "$18,750",
+  "timeline": "1-2 hours",
+  "confidence": 75,
+  "impact": "Moderate operational complexity",
+  "status": "caution",
+  "priority": 2,
+  "advantages": [
+    "Faster departure",
+    "Weather avoidance",
+    "Network protection"
+  ],
+  "considerations": [
+    "Higher operational cost",
+    "Aircraft availability dependent"
+  ],
+  "resourceRequirements": [
+    {
+      "type": "Aircraft",
+      "resource": "A6-FED",
+      "availability": "Available 14:30",
+      "status": "Maintenance complete",
+      "location": "DXB",
+      "eta": "14:30",
+      "details": "B737-800 ready for service"
+    }
+  ],
+  "costBreakdown": [
+    {
+      "category": "Aircraft Positioning",
+      "amount": "$12,000",
+      "percentage": 64,
+      "description": "Aircraft swap and positioning costs"
+    },
+    {
+      "category": "Passenger Handling",
+      "amount": "$4,250",
+      "percentage": 23,
+      "description": "Gate change and boarding"
+    },
+    {
+      "category": "Crew Coordination",
+      "amount": "$2,500",
+      "percentage": 13,
+      "description": "Crew briefing and preparation"
+    }
+  ]
+}
+❌ Error inserting option "Flight Cancellation with Rebooking" for disruption 236: malformed array literal: "["Guaranteed resolution","Network stability","Crew rest compliance"]"
