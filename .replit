@@ -33,23 +33,6 @@ args = "node server/start.js"
 task = "shell.exec"
 args = "npm run dev"
 
-[[workflows.workflow]]
-name = "Start Full Stack with Recovery API"
-author = 45149410
-mode = "parallel"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node server/start.js"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "node server/recovery-service.js"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
-
 [[ports]]
 localPort = 3001
 externalPort = 3001
