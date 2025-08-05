@@ -45,21 +45,37 @@ const pool = new Pool({
   ssl: process.env.NODE_ENV === 'production' || connectionString.includes('neon.tech') 
     ? { rejectUnauthorized: false } 
     : false,
-  max: 10, // Maximum number of clients in the pool
-  idleTimeoutMillis: 30000, // Close idle clients after 30 seconds
-  connectionTimeoutMillis: 5000, // Return an error after 5 seconds if connection could not be established
-  maxUses: 7500, // Close a connection after it has been used this many times
+  max: 5, // Reduced maximum connections to prevent exhaustion
+  min: 1, // Keep at least one connection alive
+  idleTimeoutMillis: 60000, // Keep connections alive longer
+  connectionTimeoutMillis: 10000, // Increased timeout for better reliability
+  maxUses: 1000, // Reduced max uses to recycle connections more frequently
+  acquireTimeoutMillis: 8000, // Timeout for acquiring connections
 })
 
-// Test database connection on startup
-pool.connect()
-  .then(client => {
+// Test database connection on startup with retry logic
+let connectionRetries = 0
+const maxRetries = 3
+
+async function testConnection() {
+  try {
+    const client = await pool.connect()
     console.log('✅ PostgreSQL connected successfully')
     client.release()
-  })
-  .catch(err => {
-    console.log('⚠️ PostgreSQL connection failed, API will return empty results:', err.message)
-  })
+    connectionRetries = 0 // Reset on success
+  } catch (err) {
+    connectionRetries++
+    console.log(`⚠️ PostgreSQL connection failed (attempt ${connectionRetries}/${maxRetries}):`, err.message)
+    
+    if (connectionRetries < maxRetries) {
+      setTimeout(testConnection, 5000 * connectionRetries) // Exponential backoff
+    } else {
+      console.log('❌ Max connection retries reached. API will return empty results.')
+    }
+  }
+}
+
+testConnection()
 
 // Health check endpoint
 app.get('/api/health', async (req, res) => {

@@ -12,6 +12,47 @@ export interface CustomRule {
   overridable: boolean
   conditions?: string
   actions?: string
+
+  private circuitBreakerOpen = false
+  private circuitBreakerTimeout: NodeJS.Timeout | null = null
+  private failureCount = 0
+  private readonly MAX_FAILURES = 5
+  private readonly CIRCUIT_BREAKER_TIMEOUT = 60000 // 1 minute
+
+  private checkCircuitBreaker(): boolean {
+    if (this.circuitBreakerOpen) {
+      console.log('Circuit breaker is open, skipping database call')
+      return false
+    }
+    return true
+  }
+
+  private onDatabaseSuccess() {
+    this.failureCount = 0
+    if (this.circuitBreakerOpen) {
+      console.log('Circuit breaker closed - database connection restored')
+      this.circuitBreakerOpen = false
+      if (this.circuitBreakerTimeout) {
+        clearTimeout(this.circuitBreakerTimeout)
+        this.circuitBreakerTimeout = null
+      }
+    }
+  }
+
+  private onDatabaseFailure() {
+    this.failureCount++
+    if (this.failureCount >= this.MAX_FAILURES && !this.circuitBreakerOpen) {
+      console.log('Circuit breaker opened due to multiple failures')
+      this.circuitBreakerOpen = true
+      this.circuitBreakerTimeout = setTimeout(() => {
+        console.log('Circuit breaker half-open - attempting to reconnect')
+        this.circuitBreakerOpen = false
+        this.failureCount = 0
+      }, this.CIRCUIT_BREAKER_TIMEOUT)
+    }
+  }
+
+
   status: 'Active' | 'Inactive' | 'Draft'
   created_by: string
   created_at: string
@@ -118,7 +159,8 @@ export interface HotelBooking {
 class DatabaseService {
   private baseUrl: string
   private healthCheckCache: { status: boolean; timestamp: number } | null = null
-  private readonly HEALTH_CHECK_CACHE_DURATION = 30000 // 30 seconds
+  private readonly HEALTH_CHECK_CACHE_DURATION = 120000 // 2 minutes instead of 30 seconds
+  private isHealthChecking = false
 
   constructor() {
     // Use API base URL for database operations
@@ -397,14 +439,20 @@ class DatabaseService {
       return this.healthCheckCache!.status
     }
 
+    // Prevent concurrent health checks
+    if (this.isHealthChecking) {
+      return this.healthCheckCache?.status || false
+    }
+
+    this.isHealthChecking = true
+
     try {
-      console.log('Performing health check at:', `${this.baseUrl}/health`)
       const response = await fetch(`${this.baseUrl}/health`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        signal: AbortSignal.timeout(3000), // Reduced to 3 second timeout for faster response
+        signal: AbortSignal.timeout(5000), // Increased timeout
       })
 
       const isHealthy = response.ok
@@ -415,16 +463,17 @@ class DatabaseService {
         timestamp: Date.now()
       }
 
-      console.log('Health check result:', isHealthy ? 'HEALTHY' : 'UNHEALTHY', response.status)
       return isHealthy
     } catch (error) {
-      console.error('Health check failed:', error)
-      // Cache the failure result
+      console.warn('Health check failed, using fallback mode')
+      // Cache the failure result with shorter duration
       this.healthCheckCache = {
         status: false,
-        timestamp: Date.now()
+        timestamp: Date.now() - (this.HEALTH_CHECK_CACHE_DURATION - 30000) // Cache for only 30s on failure
       }
       return false
+    } finally {
+      this.isHealthChecking = false
     }
   }
 
@@ -479,11 +528,16 @@ class DatabaseService {
 
   // Flight Disruptions
   async getAllDisruptions(): Promise<FlightDisruption[]> {
+    if (!this.checkCircuitBreaker()) {
+      return []
+    }
+
     try {
       const response = await fetch(`${this.baseUrl}/disruptions`)
       if (!response.ok) {
         if (response.status === 404) {
           console.log('No disruptions found in database')
+          this.onDatabaseSuccess()
           return []
         }
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -494,6 +548,8 @@ class DatabaseService {
         console.error('Invalid response format - expected array')
         return []
       }
+
+      this.onDatabaseSuccess()
 
       // Transform database format to expected format
       return data.map((disruption: any) => ({
@@ -520,6 +576,7 @@ class DatabaseService {
       }))
     } catch (error) {
       console.error('Failed to fetch disruptions:', error)
+      this.onDatabaseFailure()
       return []
     }
   }

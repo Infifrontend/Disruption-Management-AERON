@@ -43,7 +43,7 @@ export function AffectedFlightsList() {
 
   useEffect(() => {
     fetchFlights()
-    const interval = setInterval(fetchFlights, 30000) // Refresh every 30 seconds
+    const interval = setInterval(fetchFlights, 60000) // Refresh every 60 seconds instead of 30
     return () => clearInterval(interval)
   }, [])
 
