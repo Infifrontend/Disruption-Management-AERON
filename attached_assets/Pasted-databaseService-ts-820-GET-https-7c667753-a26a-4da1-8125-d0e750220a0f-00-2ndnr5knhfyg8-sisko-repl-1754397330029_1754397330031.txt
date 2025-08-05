@@ -1,0 +1,125 @@
+databaseService.ts:820  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/recovery-options-detailed/236 404 (Not Found)
+getDetailedRecoveryOptions @ databaseService.ts:820
+fetchRecoveryOptions @ RecoveryOptionsGenerator.tsx:205
+await in fetchRecoveryOptions
+(anonymous) @ RecoveryOptionsGenerator.tsx:337
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=a172bcb4:16915
+invokePassiveEffectMountInDEV @ chunk-PJEEZAML.js?v=a172bcb4:18324
+invokeEffectsInDev @ chunk-PJEEZAML.js?v=a172bcb4:19701
+commitDoubleInvokeEffectsInDEV @ chunk-PJEEZAML.js?v=a172bcb4:19686
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=a172bcb4:19503
+flushPassiveEffects @ chunk-PJEEZAML.js?v=a172bcb4:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=a172bcb4:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=a172bcb4:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=a172bcb4:19432
+commitRoot @ chunk-PJEEZAML.js?v=a172bcb4:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=a172bcb4:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=a172bcb4:18718
+workLoop @ chunk-PJEEZAML.js?v=a172bcb4:197
+flushWork @ chunk-PJEEZAML.js?v=a172bcb4:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=a172bcb4:384Understand this error
+databaseService.ts:885  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/recovery-steps-detailed/236 404 (Not Found)
+getDetailedRecoverySteps @ databaseService.ts:885
+fetchRecoveryOptions @ RecoveryOptionsGenerator.tsx:214
+await in fetchRecoveryOptions
+(anonymous) @ RecoveryOptionsGenerator.tsx:337
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=a172bcb4:16915
+commitPassiveMountOnFiber @ chunk-PJEEZAML.js?v=a172bcb4:18156
+commitPassiveMountEffects_complete @ chunk-PJEEZAML.js?v=a172bcb4:18129
+commitPassiveMountEffects_begin @ chunk-PJEEZAML.js?v=a172bcb4:18119
+commitPassiveMountEffects @ chunk-PJEEZAML.js?v=a172bcb4:18109
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=a172bcb4:19490
+flushPassiveEffects @ chunk-PJEEZAML.js?v=a172bcb4:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=a172bcb4:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=a172bcb4:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=a172bcb4:19432
+commitRoot @ chunk-PJEEZAML.js?v=a172bcb4:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=a172bcb4:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=a172bcb4:18718
+workLoop @ chunk-PJEEZAML.js?v=a172bcb4:197
+flushWork @ chunk-PJEEZAML.js?v=a172bcb4:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=a172bcb4:384Understand this error
+databaseService.ts:885  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/recovery-steps-detailed/236 404 (Not Found)
+getDetailedRecoverySteps @ databaseService.ts:885
+fetchRecoveryOptions @ RecoveryOptionsGenerator.tsx:214
+await in fetchRecoveryOptions
+(anonymous) @ RecoveryOptionsGenerator.tsx:337
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=a172bcb4:16915
+invokePassiveEffectMountInDEV @ chunk-PJEEZAML.js?v=a172bcb4:18324
+invokeEffectsInDev @ chunk-PJEEZAML.js?v=a172bcb4:19701
+commitDoubleInvokeEffectsInDEV @ chunk-PJEEZAML.js?v=a172bcb4:19686
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=a172bcb4:19503
+flushPassiveEffects @ chunk-PJEEZAML.js?v=a172bcb4:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=a172bcb4:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=a172bcb4:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=a172bcb4:19432
+commitRoot @ chunk-PJEEZAML.js?v=a172bcb4:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=a172bcb4:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=a172bcb4:18718
+workLoop @ chunk-PJEEZAML.js?v=a172bcb4:197
+flushWork @ chunk-PJEEZAML.js?v=a172bcb4:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=a172bcb4:384Understand this error
+databaseService.ts:961  POST https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/recovery-options/generate/236 500 (Internal Server Error)
+generateRecoveryOptions @ databaseService.ts:961
+fetchRecoveryOptions @ RecoveryOptionsGenerator.tsx:243
+await in fetchRecoveryOptions
+(anonymous) @ RecoveryOptionsGenerator.tsx:337
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=a172bcb4:16915
+commitPassiveMountOnFiber @ chunk-PJEEZAML.js?v=a172bcb4:18156
+commitPassiveMountEffects_complete @ chunk-PJEEZAML.js?v=a172bcb4:18129
+commitPassiveMountEffects_begin @ chunk-PJEEZAML.js?v=a172bcb4:18119
+commitPassiveMountEffects @ chunk-PJEEZAML.js?v=a172bcb4:18109
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=a172bcb4:19490
+flushPassiveEffects @ chunk-PJEEZAML.js?v=a172bcb4:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=a172bcb4:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=a172bcb4:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=a172bcb4:19432
+commitRoot @ chunk-PJEEZAML.js?v=a172bcb4:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=a172bcb4:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=a172bcb4:18718
+workLoop @ chunk-PJEEZAML.js?v=a172bcb4:197
+flushWork @ chunk-PJEEZAML.js?v=a172bcb4:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=a172bcb4:384Understand this error
+databaseService.ts:974 Generation failed: 500 - {"error":"Failed to generate recovery options"}
+generateRecoveryOptions @ databaseService.ts:974
+await in generateRecoveryOptions
+fetchRecoveryOptions @ RecoveryOptionsGenerator.tsx:243
+await in fetchRecoveryOptions
+(anonymous) @ RecoveryOptionsGenerator.tsx:337
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=a172bcb4:16915
+commitPassiveMountOnFiber @ chunk-PJEEZAML.js?v=a172bcb4:18156
+commitPassiveMountEffects_complete @ chunk-PJEEZAML.js?v=a172bcb4:18129
+commitPassiveMountEffects_begin @ chunk-PJEEZAML.js?v=a172bcb4:18119
+commitPassiveMountEffects @ chunk-PJEEZAML.js?v=a172bcb4:18109
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=a172bcb4:19490
+flushPassiveEffects @ chunk-PJEEZAML.js?v=a172bcb4:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=a172bcb4:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=a172bcb4:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=a172bcb4:19432
+commitRoot @ chunk-PJEEZAML.js?v=a172bcb4:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=a172bcb4:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=a172bcb4:18718
+workLoop @ chunk-PJEEZAML.js?v=a172bcb4:197
+flushWork @ chunk-PJEEZAML.js?v=a172bcb4:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=a172bcb4:384Understand this error
+databaseService.ts:961  POST https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/recovery-options/generate/236 500 (Internal Server Error)
+generateRecoveryOptions @ databaseService.ts:961
+fetchRecoveryOptions @ RecoveryOptionsGenerator.tsx:243
+await in fetchRecoveryOptions
+(anonymous) @ RecoveryOptionsGenerator.tsx:337
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=a172bcb4:16915
+invokePassiveEffectMountInDEV @ chunk-PJEEZAML.js?v=a172bcb4:18324
+invokeEffectsInDev @ chunk-PJEEZAML.js?v=a172bcb4:19701
+commitDoubleInvokeEffectsInDEV @ chunk-PJEEZAML.js?v=a172bcb4:19686
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=a172bcb4:19503
+flushPassiveEffects @ chunk-PJEEZAML.js?v=a172bcb4:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=a172bcb4:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=a172bcb4:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=a172bcb4:19432
+commitRoot @ chunk-PJEEZAML.js?v=a172bcb4:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=a172bcb4:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=a172bcb4:18718
+workLoop @ chunk-PJEEZAML.js?v=a172bcb4:197
+flushWork @ chunk-PJEEZAML.js?v=a172bcb4:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=a172bcb4:384Understand this error
+databaseService.ts:974 Generation failed: 500 - {"error":"Failed to generate recovery options"}
