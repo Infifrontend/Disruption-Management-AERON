@@ -53,15 +53,15 @@ async function populateMissingRecoveryData() {
           `, [
             disruption.id, option.title, option.description, option.cost,
             option.timeline, option.confidence, option.impact, option.status,
-            option.priority || 1, JSON.stringify(option.advantages || []),
-            JSON.stringify(option.considerations || []),
-            JSON.stringify(option.resourceRequirements || {}),
-            JSON.stringify(option.costBreakdown || {}),
-            JSON.stringify(option.timelineDetails || []),
-            JSON.stringify(option.riskAssessment || {}),
-            JSON.stringify(option.technicalSpecs || {}),
-            JSON.stringify(option.metrics || {}),
-            JSON.stringify(option.rotationPlan || {})
+            option.priority || 1, option.advantages || [],
+            option.considerations || [],
+            option.resourceRequirements || {},
+            option.costBreakdown || {},
+            option.timelineDetails || [],
+            option.riskAssessment || {},
+            option.technicalSpecs || {},
+            option.metrics || {},
+            option.rotationPlan || {}
           ])
           totalOptionsCreated++
         }
@@ -76,7 +76,7 @@ async function populateMissingRecoveryData() {
           `, [
             disruption.id, step.step, step.title, step.status,
             step.timestamp, step.system, step.details,
-            JSON.stringify(step.data || {})
+            step.data || {}
           ])
           totalStepsCreated++
         }
