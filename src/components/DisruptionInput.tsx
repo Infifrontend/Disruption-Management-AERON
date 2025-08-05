@@ -79,14 +79,21 @@ const transformFlightData = (disruption: FlightDisruption) => {
     scheduledArrival = addHours(scheduledDeparture, 3);
   }
 
+  // Check if this is an incomplete record
+  const isIncomplete = !disruption.flightNumber || 
+                      disruption.flightNumber.includes('UNKNOWN-') ||
+                      !disruption.scheduledDeparture ||
+                      !disruption.origin ||
+                      !disruption.destination ||
+                      disruption.destination === "UNKNOWN";
+
   return {
     id: disruption.id,
-    flightNumber: disruption.flightNumber || "Unknown",
+    flightNumber: disruption.flightNumber || "UNKNOWN",
     origin: disruption.origin || "DXB",
-    destination: disruption.destination || "Unknown",
-    originCity: disruption.originCity || disruption.origin || "Dubai",
-    destinationCity:
-      disruption.destinationCity || disruption.destination || "Unknown",
+    destination: disruption.destination || "UNKNOWN",
+    originCity: disruption.originCity || getLocationName(disruption.origin || "DXB"),
+    destinationCity: disruption.destinationCity || getLocationName(disruption.destination || "UNKNOWN"),
     scheduledDeparture: scheduledDeparture,
     scheduledArrival: scheduledArrival,
     currentStatus:
@@ -96,25 +103,29 @@ const transformFlightData = (disruption: FlightDisruption) => {
           ? "Cancelled"
           : disruption.status === "Diverted"
             ? "Diverted"
-            : "Delayed",
+            : disruption.status === "Resolving"
+              ? "Resolving"
+              : "Unknown",
     delay: disruption.delay || 0,
     aircraft: disruption.aircraft || "Unknown",
-    gate: `T2-A${Math.floor(Math.random() * 30) + 1}`, // Generate consistent gate
+    gate: disruption.gate || `T2-A${Math.floor(Math.random() * 30) + 1}`, // Generate consistent gate
     passengers: disruption.passengers || 0,
     crew: disruption.crew || 6,
     disruptionType: disruption.type
       ? disruption.type.toLowerCase()
       : "technical",
     categorization: getCategorization(disruption.type || "Technical"),
-    disruptionReason: disruption.disruptionReason || "Unknown disruption",
+    disruptionReason: disruption.disruptionReason || 
+                     (isIncomplete ? "⚠️ Incomplete information - some data may be missing" : "Information not available"),
     severity: disruption.severity
       ? disruption.severity.toLowerCase()
       : "medium",
-    impact: `Flight affected due to ${disruption.disruptionReason || "operational issues"}`,
-    lastUpdate: getTimeAgo(disruption.updatedAt || disruption.createdAt),
+    impact: `Flight affected due to ${disruption.disruptionReason || "operational issues"}${isIncomplete ? " (Incomplete data)" : ""}`,
+    lastUpdate: getTimeAgo(disruption.updatedAt || disruption.createdAt || new Date().toISOString()),
     priority: disruption.severity || "Medium",
     connectionFlights: disruption.connectionFlights || 0,
-    vipPassengers: Math.floor((disruption.passengers || 0) * 0.02) + 1, // 2% of passengers are VIP
+    vipPassengers: Math.floor((disruption.passengers || 0) * 0.02) + (disruption.passengers > 0 ? 1 : 0),
+    isIncomplete: isIncomplete, // Flag to identify incomplete records
   };
 };
 
@@ -261,32 +272,60 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       // Then fetch all current disruptions from database
       const data = await databaseService.getAllDisruptions();
 
-      // Validate and transform database data to component format
-      const validData = data.filter(disruption => {
-        // Basic validation to ensure required fields exist
-        return disruption && 
-               disruption.flightNumber && 
-               disruption.scheduledDeparture &&
-               disruption.origin &&
-               disruption.destination;
-      });
+      // Process all data, including incomplete records with fallbacks
+      const processedData = data.map(disruption => {
+        // Provide defaults for missing required fields
+        if (!disruption) return null;
+        
+        return {
+          ...disruption,
+          flightNumber: disruption.flightNumber || `UNKNOWN-${Date.now()}`,
+          scheduledDeparture: disruption.scheduledDeparture || new Date().toISOString(),
+          origin: disruption.origin || "DXB",
+          destination: disruption.destination || "UNKNOWN",
+          originCity: disruption.originCity || disruption.origin || "Dubai",
+          destinationCity: disruption.destinationCity || disruption.destination || "Unknown",
+          status: disruption.status || "Unknown",
+          severity: disruption.severity || "Medium",
+          type: disruption.type || "Technical",
+          disruptionReason: disruption.disruptionReason || "Information not available",
+          passengers: disruption.passengers || 0,
+          crew: disruption.crew || 6,
+          delay: disruption.delay || 0,
+          aircraft: disruption.aircraft || "Unknown",
+          connectionFlights: disruption.connectionFlights || 0
+        };
+      }).filter(disruption => disruption !== null);
 
-      const transformedFlights = validData.map(transformFlightData);
+      const transformedFlights = processedData.map(transformFlightData);
       setFlights(transformedFlights);
 
       console.log("Fetched and transformed flights:", transformedFlights.length, "flights");
       
+      // Count incomplete records
+      const incompleteCount = data.length - processedData.filter(d => 
+        d.flightNumber && d.flightNumber.indexOf('UNKNOWN-') === -1 &&
+        d.scheduledDeparture && 
+        d.origin && d.origin !== "DXB" &&
+        d.destination && d.destination !== "UNKNOWN"
+      ).length;
+      
       // Show sync results in success message if any data was synced
       if (syncResult && (syncResult.inserted > 0 || syncResult.updated > 0)) {
-        setSuccess(`✅ Data refreshed successfully! ${syncResult.inserted} new disruptions added, ${syncResult.updated} updated.`);
-        setTimeout(() => setSuccess(null), 5000);
+        let message = `✅ Data refreshed successfully! ${syncResult.inserted} new disruptions added, ${syncResult.updated} updated.`;
+        if (incompleteCount > 0) {
+          message += ` Note: ${incompleteCount} records had missing information and were displayed with defaults.`;
+        }
+        setSuccess(message);
+        setTimeout(() => setSuccess(null), 8000);
       }
       
-      // Clear any previous errors if we have valid data
+      // Clear any previous errors if we have any data
       if (transformedFlights.length === 0 && data.length === 0) {
         setError("No flight disruptions found. Add new disruptions using the 'Add Disruption' button.");
-      } else if (transformedFlights.length === 0 && data.length > 0) {
-        setError("Flight data validation failed. Some disruptions may have incomplete information.");
+      } else if (incompleteCount > 0 && incompleteCount < data.length) {
+        setSuccess(`⚠️ ${incompleteCount} disruptions had incomplete information but are shown with default values. All ${transformedFlights.length} disruptions are displayed.`);
+        setTimeout(() => setSuccess(null), 6000);
       }
     } catch (error) {
       console.error("Error fetching flights:", error);
@@ -313,12 +352,35 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       try {
         const fallbackData = await databaseService.getAllDisruptions();
         if (fallbackData && fallbackData.length > 0) {
-          const validFallbackData = fallbackData.filter(disruption => 
-            disruption && disruption.flightNumber && disruption.scheduledDeparture
-          );
-          const transformedFlights = validFallbackData.map(transformFlightData);
+          // Process all fallback data, even if incomplete
+          const processedFallbackData = fallbackData.map(disruption => {
+            if (!disruption) return null;
+            
+            return {
+              ...disruption,
+              flightNumber: disruption.flightNumber || `FALLBACK-${Date.now()}`,
+              scheduledDeparture: disruption.scheduledDeparture || new Date().toISOString(),
+              origin: disruption.origin || "DXB",
+              destination: disruption.destination || "UNKNOWN",
+              status: disruption.status || "Unknown",
+              severity: disruption.severity || "Medium",
+              type: disruption.type || "Technical",
+              disruptionReason: disruption.disruptionReason || "Cached data - may be incomplete",
+              passengers: disruption.passengers || 0,
+              crew: disruption.crew || 6,
+              delay: disruption.delay || 0,
+              aircraft: disruption.aircraft || "Unknown",
+              connectionFlights: disruption.connectionFlights || 0
+            };
+          }).filter(disruption => disruption !== null);
+          
+          const transformedFlights = processedFallbackData.map(transformFlightData);
           setFlights(transformedFlights);
           console.log("Loaded fallback data:", transformedFlights.length, "flights");
+          
+          if (transformedFlights.length > 0) {
+            setError("⚠️ Using cached flight data. Some information may be outdated or incomplete. Try refreshing when connection is restored.");
+          }
         } else {
           setFlights([]);
         }
@@ -1671,7 +1733,14 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                   >
                     <TableCell>
                       <div>
-                        <div className="font-medium">{flight.flightNumber}</div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium">{flight.flightNumber}</span>
+                          {flight.isIncomplete && (
+                            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                              Incomplete
+                            </Badge>
+                          )}
+                        </div>
                         <div className="text-sm text-muted-foreground">
                           {flight.aircraft}
                         </div>
