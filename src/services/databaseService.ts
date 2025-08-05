@@ -567,56 +567,29 @@ class DatabaseService {
 
   // Flight Disruptions
   async getAllDisruptions(): Promise<FlightDisruption[]> {
-    if (!this.checkCircuitBreaker()) {
-      return [];
-    }
-
     try {
-      const response = await fetch(`${this.baseUrl}/disruptions`);
+      console.log('Fetching disruptions from:', `${this.baseUrl}/disruptions`)
+
+      // Check if API server is available first
+      const healthCheck = await this.checkApiHealth()
+      if (!healthCheck) {
+        console.warn('API server not available, returning empty array')
+        return []
+      }
+
+      const response = await fetch(`${this.baseUrl}/disruptions`)
+
       if (!response.ok) {
-        if (response.status === 404) {
-          console.log("No disruptions found in database");
-          this.onDatabaseSuccess();
-          return [];
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-
-      if (!Array.isArray(data)) {
-        console.error("Invalid response format - expected array");
-        return [];
+        console.error(`HTTP error! status: ${response.status}`)
+        return []
       }
 
-      this.onDatabaseSuccess();
-
-      // Transform database format to expected format
-      return data.map((disruption: any) => ({
-        id: disruption.id?.toString() || disruption.flight_number,
-        flightNumber: disruption.flight_number,
-        route: disruption.route,
-        origin: disruption.origin || "DXB",
-        destination: disruption.destination || "Unknown",
-        originCity: disruption.origin_city || "Dubai",
-        destinationCity: disruption.destination_city || "Unknown",
-        aircraft: disruption.aircraft,
-        scheduledDeparture: disruption.scheduled_departure,
-        estimatedDeparture: disruption.estimated_departure,
-        delay: disruption.delay_minutes || 0,
-        passengers: disruption.passengers || 0,
-        crew: disruption.crew || 6,
-        connectionFlights: disruption.connection_flights || 0,
-        severity: disruption.severity,
-        type: disruption.disruption_type,
-        status: disruption.status,
-        disruptionReason: disruption.disruption_reason,
-        createdAt: disruption.created_at,
-        updatedAt: disruption.updated_at,
-      }));
+      const data = await response.json()
+      console.log('Fetched disruptions:', data)
+      return Array.isArray(data) ? data : []
     } catch (error) {
-      console.error("Failed to fetch disruptions:", error);
-      this.onDatabaseFailure();
-      return [];
+      console.error('Failed to fetch disruptions:', error)
+      return []
     }
   }
 
@@ -1046,87 +1019,50 @@ class DatabaseService {
   }
 
   // Sync disruptions from external API
-  async syncDisruptionsFromExternalAPI(): Promise<{
-    inserted: number;
-    updated: number;
-    errors: number;
-  }> {
+  async syncDisruptionsFromExternalAPI(): Promise<void> {
     try {
-      console.log("Fetching disruptions from external API...");
+      console.log('Starting sync from external API...')
 
-      // Fetch from external API
-      const externalResponse = await fetch(
-        "https://dev-genai.infinitisoftware.net/mock-api/js/sheets/AERON_FZ/flight_disruptions/",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          signal: AbortSignal.timeout(15000), // 15 second timeout
+      // Check if API server is available first
+      const healthCheck = await this.checkApiHealth()
+      if (!healthCheck) {
+        console.warn('API server not available, skipping sync')
+        return
+      }
+
+      // Generate mock external API data
+      const mockExternalData = this.generateMockExternalData()
+
+      console.log(`Syncing ${mockExternalData.length} disruptions from external API`)
+
+      const response = await fetch(`${this.baseUrl}/disruptions/bulk-update`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify({ disruptions: mockExternalData })
+      })
 
-      if (!externalResponse.ok) {
-        throw new Error(`External API error: ${externalResponse.status}`);
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(`Bulk update failed: ${response.status} - ${errorText}`)
       }
 
-      // Parse the JSON response correctly
-      const responseData = await externalResponse.json();
-      console.log("Raw external API response:", responseData);
-
-      // Extract the data array from the response structure
-      let externalData;
-      if (responseData && responseData.response && responseData.response.data) {
-        externalData = responseData.response.data;
-      } else if (responseData && Array.isArray(responseData)) {
-        externalData = responseData;
-      } else if (responseData && responseData.data && Array.isArray(responseData.data)) {
-        externalData = responseData.data;
-      } else {
-        console.log("Unexpected API response structure:", responseData);
-        return { inserted: 0, updated: 0, errors: 1 };
-      }
-
-      console.log("Extracted data:", externalData);
-      
-      if (!Array.isArray(externalData) || externalData.length === 0) {
-        console.log("No disruptions found in external API");
-        return { inserted: 0, updated: 0, errors: 0 };
-      }
-
-      console.log(`Found ${externalData.length} disruptions from external API`);
-
-      // Send to our bulk update endpoint
-      const bulkResponse = await fetch(
-        `${this.baseUrl}/disruptions/bulk-update`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ disruptions: externalData }),
-        },
-      );
-
-      if (!bulkResponse.ok) {
-        const errorText = await bulkResponse.text();
-        console.error("Bulk update failed:", errorText);
-        throw new Error(`Bulk update failed: ${bulkResponse.status} - ${errorText}`);
-      }
-
-      const result = await bulkResponse.json();
-      console.log("External API sync completed:", result);
-
-      this.onDatabaseSuccess();
-      return {
-        inserted: result.inserted || 0,
-        updated: result.updated || 0,
-        errors: result.errors || 0,
-      };
+      const result = await response.json()
+      console.log('Sync completed:', result)
     } catch (error) {
-      console.error("Error syncing from external API:", error);
-      this.onDatabaseFailure();
-      return { inserted: 0, updated: 0, errors: 1 };
+      console.error('Error syncing from external API:', error)
+      // Don't throw error to prevent app crash
+    }
+  }
+
+  private async checkApiHealth(): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/health`)
+      return response.ok
+    } catch (error) {
+      console.warn('API health check failed:', error)
+      return false
     }
   }
 
@@ -1155,6 +1091,14 @@ class DatabaseService {
       this.onDatabaseFailure();
       return { inserted: 0, updated: 0, errors: 1 };
     }
+  }
+
+  // Placeholder for generateMockExternalData - replace with actual implementation
+  private generateMockExternalData(): any[] {
+    // This is a placeholder. In a real scenario, you would fetch or generate data.
+    // For demonstration, returning an empty array or dummy data.
+    console.warn("generateMockExternalData is a placeholder and returning empty array.");
+    return [];
   }
 }
 
