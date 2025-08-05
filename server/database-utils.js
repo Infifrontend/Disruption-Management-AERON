@@ -1,30 +1,33 @@
 
-import { URL } from 'url'
-
 export function formatNeonConnectionString(connectionString) {
-  if (!connectionString || !connectionString.includes('neon.tech')) {
-    return connectionString
+  if (!connectionString) {
+    return null;
   }
 
-  try {
-    const url = new URL(connectionString)
-    const endpointId = url.hostname.split('.')[0]
-
-    // Add endpoint parameter for Neon compatibility
-    const params = new URLSearchParams(url.search)
-    params.set('options', `endpoint=${endpointId}`)
-    params.set('sslmode', 'require')
-
-    // Reconstruct URL with proper parameters
-    url.search = params.toString()
-    return url.toString()
-  } catch (error) {
-    console.error('Error formatting Neon connection string:', error.message)
-    return connectionString
+  // If it's already a Neon connection string with endpoint parameter, return as-is
+  if (connectionString.includes('options=endpoint%3D')) {
+    return connectionString;
   }
-}
 
-export function getFormattedDatabaseUrl() {
-  const rawUrl = process.env.DATABASE_URL
-  return formatNeonConnectionString(rawUrl)
+  // Extract the endpoint ID from the host if it's a Neon connection
+  const match = connectionString.match(/postgresql:\/\/([^:]+):([^@]+)@([^\/]+)\/(.+)/);
+  if (!match) {
+    return connectionString; // Return original if not a standard format
+  }
+
+  const [, username, password, host, database] = match;
+  
+  // Check if it's a Neon host (contains endpoint ID)
+  const endpointMatch = host.match(/^([^.]+)\.([^.]+)\.(.+)$/);
+  if (!endpointMatch) {
+    return connectionString; // Not a Neon host, return original
+  }
+
+  const [, endpointId] = endpointMatch;
+  
+  // Add the endpoint parameter for Neon
+  const url = new URL(connectionString);
+  url.searchParams.set('options', `endpoint=${endpointId}`);
+  
+  return url.toString();
 }
