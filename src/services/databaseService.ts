@@ -133,12 +133,15 @@ class DatabaseService {
     // Use API base URL for database operations
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
+    const port = window.location.port;
 
     if (hostname === "localhost") {
       this.baseUrl = "http://localhost:3001/api";
     } else {
-      // For Replit production, construct the correct URL
-      this.baseUrl = `${protocol}//${hostname.replace("-00-", "-00-").replace(".replit.dev", ".replit.dev")}:3001/api`;
+      // For Replit production, use the same origin to avoid CORS issues
+      // The server runs on port 3001 but we need to access it through the same port as frontend
+      const baseHostname = hostname.split('.')[0]; // Extract the UUID part
+      this.baseUrl = `${protocol}//${baseHostname}.sisko.replit.dev:3001/api`;
     }
     console.log("Database service initialized with baseUrl:", this.baseUrl);
   }
