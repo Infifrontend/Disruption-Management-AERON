@@ -424,7 +424,11 @@ export function AffectedFlightsList() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="flex flex-col">
-                        <span className="font-mono font-bold text-lg">{flight.flightNumber}</span>
+                        <span className="font-mono font-bold text-lg">
+                          {flight.id && flight.id.startsWith('UNKNOWN-') 
+                            ? (flight.flightNumber || '-')
+                            : flight.flightNumber}
+                        </span>
                         <span className="text-sm text-muted-foreground">{flight.originCity} ({flight.origin}) → {flight.destinationCity} ({flight.destination})</span>
                       </div>
                       <div className="flex flex-col">

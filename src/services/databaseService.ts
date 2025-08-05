@@ -486,7 +486,7 @@ class DatabaseService {
       });
 
       clearTimeout(timeoutId);
-      
+
       // Check if response is ok and has expected content
       let isHealthy = false;
       if (response.ok) {
@@ -598,7 +598,34 @@ class DatabaseService {
 
       const data = await response.json()
       console.log('Fetched disruptions:', data)
-      return Array.isArray(data) ? data : []
+
+      // Transform database format to component format
+        const transformedFlights = data.map((flight) => {
+          // Handle unknown IDs by using flight_number as display value
+          const isUnknownId = flight.id && flight.id.toString().startsWith('UNKNOWN-');
+          const displayFlightNumber = isUnknownId 
+            ? (flight.flight_number || '-')
+            : flight.flight_number;
+
+          return {
+            id: flight.id,
+            flightNumber: displayFlightNumber,
+            origin: flight.origin,
+            destination: flight.destination,
+            aircraft: flight.aircraft,
+            passengers: flight.passengers,
+            scheduledDeparture: flight.scheduled_departure,
+            actualDeparture: flight.actual_departure,
+            delay: flight.delay || 0,
+            status: isUnknownId && !flight.flight_number ? "Unknown" : flight.status,
+            disruptionReason: flight.disruption_reason,
+            categorization: flight.categorization,
+            severity: flight.severity || "Medium",
+            lastUpdated: flight.last_updated,
+          };
+        });
+
+      return Array.isArray(transformedFlights) ? transformedFlights : []
     } catch (error) {
       console.error('Failed to fetch disruptions:', error)
       return []
@@ -1062,7 +1089,7 @@ class DatabaseService {
 
       const result = await response.json()
       console.log('Sync completed:', result)
-      
+
       // Return the result with fallback values if properties are missing
       return {
         inserted: result.inserted || 0,
@@ -1089,7 +1116,7 @@ class DatabaseService {
       });
 
       clearTimeout(timeoutId);
-      
+
       if (response.ok) {
         try {
           const data = await response.json();
@@ -1099,7 +1126,7 @@ class DatabaseService {
           return true;
         }
       }
-      
+
       console.warn(`API health check failed: ${response.status} ${response.statusText}`);
       return false;
     } catch (error) {
