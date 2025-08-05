@@ -213,13 +213,20 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     try {
       setError(null);
       setLoading(true);
+      
+      // Check database health first
+      const isHealthy = await databaseService.healthCheck();
+      if (!isHealthy) {
+        throw new Error("Database service is not available");
+      }
+
       const data = await databaseService.getAllDisruptions();
 
       // Transform database data to component format
       const transformedFlights = data.map(transformFlightData);
       setFlights(transformedFlights);
 
-      console.log("Fetched and transformed flights:", transformedFlights);
+      console.log("Fetched and transformed flights:", transformedFlights.length, "flights");
     } catch (error) {
       console.error("Error fetching flights:", error);
       setError(
@@ -466,12 +473,15 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         newFlightDataConnectionFlights: newFlightData.connectionFlights
       });
 
-      const success = await databaseService.saveDisruption(newFlightData);
-      if (success) {
+      const result = await databaseService.saveDisruption(newFlightData);
+      
+      // Check if the result indicates success
+      if (result && (result === true || result.success !== false)) {
         // Clear any existing errors and show success
         setError(null);
         setSuccess("Disruption added successfully!");
         setShowAlert(true);
+        
         // Clear the form
         setNewDisruption({
           flightNumber: "",
@@ -479,8 +489,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           destination: "",
           originCity: "",
           destinationCity: "",
-          scheduledDeparture: "",
-          scheduledArrival: "",
+          scheduledDeparture: new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Kolkata' }).slice(0, 16),
+          scheduledArrival: new Date(Date.now() + 2 * 60 * 60 * 1000).toLocaleString('sv-SE', { timeZone: 'Asia/Kolkata' }).slice(0, 16),
           currentStatus: "Delayed",
           delay: "",
           aircraft: "",
@@ -496,12 +506,17 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           connectionFlights: "",
           vipPassengers: "",
         });
+        
         // Reset crew members
         setCrewMembers([{ id: 1, name: "", role: "", employeeCode: "" }]);
+        
         // Close the dialog
         setIsAddDialogOpen(false);
-        // Refresh the flights list
-        fetchFlights();
+        
+        // Refresh the flights list after a short delay
+        setTimeout(() => {
+          fetchFlights();
+        }, 1000);
       } else {
         setError(
           "Failed to save disruption. Please check your data and try again.",
@@ -511,7 +526,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     } catch (error) {
       console.error("Error adding disruption:", error);
       setError(
-        "❌ An error occurred while adding the disruption. Please try again or contact support if the issue persists.",
+        `❌ An error occurred while adding the disruption: ${error.message || 'Unknown error'}. Please try again or contact support if the issue persists.`,
       );
       setShowAlert(true);
     }
@@ -1224,9 +1239,14 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </div>
             </DialogContent>
           </Dialog>
-          <Button variant="outline" size="sm" onClick={fetchFlights}>
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Refresh Data
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={fetchFlights}
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            {loading ? 'Loading...' : 'Refresh Data'}
           </Button>
         </div>
       </div>
@@ -1662,21 +1682,37 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </h3>
               <p className="text-gray-500 mb-4">
                 {flights.length === 0
-                  ? "There are currently no flight disruptions in the system."
-                  : "No flights match your current filter criteria."}
+                  ? "There are currently no flight disruptions in the system. Add a new disruption to get started."
+                  : "No flights match your current filter criteria. Try adjusting your filters."}
               </p>
-              {flights.length === 0 && (
-                <div className="flex justify-center gap-2">
+              <div className="flex justify-center gap-2">
+                {flights.length === 0 && (
                   <Button
                     variant="outline"
                     onClick={fetchFlights}
                     className="flex items-center gap-2"
+                    disabled={loading}
                   >
-                    <RefreshCw className="h-4 w-4" />
+                    <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                     Refresh Data
                   </Button>
-                </div>
-              )}
+                )}
+                {filteredFlights.length === 0 && flights.length > 0 && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setFilters({
+                      status: "all",
+                      priority: "all",
+                      origin: "all",
+                      categorization: "all",
+                      search: "",
+                    })}
+                    className="flex items-center gap-2"
+                  >
+                    Clear Filters
+                  </Button>
+                )}
+              </div>
             </div>
           )}
         </CardContent>
