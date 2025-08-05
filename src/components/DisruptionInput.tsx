@@ -214,7 +214,12 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       setError(null);
       setLoading(true);
       
-      // Try to fetch data directly without blocking on health check
+      // First sync from external API to get latest data and prevent duplicates
+      console.log("Syncing from external API...");
+      const syncResult = await databaseService.syncDisruptionsFromExternalAPI();
+      console.log('External API sync result:', syncResult);
+      
+      // Then fetch all current disruptions from database
       const data = await databaseService.getAllDisruptions();
 
       // Transform database data to component format
@@ -222,6 +227,12 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       setFlights(transformedFlights);
 
       console.log("Fetched and transformed flights:", transformedFlights.length, "flights");
+      
+      // Show sync results in success message if any data was synced
+      if (syncResult.inserted > 0 || syncResult.updated > 0) {
+        setSuccess(`✅ Data refreshed successfully! ${syncResult.inserted} new disruptions added, ${syncResult.updated} updated.`);
+        setTimeout(() => setSuccess(null), 5000);
+      }
       
       // If we got here successfully, clear any previous errors
       if (transformedFlights.length === 0) {
@@ -238,10 +249,19 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         );
       } else {
         setError(
-          "Failed to load flight data. Please try refreshing the page."
+          "Failed to load flight data. The system may be experiencing connectivity issues, but you can still add new disruptions manually."
         );
       }
-      setFlights([]);
+      
+      // Try to load existing data from database as fallback
+      try {
+        const fallbackData = await databaseService.getAllDisruptions();
+        const transformedFlights = fallbackData.map(transformFlightData);
+        setFlights(transformedFlights);
+      } catch (fallbackError) {
+        console.error("Fallback fetch also failed:", fallbackError);
+        setFlights([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -1255,7 +1275,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
             disabled={loading}
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
-            {loading ? 'Loading...' : 'Refresh Data'}
+            {loading ? 'Syncing from API...' : 'Refresh Data'}
           </Button>
         </div>
       </div>

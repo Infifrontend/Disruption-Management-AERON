@@ -66,7 +66,7 @@ async function testConnection() {
   } catch (err) {
     connectionRetries++
     console.log(`⚠️ PostgreSQL connection failed (attempt ${connectionRetries}/${maxRetries}):`, err.message)
-    
+
     if (connectionRetries < maxRetries) {
       setTimeout(testConnection, 5000 * connectionRetries) // Exponential backoff
     } else {
@@ -202,13 +202,13 @@ app.delete('/api/settings/:category/:key', async (req, res) => {
 app.post('/api/disruptions/bulk-update', async (req, res) => {
   try {
     const { disruptions } = req.body
-    
+
     if (!Array.isArray(disruptions)) {
       return res.status(400).json({ error: 'Expected array of disruptions' })
     }
 
     console.log(`Processing bulk update of ${disruptions.length} disruptions`)
-    
+
     let updated = 0
     let inserted = 0
     let errors = 0
@@ -766,17 +766,17 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
     }
 
     // First get the disruption details
-    const disruptionResult = await pool.query(
-      'SELECT * FROM flight_disruptions WHERE id = $1 OR flight_number = $1',
-      [disruptionId]
-    )
+    const result = await pool.query(`
+      SELECT * FROM flight_disruptions 
+      WHERE id = $1::integer OR flight_number = $1
+    `, [disruptionId])
 
-    if (disruptionResult.rows.length === 0) {
+    if (result.rows.length === 0) {
       console.log(`No disruption found for ID: ${disruptionId}, returning empty results`)
       return res.status(200).json({ error: 'Disruption not found', optionsCount: 0, stepsCount: 0 })
     }
 
-    const disruption = disruptionResult.rows[0]
+    const disruption = result.rows[0]
 
     // Generate recovery options using the recovery generator
     const { generateRecoveryOptionsForDisruption } = await import('./recovery-generator.js')
@@ -983,7 +983,7 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
 
     // First get the disruption details
     const disruptionResult = await pool.query(
-      'SELECT * FROM flight_disruptions WHERE id = $1',
+      'SELECT * FROM flight_disruptions WHERE id = $1::integer OR flight_number = $1',
       [disruptionId]
     )
 
