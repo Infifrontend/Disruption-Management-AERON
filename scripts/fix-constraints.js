@@ -25,15 +25,59 @@ async function fixConstraints() {
 
     // Remove duplicates keeping the most recent one
     console.log('🧹 Removing duplicate records...')
-    const deleteResult = await client.query(`
-      DELETE FROM flight_disruptions 
+    
+    // First, get the IDs of duplicate records that need to be deleted
+    const duplicateIds = await client.query(`
+      SELECT id FROM flight_disruptions 
       WHERE id NOT IN (
           SELECT DISTINCT ON (flight_number, scheduled_departure) id
           FROM flight_disruptions 
           ORDER BY flight_number, scheduled_departure, updated_at DESC
       )
     `)
-    console.log(`✅ Removed ${deleteResult.rowCount} duplicate records`)
+    
+    if (duplicateIds.rows.length > 0) {
+      const idsToDelete = duplicateIds.rows.map(row => row.id)
+      console.log(`Found ${idsToDelete.length} duplicate records to delete`)
+      
+      // Delete related records first to avoid foreign key constraint violations
+      console.log('🗑️ Deleting related recovery_steps records...')
+      const stepsDeleteResult = await client.query(`
+        DELETE FROM recovery_steps 
+        WHERE disruption_id = ANY($1)
+      `, [idsToDelete])
+      console.log(`✅ Removed ${stepsDeleteResult.rowCount} related recovery_steps records`)
+      
+      console.log('🗑️ Deleting related recovery_options records...')
+      const optionsDeleteResult = await client.query(`
+        DELETE FROM recovery_options 
+        WHERE disruption_id = ANY($1)
+      `, [idsToDelete])
+      console.log(`✅ Removed ${optionsDeleteResult.rowCount} related recovery_options records`)
+      
+      console.log('🗑️ Deleting related crew_disruption_mapping records...')
+      const crewMappingDeleteResult = await client.query(`
+        DELETE FROM crew_disruption_mapping 
+        WHERE disruption_id = ANY($1)
+      `, [idsToDelete])
+      console.log(`✅ Removed ${crewMappingDeleteResult.rowCount} related crew_disruption_mapping records`)
+      
+      console.log('🗑️ Deleting related hotel_bookings records...')
+      const hotelDeleteResult = await client.query(`
+        DELETE FROM hotel_bookings 
+        WHERE disruption_id = ANY($1)
+      `, [idsToDelete])
+      console.log(`✅ Removed ${hotelDeleteResult.rowCount} related hotel_bookings records`)
+      
+      // Now delete the duplicate flight_disruptions records
+      const deleteResult = await client.query(`
+        DELETE FROM flight_disruptions 
+        WHERE id = ANY($1)
+      `, [idsToDelete])
+      console.log(`✅ Removed ${deleteResult.rowCount} duplicate flight_disruptions records`)
+    } else {
+      console.log('ℹ️ No duplicate records found')
+    }
 
     // Add the unique constraint
     console.log('🔐 Adding unique constraint...')
