@@ -1281,11 +1281,11 @@ app.get('/api/recovery-option-templates', async (req, res) => {
   }
 })
 
-// Detailed Recovery Options endpoints - ADD MISSING ENDPOINT
-app.get('/api/recovery-options-detailed/:disruptionId', async (req, res) => {
+// Recovery Steps Detailed endpoint
+app.get('/api/recovery-steps-detailed/:disruptionId', async (req, res) => {
   try {
     const { disruptionId } = req.params
-    console.log(`Fetching detailed recovery options for disruption ID: ${disruptionId}`)
+    const { option_id } = req.query
 
     // Convert disruptionId to integer
     const numericDisruptionId = parseInt(disruptionId)
@@ -1293,60 +1293,66 @@ app.get('/api/recovery-options-detailed/:disruptionId', async (req, res) => {
       return res.status(400).json({ error: 'Invalid disruption ID format' })
     }
 
-    try {
-      // Try detailed recovery options table first
-      const detailedResult = await pool.query(`
-        SELECT rod.*, dc.category_name, dc.category_code
-        FROM recovery_options_detailed rod
-        LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
-        WHERE rod.disruption_id = $1
-        ORDER BY rod.priority ASC, rod.confidence DESC
-      `, [numericDisruptionId])
+    console.log(`Fetching detailed recovery steps for disruption ID: ${disruptionId}`)
 
-      if (detailedResult.rows.length > 0) {
-        console.log(`Found ${detailedResult.rows.length} detailed recovery options`)
-        return res.json(detailedResult.rows)
+    // Check if recovery_steps_detailed table exists, if not fall back to recovery_steps
+    let query, params
+
+    try {
+      // Try detailed steps table first
+      query = `
+        SELECT rsd.*, dc.category_name, dc.category_code
+        FROM recovery_steps_detailed rsd
+        LEFT JOIN disruption_categories dc ON rsd.category_id = dc.id
+        WHERE rsd.disruption_id = $1
+      `
+      params = [numericDisruptionId]
+
+      if (option_id) {
+        query += ` AND rsd.option_id = $2`
+        params.push(option_id)
+      }
+
+      query += ` ORDER BY rsd.step_number ASC`
+
+      const result = await pool.query(query, params)
+
+      if (result.rows.length > 0) {
+        console.log(`Found ${result.rows.length} detailed recovery steps`)
+        return res.json(result.rows)
       }
     } catch (detailedError) {
-      console.log('Detailed options table not available, falling back to regular options')
+      console.log('Detailed steps table not available, falling back to regular steps')
     }
 
-    // Fallback to regular recovery_options table
-    const fallbackResult = await pool.query(`
+    // Fallback to regular recovery_steps table
+    query = `
       SELECT 
         id,
         disruption_id,
+        step_number,
         title,
-        description,
-        cost,
-        timeline,
-        confidence,
-        impact,
         status,
-        priority,
-        advantages,
-        considerations,
-        resource_requirements,
-        cost_breakdown,
-        timeline_details,
-        risk_assessment,
-        technical_specs,
-        metrics,
-        rotation_plan,
+        timestamp,
+        system,
+        details,
+        step_data,
         created_at,
         updated_at,
         NULL as category_name,
         NULL as category_code
-      FROM recovery_options
+      FROM recovery_steps
       WHERE disruption_id = $1
-      ORDER BY confidence DESC, priority ASC
-    `, [numericDisruptionId])
+      ORDER BY step_number ASC
+    `
+    params = [numericDisruptionId]
 
-    console.log(`Found ${fallbackResult.rows.length} fallback recovery options`)
-    res.json(fallbackResult.rows || [])
+    const result = await pool.query(query, params)
+    console.log(`Found ${result.rows.length} fallback recovery steps`)
+    res.json(result.rows || [])
   } catch (error) {
-    console.error('Error fetching detailed recovery options:', error)
-    res.status(500).json({ error: 'Failed to fetch recovery options', details: error.message })
+    console.error('Error fetching detailed recovery steps:', error)
+    res.status(500).json({ error: 'Failed to fetch recovery steps', details: error.message })
   }
 })
 
