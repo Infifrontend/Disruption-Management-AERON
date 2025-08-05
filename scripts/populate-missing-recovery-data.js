@@ -43,43 +43,53 @@ async function populateMissingRecoveryData() {
         
         // Insert recovery options
         for (const option of options) {
-          await client.query(`
-            INSERT INTO recovery_options (
-              disruption_id, title, description, cost, timeline, confidence,
-              impact, status, priority, advantages, considerations,
-              resource_requirements, cost_breakdown, timeline_details,
-              risk_assessment, technical_specs, metrics, rotation_plan
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-          `, [
-            disruption.id, option.title, option.description, option.cost,
-            option.timeline, option.confidence, option.impact, option.status,
-            option.priority || 1, 
-            JSON.stringify(option.advantages || []),
-            JSON.stringify(option.considerations || []),
-            JSON.stringify(option.resourceRequirements || {}),
-            JSON.stringify(option.costBreakdown || {}),
-            JSON.stringify(option.timelineDetails || []),
-            JSON.stringify(option.riskAssessment || {}),
-            JSON.stringify(option.technicalSpecs || {}),
-            JSON.stringify(option.metrics || {}),
-            JSON.stringify(option.rotationPlan || {})
-          ])
-          totalOptionsCreated++
+          try {
+            await client.query(`
+              INSERT INTO recovery_options (
+                disruption_id, title, description, cost, timeline, confidence,
+                impact, status, priority, advantages, considerations,
+                resource_requirements, cost_breakdown, timeline_details,
+                risk_assessment, technical_specs, metrics, rotation_plan
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+            `, [
+              disruption.id, option.title, option.description, option.cost,
+              option.timeline, option.confidence, option.impact, option.status,
+              option.priority || 1, 
+              option.advantages ? JSON.stringify(option.advantages) : null,
+              option.considerations ? JSON.stringify(option.considerations) : null,
+              option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : null,
+              option.costBreakdown ? JSON.stringify(option.costBreakdown) : null,
+              option.timelineDetails ? JSON.stringify(option.timelineDetails) : null,
+              option.riskAssessment ? JSON.stringify(option.riskAssessment) : null,
+              option.technicalSpecs ? JSON.stringify(option.technicalSpecs) : null,
+              option.metrics ? JSON.stringify(option.metrics) : null,
+              option.rotationPlan ? JSON.stringify(option.rotationPlan) : null
+            ])
+            totalOptionsCreated++
+          } catch (optionError) {
+            console.error(`❌ Error inserting option "${option.title}" for disruption ${disruption.id}:`, optionError.message)
+            console.error('Option data:', JSON.stringify(option, null, 2))
+          }
         }
         
         // Insert recovery steps
         for (const step of steps) {
-          await client.query(`
-            INSERT INTO recovery_steps (
-              disruption_id, step_number, title, status, timestamp,
-              system, details, step_data
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-          `, [
-            disruption.id, step.step, step.title, step.status,
-            step.timestamp, step.system, step.details,
-            JSON.stringify(step.data || {})
-          ])
-          totalStepsCreated++
+          try {
+            await client.query(`
+              INSERT INTO recovery_steps (
+                disruption_id, step_number, title, status, timestamp,
+                system, details, step_data
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            `, [
+              disruption.id, step.step, step.title, step.status,
+              step.timestamp, step.system, step.details,
+              step.data ? JSON.stringify(step.data) : null
+            ])
+            totalStepsCreated++
+          } catch (stepError) {
+            console.error(`❌ Error inserting step "${step.title}" for disruption ${disruption.id}:`, stepError.message)
+            console.error('Step data:', JSON.stringify(step, null, 2))
+          }
         }
         
         console.log(`✅ Created ${options.length} options and ${steps.length} steps for ${disruption.flight_number}`)
