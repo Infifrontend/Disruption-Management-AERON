@@ -1,9 +1,37 @@
 
 import { Pool } from 'pg';
 
-// Database connection
+// Database connection with Neon endpoint handling
+function formatNeonConnectionString(connectionString) {
+  if (!connectionString || !connectionString.includes('neon.tech')) {
+    return connectionString;
+  }
+
+  try {
+    const url = new URL(connectionString);
+    const endpointId = url.hostname.split('.')[0];
+    
+    // Add endpoint parameter for Neon compatibility
+    const params = new URLSearchParams(url.search);
+    params.set('options', `endpoint=${endpointId}`);
+    params.set('sslmode', 'require');
+    
+    // Reconstruct URL with proper parameters
+    url.search = params.toString();
+    return url.toString();
+  } catch (error) {
+    console.error('Error formatting Neon connection string:', error.message);
+    return connectionString;
+  }
+}
+
+const connectionString = formatNeonConnectionString(process.env.DATABASE_URL);
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
+  connectionString: connectionString,
+  ssl: connectionString && connectionString.includes('neon.tech') ? { rejectUnauthorized: false } : false,
+  max: 5,
+  connectionTimeoutMillis: 10000,
 });
 
 // Sample detailed recovery options based on the provided structure
@@ -139,10 +167,25 @@ async function populateDetailedRecoveryData() {
     await client.query('BEGIN');
     
     // Check if tables exist, if not create them
-    await client.query(`
-      SELECT * FROM information_schema.tables 
-      WHERE table_name IN ('disruption_categories', 'recovery_option_templates', 'recovery_options_detailed')
+    const tableCheck = await client.query(`
+      SELECT table_name FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name IN ('disruption_categories', 'recovery_option_templates', 'recovery_options_detailed')
     `);
+    
+    const existingTables = tableCheck.rows.map(row => row.table_name);
+    const requiredTables = ['disruption_categories', 'recovery_option_templates', 'recovery_options_detailed'];
+    const missingTables = requiredTables.filter(table => !existingTables.includes(table));
+    
+    if (missingTables.length > 0) {
+      console.log(`❌ Missing tables: ${missingTables.join(', ')}`);
+      console.log('📝 Please run the recovery categorization schema first:');
+      console.log('   psql $DATABASE_URL -f database/recovery_categorization_schema.sql');
+      await client.query('ROLLBACK');
+      return;
+    }
+    
+    console.log('✅ All required tables exist');
     
     // Get all flight disruptions to map recovery data
     const disruptionsResult = await client.query(`

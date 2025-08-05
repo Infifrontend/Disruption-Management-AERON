@@ -834,6 +834,22 @@ app.get('/api/recovery-logs', async (req, res) => {
 app.get('/api/recovery-options/:disruptionId', async (req, res) => {
   try {
     const { disruptionId } = req.params
+    
+    // First try to get from detailed recovery options table
+    const detailedResult = await pool.query(`
+      SELECT rod.*, dc.category_name 
+      FROM recovery_options_detailed rod
+      LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
+      WHERE rod.disruption_id = $1 
+      ORDER BY rod.confidence DESC, rod.priority ASC
+    `, [disruptionId])
+
+    if (detailedResult.rows.length > 0) {
+      res.json(detailedResult.rows)
+      return
+    }
+
+    // Fallback to original recovery options table
     const result = await pool.query(`
       SELECT * FROM recovery_options 
       WHERE disruption_id = $1 
@@ -842,6 +858,55 @@ app.get('/api/recovery-options/:disruptionId', async (req, res) => {
     res.json(result.rows || [])
   } catch (error) {
     console.error('Error fetching recovery options:', error)
+    res.json([])
+  }
+})
+
+// Detailed Recovery Options endpoints
+app.get('/api/recovery-options-detailed/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+    const result = await pool.query(`
+      SELECT rod.*, dc.category_name, dc.category_code
+      FROM recovery_options_detailed rod
+      LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
+      WHERE rod.disruption_id = $1 
+      ORDER BY rod.confidence DESC, rod.priority ASC
+    `, [disruptionId])
+    res.json(result.rows || [])
+  } catch (error) {
+    console.error('Error fetching detailed recovery options:', error)
+    res.json([])
+  }
+})
+
+// Recovery Categories endpoints
+app.get('/api/recovery-categories', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT * FROM disruption_categories 
+      WHERE is_active = true 
+      ORDER BY priority_level, category_name
+    `)
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching recovery categories:', error)
+    res.json([])
+  }
+})
+
+// Recovery Option Templates endpoints
+app.get('/api/recovery-templates/:categoryId', async (req, res) => {
+  try {
+    const { categoryId } = req.params
+    const result = await pool.query(`
+      SELECT * FROM recovery_option_templates 
+      WHERE category_id = $1 AND is_active = true 
+      ORDER BY title
+    `, [categoryId])
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching recovery templates:', error)
     res.json([])
   }
 })
