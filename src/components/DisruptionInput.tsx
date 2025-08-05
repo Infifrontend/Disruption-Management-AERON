@@ -606,7 +606,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           ? "Active"
           : newDisruption.currentStatus,
       disruptionReason: newDisruption.disruptionReason,
-      
+      categorization: newDisruption.categorization,
     };
 
     try {
