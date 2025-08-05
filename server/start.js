@@ -922,22 +922,31 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
       return res.status(400).json({ error: 'Invalid disruption ID', optionsCount: 0, stepsCount: 0 })
     }
 
+    // Convert disruptionId to integer for database query
+    const numericDisruptionId = parseInt(disruptionId)
+    if (isNaN(numericDisruptionId)) {
+      return res.status(400).json({ error: 'Invalid disruption ID format', optionsCount: 0, stepsCount: 0 })
+    }
+
     // First get the disruption details
     const result = await pool.query(`
       SELECT * FROM flight_disruptions
-      WHERE id = $1::integer OR flight_number = $1
-    `, [disruptionId])
+      WHERE id = $1
+    `, [numericDisruptionId])
 
     if (result.rows.length === 0) {
       console.log(`No disruption found for ID: ${disruptionId}, returning empty results`)
-      return res.status(200).json({ error: 'Disruption not found', optionsCount: 0, stepsCount: 0 })
+      return res.status(404).json({ error: 'Disruption not found', optionsCount: 0, stepsCount: 0 })
     }
 
     const disruption = result.rows[0]
+    console.log('Found disruption:', disruption.flight_number, 'Type:', disruption.disruption_type)
 
     // Generate recovery options using the recovery generator
     const { generateRecoveryOptionsForDisruption } = await import('./recovery-generator.js')
     const { options, steps } = generateRecoveryOptionsForDisruption(disruption)
+
+    console.log(`Generated ${options.length} options and ${steps.length} steps`)
 
     // Insert recovery options into database
     let optionsCount = 0
@@ -959,7 +968,7 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
             status = EXCLUDED.status,
             updated_at = CURRENT_TIMESTAMP
         `, [
-          disruptionId, option.title, option.description, option.cost,
+          numericDisruptionId, option.title, option.description, option.cost,
           option.timeline, option.confidence, option.impact, option.status,
           option.priority || 0, JSON.stringify(option.advantages || []),
           JSON.stringify(option.considerations || []),
@@ -995,7 +1004,7 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
             step_data = EXCLUDED.step_data,
             updated_at = CURRENT_TIMESTAMP
         `, [
-          disruptionId, step.step, step.title, step.status,
+          numericDisruptionId, step.step, step.title, step.status,
           step.timestamp, step.system, step.details,
           JSON.stringify(step.data || {})
         ])
@@ -1004,6 +1013,8 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
         console.error('Error inserting recovery step:', insertError)
       }
     }
+
+    console.log(`Successfully saved ${optionsCount} options and ${stepsCount} steps`)
 
     res.json({
       success: true,
@@ -1014,7 +1025,7 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
 
   } catch (error) {
     console.error('Error generating recovery options:', error)
-    res.status(500).json({ error: 'Failed to generate recovery options' })
+    res.status(500).json({ error: 'Failed to generate recovery options', details: error.message })
   }
 })
 
@@ -1275,26 +1286,68 @@ app.get('/api/recovery-steps-detailed/:disruptionId', async (req, res) => {
     const { disruptionId } = req.params
     const { option_id } = req.query
 
-    let query = `
-      SELECT rsd.*, dc.category_name, dc.category_code
-      FROM recovery_steps_detailed rsd
-      LEFT JOIN disruption_categories dc ON rsd.category_id = dc.id
-      WHERE rsd.disruption_id = $1
-    `
-    const params = [disruptionId]
-
-    if (option_id) {
-      query += ` AND rsd.option_id = $2`
-      params.push(option_id)
+    // Convert disruptionId to integer
+    const numericDisruptionId = parseInt(disruptionId)
+    if (isNaN(numericDisruptionId)) {
+      return res.status(400).json({ error: 'Invalid disruption ID format' })
     }
 
-    query += ` ORDER BY rsd.step_number ASC`
+    // Check if recovery_steps_detailed table exists, if not fall back to recovery_steps
+    let query, params
+
+    try {
+      // Try detailed steps table first
+      query = `
+        SELECT rsd.*, dc.category_name, dc.category_code
+        FROM recovery_steps_detailed rsd
+        LEFT JOIN disruption_categories dc ON rsd.category_id = dc.id
+        WHERE rsd.disruption_id = $1
+      `
+      params = [numericDisruptionId]
+
+      if (option_id) {
+        query += ` AND rsd.option_id = $2`
+        params.push(option_id)
+      }
+
+      query += ` ORDER BY rsd.step_number ASC`
+
+      const result = await pool.query(query, params)
+      
+      if (result.rows.length > 0) {
+        return res.json(result.rows)
+      }
+    } catch (detailedError) {
+      console.log('Detailed steps table not available, falling back to regular steps')
+    }
+
+    // Fallback to regular recovery_steps table
+    query = `
+      SELECT 
+        id,
+        disruption_id,
+        step_number,
+        title,
+        status,
+        timestamp,
+        system,
+        details,
+        step_data,
+        created_at,
+        updated_at,
+        NULL as category_name,
+        NULL as category_code
+      FROM recovery_steps
+      WHERE disruption_id = $1
+      ORDER BY step_number ASC
+    `
+    params = [numericDisruptionId]
 
     const result = await pool.query(query, params)
     res.json(result.rows || [])
   } catch (error) {
     console.error('Error fetching detailed recovery steps:', error)
-    res.json([])
+    res.status(500).json({ error: 'Failed to fetch recovery steps', details: error.message })
   }
 })
 
