@@ -10,23 +10,24 @@ function sanitizeForJsonb(data) {
     return null
   }
   
-  // If it's already a string, try to parse it to see if it's valid JSON
+  // If it's already a string, check if it's valid JSON
   if (typeof data === 'string') {
     try {
-      JSON.parse(data)
-      return data // It's already valid JSON string
+      // Parse and re-stringify to ensure it's properly formatted
+      const parsed = JSON.parse(data)
+      return JSON.stringify(parsed)
     } catch {
-      // If not valid JSON, stringify it
+      // If not valid JSON, wrap it in quotes and stringify
       return JSON.stringify(data)
     }
   }
   
-  // If it's an array or object, stringify it
-  if (Array.isArray(data) || typeof data === 'object') {
+  // If it's an array or object, stringify it directly
+  if (Array.isArray(data) || (typeof data === 'object' && data !== null)) {
     return JSON.stringify(data)
   }
   
-  // For other types, stringify
+  // For primitive types, stringify
   return JSON.stringify(data)
 }
 
@@ -70,17 +71,17 @@ async function populateMissingRecoveryData() {
         // Insert recovery options
         for (const option of options) {
           try {
-            // Debug data structure
+            // Debug and validate data structure
             console.log(`  - Processing option: ${option.title}`)
-            console.log(`    Advantages type: ${typeof option.advantages}, isArray: ${Array.isArray(option.advantages)}`)
-            console.log(`    Considerations type: ${typeof option.considerations}, isArray: ${Array.isArray(option.considerations)}`)
+            console.log(`    Advantages raw: ${JSON.stringify(option.advantages)}`)
+            console.log(`    Considerations raw: ${JSON.stringify(option.considerations)}`)
             
-            if (Array.isArray(option.advantages)) {
-              console.log(`    Advantages content: ${JSON.stringify(option.advantages)}`)
-            }
-            if (Array.isArray(option.considerations)) {
-              console.log(`    Considerations content: ${JSON.stringify(option.considerations)}`)
-            }
+            // Validate and sanitize data before insertion
+            const sanitizedAdvantages = sanitizeForJsonb(option.advantages)
+            const sanitizedConsiderations = sanitizeForJsonb(option.considerations)
+            
+            console.log(`    Sanitized advantages: ${sanitizedAdvantages}`)
+            console.log(`    Sanitized considerations: ${sanitizedConsiderations}`)
             await client.query(`
               INSERT INTO recovery_options (
                 disruption_id, title, description, cost, timeline, confidence,
@@ -98,9 +99,9 @@ async function populateMissingRecoveryData() {
               option.impact, 
               option.status,
               option.priority || 1,
-              // Use sanitization function for all JSONB fields
-              sanitizeForJsonb(option.advantages),
-              sanitizeForJsonb(option.considerations),
+              // Use pre-sanitized data
+              sanitizedAdvantages,
+              sanitizedConsiderations,
               sanitizeForJsonb(option.resourceRequirements),
               sanitizeForJsonb(option.costBreakdown),
               sanitizeForJsonb(option.timelineDetails),
