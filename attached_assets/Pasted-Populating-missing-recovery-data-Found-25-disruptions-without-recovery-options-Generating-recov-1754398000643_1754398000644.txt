@@ -1,0 +1,104 @@
+Populating missing recovery data...
+Found 25 disruptions without recovery options
+Generating recovery data for disruption 212 - FZ203
+Generating recovery options for flight FZ203, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 212: malformed array literal: "["Maintains original aircraft","Lower cost option","High success probability"]"
+Generating recovery data for disruption 213 - FZ215
+Generating recovery options for flight FZ215, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 213: malformed array literal: "["Maintains original aircraft","Lower cost option","High success probability"]"
+Generating recovery data for disruption 214 - FZ235
+Generating recovery options for flight FZ235, type: Airport
+Generated 1 options and 1 steps for disruption type: airport
+❌ Error processing disruption 214: malformed array literal: "["Avoids airport closure","Maintains service"]"
+Generating recovery data for disruption 215 - FZ329
+Generating recovery options for flight FZ329, type: Technical
+Generated 3 options and 4 steps for disruption type: technical
+❌ Error processing disruption 215: malformed array literal: "[]"
+Generating recovery data for disruption 216 - FZ147
+Generating recovery options for flight FZ147, type: Technical
+Generated 3 options and 4 steps for disruption type: technical
+❌ Error processing disruption 216: malformed array literal: "[]"
+Generating recovery data for disruption 217 - FZ181
+Generating recovery options for flight FZ181, type: Crew
+Generated 2 options and 3 steps for disruption type: crew
+❌ Error processing disruption 217: malformed array literal: "[]"
+Generating recovery data for disruption 218 - FZ567
+Generating recovery options for flight FZ567, type: Technical
+Generated 3 options and 4 steps for disruption type: technical
+❌ Error processing disruption 218: malformed array literal: "[]"
+Generating recovery data for disruption 219 - FZ891
+Generating recovery options for flight FZ891, type: Airport
+Generated 1 options and 1 steps for disruption type: airport
+❌ Error processing disruption 219: malformed array literal: "["Avoids airport closure","Maintains service"]"
+Generating recovery data for disruption 220 - FZ432
+Generating recovery options for flight FZ432, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 220: malformed array literal: "["Maintains original aircraft","Lower cost option","High success probability"]"
+Generating recovery data for disruption 221 - FZ654
+Generating recovery options for flight FZ654, type: Technical
+Generated 3 options and 4 steps for disruption type: technical
+❌ Error processing disruption 221: malformed array literal: "[]"
+Generating recovery data for disruption 222 - FZ123
+Generating recovery options for flight FZ123, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 222: malformed array literal: "["Maintains original aircraft","Lower cost option","High success probability"]"
+Generating recovery data for disruption 223 - FZ456
+Generating recovery options for flight FZ456, type: Technical
+Generated 3 options and 4 steps for disruption type: technical
+❌ Error processing disruption 223: malformed array literal: "[]"
+Generating recovery data for disruption 224 - FZ789
+Generating recovery options for flight FZ789, type: Crew
+Generated 2 options and 3 steps for disruption type: crew
+❌ Error processing disruption 224: malformed array literal: "[]"
+Generating recovery data for disruption 225 - FZ321
+Generating recovery options for flight FZ321, type: Airport
+Generated 1 options and 1 steps for disruption type: airport
+❌ Error processing disruption 225: malformed array literal: "["Avoids airport closure","Maintains service"]"
+Generating recovery data for disruption 226 - FZ987
+Generating recovery options for flight FZ987, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 226: malformed array literal: "["Maintains original aircraft","Lower cost option","High success probability"]"
+Generating recovery data for disruption 227 - AI-727
+Generating recovery options for flight AI-727, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 227: malformed array literal: "["Maintains original aircraft","Lower cost option","High success probability"]"
+Generating recovery data for disruption 228 - FZ502
+Generating recovery options for flight FZ502, type: Crew
+Generated 2 options and 3 steps for disruption type: crew
+❌ Error processing disruption 228: malformed array literal: "[]"
+Generating recovery data for disruption 229 - FZ751
+Generating recovery options for flight FZ751, type: ATC
+Handling disruption type: atc, generating comprehensive options
+Generated 3 options and 5 steps for disruption type: atc
+❌ Error processing disruption 229: malformed array literal: "["Quick resolution","Minimal passenger impact","Maintains schedule integrity"]"
+Generating recovery data for disruption 230 - FZ1244
+Generating recovery options for flight FZ1244, type: Crew
+Generated 2 options and 3 steps for disruption type: crew
+❌ Error processing disruption 230: malformed array literal: "[]"
+Generating recovery data for disruption 231 - FZ368
+Generating recovery options for flight FZ368, type: ATC
+Handling disruption type: atc, generating comprehensive options
+Generated 3 options and 5 steps for disruption type: atc
+❌ Error processing disruption 231: malformed array literal: "["Quick resolution","Minimal passenger impact","Maintains schedule integrity"]"
+Generating recovery data for disruption 232 - FZ901
+Generating recovery options for flight FZ901, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 232: malformed array literal: "["Maintains original aircraft","Lower cost option","High success probability"]"
+Generating recovery data for disruption 233 - FZ1066
+Generating recovery options for flight FZ1066, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 233: malformed array literal: "["Maintains original aircraft","Lower cost option","High success probability"]"
+Generating recovery data for disruption 234 - FZ445
+Generating recovery options for flight FZ445, type: Crew
+Generated 2 options and 3 steps for disruption type: crew
+❌ Error processing disruption 234: malformed array literal: "[]"
+Generating recovery data for disruption 235 - QR199
+Generating recovery options for flight QR199, type: Technical
+Generated 3 options and 4 steps for disruption type: technical
+❌ Error processing disruption 235: malformed array literal: "[]"
+Generating recovery data for disruption 236 - IX-133
+Generating recovery options for flight IX-133, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 236: malformed array literal: "["Maintains original aircraft","Lower cost option","High success probability"]"
