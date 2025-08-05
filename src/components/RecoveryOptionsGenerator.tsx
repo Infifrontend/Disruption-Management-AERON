@@ -246,7 +246,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               if (result.optionsCount > 0) {
                 // Wait a moment and fetch the newly generated options
                 await new Promise(resolve => setTimeout(resolve, 1000));
-                
+
                 try {
                   options = await databaseService.getDetailedRecoveryOptions(flightId);
                   steps = await databaseService.getDetailedRecoverySteps(flightId);
@@ -260,7 +260,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     console.warn("Error fetching standard options after generation:", standardError.message);
                   }
                 }
-                
+
                 console.log(`After generation: ${options.length} options, ${steps.length} steps`);
               } else {
                 console.log("No options generated, falling back to scenario data");
@@ -1969,7 +1969,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                                     <h4 className="font-medium text-sm">
                                       {step.step}
                                     </h4>
-                                    <p className="text-xs text-gray-600">
+                                    <p className="text-sm text-gray-700">
                                       {step.details}
                                     </p>
                                   </div>
