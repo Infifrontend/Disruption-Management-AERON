@@ -214,12 +214,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       setError(null);
       setLoading(true);
       
-      // Check database health first
-      const isHealthy = await databaseService.healthCheck();
-      if (!isHealthy) {
-        throw new Error("Database service is not available");
-      }
-
+      // Try to fetch data directly without blocking on health check
       const data = await databaseService.getAllDisruptions();
 
       // Transform database data to component format
@@ -227,11 +222,25 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       setFlights(transformedFlights);
 
       console.log("Fetched and transformed flights:", transformedFlights.length, "flights");
+      
+      // If we got here successfully, clear any previous errors
+      if (transformedFlights.length === 0) {
+        setError("No flight disruptions found. The system may be experiencing connectivity issues, but you can still add new disruptions.");
+      }
     } catch (error) {
       console.error("Error fetching flights:", error);
-      setError(
-        "Failed to load flight data. Please check your connection and try again.",
-      );
+      
+      // Check if it's a connectivity issue
+      const isHealthy = await databaseService.healthCheck();
+      if (!isHealthy) {
+        setError(
+          "Database connection is temporarily unavailable. You can still add new disruptions, and they will be synced when the connection is restored."
+        );
+      } else {
+        setError(
+          "Failed to load flight data. Please try refreshing the page."
+        );
+      }
       setFlights([]);
     } finally {
       setLoading(false);
@@ -1264,19 +1273,29 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
       {/* Error Alert */}
       {error && (
-        <Alert className="border-red-200 bg-red-50">
-          <AlertTriangle className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-800 flex items-center justify-between">
+        <Alert className="border-orange-200 bg-orange-50">
+          <AlertTriangle className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-800 flex items-center justify-between">
             <span>{error}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchFlights}
-              className="ml-4"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Retry
-            </Button>
+            <div className="flex gap-2 ml-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchFlights}
+                disabled={loading}
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+                Retry
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsAddDialogOpen(true)}
+                className="border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
+              >
+                Add New
+              </Button>
+            </div>
           </AlertDescription>
         </Alert>
       )}
