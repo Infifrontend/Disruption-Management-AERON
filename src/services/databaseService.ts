@@ -446,14 +446,18 @@ class DatabaseService {
     this.isHealthChecking = true
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // Reduced timeout for faster fallback
+
       const response = await fetch(`${this.baseUrl}/health`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
-        signal: AbortSignal.timeout(5000), // Increased timeout
+        signal: controller.signal,
       })
 
+      clearTimeout(timeoutId);
       const isHealthy = response.ok
 
       // Cache the result
@@ -462,13 +466,21 @@ class DatabaseService {
         timestamp: Date.now()
       }
 
+      if (isHealthy) {
+        this.onDatabaseSuccess();
+      } else {
+        this.onDatabaseFailure();
+      }
+
       return isHealthy
     } catch (error) {
-      console.warn('Health check failed, using fallback mode')
+      console.warn('Health check failed:', error.message || 'Unknown error')
+      this.onDatabaseFailure();
+      
       // Cache the failure result with shorter duration
       this.healthCheckCache = {
         status: false,
-        timestamp: Date.now() - (this.HEALTH_CHECK_CACHE_DURATION - 30000) // Cache for only 30s on failure
+        timestamp: Date.now() - (this.HEALTH_CHECK_CACHE_DURATION - 10000) // Cache for only 10s on failure
       }
       return false
     } finally {
