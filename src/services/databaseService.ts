@@ -1068,9 +1068,26 @@ class DatabaseService {
       if (!externalResponse.ok) {
         throw new Error(`External API error: ${externalResponse.status}`);
       }
-      const externalData = await externalResponse.response.data.json();
-      console.log(externalData.response.data);
-      console.log(!Array.isArray(externalData));
+
+      // Parse the JSON response correctly
+      const responseData = await externalResponse.json();
+      console.log("Raw external API response:", responseData);
+
+      // Extract the data array from the response structure
+      let externalData;
+      if (responseData && responseData.response && responseData.response.data) {
+        externalData = responseData.response.data;
+      } else if (responseData && Array.isArray(responseData)) {
+        externalData = responseData;
+      } else if (responseData && responseData.data && Array.isArray(responseData.data)) {
+        externalData = responseData.data;
+      } else {
+        console.log("Unexpected API response structure:", responseData);
+        return { inserted: 0, updated: 0, errors: 1 };
+      }
+
+      console.log("Extracted data:", externalData);
+      
       if (!Array.isArray(externalData) || externalData.length === 0) {
         console.log("No disruptions found in external API");
         return { inserted: 0, updated: 0, errors: 0 };
@@ -1091,7 +1108,9 @@ class DatabaseService {
       );
 
       if (!bulkResponse.ok) {
-        throw new Error(`Bulk update failed: ${bulkResponse.status}`);
+        const errorText = await bulkResponse.text();
+        console.error("Bulk update failed:", errorText);
+        throw new Error(`Bulk update failed: ${bulkResponse.status} - ${errorText}`);
       }
 
       const result = await bulkResponse.json();
