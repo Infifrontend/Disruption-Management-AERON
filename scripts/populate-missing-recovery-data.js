@@ -4,6 +4,32 @@ const { Pool } = pkg
 
 const connectionString = process.env.DATABASE_URL || 'postgresql://0.0.0.0:5432/aeron_settings'
 
+// Helper function to sanitize data for JSONB columns
+function sanitizeForJsonb(data) {
+  if (data === null || data === undefined) {
+    return null
+  }
+  
+  // If it's already a string, try to parse it to see if it's valid JSON
+  if (typeof data === 'string') {
+    try {
+      JSON.parse(data)
+      return data // It's already valid JSON string
+    } catch {
+      // If not valid JSON, stringify it
+      return JSON.stringify(data)
+    }
+  }
+  
+  // If it's an array or object, stringify it
+  if (Array.isArray(data) || typeof data === 'object') {
+    return JSON.stringify(data)
+  }
+  
+  // For other types, stringify
+  return JSON.stringify(data)
+}
+
 const pool = new Pool({
   connectionString: connectionString,
   ssl: process.env.NODE_ENV === 'production' || connectionString.includes('neon.tech')
@@ -46,11 +72,14 @@ async function populateMissingRecoveryData() {
           try {
             // Debug data structure
             console.log(`  - Processing option: ${option.title}`)
+            console.log(`    Advantages type: ${typeof option.advantages}, isArray: ${Array.isArray(option.advantages)}`)
+            console.log(`    Considerations type: ${typeof option.considerations}, isArray: ${Array.isArray(option.considerations)}`)
+            
             if (Array.isArray(option.advantages)) {
-              console.log(`    Advantages is array with ${option.advantages.length} items`)
+              console.log(`    Advantages content: ${JSON.stringify(option.advantages)}`)
             }
             if (Array.isArray(option.considerations)) {
-              console.log(`    Considerations is array with ${option.considerations.length} items`)
+              console.log(`    Considerations content: ${JSON.stringify(option.considerations)}`)
             }
             await client.query(`
               INSERT INTO recovery_options (
@@ -69,18 +98,16 @@ async function populateMissingRecoveryData() {
               option.impact, 
               option.status,
               option.priority || 1,
-              // Ensure all array/object fields are properly JSON stringified
-              Array.isArray(option.advantages) ? JSON.stringify(option.advantages) : 
-                (option.advantages ? JSON.stringify(option.advantages) : null),
-              Array.isArray(option.considerations) ? JSON.stringify(option.considerations) : 
-                (option.considerations ? JSON.stringify(option.considerations) : null),
-              option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : null,
-              option.costBreakdown ? JSON.stringify(option.costBreakdown) : null,
-              option.timelineDetails ? JSON.stringify(option.timelineDetails) : null,
-              option.riskAssessment ? JSON.stringify(option.riskAssessment) : null,
-              option.technicalSpecs ? JSON.stringify(option.technicalSpecs) : null,
-              option.metrics ? JSON.stringify(option.metrics) : null,
-              option.rotationPlan ? JSON.stringify(option.rotationPlan) : null
+              // Use sanitization function for all JSONB fields
+              sanitizeForJsonb(option.advantages),
+              sanitizeForJsonb(option.considerations),
+              sanitizeForJsonb(option.resourceRequirements),
+              sanitizeForJsonb(option.costBreakdown),
+              sanitizeForJsonb(option.timelineDetails),
+              sanitizeForJsonb(option.riskAssessment),
+              sanitizeForJsonb(option.technicalSpecs),
+              sanitizeForJsonb(option.metrics),
+              sanitizeForJsonb(option.rotationPlan)
             ])
             totalOptionsCreated++
           } catch (optionError) {
