@@ -521,8 +521,8 @@ export function generateRecoveryOptionsForDisruption(disruption) {
           impact: 'Medium delay impact',
           status: 'recommended',
           priority: 1,
-          advantages: ['Maintains original aircraft', 'Lower cost option', 'High success probability'],
-          considerations: ['Passenger accommodation may be required', 'Potential connection impacts'],
+          advantages: ["Maintains original aircraft", "Lower cost option", "High success probability"],
+          considerations: ["Weather dependency", "Potential for further delays", "Passenger accommodation required"],
           resourceRequirements: [
             { type: 'Aircraft', resource: safeDisruption.aircraft || 'A6-FDZ', availability: 'Available', status: 'On ground', location: 'DXB', eta: 'Immediate', details: 'Original aircraft available' }
           ],
@@ -558,8 +558,8 @@ export function generateRecoveryOptionsForDisruption(disruption) {
           impact: 'Moderate operational complexity',
           status: 'caution',
           priority: 2,
-          advantages: ['Faster departure', 'Weather avoidance', 'Network protection'],
-          considerations: ['Higher operational cost', 'Aircraft availability dependent'],
+          advantages: ["Faster departure", "Weather avoidance", "Network protection"],
+          considerations: ["Higher operational cost", "Aircraft availability dependent"],
           resourceRequirements: [
             { type: 'Aircraft', resource: 'A6-FED', availability: 'Available 14:30', status: 'Maintenance complete', location: 'DXB', eta: '14:30', details: 'B737-800 ready for service' }
           ],
@@ -578,8 +578,8 @@ export function generateRecoveryOptionsForDisruption(disruption) {
           impact: 'High passenger impact',
           status: 'warning',
           priority: 3,
-          advantages: ['Guaranteed resolution', 'Network stability', 'Crew rest compliance'],
-          considerations: ['High passenger compensation', 'Reputation impact', 'Hotel costs'],
+          advantages: ["Guaranteed resolution", "Network stability", "Crew rest compliance"],
+          considerations: ["High passenger compensation", "Reputation impact", "Hotel costs"],
           resourceRequirements: [
             { type: 'Passenger Services', resource: 'Rebooking Team', availability: 'Available', status: 'On standby', location: 'DXB T2', eta: 'Immediate', details: '6 agents available for rebooking' }
           ],
