@@ -1292,6 +1292,8 @@ app.get('/api/recovery-steps-detailed/:disruptionId', async (req, res) => {
       return res.status(400).json({ error: 'Invalid disruption ID format' })
     }
 
+    console.log(`Fetching detailed recovery steps for disruption ID: ${disruptionId}`)
+
     // Check if recovery_steps_detailed table exists, if not fall back to recovery_steps
     let query, params
 
@@ -1313,8 +1315,9 @@ app.get('/api/recovery-steps-detailed/:disruptionId', async (req, res) => {
       query += ` ORDER BY rsd.step_number ASC`
 
       const result = await pool.query(query, params)
-      
+
       if (result.rows.length > 0) {
+        console.log(`Found ${result.rows.length} detailed recovery steps`)
         return res.json(result.rows)
       }
     } catch (detailedError) {
@@ -1344,6 +1347,7 @@ app.get('/api/recovery-steps-detailed/:disruptionId', async (req, res) => {
     params = [numericDisruptionId]
 
     const result = await pool.query(query, params)
+    console.log(`Found ${result.rows.length} fallback recovery steps`)
     res.json(result.rows || [])
   } catch (error) {
     console.error('Error fetching detailed recovery steps:', error)
