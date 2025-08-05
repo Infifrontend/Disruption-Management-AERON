@@ -491,10 +491,10 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
           ON CONFLICT (disruption_id, title) DO NOTHING
         `, [
-          disruptionId, option.title, option.description, option.cost, option.timeline,
-          option.confidence, option.impact, option.status || 'generated', option.priority || 0,
-          option.advantages ? JSON.stringify(option.advantages) : null,
-          option.considerations ? JSON.stringify(option.considerations) : null,
+          disruptionId, title, description, cost, timeline,
+          confidence, impact, status || 'generated', priority || 0,
+          Array.isArray(advantages) ? advantages : [],
+          Array.isArray(considerations) ? considerations : [],
           option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : null,
           option.costBreakdown ? JSON.stringify(option.costBreakdown) : null,
           option.timelineDetails ? JSON.stringify(option.timelineDetails) : null,
@@ -567,8 +567,8 @@ app.post('/api/recovery-options', async (req, res) => {
     `, [
       disruption_id, title, description, cost, timeline,
       confidence, impact, status || 'generated', priority || 0,
-      advantages ? JSON.stringify(advantages) : null,
-      considerations ? JSON.stringify(considerations) : null,
+      Array.isArray(advantages) ? advantages : [],
+      Array.isArray(considerations) ? considerations : [],
       resource_requirements ? JSON.stringify(resource_requirements) : null,
       cost_breakdown ? JSON.stringify(cost_breakdown) : null,
       timeline_details ? JSON.stringify(timeline_details) : null,
