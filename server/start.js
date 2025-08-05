@@ -146,7 +146,7 @@ app.get('/api/health', async (req, res) => {
       server: 'running'
     })
   }
-}
+})
 
 // Debug endpoint to check connection details
 app.get('/api/debug', (req, res) => {
