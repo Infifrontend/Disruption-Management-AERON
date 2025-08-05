@@ -162,7 +162,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
     ? selectedFlight[0]
     : selectedFlight;
 
-  // Fetch recovery options from database
+  // Fetch recovery options from database based on categorization
   useEffect(() => {
     const fetchRecoveryOptions = async () => {
       if (!flight) {
@@ -175,6 +175,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       // Use flight number as ID if no specific ID exists
       const flightId = flight.id || flight.flightNumber || 'unknown';
       console.log("Processing flight:", flight, "with ID:", flightId);
+      console.log("Flight categorization:", flight.categorization || flight.disruptionReason);
 
       if (!useDatabaseData) {
         console.log("Database data disabled, using scenario data");
@@ -187,7 +188,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       setLoadingError(null);
 
       try {
-        console.log(`Fetching recovery options for flight ID: ${flightId}`);
+        console.log(`Fetching categorization-based recovery options for flight ID: ${flightId}`);
 
         // Check database connectivity first
         const isHealthy = await databaseService.healthCheck();
@@ -195,28 +196,44 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           throw new Error("Database connection failed");
         }
 
-        // First try to get existing options
-        let options = await databaseService.getRecoveryOptions(flightId);
-        let steps = await databaseService.getRecoverySteps(flightId);
+        // First try to get detailed recovery options based on categorization
+        let options = await databaseService.getDetailedRecoveryOptions(flightId);
+        let steps = await databaseService.getDetailedRecoverySteps(flightId);
 
-        console.log(`Found ${options.length} existing options and ${steps.length} steps`);
+        console.log(`Found ${options.length} detailed categorization-based options and ${steps.length} steps`);
 
-        // If no options exist, generate them
+        // If no detailed options exist, try to get standard options and generate if needed
         if (options.length === 0) {
-          console.log("No recovery options found, generating new ones...");
-          const result = await databaseService.generateRecoveryOptions(flightId);
-          console.log("Generation result:", result);
+          console.log("No detailed recovery options found, trying standard options...");
+          options = await databaseService.getRecoveryOptions(flightId);
+          steps = await databaseService.getRecoverySteps(flightId);
 
-          if (result.optionsCount > 0) {
-            // Wait a moment and fetch the newly generated options
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            options = await databaseService.getRecoveryOptions(flightId);
-            steps = await databaseService.getRecoverySteps(flightId);
-            console.log(`After generation: ${options.length} options, ${steps.length} steps`);
-          } else {
-            console.log("No options generated, falling back to scenario data");
-            setUseDatabaseData(false);
-            return;
+          console.log(`Found ${options.length} standard options and ${steps.length} steps`);
+
+          // If still no options exist, generate them
+          if (options.length === 0) {
+            console.log("No recovery options found, generating new ones...");
+            const result = await databaseService.generateRecoveryOptions(flightId);
+            console.log("Generation result:", result);
+
+            if (result.optionsCount > 0) {
+              // Wait a moment and fetch the newly generated options
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              options = await databaseService.getDetailedRecoveryOptions(flightId);
+              steps = await databaseService.getDetailedRecoverySteps(flightId);
+              
+              // Fallback to standard options if detailed ones still not available
+              if (options.length === 0) {
+                options = await databaseService.getRecoveryOptions(flightId);
+                steps = await databaseService.getRecoverySteps(flightId);
+              }
+              
+              console.log(`After generation: ${options.length} options, ${steps.length} steps`);
+            } else {
+              console.log("No options generated, falling back to scenario data");
+              setUseDatabaseData(false);
+              return;
+            }
           }
         }
 
@@ -225,45 +242,48 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           id: option.id || `option_${index + 1}`,
           title: option.title || `Recovery Option ${index + 1}`,
           description: option.description || "Recovery option description",
-          cost: option.cost || "TBD",
-          timeline: option.timeline || "TBD",
+          cost: option.cost || option.estimated_cost || "TBD",
+          timeline: option.timeline || option.estimated_timeline || "TBD",
           confidence: option.confidence || 80,
           impact: option.impact || "Medium impact",
           status: option.status === "generated" ? "recommended" : (option.status || "recommended"),
+          category: option.category_name || option.category_code,
+          categoryCode: option.category_code,
           advantages: Array.isArray(option.advantages) ? option.advantages : 
-                     (typeof option.advantages === 'string' ? JSON.parse(option.advantages) : []),
+                     (typeof option.advantages === 'string' ? JSON.parse(option.advantages || '[]') : []),
           considerations: Array.isArray(option.considerations) ? option.considerations : 
-                         (typeof option.considerations === 'string' ? JSON.parse(option.considerations) : []),
+                         (typeof option.considerations === 'string' ? JSON.parse(option.considerations || '[]') : []),
           metrics: option.metrics || {},
-          resourceRequirements: option.resource_requirements || [],
-          costBreakdown: option.cost_breakdown || [],
-          timelineDetails: option.timeline_details || [],
+          resourceRequirements: option.resource_requirements || option.resources || [],
+          costBreakdown: option.cost_breakdown || option.cost_analysis || [],
+          timelineDetails: option.timeline_details || option.timeline_steps || [],
           riskAssessment: option.risk_assessment || [],
           technicalSpecs: option.technical_specs || {},
           rotationPlan: option.rotation_plan || {},
+          templateData: option.template_data || {},
         }));
 
         const transformedSteps = steps.map((step) => ({
-          step: step.step_number,
-          title: step.title,
+          step: step.step_number || step.step,
+          title: step.title || step.step_title,
           status: step.status || "pending",
           timestamp: step.timestamp || new Date().toLocaleTimeString(),
           system: step.system || "AERON System",
-          details: step.details || "Processing...",
-          data: step.step_data || {},
+          details: step.details || step.description || "Processing...",
+          data: step.step_data || step.data || {},
         }));
 
-        console.log("Setting transformed options:", transformedOptions);
+        console.log("Setting transformed categorization-based options:", transformedOptions);
         console.log("Setting transformed steps:", transformedSteps);
 
         setRecoveryOptions(transformedOptions);
         setRecoverySteps(transformedSteps);
 
         if (transformedOptions.length === 0) {
-          setLoadingError("No recovery options available for this disruption type");
+          setLoadingError("No recovery options available for this disruption categorization");
         }
       } catch (error) {
-        console.error("Error fetching recovery options:", error);
+        console.error("Error fetching categorization-based recovery options:", error);
         setLoadingError(error.message || "Failed to load recovery options");
         setRecoveryOptions([]);
         setRecoverySteps([]);
@@ -1186,14 +1206,14 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     Est. Resolution: {scenarioData.estimatedTime}
                   </div>
                   <Badge variant="outline" className="text-xs">
-                    {flight?.categorization}
+                    {flight?.categorization || flight?.disruptionReason || "Unknown Category"}
                   </Badge>
                   <Badge
                     variant="outline"
                     className={`text-xs ${useDatabaseData && recoveryOptions.length > 0 ? "bg-green-50 text-green-700 border-green-200" : "bg-blue-50 text-blue-700 border-blue-200"}`}
                   >
                     {useDatabaseData && recoveryOptions.length > 0
-                      ? "Database Generated"
+                      ? "Categorization-Based"
                       : "Scenario Template"}
                   </Badge>
                   {isLoadingOptions && (
@@ -1422,6 +1442,14 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                               <Activity className="h-4 w-4 text-muted-foreground" />
                               <span>{option.impact}</span>
                             </div>
+                            {option.category && (
+                              <div className="flex items-center gap-1">
+                                <GitBranch className="h-4 w-4 text-muted-foreground" />
+                                <Badge variant="outline" className="text-xs">
+                                  {option.category}
+                                </Badge>
+                              </div>
+                            )}
                           </div>
 
                           {/* Passenger Re-accommodation Alert */}
