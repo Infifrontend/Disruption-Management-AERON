@@ -66,6 +66,13 @@ import {
 } from "lucide-react";
 import { databaseService, FlightDisruption } from "../services/databaseService";
 
+// Define interface for disruption categories
+interface DisruptionCategory {
+  id: string;
+  category_name: string;
+  description: string;
+}
+
 // Transform database flight disruption to the expected format for this component
 const transformFlightData = (disruption: FlightDisruption) => {
   // Ensure we have a valid scheduled departure time
@@ -80,7 +87,7 @@ const transformFlightData = (disruption: FlightDisruption) => {
   }
 
   // Check if this is an incomplete record
-  const isIncomplete = !disruption.flightNumber || 
+  const isIncomplete = !disruption.flightNumber ||
                       disruption.flightNumber.includes('UNKNOWN-') ||
                       !disruption.scheduledDeparture ||
                       !disruption.origin ||
@@ -115,7 +122,7 @@ const transformFlightData = (disruption: FlightDisruption) => {
       ? disruption.type.toLowerCase()
       : "technical",
     categorization: getCategorization(disruption.type || "Technical"),
-    disruptionReason: disruption.disruptionReason || 
+    disruptionReason: disruption.disruptionReason ||
                      (isIncomplete ? "⚠️ Incomplete information - some data may be missing" : "Information not available"),
     severity: disruption.severity
       ? disruption.severity.toLowerCase()
@@ -147,15 +154,45 @@ const getLocationName = (code: string) => {
   return locations[code] || code;
 };
 
-const getCategorization = (type: string) => {
-  const categorizations: { [key: string]: string } = {
+// Fetch disruption categories from database
+const fetchDisruptionCategories = async (): Promise<DisruptionCategory[]> => {
+  try {
+    const categories = await databaseService.getDisruptionCategories();
+    return categories || [];
+  } catch (error) {
+    console.error("Error fetching disruption categories:", error);
+    return []; // Return empty array if fetch fails
+  }
+};
+
+// Updated getCategorization to use fetched categories
+let disruptionCategories: DisruptionCategory[] = [];
+fetchDisruptionCategories().then(categories => {
+  disruptionCategories = categories;
+});
+
+const getCategorization = (type: string): string => {
+  const categoryMap: { [key: string]: string } = {
     Technical: "Aircraft issue (e.g., AOG)",
     Weather: "ATC/weather delay",
     Crew: "Crew issue (e.g., sick report, duty time breach)",
     ATC: "ATC/weather delay",
   };
-  return categorizations[type] || "Aircraft issue (e.g., AOG)";
+
+  // Check if the provided type maps to a known category name directly
+  if (categoryMap[type]) {
+    return categoryMap[type];
+  }
+
+  // Fallback to searching for a category that might match the type description or name
+  const foundCategory = disruptionCategories.find(cat =>
+    cat.category_name.toLowerCase().includes(type.toLowerCase()) ||
+    cat.description.toLowerCase().includes(type.toLowerCase())
+  );
+
+  return foundCategory ? foundCategory.category_name : categoryMap[type] || "Aircraft issue (e.g., AOG)";
 };
+
 
 const addHours = (dateString: string, hours: number) => {
   try {
@@ -239,7 +276,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     passengers: "",
     crew: 6,
     disruptionType: "technical",
-    categorization: "Aircraft issue (e.g., AOG)",
+    categorization: disruptionCategories.length > 0 ? disruptionCategories[0]?.category_name : "Aircraft issue (e.g., AOG)",
     disruptionReason: "",
     severity: "medium",
     impact: "",
@@ -248,7 +285,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     vipPassengers: "",
   });
 
-  
+
 
   // Fetch flights from database
   useEffect(() => {
@@ -301,9 +338,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       console.log("Fetched and transformed flights:", transformedFlights.length, "flights");
 
       // Count incomplete records
-      const incompleteCount = data.length - processedData.filter(d => 
+      const incompleteCount = data.length - processedData.filter(d =>
         d.flightNumber && d.flightNumber.indexOf('UNKNOWN-') === -1 &&
-        d.scheduledDeparture && 
+        d.scheduledDeparture &&
         d.origin && d.origin !== "DXB" &&
         d.destination && d.destination !== "UNKNOWN"
       ).length;
@@ -583,8 +620,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       originCity: newDisruption.originCity || getLocationName(newDisruption.origin),
       destinationCity: newDisruption.destinationCity || getLocationName(newDisruption.destination),
       gate: newDisruption.gate,
-      connectionFlights: newDisruption.connectionFlights 
-        ? parseInt(newDisruption.connectionFlights.toString()) 
+      connectionFlights: newDisruption.connectionFlights
+        ? parseInt(newDisruption.connectionFlights.toString())
         : 0,
       vipPassengers: newDisruption.vipPassengers
         ? parseInt(newDisruption.vipPassengers.toString())
@@ -641,7 +678,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           passengers: "",
           crew: 6,
           disruptionType: "technical",
-          categorization: "Aircraft issue (e.g., AOG)",
+          categorization: disruptionCategories.length > 0 ? disruptionCategories[0]?.category_name : "Aircraft issue (e.g., AOG)",
           disruptionReason: "",
           severity: "medium",
           impact: "",
@@ -650,7 +687,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           vipPassengers: "",
         });
 
-        
+
 
         // Close the dialog
         setIsAddDialogOpen(false);
@@ -682,7 +719,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     }));
   };
 
-  
+
 
   if (loading) {
     return (
@@ -1013,26 +1050,16 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Aircraft issue (e.g., AOG)">
-                          Aircraft issue (e.g., AOG)
-                        </SelectItem>
-                        <SelectItem value="Crew issue (e.g., sick report, duty time breach)">
-                          Crew issue (e.g., sick report, duty time breach)
-                        </SelectItem>
-                        <SelectItem value="ATC/weather delay">
-                          ATC/weather delay
-                        </SelectItem>
-                        <SelectItem value="Airport curfew/ramp congestion">
-                          Airport curfew/ramp congestion
-                        </SelectItem>
-                        <SelectItem value="Rotation misalignment or maintenance hold">
-                          Rotation misalignment or maintenance hold
-                        </SelectItem>
+                        {disruptionCategories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.category_name}>
+                            {cat.category_name}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  
+
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -1162,9 +1189,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </div>
             </DialogContent>
           </Dialog>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={fetchFlights}
             disabled={loading}
           >
@@ -1424,21 +1451,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  <SelectItem value="Aircraft issue (e.g., AOG)">
-                    Aircraft issue (e.g., AOG)
-                  </SelectItem>
-                  <SelectItem value="Crew issue (e.g., sick report, duty time breach)">
-                    Crew issue (e.g., sick report, duty time breach)
-                  </SelectItem>
-                  <SelectItem value="ATC/weather delay">
-                    ATC/weather delay
-                  </SelectItem>
-                  <SelectItem value="Airport curfew/ramp congestion">
-                    Airport curfew/ramp congestion
-                  </SelectItem>
-                  <SelectItem value="Rotation misalignment or maintenance hold">
-                    Rotation misalignment or maintenance hold
-                  </SelectItem>
+                  {disruptionCategories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.category_name}>
+                      {cat.category_name}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -1503,11 +1520,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
                           <span className="font-mono font-semibold">
-                            {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') 
+                            {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-')
                               ? (flight.flightNumber || '-')
                               : flight.flightNumber}
                           </span>
-                          {flight.status === "Incomplete" && 
+                          {flight.status === "Incomplete" &&
                            !(flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') && !flight.flightNumber) && (
                             <Badge className="bg-orange-100 text-orange-800 border-orange-200">
                               Incomplete
