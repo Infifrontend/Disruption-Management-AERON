@@ -806,6 +806,68 @@ class DatabaseService {
     }
   }
 
+  // Detailed Recovery Options with Categorization
+  async getDetailedRecoveryOptions(disruptionId: string): Promise<any[]> {
+    try {
+      console.log(`Fetching detailed recovery options for disruption ${disruptionId}`);
+      const response = await fetch(
+        `${this.baseUrl}/recovery-options-detailed/${disruptionId}`,
+      );
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log(`No detailed recovery options found for disruption ${disruptionId}`);
+          return [];
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const options = await response.json();
+      console.log(`Found ${options.length} detailed recovery options for disruption ${disruptionId}`);
+      return options;
+    } catch (error) {
+      console.error("Error fetching detailed recovery options:", error);
+      return [];
+    }
+  }
+
+  async getDisruptionCategories(): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/disruption-categories`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching disruption categories:", error);
+      return [];
+    }
+  }
+
+  async getRecoveryOptionTemplates(categoryId?: string): Promise<any[]> {
+    try {
+      const url = categoryId 
+        ? `${this.baseUrl}/recovery-option-templates?category_id=${categoryId}`
+        : `${this.baseUrl}/recovery-option-templates`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching recovery option templates:", error);
+      return [];
+    }
+  }
+
+  async getDetailedRecoverySteps(disruptionId: string, optionId?: string): Promise<any[]> {
+    try {
+      const url = optionId 
+        ? `${this.baseUrl}/recovery-steps-detailed/${disruptionId}?option_id=${optionId}`
+        : `${this.baseUrl}/recovery-steps-detailed/${disruptionId}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching detailed recovery steps:", error);
+      return [];
+    }
+  }
+
   // Generate recovery options for a disruption
   async generateRecoveryOptions(
     disruptionId: string,

@@ -114,7 +114,7 @@ app.get('/api/health', async (req, res) => {
     // Test database connection with a timeout
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 2000)
-    
+
     let databaseStatus = 'disconnected'
     try {
       const client = await pool.connect()
@@ -126,7 +126,7 @@ app.get('/api/health', async (req, res) => {
       console.warn('Database health check failed:', dbError.message)
       databaseStatus = 'disconnected'
     }
-    
+
     // Return healthy even if database is down (API can function in fallback mode)
     res.json({ 
       status: 'healthy', 
@@ -492,7 +492,7 @@ app.get('/api/disruptions', async (req, res) => {
     `)
     return queryResult.rows || []
   }, [])
-  
+
   res.json(result)
 })
 
@@ -957,60 +957,6 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
 app.get('/api/recovery-steps/:disruptionId', async (req, res) => {
   try {
     const { disruptionId } = req.params
-    const result = await pool.query(`
-      SELECT * FROM recovery_steps 
-      WHERE disruption_id = $1 
-      ORDER BY step_number ASC
-    `, [disruptionId])
-    res.json(result.rows || [])
-  } catch (error) {
-    console.error('Error fetching recovery steps:', error)
-    res.json([])
-  }
-})
-
-app.post('/api/recovery-options', async (req, res) => {
-  try {
-    const {
-      disruption_id, title, description, cost, timeline,
-      confidence, impact, status, priority, advantages, considerations,
-      resource_requirements, cost_breakdown, timeline_details,
-      risk_assessment, technical_specs, metrics, rotation_plan
-    } = req.body
-
-    const result = await pool.query(`
-      INSERT INTO recovery_options (
-        disruption_id, title, description, cost, timeline,
-        confidence, impact, status, priority, advantages, considerations,
-        resource_requirements, cost_breakdown, timeline_details,
-        risk_assessment, technical_specs, metrics, rotation_plan
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-      RETURNING *
-    `, [
-      disruption_id, title, description, cost, timeline,
-      confidence, impact, status || 'generated', priority || 0,
-      advantages ? JSON.stringify(advantages) : null,
-      considerations ? JSON.stringify(considerations) : null,
-      resource_requirements ? JSON.stringify(resource_requirements) : null,
-      cost_breakdown ? JSON.stringify(cost_breakdown) : null,
-      timeline_details ? JSON.stringify(timeline_details) : null,
-      risk_assessment ? JSON.stringify(risk_assessment) : null,
-      technical_specs ? JSON.stringify(technical_specs) : null,
-      metrics ? JSON.stringify(metrics) : null,
-      rotation_plan ? JSON.stringify(rotation_plan) : null
-    ])
-
-    res.json(result.rows[0])
-  } catch (error) {
-    console.error('Error saving recovery option:', error)
-    res.status(500).json({ error: error.message })
-  }
-})
-
-// Recovery Steps endpoints
-app.get('/api/recovery-steps/:disruptionId', async (req, res) => {
-  try {
-    const { disruptionId } = req.params
     console.log(`Fetching recovery steps for disruption ID: ${disruptionId}`)
 
     const result = await pool.query(`
@@ -1196,6 +1142,117 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
     res.status(500).json({ error: error.message })
   }
 })
+
+// Detailed Recovery Options endpoints
+app.get('/api/recovery-options-detailed/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+    console.log(`Fetching detailed recovery options for disruption ID: ${disruptionId}`)
+
+    const result = await pool.query(`
+      SELECT rod.*, dc.category_name, dc.category_code
+      FROM recovery_options_detailed rod
+      LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
+      WHERE rod.disruption_id = $1
+      ORDER BY rod.priority ASC, rod.confidence DESC
+    `, [disruptionId])
+
+    console.log(`Found ${result.rows.length} detailed recovery options`)
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching detailed recovery options:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/disruption-categories', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT * FROM disruption_categories 
+      WHERE is_active = true 
+      ORDER BY priority_level ASC
+    `)
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching disruption categories:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/recovery-option-templates', async (req, res) => {
+  try {
+    const { category_id } = req.query
+    let query = `
+      SELECT rot.*, dc.category_name, dc.category_code
+      FROM recovery_option_templates rot
+      LEFT JOIN disruption_categories dc ON rot.category_id = dc.id
+      WHERE rot.is_active = true
+    `
+    const params = []
+
+    if (category_id) {
+      query += ` AND rot.category_id = $1`
+      params.push(category_id)
+    }
+
+    query += ` ORDER BY dc.priority_level ASC, rot.title ASC`
+
+    const result = await pool.query(query, params)
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching recovery option templates:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/recovery-steps-detailed/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+    const { option_id } = req.query
+
+    let query = `
+      SELECT rsd.*, rod.title as option_title
+      FROM recovery_steps_detailed rsd
+      LEFT JOIN recovery_options_detailed rod ON rsd.option_id = rod.option_id
+      WHERE rsd.disruption_id = $1
+    `
+    const params = [disruptionId]
+
+    if (option_id) {
+      query += ` AND rsd.option_id = $2`
+      params.push(option_id)
+    }
+
+    query += ` ORDER BY rsd.option_id, rsd.step_number ASC`
+
+    const result = await pool.query(query, params)
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching detailed recovery steps:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Recovery Steps endpoints
+app.get('/api/recovery-steps/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+    console.log(`Fetching recovery steps for disruption ID: ${disruptionId}`)
+
+    const result = await pool.query(`
+      SELECT * FROM recovery_steps 
+      WHERE disruption_id = $1 
+      ORDER BY step_number ASC
+    `, [disruptionId])
+
+    console.log(`Found ${result.rows.length} recovery steps for disruption ${disruptionId}`)
+    res.json(result.rows || [])
+  } catch (error) {
+    console.error('Error fetching recovery steps:', error)
+    res.status(500).json({ error: error.message, rows: [] })
+  }
+})
+
 
 // Error handling middleware
 app.use((error, req, res, next) => {
