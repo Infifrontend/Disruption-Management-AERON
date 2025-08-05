@@ -6,23 +6,38 @@ const { Pool } = pkg
 const app = express()
 const port = process.env.API_PORT || 3001
 
-// Middleware
+// Middleware - More permissive CORS configuration
 app.use(cors({
-  origin: true,
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow all localhost and replit.dev origins
+    if (origin.includes('localhost') || origin.includes('replit.dev') || origin.includes('sisko.replit.dev')) {
+      return callback(null, true);
+    }
+    
+    // Allow all other origins for now (can be restricted later)
+    return callback(null, true);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
-  optionsSuccessStatus: 200,
-  preflightContinue: false
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  optionsSuccessStatus: 200
 }))
 
-// Handle preflight requests explicitly
-app.options('*', (req, res) => {
+// Ensure CORS headers are set for all responses
+app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', req.headers.origin || '*')
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept')
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Accept, Origin, X-Requested-With')
   res.header('Access-Control-Allow-Credentials', 'true')
-  res.sendStatus(200)
+  
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200)
+  } else {
+    next()
+  }
 })
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
