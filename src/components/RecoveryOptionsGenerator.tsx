@@ -196,41 +196,80 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           throw new Error("Database connection failed");
         }
 
-        // First try to get detailed recovery options based on categorization
-        let options = await databaseService.getDetailedRecoveryOptions(flightId);
-        let steps = await databaseService.getDetailedRecoverySteps(flightId);
+        // Initialize variables
+        let options = [];
+        let steps = [];
 
-        console.log(`Found ${options.length} detailed categorization-based options and ${steps.length} steps`);
+        // First try to get detailed recovery options based on categorization
+        try {
+          options = await databaseService.getDetailedRecoveryOptions(flightId);
+          console.log(`Found ${options.length} detailed categorization-based options`);
+        } catch (error) {
+          console.warn("Error fetching detailed recovery options:", error.message);
+          options = [];
+        }
+
+        // Try to get detailed recovery steps
+        try {
+          steps = await databaseService.getDetailedRecoverySteps(flightId);
+          console.log(`Found ${steps.length} detailed steps`);
+        } catch (error) {
+          console.warn("Error fetching detailed recovery steps:", error.message);
+          // Fallback to regular steps
+          try {
+            steps = await databaseService.getRecoverySteps(flightId);
+            console.log(`Found ${steps.length} fallback steps`);
+          } catch (stepError) {
+            console.warn("Error fetching regular recovery steps:", stepError.message);
+            steps = [];
+          }
+        }
 
         // If no detailed options exist, try to get standard options and generate if needed
         if (options.length === 0) {
           console.log("No detailed recovery options found, trying standard options...");
-          options = await databaseService.getRecoveryOptions(flightId);
-          steps = await databaseService.getRecoverySteps(flightId);
+          try {
+            options = await databaseService.getRecoveryOptions(flightId);
+            console.log(`Found ${options.length} standard options`);
+          } catch (error) {
+            console.warn("Error fetching standard recovery options:", error.message);
+            options = [];
+          }
 
-          console.log(`Found ${options.length} standard options and ${steps.length} steps`);
-
-          // If still no options exist, generate them
+          // If still no options exist, try to generate them
           if (options.length === 0) {
-            console.log("No recovery options found, generating new ones...");
-            const result = await databaseService.generateRecoveryOptions(flightId);
-            console.log("Generation result:", result);
+            console.log("No recovery options found, attempting to generate new ones...");
+            try {
+              const result = await databaseService.generateRecoveryOptions(flightId);
+              console.log("Generation result:", result);
 
-            if (result.optionsCount > 0) {
-              // Wait a moment and fetch the newly generated options
-              await new Promise(resolve => setTimeout(resolve, 1000));
-              options = await databaseService.getDetailedRecoveryOptions(flightId);
-              steps = await databaseService.getDetailedRecoverySteps(flightId);
-              
-              // Fallback to standard options if detailed ones still not available
-              if (options.length === 0) {
-                options = await databaseService.getRecoveryOptions(flightId);
-                steps = await databaseService.getRecoverySteps(flightId);
+              if (result.optionsCount > 0) {
+                // Wait a moment and fetch the newly generated options
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                try {
+                  options = await databaseService.getDetailedRecoveryOptions(flightId);
+                  steps = await databaseService.getDetailedRecoverySteps(flightId);
+                } catch (fetchError) {
+                  console.warn("Error fetching newly generated detailed options:", fetchError.message);
+                  // Fallback to standard options
+                  try {
+                    options = await databaseService.getRecoveryOptions(flightId);
+                    steps = await databaseService.getRecoverySteps(flightId);
+                  } catch (standardError) {
+                    console.warn("Error fetching standard options after generation:", standardError.message);
+                  }
+                }
+                
+                console.log(`After generation: ${options.length} options, ${steps.length} steps`);
+              } else {
+                console.log("No options generated, falling back to scenario data");
+                setUseDatabaseData(false);
+                return;
               }
-              
-              console.log(`After generation: ${options.length} options, ${steps.length} steps`);
-            } else {
-              console.log("No options generated, falling back to scenario data");
+            } catch (generateError) {
+              console.error("Error generating recovery options:", generateError.message);
+              setLoadingError("Failed to generate recovery options: " + generateError.message);
               setUseDatabaseData(false);
               return;
             }
