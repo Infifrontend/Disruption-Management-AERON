@@ -198,6 +198,109 @@ app.delete('/api/settings/:category/:key', async (req, res) => {
   }
 })
 
+// Bulk update disruptions from external API
+app.post('/api/disruptions/bulk-update', async (req, res) => {
+  try {
+    const { disruptions } = req.body
+    
+    if (!Array.isArray(disruptions)) {
+      return res.status(400).json({ error: 'Expected array of disruptions' })
+    }
+
+    console.log(`Processing bulk update of ${disruptions.length} disruptions`)
+    
+    let updated = 0
+    let inserted = 0
+    let errors = 0
+
+    for (const disruption of disruptions) {
+      try {
+        const {
+          flight_number, flightNumber, route, origin, destination, origin_city, destination_city,
+          aircraft, scheduled_departure, scheduledDeparture, estimated_departure, estimatedDeparture,
+          delay_minutes, delay, passengers, crew, connection_flights, connectionFlights,
+          severity, disruption_type, disruptionType, type, status, disruption_reason, disruptionReason
+        } = disruption
+
+        // Handle field name variations
+        const flightNum = flight_number || flightNumber
+        const scheduled_dep = scheduled_departure || scheduledDeparture
+        const estimated_dep = estimated_departure || estimatedDeparture
+        const delay_mins = delay_minutes || delay || 0
+        const connection_flights_val = connection_flights || connectionFlights || 0
+        const disruption_type_val = disruption_type || disruptionType || type || 'Technical'
+        const disruption_reason_val = disruption_reason || disruptionReason || 'API sync'
+
+        // Skip if missing critical fields
+        if (!flightNum || !scheduled_dep) {
+          console.warn(`Skipping disruption: missing flight_number or scheduled_departure`)
+          errors++
+          continue
+        }
+
+        const safeRoute = route || `${origin || 'UNK'} → ${destination || 'UNK'}`
+        const safeSeverity = severity || 'Medium'
+        const safeStatus = status || 'Active'
+
+        const result = await pool.query(`
+          INSERT INTO flight_disruptions (
+            flight_number, route, origin, destination, origin_city, destination_city,
+            aircraft, scheduled_departure, estimated_departure, delay_minutes, 
+            passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+          ON CONFLICT (flight_number, scheduled_departure) 
+          DO UPDATE SET 
+            route = EXCLUDED.route,
+            origin = EXCLUDED.origin,
+            destination = EXCLUDED.destination,
+            origin_city = EXCLUDED.origin_city,
+            destination_city = EXCLUDED.destination_city,
+            aircraft = EXCLUDED.aircraft,
+            estimated_departure = EXCLUDED.estimated_departure,
+            delay_minutes = EXCLUDED.delay_minutes,
+            passengers = EXCLUDED.passengers,
+            crew = EXCLUDED.crew,
+            connection_flights = EXCLUDED.connection_flights,
+            severity = EXCLUDED.severity,
+            disruption_type = EXCLUDED.disruption_type,
+            status = EXCLUDED.status,
+            disruption_reason = EXCLUDED.disruption_reason,
+            updated_at = CURRENT_TIMESTAMP
+          RETURNING *, (xmax = 0) AS was_inserted
+        `, [
+          flightNum, safeRoute, origin || 'UNK', destination || 'UNK',
+          origin_city || destination_city || 'Unknown', destination_city || origin_city || 'Unknown',
+          aircraft || 'Unknown', scheduled_dep, estimated_dep, delay_mins,
+          passengers || 0, crew || 6, connection_flights_val, safeSeverity, 
+          disruption_type_val, safeStatus, disruption_reason_val
+        ])
+
+        if (result.rows[0].was_inserted) {
+          inserted++
+        } else {
+          updated++
+        }
+
+      } catch (error) {
+        console.error('Error processing individual disruption:', error.message)
+        errors++
+      }
+    }
+
+    console.log(`Bulk update completed: ${inserted} inserted, ${updated} updated, ${errors} errors`)
+    res.json({ 
+      success: true, 
+      inserted, 
+      updated, 
+      errors,
+      total: disruptions.length 
+    })
+  } catch (error) {
+    console.error('Error in bulk update:', error)
+    res.status(500).json({ error: 'Bulk update failed', details: error.message })
+  }
+})
+
 // Reset settings endpoint
 app.post('/api/settings/reset', async (req, res) => {
   try {
@@ -345,12 +448,31 @@ app.post('/api/disruptions', async (req, res) => {
     const safeStatus = status || 'Active'
     const safeDisruptionReason = disruption_reason_val || 'No reason provided'
 
+    // Use UPSERT to prevent duplicates - update if flight_number and scheduled_departure match
     const result = await pool.query(`
       INSERT INTO flight_disruptions (
         flight_number, route, origin, destination, origin_city, destination_city,
         aircraft, scheduled_departure, estimated_departure, delay_minutes, 
         passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+      ON CONFLICT (flight_number, scheduled_departure) 
+      DO UPDATE SET 
+        route = EXCLUDED.route,
+        origin = EXCLUDED.origin,
+        destination = EXCLUDED.destination,
+        origin_city = EXCLUDED.origin_city,
+        destination_city = EXCLUDED.destination_city,
+        aircraft = EXCLUDED.aircraft,
+        estimated_departure = EXCLUDED.estimated_departure,
+        delay_minutes = EXCLUDED.delay_minutes,
+        passengers = EXCLUDED.passengers,
+        crew = EXCLUDED.crew,
+        connection_flights = EXCLUDED.connection_flights,
+        severity = EXCLUDED.severity,
+        disruption_type = EXCLUDED.disruption_type,
+        status = EXCLUDED.status,
+        disruption_reason = EXCLUDED.disruption_reason,
+        updated_at = CURRENT_TIMESTAMP
       RETURNING *
     `, [
       flightNum, safeRoute, safeOrigin, safeDestination, safeOriginCity, safeDestinationCity,
@@ -358,7 +480,7 @@ app.post('/api/disruptions', async (req, res) => {
       passengers, crew, connection_flights_val, safeSeverity, safeDisruptionType, safeStatus, safeDisruptionReason
     ])
 
-    console.log('Successfully saved disruption:', result.rows[0])
+    console.log('Successfully saved/updated disruption:', result.rows[0])
     res.json(result.rows[0])
   } catch (error) {
     console.error('Error saving disruption:', error.message)
