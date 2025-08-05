@@ -868,6 +868,47 @@ class DatabaseService {
     }
   }
 
+  // Get recovery options by disruption categorization
+  async getRecoveryOptionsByCategory(categoryCode: string): Promise<any[]> {
+    try {
+      console.log(`Fetching recovery options for category: ${categoryCode}`);
+      const response = await fetch(`${this.baseUrl}/recovery-options/category/${categoryCode}`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log(`No recovery options found for category ${categoryCode}`);
+          return [];
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const options = await response.json();
+      console.log(`Found ${options.length} recovery options for category ${categoryCode}`);
+      return options;
+    } catch (error) {
+      console.error("Error fetching recovery options by category:", error);
+      return [];
+    }
+  }
+
+  // Map disruption type to category code
+  async mapDisruptionToCategory(disruptionType: string, disruptionReason?: string): Promise<string | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/map-disruption-category`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          disruptionType, 
+          disruptionReason: disruptionReason || '' 
+        }),
+      });
+      if (!response.ok) return null;
+      const result = await response.json();
+      return result.categoryCode || null;
+    } catch (error) {
+      console.error("Error mapping disruption to category:", error);
+      return null;
+    }
+  }
+
   // Generate recovery options for a disruption
   async generateRecoveryOptions(
     disruptionId: string,

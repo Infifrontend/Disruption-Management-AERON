@@ -68,8 +68,8 @@ if (connectionString && connectionString.includes('neon.tech')) {
 
 const pool = new Pool({
   connectionString: connectionString,
-  ssl: process.env.NODE_ENV === 'production' || connectionString.includes('neon.tech') 
-    ? { rejectUnauthorized: false } 
+  ssl: process.env.NODE_ENV === 'production' || connectionString.includes('neon.tech')
+    ? { rejectUnauthorized: false }
     : false,
   max: 5, // Reduced maximum connections to prevent exhaustion
   min: 1, // Keep at least one connection alive
@@ -128,8 +128,8 @@ app.get('/api/health', async (req, res) => {
     }
 
     // Return healthy even if database is down (API can function in fallback mode)
-    res.json({ 
-      status: 'healthy', 
+    res.json({
+      status: 'healthy',
       timestamp: new Date().toISOString(),
       protocol: req.protocol,
       host: req.get('host'),
@@ -138,8 +138,8 @@ app.get('/api/health', async (req, res) => {
     })
   } catch (error) {
     console.error('Health check failed:', error)
-    res.status(200).json({ 
-      status: 'healthy', 
+    res.status(200).json({
+      status: 'healthy',
       error: 'Database unavailable but server running',
       timestamp: new Date().toISOString(),
       database: 'disconnected',
@@ -218,8 +218,8 @@ app.post('/api/settings', async (req, res) => {
     const result = await pool.query(`
       INSERT INTO settings (category, key, value, type, updated_by)
       VALUES ($1, $2, $3, $4, $5)
-      ON CONFLICT (category, key) 
-      DO UPDATE SET 
+      ON CONFLICT (category, key)
+      DO UPDATE SET
         value = EXCLUDED.value,
         type = EXCLUDED.type,
         updated_by = EXCLUDED.updated_by,
@@ -304,7 +304,7 @@ app.post('/api/disruptions/bulk-update', async (req, res) => {
 
           // First check if record exists
           const existingQuery = `
-            SELECT id FROM flight_disruptions 
+            SELECT id FROM flight_disruptions
             WHERE flight_number = $1 AND DATE(scheduled_departure) = DATE($2)
           `
 
@@ -371,12 +371,12 @@ app.post('/api/disruptions/bulk-update', async (req, res) => {
     }
 
     console.log(`Bulk update completed: ${inserted} inserted, ${updated} updated, ${errors} errors`)
-    res.json({ 
-      success: true, 
-      inserted, 
-      updated, 
+    res.json({
+      success: true,
+      inserted,
+      updated,
       errors,
-      total: disruptions.length 
+      total: disruptions.length
     })
   } catch (error) {
     console.error('Error in bulk update:', error)
@@ -484,10 +484,10 @@ app.get('/api/disruptions', async (req, res) => {
   const result = await withDatabaseFallback(async () => {
     const queryResult = await pool.query(`
       SELECT id, flight_number, route, origin, destination, origin_city, destination_city,
-             aircraft, scheduled_departure, estimated_departure, delay_minutes, 
-             passengers, crew, connection_flights, severity, disruption_type, status, 
+             aircraft, scheduled_departure, estimated_departure, delay_minutes,
+             passengers, crew, connection_flights, severity, disruption_type, status,
              disruption_reason, created_at, updated_at
-      FROM flight_disruptions 
+      FROM flight_disruptions
       ORDER BY created_at DESC
     `)
     return queryResult.rows || []
@@ -503,8 +503,8 @@ app.post('/api/disruptions', async (req, res) => {
 
     const {
       flight_number, flightNumber, route, origin, destination, origin_city, destination_city, originCity, destinationCity,
-      aircraft, scheduled_departure, scheduledDeparture, estimated_departure, estimatedDeparture, 
-      delay_minutes, delay, passengers, crew, connection_flights, connectionFlights, severity, disruption_type, disruptionType, type, 
+      aircraft, scheduled_departure, scheduledDeparture, estimated_departure, estimatedDeparture,
+      delay_minutes, delay, passengers, crew, connection_flights, connectionFlights, severity, disruption_type, disruptionType, type,
       status, disruption_reason, disruptionReason
     } = req.body
 
@@ -523,9 +523,9 @@ app.post('/api/disruptions', async (req, res) => {
 
     // Validate required fields
     if (!flightNum || !aircraft || !scheduled_dep || !passengers || !crew) {
-      return res.status(400).json({ 
-        error: 'Missing required fields', 
-        details: 'flight_number, aircraft, scheduled_departure, passengers, and crew are required' 
+      return res.status(400).json({
+        error: 'Missing required fields',
+        details: 'flight_number, aircraft, scheduled_departure, passengers, and crew are required'
       })
     }
 
@@ -544,11 +544,11 @@ app.post('/api/disruptions', async (req, res) => {
     const result = await pool.query(`
       INSERT INTO flight_disruptions (
         flight_number, route, origin, destination, origin_city, destination_city,
-        aircraft, scheduled_departure, estimated_departure, delay_minutes, 
+        aircraft, scheduled_departure, estimated_departure, delay_minutes,
         passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-      ON CONFLICT (flight_number, scheduled_departure) 
-      DO UPDATE SET 
+      ON CONFLICT (flight_number, scheduled_departure)
+      DO UPDATE SET
         route = EXCLUDED.route,
         origin = EXCLUDED.origin,
         destination = EXCLUDED.destination,
@@ -577,10 +577,10 @@ app.post('/api/disruptions', async (req, res) => {
   } catch (error) {
     console.error('Error saving disruption:', error.message)
     console.error('Error details:', error)
-    res.status(500).json({ 
-      error: 'Failed to save disruption', 
+    res.status(500).json({
+      error: 'Failed to save disruption',
       details: error.message,
-      code: error.code 
+      code: error.code
     })
   }
 })
@@ -629,7 +629,7 @@ app.put('/api/passengers/:pnr/rebooking', async (req, res) => {
     const { rebookingStatus, newFlightNumber, newSeatNumber } = req.body
 
     const result = await pool.query(`
-      UPDATE passengers 
+      UPDATE passengers
       SET rebooking_status = $1, new_flight_number = $2, new_seat_number = $3, updated_at = CURRENT_TIMESTAMP
       WHERE pnr = $4
       RETURNING *
@@ -650,7 +650,7 @@ app.put('/api/passengers/:pnr/rebooking', async (req, res) => {
 app.get('/api/crew/available', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT * FROM crew_members 
+      SELECT * FROM crew_members
       WHERE status = 'Available'
       ORDER BY role, name
     `)
@@ -679,7 +679,7 @@ app.get('/api/crew/flight/:flightNumber', async (req, res) => {
 app.get('/api/aircraft', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT * FROM aircraft 
+      SELECT * FROM aircraft
       ORDER BY status, registration
     `)
     res.json(result.rows || [])
@@ -692,7 +692,7 @@ app.get('/api/aircraft', async (req, res) => {
 app.get('/api/aircraft/available', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT * FROM aircraft 
+      SELECT * FROM aircraft
       WHERE status = 'Available'
       ORDER BY registration
     `)
@@ -709,7 +709,7 @@ app.put('/api/aircraft/:id/status', async (req, res) => {
     const { status } = req.body
 
     const result = await pool.query(`
-      UPDATE aircraft 
+      UPDATE aircraft
       SET status = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
       RETURNING *
@@ -730,7 +730,7 @@ app.put('/api/aircraft/:id/status', async (req, res) => {
 app.get('/api/hotel-bookings', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT * FROM hotel_bookings 
+      SELECT * FROM hotel_bookings
       ORDER BY created_at DESC
     `)
     res.json(result.rows || [])
@@ -759,7 +759,7 @@ app.post('/api/hotel-bookings', async (req, res) => {
     const { disruptionId, passengerPnr, hotelName, checkIn, checkOut, cost, status, bookingReference } = req.body
 
     const result = await pool.query(`
-      INSERT INTO hotel_bookings 
+      INSERT INTO hotel_bookings
       (disruption_id, passenger_pnr, hotel_name, check_in, check_out, cost, status, booking_reference)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *
@@ -819,7 +819,7 @@ app.get('/api/analytics/predictions', async (req, res) => {
 app.get('/api/recovery-logs', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT * FROM recovery_logs 
+      SELECT * FROM recovery_logs
       ORDER BY date_created DESC
       LIMIT 50
     `)
@@ -834,13 +834,13 @@ app.get('/api/recovery-logs', async (req, res) => {
 app.get('/api/recovery-options/:disruptionId', async (req, res) => {
   try {
     const { disruptionId } = req.params
-    
+
     // First try to get from detailed recovery options table
     const detailedResult = await pool.query(`
-      SELECT rod.*, dc.category_name 
+      SELECT rod.*, dc.category_name
       FROM recovery_options_detailed rod
       LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
-      WHERE rod.disruption_id = $1 
+      WHERE rod.disruption_id = $1
       ORDER BY rod.confidence DESC, rod.priority ASC
     `, [disruptionId])
 
@@ -851,8 +851,8 @@ app.get('/api/recovery-options/:disruptionId', async (req, res) => {
 
     // Fallback to original recovery options table
     const result = await pool.query(`
-      SELECT * FROM recovery_options 
-      WHERE disruption_id = $1 
+      SELECT * FROM recovery_options
+      WHERE disruption_id = $1
       ORDER BY confidence DESC, id ASC
     `, [disruptionId])
     res.json(result.rows || [])
@@ -870,7 +870,7 @@ app.get('/api/recovery-options-detailed/:disruptionId', async (req, res) => {
       SELECT rod.*, dc.category_name, dc.category_code
       FROM recovery_options_detailed rod
       LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
-      WHERE rod.disruption_id = $1 
+      WHERE rod.disruption_id = $1
       ORDER BY rod.confidence DESC, rod.priority ASC
     `, [disruptionId])
     res.json(result.rows || [])
@@ -884,8 +884,8 @@ app.get('/api/recovery-options-detailed/:disruptionId', async (req, res) => {
 app.get('/api/recovery-categories', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT * FROM disruption_categories 
-      WHERE is_active = true 
+      SELECT * FROM disruption_categories
+      WHERE is_active = true
       ORDER BY priority_level, category_name
     `)
     res.json(result.rows)
@@ -900,8 +900,8 @@ app.get('/api/recovery-templates/:categoryId', async (req, res) => {
   try {
     const { categoryId } = req.params
     const result = await pool.query(`
-      SELECT * FROM recovery_option_templates 
-      WHERE category_id = $1 AND is_active = true 
+      SELECT * FROM recovery_option_templates
+      WHERE category_id = $1 AND is_active = true
       ORDER BY title
     `, [categoryId])
     res.json(result.rows)
@@ -924,7 +924,7 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
 
     // First get the disruption details
     const result = await pool.query(`
-      SELECT * FROM flight_disruptions 
+      SELECT * FROM flight_disruptions
       WHERE id = $1::integer OR flight_number = $1
     `, [disruptionId])
 
@@ -945,9 +945,9 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
       try {
         await pool.query(`
           INSERT INTO recovery_options (
-            disruption_id, title, description, cost, timeline, confidence, 
-            impact, status, priority, advantages, considerations, 
-            resource_requirements, cost_breakdown, timeline_details, 
+            disruption_id, title, description, cost, timeline, confidence,
+            impact, status, priority, advantages, considerations,
+            resource_requirements, cost_breakdown, timeline_details,
             risk_assessment, technical_specs, metrics, rotation_plan
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
           ON CONFLICT (disruption_id, title) DO UPDATE SET
@@ -959,10 +959,10 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
             status = EXCLUDED.status,
             updated_at = CURRENT_TIMESTAMP
         `, [
-          disruptionId, option.title, option.description, option.cost, 
+          disruptionId, option.title, option.description, option.cost,
           option.timeline, option.confidence, option.impact, option.status,
           option.priority || 0, JSON.stringify(option.advantages || []),
-          JSON.stringify(option.considerations || []), 
+          JSON.stringify(option.considerations || []),
           JSON.stringify(option.resourceRequirements || []),
           JSON.stringify(option.costBreakdown || []),
           JSON.stringify(option.timelineDetails || []),
@@ -983,7 +983,7 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
       try {
         await pool.query(`
           INSERT INTO recovery_steps (
-            disruption_id, step_number, title, status, timestamp, 
+            disruption_id, step_number, title, status, timestamp,
             system, details, step_data
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
           ON CONFLICT (disruption_id, step_number) DO UPDATE SET
@@ -1005,9 +1005,9 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
       }
     }
 
-    res.json({ 
-      success: true, 
-      optionsCount, 
+    res.json({
+      success: true,
+      optionsCount,
       stepsCount,
       message: `Generated ${optionsCount} recovery options and ${stepsCount} steps`
     })
@@ -1025,8 +1025,8 @@ app.get('/api/recovery-steps/:disruptionId', async (req, res) => {
     console.log(`Fetching recovery steps for disruption ID: ${disruptionId}`)
 
     const result = await pool.query(`
-      SELECT * FROM recovery_steps 
-      WHERE disruption_id = $1 
+      SELECT * FROM recovery_steps
+      WHERE disruption_id = $1
       ORDER BY step_number ASC
     `, [disruptionId])
 
@@ -1109,8 +1109,8 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
     )
 
     if (existingOptions.rows[0].count > 0 && existingSteps.rows[0].count > 0) {
-      return res.json({ 
-        message: 'Recovery options and steps already exist', 
+      return res.json({
+        message: 'Recovery options and steps already exist',
         exists: true,
         optionsCount: existingOptions.rows[0].count,
         stepsCount: existingSteps.rows[0].count
@@ -1175,14 +1175,14 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
           risk_assessment, technical_specs, metrics, rotation_plan
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
       `, [
-        disruptionId, 
+        disruptionId,
         optionData.title,
         optionData.description,
-        optionData.cost, 
-        optionData.timeline, 
-        optionData.confidence, 
+        optionData.cost,
+        optionData.timeline,
+        optionData.confidence,
         optionData.impact,
-        optionData.status, 
+        optionData.status,
         i + 1, // priority based on order
         Array.isArray(optionData.advantages) ? optionData.advantages : [],
         Array.isArray(optionData.considerations) ? optionData.considerations : [],
@@ -1197,10 +1197,10 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
     }
 
     console.log('Successfully saved all recovery options and steps')
-    res.json({ 
-      message: 'Recovery options generated successfully', 
-      optionsCount: options.length, 
-      stepsCount: steps.length 
+    res.json({
+      message: 'Recovery options generated successfully',
+      optionsCount: options.length,
+      stepsCount: steps.length
     })
   } catch (error) {
     console.error('Error generating recovery options:', error)
@@ -1233,8 +1233,8 @@ app.get('/api/recovery-options-detailed/:disruptionId', async (req, res) => {
 app.get('/api/disruption-categories', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT * FROM disruption_categories 
-      WHERE is_active = true 
+      SELECT * FROM disruption_categories
+      WHERE is_active = true
       ORDER BY priority_level ASC
     `)
     res.json(result.rows)
@@ -1276,9 +1276,9 @@ app.get('/api/recovery-steps-detailed/:disruptionId', async (req, res) => {
     const { option_id } = req.query
 
     let query = `
-      SELECT rsd.*, rod.title as option_title
+      SELECT rsd.*, dc.category_name, dc.category_code
       FROM recovery_steps_detailed rsd
-      LEFT JOIN recovery_options_detailed rod ON rsd.option_id = rod.option_id
+      LEFT JOIN disruption_categories dc ON rsd.category_id = dc.id
       WHERE rsd.disruption_id = $1
     `
     const params = [disruptionId]
@@ -1288,13 +1288,13 @@ app.get('/api/recovery-steps-detailed/:disruptionId', async (req, res) => {
       params.push(option_id)
     }
 
-    query += ` ORDER BY rsd.option_id, rsd.step_number ASC`
+    query += ` ORDER BY rsd.step_number ASC`
 
     const result = await pool.query(query, params)
-    res.json(result.rows)
+    res.json(result.rows || [])
   } catch (error) {
     console.error('Error fetching detailed recovery steps:', error)
-    res.status(500).json({ error: error.message })
+    res.json([])
   }
 })
 
@@ -1305,8 +1305,8 @@ app.get('/api/recovery-steps/:disruptionId', async (req, res) => {
     console.log(`Fetching recovery steps for disruption ID: ${disruptionId}`)
 
     const result = await pool.query(`
-      SELECT * FROM recovery_steps 
-      WHERE disruption_id = $1 
+      SELECT * FROM recovery_steps
+      WHERE disruption_id = $1
       ORDER BY step_number ASC
     `, [disruptionId])
 
@@ -1318,6 +1318,85 @@ app.get('/api/recovery-steps/:disruptionId', async (req, res) => {
   }
 })
 
+// Map disruption type to category
+app.post('/api/map-disruption-category', async (req, res) => {
+  try {
+    const { disruptionType, disruptionReason } = req.body
+
+    console.log('Mapping disruption to category:', { disruptionType, disruptionReason })
+
+    // Try to find matching category based on disruption type and reason
+    let query = `
+      SELECT category_code, category_name, priority_level
+      FROM disruption_categories
+      WHERE is_active = true AND (
+        LOWER(category_name) LIKE LOWER($1) OR
+        LOWER(description) LIKE LOWER($1)
+    `
+    const params = [`%${disruptionType || ''}%`]
+
+    if (disruptionReason) {
+      query += ` OR LOWER(category_name) LIKE LOWER($2) OR LOWER(description) LIKE LOWER($2)`
+      params.push(`%${disruptionReason}%`)
+    }
+
+    query += `) ORDER BY priority_level ASC LIMIT 1`
+
+    const result = await pool.query(query, params)
+
+    if (result.rows.length > 0) {
+      res.json({
+        categoryCode: result.rows[0].category_code,
+        categoryName: result.rows[0].category_name,
+        priorityLevel: result.rows[0].priority_level
+      })
+    } else {
+      // Fallback mapping based on common patterns
+      let categoryCode = 'OTHER'
+      const lowerType = (disruptionType || '').toLowerCase()
+      const lowerReason = (disruptionReason || '').toLowerCase()
+
+      if (lowerType.includes('aircraft') || lowerType.includes('technical') ||
+          lowerReason.includes('maintenance') || lowerReason.includes('aog')) {
+        categoryCode = 'AIRCRAFT_ISSUE'
+      } else if (lowerType.includes('crew') || lowerReason.includes('crew') ||
+                 lowerReason.includes('duty') || lowerReason.includes('fatigue')) {
+        categoryCode = 'CREW_ISSUE'
+      } else if (lowerType.includes('weather') || lowerReason.includes('weather') ||
+                 lowerReason.includes('storm') || lowerReason.includes('fog')) {
+        categoryCode = 'ATC_WEATHER'
+      } else if (lowerType.includes('atc') || lowerReason.includes('atc') ||
+                 lowerReason.includes('slot') || lowerReason.includes('traffic')) {
+        categoryCode = 'ATC_WEATHER'
+      }
+
+      res.json({ categoryCode, categoryName: categoryCode.replace('_', ' ') })
+    }
+  } catch (error) {
+    console.error('Error mapping disruption to category:', error)
+    res.status(500).json({ error: error.message })
+  }
+})
+
+// Get recovery options by category
+app.get('/api/recovery-options/category/:categoryCode', async (req, res) => {
+  try {
+    const { categoryCode } = req.params
+
+    const result = await pool.query(`
+      SELECT rot.*, dc.category_name, dc.category_code
+      FROM recovery_option_templates rot
+      JOIN disruption_categories dc ON rot.category_id = dc.id
+      WHERE dc.category_code = $1 AND rot.is_active = true AND dc.is_active = true
+      ORDER BY rot.title ASC
+    `, [categoryCode])
+
+    res.json(result.rows || [])
+  } catch (error) {
+    console.error('Error fetching recovery options by category:', error)
+    res.json([])
+  }
+})
 
 // Error handling middleware
 app.use((error, req, res, next) => {
