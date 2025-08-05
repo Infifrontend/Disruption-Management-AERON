@@ -95,8 +95,8 @@ export function FlightDisruptionList() {
     };
 
     fetchDisruptions();
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchDisruptions, 30000);
+    // Refresh every 2 minutes to reduce load
+    const interval = setInterval(fetchDisruptions, 120000);
     return () => clearInterval(interval);
   }, []);
 

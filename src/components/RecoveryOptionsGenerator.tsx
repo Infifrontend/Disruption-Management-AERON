@@ -1316,8 +1316,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
             <Alert className="mb-4 border-red-200 bg-red-50">
               <AlertTriangle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
-                <strong>Error loading recovery options:</strong> {loadingError}.
-                Falling back to scenario templates.
+                <strong>Connection issue detected:</strong> {loadingError}.
+                Using offline mode with scenario templates. The system will automatically reconnect when available.
               </AlertDescription>
             </Alert>
           )}
