@@ -86,10 +86,10 @@ export function FlightDisruptionList() {
         // First sync from external API to prevent duplicates
         const syncResult = await databaseService.syncDisruptionsFromExternalAPI();
         console.log('External API sync result:', syncResult);
-        
+
         // Then fetch all current disruptions
         const data = await databaseService.getAllDisruptions();
-        
+
         // Transform and enrich data with missing properties for UI
         const enrichedData = data.map(disruption => ({
           ...disruption,
@@ -145,7 +145,7 @@ export function FlightDisruptionList() {
           },
           crewMembers: disruption.crewMembers || []
         }));
-        
+
         setDisruptions(enrichedData);
         console.log("Fetched and enriched disruptions:", enrichedData.length, "total");
       } catch (error) {

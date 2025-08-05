@@ -70,7 +70,7 @@ import { databaseService, FlightDisruption } from "../services/databaseService";
 const transformFlightData = (disruption: FlightDisruption) => {
   // Ensure we have a valid scheduled departure time
   const scheduledDeparture = disruption.scheduledDeparture || new Date().toISOString();
-  
+
   // Calculate scheduled arrival with proper fallback
   let scheduledArrival;
   if (disruption.estimatedDeparture) {
@@ -165,7 +165,7 @@ const addHours = (dateString: string, hours: number) => {
       date.setHours(date.getHours() + hours);
       return date.toISOString();
     }
-    
+
     const date = new Date(dateString);
     if (isNaN(date.getTime())) {
       // If invalid date, use current time plus hours
@@ -174,7 +174,7 @@ const addHours = (dateString: string, hours: number) => {
       fallbackDate.setHours(fallbackDate.getHours() + hours);
       return fallbackDate.toISOString();
     }
-    
+
     date.setHours(date.getHours() + hours);
     return date.toISOString();
   } catch (error) {
@@ -188,14 +188,14 @@ const addHours = (dateString: string, hours: number) => {
 
 const getTimeAgo = (dateString: string) => {
   if (!dateString) return "Unknown";
-  
+
   const now = new Date();
   const date = new Date(dateString);
-  
+
   if (isNaN(date.getTime())) {
     return "Unknown";
   }
-  
+
   const diffMs = now.getTime() - date.getTime();
   const diffMins = Math.floor(diffMs / 60000);
 
@@ -263,12 +263,12 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     try {
       setError(null);
       setLoading(true);
-      
+
       // First sync from external API to get latest data and prevent duplicates
       console.log("Syncing from external API...");
       const syncResult = await databaseService.syncDisruptionsFromExternalAPI();
       console.log('External API sync result:', syncResult);
-      
+
       // Then fetch all current disruptions from database
       const data = await databaseService.getAllDisruptions();
 
@@ -276,7 +276,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       const processedData = data.map(disruption => {
         // Provide defaults for missing required fields
         if (!disruption) return null;
-        
+
         return {
           ...disruption,
           flightNumber: disruption.flightNumber || `UNKNOWN-${Date.now()}`,
@@ -301,7 +301,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       setFlights(transformedFlights);
 
       console.log("Fetched and transformed flights:", transformedFlights.length, "flights");
-      
+
       // Count incomplete records
       const incompleteCount = data.length - processedData.filter(d => 
         d.flightNumber && d.flightNumber.indexOf('UNKNOWN-') === -1 &&
@@ -309,7 +309,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         d.origin && d.origin !== "DXB" &&
         d.destination && d.destination !== "UNKNOWN"
       ).length;
-      
+
       // Show sync results in success message if any data was synced
       if (syncResult && (syncResult.inserted > 0 || syncResult.updated > 0)) {
         let message = `✅ Data refreshed successfully! ${syncResult.inserted} new disruptions added, ${syncResult.updated} updated.`;
@@ -319,7 +319,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         setSuccess(message);
         setTimeout(() => setSuccess(null), 8000);
       }
-      
+
       // Clear any previous errors if we have any data
       if (transformedFlights.length === 0 && data.length === 0) {
         setError("No flight disruptions found. Add new disruptions using the 'Add Disruption' button.");
@@ -329,7 +329,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       }
     } catch (error) {
       console.error("Error fetching flights:", error);
-      
+
       // Check if it's a connectivity issue
       try {
         const isHealthy = await databaseService.healthCheck();
@@ -347,7 +347,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           "🔌 System connectivity issues detected. You can add new disruptions offline, and they will be synced when the connection is restored."
         );
       }
-      
+
       // Try to load existing data from database as fallback
       try {
         const fallbackData = await databaseService.getAllDisruptions();
@@ -355,7 +355,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           // Process all fallback data, even if incomplete
           const processedFallbackData = fallbackData.map(disruption => {
             if (!disruption) return null;
-            
+
             return {
               ...disruption,
               flightNumber: disruption.flightNumber || `FALLBACK-${Date.now()}`,
@@ -373,11 +373,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               connectionFlights: disruption.connectionFlights || 0
             };
           }).filter(disruption => disruption !== null);
-          
+
           const transformedFlights = processedFallbackData.map(transformFlightData);
           setFlights(transformedFlights);
           console.log("Loaded fallback data:", transformedFlights.length, "flights");
-          
+
           if (transformedFlights.length > 0) {
             setError("⚠️ Using cached flight data. Some information may be outdated or incomplete. Try refreshing when connection is restored.");
           }
@@ -629,14 +629,14 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       });
 
       const result = await databaseService.saveDisruption(newFlightData);
-      
+
       // Check if the result indicates success
       if (result && (result === true || result.success !== false)) {
         // Clear any existing errors and show success
         setError(null);
         setSuccess("Disruption added successfully!");
         setShowAlert(true);
-        
+
         // Clear the form
         setNewDisruption({
           flightNumber: "",
@@ -661,13 +661,13 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           connectionFlights: "",
           vipPassengers: "",
         });
-        
+
         // Reset crew members
         setCrewMembers([{ id: 1, name: "", role: "", employeeCode: "" }]);
-        
+
         // Close the dialog
         setIsAddDialogOpen(false);
-        
+
         // Refresh the flights list after a short delay
         setTimeout(() => {
           fetchFlights();
@@ -1363,8 +1363,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     </div>
                   </div>
                 </div>
-                Code update to adjust newFlightData object structure in
-                handleAddDisruption function.
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t">
@@ -1732,11 +1730,16 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     onClick={() => handleFlightSelection(flight)}
                   >
                     <TableCell>
-                      <div>
+                      <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="font-medium">{flight.flightNumber}</span>
-                          {flight.isIncomplete && (
-                            <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                          <span className="font-mono font-semibold">
+                            {flight.id && flight.id.startsWith('UNKNOWN-') 
+                              ? (flight.flightNumber || '-')
+                              : flight.flightNumber}
+                          </span>
+                          {flight.status === "Incomplete" && 
+                           !(flight.id && flight.id.startsWith('UNKNOWN-') && !flight.flightNumber) && (
+                            <Badge className="bg-orange-100 text-orange-800 border-orange-200">
                               Incomplete
                             </Badge>
                           )}
