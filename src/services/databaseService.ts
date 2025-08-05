@@ -1019,7 +1019,7 @@ class DatabaseService {
   }
 
   // Sync disruptions from external API
-  async syncDisruptionsFromExternalAPI(): Promise<void> {
+  async syncDisruptionsFromExternalAPI(): Promise<{ inserted: number; updated: number }> {
     try {
       console.log('Starting sync from external API...')
 
@@ -1027,7 +1027,7 @@ class DatabaseService {
       const healthCheck = await this.checkApiHealth()
       if (!healthCheck) {
         console.warn('API server not available, skipping sync')
-        return
+        return { inserted: 0, updated: 0 }
       }
 
       // Generate mock external API data
@@ -1050,9 +1050,16 @@ class DatabaseService {
 
       const result = await response.json()
       console.log('Sync completed:', result)
+      
+      // Return the result with fallback values if properties are missing
+      return {
+        inserted: result.inserted || 0,
+        updated: result.updated || 0
+      }
     } catch (error) {
       console.error('Error syncing from external API:', error)
-      // Don't throw error to prevent app crash
+      // Return default values instead of throwing to prevent app crash
+      return { inserted: 0, updated: 0 }
     }
   }
 
