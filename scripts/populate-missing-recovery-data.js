@@ -44,6 +44,14 @@ async function populateMissingRecoveryData() {
         // Insert recovery options
         for (const option of options) {
           try {
+            // Debug data structure
+            console.log(`  - Processing option: ${option.title}`)
+            if (Array.isArray(option.advantages)) {
+              console.log(`    Advantages is array with ${option.advantages.length} items`)
+            }
+            if (Array.isArray(option.considerations)) {
+              console.log(`    Considerations is array with ${option.considerations.length} items`)
+            }
             await client.query(`
               INSERT INTO recovery_options (
                 disruption_id, title, description, cost, timeline, confidence,
@@ -52,11 +60,20 @@ async function populateMissingRecoveryData() {
                 risk_assessment, technical_specs, metrics, rotation_plan
               ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
             `, [
-              disruption.id, option.title, option.description, option.cost,
-              option.timeline, option.confidence, option.impact, option.status,
-              option.priority || 1, 
-              option.advantages ? JSON.stringify(option.advantages) : null,
-              option.considerations ? JSON.stringify(option.considerations) : null,
+              disruption.id, 
+              option.title, 
+              option.description, 
+              option.cost,
+              option.timeline, 
+              option.confidence, 
+              option.impact, 
+              option.status,
+              option.priority || 1,
+              // Ensure all array/object fields are properly JSON stringified
+              Array.isArray(option.advantages) ? JSON.stringify(option.advantages) : 
+                (option.advantages ? JSON.stringify(option.advantages) : null),
+              Array.isArray(option.considerations) ? JSON.stringify(option.considerations) : 
+                (option.considerations ? JSON.stringify(option.considerations) : null),
               option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : null,
               option.costBreakdown ? JSON.stringify(option.costBreakdown) : null,
               option.timelineDetails ? JSON.stringify(option.timelineDetails) : null,
