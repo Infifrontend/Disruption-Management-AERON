@@ -425,7 +425,7 @@ export function AffectedFlightsList() {
                     <div className="flex items-center space-x-4">
                       <div className="flex flex-col">
                         <span className="font-mono font-bold text-lg">
-                          {flight.id && flight.id.startsWith('UNKNOWN-') 
+                          {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') 
                             ? (flight.flightNumber || '-')
                             : flight.flightNumber}
                         </span>
