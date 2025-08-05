@@ -884,9 +884,6 @@ export function generateRecoveryOptionsForDisruption(disruption) {
   return { options, steps }
 }
 
-// Export functions
-export { generateRecoveryOptionsForDisruption }
-
 // For backward compatibility, also export the steps function
 export function generateRecoveryStepsForDisruption(disruption) {
   return generateRecoveryOptionsForDisruption(disruption).steps
