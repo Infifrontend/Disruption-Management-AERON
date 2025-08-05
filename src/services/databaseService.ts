@@ -810,21 +810,35 @@ class DatabaseService {
   async getDetailedRecoveryOptions(disruptionId: string): Promise<any[]> {
     try {
       console.log(`Fetching detailed recovery options for disruption ${disruptionId}`);
+      
+      // Check circuit breaker
+      if (!this.checkCircuitBreaker()) {
+        console.log('Circuit breaker open, returning empty array');
+        return [];
+      }
+
       const response = await fetch(
         `${this.baseUrl}/recovery-options-detailed/${disruptionId}`,
       );
+      
       if (!response.ok) {
         if (response.status === 404) {
           console.log(`No detailed recovery options found for disruption ${disruptionId}`);
+          this.onDatabaseSuccess(); // 404 is not a failure
           return [];
         }
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.error(`HTTP error! status: ${response.status}`);
+        this.onDatabaseFailure();
+        return [];
       }
+      
       const options = await response.json();
       console.log(`Found ${options.length} detailed recovery options for disruption ${disruptionId}`);
-      return options;
+      this.onDatabaseSuccess();
+      return Array.isArray(options) ? options : [];
     } catch (error) {
       console.error("Error fetching detailed recovery options:", error);
+      this.onDatabaseFailure();
       return [];
     }
   }

@@ -1281,6 +1281,75 @@ app.get('/api/recovery-option-templates', async (req, res) => {
   }
 })
 
+// Detailed Recovery Options endpoints - ADD MISSING ENDPOINT
+app.get('/api/recovery-options-detailed/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params
+    console.log(`Fetching detailed recovery options for disruption ID: ${disruptionId}`)
+
+    // Convert disruptionId to integer
+    const numericDisruptionId = parseInt(disruptionId)
+    if (isNaN(numericDisruptionId)) {
+      return res.status(400).json({ error: 'Invalid disruption ID format' })
+    }
+
+    try {
+      // Try detailed recovery options table first
+      const detailedResult = await pool.query(`
+        SELECT rod.*, dc.category_name, dc.category_code
+        FROM recovery_options_detailed rod
+        LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
+        WHERE rod.disruption_id = $1
+        ORDER BY rod.priority ASC, rod.confidence DESC
+      `, [numericDisruptionId])
+
+      if (detailedResult.rows.length > 0) {
+        console.log(`Found ${detailedResult.rows.length} detailed recovery options`)
+        return res.json(detailedResult.rows)
+      }
+    } catch (detailedError) {
+      console.log('Detailed options table not available, falling back to regular options')
+    }
+
+    // Fallback to regular recovery_options table
+    const fallbackResult = await pool.query(`
+      SELECT 
+        id,
+        disruption_id,
+        title,
+        description,
+        cost,
+        timeline,
+        confidence,
+        impact,
+        status,
+        priority,
+        advantages,
+        considerations,
+        resource_requirements,
+        cost_breakdown,
+        timeline_details,
+        risk_assessment,
+        technical_specs,
+        metrics,
+        rotation_plan,
+        created_at,
+        updated_at,
+        NULL as category_name,
+        NULL as category_code
+      FROM recovery_options
+      WHERE disruption_id = $1
+      ORDER BY confidence DESC, priority ASC
+    `, [numericDisruptionId])
+
+    console.log(`Found ${fallbackResult.rows.length} fallback recovery options`)
+    res.json(fallbackResult.rows || [])
+  } catch (error) {
+    console.error('Error fetching detailed recovery options:', error)
+    res.status(500).json({ error: 'Failed to fetch recovery options', details: error.message })
+  }
+})
+
 app.get('/api/recovery-steps-detailed/:disruptionId', async (req, res) => {
   try {
     const { disruptionId } = req.params
