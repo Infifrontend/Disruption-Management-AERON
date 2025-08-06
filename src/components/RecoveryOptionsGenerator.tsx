@@ -554,7 +554,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
 
       scenarioData = {
         title: categoryTitle,
-        description: `Category-based recovery analysis for ${flight?.categorization || 'operational disruption'}`,
+        description: `Category-based recovery analysis for ${flight?.disruptionReason || flight?.categorization || 'operational disruption'}`,
         priority: "High",
         estimatedTime: "1-3 hours",
         icon: Plane,
