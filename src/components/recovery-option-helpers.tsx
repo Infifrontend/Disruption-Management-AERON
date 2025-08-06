@@ -30,36 +30,38 @@ export const getDetailedDescription = (option, flight) => {
   // Pattern matching for dynamic options
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = String(option.id || "").toLowerCase()
+  const optionTitleLower = optionTitle.toLowerCase()
+  const optionIdLower = optionId.toLowerCase()
   const optionDescription = option.description || ''
 
   // Aircraft swap pattern
-  if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
+  if (optionIdLower.includes('aircraft_swap') || optionTitleLower.includes('aircraft swap') || optionTitleLower.includes('swap aircraft')) {
     return `Aircraft Swap Recovery for ${flightNumber} (${origin}→${destination}): Replace ${aircraft} ${registration} with available replacement aircraft at ${origin}. The replacement aircraft has been selected based on availability and route certification for ${origin}-${destination}. Estimated passenger transfer time: 35-45 minutes. All cargo and baggage will be transferred with priority handling. This solution maintains schedule integrity with minimal passenger disruption. Current disruption: ${disruptionReason}.`
   }
 
   // Delay pattern
-  if (optionId.includes('delay') || optionTitle.includes('delay')) {
+  if (optionIdLower.includes('delay') || optionTitleLower.includes('delay')) {
     const delayTime = option.timeline || '4 hours'
     return `Controlled Delay Strategy for ${flightNumber}: Implement ${delayTime} delay to allow comprehensive resolution of ${disruptionReason}. Includes passenger accommodation services, meal vouchers for all ${passengers} passengers, and ground transportation as needed. This approach ensures complete issue resolution while providing appropriate passenger care. Alternative options available if technical resolution takes longer than expected.`
   }
 
   // Reroute/Diversion pattern
-  if (optionId.includes('reroute') || optionId.includes('divert') || optionTitle.includes('reroute') || optionTitle.includes('divert')) {
+  if (optionIdLower.includes('reroute') || optionIdLower.includes('divert') || optionTitleLower.includes('reroute') || optionTitleLower.includes('divert')) {
     return `Route Optimization for ${flightNumber}: Alternative routing to reach ${destination} while managing current ${disruptionReason}. Passengers will be provided with updated routing information and any necessary ground support. Estimated additional flight time varies based on selected route. Partnership agreements with other airlines and airports provide seamless ground handling. Original ${aircraft} ${registration} status will be assessed during passenger journey.`
   }
 
   // Codeshare/Partner pattern
-  if (optionId.includes('partner') || optionId.includes('codeshare') || optionTitle.includes('partner') || optionTitle.includes('codeshare')) {
+  if (optionIdLower.includes('partner') || optionIdLower.includes('codeshare') || optionTitleLower.includes('partner') || optionTitleLower.includes('codeshare')) {
     return `Emergency Codeshare Activation for ${flightNumber}: Secure seats on partner airline flight to ${destination}. Confirmed seat availability being processed for ${passengers} passengers including priority upgrades for VIP passengers. Automatic baggage transfer arranged through ground services. Passenger notifications sent via SMS/email with new boarding details. Maintains schedule integrity through airline partnerships.`
   }
 
   // Crew replacement pattern
-  if (optionId.includes('crew') || optionTitle.includes('crew')) {
+  if (optionIdLower.includes('crew') || optionTitleLower.includes('crew')) {
     return `Crew Replacement Protocol for ${flightNumber}: Deploy standby crew currently available at ${origin}. Fresh crew well within regulatory duty time limitations. Extended briefing required for ${aircraft} type rating and current route conditions. Estimated crew preparation time: 45-60 minutes. Current disruption: ${disruptionReason}. Passenger delay minimized through efficient crew transition process.`
   }
 
   // Cancellation pattern
-  if (optionId.includes('cancel') || optionTitle.includes('cancel')) {
+  if (optionIdLower.includes('cancel') || optionTitleLower.includes('cancel')) {
     return `Flight Cancellation Protocol for ${flightNumber}: Due to ${disruptionReason}, flight cancellation with comprehensive passenger re-accommodation. All ${passengers} passengers will be rebooked on next available flights to ${destination}. Hotel accommodation, meal vouchers, and transportation provided as per passenger rights regulations. Priority rebooking for connecting passengers and VIP travelers. Ground services coordinating baggage handling and refund processing.`
   }
 
@@ -120,9 +122,11 @@ export const getCostBreakdown = (option, flight) => {
   // Generate dynamic breakdown based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = String(option.id || "").toLowerCase()
+  const optionTitleLower = optionTitle.toLowerCase()
+  const optionIdLower = optionId.toLowerCase()
 
   // Aircraft swap pattern
-  if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
+  if (optionIdLower.includes('aircraft_swap') || optionTitleLower.includes('aircraft swap') || optionTitleLower.includes('swap aircraft')) {
     return [
       { category: 'Aircraft Positioning Fee', amount: `AED ${Math.round(totalCost * 0.42).toLocaleString()}`, percentage: 42, description: 'Moving replacement aircraft to departure gate' },
       { category: 'Crew Overtime & Allowances', amount: `AED ${Math.round(totalCost * 0.23).toLocaleString()}`, percentage: 23, description: 'Extended duty pay for crew members' },
@@ -133,7 +137,7 @@ export const getCostBreakdown = (option, flight) => {
   }
 
   // Delay pattern
-  if (optionId.includes('delay') || optionTitle.includes('delay')) {
+  if (optionIdLower.includes('delay') || optionTitleLower.includes('delay')) {
     const needsAccommodation = option.timeline?.includes('hour') && parseInt(option.timeline) >= 4
     return needsAccommodation ? [
       { category: 'Hotel Accommodation', amount: `AED ${Math.round((passengerCount * 0.6) * hotelCostPerRoom).toLocaleString()}`, percentage: 52, description: `${Math.round(passengerCount * 0.6)} rooms confirmed` },
@@ -150,7 +154,7 @@ export const getCostBreakdown = (option, flight) => {
   }
 
   // Reroute pattern
-  if (optionId.includes('reroute') || optionId.includes('divert') || optionTitle.includes('reroute') || optionTitle.includes('divert')) {
+  if (optionIdLower.includes('reroute') || optionIdLower.includes('divert') || optionTitleLower.includes('reroute') || optionTitleLower.includes('divert')) {
     return [
       { category: 'Alternative Route Costs', amount: `AED ${Math.round(totalCost * 0.58).toLocaleString()}`, percentage: 58, description: 'Additional fuel and navigation fees' },
       { category: 'Ground Transportation', amount: `AED ${Math.round(totalCost * 0.26).toLocaleString()}`, percentage: 26, description: 'Passenger transport between airports' },
@@ -160,7 +164,7 @@ export const getCostBreakdown = (option, flight) => {
   }
 
   // Partner/Codeshare pattern
-  if (optionId.includes('partner') || optionId.includes('codeshare') || optionTitle.includes('partner') || optionTitle.includes('codeshare')) {
+  if (optionIdLower.includes('partner') || optionIdLower.includes('codeshare') || optionTitleLower.includes('partner') || optionTitleLower.includes('codeshare')) {
     return [
       { category: 'Partner Airline Seats', amount: `AED ${Math.round(totalCost * 0.72).toLocaleString()}`, percentage: 72, description: `${passengerCount} seats at negotiated rate` },
       { category: 'Baggage Transfer Services', amount: `AED ${Math.round(totalCost * 0.09).toLocaleString()}`, percentage: 9, description: 'Priority baggage handling' },
@@ -171,7 +175,7 @@ export const getCostBreakdown = (option, flight) => {
   }
 
   // Crew replacement pattern
-  if (optionId.includes('crew') || optionTitle.includes('crew')) {
+  if (optionIdLower.includes('crew') || optionTitleLower.includes('crew')) {
     return [
       { category: 'Standby Crew Activation', amount: `AED ${Math.round(totalCost * 0.65).toLocaleString()}`, percentage: 65, description: 'Call-out pay for replacement crew' },
       { category: 'Extended Briefing Costs', amount: `AED ${Math.round(totalCost * 0.16).toLocaleString()}`, percentage: 16, description: 'Training coordinator and materials' },
@@ -181,7 +185,7 @@ export const getCostBreakdown = (option, flight) => {
   }
 
   // Cancellation pattern
-  if (optionId.includes('cancel') || optionTitle.includes('cancel')) {
+  if (optionIdLower.includes('cancel') || optionTitleLower.includes('cancel')) {
     return [
       { category: 'Passenger Rebooking', amount: `AED ${Math.round(totalCost * 0.45).toLocaleString()}`, percentage: 45, description: `Rebooking ${passengerCount} passengers on alternative flights` },
       { category: 'Hotel Accommodation', amount: `AED ${Math.round(totalCost * 0.25).toLocaleString()}`, percentage: 25, description: 'Overnight accommodation for passengers' },
@@ -235,11 +239,13 @@ export const getTimelineDetails = (option) => {
   // Generate dynamic timeline based on option type and timeline
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = String(option.id || "").toLowerCase()
+  const optionTitleLower = optionTitle.toLowerCase()
+  const optionIdLower = optionId.toLowerCase()
   const timelineMatch = (option.timeline || '').match(/(\d+)/)
   const totalMinutes = timelineMatch ? parseInt(timelineMatch[1]) * 60 : 120
 
   // Aircraft swap pattern
-  if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
+  if (optionIdLower.includes('aircraft_swap') || optionTitleLower.includes('aircraft swap') || optionTitleLower.includes('swap aircraft')) {
     const steps = Math.ceil(totalMinutes / 20) // Roughly 20-minute steps
     return [
       { step: 'Decision Confirmation', duration: '5 minutes', status: 'pending', startTime: addMinutes(0), endTime: addMinutes(5), details: 'Management approval and resource confirmation' },
@@ -251,7 +257,7 @@ export const getTimelineDetails = (option) => {
   }
 
   // Delay pattern
-  if (optionId.includes('delay') || optionTitle.includes('delay')) {
+  if (optionIdLower.includes('delay') || optionTitleLower.includes('delay')) {
     const hasAccommodation = totalMinutes >= 240 // 4+ hours
     return hasAccommodation ? [
       { step: 'Passenger Notification', duration: '8 minutes', status: 'pending', startTime: addMinutes(0), endTime: addMinutes(8), details: 'SMS/email alerts to all passengers' },
@@ -268,7 +274,7 @@ export const getTimelineDetails = (option) => {
   }
 
   // Crew replacement pattern
-  if (optionId.includes('crew') || optionTitle.includes('crew')) {
+  if (optionIdLower.includes('crew') || optionTitleLower.includes('crew')) {
     return [
       { step: 'Standby Crew Activation', duration: '8 minutes', status: 'pending', startTime: addMinutes(0), endTime: addMinutes(8), details: 'Contact and confirm availability of standby crew' },
       { step: 'Crew Transportation', duration: `${Math.round(totalMinutes * 0.25)} minutes`, status: 'pending', startTime: addMinutes(8), endTime: addMinutes(8 + Math.round(totalMinutes * 0.25)), details: 'Transport crew to airport' },
@@ -328,9 +334,11 @@ export const getResourceRequirements = (option) => {
   // Generate dynamic resources based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = String(option.id || "").toLowerCase()
+  const optionTitleLower = optionTitle.toLowerCase()
+  const optionIdLower = optionId.toLowerCase()
 
   // Aircraft swap pattern
-  if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
+  if (optionIdLower.includes('aircraft_swap') || optionTitleLower.includes('aircraft swap') || optionTitleLower.includes('swap aircraft')) {
     return [
       { type: 'Replacement Aircraft', resource: 'Available Aircraft (TBD)', availability: 'Available', location: 'DXB Terminal Area', status: 'Ready', eta: 'On Stand', details: 'Aircraft selection based on route requirements and availability' },
       { type: 'Flight Crew', resource: 'Qualified Crew Team', availability: 'On Duty', location: 'Crew Room Terminal 2', status: 'Briefed', eta: '15 minutes', details: 'Type-rated crew with current qualifications' },
@@ -341,7 +349,7 @@ export const getResourceRequirements = (option) => {
   }
 
   // Delay pattern
-  if (optionId.includes('delay') || optionTitle.includes('delay')) {
+  if (optionIdLower.includes('delay') || optionTitleLower.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const hours = timelineMatch ? parseInt(timelineMatch[1]) : 4
     const needsAccommodation = hours >= 4
@@ -365,7 +373,7 @@ export const getResourceRequirements = (option) => {
   }
 
   // Crew replacement pattern
-  if (optionId.includes('crew') || optionTitle.includes('crew')) {
+  if (optionIdLower.includes('crew') || optionTitleLower.includes('crew')) {
     return [
       { type: 'Replacement Captain', resource: 'Standby Captain', availability: 'Confirmed', location: 'Crew Hotel/Rest Area', status: 'En Route', eta: '25 minutes', details: 'Type-rated captain with required flight hours' },
       { type: 'Replacement F/O', resource: 'Standby First Officer', availability: 'Confirmed', location: 'Crew Rest Area', status: 'Ready', eta: '5 minutes', details: 'Qualified first officer within duty limits' },
@@ -412,10 +420,12 @@ export const getRiskAssessment = (option) => {
   // Generate dynamic risk assessment based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = String(option.id || "").toLowerCase()
+  const optionTitleLower = optionTitle.toLowerCase()
+  const optionIdLower = optionId.toLowerCase()
   const confidence = option.confidence || 85
 
   // Aircraft swap pattern
-  if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
+  if (optionIdLower.includes('aircraft_swap') || optionTitleLower.includes('aircraft swap') || optionTitleLower.includes('swap aircraft')) {
     return [
       { risk: 'Aircraft Availability Conflict', probability: 'Low', impact: 'Medium', mitigation: 'Secondary aircraft options confirmed in standby', riskScore: 3 },
       { risk: 'Passenger Baggage Transfer Delays', probability: 'Medium', impact: 'Low', mitigation: 'Priority baggage team deployed with extended transfer window', riskScore: 2 },
@@ -425,7 +435,7 @@ export const getRiskAssessment = (option) => {
   }
 
   // Delay pattern
-  if (optionId.includes('delay') || optionTitle.includes('delay')) {
+  if (optionIdLower.includes('delay') || optionTitleLower.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const hours = timelineMatch ? parseInt(timelineMatch[1]) : 4
     const isLongDelay = hours >= 4
@@ -444,7 +454,7 @@ export const getRiskAssessment = (option) => {
   }
 
   // Crew replacement pattern
-  if (optionId.includes('crew') || optionTitle.includes('crew')) {
+  if (optionIdLower.includes('crew') || optionTitleLower.includes('crew')) {
     return [
       { risk: 'Standby Crew Unavailable', probability: 'Low', impact: 'High', mitigation: 'Multiple qualified crew members confirmed available', riskScore: 3 },
       { risk: 'Extended Briefing Time', probability: 'Medium', impact: 'Low', mitigation: 'Pre-briefing materials prepared, time buffers included', riskScore: 2 },
@@ -454,7 +464,7 @@ export const getRiskAssessment = (option) => {
   }
 
   // Cancellation pattern
-  if (optionId.includes('cancel') || optionTitle.includes('cancel')) {
+  if (optionIdLower.includes('cancel') || optionTitleLower.includes('cancel')) {
     return [
       { risk: 'Alternative Flight Capacity', probability: 'High', impact: 'High', mitigation: 'Partner airline agreements, multiple rebooking options', riskScore: 9 },
       { risk: 'Passenger Compensation Costs', probability: 'High', impact: 'Medium', mitigation: 'Compensation budget allocated, efficient processing system', riskScore: 6 },
@@ -517,9 +527,11 @@ export const getTechnicalSpecs = (option) => {
   // Generate dynamic technical specs based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = String(option.id || "").toLowerCase()
+  const optionTitleLower = optionTitle.toLowerCase()
+  const optionIdLower = optionId.toLowerCase()
 
   // Aircraft swap pattern
-  if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
+  if (optionIdLower.includes('aircraft_swap') || optionTitleLower.includes('aircraft swap') || optionTitleLower.includes('swap aircraft')) {
     return {
       implementation: 'Aircraft swap protocol with coordinated ground operations and priority positioning',
       systemsRequired: ['ACARS Real-time Updates', 'Ground Power Unit', 'Baggage Transfer System', 'Passenger Information Display', 'Aircraft Positioning Coordination'],
@@ -533,7 +545,7 @@ export const getTechnicalSpecs = (option) => {
   }
 
   // Delay pattern
-  if (optionId.includes('delay') || optionTitle.includes('delay')) {
+  if (optionIdLower.includes('delay') || optionTitleLower.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const hours = timelineMatch ? parseInt(timelineMatch[1]) : 4
 
@@ -550,7 +562,7 @@ export const getTechnicalSpecs = (option) => {
   }
 
   // Crew replacement pattern
-  if (optionId.includes('crew') || optionTitle.includes('crew')) {
+  if (optionIdLower.includes('crew') || optionTitleLower.includes('crew')) {
     return {
       implementation: 'Emergency crew replacement with extended briefing and qualification verification',
       systemsRequired: ['Crew Management System', 'Training Records Database', 'Duty Time Tracking', 'Qualification Verification System'],
@@ -625,12 +637,14 @@ export const getHistoricalData = (option) => {
   const confidence = option.confidence || 85
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = String(option.id || "").toLowerCase()
+  const optionTitleLower = optionTitle.toLowerCase()
+  const optionIdLower = optionId.toLowerCase()
 
   // Adjust success rate based on confidence
   const adjustedSuccessRate = Math.min(98, Math.max(75, confidence + Math.floor(Math.random() * 10) - 5))
 
   // Pattern-based historical data
-  if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
+  if (optionIdLower.includes('aircraft_swap') || optionTitleLower.includes('aircraft swap') || optionTitleLower.includes('swap aircraft')) {
     return {
       ...baseData,
       successRate: adjustedSuccessRate,
@@ -642,7 +656,7 @@ export const getHistoricalData = (option) => {
     }
   }
 
-  if (optionId.includes('delay') || optionTitle.includes('delay')) {
+  if (optionIdLower.includes('delay') || optionTitleLower.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const hours = timelineMatch ? parseInt(timelineMatch[1]) : 4
 
@@ -657,7 +671,7 @@ export const getHistoricalData = (option) => {
     }
   }
 
-  if (optionId.includes('crew') || optionTitle.includes('crew')) {
+  if (optionIdLower.includes('crew') || optionTitleLower.includes('crew')) {
     return {
       ...baseData,
       successRate: adjustedSuccessRate,
@@ -711,12 +725,14 @@ export const getAlternativeConsiderations = (option, flight) => {
   // Generate dynamic considerations based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = String(option.id || "").toLowerCase()
+  const optionTitleLower = optionTitle.toLowerCase()
+  const optionIdLower = optionId.toLowerCase()
   const passengers = flight?.passengers || 167
   const origin = flight?.origin || 'DXB'
   const destination = flight?.destination || 'BOM'
 
   // Aircraft swap pattern
-  if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
+  if (optionIdLower.includes('aircraft_swap') || optionTitleLower.includes('aircraft swap') || optionTitleLower.includes('swap aircraft')) {
     return [
       `Cancellation considered but ${passengers} passengers would face significant delays until next available departure`,
       `Partner airline has limited availability on ${origin}-${destination} route during this timeframe`,
@@ -727,7 +743,7 @@ export const getAlternativeConsiderations = (option, flight) => {
   }
 
   // Delay pattern
-  if (optionId.includes('delay') || optionTitle.includes('delay')) {
+  if (optionIdLower.includes('delay') || optionTitleLower.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const hours = timelineMatch ? parseInt(timelineMatch[1]) : 4
 
@@ -741,7 +757,7 @@ export const getAlternativeConsiderations = (option, flight) => {
   }
 
   // Crew replacement pattern
-  if (optionId.includes('crew') || optionTitle.includes('crew')) {
+  if (optionIdLower.includes('crew') || optionTitleLower.includes('crew')) {
     return [
       'Flight cancellation avoided through efficient standby crew deployment procedures',
       'Extended delay until next day considered but passenger accommodation costs exceed crew replacement',
@@ -752,7 +768,7 @@ export const getAlternativeConsiderations = (option, flight) => {
   }
 
   // Cancellation pattern
-  if (optionId.includes('cancel') || optionTitle.includes('cancel')) {
+  if (optionIdLower.includes('cancel') || optionTitleLower.includes('cancel')) {
     return [
       `All ${passengers} passengers will be accommodated on alternative flights with priority rebooking`,
       'Delay options evaluated but resolution timeline exceeds acceptable passenger wait time',
@@ -848,9 +864,11 @@ export const getEditableParameters = (option) => {
   // Generate dynamic parameters based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = String(option.id || "").toLowerCase()
+  const optionTitleLower = optionTitle.toLowerCase()
+  const optionIdLower = optionId.toLowerCase()
 
   // Aircraft swap pattern
-  if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
+  if (optionIdLower.includes('aircraft_swap') || optionTitleLower.includes('aircraft swap') || optionTitleLower.includes('swap aircraft')) {
     return [
       { name: 'Replacement Aircraft', type: 'select', value: 'Auto-Selected', options: ['Auto-Selected', 'A320 Family', 'B737 Family', 'Alternative Type'], impact: 'cost', description: 'Aircraft type selection' },
       { name: 'Transfer Time Buffer', type: 'slider', value: 40, min: 25, max: 60, unit: 'minutes', impact: 'timeline', description: 'Additional time for passenger/baggage transfer' },
@@ -860,7 +878,7 @@ export const getEditableParameters = (option) => {
   }
 
   // Delay pattern
-  if (optionId.includes('delay') || optionTitle.includes('delay')) {
+  if (optionIdLower.includes('delay') || optionTitleLower.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const defaultMinutes = timelineMatch ? parseInt(timelineMatch[1]) * 60 : 240
 
@@ -873,7 +891,7 @@ export const getEditableParameters = (option) => {
   }
 
   // Crew replacement pattern
-  if (optionId.includes('crew') || optionTitle.includes('crew')) {
+  if (optionIdLower.includes('crew') || optionTitleLower.includes('crew')) {
     return [
       { name: 'Crew Selection', type: 'select', value: 'Auto-Assigned', options: ['Auto-Assigned', 'Specific Captain', 'Nearest Available'], impact: 'timeline', description: 'Crew assignment method' },
       { name: 'Briefing Duration', type: 'slider', value: 35, min: 20, max: 60, unit: 'minutes', impact: 'timeline', description: 'Extended crew briefing time' },
@@ -917,11 +935,13 @@ export const getWhatIfScenarios = (option) => {
   // Generate dynamic what-if scenarios based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = String(option.id || "").toLowerCase()
+  const optionTitleLower = optionTitle.toLowerCase()
+  const optionIdLower = optionId.toLowerCase()
   const costMatch = (option.cost || '').match(/[\d,]+/)
   const baseCost = costMatch ? parseInt(costMatch[0].replace(/,/g, '')) : 50000
 
   // Aircraft swap pattern
-  if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
+  if (optionIdLower.includes('aircraft_swap') || optionTitleLower.includes('aircraft swap') || optionTitleLower.includes('swap aircraft')) {
     return [
       { scenario: 'Original aircraft issue resolved quickly', impact: `Save AED ${Math.round(baseCost * 0.4).toLocaleString()} positioning cost`, probability: 15, timeline: '2 hours' },
       { scenario: 'Replacement aircraft experiences delay', impact: `Additional AED ${Math.round(baseCost * 0.2).toLocaleString()} + extended delay`, probability: 8, timeline: '1.5 hours' },
@@ -931,7 +951,7 @@ export const getWhatIfScenarios = (option) => {
   }
 
   // Delay pattern
-  if (optionId.includes('delay') || optionTitle.includes('delay')) {
+  if (optionIdLower.includes('delay') || optionTitleLower.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const hours = timelineMatch ? parseInt(timelineMatch[1]) : 4
 
@@ -944,7 +964,7 @@ export const getWhatIfScenarios = (option) => {
   }
 
   // Crew replacement pattern
-  if (optionId.includes('crew') || optionTitle.includes('crew')) {
+  if (optionIdLower.includes('crew') || optionTitleLower.includes('crew')) {
     return [
       { scenario: 'Standby crew unavailable at critical time', impact: `AED ${Math.round(baseCost * 1.5).toLocaleString()} external crew procurement`, probability: 12, timeline: '3 hours' },
       { scenario: 'Original crew situation resolved', impact: `Save AED ${Math.round(baseCost * 0.8).toLocaleString()} standby costs`, probability: 8, timeline: '1 hour' },
