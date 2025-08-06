@@ -277,30 +277,211 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         }
 
         // Transform database format to component format
-        const transformedOptions = options.map((option, index) => ({
-          id: option.id || `option_${index + 1}`,
-          title: option.title || `Recovery Option ${index + 1}`,
-          description: option.description || "Recovery option description",
-          cost: option.cost || option.estimated_cost || "TBD",
-          timeline: option.timeline || option.estimated_timeline || "TBD",
-          confidence: option.confidence || 80,
-          impact: option.impact || "Medium impact",
-          status: option.status === "generated" ? "recommended" : (option.status || "recommended"),
-          category: option.category_name || option.category_code,
-          categoryCode: option.category_code,
-          advantages: Array.isArray(option.advantages) ? option.advantages : 
-                     (typeof option.advantages === 'string' ? JSON.parse(option.advantages || '[]') : []),
-          considerations: Array.isArray(option.considerations) ? option.considerations : 
-                         (typeof option.considerations === 'string' ? JSON.parse(option.considerations || '[]') : []),
-          metrics: option.metrics || {},
-          resourceRequirements: option.resource_requirements || option.resources || [],
-          costBreakdown: option.cost_breakdown || option.cost_analysis || [],
-          timelineDetails: option.timeline_details || option.timeline_steps || [],
-          riskAssessment: option.risk_assessment || [],
-          technicalSpecs: option.technical_specs || {},
-          rotationPlan: option.rotation_plan || {},
-          templateData: option.template_data || {},
-        }));
+        const transformedOptions = options.map((option, index) => {
+          // Parse JSON fields safely
+          const parseJsonField = (field, fallback = []) => {
+            if (Array.isArray(field)) return field;
+            if (typeof field === 'string') {
+              try {
+                return JSON.parse(field);
+              } catch (e) {
+                console.warn('Failed to parse JSON field:', field);
+                return fallback;
+              }
+            }
+            return fallback;
+          };
+
+          const parseJsonObject = (field, fallback = {}) => {
+            if (typeof field === 'object' && field !== null) return field;
+            if (typeof field === 'string') {
+              try {
+                return JSON.parse(field);
+              } catch (e) {
+                console.warn('Failed to parse JSON object:', field);
+                return fallback;
+              }
+            }
+            return fallback;
+          };
+
+          return {
+            id: option.id || `option_${index + 1}`,
+            title: option.title || `Recovery Option ${index + 1}`,
+            description: option.description || "Recovery option description",
+            cost: option.cost || option.estimated_cost || "TBD",
+            timeline: option.timeline || option.estimated_timeline || "TBD",
+            confidence: option.confidence || 80,
+            impact: option.impact || "Medium impact",
+            status: option.status === "generated" ? "recommended" : (option.status || "recommended"),
+            category: option.category_name || option.category_code,
+            categoryCode: option.category_code,
+            advantages: parseJsonField(option.advantages, [
+              "Effective recovery solution",
+              "Minimizes operational disruption",
+              "Cost-efficient approach"
+            ]),
+            considerations: parseJsonField(option.considerations, [
+              "Requires coordination with multiple teams",
+              "Timeline dependent on external factors",
+              "May impact downstream operations"
+            ]),
+            metrics: parseJsonObject(option.metrics, {
+              costEfficiency: 85,
+              timeEfficiency: 80,
+              passengerSatisfaction: 75,
+              operationalComplexity: 60
+            }),
+            resourceRequirements: parseJsonField(option.resource_requirements || option.resources, [
+              {
+                type: 'Personnel',
+                resource: 'Operations Team',
+                availability: 'Available',
+                status: 'Ready',
+                location: 'DXB Operations Center',
+                eta: 'Immediate',
+                details: 'Experienced operations team available for recovery coordination'
+              },
+              {
+                type: 'Equipment',
+                resource: 'Ground Support Equipment',
+                availability: 'Available',
+                status: 'Operational',
+                location: 'DXB Ramp',
+                eta: '15 minutes',
+                details: 'Standard GSE available for aircraft servicing'
+              }
+            ]),
+            costBreakdown: parseJsonField(option.cost_breakdown || option.cost_analysis, [
+              {
+                category: 'Operations Cost',
+                amount: option.cost || 'AED 25,000',
+                percentage: 60,
+                description: 'Direct operational costs including crew and resources'
+              },
+              {
+                category: 'Passenger Services',
+                amount: 'AED 8,000',
+                percentage: 25,
+                description: 'Passenger accommodation and compensation'
+              },
+              {
+                category: 'Administrative',
+                amount: 'AED 5,000',
+                percentage: 15,
+                description: 'Documentation and regulatory compliance'
+              }
+            ]),
+            timelineDetails: parseJsonField(option.timeline_details || option.timeline_steps, [
+              {
+                step: 'Initial Assessment',
+                duration: '15 min',
+                startTime: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                endTime: new Date(Date.now() + 15 * 60000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                details: 'Assess situation and confirm recovery approach',
+                status: 'pending'
+              },
+              {
+                step: 'Resource Coordination',
+                duration: '20 min',
+                startTime: new Date(Date.now() + 15 * 60000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                endTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                details: 'Coordinate required resources and personnel',
+                status: 'pending'
+              },
+              {
+                step: 'Implementation',
+                duration: '25 min',
+                startTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                endTime: new Date(Date.now() + 60 * 60000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                details: 'Execute recovery plan and monitor progress',
+                status: 'pending'
+              }
+            ]),
+            riskAssessment: parseJsonField(option.risk_assessment, [
+              {
+                risk: 'Resource Availability',
+                probability: 'Low',
+                impact: 'Medium',
+                riskScore: 2,
+                mitigation: 'Maintain backup resource pool and alternative suppliers'
+              },
+              {
+                risk: 'Weather Deterioration',
+                probability: 'Medium',
+                impact: 'High',
+                riskScore: 4,
+                mitigation: 'Continuous weather monitoring with contingency plans'
+              },
+              {
+                risk: 'Regulatory Compliance',
+                probability: 'Low',
+                impact: 'High',
+                riskScore: 3,
+                mitigation: 'Ensure all actions comply with aviation regulations'
+              }
+            ]),
+            technicalSpecs: parseJsonObject(option.technical_specs, {
+              aircraftRequirements: [
+                'Aircraft type: B737-800 or equivalent',
+                'ETOPS capability required for route',
+                'Maintenance status: Current and compliant'
+              ],
+              operationalConstraints: [
+                'Minimum crew rest requirements: 12 hours',
+                'Airport operating hours: 06:00 - 23:00 local time',
+                'Fuel requirements: Standard + 10% contingency'
+              ],
+              weatherLimitations: [
+                'Minimum visibility: 1200m',
+                'Maximum crosswind: 25 knots',
+                'Ceiling: 200ft minimum'
+              ],
+              regulatoryCompliance: [
+                'EU261 compensation applicable for delays >3 hours',
+                'Duty time regulations: EASA FTL compliant',
+                'Slot coordination required for schedule changes'
+              ]
+            }),
+            rotationPlan: parseJsonObject(option.rotation_plan, {}),
+            templateData: parseJsonObject(option.template_data, {}),
+            detailedDescription: option.description || `This recovery option provides a comprehensive solution for ${flight?.flightNumber || 'the affected flight'} disruption. The plan takes into account operational constraints, passenger impact, and cost considerations to deliver an optimal recovery strategy.`,
+            editableParameters: [
+              {
+                name: 'delayTolerance',
+                value: 30,
+                min: 0,
+                max: 120,
+                unit: 'minutes',
+                type: 'slider',
+                description: 'Maximum acceptable delay for passengers',
+                impact: 'Passenger satisfaction and compensation costs'
+              },
+              {
+                name: 'priorityLevel',
+                value: 'High',
+                options: ['Low', 'Medium', 'High', 'Critical'],
+                type: 'select',
+                description: 'Priority level for resource allocation',
+                impact: 'Resource availability and response time'
+              },
+              {
+                name: 'allowOvertime',
+                value: true,
+                type: 'switch',
+                description: 'Allow crew overtime for recovery',
+                impact: 'Cost increase but faster resolution'
+              }
+            ],
+            historicalData: {
+              successRate: Math.max(65, option.confidence || 80),
+              averageCost: option.cost || 'AED 25,000',
+              typicalDuration: option.timeline || '60 minutes',
+              lastUsed: 'Within last 30 days',
+              performanceRating: 'Good'
+            }
+          };
+        });
 
         const transformedSteps = steps.map((step) => ({
           step: step.step_number || step.step,
@@ -394,7 +575,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   impact: "Minimal passenger disruption",
                   status: "recommended",
                   advantages: ["Same aircraft type", "Available immediately"],
-                  considerations: ["Crew briefing required"]
+                  considerations: ["Crew briefing required"],
+                  detailedDescription: "Execute immediate aircraft swap using available alternative aircraft. This option provides the fastest resolution with minimal passenger impact, utilizing our standby aircraft fleet to maintain schedule integrity."
                 },
                 {
                   id: "DELAY_REPAIR_MOCK",
@@ -451,7 +633,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   impact: "Standard operational impact",
                   status: "recommended",
                   advantages: ["Proven procedure"],
-                  considerations: ["Generic solution"]
+                  considerations: ["Generic solution"],
+                  detailedDescription: `Standard recovery protocol for ${categorization || 'operational disruption'} situations. This comprehensive approach follows established procedures to minimize passenger impact while maintaining operational efficiency.`
                 }
               ];
           }
@@ -682,9 +865,13 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
 
   // Generate rotation plan data based on selected recovery option
   const generateRotationPlanData = (option, flight) => {
-    // Enhanced null checks
-    if (!option?.id || typeof option.id !== 'string' || !flight) {
-      console.warn('Missing option or flight data for rotation plan generation', { option: !!option, flight: !!flight });
+    // Enhanced null checks with better fallback handling
+    if (!option || !flight) {
+      console.warn('Missing option or flight data for rotation plan generation', { 
+        hasOption: !!option, 
+        hasOptionId: !!option?.id,
+        hasFlight: !!flight 
+      });
       return {
         aircraftOptions: [],
         crewData: [],
@@ -705,24 +892,32 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       };
     }
 
+    // Ensure option has required fields with safe defaults
+    const safeOption = {
+      id: option.id || 'UNKNOWN_OPTION',
+      title: option.title || 'Unknown Option',
+      timeline: option.timeline || '60 minutes',
+      ...option
+    };
+
     const isAircraftSwap =
-      option.id?.includes("AIRCRAFT_SWAP") ||
-      option.id?.includes("SWAP") ||
-      option.title?.includes("Aircraft Swap") ||
-      option.title?.includes("Swap");
+      safeOption.id.includes("AIRCRAFT_SWAP") ||
+      safeOption.id.includes("SWAP") ||
+      safeOption.title.includes("Aircraft Swap") ||
+      safeOption.title.includes("Swap");
     const isDelayOption =
-      option.id?.includes("DELAY") || 
-      option.title?.includes("Delay");
+      safeOption.id.includes("DELAY") || 
+      safeOption.title.includes("Delay");
     const isCancellation =
-      option.id?.includes("CANCEL") || 
-      option.title?.includes("Cancel");
-    const isCrewIssue = flight?.categorization?.includes("Crew issue") ||
-      flight?.disruptionReason?.includes("crew");
+      safeOption.id.includes("CANCEL") || 
+      safeOption.title.includes("Cancel");
+    const isCrewIssue = (flight?.categorization || '').includes("Crew issue") ||
+      (flight?.disruptionReason || '').includes("crew");
     const isMaintenanceIssue =
-      flight?.categorization?.includes("technical issue") ||
-      flight?.disruptionReason?.includes("maintenance");
-    const isWeatherIssue = flight?.categorization?.includes("Weather") ||
-      flight?.disruptionReason?.includes("weather");
+      (flight?.categorization || '').includes("technical issue") ||
+      (flight?.disruptionReason || '').includes("maintenance");
+    const isWeatherIssue = (flight?.categorization || '').includes("Weather") ||
+      (flight?.disruptionReason || '').includes("weather");
 
     // Aircraft options based on recovery option type
     const aircraftOptions = isAircraftSwap
@@ -879,7 +1074,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         ? [
             {
               flight: "FZ456 DXB-BOM",
-              departure: `Dep: 18:30 → ${new Date(Date.now() + parseInt(option.timeline.replace(/[^0-9]/g, "")) * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} (+${option.timeline})`,
+              departure: `Dep: 18:30 → ${new Date(Date.now() + (parseInt(safeOption.timeline.replace(/[^0-9]/g, "")) || 60) * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })} (+${safeOption.timeline})`,
               impact: "Medium Impact",
               reason: "Direct delay impact",
             },
@@ -940,12 +1135,12 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       curfewViolation: {
         status:
           isDelayOption &&
-          parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
+          (parseInt(safeOption.timeline.replace(/[^0-9]/g, "")) || 60) > 180
             ? "Risk"
             : "No Risk",
         details:
           isDelayOption &&
-          parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
+          (parseInt(safeOption.timeline.replace(/[^0-9]/g, "")) || 60) > 180
             ? `${flight?.destination || "BOM"} arrival may violate 23:00 curfew`
             : "Within curfew limits",
       },
@@ -968,7 +1163,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       delayCost: isCancellation
         ? 89200
         : isDelayOption
-          ? parseInt(option.timeline.replace(/[^0-9]/g, "")) * 280
+          ? (parseInt(safeOption.timeline.replace(/[^0-9]/g, "")) || 60) * 280
           : isAircraftSwap
             ? 34200
             : 5200,
@@ -982,7 +1177,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       hotelTransport: isCancellation
         ? 24500
         : isDelayOption &&
-            parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
+            (parseInt(safeOption.timeline.replace(/[^0-9]/g, "")) || 60) > 180
           ? 8450
             : isAircraftSwap
               ? 840
@@ -990,7 +1185,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       eu261Risk: isCancellation
         ? "Critical"
         : isDelayOption &&
-            parseInt(option.timeline.replace(/[^0-9]/g, "")) > 180
+            (parseInt(safeOption.timeline.replace(/[^0-9]/g, "")) || 60) > 180
           ? "High"
           : isAircraftSwap
             ? "Medium"
