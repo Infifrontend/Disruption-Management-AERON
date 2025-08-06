@@ -1535,17 +1535,14 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     <Timer className="h-4 w-4" />
                     Est. Resolution: {scenarioData.estimatedTime}
                   </div>
-                  <Badge variant="outline" className="text-xs">
-                    {flight?.categorization || flight?.disruptionReason || "Unknown Category"}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className={`text-xs ${useDatabaseData && recoveryOptions.length > 0 ? "bg-green-50 text-green-700 border-green-200" : "bg-blue-50 text-blue-700 border-blue-200"}`}
-                  >
-                    {useDatabaseData && recoveryOptions.length > 0
-                      ? "Categorization-Based"
-                      : "Scenario Template"}
-                  </Badge>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Target className="h-4 w-4" />
+                    {scenarioData.options.length} Options Available
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <CheckCircle className="h-4 w-4" />
+                    {scenarioData.options.filter(opt => opt.status === 'recommended').length} Recommended
+                  </div>
                   {isLoadingOptions && (
                     <Badge
                       variant="outline"
@@ -1646,19 +1643,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5 text-flydubai-blue" />
-            Recovery Options
-            {useDatabaseData && (
-              <div className="flex items-center gap-2 ml-auto">
-                <Switch
-                  checked={useDatabaseData}
-                  onCheckedChange={setUseDatabaseData}
-                  disabled={isLoadingOptions}
-                />
-                <span className="text-sm text-muted-foreground">
-                  Database Data
-                </span>
-              </div>
-            )}
+            Recovery Options ({scenarioData.options.length} Available)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -1724,16 +1709,6 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Retry
                 </Button>
-                {useDatabaseData && (
-                  <Button
-                    onClick={() => setUseDatabaseData(false)}
-                    variant="outline"
-                    className="border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
-                  >
-                    <Target className="h-4 w-4 mr-2" />
-                    Use Scenario Data
-                  </Button>
-                )}
               </div>
             </div>
           ) : (
