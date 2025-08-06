@@ -1,0 +1,40 @@
+what-if-simulation-helpers.tsx:146 Error generating recovery option details: TypeError: (option.id || "").toLowerCase is not a function
+    at getDetailedDescription (recovery-option-helpers.tsx:32:38)
+    at generateRecoveryOptionDetails (what-if-simulation-helpers.tsx:133:28)
+    at handleViewRecoveryOption (RecoveryOptionsGenerator.tsx:1270:12)
+generateRecoveryOptionDetails @ what-if-simulation-helpers.tsx:146
+handleViewRecoveryOption @ RecoveryOptionsGenerator.tsx:1270Understand this error
+api/recovery-option/410/timeline:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this error
+databaseService.ts:1337 Error fetching timeline details: Error: HTTP error! status: 500
+    at DatabaseService.getTimelineDetails (databaseService.ts:1332:15)
+    at async Promise.all (index 2)
+    at async handleViewRecoveryOption (RecoveryOptionsGenerator.tsx:1253:76)
+getTimelineDetails @ databaseService.ts:1337Understand this error
+api/recovery-option/410/resources:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this error
+databaseService.ts:1356 Error fetching resource details: Error: HTTP error! status: 500
+    at DatabaseService.getResourceDetails (databaseService.ts:1351:15)
+    at async Promise.all (index 3)
+    at async handleViewRecoveryOption (RecoveryOptionsGenerator.tsx:1253:76)
+getResourceDetails @ databaseService.ts:1356Understand this error
+api/recovery-option/410/rotation-plan:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this error
+databaseService.ts:1299 Error fetching rotation plan details: Error: HTTP error! status: 500
+    at DatabaseService.getRotationPlanDetails (databaseService.ts:1294:15)
+    at async Promise.all (index 0)
+    at async handleViewRecoveryOption (RecoveryOptionsGenerator.tsx:1253:76)
+getRotationPlanDetails @ databaseService.ts:1299Understand this error
+api/recovery-option/410/cost-analysis:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this error
+databaseService.ts:1318 Error fetching cost analysis details: Error: HTTP error! status: 500
+    at DatabaseService.getCostAnalysisDetails (databaseService.ts:1313:15)
+    at async Promise.all (index 1)
+    at async handleViewRecoveryOption (RecoveryOptionsGenerator.tsx:1253:76)
+getCostAnalysisDetails @ databaseService.ts:1318Understand this error
+api/recovery-option/410/technical:1  Failed to load resource: the server responded with a status of 500 (Internal Server Error)Understand this error
+databaseService.ts:1375 Error fetching technical details: Error: HTTP error! status: 500
+    at DatabaseService.getTechnicalDetails (databaseService.ts:1370:15)
+    at async Promise.all (index 4)
+    at async handleViewRecoveryOption (RecoveryOptionsGenerator.tsx:1253:76)
+getTechnicalDetails @ databaseService.ts:1375Understand this error
+what-if-simulation-helpers.tsx:146 Error generating recovery option details: TypeError: (option.id || "").toLowerCase is not a function
+    at getDetailedDescription (recovery-option-helpers.tsx:32:38)
+    at generateRecoveryOptionDetails (what-if-simulation-helpers.tsx:133:28)
+    at handleViewRecoveryOption (RecoveryOptionsGenerator.tsx:1270:12)
