@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
+import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
 import { Checkbox } from './ui/checkbox'
 import { Textarea } from './ui/textarea'
 import { Alert, AlertDescription } from './ui/alert'
@@ -980,76 +981,82 @@ export function HOTACManagement() {
                         )}
 
                         {/* More Actions Dropdown */}
-                        <Dialog>
-                          <DialogTrigger asChild>
+                        <Popover>
+                          <PopoverTrigger asChild>
                             <Button size="sm" variant="outline" title="More Actions">
                               <MoreHorizontal className="h-3 w-3" />
                             </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-md">
-                            <DialogHeader>
-                              <DialogTitle>Actions for {record.flightNumber}</DialogTitle>
-                              <DialogDescription>
-                                Select an action to perform for this HOTAC booking record.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="grid grid-cols-2 gap-2 p-4">
+                          </PopoverTrigger>
+                          <PopoverContent className="w-64 p-2" align="end">
+                            <div className="space-y-1">
+                              <div className="px-2 py-1 text-sm font-medium text-flydubai-navy border-b border-gray-200 mb-2">
+                                Actions for {record.flightNumber}
+                              </div>
+                              
                               <Button 
                                 size="sm" 
+                                variant="ghost"
                                 onClick={() => handleRebookHotel(record)}
-                                className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
+                                className="w-full justify-start h-8 px-2 hover:bg-orange-50 hover:text-flydubai-orange"
                               >
-                                <RotateCcw className="h-3 w-3 mr-1" />
+                                <RotateCcw className="h-3 w-3 mr-2" />
                                 Rebook Hotel
                               </Button>
                               
                               <Button 
-                                size="sm" 
+                                size="sm"
+                                variant="ghost"
                                 onClick={() => handleGenerateVoucher(record)}
-                                variant="outline"
+                                className="w-full justify-start h-8 px-2 hover:bg-blue-50 hover:text-flydubai-blue"
                               >
-                                <Receipt className="h-3 w-3 mr-1" />
+                                <Receipt className="h-3 w-3 mr-2" />
                                 Generate Voucher
                               </Button>
                               
                               <Button 
-                                size="sm" 
+                                size="sm"
+                                variant="ghost"
                                 onClick={() => handleViewHistory(record)}
-                                variant="outline"
+                                className="w-full justify-start h-8 px-2 hover:bg-blue-50 hover:text-flydubai-blue"
                               >
-                                <History className="h-3 w-3 mr-1" />
+                                <History className="h-3 w-3 mr-2" />
                                 View History
                               </Button>
                               
                               <Button 
-                                size="sm" 
+                                size="sm"
+                                variant="ghost"
                                 onClick={() => handleRequestPriority(record)}
-                                variant="outline"
+                                className="w-full justify-start h-8 px-2 hover:bg-yellow-50 hover:text-yellow-700"
                               >
-                                <Star className="h-3 w-3 mr-1" />
+                                <Star className="h-3 w-3 mr-2" />
                                 Request Priority
                               </Button>
                               
                               <Button 
-                                size="sm" 
+                                size="sm"
+                                variant="ghost"
                                 onClick={() => handleContactSupport(record)}
-                                variant="outline"
+                                className="w-full justify-start h-8 px-2 hover:bg-green-50 hover:text-green-700"
                               >
-                                <Headphones className="h-3 w-3 mr-1" />
+                                <Headphones className="h-3 w-3 mr-2" />
                                 Contact Support
                               </Button>
                               
+                              <div className="border-t border-gray-200 my-1"></div>
+                              
                               <Button 
-                                size="sm" 
+                                size="sm"
+                                variant="ghost"
                                 onClick={() => handleCancelBooking(record)}
-                                className="bg-red-600 hover:bg-red-700 text-white"
+                                className="w-full justify-start h-8 px-2 hover:bg-red-50 hover:text-red-700"
                               >
-                                <XCircle className="h-3 w-3 mr-1" />
+                                <XCircle className="h-3 w-3 mr-2" />
                                 Cancel Booking
                               </Button>
                             </div>
-                          </DialogContent>
-                        </Dialog>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </TableCell>
                   </TableRow>
