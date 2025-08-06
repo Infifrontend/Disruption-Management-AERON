@@ -15,7 +15,7 @@ class BackendConfigService {
 
   private initializeConfig(): BackendConfig {
     const backendType = import.meta.env.VITE_BACKEND_TYPE || 'express'
-    const expressUrl = import.meta.env.VITE_EXPRESS_API_URL || 'http://0.0.0.0:3001/api'
+    const expressUrl = import.meta.env.VITE_API_URL || 'http://0.0.0.0:3001/api'
     const pythonUrl = import.meta.env.VITE_PYTHON_API_URL || 'https://de8beaee-b5a0-4c60-90f6-8331e3429086-00-37powysl19y12.sisko.replit.dev/api'
 
     const type = backendType === 'python' ? 'python' : 'express'
@@ -53,7 +53,7 @@ class BackendConfigService {
 
   // Method to switch backend at runtime (optional)
   switchBackend(type: 'express' | 'python'): void {
-    const expressUrl = import.meta.env.VITE_EXPRESS_API_URL || 'http://0.0.0.0:3001/api'
+    const expressUrl = import.meta.env.VITE_API_URL || 'http://0.0.0.0:3001/api'
     const pythonUrl = import.meta.env.VITE_PYTHON_API_URL || 'https://de8beaee-b5a0-4c60-90f6-8331e3429086-00-37powysl19y12.sisko.replit.dev/api'
 
     this.config = {
