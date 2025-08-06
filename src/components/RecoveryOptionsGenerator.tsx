@@ -3203,7 +3203,6 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                 </Card>
               </TabsContent>
             </Tabs>
-            </div>
           </ScrollArea>
 
           {/* Footer Action Buttons */}
