@@ -905,7 +905,7 @@ export function HOTACManagement() {
                     </TableCell>
                     
                     <TableCell>
-                      <div className="flex flex-wrap gap-1">
+                      <div className="flex gap-1">
                         {/* View Details - Primary Action */}
                         <Dialog>
                           <DialogTrigger asChild>
@@ -915,7 +915,8 @@ export function HOTACManagement() {
                               className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                               title="View Details"
                             >
-                              <Eye className="h-3 w-3" />
+                              <Eye className="h-3 w-3 mr-1" />
+                              View
                             </Button>
                           </DialogTrigger>
                           <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
@@ -929,62 +930,12 @@ export function HOTACManagement() {
                           </DialogContent>
                         </Dialog>
 
-                        {/* Primary Actions - Always Visible */}
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleNotifyCrew(record)}
-                          className="bg-flydubai-blue hover:bg-flydubai-blue/90 text-white"
-                          title="Notify Crew"
-                        >
-                          <Users className="h-3 w-3" />
-                        </Button>
-                        
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleNotifyHotel(record)}
-                          className="bg-green-600 hover:bg-green-700 text-white"
-                          title="Notify Hotel"
-                        >
-                          <Hotel className="h-3 w-3" />
-                        </Button>
-                        
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleNotifyTransport(record)}
-                          className="bg-orange-600 hover:bg-orange-700 text-white"
-                          title="Notify Transport"
-                        >
-                          <Car className="h-3 w-3" />
-                        </Button>
-
-                        {/* Status-specific Actions */}
-                        {record.bookingStatus === 'Pending' && (
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleChangeStatus(record, 'Confirmed')}
-                            className="bg-green-600 hover:bg-green-700 text-white"
-                            title="Confirm Booking"
-                          >
-                            <CheckCircle className="h-3 w-3" />
-                          </Button>
-                        )}
-
-                        {record.priority === 'Urgent' && (
-                          <Button 
-                            size="sm" 
-                            onClick={() => handleEscalateIssue(record)}
-                            className="bg-red-600 hover:bg-red-700 text-white"
-                            title="Escalate Issue"
-                          >
-                            <AlertOctagon className="h-3 w-3" />
-                          </Button>
-                        )}
-
                         {/* More Actions Dropdown */}
                         <Popover>
                           <PopoverTrigger asChild>
                             <Button size="sm" variant="outline" title="More Actions">
-                              <MoreHorizontal className="h-3 w-3" />
+                              <MoreHorizontal className="h-3 w-3 mr-1" />
+                              More Actions
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-64 p-2" align="end">
@@ -992,6 +943,63 @@ export function HOTACManagement() {
                               <div className="px-2 py-1 text-sm font-medium text-flydubai-navy border-b border-gray-200 mb-2">
                                 Actions for {record.flightNumber}
                               </div>
+                              
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => handleNotifyCrew(record)}
+                                className="w-full justify-start h-8 px-2 hover:bg-blue-50 hover:text-flydubai-blue"
+                              >
+                                <Users className="h-3 w-3 mr-2" />
+                                Notify Crew
+                              </Button>
+                              
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => handleNotifyHotel(record)}
+                                className="w-full justify-start h-8 px-2 hover:bg-green-50 hover:text-green-700"
+                              >
+                                <Hotel className="h-3 w-3 mr-2" />
+                                Notify Hotel
+                              </Button>
+                              
+                              <Button 
+                                size="sm" 
+                                variant="ghost"
+                                onClick={() => handleNotifyTransport(record)}
+                                className="w-full justify-start h-8 px-2 hover:bg-orange-50 hover:text-flydubai-orange"
+                              >
+                                <Car className="h-3 w-3 mr-2" />
+                                Notify Transport
+                              </Button>
+
+                              {/* Status-specific Actions */}
+                              {record.bookingStatus === 'Pending' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost"
+                                  onClick={() => handleChangeStatus(record, 'Confirmed')}
+                                  className="w-full justify-start h-8 px-2 hover:bg-green-50 hover:text-green-700"
+                                >
+                                  <CheckCircle className="h-3 w-3 mr-2" />
+                                  Confirm Booking
+                                </Button>
+                              )}
+
+                              {record.priority === 'Urgent' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost"
+                                  onClick={() => handleEscalateIssue(record)}
+                                  className="w-full justify-start h-8 px-2 hover:bg-red-50 hover:text-red-700"
+                                >
+                                  <AlertOctagon className="h-3 w-3 mr-2" />
+                                  Escalate Issue
+                                </Button>
+                              )}
+                              
+                              <div className="border-t border-gray-200 my-1"></div>
                               
                               <Button 
                                 size="sm" 
