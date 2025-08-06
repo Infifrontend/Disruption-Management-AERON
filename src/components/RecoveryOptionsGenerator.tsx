@@ -931,17 +931,21 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       ...option
     };
 
+    // Convert to string for safe string operations
+    const optionIdStr = String(safeOption.id);
+    const optionTitleStr = String(safeOption.title);
+
     const isAircraftSwap =
-      safeOption.id.includes("AIRCRAFT_SWAP") ||
-      safeOption.id.includes("SWAP") ||
-      safeOption.title.includes("Aircraft Swap") ||
-      safeOption.title.includes("Swap");
+      optionIdStr.includes("AIRCRAFT_SWAP") ||
+      optionIdStr.includes("SWAP") ||
+      optionTitleStr.includes("Aircraft Swap") ||
+      optionTitleStr.includes("Swap");
     const isDelayOption =
-      safeOption.id.includes("DELAY") || 
-      safeOption.title.includes("Delay");
+      optionIdStr.includes("DELAY") || 
+      optionTitleStr.includes("Delay");
     const isCancellation =
-      safeOption.id.includes("CANCEL") || 
-      safeOption.title.includes("Cancel");
+      optionIdStr.includes("CANCEL") || 
+      optionTitleStr.includes("Cancel");
     const isCrewIssue = (flight?.categorization || '').includes("Crew issue") ||
       (flight?.disruptionReason || '').includes("crew");
     const isMaintenanceIssue =

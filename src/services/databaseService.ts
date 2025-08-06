@@ -1326,6 +1326,63 @@ class DatabaseService {
       const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/timeline`);
       if (!response.ok) {
         if (response.status === 404) {
+          console.log(`No timeline found for option ${optionId}`);
+          return null;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      return result.timeline;
+    } catch (error) {
+      console.error("Error fetching timeline details:", error);
+      return null;
+    }
+  }
+
+  // Get detailed resources for a recovery option
+  async getResourceDetails(optionId: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/resources`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log(`No resources found for option ${optionId}`);
+          return null;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      return result.resources;
+    } catch (error) {
+      console.error("Error fetching resource details:", error);
+      return null;
+    }
+  }
+
+  // Get detailed technical specifications for a recovery option
+  async getTechnicalDetails(optionId: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/technical`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log(`No technical specifications found for option ${optionId}`);
+          return null;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      return result.technical;
+    } catch (error) {
+      console.error("Error fetching technical specification details:", error);
+      return null;
+    }
+  }
+
+  // Get detailed timeline for a recovery option
+  async getTimelineDetails(optionId: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/timeline`);
+      if (!response.ok) {
+        if (response.status === 404) {
           console.log(`No timeline details found for option ${optionId}`);
           return null;
         }
