@@ -1,5 +1,12 @@
+import pkg from 'pg';
+const { Pool } = pkg;
 
-import { Pool } from 'pg';
+// Handle dotenv configuration
+try {
+  await import('dotenv/config');
+} catch (e) {
+  console.log('⚠️ dotenv not available, using environment variables directly');
+}
 
 // Database connection with Neon endpoint handling
 function formatNeonConnectionString(connectionString) {
@@ -10,12 +17,12 @@ function formatNeonConnectionString(connectionString) {
   try {
     const url = new URL(connectionString);
     const endpointId = url.hostname.split('.')[0];
-    
+
     // Add endpoint parameter for Neon compatibility
     const params = new URLSearchParams(url.search);
     params.set('options', `endpoint=${endpointId}`);
     params.set('sslmode', 'require');
-    
+
     // Reconstruct URL with proper parameters
     url.search = params.toString();
     return url.toString();
@@ -25,12 +32,27 @@ function formatNeonConnectionString(connectionString) {
   }
 }
 
-const connectionString = formatNeonConnectionString(process.env.DATABASE_URL);
+let connectionString = process.env.DATABASE_URL || 'postgresql://0.0.0.0:5432/aeron_settings';
+
+// Handle Neon database connection with proper endpoint parameter
+if (connectionString && connectionString.includes('neon.tech')) {
+  try {
+    const url = new URL(connectionString);
+    const endpointId = url.hostname.split('.')[0];
+    const params = new URLSearchParams(url.search);
+    params.set('options', `endpoint=${endpointId}`);
+    params.set('sslmode', 'require');
+    url.search = params.toString();
+    connectionString = url.toString();
+  } catch (error) {
+    console.error('⚠️ Error configuring Neon connection:', error.message);
+  }
+}
 
 const pool = new Pool({
   connectionString: connectionString,
-  ssl: connectionString && connectionString.includes('neon.tech') ? { rejectUnauthorized: false } : false,
-  max: 5,
+  ssl: connectionString.includes('neon.tech') ? { rejectUnauthorized: false } : false,
+  max: 1,
   connectionTimeoutMillis: 10000,
 });
 
@@ -159,24 +181,24 @@ const sampleRecoveryOptions = [
 
 async function populateDetailedRecoveryData() {
   const client = await pool.connect();
-  
+
   try {
     console.log('🚀 Starting detailed recovery data population...');
-    
+
     // Begin transaction
     await client.query('BEGIN');
-    
+
     // Check if tables exist, if not create them
     const tableCheck = await client.query(`
       SELECT table_name FROM information_schema.tables 
       WHERE table_schema = 'public' 
       AND table_name IN ('disruption_categories', 'recovery_option_templates', 'recovery_options_detailed')
     `);
-    
+
     const existingTables = tableCheck.rows.map(row => row.table_name);
     const requiredTables = ['disruption_categories', 'recovery_option_templates', 'recovery_options_detailed'];
     const missingTables = requiredTables.filter(table => !existingTables.includes(table));
-    
+
     if (missingTables.length > 0) {
       console.log(`❌ Missing tables: ${missingTables.join(', ')}`);
       console.log('📝 Please run the recovery categorization schema first:');
@@ -184,9 +206,9 @@ async function populateDetailedRecoveryData() {
       await client.query('ROLLBACK');
       return;
     }
-    
+
     console.log('✅ All required tables exist');
-    
+
     // Get all flight disruptions to map recovery data
     const disruptionsResult = await client.query(`
       SELECT id, flight_number, disruption_type, disruption_reason 
@@ -195,21 +217,21 @@ async function populateDetailedRecoveryData() {
       ORDER BY id
       LIMIT 5
     `);
-    
+
     const disruptions = disruptionsResult.rows;
     console.log(`📊 Found ${disruptions.length} active disruptions to process`);
-    
+
     if (disruptions.length === 0) {
       console.log('⚠️ No active disruptions found');
       await client.query('ROLLBACK');
       return;
     }
-    
+
     // Helper function to map disruption type to category
     function mapDisruptionTypeToCategory(type, reason) {
       const lowerType = type.toLowerCase();
       const lowerReason = reason.toLowerCase();
-      
+
       if (lowerType.includes('technical') || lowerReason.includes('maintenance') || lowerReason.includes('aog')) {
         return 'AIRCRAFT_ISSUE';
       }
@@ -225,34 +247,34 @@ async function populateDetailedRecoveryData() {
       if (lowerType.includes('rotation') || lowerReason.includes('rotation') || lowerReason.includes('misalignment')) {
         return 'ROTATION_MAINTENANCE';
       }
-      
+
       return 'AIRCRAFT_ISSUE'; // Default fallback
     }
-    
+
     // Get category IDs
     const categoriesResult = await client.query('SELECT id, category_code FROM disruption_categories');
     const categories = {};
     categoriesResult.rows.forEach(cat => {
       categories[cat.category_code] = cat.id;
     });
-    
+
     // Process each disruption
     for (const disruption of disruptions) {
       const categoryCode = mapDisruptionTypeToCategory(disruption.disruption_type, disruption.disruption_reason);
       const categoryId = categories[categoryCode];
-      
+
       if (!categoryId) {
         console.log(`❌ No category found for: ${categoryCode}`);
         continue;
       }
-      
+
       console.log(`🔄 Processing disruption ${disruption.flight_number} (ID: ${disruption.id}) - Category: ${categoryCode}`);
-      
+
       // Insert detailed recovery options for this disruption
       for (let i = 0; i < sampleRecoveryOptions.length; i++) {
         const option = sampleRecoveryOptions[i];
         const uniqueOptionId = `${option.option_id}_${disruption.id}`;
-        
+
         try {
           await client.query(`
             INSERT INTO recovery_options_detailed (
@@ -283,12 +305,12 @@ async function populateDetailedRecoveryData() {
             JSON.stringify(option.risk_assessment),
             JSON.stringify(option.technical_details)
           ]);
-          
+
           // Insert detailed recovery steps
           if (option.timeline_steps && Array.isArray(option.timeline_steps)) {
             for (let stepIndex = 0; stepIndex < option.timeline_steps.length; stepIndex++) {
               const step = option.timeline_steps[stepIndex];
-              
+
               await client.query(`
                 INSERT INTO recovery_steps_detailed (
                   disruption_id, option_id, step_number, step_name,
@@ -308,32 +330,32 @@ async function populateDetailedRecoveryData() {
               ]);
             }
           }
-          
+
         } catch (optionError) {
           console.error(`❌ Error inserting option ${uniqueOptionId}:`, optionError.message);
         }
       }
-      
+
       console.log(`✅ Processed ${sampleRecoveryOptions.length} detailed options for ${disruption.flight_number}`);
     }
-    
+
     // Commit transaction
     await client.query('COMMIT');
-    
+
     console.log('✅ Detailed recovery data population completed successfully!');
-    
+
     // Verify the data
     const optionsCount = await client.query('SELECT COUNT(*) FROM recovery_options_detailed');
     const stepsCount = await client.query('SELECT COUNT(*) FROM recovery_steps_detailed');
     const categoriesCount = await client.query('SELECT COUNT(*) FROM disruption_categories');
     const templatesCount = await client.query('SELECT COUNT(*) FROM recovery_option_templates');
-    
+
     console.log(`📊 Final Summary:`);
     console.log(`  - Disruption categories: ${categoriesCount.rows[0].count}`);
     console.log(`  - Recovery option templates: ${templatesCount.rows[0].count}`);
     console.log(`  - Detailed recovery options: ${optionsCount.rows[0].count}`);
     console.log(`  - Detailed recovery steps: ${stepsCount.rows[0].count}`);
-    
+
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('❌ Error populating detailed recovery data:', error);
