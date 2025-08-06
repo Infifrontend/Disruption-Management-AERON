@@ -10,7 +10,7 @@ export function ComparisonPage() {
 
   const handleSelectPlan = (plan: any) => {
     setSelectedRecoveryPlan(plan)
-    navigate('/detailed')
+    navigate('/pending')
   }
 
   return (
