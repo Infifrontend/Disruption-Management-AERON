@@ -1377,80 +1377,6 @@ app.get('/api/recovery-steps-detailed/:disruptionId', async (req, res) => {
   }
 })
 
-app.get('/api/recovery-steps-detailed/:disruptionId', async (req, res) => {
-  try {
-    const { disruptionId } = req.params
-    const { option_id } = req.query
-
-    // Convert disruptionId to integer
-    const numericDisruptionId = parseInt(disruptionId)
-    if (isNaN(numericDisruptionId)) {
-      return res.status(400).json({ error: 'Invalid disruption ID format' })
-    }
-
-    console.log(`Fetching detailed recovery steps for disruption ID: ${disruptionId}`)
-
-    // Check if recovery_steps_detailed table exists, if not fall back to recovery_steps
-    let query, params
-
-    try {
-      // Try detailed steps table first
-      query = `
-        SELECT rsd.*, dc.category_name, dc.category_code
-        FROM recovery_steps_detailed rsd
-        LEFT JOIN disruption_categories dc ON rsd.category_id = dc.id
-        WHERE rsd.disruption_id = $1
-      `
-      params = [numericDisruptionId]
-
-      if (option_id) {
-        query += ` AND rsd.option_id = $2`
-        params.push(option_id)
-      }
-
-      query += ` ORDER BY rsd.step_number ASC`
-
-      const result = await pool.query(query, params)
-
-      if (result.rows.length > 0) {
-        console.log(`Found ${result.rows.length} detailed recovery steps`)
-        return res.json(result.rows)
-      }
-    } catch (detailedError) {
-      console.log('Detailed steps table not available, falling back to regular steps')
-    }
-
-    // Fallback to regular recovery_steps table
-    query = `
-      SELECT 
-        id,
-        disruption_id,
-        step_number,
-        title,
-        status,
-        timestamp,
-        system,
-        details,
-        step_data,
-        created_at,
-        updated_at,
-        NULL as category_name,
-        NULL as category_code
-      FROM recovery_steps
-      WHERE disruption_id = $1
-      ORDER BY step_number ASC
-    `
-    params = [numericDisruptionId]
-
-    const result = await pool.query(query, params)
-    console.log(`Found ${result.rows.length} fallback recovery steps`)
-    res.json(result.rows || [])
-  } catch (error) {
-    console.error('Error fetching detailed recovery steps:', error)
-    res.status(500).json({ error: 'Failed to fetch recovery steps', details: error.message })
-  }
-})
-
 // Recovery Steps endpoints
 app.get('/api/recovery-steps/:disruptionId', async (req, res) => {
   try {
@@ -1548,6 +1474,237 @@ app.get('/api/recovery-options/category/:categoryCode', async (req, res) => {
   } catch (error) {
     console.error('Error fetching recovery options by category:', error)
     res.json([])
+  }
+})
+
+// Get recovery option details by ID
+app.get('/api/recovery-option/:optionId', async (req, res) => {
+  try {
+    const { optionId } = req.params
+
+    const result = await pool.query(
+      'SELECT * FROM recovery_options WHERE id = $1',
+      [optionId]
+    )
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        error: 'Recovery option not found', 
+        optionId: optionId 
+      })
+    }
+
+    const option = result.rows[0]
+
+    res.json({
+      success: true,
+      option: {
+        ...option,
+        advantages: option.advantages || [],
+        considerations: option.considerations || [],
+        resourceRequirements: option.resource_requirements || {},
+        costBreakdown: option.cost_breakdown || {},
+        timelineDetails: option.timeline_details || {},
+        riskAssessment: option.risk_assessment || {},
+        technicalSpecs: option.technical_specs || {},
+        metrics: option.metrics || {},
+        rotationPlan: option.rotation_plan || {}
+      }
+    })
+
+  } catch (error) {
+    console.error('Recovery Service: Error fetching option details:', error)
+    res.status(500).json({ 
+      error: 'Failed to fetch recovery option details', 
+      details: error.message 
+    })
+  }
+})
+
+// Get detailed rotation plan data for a recovery option
+app.get('/api/recovery-option/:optionId/rotation-plan', async (req, res) => {
+  try {
+    const { optionId } = req.params
+
+    const result = await pool.query(`
+      SELECT * FROM rotation_plan_details WHERE recovery_option_id = $1
+    `, [optionId])
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        error: 'Rotation plan not found for this option', 
+        optionId: optionId 
+      })
+    }
+
+    const rotationPlan = result.rows[0]
+
+    res.json({
+      success: true,
+      rotationPlan: {
+        aircraftOptions: rotationPlan.aircraft_options || [],
+        crewData: rotationPlan.crew_data || [],
+        nextSectors: rotationPlan.next_sectors || [],
+        operationalConstraints: rotationPlan.operational_constraints || {},
+        costBreakdown: rotationPlan.cost_breakdown || {},
+        recommendation: rotationPlan.recommendation || {}
+      }
+    })
+
+  } catch (error) {
+    console.error('Error fetching rotation plan:', error)
+    res.status(500).json({ 
+      error: 'Failed to fetch rotation plan details', 
+      details: error.message 
+    })
+  }
+})
+
+// Get detailed cost analysis for a recovery option
+app.get('/api/recovery-option/:optionId/cost-analysis', async (req, res) => {
+  try {
+    const { optionId } = req.params
+
+    const result = await pool.query(`
+      SELECT * FROM cost_analysis_details WHERE recovery_option_id = $1
+    `, [optionId])
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        error: 'Cost analysis not found for this option', 
+        optionId: optionId 
+      })
+    }
+
+    const costAnalysis = result.rows[0]
+
+    res.json({
+      success: true,
+      costAnalysis: {
+        costCategories: costAnalysis.cost_categories || [],
+        totalCost: costAnalysis.total_cost || 0,
+        costComparison: costAnalysis.cost_comparison || {},
+        savingsAnalysis: costAnalysis.savings_analysis || {}
+      }
+    })
+
+  } catch (error) {
+    console.error('Error fetching cost analysis:', error)
+    res.status(500).json({ 
+      error: 'Failed to fetch cost analysis details', 
+      details: error.message 
+    })
+  }
+})
+
+// Get detailed timeline for a recovery option
+app.get('/api/recovery-option/:optionId/timeline', async (req, res) => {
+  try {
+    const { optionId } = req.params
+
+    const result = await pool.query(`
+      SELECT * FROM timeline_details WHERE recovery_option_id = $1
+    `, [optionId])
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        error: 'Timeline details not found for this option', 
+        optionId: optionId 
+      })
+    }
+
+    const timeline = result.rows[0]
+
+    res.json({
+      success: true,
+      timeline: {
+        timelineSteps: timeline.timeline_steps || [],
+        criticalPath: timeline.critical_path || {},
+        dependencies: timeline.dependencies || [],
+        milestones: timeline.milestones || []
+      }
+    })
+
+  } catch (error) {
+    console.error('Error fetching timeline details:', error)
+    res.status(500).json({ 
+      error: 'Failed to fetch timeline details', 
+      details: error.message 
+    })
+  }
+})
+
+// Get detailed resource requirements for a recovery option
+app.get('/api/recovery-option/:optionId/resources', async (req, res) => {
+  try {
+    const { optionId } = req.params
+
+    const result = await pool.query(`
+      SELECT * FROM resource_details WHERE recovery_option_id = $1
+    `, [optionId])
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        error: 'Resource details not found for this option', 
+        optionId: optionId 
+      })
+    }
+
+    const resources = result.rows[0]
+
+    res.json({
+      success: true,
+      resources: {
+        personnelRequirements: resources.personnel_requirements || [],
+        equipmentRequirements: resources.equipment_requirements || [],
+        facilityRequirements: resources.facility_requirements || [],
+        availabilityStatus: resources.availability_status || {}
+      }
+    })
+
+  } catch (error) {
+    console.error('Error fetching resource details:', error)
+    res.status(500).json({ 
+      error: 'Failed to fetch resource details', 
+      details: error.message 
+    })
+  }
+})
+
+// Get technical specifications for a recovery option
+app.get('/api/recovery-option/:optionId/technical', async (req, res) => {
+  try {
+    const { optionId } = req.params
+
+    const result = await pool.query(`
+      SELECT * FROM technical_specifications WHERE recovery_option_id = $1
+    `, [optionId])
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ 
+        error: 'Technical specifications not found for this option', 
+        optionId: optionId 
+      })
+    }
+
+    const technical = result.rows[0]
+
+    res.json({
+      success: true,
+      technical: {
+        aircraftSpecs: technical.aircraft_specs || {},
+        operationalConstraints: technical.operational_constraints || {},
+        regulatoryRequirements: technical.regulatory_requirements || [],
+        weatherLimitations: technical.weather_limitations || {}
+      }
+    })
+
+  } catch (error) {
+    console.error('Error fetching technical specifications:', error)
+    res.status(500).json({ 
+      error: 'Failed to fetch technical specifications', 
+      details: error.message 
+    })
   }
 })
 

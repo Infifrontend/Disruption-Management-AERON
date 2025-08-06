@@ -852,15 +852,46 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
     }, 2000);
   };
 
-  const handleViewRotationPlan = (option) => {
-    setSelectedRotationData(option);
-    const scheduleImpact = generateScheduleImpactAnalysis(
-      option,
-      flight,
-      scenarioData,
-    );
-    setScheduleImpactData(scheduleImpact);
-    setShowRotationPlan(true);
+  const handleViewRotationPlan = async (option) => {
+    console.log('Loading rotation plan data for option:', option.id);
+    
+    try {
+      // Load rotation plan data from database
+      const rotationPlanData = await databaseService.getRotationPlanDetails(option.id);
+      
+      if (rotationPlanData) {
+        console.log('Loaded rotation plan from database:', rotationPlanData);
+        // Use database data
+        setSelectedRotationData({
+          ...option,
+          databaseRotationPlan: rotationPlanData
+        });
+      } else {
+        console.log('No database rotation plan found, using generated data');
+        // Fallback to generated data
+        setSelectedRotationData(option);
+      }
+
+      const scheduleImpact = generateScheduleImpactAnalysis(
+        option,
+        flight,
+        scenarioData,
+      );
+      setScheduleImpactData(scheduleImpact);
+      setShowRotationPlan(true);
+    } catch (error) {
+      console.error('Error loading rotation plan data:', error);
+      
+      // Fallback to generated data
+      setSelectedRotationData(option);
+      const scheduleImpact = generateScheduleImpactAnalysis(
+        option,
+        flight,
+        scenarioData,
+      );
+      setScheduleImpactData(scheduleImpact);
+      setShowRotationPlan(true);
+    }
   };
 
   // Generate rotation plan data based on selected recovery option
@@ -892,11 +923,11 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       };
     }
 
-    // Ensure option has required fields with safe defaults
+    // Ensure option has required fields with safe defaults and proper type checking
     const safeOption = {
-      id: option.id || 'UNKNOWN_OPTION',
-      title: option.title || 'Unknown Option',
-      timeline: option.timeline || '60 minutes',
+      id: String(option.id || 'UNKNOWN_OPTION'),
+      title: String(option.title || 'Unknown Option'),
+      timeline: String(option.timeline || '60 minutes'),
       ...option
     };
 
@@ -1214,15 +1245,76 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
     };
   };
 
-  const handleViewRecoveryOption = (option) => {
-    const detailedOption = generateRecoveryOptionDetails(option, flight);
-    setSelectedOptionForDetails(detailedOption);
-    setEditedOption(detailedOption);
-    setIsEditMode(false);
-    setShowWhatIfSimulation(false);
-    setShowCrewTrackingGantt(false);
-    setActiveSimulation(null);
-    setShowRecoveryOptionDetails(true);
+  const handleViewRecoveryOption = async (option) => {
+    console.log('Loading detailed recovery option data for:', option.id);
+    
+    try {
+      // Load all detailed data from database
+      const [rotationPlan, costAnalysis, timeline, resources, technical] = await Promise.all([
+        databaseService.getRotationPlanDetails(option.id),
+        databaseService.getCostAnalysisDetails(option.id),
+        databaseService.getTimelineDetails(option.id),
+        databaseService.getResourceDetails(option.id),
+        databaseService.getTechnicalDetails(option.id)
+      ]);
+
+      // Merge database data with existing option data
+      const detailedOption = {
+        ...option,
+        rotationPlan: rotationPlan || {},
+        detailedCostAnalysis: costAnalysis || {},
+        detailedTimeline: timeline || {},
+        detailedResources: resources || {},
+        detailedTechnical: technical || {},
+        // Keep existing fallback data structure
+        ...generateRecoveryOptionDetails(option, flight)
+      };
+
+      // Override with database data if available
+      if (costAnalysis?.costCategories) {
+        detailedOption.costBreakdown = costAnalysis.costCategories;
+      }
+      if (timeline?.timelineSteps) {
+        detailedOption.timelineDetails = timeline.timelineSteps;
+      }
+      if (resources?.personnelRequirements) {
+        detailedOption.resourceRequirements = [
+          ...resources.personnelRequirements,
+          ...resources.equipmentRequirements,
+          ...resources.facilityRequirements
+        ];
+      }
+      if (technical?.aircraftSpecs) {
+        detailedOption.technicalSpecs = {
+          aircraftRequirements: Object.values(technical.aircraftSpecs),
+          operationalConstraints: Object.values(technical.operationalConstraints),
+          regulatoryCompliance: technical.regulatoryRequirements,
+          weatherLimitations: Object.values(technical.weatherLimitations || {})
+        };
+      }
+
+      console.log('Loaded detailed option data:', detailedOption);
+
+      setSelectedOptionForDetails(detailedOption);
+      setEditedOption(detailedOption);
+      setIsEditMode(false);
+      setShowWhatIfSimulation(false);
+      setShowCrewTrackingGantt(false);
+      setActiveSimulation(null);
+      setShowRecoveryOptionDetails(true);
+    } catch (error) {
+      console.error('Error loading detailed recovery option data:', error);
+      
+      // Fallback to generated data
+      const detailedOption = generateRecoveryOptionDetails(option, flight);
+      setSelectedOptionForDetails(detailedOption);
+      setEditedOption(detailedOption);
+      setIsEditMode(false);
+      setShowWhatIfSimulation(false);
+      setShowCrewTrackingGantt(false);
+      setActiveSimulation(null);
+      setShowRecoveryOptionDetails(true);
+    }
   };
 
   const handlePassengerServicesNavigation = (option) => {
@@ -2434,10 +2526,24 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                       </TableHeader>
                       <TableBody>
                         {(() => {
-                          const rotationData = generateRotationPlanData(
-                            selectedRotationData,
-                            flight,
-                          );
+                          // Use database data if available, otherwise generate
+                          let rotationData;
+                          if (selectedRotationData?.databaseRotationPlan) {
+                            rotationData = {
+                              aircraftOptions: selectedRotationData.databaseRotationPlan.aircraftOptions || [],
+                              crewData: selectedRotationData.databaseRotationPlan.crewData || [],
+                              nextSectors: selectedRotationData.databaseRotationPlan.nextSectors || [],
+                              operationalConstraints: selectedRotationData.databaseRotationPlan.operationalConstraints || {},
+                              costBreakdown: selectedRotationData.databaseRotationPlan.costBreakdown || {},
+                              recommendation: selectedRotationData.databaseRotationPlan.recommendation || {}
+                            };
+                          } else {
+                            rotationData = generateRotationPlanData(
+                              selectedRotationData,
+                              flight,
+                            );
+                          }
+                          
                           if (!rotationData || !rotationData.aircraftOptions) {
                             return (
                               <TableRow>

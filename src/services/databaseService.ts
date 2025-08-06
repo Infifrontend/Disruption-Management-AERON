@@ -1282,6 +1282,101 @@ class DatabaseService {
     }
   }
 
+  // Get detailed rotation plan data for a recovery option
+  async getRotationPlanDetails(optionId: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/rotation-plan`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log(`No rotation plan found for option ${optionId}`);
+          return null;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      return result.rotationPlan;
+    } catch (error) {
+      console.error("Error fetching rotation plan details:", error);
+      return null;
+    }
+  }
+
+  // Get detailed cost analysis for a recovery option
+  async getCostAnalysisDetails(optionId: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/cost-analysis`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log(`No cost analysis found for option ${optionId}`);
+          return null;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      return result.costAnalysis;
+    } catch (error) {
+      console.error("Error fetching cost analysis details:", error);
+      return null;
+    }
+  }
+
+  // Get detailed timeline for a recovery option
+  async getTimelineDetails(optionId: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/timeline`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log(`No timeline details found for option ${optionId}`);
+          return null;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      return result.timeline;
+    } catch (error) {
+      console.error("Error fetching timeline details:", error);
+      return null;
+    }
+  }
+
+  // Get detailed resource requirements for a recovery option
+  async getResourceDetails(optionId: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/resources`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log(`No resource details found for option ${optionId}`);
+          return null;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      return result.resources;
+    } catch (error) {
+      console.error("Error fetching resource details:", error);
+      return null;
+    }
+  }
+
+  // Get technical specifications for a recovery option
+  async getTechnicalDetails(optionId: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/technical`);
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log(`No technical details found for option ${optionId}`);
+          return null;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const result = await response.json();
+      return result.technical;
+    } catch (error) {
+      console.error("Error fetching technical details:", error);
+      return null;
+    }
+  }
+
   // Generate mock external API data for testing - disabled to prevent unknown records
   private generateMockExternalData(): any[] {
     // Return empty array to stop generating mock data that creates unknown records
