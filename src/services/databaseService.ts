@@ -482,7 +482,9 @@ class DatabaseService {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // Increased timeout for Python backend
+      const config = backendConfig.getConfig();
+      const timeout = config.isPython ? 8000 : 2000; // 8s for Python, 2s for Express
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       const response = await fetch(`${this.baseUrl}/health`, {
         method: "GET",
