@@ -482,7 +482,7 @@ class DatabaseService {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000); // Further reduced timeout
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // Increased timeout for Python backend
 
       const response = await fetch(`${this.baseUrl}/health`, {
         method: "GET",

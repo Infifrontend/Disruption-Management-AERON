@@ -19,7 +19,12 @@ class BackendConfigService {
     const pythonUrl = import.meta.env.VITE_PYTHON_API_URL || 'https://de8beaee-b5a0-4c60-90f6-8331e3429086-00-37powysl19y12.sisko.replit.dev/api'
 
     const type = backendType === 'python' ? 'python' : 'express'
-    const apiUrl = type === 'python' ? pythonUrl : expressUrl
+    let apiUrl = type === 'python' ? pythonUrl : expressUrl
+
+    // Validate Python URL format
+    if (type === 'python' && pythonUrl.includes('sisko.replit.dev')) {
+      console.warn('⚠️ Python backend URL may be unreachable. Consider switching to Express backend.')
+    }
 
     console.log(`🔧 Backend Config: Using ${type.toUpperCase()} backend at ${apiUrl}`)
 
