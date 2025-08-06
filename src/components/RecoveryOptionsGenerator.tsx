@@ -1618,7 +1618,7 @@ export function RecoveryOptionsGenerator({
         open={showCrewTrackingGantt}
         onOpenChange={setShowCrewTrackingGantt}
       >
-        <DialogContent className="max-w-[95vw] max-h-[95vh] flex flex-col overflow-hidden">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] flex flex-col">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-flydubai-blue" />
@@ -1630,7 +1630,7 @@ export function RecoveryOptionsGenerator({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-y-auto">
             <CrewTrackingGantt
               recoveryOption={selectedOptionForDetails}
               flight={flight}

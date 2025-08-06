@@ -449,7 +449,7 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
           </div>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="max-h-[60vh] w-full">
+          <ScrollArea className="h-[70vh] w-full">
             <div className="space-y-4">
               {/* Time Header */}
               <div className="relative">
@@ -716,7 +716,7 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="max-h-[300px] w-full">
+            <ScrollArea className="h-[400px] w-full">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="space-y-3">
                   <div>
@@ -796,7 +796,7 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
                 </TabsList>
 
                 <TabsContent value="crew" className="space-y-4">
-                  <ScrollArea className="max-h-[50vh] w-full">
+                  <ScrollArea className="h-[60vh] w-full">
                     <div className="grid grid-cols-2 gap-4">
                       <Card>
                         <CardHeader>
@@ -897,7 +897,7 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
                       <CardTitle className="text-sm">Current Assignments</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <ScrollArea className="max-h-[40vh] w-full">
+                      <ScrollArea className="h-[50vh] w-full">
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -945,7 +945,7 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
                 </TabsContent>
 
                 <TabsContent value="qualifications" className="space-y-4">
-                  <ScrollArea className="max-h-[50vh] w-full">
+                  <ScrollArea className="h-[60vh] w-full">
                     <div className="grid grid-cols-2 gap-4">
                       <Card>
                         <CardHeader>
