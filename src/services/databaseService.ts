@@ -1,5 +1,6 @@
 // Database service for PostgreSQL operations
 import { SettingsData } from "../utils/settingsStorage";
+import { backendConfig } from "./backendConfig";
 
 export interface CustomRule {
   id: number;
@@ -130,18 +131,24 @@ class DatabaseService {
   private readonly CIRCUIT_BREAKER_TIMEOUT = 60000; // 1 minute
 
   constructor() {
-    // Use API base URL for database operations
-    const hostname = window.location.hostname;
-    const protocol = window.location.protocol;
-
-    if (hostname === "localhost") {
-      this.baseUrl = "http://localhost:3001/api";
+    // Use backend configuration to determine API URL
+    const config = backendConfig.getConfig();
+    
+    if (config.isPython) {
+      // For Python backend, use the full URL
+      this.baseUrl = config.apiUrl;
     } else {
-      // For Replit production, use relative path to avoid CORS issues
-      // The proxy should handle routing to the correct API server
-      this.baseUrl = "/api";
+      // For Express backend, use relative path for Replit or localhost
+      const hostname = window.location.hostname;
+      if (hostname === "localhost") {
+        this.baseUrl = config.apiUrl;
+      } else {
+        // For Replit production, use relative path to avoid CORS issues
+        this.baseUrl = "/api";
+      }
     }
-    console.log("Database service initialized with baseUrl:", this.baseUrl);
+    
+    console.log(`Database service initialized with ${config.type.toUpperCase()} backend:`, this.baseUrl);
   }
 
   private checkCircuitBreaker(): boolean {
