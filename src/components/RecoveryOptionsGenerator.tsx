@@ -2458,8 +2458,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
 
       {/* Enhanced Rotation Plan Dialog */}
       <Dialog open={showRotationPlan} onOpenChange={setShowRotationPlan}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden">
-          <DialogHeader className="pb-4">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] flex flex-col">
+          <DialogHeader className="pb-4 flex-shrink-0">
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Eye className="h-6 w-6 text-flydubai-blue" />
               View Rotation Plan
@@ -2489,7 +2489,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto dialog-scrollable">
+          <div className="flex-1 overflow-y-auto min-h-0 pr-2 -mr-2">
             <Tabs defaultValue="aircraft" className="w-full">
               <TabsList className="grid w-full grid-cols-4 mb-6">
                 <TabsTrigger value="aircraft">
@@ -3198,7 +3198,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           </div>
 
           {/* Footer Action Buttons */}
-          <div className="flex justify-between items-center pt-4 border-t">
+          <div className="flex justify-between items-center pt-4 border-t flex-shrink-0 mt-4">
             <div className="flex gap-2">
               <Button
                 variant="outline"
