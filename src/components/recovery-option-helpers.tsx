@@ -8,61 +8,61 @@ export const getDetailedDescription = (option, flight) => {
   const registration = flight?.registration || 'A6-FDU'
   const passengers = flight?.passengers || 167
   const disruptionReason = flight?.disruptionReason || 'Technical issue'
-  
+
   // First check for exact ID matches, then fall back to pattern matching
   const descriptions = {
     'AIRCRAFT_SWAP_A320_001': `Aircraft Swap Recovery for ${flightNumber} (${origin}→${destination}): Replace ${aircraft} ${registration} with available Airbus A320 (A6-FMC) at ${origin}. The replacement aircraft has completed D-check maintenance (last: 72 hours ago) and is certified for the ${origin}-${destination} route. Estimated passenger transfer time: 35 minutes. All cargo and baggage will be transferred with priority handling. This solution maintains schedule integrity with minimal passenger disruption.`,
-    
+
     'DELAY_4H_OVERNIGHT': `Controlled Delay Strategy for ${flightNumber}: Implement 4-hour delay to allow comprehensive resolution of ${disruptionReason}. Includes passenger accommodation at Dubai International Hotel (147 rooms confirmed), meal vouchers for all ${passengers} passengers, and ground transportation. Weather forecast shows improvement in 3.5 hours. Alternative aircraft A6-FMF will be available as backup after 6 hours if primary resolution fails.`,
-    
+
     'REROUTE_AUH_TECH': `Route Optimization via Abu Dhabi for ${flightNumber}: Immediate departure to ${destination} via AUH using flydubai's hub connectivity. Passengers will transit through AUH Terminal 1 with dedicated ground support. Estimated additional flight time: 45 minutes. Partnership with Etihad provides seamless ground handling. Original ${aircraft} ${registration} will undergo inspection at ${origin} while passengers continue journey.`,
-    
+
     'PARTNER_CODESHARE': `Emergency Codeshare Activation for ${flightNumber}: Secure seats on Emirates flight EK542 (${origin}→${destination}) departing 16:45. Confirmed availability: 189 seats including 12 business class upgrades for VIP passengers. Automatic baggage transfer arranged through dnata ground services. Passenger notifications sent via SMS/email with new boarding details. Maintains arrival time within 30 minutes of original schedule.`,
-    
-    'CREW_REPLACEMENT_DXB': `Crew Replacement Protocol for ${flightNumber}: Deploy standby crew (Captain Al-Zaabi, F/O Rahman + 4 cabin crew) currently on duty at ${origin}. Fresh crew duty time: 2.5 hours (well within regulatory limits). Extended briefing required for ${aircraft} type rating. Estimated crew preparation time: 45 minutes. Original crew stood down due to duty time violation (13.8/13.0 hours). Passenger delay: minimal (under 1 hour).`
+
+    'CREW_REPLACEMENT_DXB': `Crew Replacement Protocol for ${flightNumber}: Deploy standby crew (Captain Al-Zaabi, F/O Rahman + 4 cabin crew) currently on duty at ${origin}. Fresh crew duty time: 2.5 hours (well within regulatory limits). Extended briefing required for ${aircraft} type rating. Estimated crew preparation time: 45 minutes. Current crew situation: ${disruptionReason}. Passenger delay: minimal (under 1 hour).`
   }
-  
+
   // If exact match found, return it
   if (descriptions[option.id]) {
     return descriptions[option.id]
   }
-  
+
   // Pattern matching for dynamic options
   const optionTitle = (option.title || '').toLowerCase()
-  const optionId = (option.id || '').toLowerCase()
+  const optionId = String(option.id || "").toLowerCase()
   const optionDescription = option.description || ''
-  
+
   // Aircraft swap pattern
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
     return `Aircraft Swap Recovery for ${flightNumber} (${origin}→${destination}): Replace ${aircraft} ${registration} with available replacement aircraft at ${origin}. The replacement aircraft has been selected based on availability and route certification for ${origin}-${destination}. Estimated passenger transfer time: 35-45 minutes. All cargo and baggage will be transferred with priority handling. This solution maintains schedule integrity with minimal passenger disruption. Current disruption: ${disruptionReason}.`
   }
-  
+
   // Delay pattern
   if (optionId.includes('delay') || optionTitle.includes('delay')) {
     const delayTime = option.timeline || '4 hours'
     return `Controlled Delay Strategy for ${flightNumber}: Implement ${delayTime} delay to allow comprehensive resolution of ${disruptionReason}. Includes passenger accommodation services, meal vouchers for all ${passengers} passengers, and ground transportation as needed. This approach ensures complete issue resolution while providing appropriate passenger care. Alternative options available if technical resolution takes longer than expected.`
   }
-  
+
   // Reroute/Diversion pattern
   if (optionId.includes('reroute') || optionId.includes('divert') || optionTitle.includes('reroute') || optionTitle.includes('divert')) {
     return `Route Optimization for ${flightNumber}: Alternative routing to reach ${destination} while managing current ${disruptionReason}. Passengers will be provided with updated routing information and any necessary ground support. Estimated additional flight time varies based on selected route. Partnership agreements with other airlines and airports provide seamless ground handling. Original ${aircraft} ${registration} status will be assessed during passenger journey.`
   }
-  
+
   // Codeshare/Partner pattern
   if (optionId.includes('partner') || optionId.includes('codeshare') || optionTitle.includes('partner') || optionTitle.includes('codeshare')) {
     return `Emergency Codeshare Activation for ${flightNumber}: Secure seats on partner airline flight to ${destination}. Confirmed seat availability being processed for ${passengers} passengers including priority upgrades for VIP passengers. Automatic baggage transfer arranged through ground services. Passenger notifications sent via SMS/email with new boarding details. Maintains schedule integrity through airline partnerships.`
   }
-  
+
   // Crew replacement pattern
   if (optionId.includes('crew') || optionTitle.includes('crew')) {
-    return `Crew Replacement Protocol for ${flightNumber}: Deploy standby crew currently available at ${origin}. Fresh crew well within regulatory duty time limitations. Extended briefing required for ${aircraft} type rating and current route conditions. Estimated crew preparation time: 45-60 minutes. Current crew situation: ${disruptionReason}. Passenger delay minimized through efficient crew transition process.`
+    return `Crew Replacement Protocol for ${flightNumber}: Deploy standby crew currently available at ${origin}. Fresh crew well within regulatory duty time limitations. Extended briefing required for ${aircraft} type rating and current route conditions. Estimated crew preparation time: 45-60 minutes. Current disruption: ${disruptionReason}. Passenger delay minimized through efficient crew transition process.`
   }
-  
+
   // Cancellation pattern
   if (optionId.includes('cancel') || optionTitle.includes('cancel')) {
     return `Flight Cancellation Protocol for ${flightNumber}: Due to ${disruptionReason}, flight cancellation with comprehensive passenger re-accommodation. All ${passengers} passengers will be rebooked on next available flights to ${destination}. Hotel accommodation, meal vouchers, and transportation provided as per passenger rights regulations. Priority rebooking for connecting passengers and VIP travelers. Ground services coordinating baggage handling and refund processing.`
   }
-  
+
   // Default contextual description
   return `Recovery solution for ${flightNumber} (${origin}→${destination}): ${optionDescription}. Aircraft: ${aircraft} ${registration}. Passengers affected: ${passengers}. Current situation: ${disruptionReason}. Estimated implementation time based on current operational conditions at ${origin}. Solution focuses on ${option.impact || 'minimizing passenger disruption'} while ensuring safety and regulatory compliance.`
 }
@@ -71,11 +71,11 @@ export const getCostBreakdown = (option, flight) => {
   const passengerCount = flight?.passengers || 167
   const hotelCostPerRoom = 150 // AED per night
   const mealVoucherCost = 75 // AED per passenger
-  
+
   // Extract cost number from option.cost string for calculations
   const totalCostMatch = option.cost?.match(/[\d,]+/)
   const totalCost = totalCostMatch ? parseInt(totalCostMatch[0].replace(/,/g, '')) : 50000
-  
+
   const breakdowns = {
     'AIRCRAFT_SWAP_A320_001': [
       { category: 'Aircraft Positioning Fee', amount: 'AED 28,500', percentage: 42, description: 'Moving A6-FMC from Terminal 1 to gate' },
@@ -111,16 +111,16 @@ export const getCostBreakdown = (option, flight) => {
       { category: 'Administrative Processing', amount: 'AED 2,500', percentage: 9, description: 'Duty time documentation, roster changes' }
     ]
   }
-  
+
   // If exact match found, return it
   if (breakdowns[option.id]) {
     return breakdowns[option.id]
   }
-  
+
   // Generate dynamic breakdown based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = (option.id || '').toLowerCase()
-  
+
   // Aircraft swap pattern
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
     return [
@@ -131,7 +131,7 @@ export const getCostBreakdown = (option, flight) => {
       { category: 'Documentation & Admin', amount: `AED ${Math.round(totalCost * 0.09).toLocaleString()}`, percentage: 9, description: 'Route changes, permits, notifications' }
     ]
   }
-  
+
   // Delay pattern
   if (optionId.includes('delay') || optionTitle.includes('delay')) {
     const needsAccommodation = option.timeline?.includes('hour') && parseInt(option.timeline) >= 4
@@ -148,7 +148,7 @@ export const getCostBreakdown = (option, flight) => {
       { category: 'Administrative Costs', amount: `AED ${Math.round(totalCost * 0.10).toLocaleString()}`, percentage: 10, description: 'Documentation and notifications' }
     ]
   }
-  
+
   // Reroute pattern
   if (optionId.includes('reroute') || optionId.includes('divert') || optionTitle.includes('reroute') || optionTitle.includes('divert')) {
     return [
@@ -158,7 +158,7 @@ export const getCostBreakdown = (option, flight) => {
       { category: 'Passenger Services', amount: `AED ${Math.round(totalCost * 0.06).toLocaleString()}`, percentage: 6, description: 'Transit support and refreshments' }
     ]
   }
-  
+
   // Partner/Codeshare pattern
   if (optionId.includes('partner') || optionId.includes('codeshare') || optionTitle.includes('partner') || optionTitle.includes('codeshare')) {
     return [
@@ -169,7 +169,7 @@ export const getCostBreakdown = (option, flight) => {
       { category: 'Service Recovery', amount: `AED ${Math.round(totalCost * 0.02).toLocaleString()}`, percentage: 2, description: 'Passenger compensation vouchers' }
     ]
   }
-  
+
   // Crew replacement pattern
   if (optionId.includes('crew') || optionTitle.includes('crew')) {
     return [
@@ -179,7 +179,7 @@ export const getCostBreakdown = (option, flight) => {
       { category: 'Administrative Processing', amount: `AED ${Math.round(totalCost * 0.09).toLocaleString()}`, percentage: 9, description: 'Duty time documentation, roster changes' }
     ]
   }
-  
+
   // Cancellation pattern
   if (optionId.includes('cancel') || optionTitle.includes('cancel')) {
     return [
@@ -190,7 +190,7 @@ export const getCostBreakdown = (option, flight) => {
       { category: 'Ground Services', amount: `AED ${Math.round(totalCost * 0.05).toLocaleString()}`, percentage: 5, description: 'Baggage handling and customer service' }
     ]
   }
-  
+
   // Default breakdown
   return [
     { category: 'Primary Recovery Cost', amount: `AED ${Math.round(totalCost * 0.70).toLocaleString()}`, percentage: 70, description: 'Main implementation cost' },
@@ -202,7 +202,7 @@ export const getCostBreakdown = (option, flight) => {
 export const getTimelineDetails = (option) => {
   const currentTime = new Date()
   const addMinutes = (minutes) => new Date(currentTime.getTime() + minutes * 60000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-  
+
   const timelines = {
     'AIRCRAFT_SWAP_A320_001': [
       { step: 'Decision Confirmation', duration: '5 minutes', status: 'pending', startTime: addMinutes(0), endTime: addMinutes(5), details: 'Management approval and resource confirmation' },
@@ -226,18 +226,18 @@ export const getTimelineDetails = (option) => {
       { step: 'Departure Clearance', duration: '10 minutes', status: 'pending', startTime: addMinutes(70), endTime: addMinutes(80), details: 'Final clearances and departure' }
     ]
   }
-  
+
   // If exact match found, return it
   if (timelines[option.id]) {
     return timelines[option.id]
   }
-  
+
   // Generate dynamic timeline based on option type and timeline
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = (option.id || '').toLowerCase()
   const timelineMatch = (option.timeline || '').match(/(\d+)/)
   const totalMinutes = timelineMatch ? parseInt(timelineMatch[1]) * 60 : 120
-  
+
   // Aircraft swap pattern
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
     const steps = Math.ceil(totalMinutes / 20) // Roughly 20-minute steps
@@ -249,7 +249,7 @@ export const getTimelineDetails = (option) => {
       { step: 'Final Checks & Departure', duration: '15 minutes', status: 'pending', startTime: addMinutes(totalMinutes - 15), endTime: addMinutes(totalMinutes), details: 'Pre-flight checks and departure clearance' }
     ]
   }
-  
+
   // Delay pattern
   if (optionId.includes('delay') || optionTitle.includes('delay')) {
     const hasAccommodation = totalMinutes >= 240 // 4+ hours
@@ -266,7 +266,7 @@ export const getTimelineDetails = (option) => {
       { step: 'Boarding & Departure', duration: '10 minutes', status: 'pending', startTime: addMinutes(totalMinutes - 10), endTime: addMinutes(totalMinutes), details: 'Complete boarding and departure' }
     ]
   }
-  
+
   // Crew replacement pattern
   if (optionId.includes('crew') || optionTitle.includes('crew')) {
     return [
@@ -277,11 +277,11 @@ export const getTimelineDetails = (option) => {
       { step: 'Departure Clearance', duration: '10 minutes', status: 'pending', startTime: addMinutes(totalMinutes - 10), endTime: addMinutes(totalMinutes), details: 'Final clearances and departure' }
     ]
   }
-  
+
   // Default timeline
   const stepCount = Math.min(5, Math.max(3, Math.ceil(totalMinutes / 30)))
   const stepDuration = Math.round(totalMinutes / stepCount)
-  
+
   return Array.from({ length: stepCount }, (_, index) => ({
     step: index === 0 ? 'Implementation Start' : 
           index === stepCount - 1 ? 'Completion & Departure' : 
@@ -319,16 +319,16 @@ export const getResourceRequirements = (option) => {
       { type: 'Training Coordinator', resource: 'Captain Al-Rashid (TRI)', availability: 'On Call', location: 'Training Center B', status: 'Responding', eta: '15 minutes', details: 'For extended crew briefing and documentation' }
     ]
   }
-  
+
   // If exact match found, return it
   if (resources[option.id]) {
     return resources[option.id]
   }
-  
+
   // Generate dynamic resources based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = (option.id || '').toLowerCase()
-  
+
   // Aircraft swap pattern
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
     return [
@@ -339,13 +339,13 @@ export const getResourceRequirements = (option) => {
       { type: 'Ground Handling', resource: 'Premium Ground Service Team', availability: 'Available', location: 'Gate Operations', status: 'Assigned', eta: 'On Location', details: 'Specialized team for aircraft swap operations' }
     ]
   }
-  
+
   // Delay pattern
   if (optionId.includes('delay') || optionTitle.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const hours = timelineMatch ? parseInt(timelineMatch[1]) : 4
     const needsAccommodation = hours >= 4
-    
+
     if (needsAccommodation) {
       return [
         { type: 'Accommodation', resource: 'Hotel Rooms', availability: 'Confirmed', location: 'Airport Hotels', status: 'Reserved', eta: 'Available Now', details: 'Block booking confirmed for passenger accommodation' },
@@ -363,7 +363,7 @@ export const getResourceRequirements = (option) => {
       ]
     }
   }
-  
+
   // Crew replacement pattern
   if (optionId.includes('crew') || optionTitle.includes('crew')) {
     return [
@@ -373,7 +373,7 @@ export const getResourceRequirements = (option) => {
       { type: 'Training Coordinator', resource: 'Training Captain (TRI)', availability: 'On Call', location: 'Training Center', status: 'Responding', eta: '15 minutes', details: 'Extended crew briefing and documentation support' }
     ]
   }
-  
+
   // Default resource requirements
   return [
     { type: 'Operational Resources', resource: 'Standard operational resources', availability: 'Available', location: 'Various locations', status: 'Ready', eta: 'As required', details: 'Standard resource allocation for this recovery type' },
@@ -403,17 +403,17 @@ export const getRiskAssessment = (option) => {
       { risk: 'Crew Fatigue After Long Duty', probability: 'Low', impact: 'Medium', mitigation: 'Fresh crew with minimal duty time, medical clearance verified', riskScore: 2 }
     ]
   }
-  
+
   // If exact match found, return it
   if (risks[option.id]) {
     return risks[option.id]
   }
-  
+
   // Generate dynamic risk assessment based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = (option.id || '').toLowerCase()
   const confidence = option.confidence || 85
-  
+
   // Aircraft swap pattern
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
     return [
@@ -423,13 +423,13 @@ export const getRiskAssessment = (option) => {
       { risk: 'Weather Impact During Transfer', probability: 'Low', impact: 'High', mitigation: 'Weather monitoring active, contingency plans prepared', riskScore: 3 }
     ]
   }
-  
+
   // Delay pattern
   if (optionId.includes('delay') || optionTitle.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const hours = timelineMatch ? parseInt(timelineMatch[1]) : 4
     const isLongDelay = hours >= 4
-    
+
     return isLongDelay ? [
       { risk: 'Accommodation Capacity Issues', probability: 'Low', impact: 'High', mitigation: 'Multiple hotel partnerships and overflow arrangements confirmed', riskScore: 3 },
       { risk: 'Extended Resolution Time', probability: 'Medium', impact: 'High', mitigation: 'Specialist teams on standby, parts inventory verified', riskScore: 6 },
@@ -442,7 +442,7 @@ export const getRiskAssessment = (option) => {
       { risk: 'Weather Window Closure', probability: 'Low', impact: 'High', mitigation: 'Weather monitoring, alternative plans prepared', riskScore: 3 }
     ]
   }
-  
+
   // Crew replacement pattern
   if (optionId.includes('crew') || optionTitle.includes('crew')) {
     return [
@@ -452,7 +452,7 @@ export const getRiskAssessment = (option) => {
       { risk: 'Crew Coordination Challenges', probability: 'Low', impact: 'Medium', mitigation: 'Training coordinator available, standardized procedures', riskScore: 2 }
     ]
   }
-  
+
   // Cancellation pattern
   if (optionId.includes('cancel') || optionTitle.includes('cancel')) {
     return [
@@ -462,11 +462,11 @@ export const getRiskAssessment = (option) => {
       { risk: 'Customer Satisfaction Impact', probability: 'High', impact: 'Medium', mitigation: 'Service recovery program, compensation packages', riskScore: 6 }
     ]
   }
-  
+
   // Default risk assessment based on confidence level
   const baseRisk = confidence > 90 ? 'Low' : confidence > 75 ? 'Medium' : 'High'
   const riskMultiplier = confidence > 90 ? 2 : confidence > 75 ? 4 : 6
-  
+
   return [
     { risk: 'Implementation Complexity', probability: baseRisk, impact: 'Medium', mitigation: 'Experienced team assigned, procedures well documented', riskScore: Math.min(riskMultiplier, 6) },
     { risk: 'Resource Availability', probability: 'Medium', impact: 'Medium', mitigation: 'Backup resources identified, contingency plans prepared', riskScore: 4 },
@@ -508,16 +508,16 @@ export const getTechnicalSpecs = (option) => {
       trainingStatus: 'All crew current on recurrent training, emergency procedures up to date'
     }
   }
-  
+
   // If exact match found, return it
   if (specs[option.id]) {
     return specs[option.id]
   }
-  
+
   // Generate dynamic technical specs based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = (option.id || '').toLowerCase()
-  
+
   // Aircraft swap pattern
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
     return {
@@ -531,12 +531,12 @@ export const getTechnicalSpecs = (option) => {
       routeApproval: 'Aircraft certified for destination, operational approvals verified'
     }
   }
-  
+
   // Delay pattern
   if (optionId.includes('delay') || optionTitle.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const hours = timelineMatch ? parseInt(timelineMatch[1]) : 4
-    
+
     return {
       implementation: 'Comprehensive delay management with passenger care and issue resolution',
       systemsRequired: hours >= 4 ? ['Hotel Booking System', 'Transport Coordination', 'Passenger Notification Platform', 'Maintenance Support Systems'] : ['Terminal Services System', 'Passenger Notification Platform', 'Maintenance Support Systems'],
@@ -548,7 +548,7 @@ export const getTechnicalSpecs = (option) => {
       regulatoryCompliance: 'Meets all passenger care requirements for delay duration and circumstances'
     }
   }
-  
+
   // Crew replacement pattern
   if (optionId.includes('crew') || optionTitle.includes('crew')) {
     return {
@@ -562,7 +562,7 @@ export const getTechnicalSpecs = (option) => {
       trainingStatus: 'All crew current on recurrent training, emergency procedures, and company standards'
     }
   }
-  
+
   // Default technical specs
   return {
     implementation: 'Standard recovery procedures following approved operational protocols',
@@ -628,7 +628,7 @@ export const getHistoricalData = (option) => {
 
   // Adjust success rate based on confidence
   const adjustedSuccessRate = Math.min(98, Math.max(75, confidence + Math.floor(Math.random() * 10) - 5))
-  
+
   // Pattern-based historical data
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
     return {
@@ -645,7 +645,7 @@ export const getHistoricalData = (option) => {
   if (optionId.includes('delay') || optionTitle.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const hours = timelineMatch ? parseInt(timelineMatch[1]) : 4
-    
+
     return {
       ...baseData,
       successRate: adjustedSuccessRate,
@@ -699,22 +699,22 @@ export const getAlternativeConsiderations = (option, flight) => {
       'Delay until next day considered but passenger accommodation costs exceed crew replacement',
       'Partner airline option available but would require passenger re-booking complexity',
       'Crew replacement fastest solution with minimal passenger disruption',
-      'Original crew available for next rotation after mandatory rest period'
+      'Original crew will be available for next rotation after mandatory rest period'
     ]
   }
-  
+
   // If exact match found, return it
   if (considerations[option.id]) {
     return considerations[option.id]
   }
-  
+
   // Generate dynamic considerations based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = (option.id || '').toLowerCase()
   const passengers = flight?.passengers || 167
   const origin = flight?.origin || 'DXB'
   const destination = flight?.destination || 'BOM'
-  
+
   // Aircraft swap pattern
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
     return [
@@ -725,12 +725,12 @@ export const getAlternativeConsiderations = (option, flight) => {
       'Alternative aircraft options evaluated with positioning requirements and route certifications considered'
     ]
   }
-  
+
   // Delay pattern
   if (optionId.includes('delay') || optionTitle.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const hours = timelineMatch ? parseInt(timelineMatch[1]) : 4
-    
+
     return [
       'Aircraft swap evaluated but suitable replacement aircraft not immediately available',
       `Diversion to alternative airport considered but adds significant travel time for ${passengers} passengers`,
@@ -739,7 +739,7 @@ export const getAlternativeConsiderations = (option, flight) => {
       hours >= 4 ? 'Shorter delay options insufficient for comprehensive technical resolution requirements' : 'Extended delay avoided through focused technical intervention approach'
     ]
   }
-  
+
   // Crew replacement pattern
   if (optionId.includes('crew') || optionTitle.includes('crew')) {
     return [
@@ -750,7 +750,7 @@ export const getAlternativeConsiderations = (option, flight) => {
       'Original crew will be available for subsequent rotations after mandatory rest period compliance'
     ]
   }
-  
+
   // Cancellation pattern
   if (optionId.includes('cancel') || optionTitle.includes('cancel')) {
     return [
@@ -761,7 +761,7 @@ export const getAlternativeConsiderations = (option, flight) => {
       'Partner airline coordination active to minimize rebooking delays and provide alternative routing options'
     ]
   }
-  
+
   // Default considerations
   return [
     'Comprehensive evaluation completed for all available recovery alternatives',
@@ -778,7 +778,7 @@ export const getStakeholderImpact = (option, flight) => {
   const connectingCount = Math.floor(passengerCount * 0.25) // ~25% connecting
   const origin = flight?.origin || 'DXB'
   const destination = flight?.destination || 'BOM'
-  
+
   return {
     passengers: { 
       impact: `${passengerCount} passengers affected, ${vipCount} VIP priority passengers`, 
@@ -839,16 +839,16 @@ export const getEditableParameters = (option) => {
       { name: 'Crew Transport', type: 'select', value: 'Standard', options: ['Standard', 'Priority', 'Helicopter'], impact: 'cost', description: 'Crew transportation method' }
     ]
   }
-  
+
   // If exact match found, return it
   if (editableParams[option.id]) {
     return editableParams[option.id]
   }
-  
+
   // Generate dynamic parameters based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = (option.id || '').toLowerCase()
-  
+
   // Aircraft swap pattern
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
     return [
@@ -858,12 +858,12 @@ export const getEditableParameters = (option) => {
       { name: 'Passenger Compensation', type: 'switch', value: false, impact: 'cost', description: 'Additional compensation beyond standard' }
     ]
   }
-  
+
   // Delay pattern
   if (optionId.includes('delay') || optionTitle.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const defaultMinutes = timelineMatch ? parseInt(timelineMatch[1]) * 60 : 240
-    
+
     return [
       { name: 'Delay Duration', type: 'slider', value: defaultMinutes, min: 60, max: 720, unit: 'minutes', impact: 'cost', description: 'Total delay time' },
       { name: 'Accommodation Level', type: 'select', value: 'Standard', options: ['Budget', 'Standard', 'Premium'], impact: 'cost', description: 'Passenger accommodation level' },
@@ -871,7 +871,7 @@ export const getEditableParameters = (option) => {
       { name: 'Transport Method', type: 'select', value: 'Coach', options: ['Coach', 'Individual Taxi', 'Mixed'], impact: 'cost', description: 'Passenger transportation method' }
     ]
   }
-  
+
   // Crew replacement pattern
   if (optionId.includes('crew') || optionTitle.includes('crew')) {
     return [
@@ -881,7 +881,7 @@ export const getEditableParameters = (option) => {
       { name: 'Backup Crew Alert', type: 'switch', value: true, impact: 'cost', description: 'Alert additional backup crew' }
     ]
   }
-  
+
   // Default parameters
   return [
     { name: 'Implementation Priority', type: 'select', value: 'Standard', options: ['Standard', 'High', 'Emergency'], impact: 'cost', description: 'Resource allocation priority' },
@@ -908,18 +908,18 @@ export const getWhatIfScenarios = (option) => {
       { scenario: 'Extended briefing required', impact: 'Additional AED 3,500 + 30min delay', probability: 30, timeline: '45 minutes' }
     ]
   }
-  
+
   // If exact match found, return it
   if (scenarios[option.id]) {
     return scenarios[option.id]
   }
-  
+
   // Generate dynamic what-if scenarios based on option type
   const optionTitle = (option.title || '').toLowerCase()
   const optionId = (option.id || '').toLowerCase()
   const costMatch = (option.cost || '').match(/[\d,]+/)
   const baseCost = costMatch ? parseInt(costMatch[0].replace(/,/g, '')) : 50000
-  
+
   // Aircraft swap pattern
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
     return [
@@ -929,12 +929,12 @@ export const getWhatIfScenarios = (option) => {
       { scenario: 'Weather impacts aircraft positioning', impact: `Additional AED ${Math.round(baseCost * 0.1).toLocaleString()} + delay`, probability: 20, timeline: '1 hour' }
     ]
   }
-  
+
   // Delay pattern
   if (optionId.includes('delay') || optionTitle.includes('delay')) {
     const timelineMatch = option.timeline?.match(/(\d+)/)
     const hours = timelineMatch ? parseInt(timelineMatch[1]) : 4
-    
+
     return [
       { scenario: 'Issue resolved earlier than expected', impact: `Save AED ${Math.round(baseCost * 0.3).toLocaleString()} accommodation costs`, probability: 25, timeline: `${Math.max(1, hours - 2)} hours` },
       { scenario: hours >= 4 ? 'Hotel capacity insufficient' : 'Terminal capacity issues', impact: `Additional AED ${Math.round(baseCost * 0.15).toLocaleString()} alternative arrangements`, probability: 10, timeline: '30 minutes' },
@@ -942,7 +942,7 @@ export const getWhatIfScenarios = (option) => {
       { scenario: 'Passenger rebooking requests', impact: `AED ${Math.round(baseCost * 0.2).toLocaleString()} alternative flight costs`, probability: 15, timeline: 'Immediate' }
     ]
   }
-  
+
   // Crew replacement pattern
   if (optionId.includes('crew') || optionTitle.includes('crew')) {
     return [
@@ -952,7 +952,7 @@ export const getWhatIfScenarios = (option) => {
       { scenario: 'Weather impacts crew transport', impact: `Additional AED ${Math.round(baseCost * 0.1).toLocaleString()} + delay`, probability: 15, timeline: '30 minutes' }
     ]
   }
-  
+
   // Default scenarios
   return [
     { scenario: 'Standard recovery proceeds smoothly', impact: 'No additional costs, on-time completion', probability: 70, timeline: 'As planned' },

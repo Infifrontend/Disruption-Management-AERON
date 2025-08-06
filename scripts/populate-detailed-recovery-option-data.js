@@ -1,12 +1,11 @@
-
 import pkg from 'pg';
 const { Pool } = pkg;
 import 'dotenv/config';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('neon.tech') 
-    ? { rejectUnauthorized: false } 
+  ssl: process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('neon.tech')
+    ? { rejectUnauthorized: false }
     : false
 });
 
@@ -15,178 +14,84 @@ const sampleRotationPlanData = {
   "AIRCRAFT_SWAP": {
     aircraftOptions: [
       {
-        reg: "A6-FED",
-        type: "B737-800 (189Y)",
-        etops: { status: "available", value: "180min" },
-        cabinMatch: { status: "exact", value: "Exact" },
-        availability: "Available Now",
-        assigned: { status: "none", value: "None" },
-        turnaround: "45 min",
-        maintenance: { status: "current", value: "Current" },
-        recommended: true
-      },
-      {
-        reg: "A6-FEL",
-        type: "B737-MAX8 (189Y)",
-        etops: { status: "available", value: "180min" },
-        cabinMatch: { status: "similar", value: "Similar" },
-        availability: "Available 14:30",
-        assigned: { status: "assigned", value: "FZ892" },
-        turnaround: "60 min",
-        maintenance: { status: "current", value: "Current" },
-        recommended: false
+        registration: "A6-FED",
+        type: "B737-800",
+        location: "DXB Gate C15",
+        availability: "Available",
+        suitability: "100% - Same aircraft type"
       }
     ],
     crewData: [
       {
-        name: "Capt. Ahmed Al-Mansouri",
         role: "Captain",
-        type: "B737 Type Rating",
-        status: "Available",
-        issue: null
-      },
-      {
-        name: "FO Sarah Johnson",
-        role: "First Officer",
-        type: "B737/MAX Type Rating",
-        status: "Available",
-        issue: null
+        name: "Sarah Johnson",
+        qualification: "B737 Type Rating",
+        availability: "Available"
       }
     ],
     nextSectors: [
       {
-        flight: "FZ456 DXB-BOM",
-        departure: "Dep: 18:30 → 19:45 (+75min)",
-        impact: "High Impact",
-        reason: "Aircraft swap delay"
+        flightNumber: "FZ125",
+        route: "DXB-BOM",
+        scheduledTime: "14:30",
+        impact: "Minimal delay expected"
       }
-    ],
-    operationalConstraints: {
-      gateCompatibility: {
-        status: "Compatible",
-        details: "All gates compatible with B737-800"
-      },
-      slotCapacity: {
-        status: "Coordination Required",
-        details: "New departure slot needed"
-      },
-      curfewViolation: {
-        status: "No Risk",
-        details: "Within curfew limits"
-      },
-      passengerConnections: {
-        status: "Minimal Impact",
-        details: "No significant connection issues"
-      }
-    },
-    costBreakdown: {
-      delayCost: 34200,
-      fuelEfficiency: "+2.1%",
-      hotelTransport: 840,
-      eu261Risk: "Medium"
-    },
-    recommendation: {
-      aircraft: "A6-FED",
-      reason: "Optimal balance across cost (92%), delay minimization (88%), crew impact (95%), and fuel efficiency (91%). Immediate availability with exact cabin configuration match."
-    }
+    ]
   },
   "DELAY_REPAIR": {
     aircraftOptions: [
       {
-        reg: "A6-FDZ",
-        type: "B737-800 (189Y)",
-        etops: { status: "available", value: "180min" },
-        cabinMatch: { status: "exact", value: "Exact" },
-        availability: "Delayed 4-6h",
-        assigned: { status: "none", value: "None" },
-        turnaround: "30 min",
-        maintenance: { status: "aog", value: "Under Maintenance" },
-        recommended: true
+        registration: "A6-FDB",
+        type: "B737-800",
+        location: "DXB Maintenance",
+        availability: "Under Repair",
+        suitability: "Original aircraft"
       }
     ],
     crewData: [
       {
-        name: "Capt. Ahmed Al-Mansouri",
-        role: "Captain",
-        type: "B737 Type Rating",
-        status: "Available",
-        issue: null
+        role: "Maintenance Team",
+        name: "Technical Services",
+        qualification: "B737 Certified",
+        availability: "On Site"
       }
     ],
-    nextSectors: [
-      {
-        flight: "FZ456 DXB-BOM",
-        departure: "Dep: 18:30 → 22:30 (+4h)",
-        impact: "Medium Impact",
-        reason: "Direct delay impact"
-      }
-    ],
-    operationalConstraints: {
-      gateCompatibility: {
-        status: "Original Gate",
-        details: "Same gate assignment maintained"
-      },
-      slotCapacity: {
-        status: "Coordination Required",
-        details: "Destination slot coordination required"
-      },
-      curfewViolation: {
-        status: "Risk",
-        details: "Arrival may violate 23:00 curfew"
-      },
-      passengerConnections: {
-        status: "Affected",
-        details: "47 passengers miss onward connections"
-      }
-    },
-    costBreakdown: {
-      delayCost: 67200,
-      fuelEfficiency: "+0.8%",
-      hotelTransport: 8450,
-      eu261Risk: "High"
-    },
-    recommendation: {
-      aircraft: "A6-FDZ",
-      reason: "Manageable delay impact with 85% confidence. Maintains operational continuity with minimal crew changes."
-    }
+    nextSectors: []
+  },
+  "STANDARD": {
+    aircraftOptions: [],
+    crewData: [],
+    nextSectors: []
   }
 };
 
 const sampleCostAnalysisData = {
   "AIRCRAFT_SWAP": {
     costCategories: [
-      {
-        category: "Aircraft Positioning",
-        amount: "AED 12,000",
-        percentage: 64,
-        description: "Aircraft swap and positioning costs",
-        breakdown: [
-          { item: "Fuel for positioning", cost: "AED 4,500" },
-          { item: "Crew positioning", cost: "AED 3,200" },
-          { item: "Ground handling", cost: "AED 4,300" }
-        ]
-      },
-      {
-        category: "Passenger Handling",
-        amount: "AED 4,250",
-        percentage: 23,
-        description: "Gate change and boarding",
-        breakdown: [
-          { item: "Gate change coordination", cost: "AED 1,800" },
-          { item: "Passenger notifications", cost: "AED 1,200" },
-          { item: "Additional boarding time", cost: "AED 1,250" }
-        ]
-      }
+      { category: "Aircraft Positioning", amount: 8750, percentage: 35 },
+      { category: "Ground Handling", amount: 6250, percentage: 25 },
+      { category: "Passenger Services", amount: 6250, percentage: 25 },
+      { category: "Administrative", amount: 3750, percentage: 15 }
     ],
-    totalCost: 18750,
+    totalCost: 25000,
     costComparison: {
-      vsDelay: { difference: "-AED 15,000", percentage: "-44%" },
-      vsCancellation: { difference: "-AED 31,250", percentage: "-62%" }
-    },
-    savingsAnalysis: {
-      passengerCompensation: "AED 8,400 saved",
-      hotelCosts: "AED 12,500 saved",
-      revenueProtection: "AED 45,000 protected"
+      baseline: 25000,
+      alternative: 45000,
+      savings: 20000
+    }
+  },
+  "DELAY_REPAIR": {
+    costCategories: [
+      { category: "Maintenance Labor", amount: 2550, percentage: 30 },
+      { category: "Parts", amount: 2125, percentage: 25 },
+      { category: "Passenger Compensation", amount: 2975, percentage: 35 },
+      { category: "Operations", amount: 850, percentage: 10 }
+    ],
+    totalCost: 8500,
+    costComparison: {
+      baseline: 8500,
+      alternative: 25000,
+      savings: 16500
     }
   }
 };
@@ -194,150 +99,93 @@ const sampleCostAnalysisData = {
 const sampleTimelineData = {
   "AIRCRAFT_SWAP": {
     timelineSteps: [
-      {
-        step: "Aircraft Identification",
-        duration: "15 min",
-        startTime: "14:00",
-        endTime: "14:15",
-        details: "Identify and confirm alternative aircraft availability",
-        status: "completed",
-        dependencies: ["Maintenance clearance", "Crew availability"],
-        criticalPath: true
-      },
-      {
-        step: "Crew Briefing",
-        duration: "20 min",
-        startTime: "14:15",
-        endTime: "14:35",
-        details: "Brief crew on aircraft change and specific considerations",
-        status: "in-progress",
-        dependencies: ["Aircraft confirmation"],
-        criticalPath: true
-      },
-      {
-        step: "Passenger Transfer",
-        duration: "30 min",
-        startTime: "14:35",
-        endTime: "15:05",
-        details: "Transfer passengers and luggage to new aircraft",
-        status: "pending",
-        dependencies: ["Gate coordination"],
-        criticalPath: false
-      }
+      { step: "Identify Spare Aircraft", duration: "10 min", status: "completed" },
+      { step: "Position Aircraft", duration: "15 min", status: "in-progress" },
+      { step: "Crew Reassignment", duration: "20 min", status: "pending" },
+      { step: "Passenger Transfer", duration: "20 min", status: "pending" },
+      { step: "Final Checks", duration: "10 min", status: "pending" }
     ],
     criticalPath: {
       totalDuration: "75 minutes",
-      steps: ["Aircraft Identification", "Crew Briefing", "Final Checks"],
-      bottlenecks: ["Crew briefing time", "Aircraft positioning"]
-    },
-    milestones: [
-      {
-        name: "Aircraft Confirmed",
-        time: "14:15",
-        status: "completed"
-      },
-      {
-        name: "Crew Ready",
-        time: "14:35",
-        status: "in-progress"
-      }
-    ]
+      criticalSteps: ["Position Aircraft", "Passenger Transfer"]
+    }
+  },
+  "DELAY_REPAIR": {
+    timelineSteps: [
+      { step: "Diagnostics", duration: "45 min", status: "completed" },
+      { step: "Parts Procurement", duration: "60 min", status: "in-progress" },
+      { step: "Repair Work", duration: "90 min", status: "pending" },
+      { step: "Testing", duration: "30 min", status: "pending" }
+    ],
+    criticalPath: {
+      totalDuration: "225 minutes",
+      criticalSteps: ["Repair Work", "Testing"]
+    }
   }
 };
 
 const sampleResourceData = {
   "AIRCRAFT_SWAP": {
     personnelRequirements: [
-      {
-        type: "Flight Crew",
-        resource: "Captain + First Officer",
-        availability: "Available",
-        status: "Confirmed",
-        location: "DXB Crew Room",
-        eta: "Immediate",
-        details: "Type-rated crew available for B737-800"
-      },
-      {
-        type: "Ground Crew",
-        resource: "Ramp Team (6 persons)",
-        availability: "Available",
-        status: "Dispatched",
-        location: "Gate C15",
-        eta: "10 minutes",
-        details: "Standard ground handling crew for aircraft positioning"
-      }
+      { role: "Ground Crew", count: 6, availability: "Available" },
+      { role: "Flight Crew", count: 2, availability: "Standby" }
     ],
     equipmentRequirements: [
-      {
-        type: "Ground Support",
-        resource: "Aircraft Tug",
-        availability: "Available",
-        status: "En Route",
-        location: "Maintenance Hangar",
-        eta: "15 minutes",
-        details: "Required for aircraft positioning to gate"
-      }
+      { equipment: "Ground Power Unit", availability: "Available" },
+      { equipment: "Baggage Loader", availability: "Available" }
     ],
     facilityRequirements: [
-      {
-        type: "Gate",
-        resource: "Gate C15",
-        availability: "Reserved",
-        status: "Confirmed",
-        location: "Terminal 2",
-        eta: "Immediate",
-        details: "Gate reserved for aircraft swap operation"
-      }
+      { facility: "Gate B3", availability: "Confirmed" }
+    ]
+  },
+  "DELAY_REPAIR": {
+    personnelRequirements: [
+      { role: "Maintenance Technician", count: 2, availability: "On Site" }
     ],
-    availabilityStatus: {
-      overall: "95% Ready",
-      constraints: ["Tug positioning time"],
-      riskFactors: ["Weather conditions", "ATC delays"]
-    }
+    equipmentRequirements: [
+      { equipment: "Hydraulic Test Kit", availability: "Available" }
+    ],
+    facilityRequirements: [
+      { facility: "Maintenance Bay", availability: "Occupied" }
+    ]
   }
 };
 
 const sampleTechnicalSpecs = {
   "AIRCRAFT_SWAP": {
     aircraftSpecs: {
-      originalAircraft: {
-        registration: "A6-FDZ",
-        type: "B737-800",
-        configuration: "189Y",
-        etopsRating: "180min"
-      },
-      replacementAircraft: {
-        registration: "A6-FED",
-        type: "B737-800",
-        configuration: "189Y",
-        etopsRating: "180min"
-      },
-      compatibility: "100% - Identical aircraft type and configuration"
+      originalAircraft: "A6-FDB - B737-800",
+      replacementAircraft: "A6-FED - B737-800",
+      compatibility: "100% - Identical type"
     },
     operationalConstraints: {
       fuelRequirements: "Standard + 10% contingency",
-      crewRequirements: "B737 type rating mandatory",
-      maintenanceStatus: "Current - A-Check due in 150 flight hours",
-      performanceData: "Identical to original aircraft"
+      crewRequirements: "B737 type rating mandatory"
     },
     regulatoryRequirements: [
       "GCAA approval for aircraft change",
-      "Crew currency verification",
-      "Maintenance log transfer",
-      "Weight and balance recalculation"
-    ],
-    weatherLimitations: {
-      minimumVisibility: "1200m",
-      maximumCrosswind: "25 knots",
-      ceilingMinimum: "200ft",
-      operationalConstraints: "Standard Category II approach capability"
-    }
+      "Crew currency verification"
+    ]
+  },
+  "DELAY_REPAIR": {
+    aircraftSpecs: {
+      affectedSystem: "Hydraulic System",
+      repairComplexity: "Medium"
+    },
+    operationalConstraints: {
+      maintenanceWindow: "4 hours maximum",
+      partsAvailability: "In stock at DXB"
+    },
+    regulatoryRequirements: [
+      "Maintenance supervisor sign-off",
+      "Engineering approval"
+    ]
   }
 };
 
 async function populateDetailedRecoveryData() {
   console.log('🔄 Starting detailed recovery data population...');
-  
+
   try {
     // Get all recovery options
     const recoveryOptionsResult = await pool.query(`
@@ -345,12 +193,12 @@ async function populateDetailedRecoveryData() {
       FROM recovery_options
       ORDER BY id
     `);
-    
+
     console.log(`Found ${recoveryOptionsResult.rows.length} recovery options to populate`);
-    
+
     for (const option of recoveryOptionsResult.rows) {
       console.log(`Processing option: ${option.title} (ID: ${option.id})`);
-      
+
       // Determine data type based on option title
       let dataType = "STANDARD";
       if (option.title.toLowerCase().includes("swap")) {
@@ -358,7 +206,7 @@ async function populateDetailedRecoveryData() {
       } else if (option.title.toLowerCase().includes("delay")) {
         dataType = "DELAY_REPAIR";
       }
-      
+
       // Insert rotation plan details
       if (sampleRotationPlanData[dataType]) {
         await pool.query(`
@@ -366,52 +214,56 @@ async function populateDetailedRecoveryData() {
             recovery_option_id, aircraft_options, crew_data, next_sectors,
             operational_constraints, cost_breakdown, recommendation
           ) VALUES ($1, $2, $3, $4, $5, $6, $7)
-          ON CONFLICT DO NOTHING
+          ON CONFLICT (recovery_option_id) DO UPDATE SET
+            aircraft_options = EXCLUDED.aircraft_options,
+            updated_at = CURRENT_TIMESTAMP
         `, [
           option.id,
           JSON.stringify(sampleRotationPlanData[dataType].aircraftOptions),
           JSON.stringify(sampleRotationPlanData[dataType].crewData),
           JSON.stringify(sampleRotationPlanData[dataType].nextSectors),
-          JSON.stringify(sampleRotationPlanData[dataType].operationalConstraints),
-          JSON.stringify(sampleRotationPlanData[dataType].costBreakdown),
-          JSON.stringify(sampleRotationPlanData[dataType].recommendation)
+          JSON.stringify({}),
+          JSON.stringify({}),
+          JSON.stringify({})
         ]);
       }
-      
+
       // Insert cost analysis details
       if (sampleCostAnalysisData[dataType]) {
         await pool.query(`
           INSERT INTO cost_analysis_details (
-            recovery_option_id, cost_categories, total_cost,
-            cost_comparison, savings_analysis
+            recovery_option_id, cost_categories, total_cost, cost_comparison, savings_analysis
           ) VALUES ($1, $2, $3, $4, $5)
-          ON CONFLICT DO NOTHING
+          ON CONFLICT (recovery_option_id) DO UPDATE SET
+            cost_categories = EXCLUDED.cost_categories,
+            updated_at = CURRENT_TIMESTAMP
         `, [
           option.id,
           JSON.stringify(sampleCostAnalysisData[dataType].costCategories),
           sampleCostAnalysisData[dataType].totalCost,
           JSON.stringify(sampleCostAnalysisData[dataType].costComparison),
-          JSON.stringify(sampleCostAnalysisData[dataType].savingsAnalysis)
+          JSON.stringify({})
         ]);
       }
-      
+
       // Insert timeline details
       if (sampleTimelineData[dataType]) {
         await pool.query(`
           INSERT INTO timeline_details (
-            recovery_option_id, timeline_steps, critical_path,
-            dependencies, milestones
+            recovery_option_id, timeline_steps, critical_path, dependencies, milestones
           ) VALUES ($1, $2, $3, $4, $5)
-          ON CONFLICT DO NOTHING
+          ON CONFLICT (recovery_option_id) DO UPDATE SET
+            timeline_steps = EXCLUDED.timeline_steps,
+            updated_at = CURRENT_TIMESTAMP
         `, [
           option.id,
           JSON.stringify(sampleTimelineData[dataType].timelineSteps),
           JSON.stringify(sampleTimelineData[dataType].criticalPath),
-          JSON.stringify([]), // dependencies
-          JSON.stringify(sampleTimelineData[dataType].milestones)
+          JSON.stringify([]),
+          JSON.stringify([])
         ]);
       }
-      
+
       // Insert resource details
       if (sampleResourceData[dataType]) {
         await pool.query(`
@@ -419,16 +271,18 @@ async function populateDetailedRecoveryData() {
             recovery_option_id, personnel_requirements, equipment_requirements,
             facility_requirements, availability_status
           ) VALUES ($1, $2, $3, $4, $5)
-          ON CONFLICT DO NOTHING
+          ON CONFLICT (recovery_option_id) DO UPDATE SET
+            personnel_requirements = EXCLUDED.personnel_requirements,
+            updated_at = CURRENT_TIMESTAMP
         `, [
           option.id,
           JSON.stringify(sampleResourceData[dataType].personnelRequirements),
           JSON.stringify(sampleResourceData[dataType].equipmentRequirements),
           JSON.stringify(sampleResourceData[dataType].facilityRequirements),
-          JSON.stringify(sampleResourceData[dataType].availabilityStatus)
+          JSON.stringify({})
         ]);
       }
-      
+
       // Insert technical specifications
       if (sampleTechnicalSpecs[dataType]) {
         await pool.query(`
@@ -436,23 +290,24 @@ async function populateDetailedRecoveryData() {
             recovery_option_id, aircraft_specs, operational_constraints,
             regulatory_requirements, weather_limitations
           ) VALUES ($1, $2, $3, $4, $5)
-          ON CONFLICT DO NOTHING
+          ON CONFLICT (recovery_option_id) DO UPDATE SET
+            aircraft_specs = EXCLUDED.aircraft_specs,
+            updated_at = CURRENT_TIMESTAMP
         `, [
           option.id,
           JSON.stringify(sampleTechnicalSpecs[dataType].aircraftSpecs),
           JSON.stringify(sampleTechnicalSpecs[dataType].operationalConstraints),
           JSON.stringify(sampleTechnicalSpecs[dataType].regulatoryRequirements),
-          JSON.stringify(sampleTechnicalSpecs[dataType].weatherLimitations)
+          JSON.stringify({})
         ]);
       }
-      
-      console.log(`✅ Populated detailed data for option: ${option.title}`);
     }
-    
-    console.log('🎉 Detailed recovery data population completed successfully!');
-    
+
+    console.log('✅ Detailed recovery data population completed successfully!');
+
   } catch (error) {
     console.error('❌ Error populating detailed recovery data:', error);
+    throw error;
   } finally {
     await pool.end();
   }
