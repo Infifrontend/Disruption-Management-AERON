@@ -1815,7 +1815,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
       {/* Sticky Selected Flight Summary at Bottom */}
       {selectedFlight && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg">
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-black bg-opacity-50 shadow-lg">
           <div className="max-w-7xl mx-auto px-4 py-4">
             <Card className="border-blue-200 bg-blue-50 shadow-md">
               <CardContent className="p-4">
