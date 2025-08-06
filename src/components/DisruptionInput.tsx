@@ -761,23 +761,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     }));
   };
 
-  // Placeholder for handleGenerateRecoveryOptions if it exists elsewhere
-  const handleGenerateRecoveryOptions = () => {
-    // This function is called when the "Generate Recovery Options" button is clicked.
-    // It is assumed to be defined and handles the logic for generating recovery options.
-    // For this example, we'll simulate setting `isGenerating` state.
-    setIsGenerating(true);
-    // Simulate an API call or heavy processing
-    setTimeout(() => {
-      setIsGenerating(false);
-      // In a real scenario, you would navigate or show results here.
-      console.log("Generating recovery options...");
-      setRecoveryOptions([
-        { id: 1, description: "Option 1: Re-route flight via XYZ", status: "Pending" },
-        { id: 2, description: "Option 2: Delay flight by 2 hours", status: "Pending" },
-      ]);
-    }, 2000);
-  };
+  
 
 
   if (loading) {
@@ -1837,152 +1821,76 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       </div>
 
 
-      {/* Selected Flight Summary - Fixed at bottom with proper margin */}
+      {/* Selected Flight Summary - Matching the provided design */}
       {selectedFlight && (
-        <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-10 mt-4">
+        <div className="sticky bottom-0 left-0 right-0 bg-blue-600 text-white p-4 shadow-lg z-10 mt-4">
           <div className="max-w-7xl mx-auto">
-            {/* Compact Header */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center space-x-4">
-                <div className="text-sm font-medium text-gray-900">
-                  Selected: {selectedFlight.flightNumber} ({selectedFlight.route})
+            <div className="flex items-center justify-between">
+              {/* Left section with flight info */}
+              <div className="flex items-center space-x-6">
+                <div className="flex items-center space-x-2">
+                  <Plane className="h-5 w-5" />
+                  <span className="font-semibold">Selected Flight</span>
                 </div>
-                <div className="text-sm text-gray-600">
-                  {selectedFlight.passengers} passengers • {selectedFlight.delay}min delay
+                
+                <div className="flex items-center space-x-2">
+                  <span className="font-mono font-bold text-lg">{selectedFlight.flightNumber}</span>
+                  <span className="text-blue-200">{selectedFlight.origin} → {selectedFlight.destination}</span>
+                </div>
+                
+                <div className="flex items-center space-x-4 text-sm">
+                  <div className="flex items-center space-x-1">
+                    <Users className="h-4 w-4" />
+                    <span>{selectedFlight.passengers} passengers</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <span>{selectedFlight.connectionFlights} connections</span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Badge className="bg-yellow-500 text-yellow-900 border-yellow-400">
+                      {selectedFlight.currentStatus}
+                    </Badge>
+                    <Badge className="bg-red-500 text-white border-red-400">
+                      Critical
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div className="text-sm">
+                  <div>Aircraft: <span className="font-medium">{selectedFlight.aircraft}</span></div>
+                  <div>Departure: <span className="font-medium">
+                    {selectedFlight.scheduledDeparture ? 
+                      new Date(selectedFlight.scheduledDeparture).toLocaleString('en-GB', { 
+                        day: '2-digit', 
+                        month: 'short', 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      }) : 'N/A'
+                    }
+                  </span></div>
+                  <div>Category: <span className="font-medium">{selectedFlight.categorization}</span></div>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+
+              {/* Right section with buttons */}
+              <div className="flex items-center space-x-3">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setSelectedFlight(null)}
-                  className="text-xs"
+                  className="border-white text-white hover:bg-white hover:text-blue-600"
                 >
-                  <X className="h-3 w-3 mr-1" />
-                  Clear
+                  <X className="h-4 w-4 mr-1" />
+                  Clear Selection
                 </Button>
                 <Button
                   size="sm"
-                  onClick={handleGenerateRecoveryOptions}
-                  disabled={!selectedFlight || isGenerating}
-                  className="text-xs bg-flydubai-blue hover:bg-blue-700"
+                  onClick={() => onSelectFlight([selectedFlight])}
+                  className="bg-white text-blue-600 hover:bg-gray-100 font-semibold"
                 >
-                  {isGenerating ? (
-                    <>
-                      <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent mr-1"></div>
-                      Generating...
-                    </>
-                  ) : (
-                    <>
-                      <Zap className="h-3 w-3 mr-1" />
-                      Generate Recovery Options
-                    </>
-                  )}
+                  Generate Recovery Options
                 </Button>
               </div>
-            </div>
-
-            {/* Detailed Summary Information */}
-            <div className="bg-gray-50 rounded-lg p-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-sm">
-                {/* Flight Details */}
-                <div>
-                  <div className="font-medium text-gray-700 mb-1">Flight Info</div>
-                  <div className="text-gray-600">
-                    <div>Flight: {selectedFlight.flightNumber}</div>
-                    <div>Route: {selectedFlight.route}</div>
-                    <div>Aircraft: {selectedFlight.aircraft}</div>
-                  </div>
-                </div>
-
-                {/* Departure Details */}
-                <div>
-                  <div className="font-medium text-gray-700 mb-1">Departure</div>
-                  <div className="text-gray-600">
-                    <div>Scheduled: {selectedFlight.scheduledDeparture ? new Date(selectedFlight.scheduledDeparture).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'N/A'}</div>
-                    <div>Estimated: {selectedFlight.estimatedDeparture ? new Date(selectedFlight.estimatedDeparture).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }) : 'N/A'}</div>
-                    <div className={`font-medium ${selectedFlight.delay > 30 ? 'text-red-600' : selectedFlight.delay > 15 ? 'text-yellow-600' : 'text-green-600'}`}>
-                      Delay: {selectedFlight.delay}min
-                    </div>
-                  </div>
-                </div>
-
-                {/* Route Details */}
-                <div>
-                  <div className="font-medium text-gray-700 mb-1">Route</div>
-                  <div className="text-gray-600">
-                    <div>From: {selectedFlight.originCity || selectedFlight.origin}</div>
-                    <div>To: {selectedFlight.destinationCity || selectedFlight.destination}</div>
-                    <div>Connections: {selectedFlight.connectionFlights || 0}</div>
-                  </div>
-                </div>
-
-                {/* Passenger Info */}
-                <div>
-                  <div className="font-medium text-gray-700 mb-1">Passengers</div>
-                  <div className="text-gray-600">
-                    <div>Total: {selectedFlight.passengers}</div>
-                    <div>Crew: {selectedFlight.crew || 6}</div>
-                    <div>Affected: {selectedFlight.passengers + (selectedFlight.crew || 6)}</div>
-                  </div>
-                </div>
-
-                {/* Disruption Status */}
-                <div>
-                  <div className="font-medium text-gray-700 mb-1">Disruption</div>
-                  <div className="text-gray-600">
-                    <div>Type: {selectedFlight.type}</div>
-                    <div>Category: {selectedFlight.categorization || 'Uncategorized'}</div>
-                    <div className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                      selectedFlight.severity === 'High' ? 'bg-red-100 text-red-800' :
-                      selectedFlight.severity === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-green-100 text-green-800'
-                    }`}>
-                      {selectedFlight.severity}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Status & Actions */}
-                <div>
-                  <div className="font-medium text-gray-700 mb-1">Status</div>
-                  <div className="text-gray-600">
-                    <div className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                      selectedFlight.status === 'Active' ? 'bg-blue-100 text-blue-800' :
-                      selectedFlight.status === 'Resolved' ? 'bg-green-100 text-green-800' :
-                      selectedFlight.status === 'Diverted' ? 'bg-orange-100 text-orange-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {selectedFlight.status}
-                    </div>
-                    <div className="mt-1 text-xs">
-                      Created: {selectedFlight.createdAt ? new Date(selectedFlight.createdAt).toLocaleDateString() : 'N/A'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Disruption Reason */}
-              {selectedFlight.disruptionReason && (
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <div className="font-medium text-gray-700 mb-1">Disruption Reason</div>
-                  <div className="text-sm text-gray-600 bg-white p-2 rounded border">
-                    {selectedFlight.disruptionReason}
-                  </div>
-                </div>
-              )}
-
-              {/* Recovery Options Status */}
-              {recoveryOptions.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <div className="flex items-center justify-between">
-                    <div className="font-medium text-gray-700">Recovery Options Available</div>
-                    <div className="text-sm text-green-600 font-medium">
-                      {recoveryOptions.length} option{recoveryOptions.length !== 1 ? 's' : ''} generated
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           </div>
         </div>
