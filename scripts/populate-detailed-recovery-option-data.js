@@ -2,8 +2,17 @@ import pkg from 'pg';
 const { Pool } = pkg;
 import 'dotenv/config';
 
+// Handle Neon database endpoint ID requirement
+let connectionString = process.env.DATABASE_URL;
+if (connectionString?.includes('neon.tech') && !connectionString.includes('options=endpoint')) {
+  const url = new URL(connectionString);
+  const endpointId = url.hostname.split('.')[0];
+  url.searchParams.set('options', `endpoint=${endpointId}`);
+  connectionString = url.toString();
+}
+
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+  connectionString: connectionString,
   ssl: process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('neon.tech')
     ? { rejectUnauthorized: false }
     : false
@@ -187,6 +196,25 @@ async function populateDetailedRecoveryData() {
   console.log('🔄 Starting detailed recovery data population...');
 
   try {
+    // Check if required tables exist
+    const tableCheck = await pool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public' 
+      AND table_name IN ('rotation_plan_details', 'cost_analysis_details', 'timeline_details', 'resource_details', 'technical_specifications')
+    `);
+    
+    const existingTables = tableCheck.rows.map(row => row.table_name);
+    const requiredTables = ['rotation_plan_details', 'cost_analysis_details', 'timeline_details', 'resource_details', 'technical_specifications'];
+    const missingTables = requiredTables.filter(table => !existingTables.includes(table));
+    
+    if (missingTables.length > 0) {
+      console.error('❌ Missing required tables:', missingTables.join(', '));
+      console.log('📋 Please run: node scripts/apply-schema.js first');
+      return;
+    }
+    
+    console.log('✅ All required tables exist');
     // Get all recovery options
     const recoveryOptionsResult = await pool.query(`
       SELECT id, title, disruption_id
