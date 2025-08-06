@@ -1411,10 +1411,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Search Row - Reduced spacing */}
-            <div className="grid grid-cols-1 gap-3">
+            {/* First Row - Search */}
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Search</label>
+                <label className="text-sm font-medium mb-2 block">Search</label>
                 <div className="relative">
                   <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
                   <Input
@@ -1429,10 +1429,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </div>
             </div>
 
-            {/* Main Filters Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {/* Second Row - Main Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Status</label>
+                <label className="text-sm font-medium mb-2 block">Status</label>
                 <Select
                   value={filters.status}
                   onValueChange={(value) =>
@@ -1452,7 +1452,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-1 block">Priority</label>
+                <label className="text-sm font-medium mb-2 block">Priority</label>
                 <Select
                   value={filters.priority}
                   onValueChange={(value) =>
@@ -1473,7 +1473,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-1 block">Origin</label>
+                <label className="text-sm font-medium mb-2 block">Origin</label>
                 <Select
                   value={filters.origin}
                   onValueChange={(value) =>
@@ -1493,7 +1493,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-1 block">
+                <label className="text-sm font-medium mb-2 block">
                   Categorization
                 </label>
                 <Select
@@ -1505,13 +1505,13 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="All categories" />
                   </SelectTrigger>
-                  <SelectContent className="max-w-[300px]">
+                  <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
                     {Array.from(new Set(flights.map(f => f.categorization))).sort().map(cat => (
-                      <SelectItem key={cat} value={cat} className="max-w-[280px]">
-                        <div className="truncate max-w-[250px]" title={cat}>
-                          {cat.length > 35 ? `${cat.substring(0, 35)}...` : cat}
-                        </div>
+                      <SelectItem key={cat} value={cat}>
+                        <span className="truncate block max-w-[200px]" title={cat}>
+                          {cat}
+                        </span>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1519,7 +1519,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-1 block">Sort By</label>
+                <label className="text-sm font-medium mb-2 block">Sort By</label>
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-full">
                     <SelectValue />
@@ -1659,19 +1659,15 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                             <Badge
                               className={`${getCategorizationColor(
                                 flight.categorization,
-                              )} text-xs block max-w-full`}
+                              )} text-xs truncate block max-w-full`}
                               title={flight.categorization}
                             >
-                              <span className="truncate block max-w-[180px]">
-                                {flight.categorization.length > 25 
-                                  ? `${flight.categorization.substring(0, 25)}...` 
-                                  : flight.categorization}
+                              <span className="truncate">
+                                {flight.categorization}
                               </span>
                             </Badge>
-                            <div className="text-sm text-muted-foreground truncate max-w-[180px]" title={flight.disruptionReason}>
-                              {flight.disruptionReason.length > 30 
-                                ? `${flight.disruptionReason.substring(0, 30)}...` 
-                                : flight.disruptionReason}
+                            <div className="text-sm text-muted-foreground truncate" title={flight.disruptionReason}>
+                              {flight.disruptionReason}
                             </div>
                           </div>
                         </TableCell>
@@ -1728,62 +1724,59 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
               {/* Pagination Controls */}
               {sortedFlights.length > itemsPerPage && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-                  <div className="text-sm text-muted-foreground order-2 sm:order-1">
+                <div className="flex items-center justify-between mt-4">
+                  <div className="text-sm text-muted-foreground">
                     Page {currentPage} of {totalPages} ({sortedFlights.length} total flights)
                   </div>
-                  <div className="order-1 sm:order-2">
-                    <Pagination>
-                      <PaginationContent className="flex-wrap justify-center gap-1">
-                        <PaginationItem>
-                          <PaginationPrevious 
-                            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                            className={`${currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"} text-xs sm:text-sm px-2 py-1`}
-                          />
-                        </PaginationItem>
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
 
-                        {/* Page Numbers - Responsive display */}
-                        {Array.from({ length: Math.min(window.innerWidth < 640 ? 3 : 5, totalPages) }, (_, i) => {
-                          let pageNum;
-                          const maxVisible = window.innerWidth < 640 ? 3 : 5;
-                          if (totalPages <= maxVisible) {
-                            pageNum = i + 1;
-                          } else if (currentPage <= Math.floor(maxVisible/2) + 1) {
-                            pageNum = i + 1;
-                          } else if (currentPage >= totalPages - Math.floor(maxVisible/2)) {
-                            pageNum = totalPages - maxVisible + 1 + i;
-                          } else {
-                            pageNum = currentPage - Math.floor(maxVisible/2) + i;
-                          }
+                      {/* Page Numbers */}
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
 
-                          return (
-                            <PaginationItem key={pageNum}>
-                              <PaginationLink
-                                onClick={() => setCurrentPage(pageNum)}
-                                isActive={currentPage === pageNum}
-                                className="cursor-pointer text-xs sm:text-sm px-2 py-1 min-w-[32px] justify-center"
-                              >
-                                {pageNum}
-                              </PaginationLink>
-                            </PaginationItem>
-                          );
-                        })}
-
-                        {totalPages > (window.innerWidth < 640 ? 3 : 5) && currentPage < totalPages - (window.innerWidth < 640 ? 1 : 2) && (
-                          <PaginationItem>
-                            <PaginationEllipsis className="text-xs sm:text-sm px-2 py-1" />
+                        return (
+                          <PaginationItem key={pageNum}>
+                            <PaginationLink
+                              onClick={() => setCurrentPage(pageNum)}
+                              isActive={currentPage === pageNum}
+                              className="cursor-pointer"
+                            >
+                              {pageNum}
+                            </PaginationLink>
                           </PaginationItem>
-                        )}
+                        );
+                      })}
 
+                      {totalPages > 5 && currentPage < totalPages - 2 && (
                         <PaginationItem>
-                          <PaginationNext 
-                            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                            className={`${currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"} text-xs sm:text-sm px-2 py-1`}
-                          />
+                          <PaginationEllipsis />
                         </PaginationItem>
-                      </PaginationContent>
-                    </Pagination>
-                  </div>
+                      )}
+
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
                 </div>
               )}
 
