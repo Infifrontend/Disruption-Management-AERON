@@ -2108,7 +2108,6 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                         <div>
                           <span className="font-semibold">
                             Total Estimated Cost:
-                          ```
                           </span>
                           <p className="text-xs text-gray-600">
                             Including all operational expenses
@@ -3109,7 +3108,6 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
             </div>
             <div className="flex gap-2">
               <Button
-                variant="outline"
                 onClick={() => {
                   // Refresh suggestions logic
                   console.log(
@@ -3117,6 +3115,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                     selectedRotationData,
                   );
                 }}
+                variant="outline"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Refresh Suggestions
