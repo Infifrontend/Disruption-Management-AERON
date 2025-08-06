@@ -21,9 +21,14 @@ import {
   User,
   Phone,
   Mail,
-  Plus
+  Plus,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react'
+import { Alert } from './ui/alert'
 import { databaseService, FlightDisruption, PassengerData } from '../services/databaseService'
+
+const FLIGHTS_PER_PAGE = 10;
 
 export function AffectedFlightsList() {
   const [flights, setFlights] = useState<FlightDisruption[]>([])
@@ -40,6 +45,7 @@ export function AffectedFlightsList() {
     destination: 'all',
     search: ''
   })
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchFlights()
@@ -94,6 +100,15 @@ export function AffectedFlightsList() {
         !flight.destinationCity.toLowerCase().includes(filters.search.toLowerCase())) return false
     return true
   })
+
+  const startIndex = (currentPage - 1) * FLIGHTS_PER_PAGE;
+  const endIndex = startIndex + FLIGHTS_PER_PAGE;
+  const paginatedFlights = filteredFlights.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(filteredFlights.length / FLIGHTS_PER_PAGE);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -463,32 +478,101 @@ export function AffectedFlightsList() {
                     </p>
                   )))}
                 </div>
-              </div>
+              </Card>
             ))
           })()}
+
           {filteredFlights.length === 0 && (
-              <div className="text-center py-12">
-                <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <Plane className="h-8 w-8 text-gray-400" />
+            <div className="text-center py-12">
+              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Plane className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No affected flights found</h3>
+              <p className="text-gray-500 mb-4">
+                {flights.length === 0 
+                  ? "There are currently no flight disruptions in the system."
+                  : "No flights match your current filter criteria."
+                }
+              </p>
+              {flights.length === 0 && (
+                <div className="flex justify-center gap-2">
+                  <Button variant="outline" onClick={fetchFlights} className="flex items-center gap-2">
+                    <RefreshCw className="h-4 w-4" />
+                    Refresh Data
+                  </Button>
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No affected flights found</h3>
-                <p className="text-gray-500 mb-4">
-                  {flights.length === 0 
-                    ? "There are currently no flight disruptions in the system."
-                    : "No flights match your current filter criteria."
-                  }
-                </p>
-                {flights.length === 0 && (
-                  <div className="flex justify-center gap-2">
-                    <Button variant="outline" onClick={fetchFlights} className="flex items-center gap-2">
-                      <RefreshCw className="h-4 w-4" />
-                      Refresh Data
+              )}
+            </div>
+          )}
+
+          {/* Pagination Navigation */}
+          {filteredFlights.length > 0 && totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex items-center gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+
+              <div className="flex items-center gap-2">
+                {/* First page */}
+                {currentPage > 3 && (
+                  <>
+                    <Button
+                      variant={1 === currentPage ? "default" : "outline"}
+                      onClick={() => handlePageChange(1)}
+                      size="sm"
+                    >
+                      1
                     </Button>
-                  </div>
+                    {currentPage > 4 && <span className="text-muted-foreground">...</span>}
+                  </>
+                )}
+
+                {/* Page numbers around current page */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => page >= currentPage - 2 && page <= currentPage + 2)
+                  .map(page => (
+                    <Button
+                      key={page}
+                      variant={page === currentPage ? "default" : "outline"}
+                      onClick={() => handlePageChange(page)}
+                      size="sm"
+                    >
+                      {page}
+                    </Button>
+                  ))}
+
+                {/* Last page */}
+                {currentPage < totalPages - 2 && (
+                  <>
+                    {currentPage < totalPages - 3 && <span className="text-muted-foreground">...</span>}
+                    <Button
+                      variant={totalPages === currentPage ? "default" : "outline"}
+                      onClick={() => handlePageChange(totalPages)}
+                      size="sm"
+                    >
+                      {totalPages}
+                    </Button>
+                  </>
                 )}
               </div>
-            )}
-          </div>
+
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-2"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </CardContent>
       </Card>
 
