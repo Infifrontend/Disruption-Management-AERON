@@ -71,12 +71,12 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
   // Generate comprehensive crew tracking data based on recovery option
   const generateCrewTrackingData = () => {
     const currentDate = new Date()
-    
+
     const flightNumber = flight?.flightNumber || 'FZ123'
     const origin = flight?.origin || 'DXB'
     const destination = flight?.destination || 'BOM'
     const aircraft = flight?.aircraft || 'B737-800'
-    
+
     const baseData = {
       'AIRCRAFT_SWAP_A320_001': {
         crews: [
@@ -214,13 +214,13 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
     const slots = []
     const start = new Date(currentTime.getTime() - 2 * 60 * 60 * 1000)
     const end = new Date(currentTime.getTime() + 22 * 60 * 60 * 1000)
-    
+
     const interval = timeScale === 'hour' ? 60 : timeScale === '30min' ? 30 : 15
-    
+
     for (let time = new Date(start); time <= end; time.setMinutes(time.getMinutes() + interval)) {
       slots.push(new Date(time))
     }
-    
+
     return slots
   }
 
@@ -256,7 +256,7 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
         default: return 'bg-gray-500'
       }
     }
-    
+
     switch (assignment.type) {
       case 'briefing': return 'bg-blue-400'
       case 'positioning': return 'bg-green-500' 
@@ -272,7 +272,7 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
     const newPlan = { ...modifiedPlan }
     if (!newPlan.crewChanges) newPlan.crewChanges = {}
     if (!newPlan.crewChanges[crewId]) newPlan.crewChanges[crewId] = {}
-    
+
     newPlan.crewChanges[crewId][field] = value
     setModifiedPlan(newPlan)
 
@@ -433,7 +433,7 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
               <Calendar className="h-5 w-5 text-flydubai-blue" />
               {viewMode === 'crew' ? 'Crew' : viewMode === 'aircraft' ? 'Aircraft' : 'Flight'} Timeline
             </CardTitle>
-            
+
             {/* Timeline Controls */}
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm">
@@ -449,258 +449,260 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {/* Time Header */}
-            <div className="relative">
-              <div className="flex">
-                <div className="w-64 flex-shrink-0"></div>
-                <div className="flex-1 relative">
-                  <div className="flex border-b border-gray-200">
-                    {timeSlots.filter((_, index) => index % (timeScale === 'hour' ? 1 : timeScale === '30min' ? 2 : 4) === 0).map((slot, index) => (
-                      <div key={index} className="flex-1 text-center py-2 text-xs border-r border-gray-100 last:border-r-0">
-                        <div className="font-medium">{formatTime(slot)}</div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {/* Current time indicator */}
-                  <div 
-                    className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20"
-                    style={{ left: `${getTimelinePosition(currentTime)}%` }}
-                  >
-                    <div className="absolute -top-1 -left-2 w-4 h-2 bg-red-500 rounded"></div>
+          <ScrollArea className="max-h-[60vh] w-full">
+            <div className="space-y-4">
+              {/* Time Header */}
+              <div className="relative">
+                <div className="flex">
+                  <div className="w-64 flex-shrink-0"></div>
+                  <div className="flex-1 relative">
+                    <div className="flex border-b border-gray-200">
+                      {timeSlots.filter((_, index) => index % (timeScale === 'hour' ? 1 : timeScale === '30min' ? 2 : 4) === 0).map((slot, index) => (
+                        <div key={index} className="flex-1 text-center py-2 text-xs border-r border-gray-100 last:border-r-0">
+                          <div className="font-medium">{formatTime(slot)}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Current time indicator */}
+                    <div 
+                      className="absolute top-0 bottom-0 w-0.5 bg-red-500 z-20"
+                      style={{ left: `${getTimelinePosition(currentTime)}%` }}
+                    >
+                      <div className="absolute -top-1 -left-2 w-4 h-2 bg-red-500 rounded"></div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            {/* Crew Rows */}
-            {viewMode === 'crew' && crewData.crews.map((crew, crewIndex) => (
-              <div key={crew.id} className="space-y-1">
-                {/* Crew Header */}
-                <div className="flex">
-                  <div className="w-64 flex-shrink-0 pr-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-sm">{crew.name}</h4>
-                        <p className="text-xs text-muted-foreground">
-                          {crew.captain.name.split(' ').slice(-1)[0]} / {crew.firstOfficer.name.split(' ').slice(-1)[0]}
-                        </p>
-                      </div>
-                      {editMode && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedCrewMember(crew)
-                            setShowEditDialog(true)
-                          }}
-                        >
-                          <Edit className="h-3 w-3" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="flex-1 relative h-12 bg-gray-50 border border-gray-200 rounded">
-                    {/* Assignments */}
-                    {crew.assignments.map((assignment, assignIndex) => {
-                      const startPos = getTimelinePosition(assignment.scheduledDeparture || assignment.scheduledStart)
-                      const width = getDurationWidth(
-                        assignment.scheduledDeparture || assignment.scheduledStart,
-                        assignment.scheduledArrival || assignment.scheduledEnd
-                      )
-                      
-                      return (
-                        <div
-                          key={assignIndex}
-                          className={`absolute top-1 bottom-1 rounded text-white text-xs flex items-center justify-center font-medium shadow-sm ${getAssignmentColor(assignment)}`}
-                          style={{
-                            left: `${startPos}%`,
-                            width: `${width}%`,
-                            minWidth: '40px'
-                          }}
-                          title={`${assignment.type}: ${assignment.description || assignment.flightNumber} (${formatTime(assignment.scheduledDeparture || assignment.scheduledStart)} - ${formatTime(assignment.scheduledArrival || assignment.scheduledEnd)})`}
-                        >
-                          <span className="truncate px-1">
-                            {assignment.flightNumber || assignment.type.toUpperCase()}
-                          </span>
+              {/* Crew Rows */}
+              {viewMode === 'crew' && crewData.crews.map((crew, crewIndex) => (
+                <div key={crew.id} className="space-y-1">
+                  {/* Crew Header */}
+                  <div className="flex">
+                    <div className="w-64 flex-shrink-0 pr-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium text-sm">{crew.name}</h4>
+                          <p className="text-xs text-muted-foreground">
+                            {crew.captain.name.split(' ').slice(-1)[0]} / {crew.firstOfficer.name.split(' ').slice(-1)[0]}
+                          </p>
                         </div>
-                      )
-                    })}
-                  </div>
-                </div>
-
-                {/* Duty Time Progress */}
-                <div className="flex">
-                  <div className="w-64 flex-shrink-0 pr-4">
-                    <div className="flex justify-between text-xs">
-                      <span>Duty: {crew.captain.dutyTime}h</span>
-                      <span>Max: {crew.captain.maxDutyTime}h</span>
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full transition-all ${getDutyTimeColor(crew.captain.dutyTime, crew.captain.maxDutyTime)}`}
-                        style={{ width: `${getDutyTimeProgress(crew.captain.dutyTime, crew.captain.maxDutyTime)}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Crew Members Details */}
-                <div className="ml-4 pl-4 border-l border-gray-200 space-y-2">
-                  {/* Captain */}
-                  <div className="flex">
-                    <div className="w-60 flex-shrink-0 pr-4">
-                      <div className="flex items-center gap-2">
-                        <User className="h-3 w-3 text-blue-600" />
-                        <span className="text-xs">{crew.captain.name}</span>
-                        <Badge variant="outline" className="text-xs">CPT</Badge>
+                        {editMode && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedCrewMember(crew)
+                              setShowEditDialog(true)
+                            }}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                        )}
                       </div>
                     </div>
-                    <div className="flex-1 relative h-6 bg-blue-50 border border-blue-200 rounded">
-                      {crew.assignments.filter(a => a.type === 'flight').map((assignment, index) => {
-                        const startPos = getTimelinePosition(assignment.scheduledDeparture)
-                        const width = getDurationWidth(assignment.scheduledDeparture, assignment.scheduledArrival)
-                        
+
+                    <div className="flex-1 relative h-12 bg-gray-50 border border-gray-200 rounded">
+                      {/* Assignments */}
+                      {crew.assignments.map((assignment, assignIndex) => {
+                        const startPos = getTimelinePosition(assignment.scheduledDeparture || assignment.scheduledStart)
+                        const width = getDurationWidth(
+                          assignment.scheduledDeparture || assignment.scheduledStart,
+                          assignment.scheduledArrival || assignment.scheduledEnd
+                        )
+
                         return (
                           <div
-                            key={index}
-                            className="absolute top-0.5 bottom-0.5 bg-blue-600 text-white text-xs flex items-center justify-center rounded"
+                            key={assignIndex}
+                            className={`absolute top-1 bottom-1 rounded text-white text-xs flex items-center justify-center font-medium shadow-sm ${getAssignmentColor(assignment)}`}
                             style={{
                               left: `${startPos}%`,
                               width: `${width}%`,
-                              minWidth: '30px'
+                              minWidth: '40px'
                             }}
+                            title={`${assignment.type}: ${assignment.description || assignment.flightNumber} (${formatTime(assignment.scheduledDeparture || assignment.scheduledStart)} - ${formatTime(assignment.scheduledArrival || assignment.scheduledEnd)})`}
                           >
-                            <Plane className="h-3 w-3" />
+                            <span className="truncate px-1">
+                              {assignment.flightNumber || assignment.type.toUpperCase()}
+                            </span>
                           </div>
                         )
                       })}
                     </div>
                   </div>
 
-                  {/* First Officer */}
+                  {/* Duty Time Progress */}
                   <div className="flex">
-                    <div className="w-60 flex-shrink-0 pr-4">
-                      <div className="flex items-center gap-2">
-                        <User className="h-3 w-3 text-green-600" />
-                        <span className="text-xs">{crew.firstOfficer.name}</span>
-                        <Badge variant="outline" className="text-xs">F/O</Badge>
+                    <div className="w-64 flex-shrink-0 pr-4">
+                      <div className="flex justify-between text-xs">
+                        <span>Duty: {crew.captain.dutyTime}h</span>
+                        <span>Max: {crew.captain.maxDutyTime}h</span>
                       </div>
                     </div>
-                    <div className="flex-1 relative h-6 bg-green-50 border border-green-200 rounded">
-                      {crew.assignments.filter(a => a.type === 'flight').map((assignment, index) => {
-                        const startPos = getTimelinePosition(assignment.scheduledDeparture)
-                        const width = getDurationWidth(assignment.scheduledDeparture, assignment.scheduledArrival)
-                        
-                        return (
-                          <div
-                            key={index}
-                            className="absolute top-0.5 bottom-0.5 bg-green-600 text-white text-xs flex items-center justify-center rounded"
-                            style={{
-                              left: `${startPos}%`,
-                              width: `${width}%`,
-                              minWidth: '30px'
-                            }}
-                          >
-                            <Plane className="h-3 w-3" />
-                          </div>
-                        )
-                      })}
+                    <div className="flex-1">
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all ${getDutyTimeColor(crew.captain.dutyTime, crew.captain.maxDutyTime)}`}
+                          style={{ width: `${getDutyTimeProgress(crew.captain.dutyTime, crew.captain.maxDutyTime)}%` }}
+                        ></div>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Cabin Crew */}
-                  {crew.cabinCrew.map((cc, ccIndex) => (
-                    <div key={cc.id} className="flex">
+                  {/* Crew Members Details */}
+                  <div className="ml-4 pl-4 border-l border-gray-200 space-y-2">
+                    {/* Captain */}
+                    <div className="flex">
                       <div className="w-60 flex-shrink-0 pr-4">
                         <div className="flex items-center gap-2">
-                          <Users className="h-3 w-3 text-purple-600" />
-                          <span className="text-xs">{cc.name}</span>
-                          <Badge variant="outline" className="text-xs">FA</Badge>
+                          <User className="h-3 w-3 text-blue-600" />
+                          <span className="text-xs">{crew.captain.name}</span>
+                          <Badge variant="outline" className="text-xs">CPT</Badge>
                         </div>
                       </div>
-                      <div className="flex-1 relative h-6 bg-purple-50 border border-purple-200 rounded">
+                      <div className="flex-1 relative h-6 bg-blue-50 border border-blue-200 rounded">
                         {crew.assignments.filter(a => a.type === 'flight').map((assignment, index) => {
                           const startPos = getTimelinePosition(assignment.scheduledDeparture)
                           const width = getDurationWidth(assignment.scheduledDeparture, assignment.scheduledArrival)
-                          
+
                           return (
                             <div
                               key={index}
-                              className="absolute top-0.5 bottom-0.5 bg-purple-600 text-white text-xs flex items-center justify-center rounded"
+                              className="absolute top-0.5 bottom-0.5 bg-blue-600 text-white text-xs flex items-center justify-center rounded"
                               style={{
                                 left: `${startPos}%`,
                                 width: `${width}%`,
                                 minWidth: '30px'
                               }}
                             >
-                              <Users className="h-3 w-3" />
+                              <Plane className="h-3 w-3" />
                             </div>
                           )
                         })}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            ))}
 
-            {/* Aircraft View */}
-            {viewMode === 'aircraft' && crewData.aircraft.map((aircraft, index) => (
-              <div key={aircraft.id} className="space-y-2">
-                <div className="flex">
-                  <div className="w-64 flex-shrink-0 pr-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-sm">{aircraft.registration}</h4>
-                        <p className="text-xs text-muted-foreground">{aircraft.type}</p>
-                        <Badge className={`text-xs ${
-                          aircraft.status.includes('Available') ? 'bg-green-100 text-green-800' :
-                          aircraft.status.includes('Technical') ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {aircraft.status}
-                        </Badge>
+                    {/* First Officer */}
+                    <div className="flex">
+                      <div className="w-60 flex-shrink-0 pr-4">
+                        <div className="flex items-center gap-2">
+                          <User className="h-3 w-3 text-green-600" />
+                          <span className="text-xs">{crew.firstOfficer.name}</span>
+                          <Badge variant="outline" className="text-xs">F/O</Badge>
+                        </div>
+                      </div>
+                      <div className="flex-1 relative h-6 bg-green-50 border border-green-200 rounded">
+                        {crew.assignments.filter(a => a.type === 'flight').map((assignment, index) => {
+                          const startPos = getTimelinePosition(assignment.scheduledDeparture)
+                          const width = getDurationWidth(assignment.scheduledDeparture, assignment.scheduledArrival)
+
+                          return (
+                            <div
+                              key={index}
+                              className="absolute top-0.5 bottom-0.5 bg-green-600 text-white text-xs flex items-center justify-center rounded"
+                              style={{
+                                left: `${startPos}%`,
+                                width: `${width}%`,
+                                minWidth: '30px'
+                              }}
+                            >
+                              <Plane className="h-3 w-3" />
+                            </div>
+                          )
+                        })}
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="flex-1 relative h-12 bg-gray-50 border border-gray-200 rounded">
-                    {aircraft.assignments.map((assignment, assignIndex) => {
-                      const startPos = getTimelinePosition(assignment.scheduledDeparture)
-                      const width = 8
-                      
-                      return (
-                        <div
-                          key={assignIndex}
-                          className={`absolute top-1 bottom-1 rounded text-white text-xs flex items-center justify-center font-medium shadow-sm ${
-                            assignment.status === 'Scheduled' ? 'bg-flydubai-blue' :
-                            assignment.status === 'Cancelled' ? 'bg-red-500' :
-                            assignment.status === 'Reassigned' ? 'bg-purple-500' :
-                            'bg-gray-500'
-                          }`}
-                          style={{
-                            left: `${startPos}%`,
-                            width: `${width}%`,
-                            minWidth: '60px'
-                          }}
-                          title={`${assignment.flightNumber} - ${assignment.status}`}
-                        >
-                          <span className="truncate px-1">
-                            {assignment.flightNumber}
-                          </span>
+
+                    {/* Cabin Crew */}
+                    {crew.cabinCrew.map((cc, ccIndex) => (
+                      <div key={cc.id} className="flex">
+                        <div className="w-60 flex-shrink-0 pr-4">
+                          <div className="flex items-center gap-2">
+                            <Users className="h-3 w-3 text-purple-600" />
+                            <span className="text-xs">{cc.name}</span>
+                            <Badge variant="outline" className="text-xs">FA</Badge>
+                          </div>
                         </div>
-                      )
-                    })}
+                        <div className="flex-1 relative h-6 bg-purple-50 border border-purple-200 rounded">
+                          {crew.assignments.filter(a => a.type === 'flight').map((assignment, index) => {
+                            const startPos = getTimelinePosition(assignment.scheduledDeparture)
+                            const width = getDurationWidth(assignment.scheduledDeparture, assignment.scheduledArrival)
+
+                            return (
+                              <div
+                                key={index}
+                                className="absolute top-0.5 bottom-0.5 bg-purple-600 text-white text-xs flex items-center justify-center rounded"
+                                style={{
+                                  left: `${startPos}%`,
+                                  width: `${width}%`,
+                                  minWidth: '30px'
+                                }}
+                              >
+                                <Users className="h-3 w-3" />
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+
+              {/* Aircraft View */}
+              {viewMode === 'aircraft' && crewData.aircraft.map((aircraft, index) => (
+                <div key={aircraft.id} className="space-y-2">
+                  <div className="flex">
+                    <div className="w-64 flex-shrink-0 pr-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium text-sm">{aircraft.registration}</h4>
+                          <p className="text-xs text-muted-foreground">{aircraft.type}</p>
+                          <Badge className={`text-xs ${
+                            aircraft.status.includes('Available') ? 'bg-green-100 text-green-800' :
+                            aircraft.status.includes('Technical') ? 'bg-red-100 text-red-800' :
+                            'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {aircraft.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex-1 relative h-12 bg-gray-50 border border-gray-200 rounded">
+                      {aircraft.assignments.map((assignment, assignIndex) => {
+                        const startPos = getTimelinePosition(assignment.scheduledDeparture)
+                        const width = 8
+
+                        return (
+                          <div
+                            key={assignIndex}
+                            className={`absolute top-1 bottom-1 rounded text-white text-xs flex items-center justify-center font-medium shadow-sm ${
+                              assignment.status === 'Scheduled' ? 'bg-flydubai-blue' :
+                              assignment.status === 'Cancelled' ? 'bg-red-500' :
+                              assignment.status === 'Reassigned' ? 'bg-purple-500' :
+                              'bg-gray-500'
+                            }`}
+                            style={{
+                              left: `${startPos}%`,
+                              width: `${width}%`,
+                              minWidth: '60px'
+                            }}
+                            title={`${assignment.flightNumber} - ${assignment.status}`}
+                          >
+                            <span className="truncate px-1">
+                              {assignment.flightNumber}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
         </CardContent>
       </Card>
 
@@ -714,59 +716,61 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-3">
-                <div>
-                  <Label className="text-xs font-medium">Cost Impact</Label>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Original: {impactAnalysis.originalCost}</span>
-                    <span className={`text-sm font-medium ${impactAnalysis.costDifference > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                      {impactAnalysis.costDifference > 0 ? '+' : ''}AED {impactAnalysis.costDifference.toLocaleString()}
-                    </span>
+            <ScrollArea className="max-h-[300px] w-full">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-xs font-medium">Cost Impact</Label>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Original: {impactAnalysis.originalCost}</span>
+                      <span className={`text-sm font-medium ${impactAnalysis.costDifference > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                        {impactAnalysis.costDifference > 0 ? '+' : ''}AED {impactAnalysis.costDifference.toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">New: {impactAnalysis.newCost}</div>
                   </div>
-                  <div className="text-sm text-muted-foreground">New: {impactAnalysis.newCost}</div>
+
+                  <div>
+                    <Label className="text-xs font-medium">Timeline Impact</Label>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Original: {impactAnalysis.originalTime}</span>
+                      <span className={`text-sm font-medium ${impactAnalysis.timeDifference > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                        {impactAnalysis.timeDifference > 0 ? '+' : ''}{impactAnalysis.timeDifference} min
+                      </span>
+                    </div>
+                    <div className="text-sm text-muted-foreground">New: {impactAnalysis.newTime}</div>
+                  </div>
                 </div>
 
-                <div>
-                  <Label className="text-xs font-medium">Timeline Impact</Label>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm">Original: {impactAnalysis.originalTime}</span>
-                    <span className={`text-sm font-medium ${impactAnalysis.timeDifference > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                      {impactAnalysis.timeDifference > 0 ? '+' : ''}{impactAnalysis.timeDifference} min
-                    </span>
+                {impactAnalysis.risks.length > 0 && (
+                  <div>
+                    <Label className="text-xs font-medium text-red-600">Risks</Label>
+                    <ul className="text-xs space-y-1 mt-1">
+                      {impactAnalysis.risks.map((risk, index) => (
+                        <li key={index} className="flex items-start gap-1">
+                          <div className="w-1 h-1 bg-red-500 rounded-full mt-1.5"></div>
+                          {risk}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <div className="text-sm text-muted-foreground">New: {impactAnalysis.newTime}</div>
-                </div>
+                )}
+
+                {impactAnalysis.benefits.length > 0 && (
+                  <div>
+                    <Label className="text-xs font-medium text-green-600">Benefits</Label>
+                    <ul className="text-xs space-y-1 mt-1">
+                      {impactAnalysis.benefits.map((benefit, index) => (
+                        <li key={index} className="flex items-start gap-1">
+                          <div className="w-1 h-1 bg-green-500 rounded-full mt-1.5"></div>
+                          {benefit}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-
-              {impactAnalysis.risks.length > 0 && (
-                <div>
-                  <Label className="text-xs font-medium text-red-600">Risks</Label>
-                  <ul className="text-xs space-y-1 mt-1">
-                    {impactAnalysis.risks.map((risk, index) => (
-                      <li key={index} className="flex items-start gap-1">
-                        <div className="w-1 h-1 bg-red-500 rounded-full mt-1.5"></div>
-                        {risk}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {impactAnalysis.benefits.length > 0 && (
-                <div>
-                  <Label className="text-xs font-medium text-green-600">Benefits</Label>
-                  <ul className="text-xs space-y-1 mt-1">
-                    {impactAnalysis.benefits.map((benefit, index) => (
-                      <li key={index} className="flex items-start gap-1">
-                        <div className="w-1 h-1 bg-green-500 rounded-full mt-1.5"></div>
-                        {benefit}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
+            </ScrollArea>
           </CardContent>
         </Card>
       )}
@@ -780,7 +784,7 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
               Modify crew assignments and see real-time impact on the recovery plan
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedCrewMember && (
             <div className="space-y-4">
               <Tabs defaultValue="crew" className="w-full">
@@ -790,99 +794,101 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
                   <TabsTrigger value="qualifications">Qualifications</TabsTrigger>
                   <TabsTrigger value="performance">Performance</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="crew" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm">Captain</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div>
-                          <Label>Name</Label>
-                          <Input defaultValue={selectedCrewMember.captain.name} />
-                        </div>
-                        <div>
-                          <Label>License</Label>
-                          <Input defaultValue={selectedCrewMember.captain.license} />
-                        </div>
-                        <div>
-                          <Label>Total Hours</Label>
-                          <Input defaultValue={selectedCrewMember.captain.totalHours} />
-                        </div>
-                        <div>
-                          <Label>Duty Time</Label>
-                          <Input defaultValue={`${selectedCrewMember.captain.dutyTime}h`} />
-                        </div>
-                        <div>
-                          <Label>Location</Label>
-                          <Input defaultValue={selectedCrewMember.captain.location} />
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm">First Officer</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div>
-                          <Label>Name</Label>
-                          <Input defaultValue={selectedCrewMember.firstOfficer.name} />
-                        </div>
-                        <div>
-                          <Label>License</Label>
-                          <Input defaultValue={selectedCrewMember.firstOfficer.license} />
-                        </div>
-                        <div>
-                          <Label>Total Hours</Label>
-                          <Input defaultValue={selectedCrewMember.firstOfficer.totalHours} />
-                        </div>
-                        <div>
-                          <Label>Duty Time</Label>
-                          <Input defaultValue={`${selectedCrewMember.firstOfficer.dutyTime}h`} />
-                        </div>
-                        <div>
-                          <Label>Location</Label>
-                          <Input defaultValue={selectedCrewMember.firstOfficer.location} />
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm">Cabin Crew</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-4">
-                        {selectedCrewMember.cabinCrew.map((cc, index) => (
-                          <div key={cc.id} className="space-y-2 p-3 border rounded">
-                            <div>
-                              <Label>Name</Label>
-                              <Input defaultValue={cc.name} />
-                            </div>
-                            <div>
-                              <Label>Position</Label>
-                              <Select defaultValue={cc.position}>
-                                <SelectTrigger>
-                                  <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="Senior Flight Attendant">Senior Flight Attendant</SelectItem>
-                                  <SelectItem value="Flight Attendant">Flight Attendant</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <Label>Languages</Label>
-                              <Input defaultValue={cc.languages.join(', ')} />
-                            </div>
+                  <ScrollArea className="max-h-[50vh] w-full">
+                    <div className="grid grid-cols-2 gap-4">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm">Captain</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <Label>Name</Label>
+                            <Input defaultValue={selectedCrewMember.captain.name} />
                           </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
+                          <div>
+                            <Label>License</Label>
+                            <Input defaultValue={selectedCrewMember.captain.license} />
+                          </div>
+                          <div>
+                            <Label>Total Hours</Label>
+                            <Input defaultValue={selectedCrewMember.captain.totalHours} />
+                          </div>
+                          <div>
+                            <Label>Duty Time</Label>
+                            <Input defaultValue={`${selectedCrewMember.captain.dutyTime}h`} />
+                          </div>
+                          <div>
+                            <Label>Location</Label>
+                            <Input defaultValue={selectedCrewMember.captain.location} />
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm">First Officer</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <Label>Name</Label>
+                            <Input defaultValue={selectedCrewMember.firstOfficer.name} />
+                          </div>
+                          <div>
+                            <Label>License</Label>
+                            <Input defaultValue={selectedCrewMember.firstOfficer.license} />
+                          </div>
+                          <div>
+                            <Label>Total Hours</Label>
+                            <Input defaultValue={selectedCrewMember.firstOfficer.totalHours} />
+                          </div>
+                          <div>
+                            <Label>Duty Time</Label>
+                            <Input defaultValue={`${selectedCrewMember.firstOfficer.dutyTime}h`} />
+                          </div>
+                          <div>
+                            <Label>Location</Label>
+                            <Input defaultValue={selectedCrewMember.firstOfficer.location} />
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm">Cabin Crew</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 gap-4">
+                          {selectedCrewMember.cabinCrew.map((cc, index) => (
+                            <div key={cc.id} className="space-y-2 p-3 border rounded">
+                              <div>
+                                <Label>Name</Label>
+                                <Input defaultValue={cc.name} />
+                              </div>
+                              <div>
+                                <Label>Position</Label>
+                                <Select defaultValue={cc.position}>
+                                  <SelectTrigger>
+                                    <SelectValue />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Senior Flight Attendant">Senior Flight Attendant</SelectItem>
+                                    <SelectItem value="Flight Attendant">Flight Attendant</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                              <div>
+                                <Label>Languages</Label>
+                                <Input defaultValue={cc.languages.join(', ')} />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </ScrollArea>
                 </TabsContent>
 
                 <TabsContent value="assignments" className="space-y-4">
@@ -891,101 +897,105 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
                       <CardTitle className="text-sm">Current Assignments</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Description</TableHead>
-                            <TableHead>Time</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Actions</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {selectedCrewMember.assignments.map((assignment, index) => (
-                            <TableRow key={assignment.id}>
-                              <TableCell>
-                                <Badge>{assignment.type}</Badge>
-                              </TableCell>
-                              <TableCell>
-                                {assignment.flightNumber || assignment.description}
-                              </TableCell>
-                              <TableCell>
-                                {formatTime(assignment.scheduledDeparture || assignment.scheduledStart)} - {formatTime(assignment.scheduledArrival || assignment.scheduledEnd)}
-                              </TableCell>
-                              <TableCell>
-                                <Badge className={
-                                  assignment.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' :
-                                  assignment.status === 'In Progress' ? 'bg-orange-100 text-orange-800' :
-                                  assignment.status === 'Required' ? 'bg-red-100 text-red-800' :
-                                  'bg-gray-100 text-gray-800'
-                                }>
-                                  {assignment.status}
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
-                                <Button size="sm" variant="outline">
-                                  <Edit className="h-3 w-3" />
-                                </Button>
-                              </TableCell>
+                      <ScrollArea className="max-h-[40vh] w-full">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Type</TableHead>
+                              <TableHead>Description</TableHead>
+                              <TableHead>Time</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Actions</TableHead>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
+                          </TableHeader>
+                          <TableBody>
+                            {selectedCrewMember.assignments.map((assignment, index) => (
+                              <TableRow key={assignment.id}>
+                                <TableCell>
+                                  <Badge>{assignment.type}</Badge>
+                                </TableCell>
+                                <TableCell>
+                                  {assignment.flightNumber || assignment.description}
+                                </TableCell>
+                                <TableCell>
+                                  {formatTime(assignment.scheduledDeparture || assignment.scheduledStart)} - {formatTime(assignment.scheduledArrival || assignment.scheduledEnd)}
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={
+                                    assignment.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' :
+                                    assignment.status === 'In Progress' ? 'bg-orange-100 text-orange-800' :
+                                    assignment.status === 'Required' ? 'bg-red-100 text-red-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }>
+                                    {assignment.status}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Button size="sm" variant="outline">
+                                    <Edit className="h-3 w-3" />
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </ScrollArea>
                     </CardContent>
                   </Card>
                 </TabsContent>
 
                 <TabsContent value="qualifications" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm">Captain Qualifications</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div>
-                          <Label>Type Ratings</Label>
-                          <div className="flex gap-2 mt-1">
-                            {selectedCrewMember.captain.typeRating.map(rating => (
-                              <Badge key={rating} className="bg-green-100 text-green-800">{rating}</Badge>
-                            ))}
+                  <ScrollArea className="max-h-[50vh] w-full">
+                    <div className="grid grid-cols-2 gap-4">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm">Captain Qualifications</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <Label>Type Ratings</Label>
+                            <div className="flex gap-2 mt-1">
+                              {selectedCrewMember.captain.typeRating.map(rating => (
+                                <Badge key={rating} className="bg-green-100 text-green-800">{rating}</Badge>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <Label>Medical Certificate</Label>
-                          <Badge className="bg-green-100 text-green-800">Valid</Badge>
-                        </div>
-                        <div>
-                          <Label>License Expiry</Label>
-                          <span className="text-sm">Mar 2025</span>
-                        </div>
-                      </CardContent>
-                    </Card>
+                          <div>
+                            <Label>Medical Certificate</Label>
+                            <Badge className="bg-green-100 text-green-800">Valid</Badge>
+                          </div>
+                          <div>
+                            <Label>License Expiry</Label>
+                            <span className="text-sm">Mar 2025</span>
+                          </div>
+                        </CardContent>
+                      </Card>
 
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm">First Officer Qualifications</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        <div>
-                          <Label>Type Ratings</Label>
-                          <div className="flex gap-2 mt-1">
-                            {selectedCrewMember.firstOfficer.typeRating.map(rating => (
-                              <Badge key={rating} className="bg-green-100 text-green-800">{rating}</Badge>
-                            ))}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-sm">First Officer Qualifications</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                          <div>
+                            <Label>Type Ratings</Label>
+                            <div className="flex gap-2 mt-1">
+                              {selectedCrewMember.firstOfficer.typeRating.map(rating => (
+                                <Badge key={rating} className="bg-green-100 text-green-800">{rating}</Badge>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                        <div>
-                          <Label>Medical Certificate</Label>
-                          <Badge className="bg-green-100 text-green-800">Valid</Badge>
-                        </div>
-                        <div>
-                          <Label>License Expiry</Label>
-                          <span className="text-sm">Jul 2024</span>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
+                          <div>
+                            <Label>Medical Certificate</Label>
+                            <Badge className="bg-green-100 text-green-800">Valid</Badge>
+                          </div>
+                          <div>
+                            <Label>License Expiry</Label>
+                            <span className="text-sm">Jul 2024</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </ScrollArea>
                 </TabsContent>
 
                 <TabsContent value="performance" className="space-y-4">
