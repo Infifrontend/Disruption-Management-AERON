@@ -18,9 +18,11 @@ export const generateScheduleComparisonSummary = (originalPlan, newPlan) => {
 
 export const calculatePassengerImpact = (rotationPlan, option, flight) => {
   const estimatedPassengers = flight?.passengers || 167
+  const optionId = String(option.id || '')
+  const optionTitle = String(option.title || '')
   
   // Check if this is a delay option
-  if (option.id?.includes('DELAY') || option.title?.toLowerCase().includes('delay')) {
+  if (optionId.includes('DELAY') || optionTitle.toLowerCase().includes('delay')) {
     const delayMatch = option.timeline?.match(/(\d+)/)
     const delayHours = delayMatch ? parseInt(delayMatch[1]) : 2
     
@@ -35,7 +37,7 @@ export const calculatePassengerImpact = (rotationPlan, option, flight) => {
   }
   
   // Check if this is a cancellation option
-  if (option.id?.includes('CANCEL') || option.title?.toLowerCase().includes('cancel')) {
+  if (optionId.includes('CANCEL') || optionTitle.toLowerCase().includes('cancel')) {
     return {
       totalAffected: estimatedPassengers,
       rebookingRequired: true,
@@ -58,7 +60,10 @@ export const calculatePassengerImpact = (rotationPlan, option, flight) => {
 }
 
 export const extractCrewImpact = (rotationPlan, option) => {
-  if (option.id?.includes('CREW') || option.title?.toLowerCase().includes('crew')) {
+  const optionId = String(option.id || '')
+  const optionTitle = String(option.title || '')
+  
+  if (optionId.includes('CREW') || optionTitle.toLowerCase().includes('crew')) {
     return {
       crewChangeRequired: true,
       affectedCrewMembers: rotationPlan?.cascadeAnalysis?.affectedCrewMembers || [],
@@ -78,7 +83,10 @@ export const extractCrewImpact = (rotationPlan, option) => {
 }
 
 export const extractAircraftImpact = (rotationPlan, option, flight) => {
-  if (option.id?.includes('SWAP') || option.title?.toLowerCase().includes('swap')) {
+  const optionId = String(option.id || '')
+  const optionTitle = String(option.title || '')
+  
+  if (optionId.includes('SWAP') || optionTitle.toLowerCase().includes('swap')) {
     const originalAircraft = rotationPlan?.originalPlan?.[0]?.aircraft || 'A6-FDB'
     const newAircraft = rotationPlan?.newPlan?.[0]?.aircraft || 'A6-FDC'
     
@@ -191,17 +199,20 @@ export const generateComplianceAnalysis = (option, rotationPlan) => {
   let dutyTimeViolations = 0
   let restPeriodViolations = 0
   let totalComplianceScore = 95
+  
+  const optionId = String(option.id || '')
+  const optionTimeline = String(option.timeline || '')
 
   // Analyze based on option type
-  if (option.id?.includes('DELAY') && option.timeline?.includes('hours')) {
-    const hours = parseInt(option.timeline.match(/(\d+)/)?.[1] || '0')
+  if (optionId.includes('DELAY') && optionTimeline.includes('hours')) {
+    const hours = parseInt(optionTimeline.match(/(\d+)/)?.[1] || '0')
     if (hours > 4) {
       restPeriodViolations = 1
       totalComplianceScore = 85
     }
   }
   
-  if (option.id?.includes('CREW')) {
+  if (optionId.includes('CREW')) {
     // Crew changes generally maintain compliance
     totalComplianceScore = 98
   }
@@ -285,20 +296,20 @@ export const calculateROI = (selectedOption, allOptions) => {
 export const generateScheduleImpactAnalysis = (option, flight, scenarioData) => {
   // Extract real data from the option
   const rotationPlan = option.rotationPlan
-  const optionTitle = option.title
-  const optionId = option.id
+  const optionTitle = option.title || ''
+  const optionId = String(option.id || '')
   
   // Determine analysis type based on option content
   let analysisType = 'General Impact Analysis'
-  if (optionId?.includes('SWAP') || optionTitle?.toLowerCase().includes('swap')) {
+  if (optionId.includes('SWAP') || optionTitle.toLowerCase().includes('swap')) {
     analysisType = 'Aircraft Swap Impact Analysis'
-  } else if (optionId?.includes('CREW') || optionTitle?.toLowerCase().includes('crew')) {
+  } else if (optionId.includes('CREW') || optionTitle.toLowerCase().includes('crew')) {
     analysisType = 'Crew Assignment Impact Analysis'
-  } else if (optionId?.includes('DELAY') || optionTitle?.toLowerCase().includes('delay')) {
+  } else if (optionId.includes('DELAY') || optionTitle.toLowerCase().includes('delay')) {
     analysisType = 'Flight Delay Impact Analysis'
-  } else if (optionId?.includes('CANCEL') || optionTitle?.toLowerCase().includes('cancel')) {
+  } else if (optionId.includes('CANCEL') || optionTitle.toLowerCase().includes('cancel')) {
     analysisType = 'Flight Cancellation Impact Analysis'
-  } else if (optionId?.includes('REROUTE') || optionTitle?.toLowerCase().includes('reroute') || optionTitle?.toLowerCase().includes('divert')) {
+  } else if (optionId.includes('REROUTE') || optionTitle.toLowerCase().includes('reroute') || optionTitle.toLowerCase().includes('divert')) {
     analysisType = 'Route Change Impact Analysis'
   }
 
