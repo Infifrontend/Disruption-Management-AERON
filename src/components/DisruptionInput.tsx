@@ -757,18 +757,19 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     }));
   };
 
-  // Placeholder for handleGenerateRecoveryOptions if it exists elsewhere
+  // Handle Generate Recovery Options - redirect to Recovery Options page
   const handleGenerateRecoveryOptions = () => {
-    // This function is called when the "Generate Recovery Options" button is clicked.
-    // It is assumed to be defined and handles the logic for generating recovery options.
-    // For this example, we'll simulate setting `isGenerating` state.
+    if (!selectedFlight) return;
+    
     setIsGenerating(true);
-    // Simulate an API call or heavy processing
+    
+    // Pass the selected flight to the parent and navigate to recovery options
+    onSelectFlight([selectedFlight]);
+    
+    // Reset generating state after navigation
     setTimeout(() => {
       setIsGenerating(false);
-      // In a real scenario, you would navigate or show results here.
-      console.log("Generating recovery options...");
-    }, 2000);
+    }, 500);
   };
 
 
