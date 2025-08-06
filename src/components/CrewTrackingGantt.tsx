@@ -53,7 +53,8 @@ import {
   Sun,
   Navigation,
   Fuel,
-  Wrench
+  Wrench,
+  Eye
 } from 'lucide-react'
 
 export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
@@ -352,48 +353,44 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-lg font-semibold text-flydubai-navy">Crew Tracking & What-If Analysis</h2>
-          <p className="text-sm text-muted-foreground">
-            Recovery Option: {recoveryOption?.title} • Flight: {flight?.flightNumber}
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Select value={viewMode} onValueChange={setViewMode}>
-            <SelectTrigger className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="crew">Crew View</SelectItem>
-              <SelectItem value="aircraft">Aircraft View</SelectItem>
-              <SelectItem value="flights">Flights View</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={timeScale} onValueChange={setTimeScale}>
-            <SelectTrigger className="w-24">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="hour">1h</SelectItem>
-              <SelectItem value="30min">30m</SelectItem>
-              <SelectItem value="15min">15m</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setEditMode(!editMode)}
-            className={editMode ? 'bg-blue-50 border-blue-300' : ''}
-          >
-            <Edit className="h-4 w-4 mr-2" />
-            {editMode ? 'View Mode' : 'Edit Mode'}
-          </Button>
-          <Button variant="outline" size="sm" onClick={onClose}>
-            Close
-          </Button>
-        </div>
-      </div>
+      <Card className="border-flydubai-blue">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-flydubai-blue rounded-lg">
+                <Users className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <CardTitle className="text-flydubai-navy">
+                  Crew Tracking & What-If Analysis
+                </CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Recovery Option: {recoveryOption?.title || "Unknown"} • Flight: {flight?.flightNumber || "Unknown"}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setViewMode(viewMode === 'crew' ? 'timeline' : 'crew')}
+                className="bg-blue-50 border-blue-300 text-blue-700 hover:bg-blue-100"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                {viewMode === 'crew' ? 'Timeline View' : 'Crew View'}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onClose}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Close
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
 
       {/* Disruption Summary */}
       <Card>
