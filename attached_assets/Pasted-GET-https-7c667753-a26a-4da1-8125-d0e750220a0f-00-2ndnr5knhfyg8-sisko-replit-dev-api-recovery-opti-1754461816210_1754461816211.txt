@@ -1,0 +1,99 @@
+GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/recovery-option/410/resources 404 (Not Found)
+getResourceDetails @ databaseService.ts:1402
+handleViewRecoveryOption @ RecoveryOptionsGenerator.tsx:1261
+onClick @ RecoveryOptionsGenerator.tsx:1841
+callCallback2 @ chunk-PJEEZAML.js?v=0369a465:3674
+invokeGuardedCallbackDev @ chunk-PJEEZAML.js?v=0369a465:3699
+invokeGuardedCallback @ chunk-PJEEZAML.js?v=0369a465:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-PJEEZAML.js?v=0369a465:3736
+executeDispatch @ chunk-PJEEZAML.js?v=0369a465:7014
+processDispatchQueueItemsInOrder @ chunk-PJEEZAML.js?v=0369a465:7034
+processDispatchQueue @ chunk-PJEEZAML.js?v=0369a465:7043
+dispatchEventsForPlugins @ chunk-PJEEZAML.js?v=0369a465:7051
+(anonymous) @ chunk-PJEEZAML.js?v=0369a465:7174
+batchedUpdates$1 @ chunk-PJEEZAML.js?v=0369a465:18913
+batchedUpdates @ chunk-PJEEZAML.js?v=0369a465:3579
+dispatchEventForPluginEventSystem @ chunk-PJEEZAML.js?v=0369a465:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-PJEEZAML.js?v=0369a465:5478
+dispatchEvent @ chunk-PJEEZAML.js?v=0369a465:5472
+dispatchDiscreteEvent @ chunk-PJEEZAML.js?v=0369a465:5449Understand this error
+databaseService.ts:1307  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/recovery-option/410/cost-analysis 404 (Not Found)
+getCostAnalysisDetails @ databaseService.ts:1307
+handleViewRecoveryOption @ RecoveryOptionsGenerator.tsx:1259
+onClick @ RecoveryOptionsGenerator.tsx:1841
+callCallback2 @ chunk-PJEEZAML.js?v=0369a465:3674
+invokeGuardedCallbackDev @ chunk-PJEEZAML.js?v=0369a465:3699
+invokeGuardedCallback @ chunk-PJEEZAML.js?v=0369a465:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-PJEEZAML.js?v=0369a465:3736
+executeDispatch @ chunk-PJEEZAML.js?v=0369a465:7014
+processDispatchQueueItemsInOrder @ chunk-PJEEZAML.js?v=0369a465:7034
+processDispatchQueue @ chunk-PJEEZAML.js?v=0369a465:7043
+dispatchEventsForPlugins @ chunk-PJEEZAML.js?v=0369a465:7051
+(anonymous) @ chunk-PJEEZAML.js?v=0369a465:7174
+batchedUpdates$1 @ chunk-PJEEZAML.js?v=0369a465:18913
+batchedUpdates @ chunk-PJEEZAML.js?v=0369a465:3579
+dispatchEventForPluginEventSystem @ chunk-PJEEZAML.js?v=0369a465:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-PJEEZAML.js?v=0369a465:5478
+dispatchEvent @ chunk-PJEEZAML.js?v=0369a465:5472
+dispatchDiscreteEvent @ chunk-PJEEZAML.js?v=0369a465:5449Understand this error
+databaseService.ts:1383  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/recovery-option/410/timeline 404 (Not Found)
+getTimelineDetails @ databaseService.ts:1383
+handleViewRecoveryOption @ RecoveryOptionsGenerator.tsx:1260
+onClick @ RecoveryOptionsGenerator.tsx:1841
+callCallback2 @ chunk-PJEEZAML.js?v=0369a465:3674
+invokeGuardedCallbackDev @ chunk-PJEEZAML.js?v=0369a465:3699
+invokeGuardedCallback @ chunk-PJEEZAML.js?v=0369a465:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-PJEEZAML.js?v=0369a465:3736
+executeDispatch @ chunk-PJEEZAML.js?v=0369a465:7014
+processDispatchQueueItemsInOrder @ chunk-PJEEZAML.js?v=0369a465:7034
+processDispatchQueue @ chunk-PJEEZAML.js?v=0369a465:7043
+dispatchEventsForPlugins @ chunk-PJEEZAML.js?v=0369a465:7051
+(anonymous) @ chunk-PJEEZAML.js?v=0369a465:7174
+batchedUpdates$1 @ chunk-PJEEZAML.js?v=0369a465:18913
+batchedUpdates @ chunk-PJEEZAML.js?v=0369a465:3579
+dispatchEventForPluginEventSystem @ chunk-PJEEZAML.js?v=0369a465:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-PJEEZAML.js?v=0369a465:5478
+dispatchEvent @ chunk-PJEEZAML.js?v=0369a465:5472
+dispatchDiscreteEvent @ chunk-PJEEZAML.js?v=0369a465:5449Understand this error
+databaseService.ts:1421  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/recovery-option/410/technical 404 (Not Found)
+getTechnicalDetails @ databaseService.ts:1421
+handleViewRecoveryOption @ RecoveryOptionsGenerator.tsx:1262
+onClick @ RecoveryOptionsGenerator.tsx:1841
+callCallback2 @ chunk-PJEEZAML.js?v=0369a465:3674
+invokeGuardedCallbackDev @ chunk-PJEEZAML.js?v=0369a465:3699
+invokeGuardedCallback @ chunk-PJEEZAML.js?v=0369a465:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-PJEEZAML.js?v=0369a465:3736
+executeDispatch @ chunk-PJEEZAML.js?v=0369a465:7014
+processDispatchQueueItemsInOrder @ chunk-PJEEZAML.js?v=0369a465:7034
+processDispatchQueue @ chunk-PJEEZAML.js?v=0369a465:7043
+dispatchEventsForPlugins @ chunk-PJEEZAML.js?v=0369a465:7051
+(anonymous) @ chunk-PJEEZAML.js?v=0369a465:7174
+batchedUpdates$1 @ chunk-PJEEZAML.js?v=0369a465:18913
+batchedUpdates @ chunk-PJEEZAML.js?v=0369a465:3579
+dispatchEventForPluginEventSystem @ chunk-PJEEZAML.js?v=0369a465:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-PJEEZAML.js?v=0369a465:5478
+dispatchEvent @ chunk-PJEEZAML.js?v=0369a465:5472
+dispatchDiscreteEvent @ chunk-PJEEZAML.js?v=0369a465:5449Understand this error
+databaseService.ts:1288  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/recovery-option/410/rotation-plan 404 (Not Found)
+getRotationPlanDetails @ databaseService.ts:1288
+handleViewRecoveryOption @ RecoveryOptionsGenerator.tsx:1258
+onClick @ RecoveryOptionsGenerator.tsx:1841
+callCallback2 @ chunk-PJEEZAML.js?v=0369a465:3674
+invokeGuardedCallbackDev @ chunk-PJEEZAML.js?v=0369a465:3699
+invokeGuardedCallback @ chunk-PJEEZAML.js?v=0369a465:3733
+invokeGuardedCallbackAndCatchFirstError @ chunk-PJEEZAML.js?v=0369a465:3736
+executeDispatch @ chunk-PJEEZAML.js?v=0369a465:7014
+processDispatchQueueItemsInOrder @ chunk-PJEEZAML.js?v=0369a465:7034
+processDispatchQueue @ chunk-PJEEZAML.js?v=0369a465:7043
+dispatchEventsForPlugins @ chunk-PJEEZAML.js?v=0369a465:7051
+(anonymous) @ chunk-PJEEZAML.js?v=0369a465:7174
+batchedUpdates$1 @ chunk-PJEEZAML.js?v=0369a465:18913
+batchedUpdates @ chunk-PJEEZAML.js?v=0369a465:3579
+dispatchEventForPluginEventSystem @ chunk-PJEEZAML.js?v=0369a465:7173
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-PJEEZAML.js?v=0369a465:5478
+dispatchEvent @ chunk-PJEEZAML.js?v=0369a465:5472
+dispatchDiscreteEvent @ chunk-PJEEZAML.js?v=0369a465:5449Understand this error
+what-if-simulation-helpers.tsx:146 Error generating recovery option details: TypeError: (option.id || "").toLowerCase is not a function
+    at getCostBreakdown (recovery-option-helpers.tsx:122:38)
+    at generateRecoveryOptionDetails (what-if-simulation-helpers.tsx:134:22)
+    at handleViewRecoveryOption (RecoveryOptionsGenerator.tsx:1274:12)
