@@ -1494,8 +1494,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         open={showCrewTrackingGantt}
         onOpenChange={setShowCrewTrackingGantt}
       >
-        <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden">
-          <DialogHeader>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] flex flex-col overflow-hidden">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-flydubai-blue" />
               Crew Tracking & What-If Analysis
@@ -1506,7 +1506,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <CrewTrackingGantt
               recoveryOption={selectedOptionForDetails}
               flight={flight}
