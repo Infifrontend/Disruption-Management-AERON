@@ -125,9 +125,10 @@ import {
 import { generateScheduleImpactAnalysis } from "./schedule-impact-helpers";
 
 export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompare, onPassengerServices, onNavigateToPendingSolutions }) {
-  const [isMounted, setIsMounted] = useState(isMounted)
+  const [isMounted, setIsMounted] = useState(true)
 
   useEffect(() => {
+    setIsMounted(true)
     return () => {
       setIsMounted(false)
     }
