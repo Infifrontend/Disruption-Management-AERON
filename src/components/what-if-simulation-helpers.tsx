@@ -1,29 +1,29 @@
 // Helper functions for what-if simulation and impact calculations
 
 // Import the helper functions from the recovery option helpers
-import { 
-  getDetailedDescription, 
-  getCostBreakdown, 
-  getTimelineDetails, 
-  getResourceRequirements, 
-  getRiskAssessment, 
-  getTechnicalSpecs, 
-  getHistoricalData, 
-  getAlternativeConsiderations, 
-  getStakeholderImpact, 
-  getEditableParameters, 
-  getWhatIfScenarios 
+import {
+  getDetailedDescription,
+  getCostBreakdown,
+  getTimelineDetails,
+  getResourceRequirements,
+  getRiskAssessment,
+  getTechnicalSpecs,
+  getHistoricalData,
+  getAlternativeConsiderations,
+  getStakeholderImpact,
+  getEditableParameters,
+  getWhatIfScenarios
 } from './recovery-option-helpers'
 
 export const calculateScenarioImpact = (baseOption, scenario, editedParams = {}) => {
   const baseCost = parseInt((baseOption.cost || '50000').replace(/[^\d]/g, '') || '50000')
   const baseTimeMatch = (baseOption.timeline || '').match(/(\d+)/)
   const baseTime = baseTimeMatch ? parseInt(baseTimeMatch[1]) * 60 : 120 // Convert to minutes
-  
+
   let adjustedCost = baseCost
   let adjustedTime = baseTime
   let confidence = baseOption.confidence || 85
-  
+
   // Apply scenario adjustments
   if (scenario.adjustments?.costReduction) {
     adjustedCost = baseCost * (1 - scenario.adjustments.costReduction / 100)
@@ -37,13 +37,13 @@ export const calculateScenarioImpact = (baseOption, scenario, editedParams = {})
   if (scenario.adjustments?.timeIncrease) {
     adjustedTime = baseTime + scenario.adjustments.timeIncrease
   }
-  
+
   confidence = scenario.adjustments?.successProbability || confidence
-  
+
   // Apply parameter edits
   Object.keys(editedParams).forEach(param => {
     const paramValue = editedParams[param]
-    
+
     // Apply parameter-specific adjustments
     if (param === 'Delay Duration' && paramValue !== 240) {
       const factor = paramValue / 240
@@ -67,7 +67,7 @@ export const calculateScenarioImpact = (baseOption, scenario, editedParams = {})
       adjustedTime = adjustedTime + (paramValue - 35) // Adjust from default 35 minutes
     }
   })
-  
+
   return {
     cost: `AED ${Math.round(adjustedCost).toLocaleString()}`,
     timeline: adjustedTime < 60 ? `${adjustedTime} minutes` : `${(adjustedTime / 60).toFixed(1)} hours`,
@@ -131,7 +131,10 @@ export const generateRecoveryOptionDetails = (option, flight) => {
     return {
       ...option,
       detailedDescription: getDetailedDescription(option, flight),
-      costBreakdown: getCostBreakdown(option, flight),
+      costBreakdown: getCostBreakdown({
+        ...option,
+        id: String(option.id || "")
+      }),
       timelineDetails: getTimelineDetails(option),
       resourceRequirements: getResourceRequirements(option),
       riskAssessment: getRiskAssessment(option),

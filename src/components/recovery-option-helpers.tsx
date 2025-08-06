@@ -19,7 +19,7 @@ export const getDetailedDescription = (option, flight) => {
 
     'PARTNER_CODESHARE': `Emergency Codeshare Activation for ${flightNumber}: Secure seats on Emirates flight EK542 (${origin}→${destination}) departing 16:45. Confirmed availability: 189 seats including 12 business class upgrades for VIP passengers. Automatic baggage transfer arranged through dnata ground services. Passenger notifications sent via SMS/email with new boarding details. Maintains arrival time within 30 minutes of original schedule.`,
 
-    'CREW_REPLACEMENT_DXB': `Crew Replacement Protocol for ${flightNumber}: Deploy standby crew (Captain Al-Zaabi, F/O Rahman + 4 cabin crew) currently on duty at ${origin}. Fresh crew duty time: 2.5 hours (well within regulatory limits). Extended briefing required for ${aircraft} type rating. Estimated crew preparation time: 45 minutes. Current crew situation: ${disruptionReason}. Passenger delay: minimal (under 1 hour).`
+    'CREW_REPLACEMENT_DXB': `Crew Replacement Protocol for ${flightNumber}: Deploy standby crew (Captain Al-Zaabi, F/O Rahman + 4 cabin crew) currently on duty at ${origin}. Fresh crew duty time: 2.5 hours (well within regulatory limits). Extended briefing required for ${aircraft} type rating. Estimated crew preparation time: 45 minutes. Current disruption: ${disruptionReason}. Passenger delay: minimal (under 1 hour).`
   }
 
   // If exact match found, return it
@@ -119,7 +119,7 @@ export const getCostBreakdown = (option, flight) => {
 
   // Generate dynamic breakdown based on option type
   const optionTitle = (option.title || '').toLowerCase()
-  const optionId = (option.id || '').toLowerCase()
+  const optionId = String(option.id || "").toLowerCase()
 
   // Aircraft swap pattern
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
@@ -234,7 +234,7 @@ export const getTimelineDetails = (option) => {
 
   // Generate dynamic timeline based on option type and timeline
   const optionTitle = (option.title || '').toLowerCase()
-  const optionId = (option.id || '').toLowerCase()
+  const optionId = String(option.id || "").toLowerCase()
   const timelineMatch = (option.timeline || '').match(/(\d+)/)
   const totalMinutes = timelineMatch ? parseInt(timelineMatch[1]) * 60 : 120
 
@@ -327,7 +327,7 @@ export const getResourceRequirements = (option) => {
 
   // Generate dynamic resources based on option type
   const optionTitle = (option.title || '').toLowerCase()
-  const optionId = (option.id || '').toLowerCase()
+  const optionId = String(option.id || "").toLowerCase()
 
   // Aircraft swap pattern
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
@@ -411,7 +411,7 @@ export const getRiskAssessment = (option) => {
 
   // Generate dynamic risk assessment based on option type
   const optionTitle = (option.title || '').toLowerCase()
-  const optionId = (option.id || '').toLowerCase()
+  const optionId = String(option.id || "").toLowerCase()
   const confidence = option.confidence || 85
 
   // Aircraft swap pattern
@@ -516,7 +516,7 @@ export const getTechnicalSpecs = (option) => {
 
   // Generate dynamic technical specs based on option type
   const optionTitle = (option.title || '').toLowerCase()
-  const optionId = (option.id || '').toLowerCase()
+  const optionId = String(option.id || "").toLowerCase()
 
   // Aircraft swap pattern
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
@@ -624,7 +624,7 @@ export const getHistoricalData = (option) => {
   // Generate contextual historical data based on option type and confidence
   const confidence = option.confidence || 85
   const optionTitle = (option.title || '').toLowerCase()
-  const optionId = (option.id || '').toLowerCase()
+  const optionId = String(option.id || "").toLowerCase()
 
   // Adjust success rate based on confidence
   const adjustedSuccessRate = Math.min(98, Math.max(75, confidence + Math.floor(Math.random() * 10) - 5))
@@ -710,7 +710,7 @@ export const getAlternativeConsiderations = (option, flight) => {
 
   // Generate dynamic considerations based on option type
   const optionTitle = (option.title || '').toLowerCase()
-  const optionId = (option.id || '').toLowerCase()
+  const optionId = String(option.id || "").toLowerCase()
   const passengers = flight?.passengers || 167
   const origin = flight?.origin || 'DXB'
   const destination = flight?.destination || 'BOM'
@@ -847,7 +847,7 @@ export const getEditableParameters = (option) => {
 
   // Generate dynamic parameters based on option type
   const optionTitle = (option.title || '').toLowerCase()
-  const optionId = (option.id || '').toLowerCase()
+  const optionId = String(option.id || "").toLowerCase()
 
   // Aircraft swap pattern
   if (optionId.includes('aircraft_swap') || optionTitle.includes('aircraft swap') || optionTitle.includes('swap aircraft')) {
@@ -916,7 +916,7 @@ export const getWhatIfScenarios = (option) => {
 
   // Generate dynamic what-if scenarios based on option type
   const optionTitle = (option.title || '').toLowerCase()
-  const optionId = (option.id || '').toLowerCase()
+  const optionId = String(option.id || "").toLowerCase()
   const costMatch = (option.cost || '').match(/[\d,]+/)
   const baseCost = costMatch ? parseInt(costMatch[0].replace(/,/g, '')) : 50000
 
