@@ -2,6 +2,7 @@
 -- AERON Settings Database Schema
 -- This schema supports hierarchical settings with categories, versioning, and audit trails
 -- Updated with current schema and sample data for import
+-- Includes recovery categorization and detailed recovery options
 
 -- Settings table for storing all configuration parameters
 CREATE TABLE IF NOT EXISTS settings (
@@ -64,7 +65,7 @@ CREATE TABLE IF NOT EXISTS custom_parameters (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Flight Disruptions table
+-- Flight Disruptions table with unique constraint for preventing duplicates
 CREATE TABLE IF NOT EXISTS flight_disruptions (
     id SERIAL PRIMARY KEY,
     flight_number VARCHAR(10) NOT NULL,
@@ -86,7 +87,38 @@ CREATE TABLE IF NOT EXISTS flight_disruptions (
     disruption_reason TEXT,
     categorization VARCHAR(255),
     created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
-    updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
+    updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    CONSTRAINT unique_flight_schedule UNIQUE (flight_number, scheduled_departure)
+);
+
+-- Disruption Categories table for storing different types of disruptions
+CREATE TABLE IF NOT EXISTS disruption_categories (
+    id SERIAL PRIMARY KEY,
+    category_code VARCHAR(50) UNIQUE NOT NULL,
+    category_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    priority_level INTEGER DEFAULT 5,
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    is_active BOOLEAN DEFAULT true
+);
+
+-- Recovery Option Templates table for storing categorization-based options
+CREATE TABLE IF NOT EXISTS recovery_option_templates (
+    id SERIAL PRIMARY KEY,
+    category_id INTEGER REFERENCES disruption_categories(id) ON DELETE CASCADE,
+    template_code VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    default_timeline VARCHAR(100),
+    default_confidence INTEGER DEFAULT 80,
+    default_impact VARCHAR(20) DEFAULT 'Medium',
+    default_status VARCHAR(20) DEFAULT 'available',
+    template_data JSONB,
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    is_active BOOLEAN DEFAULT true,
+    UNIQUE(category_id, template_code)
 );
 
 -- Recovery Options table
@@ -109,10 +141,54 @@ CREATE TABLE IF NOT EXISTS recovery_options (
     risk_assessment JSONB,
     technical_specs JSONB,
     metrics JSONB,
-    rotation_plan JSONB,
+    rotation_plan JSONB DEFAULT '{}',
+    detailed_cost_analysis JSONB DEFAULT '{}',
+    timeline_breakdown JSONB DEFAULT '{}',
+    resource_details JSONB DEFAULT '{}',
+    risk_details JSONB DEFAULT '{}',
+    technical_details JSONB DEFAULT '{}',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(disruption_id, title)
+);
+
+-- Enhanced Recovery Options table with detailed information
+CREATE TABLE IF NOT EXISTS recovery_options_detailed (
+    id SERIAL PRIMARY KEY,
+    option_id VARCHAR(50) UNIQUE NOT NULL,
+    disruption_id INTEGER REFERENCES flight_disruptions(id) ON DELETE CASCADE,
+    category_id INTEGER REFERENCES disruption_categories(id),
+    template_id INTEGER REFERENCES recovery_option_templates(id),
+    title VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    timeline VARCHAR(100),
+    percentage_of_flight_cost DECIMAL(5,2),
+    confidence INTEGER DEFAULT 80,
+    impact VARCHAR(20) DEFAULT 'Medium',
+    status VARCHAR(50) DEFAULT 'generated',
+    priority INTEGER DEFAULT 0,
+    
+    -- Cost Analysis
+    cost_analysis JSONB,
+    
+    -- Timeline Steps
+    timeline_steps JSONB,
+    
+    -- Resources Required
+    resources JSONB,
+    
+    -- Risk Assessment
+    risk_assessment JSONB,
+    
+    -- Technical Details
+    technical_details JSONB,
+    
+    -- Additional metadata
+    advantages JSONB,
+    considerations JSONB,
+    
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
 );
 
 -- Recovery Steps table
@@ -129,6 +205,92 @@ CREATE TABLE IF NOT EXISTS recovery_steps (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(disruption_id, step_number)
+);
+
+-- Recovery Steps Enhanced table
+CREATE TABLE IF NOT EXISTS recovery_steps_detailed (
+    id SERIAL PRIMARY KEY,
+    disruption_id INTEGER REFERENCES flight_disruptions(id) ON DELETE CASCADE,
+    option_id VARCHAR(50) REFERENCES recovery_options_detailed(option_id) ON DELETE CASCADE,
+    step_number INTEGER NOT NULL,
+    step_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    duration VARCHAR(50),
+    status VARCHAR(50) DEFAULT 'pending',
+    timestamp_start TIMESTAMPTZ,
+    timestamp_end TIMESTAMPTZ,
+    system VARCHAR(255),
+    step_data JSONB,
+    created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
+    UNIQUE(disruption_id, option_id, step_number)
+);
+
+-- Rotation plan details table
+CREATE TABLE IF NOT EXISTS rotation_plan_details (
+    id SERIAL PRIMARY KEY,
+    recovery_option_id INTEGER REFERENCES recovery_options(id) ON DELETE CASCADE,
+    aircraft_options JSONB DEFAULT '[]',
+    crew_data JSONB DEFAULT '[]',
+    next_sectors JSONB DEFAULT '[]',
+    operational_constraints JSONB DEFAULT '{}',
+    cost_breakdown JSONB DEFAULT '{}',
+    recommendation JSONB DEFAULT '{}',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(recovery_option_id)
+);
+
+-- Cost analysis details table
+CREATE TABLE IF NOT EXISTS cost_analysis_details (
+    id SERIAL PRIMARY KEY,
+    recovery_option_id INTEGER REFERENCES recovery_options(id) ON DELETE CASCADE,
+    cost_categories JSONB DEFAULT '[]',
+    total_cost DECIMAL(12,2) DEFAULT 0,
+    cost_comparison JSONB DEFAULT '{}',
+    savings_analysis JSONB DEFAULT '{}',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(recovery_option_id)
+);
+
+-- Timeline details table
+CREATE TABLE IF NOT EXISTS timeline_details (
+    id SERIAL PRIMARY KEY,
+    recovery_option_id INTEGER REFERENCES recovery_options(id) ON DELETE CASCADE,
+    timeline_steps JSONB DEFAULT '[]',
+    critical_path JSONB DEFAULT '{}',
+    dependencies JSONB DEFAULT '[]',
+    milestones JSONB DEFAULT '[]',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(recovery_option_id)
+);
+
+-- Resource details table
+CREATE TABLE IF NOT EXISTS resource_details (
+    id SERIAL PRIMARY KEY,
+    recovery_option_id INTEGER REFERENCES recovery_options(id) ON DELETE CASCADE,
+    personnel_requirements JSONB DEFAULT '[]',
+    equipment_requirements JSONB DEFAULT '[]',
+    facility_requirements JSONB DEFAULT '[]',
+    availability_status JSONB DEFAULT '{}',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(recovery_option_id)
+);
+
+-- Technical specifications table
+CREATE TABLE IF NOT EXISTS technical_specifications (
+    id SERIAL PRIMARY KEY,
+    recovery_option_id INTEGER REFERENCES recovery_options(id) ON DELETE CASCADE,
+    aircraft_specs JSONB DEFAULT '{}',
+    operational_constraints JSONB DEFAULT '{}',
+    regulatory_requirements JSONB DEFAULT '[]',
+    weather_limitations JSONB DEFAULT '{}',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(recovery_option_id)
 );
 
 -- Passengers table
@@ -258,6 +420,15 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+-- Function for recovery categorization timestamp updates
+CREATE OR REPLACE FUNCTION update_recovery_timestamp()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
 -- Triggers for automatic timestamp updates (drop if exists first)
 DROP TRIGGER IF EXISTS update_settings_updated_at ON settings;
 CREATE TRIGGER update_settings_updated_at BEFORE UPDATE ON settings
@@ -266,6 +437,30 @@ CREATE TRIGGER update_settings_updated_at BEFORE UPDATE ON settings
 DROP TRIGGER IF EXISTS update_custom_rules_updated_at ON custom_rules;
 CREATE TRIGGER update_custom_rules_updated_at BEFORE UPDATE ON custom_rules
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_flight_disruptions_updated_at ON flight_disruptions;
+CREATE TRIGGER update_flight_disruptions_updated_at BEFORE UPDATE ON flight_disruptions
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+DROP TRIGGER IF EXISTS update_disruption_categories_timestamp ON disruption_categories;
+CREATE TRIGGER update_disruption_categories_timestamp 
+    BEFORE UPDATE ON disruption_categories
+    FOR EACH ROW EXECUTE FUNCTION update_recovery_timestamp();
+
+DROP TRIGGER IF EXISTS update_recovery_option_templates_timestamp ON recovery_option_templates;
+CREATE TRIGGER update_recovery_option_templates_timestamp 
+    BEFORE UPDATE ON recovery_option_templates
+    FOR EACH ROW EXECUTE FUNCTION update_recovery_timestamp();
+
+DROP TRIGGER IF EXISTS update_recovery_options_detailed_timestamp ON recovery_options_detailed;
+CREATE TRIGGER update_recovery_options_detailed_timestamp 
+    BEFORE UPDATE ON recovery_options_detailed
+    FOR EACH ROW EXECUTE FUNCTION update_recovery_timestamp();
+
+DROP TRIGGER IF EXISTS update_recovery_steps_detailed_timestamp ON recovery_steps_detailed;
+CREATE TRIGGER update_recovery_steps_detailed_timestamp 
+    BEFORE UPDATE ON recovery_steps_detailed
+    FOR EACH ROW EXECUTE FUNCTION update_recovery_timestamp();
 
 -- Function to create audit trail
 CREATE OR REPLACE FUNCTION create_settings_audit()
@@ -301,21 +496,79 @@ CREATE INDEX IF NOT EXISTS idx_settings_audit_setting_id ON settings_audit(setti
 CREATE INDEX IF NOT EXISTS idx_settings_audit_changed_at ON settings_audit(changed_at);
 CREATE INDEX IF NOT EXISTS idx_custom_rules_priority ON custom_rules(priority);
 CREATE INDEX IF NOT EXISTS idx_custom_rules_status ON custom_rules(status);
+
+-- Flight disruption indexes
 CREATE INDEX IF NOT EXISTS idx_flight_disruptions_status ON flight_disruptions(status);
 CREATE INDEX IF NOT EXISTS idx_flight_disruptions_type ON flight_disruptions(disruption_type);
 CREATE INDEX IF NOT EXISTS idx_flight_disruptions_created ON flight_disruptions(created_at);
+CREATE INDEX IF NOT EXISTS idx_flight_disruptions_lookup ON flight_disruptions (flight_number, scheduled_departure, status);
+CREATE INDEX IF NOT EXISTS idx_flight_disruptions_updated ON flight_disruptions (updated_at DESC);
+
+-- Recovery categorization indexes
+CREATE INDEX IF NOT EXISTS idx_disruption_categories_code ON disruption_categories(category_code);
+CREATE INDEX IF NOT EXISTS idx_recovery_option_templates_category ON recovery_option_templates(category_id);
+CREATE INDEX IF NOT EXISTS idx_recovery_options_detailed_disruption ON recovery_options_detailed(disruption_id);
+CREATE INDEX IF NOT EXISTS idx_recovery_options_detailed_category ON recovery_options_detailed(category_id);
+CREATE INDEX IF NOT EXISTS idx_recovery_options_detailed_option_id ON recovery_options_detailed(option_id);
+
+-- Recovery options and steps indexes
+CREATE INDEX IF NOT EXISTS idx_recovery_options_disruption ON recovery_options(disruption_id);
+CREATE INDEX IF NOT EXISTS idx_recovery_options_status ON recovery_options(status);
+CREATE INDEX IF NOT EXISTS idx_recovery_steps_disruption ON recovery_steps(disruption_id);
+CREATE INDEX IF NOT EXISTS idx_recovery_steps_status ON recovery_steps(status);
+CREATE INDEX IF NOT EXISTS idx_recovery_steps_detailed_disruption ON recovery_steps_detailed(disruption_id);
+CREATE INDEX IF NOT EXISTS idx_recovery_steps_detailed_option ON recovery_steps_detailed(option_id);
+
+-- Detail tables indexes
+CREATE INDEX IF NOT EXISTS idx_rotation_plan_recovery_option ON rotation_plan_details(recovery_option_id);
+CREATE INDEX IF NOT EXISTS idx_cost_analysis_recovery_option ON cost_analysis_details(recovery_option_id);
+CREATE INDEX IF NOT EXISTS idx_timeline_details_recovery_option ON timeline_details(recovery_option_id);
+CREATE INDEX IF NOT EXISTS idx_resource_details_recovery_option ON resource_details(recovery_option_id);
+CREATE INDEX IF NOT EXISTS idx_technical_specs_recovery_option ON technical_specifications(recovery_option_id);
+
+-- Other entity indexes
 CREATE INDEX IF NOT EXISTS idx_passengers_flight ON passengers(flight_number);
 CREATE INDEX IF NOT EXISTS idx_passengers_pnr ON passengers(pnr);
 CREATE INDEX IF NOT EXISTS idx_crew_status ON crew_members(status);
 CREATE INDEX IF NOT EXISTS idx_crew_employee_id ON crew_members(employee_id);
 CREATE INDEX IF NOT EXISTS idx_aircraft_status ON aircraft(status);
-CREATE INDEX IF NOT EXISTS idx_recovery_options_disruption ON recovery_options(disruption_id);
-CREATE INDEX IF NOT EXISTS idx_recovery_options_status ON recovery_options(status);
-CREATE INDEX IF NOT EXISTS idx_recovery_steps_disruption ON recovery_steps(disruption_id);
-CREATE INDEX IF NOT EXISTS idx_recovery_steps_status ON recovery_steps(status);
 CREATE INDEX IF NOT EXISTS idx_crew_disruption_mapping_disruption ON crew_disruption_mapping(disruption_id);
 CREATE INDEX IF NOT EXISTS idx_crew_disruption_mapping_crew ON crew_disruption_mapping(crew_member_id);
 CREATE INDEX IF NOT EXISTS idx_hotel_bookings_disruption ON hotel_bookings(disruption_id);
+
+-- Insert disruption categories
+INSERT INTO disruption_categories (category_code, category_name, description, priority_level) VALUES
+('AIRCRAFT_ISSUE', 'Aircraft Issue (e.g., AOG)', 'Technical issues with aircraft requiring maintenance or replacement', 1),
+('CREW_ISSUE', 'Crew Issue (e.g., sick report, duty time breach)', 'Issues related to crew availability, duty time, or medical situations', 2),
+('ATC_WEATHER', 'ATC/Weather Delay', 'Delays caused by air traffic control restrictions or weather conditions', 3),
+('CURFEW_CONGESTION', 'Airport Curfew/Ramp Congestion', 'Issues related to airport operating restrictions or congestion', 4),
+('ROTATION_MAINTENANCE', 'Rotation Misalignment or Maintenance Hold', 'Issues with aircraft rotation scheduling or maintenance delays', 5)
+ON CONFLICT (category_code) DO NOTHING;
+
+-- Insert recovery option templates for each category
+INSERT INTO recovery_option_templates (category_id, template_code, title, description, default_timeline, default_confidence, default_impact, template_data) VALUES
+-- Aircraft Issue Templates
+((SELECT id FROM disruption_categories WHERE category_code = 'AIRCRAFT_ISSUE'), 'AIRCRAFT_SWAP', 'Aircraft Swap', 'Swap the affected aircraft with an available alternative to maintain schedule integrity', '75 minutes', 95, 'Low', '{"type": "swap", "requires_crew_brief": true}'),
+((SELECT id FROM disruption_categories WHERE category_code = 'AIRCRAFT_ISSUE'), 'DELAY_REPAIR', 'Delay for Repair Completion', 'Hold the flight until the technical issue is resolved by maintenance', '3-4 hours', 65, 'High', '{"type": "repair", "requires_maintenance": true}'),
+((SELECT id FROM disruption_categories WHERE category_code = 'AIRCRAFT_ISSUE'), 'CANCEL_REBOOK', 'Cancel and Rebook', 'Cancel the flight and rebook affected passengers on alternate flights', '6-8 hours', 90, 'High', '{"type": "cancel", "requires_rebooking": true}'),
+
+-- Crew Issue Templates
+((SELECT id FROM disruption_categories WHERE category_code = 'CREW_ISSUE'), 'STANDBY_CREW', 'Assign Standby Crew', 'Activate standby crew to replace affected crew members', '30 minutes', 92, 'Low', '{"type": "crew_swap", "requires_briefing": true}'),
+((SELECT id FROM disruption_categories WHERE category_code = 'CREW_ISSUE'), 'DEADHEAD_CREW', 'Position Deadhead Crew', 'Transport qualified crew from another location', '2-3 hours', 85, 'Medium', '{"type": "crew_positioning", "requires_transport": true}'),
+
+-- Weather Templates
+((SELECT id FROM disruption_categories WHERE category_code = 'ATC_WEATHER'), 'DELAY_WEATHER', 'Delay for Weather Clearance', 'Wait for weather conditions to improve at destination', '2-3 hours', 90, 'Medium', '{"type": "weather_wait", "monitor_conditions": true}'),
+((SELECT id FROM disruption_categories WHERE category_code = 'ATC_WEATHER'), 'REROUTE', 'Reroute to Alternate Airport', 'Divert to alternative airport with better weather conditions', '4-6 hours', 85, 'High', '{"type": "reroute", "requires_ground_transport": true}'),
+((SELECT id FROM disruption_categories WHERE category_code = 'ATC_WEATHER'), 'CANCEL_WEATHER', 'Cancel Due to Weather', 'Cancel flight due to severe weather conditions', '1 hour', 100, 'High', '{"type": "cancel_weather", "passenger_accommodation": true}'),
+
+-- Curfew/Congestion Templates
+((SELECT id FROM disruption_categories WHERE category_code = 'CURFEW_CONGESTION'), 'EARLY_DEPARTURE', 'Early Departure Swap', 'Swap with earlier flight to beat curfew restrictions', '45 minutes', 92, 'Medium', '{"type": "early_swap", "requires_coordination": true}'),
+((SELECT id FROM disruption_categories WHERE category_code = 'CURFEW_CONGESTION'), 'NEXT_DAY', 'Next Day Operation', 'Defer flight to next available slot after curfew', '12-24 hours', 95, 'High', '{"type": "defer", "passenger_overnight": true}'),
+
+-- Rotation/Maintenance Templates
+((SELECT id FROM disruption_categories WHERE category_code = 'ROTATION_MAINTENANCE'), 'ROTATION_SWAP', 'Aircraft Rotation Swap', 'Reassign aircraft from another rotation', '90 minutes', 88, 'Medium', '{"type": "rotation_swap", "cascade_effects": true}'),
+((SELECT id FROM disruption_categories WHERE category_code = 'ROTATION_MAINTENANCE'), 'MAINTENANCE_DEFER', 'Defer Maintenance Window', 'Postpone non-critical maintenance to later slot', '60 minutes', 80, 'Low', '{"type": "maintenance_defer", "regulatory_check": true}')
+ON CONFLICT (category_id, template_code) DO NOTHING;
 
 -- Insert default settings
 INSERT INTO settings (category, key, value, type, description, updated_by) VALUES
@@ -425,10 +678,8 @@ INSERT INTO flight_disruptions (flight_number, route, origin, destination, origi
 ('FZ567', 'BOM → DXB', 'BOM', 'DXB', 'Mumbai', 'Dubai', 'B737-800', '2025-01-10 11:15:00+00', '2025-01-10 13:45:00+00', 150, 162, 6, 2, 'High', 'Technical', 'Delayed', 'Auxiliary Power Unit malfunction requiring repair', 'Aircraft issue (e.g., AOG)'),
 ('FZ891', 'DEL → DXB', 'DEL', 'DXB', 'Delhi', 'Dubai', 'B737 MAX 8', '2025-01-10 12:30:00+00', '2025-01-10 14:00:00+00', 90, 188, 6, 1, 'Medium', 'Airport', 'Delayed', 'Air traffic control flow restrictions', 'Airport issue (e.g., runway closure, ATC delays)'),
 ('FZ432', 'DXB → AMM', 'DXB', 'AMM', 'Dubai', 'Amman', 'B737-800', '2025-01-10 18:45:00+00', NULL, 0, 156, 6, 0, 'Critical', 'Weather', 'Cancelled', 'Severe thunderstorms with lightning activity', 'Weather issue (e.g., fog, sandstorm)'),
-('FZ654', 'CAI → DXB', 'CAI', 'DXB', 'Cairo', 'Dubai', 'B737 MAX 8', '2025-01-10 20:30:00+00', '2025-01-10 21:15:00+00', 45, 172, 6, 1, 'Low', 'Technical', 'Delayed', 'Routine pre-flight system check delay', 'Aircraft issue (e.g., AOG)'),
-('AR-121', 'BCN → IST', 'BCN', 'IST', 'Barcelona', 'Istanbul', 'B737-900ER', '2025-08-05 22:26:00+00', '2025-08-05 23:26:00+00', 22, 111, 6, 2, 'Medium', 'Weather', 'Diverted', 'Weather Condition is very Dangerous', 'Weather issue (e.g., fog, sandstorm)'),
-('NZ121', 'DXB → KHI', 'DXB', 'KHI', 'Dubai', 'Karachi', 'B737-800', '2025-08-05 19:13:00+00', '2025-08-05 21:13:00+00', 10, 200, 6, 2, 'Medium', 'Technical', 'Active', 'Weather Condition is very Dangerous', 'Aircraft issue (e.g., AOG)')
-ON CONFLICT DO NOTHING;
+('FZ654', 'CAI → DXB', 'CAI', 'DXB', 'Cairo', 'Dubai', 'B737 MAX 8', '2025-01-10 20:30:00+00', '2025-01-10 21:15:00+00', 45, 172, 6, 1, 'Low', 'Technical', 'Delayed', 'Routine pre-flight system check delay', 'Aircraft issue (e.g., AOG)')
+ON CONFLICT (flight_number, scheduled_departure) DO NOTHING;
 
 -- Insert sample passengers
 INSERT INTO passengers (pnr, name, flight_number, seat_number, ticket_class, loyalty_tier, special_needs, contact_info, rebooking_status) VALUES
@@ -544,9 +795,5 @@ LEFT JOIN passengers p ON fd.flight_number = p.flight_number
 LEFT JOIN crew_disruption_mapping cdm ON fd.id = cdm.disruption_id
 GROUP BY fd.id;
 
--- Grant permissions (adjust as needed for your environment)
--- GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO your_user;
--- GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO your_user;
-
 -- Final message
-SELECT 'AERON Database Schema and Sample Data Successfully Imported!' as status;
+SELECT 'AERON Database Schema and Sample Data Successfully Updated!' as status;
