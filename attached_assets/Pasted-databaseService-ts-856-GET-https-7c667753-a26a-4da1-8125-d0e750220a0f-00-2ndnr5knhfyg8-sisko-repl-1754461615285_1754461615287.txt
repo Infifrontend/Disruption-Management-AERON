@@ -1,0 +1,81 @@
+databaseService.ts:856  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/disruption-categories net::ERR_ABORTED 500 (Internal Server Error)
+getDisruptionCategories @ databaseService.ts:856
+fetchDisruptionCategories @ DisruptionInput.tsx:160
+(anonymous) @ DisruptionInput.tsx:170Understand this error
+databaseService.ts:860 Error fetching disruption categories: Error: HTTP error! status: 500
+    at DatabaseService.getDisruptionCategories (databaseService.ts:857:31)
+    at async fetchDisruptionCategories (DisruptionInput.tsx:160:24)
+getDisruptionCategories @ databaseService.ts:860
+await in getDisruptionCategories
+fetchDisruptionCategories @ DisruptionInput.tsx:160
+(anonymous) @ DisruptionInput.tsx:170Understand this error
+databaseService.ts:480  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/health net::ERR_ABORTED 500 (Internal Server Error)
+healthCheck @ databaseService.ts:480
+initializeStorage @ settingsStorage.ts:37
+SettingsStorage @ settingsStorage.ts:30
+(anonymous) @ settingsStorage.ts:395Understand this error
+databaseService.ts:1226  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/health net::ERR_ABORTED 500 (Internal Server Error)
+checkApiHealth @ databaseService.ts:1226
+getAllDisruptions @ databaseService.ts:586
+fetchFlightStats @ Layout.tsx:71
+(anonymous) @ Layout.tsx:97
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=0369a465:16915
+commitPassiveMountOnFiber @ chunk-PJEEZAML.js?v=0369a465:18156
+commitPassiveMountEffects_complete @ chunk-PJEEZAML.js?v=0369a465:18129
+commitPassiveMountEffects_begin @ chunk-PJEEZAML.js?v=0369a465:18119
+commitPassiveMountEffects @ chunk-PJEEZAML.js?v=0369a465:18109
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=0369a465:19490
+flushPassiveEffects @ chunk-PJEEZAML.js?v=0369a465:19447
+(anonymous) @ chunk-PJEEZAML.js?v=0369a465:19328
+workLoop @ chunk-PJEEZAML.js?v=0369a465:197
+flushWork @ chunk-PJEEZAML.js?v=0369a465:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=0369a465:384Understand this error
+databaseService.ts:1226  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/health net::ERR_ABORTED 500 (Internal Server Error)
+checkApiHealth @ databaseService.ts:1226
+getAllDisruptions @ databaseService.ts:586
+fetchFlightStats @ Layout.tsx:71
+(anonymous) @ Layout.tsx:97
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=0369a465:16915
+invokePassiveEffectMountInDEV @ chunk-PJEEZAML.js?v=0369a465:18324
+invokeEffectsInDev @ chunk-PJEEZAML.js?v=0369a465:19701
+commitDoubleInvokeEffectsInDEV @ chunk-PJEEZAML.js?v=0369a465:19686
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=0369a465:19503
+flushPassiveEffects @ chunk-PJEEZAML.js?v=0369a465:19447
+(anonymous) @ chunk-PJEEZAML.js?v=0369a465:19328
+workLoop @ chunk-PJEEZAML.js?v=0369a465:197
+flushWork @ chunk-PJEEZAML.js?v=0369a465:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=0369a465:384Understand this error
+databaseService.ts:1226  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/health net::ERR_ABORTED 500 (Internal Server Error)
+checkApiHealth @ databaseService.ts:1226
+getAllDisruptions @ databaseService.ts:586
+fetchFlights @ DisruptionInput.tsx:308
+await in fetchFlights
+(anonymous) @ DisruptionInput.tsx:292
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=0369a465:16915
+commitPassiveMountOnFiber @ chunk-PJEEZAML.js?v=0369a465:18156
+commitPassiveMountEffects_complete @ chunk-PJEEZAML.js?v=0369a465:18129
+commitPassiveMountEffects_begin @ chunk-PJEEZAML.js?v=0369a465:18119
+commitPassiveMountEffects @ chunk-PJEEZAML.js?v=0369a465:18109
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=0369a465:19490
+flushPassiveEffects @ chunk-PJEEZAML.js?v=0369a465:19447
+(anonymous) @ chunk-PJEEZAML.js?v=0369a465:19328
+workLoop @ chunk-PJEEZAML.js?v=0369a465:197
+flushWork @ chunk-PJEEZAML.js?v=0369a465:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=0369a465:384Understand this error
+databaseService.ts:1226  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/health net::ERR_ABORTED 500 (Internal Server Error)
+checkApiHealth @ databaseService.ts:1226
+getAllDisruptions @ databaseService.ts:586
+fetchFlights @ DisruptionInput.tsx:308
+await in fetchFlights
+(anonymous) @ DisruptionInput.tsx:292
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=0369a465:16915
+invokePassiveEffectMountInDEV @ chunk-PJEEZAML.js?v=0369a465:18324
+invokeEffectsInDev @ chunk-PJEEZAML.js?v=0369a465:19701
+commitDoubleInvokeEffectsInDEV @ chunk-PJEEZAML.js?v=0369a465:19686
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=0369a465:19503
+flushPassiveEffects @ chunk-PJEEZAML.js?v=0369a465:19447
+(anonymous) @ chunk-PJEEZAML.js?v=0369a465:19328
+workLoop @ chunk-PJEEZAML.js?v=0369a465:197
+flushWork @ chunk-PJEEZAML.js?v=0369a465:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=0369a465:384Understand this error
+databaseService.ts:1226  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/health net::ERR_ABORTED 500 (Internal Server Error)
