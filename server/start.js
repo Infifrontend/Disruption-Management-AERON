@@ -1802,7 +1802,7 @@ app.get('/api/recovery-option/:optionId/technical', async (req, res) => {
       }
 
       // Parse and return the technical_specs JSON field
-      let technicalSpecs = result.rows[0].technical_specs
+      let technicalSpecs = result.rows[0].technical_specs || {}
       if (typeof technicalSpecs === 'string') {
         try {
           technicalSpecs = JSON.parse(technicalSpecs)
@@ -1811,12 +1811,17 @@ app.get('/api/recovery-option/:optionId/technical', async (req, res) => {
         }
       }
 
+      // Ensure technicalSpecs is an object before accessing properties
+      if (!technicalSpecs || typeof technicalSpecs !== 'object') {
+        technicalSpecs = {}
+      }
+
       res.json({
         success: true,
         technical: {
-          aircraftSpecs: technicalSpecs.aircraftRequirements || {},
+          aircraftSpecs: technicalSpecs.aircraftRequirements || technicalSpecs.aircraftSpecs || {},
           operationalConstraints: technicalSpecs.operationalConstraints || {},
-          regulatoryRequirements: technicalSpecs.regulatoryCompliance || [],
+          regulatoryRequirements: technicalSpecs.regulatoryCompliance || technicalSpecs.regulatoryRequirements || [],
           weatherLimitations: technicalSpecs.weatherLimitations || {}
         }
       })
@@ -1838,7 +1843,14 @@ app.get('/api/recovery-option/:optionId/technical', async (req, res) => {
     console.error('Error fetching technical specifications:', error)
     res.status(500).json({ 
       error: 'Failed to fetch technical specifications', 
-      details: error.message 
+      details: error.message,
+      success: false,
+      technical: {
+        aircraftSpecs: {},
+        operationalConstraints: {},
+        regulatoryRequirements: [],
+        weatherLimitations: {}
+      }
     })
   }
 })
