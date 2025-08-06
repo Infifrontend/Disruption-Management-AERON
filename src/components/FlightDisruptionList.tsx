@@ -26,6 +26,14 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { Progress } from "./ui/progress";
 import { Separator } from "./ui/separator";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "./ui/pagination";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -73,6 +81,8 @@ export function FlightDisruptionList() {
   const [selectedDisruption, setSelectedDisruption] = useState(null);
   const [disruptions, setDisruptions] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
   const [filters, setFilters] = useState({
     severity: "all",
     type: "all",
@@ -208,6 +218,11 @@ export function FlightDisruptionList() {
           .includes(filters.search.toLowerCase()))
     );
   });
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   const getSeverityColor = (severity) => {
     switch (severity) {
@@ -500,7 +515,9 @@ export function FlightDisruptionList() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredDisruptions.map((disruption) => (
+              {filteredDisruptions
+                .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                .map((disruption) => (
                 <TableRow key={disruption.id} className="hover:bg-muted/50">
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -630,6 +647,66 @@ export function FlightDisruptionList() {
               ))}
             </TableBody>
           </Table>
+
+          {/* Pagination */}
+          {filteredDisruptions.length > itemsPerPage && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
+              <div className="text-sm text-muted-foreground">
+                Page {currentPage} of {Math.ceil(filteredDisruptions.length / itemsPerPage)} ({filteredDisruptions.length} total flights)
+              </div>
+              
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                  
+                  {Array.from({ length: Math.ceil(filteredDisruptions.length / itemsPerPage) }, (_, i) => i + 1)
+                    .filter(page => {
+                      const totalPages = Math.ceil(filteredDisruptions.length / itemsPerPage);
+                      if (totalPages <= 7) return true;
+                      if (page <= 3) return true;
+                      if (page >= totalPages - 2) return true;
+                      if (Math.abs(page - currentPage) <= 1) return true;
+                      return false;
+                    })
+                    .map((page, index, array) => {
+                      const prevPage = array[index - 1];
+                      const showEllipsis = prevPage && page - prevPage > 1;
+                      
+                      return (
+                        <React.Fragment key={page}>
+                          {showEllipsis && (
+                            <PaginationItem>
+                              <span className="px-3 py-2">...</span>
+                            </PaginationItem>
+                          )}
+                          <PaginationItem>
+                            <PaginationLink
+                              onClick={() => setCurrentPage(page)}
+                              isActive={currentPage === page}
+                              className="cursor-pointer"
+                            >
+                              {page}
+                            </PaginationLink>
+                          </PaginationItem>
+                        </React.Fragment>
+                      );
+                    })}
+                  
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => setCurrentPage(prev => Math.min(Math.ceil(filteredDisruptions.length / itemsPerPage), prev + 1))}
+                      className={currentPage === Math.ceil(filteredDisruptions.length / itemsPerPage) ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
         </CardContent>
       </Card>
 
