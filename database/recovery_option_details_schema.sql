@@ -1,3 +1,4 @@
+
 -- Enhanced Recovery Options Details Schema
 -- This extends the existing recovery options with detailed data for tabs
 
@@ -72,12 +73,49 @@ CREATE TABLE IF NOT EXISTS technical_specifications (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Add unique constraints
-ALTER TABLE rotation_plan_details ADD CONSTRAINT IF NOT EXISTS unique_rotation_plan_option UNIQUE (recovery_option_id);
-ALTER TABLE cost_analysis_details ADD CONSTRAINT IF NOT EXISTS unique_cost_analysis_option UNIQUE (recovery_option_id);
-ALTER TABLE timeline_details ADD CONSTRAINT IF NOT EXISTS unique_timeline_option UNIQUE (recovery_option_id);
-ALTER TABLE resource_details ADD CONSTRAINT IF NOT EXISTS unique_resource_option UNIQUE (recovery_option_id);
-ALTER TABLE technical_specifications ADD CONSTRAINT IF NOT EXISTS unique_technical_option UNIQUE (recovery_option_id);
+-- Add unique constraints using DO block to handle IF NOT EXISTS
+DO $$ 
+BEGIN
+    -- Add unique constraint for rotation_plan_details
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'unique_rotation_plan_option'
+    ) THEN
+        ALTER TABLE rotation_plan_details ADD CONSTRAINT unique_rotation_plan_option UNIQUE (recovery_option_id);
+    END IF;
+
+    -- Add unique constraint for cost_analysis_details
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'unique_cost_analysis_option'
+    ) THEN
+        ALTER TABLE cost_analysis_details ADD CONSTRAINT unique_cost_analysis_option UNIQUE (recovery_option_id);
+    END IF;
+
+    -- Add unique constraint for timeline_details
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'unique_timeline_option'
+    ) THEN
+        ALTER TABLE timeline_details ADD CONSTRAINT unique_timeline_option UNIQUE (recovery_option_id);
+    END IF;
+
+    -- Add unique constraint for resource_details
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'unique_resource_option'
+    ) THEN
+        ALTER TABLE resource_details ADD CONSTRAINT unique_resource_option UNIQUE (recovery_option_id);
+    END IF;
+
+    -- Add unique constraint for technical_specifications
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'unique_technical_option'
+    ) THEN
+        ALTER TABLE technical_specifications ADD CONSTRAINT unique_technical_option UNIQUE (recovery_option_id);
+    END IF;
+END $$;
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_rotation_plan_recovery_option ON rotation_plan_details(recovery_option_id);
