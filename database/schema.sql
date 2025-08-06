@@ -756,6 +756,30 @@ INSERT INTO crew_disruption_mapping (disruption_id, crew_member_id, disruption_r
 (2, 2, 'First officer on affected flight', 'In Progress', 'Monitoring for next assignment')
 ON CONFLICT DO NOTHING;
 
+-- Add foreign key constraints for data integrity
+ALTER TABLE crew_disruption_mapping
+ADD CONSTRAINT fk_disruption_id 
+FOREIGN KEY (disruption_id) REFERENCES flight_disruptions(id) ON DELETE CASCADE;
+
+-- Add additional indexes for better performance
+CREATE INDEX IF NOT EXISTS idx_flight_disruptions_flight_number ON flight_disruptions(flight_number);
+CREATE INDEX IF NOT EXISTS idx_crew_disruption_mapping_disruption ON crew_disruption_mapping(disruption_id);
+CREATE INDEX IF NOT EXISTS idx_crew_disruption_mapping_crew ON crew_disruption_mapping(crew_member_id);
+CREATE INDEX IF NOT EXISTS idx_passengers_flight ON passengers(flight_number);
+CREATE INDEX IF NOT EXISTS idx_passengers_pnr ON passengers(pnr);
+CREATE INDEX IF NOT EXISTS idx_crew_status ON crew_members(status);
+CREATE INDEX IF NOT EXISTS idx_crew_employee_id ON crew_members(employee_id);
+CREATE INDEX IF NOT EXISTS idx_aircraft_status ON aircraft(status);
+CREATE INDEX IF NOT EXISTS idx_hotel_bookings_disruption ON hotel_bookings(disruption_id);
+
+-- Add unique constraints for data consistency
+ALTER TABLE rotation_plan_details
+ADD CONSTRAINT unique_rotation_plan_option UNIQUE (recovery_option_id);
+
+-- Ensure flight_disruptions table has proper data type for disruption_reason
+ALTER TABLE flight_disruptions
+ALTER COLUMN disruption_reason TYPE TEXT;
+
 -- Insert sample custom parameters
 INSERT INTO custom_parameters (parameter_id, name, category, weight, description, created_by) VALUES
 ('PARAM-001', 'Weather Risk Factor', 'Weather Analysis', 25, 'Weight for weather conditions in decision making', 'system'),
