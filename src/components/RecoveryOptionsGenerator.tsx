@@ -157,6 +157,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
   const [recoverySteps, setRecoverySteps] = useState([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
   const [loadingError, setLoadingError] = useState(null);
+  const [loadingRecoveryOption, setLoadingRecoveryOption] = useState(null);
+  const [loadingRotationPlan, setLoadingRotationPlan] = useState(null);
 
   // Handle both array and single flight selection
   const flight = Array.isArray(selectedFlight)
@@ -854,6 +856,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
 
   const handleViewRotationPlan = async (option) => {
     console.log('Loading rotation plan data for option:', option.id);
+    setLoadingRotationPlan(option.id);
 
     try {
       // Load rotation plan data from database
@@ -891,6 +894,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       );
       setScheduleImpactData(scheduleImpact);
       setShowRotationPlan(true);
+    } finally {
+      setLoadingRotationPlan(null);
     }
   };
 
@@ -1251,6 +1256,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
 
   const handleViewRecoveryOption = async (option) => {
     console.log('Loading detailed recovery option data for:', option.id);
+    setLoadingRecoveryOption(option.id);
 
     try {
       // Load all detailed data from database
@@ -1318,6 +1324,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       setShowCrewTrackingGantt(false);
       setActiveSimulation(null);
       setShowRecoveryOptionDetails(true);
+    } finally {
+      setLoadingRecoveryOption(null);
     }
   };
 
@@ -1814,19 +1822,39 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                       <Button
                         variant="outline"
                         onClick={() => handleViewRecoveryOption(option)}
+                        disabled={loadingRecoveryOption === option.id}
                         className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                       >
-                        <FileText className="h-4 w-4 mr-2" />
-                        View Recovery Option
+                        {loadingRecoveryOption === option.id ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-flydubai-blue mr-2"></div>
+                            Loading...
+                          </>
+                        ) : (
+                          <>
+                            <FileText className="h-4 w-4 mr-2" />
+                            View Recovery Option
+                          </>
+                        )}
                       </Button>
 
                       <Button
                         variant="outline"
                         onClick={() => handleViewRotationPlan(option)}
+                        disabled={loadingRotationPlan === option.id}
                         className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                       >
-                        <Eye className="h-4 w-4 mr-2" />
-                        View Rotation Plan
+                        {loadingRotationPlan === option.id ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-flydubai-blue mr-2"></div>
+                            Loading...
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Rotation Plan
+                          </>
+                        )}
                       </Button>
 
                       {/* Passenger Services Button - only show when re-accommodation is needed */}
