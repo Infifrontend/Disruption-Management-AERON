@@ -1526,30 +1526,53 @@ app.get('/api/recovery-option/:optionId/rotation-plan', async (req, res) => {
   try {
     const { optionId } = req.params
 
-    const result = await pool.query(`
+    // First try to get from rotation_plan_details table
+    let result = await pool.query(`
       SELECT * FROM rotation_plan_details WHERE recovery_option_id = $1
     `, [optionId])
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ 
-        error: 'Rotation plan not found for this option', 
-        optionId: optionId 
+      // Fallback: try to get from recovery_options table
+      result = await pool.query(`
+        SELECT rotation_plan FROM recovery_options WHERE id = $1
+      `, [optionId])
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ 
+          error: 'Rotation plan not found for this option', 
+          optionId: optionId 
+        })
+      }
+
+      // Return the rotation_plan JSON field
+      const rotationPlan = result.rows[0].rotation_plan || {}
+      
+      res.json({
+        success: true,
+        rotationPlan: {
+          aircraftOptions: rotationPlan.aircraftOptions || [],
+          crewData: rotationPlan.crewData || [],
+          nextSectors: rotationPlan.nextSectors || [],
+          operationalConstraints: rotationPlan.operationalConstraints || {},
+          costBreakdown: rotationPlan.costBreakdown || {},
+          recommendation: rotationPlan.recommendation || {}
+        }
+      })
+    } else {
+      const rotationPlan = result.rows[0]
+
+      res.json({
+        success: true,
+        rotationPlan: {
+          aircraftOptions: rotationPlan.aircraft_options || [],
+          crewData: rotationPlan.crew_data || [],
+          nextSectors: rotationPlan.next_sectors || [],
+          operationalConstraints: rotationPlan.operational_constraints || {},
+          costBreakdown: rotationPlan.cost_breakdown || {},
+          recommendation: rotationPlan.recommendation || {}
+        }
       })
     }
-
-    const rotationPlan = result.rows[0]
-
-    res.json({
-      success: true,
-      rotationPlan: {
-        aircraftOptions: rotationPlan.aircraft_options || [],
-        crewData: rotationPlan.crew_data || [],
-        nextSectors: rotationPlan.next_sectors || [],
-        operationalConstraints: rotationPlan.operational_constraints || {},
-        costBreakdown: rotationPlan.cost_breakdown || {},
-        recommendation: rotationPlan.recommendation || {}
-      }
-    })
 
   } catch (error) {
     console.error('Error fetching rotation plan:', error)
@@ -1565,28 +1588,56 @@ app.get('/api/recovery-option/:optionId/cost-analysis', async (req, res) => {
   try {
     const { optionId } = req.params
 
-    const result = await pool.query(`
+    // First try to get from cost_analysis_details table
+    let result = await pool.query(`
       SELECT * FROM cost_analysis_details WHERE recovery_option_id = $1
     `, [optionId])
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ 
-        error: 'Cost analysis not found for this option', 
-        optionId: optionId 
+      // Fallback: try to get from recovery_options table
+      result = await pool.query(`
+        SELECT cost_breakdown FROM recovery_options WHERE id = $1
+      `, [optionId])
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ 
+          error: 'Cost analysis not found for this option', 
+          optionId: optionId 
+        })
+      }
+
+      // Parse and return the cost_breakdown JSON field
+      let costBreakdown = result.rows[0].cost_breakdown
+      if (typeof costBreakdown === 'string') {
+        try {
+          costBreakdown = JSON.parse(costBreakdown)
+        } catch (e) {
+          costBreakdown = []
+        }
+      }
+
+      res.json({
+        success: true,
+        costAnalysis: {
+          costCategories: Array.isArray(costBreakdown) ? costBreakdown : [],
+          totalCost: 0,
+          costComparison: {},
+          savingsAnalysis: {}
+        }
+      })
+    } else {
+      const costAnalysis = result.rows[0]
+
+      res.json({
+        success: true,
+        costAnalysis: {
+          costCategories: costAnalysis.cost_categories || [],
+          totalCost: costAnalysis.total_cost || 0,
+          costComparison: costAnalysis.cost_comparison || {},
+          savingsAnalysis: costAnalysis.savings_analysis || {}
+        }
       })
     }
-
-    const costAnalysis = result.rows[0]
-
-    res.json({
-      success: true,
-      costAnalysis: {
-        costCategories: costAnalysis.cost_categories || [],
-        totalCost: costAnalysis.total_cost || 0,
-        costComparison: costAnalysis.cost_comparison || {},
-        savingsAnalysis: costAnalysis.savings_analysis || {}
-      }
-    })
 
   } catch (error) {
     console.error('Error fetching cost analysis:', error)
@@ -1602,28 +1653,56 @@ app.get('/api/recovery-option/:optionId/timeline', async (req, res) => {
   try {
     const { optionId } = req.params
 
-    const result = await pool.query(`
+    // First try to get from timeline_details table
+    let result = await pool.query(`
       SELECT * FROM timeline_details WHERE recovery_option_id = $1
     `, [optionId])
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ 
-        error: 'Timeline details not found for this option', 
-        optionId: optionId 
+      // Fallback: try to get from recovery_options table
+      result = await pool.query(`
+        SELECT timeline_details FROM recovery_options WHERE id = $1
+      `, [optionId])
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ 
+          error: 'Timeline details not found for this option', 
+          optionId: optionId 
+        })
+      }
+
+      // Parse and return the timeline_details JSON field
+      let timelineDetails = result.rows[0].timeline_details
+      if (typeof timelineDetails === 'string') {
+        try {
+          timelineDetails = JSON.parse(timelineDetails)
+        } catch (e) {
+          timelineDetails = []
+        }
+      }
+
+      res.json({
+        success: true,
+        timeline: {
+          timelineSteps: Array.isArray(timelineDetails) ? timelineDetails : [],
+          criticalPath: {},
+          dependencies: [],
+          milestones: []
+        }
+      })
+    } else {
+      const timeline = result.rows[0]
+
+      res.json({
+        success: true,
+        timeline: {
+          timelineSteps: timeline.timeline_steps || [],
+          criticalPath: timeline.critical_path || {},
+          dependencies: timeline.dependencies || [],
+          milestones: timeline.milestones || []
+        }
       })
     }
-
-    const timeline = result.rows[0]
-
-    res.json({
-      success: true,
-      timeline: {
-        timelineSteps: timeline.timeline_steps || [],
-        criticalPath: timeline.critical_path || {},
-        dependencies: timeline.dependencies || [],
-        milestones: timeline.milestones || []
-      }
-    })
 
   } catch (error) {
     console.error('Error fetching timeline details:', error)
@@ -1639,28 +1718,56 @@ app.get('/api/recovery-option/:optionId/resources', async (req, res) => {
   try {
     const { optionId } = req.params
 
-    const result = await pool.query(`
+    // First try to get from resource_details table
+    let result = await pool.query(`
       SELECT * FROM resource_details WHERE recovery_option_id = $1
     `, [optionId])
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ 
-        error: 'Resource details not found for this option', 
-        optionId: optionId 
+      // Fallback: try to get from recovery_options table
+      result = await pool.query(`
+        SELECT resource_requirements FROM recovery_options WHERE id = $1
+      `, [optionId])
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ 
+          error: 'Resource details not found for this option', 
+          optionId: optionId 
+        })
+      }
+
+      // Parse and return the resource_requirements JSON field
+      let resourceRequirements = result.rows[0].resource_requirements
+      if (typeof resourceRequirements === 'string') {
+        try {
+          resourceRequirements = JSON.parse(resourceRequirements)
+        } catch (e) {
+          resourceRequirements = []
+        }
+      }
+
+      res.json({
+        success: true,
+        resources: {
+          personnelRequirements: Array.isArray(resourceRequirements) ? resourceRequirements.filter(r => r.type === 'Personnel') : [],
+          equipmentRequirements: Array.isArray(resourceRequirements) ? resourceRequirements.filter(r => r.type === 'Equipment') : [],
+          facilityRequirements: Array.isArray(resourceRequirements) ? resourceRequirements.filter(r => r.type === 'Facility') : [],
+          availabilityStatus: {}
+        }
+      })
+    } else {
+      const resources = result.rows[0]
+
+      res.json({
+        success: true,
+        resources: {
+          personnelRequirements: resources.personnel_requirements || [],
+          equipmentRequirements: resources.equipment_requirements || [],
+          facilityRequirements: resources.facility_requirements || [],
+          availabilityStatus: resources.availability_status || {}
+        }
       })
     }
-
-    const resources = result.rows[0]
-
-    res.json({
-      success: true,
-      resources: {
-        personnelRequirements: resources.personnel_requirements || [],
-        equipmentRequirements: resources.equipment_requirements || [],
-        facilityRequirements: resources.facility_requirements || [],
-        availabilityStatus: resources.availability_status || {}
-      }
-    })
 
   } catch (error) {
     console.error('Error fetching resource details:', error)
@@ -1676,28 +1783,56 @@ app.get('/api/recovery-option/:optionId/technical', async (req, res) => {
   try {
     const { optionId } = req.params
 
-    const result = await pool.query(`
+    // First try to get from technical_specifications table
+    let result = await pool.query(`
       SELECT * FROM technical_specifications WHERE recovery_option_id = $1
     `, [optionId])
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ 
-        error: 'Technical specifications not found for this option', 
-        optionId: optionId 
+      // Fallback: try to get from recovery_options table
+      result = await pool.query(`
+        SELECT technical_specs FROM recovery_options WHERE id = $1
+      `, [optionId])
+
+      if (result.rows.length === 0) {
+        return res.status(404).json({ 
+          error: 'Technical specifications not found for this option', 
+          optionId: optionId 
+        })
+      }
+
+      // Parse and return the technical_specs JSON field
+      let technicalSpecs = result.rows[0].technical_specs
+      if (typeof technicalSpecs === 'string') {
+        try {
+          technicalSpecs = JSON.parse(technicalSpecs)
+        } catch (e) {
+          technicalSpecs = {}
+        }
+      }
+
+      res.json({
+        success: true,
+        technical: {
+          aircraftSpecs: technicalSpecs.aircraftRequirements || {},
+          operationalConstraints: technicalSpecs.operationalConstraints || {},
+          regulatoryRequirements: technicalSpecs.regulatoryCompliance || [],
+          weatherLimitations: technicalSpecs.weatherLimitations || {}
+        }
+      })
+    } else {
+      const technical = result.rows[0]
+
+      res.json({
+        success: true,
+        technical: {
+          aircraftSpecs: technical.aircraft_specs || {},
+          operationalConstraints: technical.operational_constraints || {},
+          regulatoryRequirements: technical.regulatory_requirements || [],
+          weatherLimitations: technical.weather_limitations || {}
+        }
       })
     }
-
-    const technical = result.rows[0]
-
-    res.json({
-      success: true,
-      technical: {
-        aircraftSpecs: technical.aircraft_specs || {},
-        operationalConstraints: technical.operational_constraints || {},
-        regulatoryRequirements: technical.regulatory_requirements || [],
-        weatherLimitations: technical.weather_limitations || {}
-      }
-    })
 
   } catch (error) {
     console.error('Error fetching technical specifications:', error)
