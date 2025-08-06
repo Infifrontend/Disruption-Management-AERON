@@ -296,7 +296,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     vipPassengers: "",
   });
 
-
+  // State for generating recovery options
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Fetch flights from database
   useEffect(() => {
@@ -536,22 +537,22 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     // Status filter
     if (filters.status !== "all" && flight.currentStatus !== filters.status)
       return false;
-    
+
     // Priority filter
     if (filters.priority !== "all" && flight.priority !== filters.priority)
       return false;
-    
+
     // Origin filter
     if (filters.origin !== "all" && flight.origin !== filters.origin)
       return false;
-    
+
     // Categorization filter
     if (
       filters.categorization !== "all" &&
       flight.categorization !== filters.categorization
     )
       return false;
-    
+
     // Search filter - check multiple fields
     if (filters.search && filters.search.trim() !== "") {
       const searchTerm = filters.search.toLowerCase().trim();
@@ -564,14 +565,14 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         flight.origin || "",
         flight.destination || ""
       ];
-      
+
       const matchFound = searchableFields.some(field => 
         field.toLowerCase().includes(searchTerm)
       );
-      
+
       if (!matchFound) return false;
     }
-    
+
     return true;
   });
 
@@ -756,6 +757,19 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     }));
   };
 
+  // Placeholder for handleGenerateRecoveryOptions if it exists elsewhere
+  const handleGenerateRecoveryOptions = () => {
+    // This function is called when the "Generate Recovery Options" button is clicked.
+    // It is assumed to be defined and handles the logic for generating recovery options.
+    // For this example, we'll simulate setting `isGenerating` state.
+    setIsGenerating(true);
+    // Simulate an API call or heavy processing
+    setTimeout(() => {
+      setIsGenerating(false);
+      // In a real scenario, you would navigate or show results here.
+      console.log("Generating recovery options...");
+    }, 2000);
+  };
 
 
   if (loading) {
@@ -1519,7 +1533,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </div>
             </div>
           </div>
-          
+
           <div className="flex items-center justify-between mt-4 pt-4 border-t">
             <div className="flex items-center gap-4">
               <label className="text-sm font-medium">Items per page:</label>
@@ -1548,385 +1562,326 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         </CardContent>
       </Card>
 
-      {/* Flight Selection */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>
-              Flight Selection (
-              {selectedFlight ? "1 selected" : "None selected"})
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">
-                Click a row to select flight
-              </span>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table className="min-w-full">
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Flight</TableHead>
-                  <TableHead>Route</TableHead>
-                  <TableHead>Departure</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Categorization</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Passengers</TableHead>
-                  <TableHead>Impact</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {paginatedFlights.map((flight) => (
-                  <TableRow
-                    key={flight.id}
-                    className={`cursor-pointer hover:bg-blue-50 ${selectedFlight?.id === flight.id ? "bg-blue-100 border-blue-200" : ""}`}
-                    onClick={() => handleFlightSelection(flight)}
-                  >
-                    <TableCell>
-                      <div className="space-y-1 max-w-[120px]">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono font-semibold truncate">
-                            {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-')
-                              ? (flight.flightNumber || '-')
-                              : flight.flightNumber}
-                          </span>
-                          {flight.status === "Incomplete" &&
-                           !(flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') && !flight.flightNumber) && (
-                            <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-xs">
-                              Incomplete
-                            </Badge>
+      {/* Flight List */}
+      <div className="relative flex-1 overflow-hidden">
+        <div className={`h-full overflow-y-auto ${selectedFlight ? 'pb-4' : ''}`}>
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>
+                  Flight List ({sortedFlights.length} affected)
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    Click a row to select flight
+                  </span>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <Table className="min-w-full">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Flight</TableHead>
+                      <TableHead>Route</TableHead>
+                      <TableHead>Departure</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Categorization</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Passengers</TableHead>
+                      <TableHead>Impact</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedFlights.map((flight) => (
+                      <TableRow
+                        key={flight.id}
+                        className={`cursor-pointer hover:bg-blue-50 ${selectedFlight?.id === flight.id ? "bg-blue-100 border-blue-200" : ""}`}
+                        onClick={() => handleFlightSelection(flight)}
+                      >
+                        <TableCell>
+                          <div className="space-y-1 max-w-[120px]">
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono font-semibold truncate">
+                                {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-')
+                                  ? (flight.flightNumber || '-')
+                                  : flight.flightNumber}
+                              </span>
+                              {flight.status === "Incomplete" &&
+                               !(flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') && !flight.flightNumber) && (
+                                <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-xs">
+                                  Incomplete
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="text-sm text-muted-foreground truncate" title={flight.aircraft}>
+                              {flight.aircraft}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2 max-w-[140px]">
+                            <span className="font-medium truncate">{flight.origin}</span>
+                            <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                            <span className="font-medium truncate">
+                              {flight.destination}
+                            </span>
+                          </div>
+                          <div className="text-sm text-muted-foreground truncate max-w-[140px]" title={`${flight.originCity} → ${flight.destinationCity}`}>
+                            {flight.originCity} → {flight.destinationCity}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">
+                              {formatTime(flight.scheduledDeparture)}
+                            </div>
+                            <div className="text-sm text-muted-foreground">
+                              {formatDate(flight.scheduledDeparture)}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(flight.currentStatus)}>
+                            {flight.currentStatus}
+                          </Badge>
+                          {flight.delay > 0 && (
+                            <div className="text-sm text-red-600 mt-1">
+                              +{flight.delay}m
+                            </div>
                           )}
-                        </div>
-                        <div className="text-sm text-muted-foreground truncate" title={flight.aircraft}>
-                          {flight.aircraft}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 max-w-[140px]">
-                        <span className="font-medium truncate">{flight.origin}</span>
-                        <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                        <span className="font-medium truncate">
-                          {flight.destination}
-                        </span>
-                      </div>
-                      <div className="text-sm text-muted-foreground truncate max-w-[140px]" title={`${flight.originCity} → ${flight.destinationCity}`}>
-                        {flight.originCity} → {flight.destinationCity}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">
-                          {formatTime(flight.scheduledDeparture)}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {formatDate(flight.scheduledDeparture)}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(flight.currentStatus)}>
-                        {flight.currentStatus}
-                      </Badge>
-                      {flight.delay > 0 && (
-                        <div className="text-sm text-red-600 mt-1">
-                          +{flight.delay}m
-                        </div>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1 max-w-[200px]">
-                        <Badge
-                          className={`${getCategorizationColor(
-                            flight.categorization,
-                          )} text-xs truncate block max-w-full`}
-                          title={flight.categorization}
-                        >
-                          <span className="truncate">
-                            {flight.categorization}
-                          </span>
-                        </Badge>
-                        <div className="text-sm text-muted-foreground truncate" title={flight.disruptionReason}>
-                          {flight.disruptionReason}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getPriorityColor(flight.priority)}>
-                        {flight.priority}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{flight.passengers}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {flight.connectionFlights > 0
-                            ? `${flight.connectionFlights} connections`
-                            : "Direct flight"}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">
-                          {getDisruptionIcon(flight.disruptionType)}
-                        </span>
-                        <div>
-                          <div
-                            className={`text-sm font-medium ${getSeverityColor(flight.severity)}`}
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1 max-w-[200px]">
+                            <Badge
+                              className={`${getCategorizationColor(
+                                flight.categorization,
+                              )} text-xs truncate block max-w-full`}
+                              title={flight.categorization}
+                            >
+                              <span className="truncate">
+                                {flight.categorization}
+                              </span>
+                            </Badge>
+                            <div className="text-sm text-muted-foreground truncate" title={flight.disruptionReason}>
+                              {flight.disruptionReason}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getPriorityColor(flight.priority)}>
+                            {flight.priority}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{flight.passengers}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {flight.connectionFlights > 0
+                                ? `${flight.connectionFlights} connections`
+                                : "Direct flight"}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg">
+                              {getDisruptionIcon(flight.disruptionType)}
+                            </span>
+                            <div>
+                              <div
+                                className={`text-sm font-medium ${getSeverityColor(flight.severity)}`}
+                              >
+                                {flight.severity} severity
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {flight.lastUpdate}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelectFlight([flight]);
+                            }}
                           >
-                            {flight.severity} severity
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            {flight.lastUpdate}
-                          </div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
+                            <Eye className="h-3 w-3 mr-1" />
+                            Details
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Pagination Controls */}
+              {sortedFlights.length > itemsPerPage && (
+                <div className="flex items-center justify-between mt-4">
+                  <div className="text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages} ({sortedFlights.length} total flights)
+                  </div>
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious 
+                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
+
+                      {/* Page Numbers */}
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+
+                        return (
+                          <PaginationItem key={pageNum}>
+                            <PaginationLink
+                              onClick={() => setCurrentPage(pageNum)}
+                              isActive={currentPage === pageNum}
+                              className="cursor-pointer"
+                            >
+                              {pageNum}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      })}
+
+                      {totalPages > 5 && currentPage < totalPages - 2 && (
+                        <PaginationItem>
+                          <PaginationEllipsis />
+                        </PaginationItem>
+                      )}
+
+                      <PaginationItem>
+                        <PaginationNext 
+                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+
+              {/* No data state */}
+              {sortedFlights.length === 0 && !loading && (
+                <div className="text-center py-12">
+                  <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <Plane className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No affected flights found
+                  </h3>
+                  <p className="text-gray-500 mb-4">
+                    {flights.length === 0
+                      ? "There are currently no flight disruptions in the system. Add a new disruption to get started."
+                      : "No flights match your current filter criteria. Try adjusting your filters."}
+                  </p>
+                  <div className="flex justify-center gap-2">
+                    {flights.length === 0 && (
                       <Button
                         variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectFlight([flight]);
-                        }}
+                        onClick={fetchFlights}
+                        className="flex items-center gap-2"
+                        disabled={loading}
                       >
-                        <Eye className="h-3 w-3 mr-1" />
-                        Details
+                        <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                        Refresh Data
                       </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                    )}
+                    {filteredFlights.length === 0 && flights.length > 0 && (
+                      <Button
+                        variant="outline"
+                        onClick={() => setFilters({
+                          status: "all",
+                          priority: "all",
+                          origin: "all",
+                          categorization: "all",
+                          search: "",
+                        })}
+                        className="flex items-center gap-2"
+                      >
+                        Clear Filters
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
 
-          {/* Pagination Controls */}
-          {sortedFlights.length > itemsPerPage && (
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-muted-foreground">
-                Page {currentPage} of {totalPages} ({sortedFlights.length} total flights)
-              </div>
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious 
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                    />
-                  </PaginationItem>
-                  
-                  {/* Page Numbers */}
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-                    
-                    return (
-                      <PaginationItem key={pageNum}>
-                        <PaginationLink
-                          onClick={() => setCurrentPage(pageNum)}
-                          isActive={currentPage === pageNum}
-                          className="cursor-pointer"
-                        >
-                          {pageNum}
-                        </PaginationLink>
-                      </PaginationItem>
-                    );
-                  })}
-                  
-                  {totalPages > 5 && currentPage < totalPages - 2 && (
-                    <PaginationItem>
-                      <PaginationEllipsis />
-                    </PaginationItem>
-                  )}
-                  
-                  <PaginationItem>
-                    <PaginationNext 
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
-            </div>
-          )}
 
-          {/* No data state */}
-          {sortedFlights.length === 0 && !loading && (
-            <div className="text-center py-12">
-              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Plane className="h-8 w-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No affected flights found
-              </h3>
-              <p className="text-gray-500 mb-4">
-                {flights.length === 0
-                  ? "There are currently no flight disruptions in the system. Add a new disruption to get started."
-                  : "No flights match your current filter criteria. Try adjusting your filters."}
-              </p>
-              <div className="flex justify-center gap-2">
-                {flights.length === 0 && (
-                  <Button
-                    variant="outline"
-                    onClick={fetchFlights}
-                    className="flex items-center gap-2"
-                    disabled={loading}
-                  >
-                    <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                    Refresh Data
-                  </Button>
-                )}
-                {filteredFlights.length === 0 && flights.length > 0 && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setFilters({
-                      status: "all",
-                      priority: "all",
-                      origin: "all",
-                      categorization: "all",
-                      search: "",
-                    })}
-                    className="flex items-center gap-2"
-                  >
-                    Clear Filters
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      
-
-      {/* Sticky Selected Flight Summary at Bottom */}
+      {/* Selected Flight Summary - Fixed at bottom with proper margin */}
       {selectedFlight && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-black bg-opacity-50 shadow-lg">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <Card className="border-blue-200 bg-blue-50 shadow-md">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  {/* Left side - Flight Info */}
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                      <Zap className="h-5 w-5 text-blue-600" />
-                      <h4 className="font-semibold text-blue-800">
-                        Selected Flight
-                      </h4>
-                    </div>
-                    
-                    <div className="flex items-center gap-4 text-sm">
-                      <div className="flex items-center gap-1">
-                        <Plane className="h-4 w-4 text-blue-600" />
-                        <span className="text-blue-600 font-semibold">
-                          {selectedFlight.flightNumber}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center gap-1">
-                        <span className="text-blue-600">{selectedFlight.origin}</span>
-                        <ArrowRight className="h-3 w-3 text-blue-500" />
-                        <span className="text-blue-600">{selectedFlight.destination}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4 text-blue-600" />
-                        <span className="text-blue-600 font-semibold">
-                          {impact.passengers.toLocaleString()}
-                        </span>
-                        <span className="text-blue-700">passengers</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-1">
-                        <span className="text-blue-600 font-semibold">
-                          {impact.connections}
-                        </span>
-                        <span className="text-blue-700">connections</span>
-                      </div>
-                      
-                      <Badge className={getStatusColor(selectedFlight.currentStatus)}>
-                        {selectedFlight.currentStatus}
-                      </Badge>
-                      
-                      <Badge className={getPriorityColor(selectedFlight.priority)}>
-                        {selectedFlight.priority}
-                      </Badge>
-                    </div>
-                  </div>
-
-                  {/* Right side - Actions */}
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedFlight(null)}
-                      className="border-blue-300 text-blue-700 hover:bg-blue-100"
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Clear Selection
-                    </Button>
-                    <Button
-                      onClick={handleProceedToRecovery}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      <ArrowRight className="h-4 w-4 mr-2" />
-                      Generate Recovery Options
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* Additional flight details row */}
-                <div className="mt-3 pt-3 border-t border-blue-200">
-                  <div className="flex items-center gap-6 text-sm">
-                    <div className="flex items-center gap-1">
-                      <span className="text-blue-600">Aircraft:</span>
-                      <span className="text-blue-800 font-medium">{selectedFlight.aircraft}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-1">
-                      <span className="text-blue-600">Departure:</span>
-                      <span className="text-blue-800 font-medium">
-                        {formatTime(selectedFlight.scheduledDeparture)} on {formatDate(selectedFlight.scheduledDeparture)}
-                      </span>
-                    </div>
-                    
-                    {selectedFlight.delay > 0 && (
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4 text-red-600" />
-                        <span className="text-red-600 font-medium">+{selectedFlight.delay}m delay</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex items-center gap-1">
-                      <span className="text-blue-600">Category:</span>
-                      <span className="text-blue-800 font-medium truncate max-w-48" title={selectedFlight.categorization}>
-                        {selectedFlight.categorization}
-                      </span>
-                    </div>
-                    
-                    {selectedFlight.lastUpdate === "Just now" && (
-                      <Badge className="bg-green-100 text-green-800 border-green-200">
-                        Recently Added
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-10 mt-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Plane className="h-4 w-4 text-flydubai-blue" />
+                <span className="font-medium text-sm">Selected Flight:</span>
+              </div>
+              <div className="text-sm">
+                <span className="font-semibold">{selectedFlight.flightNumber}</span>
+                <span className="mx-2 text-gray-400">•</span>
+                <span>{selectedFlight.route}</span>
+                <span className="mx-2 text-gray-400">•</span>
+                <span>{selectedFlight.passengers} passengers</span>
+              </div>
+              <Badge 
+                variant={selectedFlight.severity === 'Critical' ? 'destructive' : 
+                        selectedFlight.severity === 'High' ? 'default' : 'secondary'}
+                className="text-xs"
+              >
+                {selectedFlight.severity}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedFlight(null)}
+                className="text-xs"
+              >
+                <X className="h-3 w-3 mr-1" />
+                Clear
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleGenerateRecoveryOptions}
+                disabled={!selectedFlight || isGenerating}
+                className="text-xs bg-flydubai-blue hover:bg-blue-700"
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent mr-1"></div>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="h-3 w-3 mr-1" />
+                    Generate Recovery Options
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       )}
