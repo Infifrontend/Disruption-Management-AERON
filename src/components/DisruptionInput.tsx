@@ -1395,120 +1395,128 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium mb-2 block">Search</label>
-              <div className="relative">
-                <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
-                <Input
-                  placeholder="Flight, city, reason..."
-                  value={filters.search}
-                  onChange={(e) =>
-                    setFilters({ ...filters, search: e.target.value })
-                  }
-                  className="pl-10"
-                />
+          <div className="space-y-4">
+            {/* First Row - Search */}
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Search</label>
+                <div className="relative">
+                  <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
+                  <Input
+                    placeholder="Flight, city, reason..."
+                    value={filters.search}
+                    onChange={(e) =>
+                      setFilters({ ...filters, search: e.target.value })
+                    }
+                    className="pl-10"
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium mb-2 block">Status</label>
-              <Select
-                value={filters.status}
-                onValueChange={(value) =>
-                  setFilters({ ...filters, status: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="Delayed">Delayed</SelectItem>
-                  <SelectItem value="Cancelled">Cancelled</SelectItem>
-                  <SelectItem value="Diverted">Diverted</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Second Row - Main Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Status</label>
+                <Select
+                  value={filters.status}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, status: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="Delayed">Delayed</SelectItem>
+                    <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    <SelectItem value="Diverted">Diverted</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium mb-2 block">Priority</label>
-              <Select
-                value={filters.priority}
-                onValueChange={(value) =>
-                  setFilters({ ...filters, priority: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All priorities" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Priorities</SelectItem>
-                  <SelectItem value="Critical">Critical</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="Low">Low</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Priority</label>
+                <Select
+                  value={filters.priority}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, priority: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All priorities" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Priorities</SelectItem>
+                    <SelectItem value="Critical">Critical</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium mb-2 block">Origin</label>
-              <Select
-                value={filters.origin}
-                onValueChange={(value) =>
-                  setFilters({ ...filters, origin: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All origins" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Origins</SelectItem>
-                  {Array.from(new Set(flights.map(f => f.origin))).sort().map(origin => (
-                    <SelectItem key={origin} value={origin}>{origin}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Origin</label>
+                <Select
+                  value={filters.origin}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, origin: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All origins" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Origins</SelectItem>
+                    {Array.from(new Set(flights.map(f => f.origin))).sort().map(origin => (
+                      <SelectItem key={origin} value={origin}>{origin}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium mb-2 block">
-                Categorization
-              </label>
-              <Select
-                value={filters.categorization}
-                onValueChange={(value) =>
-                  setFilters({ ...filters, categorization: value })
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="All categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {Array.from(new Set(flights.map(f => f.categorization))).sort().map(cat => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Categorization
+                </label>
+                <Select
+                  value={filters.categorization}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, categorization: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {Array.from(new Set(flights.map(f => f.categorization))).sort().map(cat => (
+                      <SelectItem key={cat} value={cat}>
+                        <span className="truncate block max-w-[200px]" title={cat}>
+                          {cat}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div className="md:col-span-2">
-              <label className="text-sm font-medium mb-2 block">Sort By</label>
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="priority">Priority</SelectItem>
-                  <SelectItem value="departure">Departure Time</SelectItem>
-                  <SelectItem value="passengers">Passenger Count</SelectItem>
-                  <SelectItem value="delay">Delay Duration</SelectItem>
-                </SelectContent>
-              </Select>
+              <div>
+                <label className="text-sm font-medium mb-2 block">Sort By</label>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="priority">Priority</SelectItem>
+                    <SelectItem value="departure">Departure Time</SelectItem>
+                    <SelectItem value="passengers">Passenger Count</SelectItem>
+                    <SelectItem value="delay">Delay Duration</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           
