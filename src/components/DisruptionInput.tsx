@@ -757,18 +757,17 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     }));
   };
 
-  // Placeholder for handleGenerateRecoveryOptions if it exists elsewhere
+  // Handle Generate Recovery Options button click
   const handleGenerateRecoveryOptions = () => {
-    // This function is called when the "Generate Recovery Options" button is clicked.
-    // It is assumed to be defined and handles the logic for generating recovery options.
-    // For this example, we'll simulate setting `isGenerating` state.
-    setIsGenerating(true);
-    // Simulate an API call or heavy processing
-    setTimeout(() => {
-      setIsGenerating(false);
-      // In a real scenario, you would navigate or show results here.
-      console.log("Generating recovery options...");
-    }, 2000);
+    if (selectedFlight) {
+      setIsGenerating(true);
+      // Simulate brief loading state before navigation
+      setTimeout(() => {
+        setIsGenerating(false);
+        // Navigate to recovery options page with selected flight
+        onSelectFlight([selectedFlight]);
+      }, 500);
+    }
   };
 
 
@@ -784,7 +783,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
   }
 
   return (
-    <div className="space-y-6 pb-32">
+    <div className="space-y-6 pb-4">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -1563,9 +1562,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       </Card>
 
       {/* Flight List */}
-      <div className="relative flex-1 overflow-hidden">
-        <div className={`h-full overflow-y-auto ${selectedFlight ? 'pb-4' : ''}`}>
-          <Card>
+      <div className="relative">
+        <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle>
@@ -1825,108 +1823,110 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               )}
             </CardContent>
           </Card>
-        </div>
       </div>
 
-
-      {/* Selected Flight Summary - Fixed at bottom with proper margin */}
+      {/* Selected Flight Summary - Improved layout */}
       {selectedFlight && (
-        <div className="sticky bottom-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 shadow-lg z-10 mt-4">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-6">
-              <div className="flex items-center gap-2">
-                <Plane className="h-5 w-5 text-white" />
-                <span className="font-semibold text-white">Selected Flight</span>
+        <Card className="border-blue-200 bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
+          <CardContent className="p-4">
+          <div className="space-y-4">
+              {/* Header Section */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Plane className="h-5 w-5 text-white" />
+                  <span className="font-semibold text-white">Selected Flight</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedFlight(null)}
+                    className="text-blue-700 border-white bg-white hover:bg-gray-100"
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Clear Selection
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleGenerateRecoveryOptions}
+                    disabled={!selectedFlight || isGenerating}
+                    className="bg-white text-blue-700 hover:bg-gray-100 font-semibold"
+                  >
+                    {isGenerating ? (
+                      <>
+                        <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-700 border-t-transparent mr-1"></div>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="h-3 w-3 mr-1" />
+                        Generate Recovery Options
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
-              
-              <div className="flex items-center gap-1">
-                <Plane className="h-4 w-4 text-blue-200" />
-                <span className="font-bold text-lg">{selectedFlight.flightNumber}</span>
+
+              {/* Flight Details Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-sm">
+                <div className="flex items-center gap-1">
+                  <Plane className="h-4 w-4 text-blue-200" />
+                  <span className="font-bold">{selectedFlight.flightNumber}</span>
+                </div>
+                
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4 text-blue-200" />
+                  <span>{selectedFlight.origin}</span>
+                  <ArrowRight className="h-3 w-3 mx-1" />
+                  <span>{selectedFlight.destination}</span>
+                </div>
+                
+                <div className="flex items-center gap-1">
+                  <Users className="h-4 w-4 text-blue-200" />
+                  <span>{selectedFlight.passengers} pax</span>
+                </div>
+                
+                <div className="flex items-center gap-1">
+                  <Plane className="h-4 w-4 text-blue-200" />
+                  <span>{selectedFlight.connectionFlights} conn</span>
+                </div>
+                
+                <Badge 
+                  variant="secondary"
+                  className="bg-yellow-500 text-yellow-900 border-yellow-400 w-fit"
+                >
+                  {selectedFlight.currentStatus}
+                </Badge>
+                
+                <Badge 
+                  variant="secondary"
+                  className="bg-red-500 text-white border-red-400 w-fit"
+                >
+                  {selectedFlight.priority}
+                </Badge>
               </div>
-              
-              <div className="flex items-center gap-1">
-                <MapPin className="h-4 w-4 text-blue-200" />
-                <span className="font-medium">{selectedFlight.origin}</span>
-                <ArrowRight className="h-3 w-3 text-blue-200 mx-1" />
-                <span className="font-medium">{selectedFlight.destination}</span>
+
+              {/* Additional Details */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-blue-500 text-sm">
+                <div className="flex items-center gap-1">
+                  <span className="text-blue-200">Aircraft:</span>
+                  <span className="font-medium">{selectedFlight.aircraft}</span>
+                </div>
+                
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3 w-3 text-blue-200" />
+                  <span className="text-blue-200">Departure:</span>
+                  <span className="font-medium">{formatTime(selectedFlight.scheduledDeparture)}</span>
+                </div>
+                
+                <div className="flex items-center gap-1">
+                  <span className="text-blue-200">Category:</span>
+                  <span className="font-medium truncate">{selectedFlight.categorization}</span>
+                </div>
               </div>
-              
-              <div className="flex items-center gap-1">
-                <Users className="h-4 w-4 text-blue-200" />
-                <span className="font-medium">{selectedFlight.passengers} passengers</span>
-              </div>
-              
-              <div className="flex items-center gap-1">
-                <Plane className="h-4 w-4 text-blue-200" />
-                <span className="font-medium">{selectedFlight.connectionFlights} connections</span>
-              </div>
-              
-              <Badge 
-                variant={selectedFlight.currentStatus === 'Delayed' ? 'secondary' : 
-                        selectedFlight.currentStatus === 'Cancelled' ? 'destructive' : 'default'}
-                className="bg-yellow-500 text-yellow-900 border-yellow-400"
-              >
-                {selectedFlight.currentStatus}
-              </Badge>
-              
-              <Badge 
-                variant="secondary"
-                className="bg-red-500 text-white border-red-400"
-              >
-                Critical
-              </Badge>
             </div>
-            
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSelectedFlight(null)}
-                className="text-blue-700 border-white bg-white hover:bg-gray-100"
-              >
-                <X className="h-3 w-3 mr-1" />
-                Clear Selection
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleGenerateRecoveryOptions}
-                disabled={!selectedFlight || isGenerating}
-                className="bg-white text-blue-700 hover:bg-gray-100 font-semibold"
-              >
-                {isGenerating ? (
-                  <>
-                    <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-700 border-t-transparent mr-1"></div>
-                    Generating...
-                  </>
-                ) : (
-                  <>
-                    <Zap className="h-3 w-3 mr-1" />
-                    Generate Recovery Options
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-          
-          {/* Second row with additional details */}
-          <div className="flex items-center gap-6 mt-3 pt-3 border-t border-blue-500">
-            <div className="flex items-center gap-1">
-              <span className="text-blue-200 text-sm">Aircraft:</span>
-              <span className="font-medium text-sm">{selectedFlight.aircraft}</span>
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <Clock className="h-3 w-3 text-blue-200" />
-              <span className="text-blue-200 text-sm">Departure:</span>
-              <span className="font-medium text-sm">{formatTime(selectedFlight.scheduledDeparture)} on {formatDate(selectedFlight.scheduledDeparture)}</span>
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <span className="text-blue-200 text-sm">Category:</span>
-              <span className="font-medium text-sm">{selectedFlight.categorization}</span>
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Success/Error Alert Dialog */}
