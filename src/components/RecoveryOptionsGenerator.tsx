@@ -125,7 +125,7 @@ import {
 import { generateScheduleImpactAnalysis } from "./schedule-impact-helpers";
 
 export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompare, onPassengerServices, onNavigateToPendingSolutions }) {
-  const [isMounted, setIsMounted] = useState(true)
+  const [isMounted, setIsMounted] = useState(isMounted)
 
   useEffect(() => {
     return () => {
@@ -555,13 +555,12 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         options: recoveryOptions,
       };
     } else {
-      // Fallback to scenario-based data when database is disabled, failed, or loading
-      console.log("Using fallback scenario data for flight categorization:", flight?.categorization);
+      console.log("Using fallback data for flight categorization:", flight?.categorization);
 
       // Import scenario recovery functions
       const getScenarioDataForFlight = (categorization) => {
         const generateMockOptions = (type) => {
-          console.log("Generating mock options for type:", type);
+          console.log("Generating recovery options for type:", type);
           switch (type) {
             case 'Aircraft technical issue (e.g., AOG, maintenance)':
               return [
@@ -854,11 +853,11 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
 
   const handleViewRotationPlan = async (option) => {
     console.log('Loading rotation plan data for option:', option.id);
-    
+
     try {
       // Load rotation plan data from database
       const rotationPlanData = await databaseService.getRotationPlanDetails(option.id);
-      
+
       if (rotationPlanData) {
         console.log('Loaded rotation plan from database:', rotationPlanData);
         // Use database data
@@ -881,7 +880,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       setShowRotationPlan(true);
     } catch (error) {
       console.error('Error loading rotation plan data:', error);
-      
+
       // Fallback to generated data
       setSelectedRotationData(option);
       const scheduleImpact = generateScheduleImpactAnalysis(
@@ -1251,7 +1250,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
 
   const handleViewRecoveryOption = async (option) => {
     console.log('Loading detailed recovery option data for:', option.id);
-    
+
     try {
       // Load all detailed data from database
       const [rotationPlan, costAnalysis, timeline, resources, technical] = await Promise.all([
@@ -1308,7 +1307,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       setShowRecoveryOptionDetails(true);
     } catch (error) {
       console.error('Error loading detailed recovery option data:', error);
-      
+
       // Fallback to generated data
       const detailedOption = generateRecoveryOptionDetails(option, flight);
       setSelectedOptionForDetails(detailedOption);
@@ -2547,7 +2546,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                               flight,
                             );
                           }
-                          
+
                           if (!rotationData || !rotationData.aircraftOptions) {
                             return (
                               <TableRow>
