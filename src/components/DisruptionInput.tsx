@@ -770,7 +770,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
   }
 
   return (
-    <div className="space-y-6 pb-32">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -1813,123 +1813,121 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
       
 
-      {/* Sticky Selected Flight Summary at Bottom */}
-      {selectedFlight && (
-        <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg">
-          <div className="max-w-7xl mx-auto px-4 py-4">
-            <Card className="border-blue-200 bg-blue-50 shadow-md">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  {/* Left side - Flight Info */}
-                  <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2">
-                      <Zap className="h-5 w-5 text-blue-600" />
-                      <h4 className="font-semibold text-blue-800">
-                        Selected Flight
-                      </h4>
+      {/* Selected Flight Summary within Flight Selection Card */}
+          {selectedFlight && (
+            <div className="mt-4 pt-4 border-t">
+              <Card className="border-blue-200 bg-blue-50 shadow-sm">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    {/* Left side - Flight Info */}
+                    <div className="flex items-center gap-6">
+                      <div className="flex items-center gap-2">
+                        <Zap className="h-5 w-5 text-blue-600" />
+                        <h4 className="font-semibold text-blue-800">
+                          Selected Flight
+                        </h4>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-sm">
+                        <div className="flex items-center gap-1">
+                          <Plane className="h-4 w-4 text-blue-600" />
+                          <span className="text-blue-600 font-semibold">
+                            {selectedFlight.flightNumber}
+                          </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-1">
+                          <span className="text-blue-600">{selectedFlight.origin}</span>
+                          <ArrowRight className="h-3 w-3 text-blue-500" />
+                          <span className="text-blue-600">{selectedFlight.destination}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-1">
+                          <Users className="h-4 w-4 text-blue-600" />
+                          <span className="text-blue-600 font-semibold">
+                            {impact.passengers.toLocaleString()}
+                          </span>
+                          <span className="text-blue-700">passengers</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-1">
+                          <span className="text-blue-600 font-semibold">
+                            {impact.connections}
+                          </span>
+                          <span className="text-blue-700">connections</span>
+                        </div>
+                        
+                        <Badge className={getStatusColor(selectedFlight.currentStatus)}>
+                          {selectedFlight.currentStatus}
+                        </Badge>
+                        
+                        <Badge className={getPriorityColor(selectedFlight.priority)}>
+                          {selectedFlight.priority}
+                        </Badge>
+                      </div>
                     </div>
-                    
-                    <div className="flex items-center gap-4 text-sm">
-                      <div className="flex items-center gap-1">
-                        <Plane className="h-4 w-4 text-blue-600" />
-                        <span className="text-blue-600 font-semibold">
-                          {selectedFlight.flightNumber}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center gap-1">
-                        <span className="text-blue-600">{selectedFlight.origin}</span>
-                        <ArrowRight className="h-3 w-3 text-blue-500" />
-                        <span className="text-blue-600">{selectedFlight.destination}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4 text-blue-600" />
-                        <span className="text-blue-600 font-semibold">
-                          {impact.passengers.toLocaleString()}
-                        </span>
-                        <span className="text-blue-700">passengers</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-1">
-                        <span className="text-blue-600 font-semibold">
-                          {impact.connections}
-                        </span>
-                        <span className="text-blue-700">connections</span>
-                      </div>
-                      
-                      <Badge className={getStatusColor(selectedFlight.currentStatus)}>
-                        {selectedFlight.currentStatus}
-                      </Badge>
-                      
-                      <Badge className={getPriorityColor(selectedFlight.priority)}>
-                        {selectedFlight.priority}
-                      </Badge>
-                    </div>
-                  </div>
 
-                  {/* Right side - Actions */}
-                  <div className="flex items-center gap-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSelectedFlight(null)}
-                      className="border-blue-300 text-blue-700 hover:bg-blue-100"
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      Clear Selection
-                    </Button>
-                    <Button
-                      onClick={handleProceedToRecovery}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      <ArrowRight className="h-4 w-4 mr-2" />
-                      Generate Recovery Options
-                    </Button>
+                    {/* Right side - Actions */}
+                    <div className="flex items-center gap-3">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedFlight(null)}
+                        className="border-blue-300 text-blue-700 hover:bg-blue-100"
+                      >
+                        <X className="h-4 w-4 mr-2" />
+                        Clear Selection
+                      </Button>
+                      <Button
+                        onClick={handleProceedToRecovery}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <ArrowRight className="h-4 w-4 mr-2" />
+                        Generate Recovery Options
+                      </Button>
+                    </div>
                   </div>
-                </div>
-                
-                {/* Additional flight details row */}
-                <div className="mt-3 pt-3 border-t border-blue-200">
-                  <div className="flex items-center gap-6 text-sm">
-                    <div className="flex items-center gap-1">
-                      <span className="text-blue-600">Aircraft:</span>
-                      <span className="text-blue-800 font-medium">{selectedFlight.aircraft}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-1">
-                      <span className="text-blue-600">Departure:</span>
-                      <span className="text-blue-800 font-medium">
-                        {formatTime(selectedFlight.scheduledDeparture)} on {formatDate(selectedFlight.scheduledDeparture)}
-                      </span>
-                    </div>
-                    
-                    {selectedFlight.delay > 0 && (
+                  
+                  {/* Additional flight details row */}
+                  <div className="mt-3 pt-3 border-t border-blue-200">
+                    <div className="flex items-center gap-6 text-sm">
                       <div className="flex items-center gap-1">
-                        <Clock className="h-4 w-4 text-red-600" />
-                        <span className="text-red-600 font-medium">+{selectedFlight.delay}m delay</span>
+                        <span className="text-blue-600">Aircraft:</span>
+                        <span className="text-blue-800 font-medium">{selectedFlight.aircraft}</span>
                       </div>
-                    )}
-                    
-                    <div className="flex items-center gap-1">
-                      <span className="text-blue-600">Category:</span>
-                      <span className="text-blue-800 font-medium truncate max-w-48" title={selectedFlight.categorization}>
-                        {selectedFlight.categorization}
-                      </span>
+                      
+                      <div className="flex items-center gap-1">
+                        <span className="text-blue-600">Departure:</span>
+                        <span className="text-blue-800 font-medium">
+                          {formatTime(selectedFlight.scheduledDeparture)} on {formatDate(selectedFlight.scheduledDeparture)}
+                        </span>
+                      </div>
+                      
+                      {selectedFlight.delay > 0 && (
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4 text-red-600" />
+                          <span className="text-red-600 font-medium">+{selectedFlight.delay}m delay</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-1">
+                        <span className="text-blue-600">Category:</span>
+                        <span className="text-blue-800 font-medium truncate max-w-48" title={selectedFlight.categorization}>
+                          {selectedFlight.categorization}
+                        </span>
+                      </div>
+                      
+                      {selectedFlight.lastUpdate === "Just now" && (
+                        <Badge className="bg-green-100 text-green-800 border-green-200">
+                          Recently Added
+                        </Badge>
+                      )}
                     </div>
-                    
-                    {selectedFlight.lastUpdate === "Just now" && (
-                      <Badge className="bg-green-100 text-green-800 border-green-200">
-                        Recently Added
-                      </Badge>
-                    )}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
       {/* Success/Error Alert Dialog */}
       <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
