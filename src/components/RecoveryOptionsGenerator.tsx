@@ -547,10 +547,14 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
   let scenarioData;
   try {
     if (useDatabaseData && recoveryOptions.length > 0 && !isLoadingOptions) {
-      // Use database data when available
+      // Use database data when available - display category-based title
+      const categoryTitle = flight?.categorization 
+        ? `${flight.categorization} Recovery Options`
+        : "Recovery Options";
+      
       scenarioData = {
-        title: "Database Recovery Options",
-        description: "AI-generated flight recovery analysis",
+        title: categoryTitle,
+        description: `Category-based recovery analysis for ${flight?.categorization || 'operational disruption'}`,
         priority: "High",
         estimatedTime: "1-3 hours",
         icon: Plane,
@@ -642,9 +646,13 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           }
         };
 
+        const categoryTitle = categorization 
+          ? `${categorization} Recovery Options`
+          : "Recovery Options";
+
         const result = {
-          title: "Scenario Recovery Options",
-          description: "Template-based recovery analysis",
+          title: categoryTitle,
+          description: `Template-based analysis for ${categorization || 'operational disruption'}`,
           priority: "Medium",
           estimatedTime: "2-4 hours",
           icon: Plane,
