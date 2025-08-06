@@ -1,4 +1,3 @@
-
 -- Enhanced Recovery Options Details Schema
 -- This extends the existing recovery options with detailed data for tabs
 
@@ -72,6 +71,13 @@ CREATE TABLE IF NOT EXISTS technical_specifications (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Add unique constraints
+ALTER TABLE rotation_plan_details ADD CONSTRAINT IF NOT EXISTS unique_rotation_plan_option UNIQUE (recovery_option_id);
+ALTER TABLE cost_analysis_details ADD CONSTRAINT IF NOT EXISTS unique_cost_analysis_option UNIQUE (recovery_option_id);
+ALTER TABLE timeline_details ADD CONSTRAINT IF NOT EXISTS unique_timeline_option UNIQUE (recovery_option_id);
+ALTER TABLE resource_details ADD CONSTRAINT IF NOT EXISTS unique_resource_option UNIQUE (recovery_option_id);
+ALTER TABLE technical_specifications ADD CONSTRAINT IF NOT EXISTS unique_technical_option UNIQUE (recovery_option_id);
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_rotation_plan_recovery_option ON rotation_plan_details(recovery_option_id);
