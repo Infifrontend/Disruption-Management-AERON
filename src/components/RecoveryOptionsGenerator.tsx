@@ -1494,8 +1494,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         open={showCrewTrackingGantt}
         onOpenChange={setShowCrewTrackingGantt}
       >
-        <DialogContent className="max-w-[95vw] max-h-[95vh] flex flex-col overflow-hidden">
-          <DialogHeader className="flex-shrink-0">
+        <DialogContent className="max-w-[95vw] max-h-[95vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0 pb-4 border-b">
             <DialogTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-flydubai-blue" />
               Crew Tracking & What-If Analysis
@@ -1506,13 +1506,15 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <CrewTrackingGantt
-              recoveryOption={selectedOptionForDetails}
-              flight={flight}
-              onClose={() => setShowCrewTrackingGantt(false)}
-            />
-          </div>
+          <ScrollArea className="flex-1 max-h-[calc(95vh-120px)] pr-4">
+            <div className="py-4">
+              <CrewTrackingGantt
+                recoveryOption={selectedOptionForDetails}
+                flight={flight}
+                onClose={() => setShowCrewTrackingGantt(false)}
+              />
+            </div>
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
@@ -1884,8 +1886,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         open={showRecoveryOptionDetails}
         onOpenChange={setShowRecoveryOptionDetails}
       >
-        <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-7xl max-h-[95vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0 pb-4 border-b">
             <div className="flex items-center justify-between">
               <div>
                 <DialogTitle className="flex items-center gap-2">
@@ -1920,8 +1922,9 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
             </div>
           </DialogHeader>
 
-          {selectedOptionForDetails ? (
-            <div className="space-y-6">
+          <ScrollArea className="flex-1 max-h-[calc(95vh-140px)] pr-4">
+            {selectedOptionForDetails ? (
+              <div className="space-y-6 py-4">
               {/* Edit Mode Controls */}
               {isEditMode && (
                 <Card className="border-blue-200 bg-blue-50">
@@ -2445,24 +2448,25 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   </Card>
                 </TabsContent>
               </Tabs>
-            </div>
-          ) : (
-            <div className="flex items-center justify-center p-8">
-              <div className="text-center">
-                <RefreshCw className="h-8 w-8 text-flydubai-blue animate-spin mx-auto mb-4" />
-                <p className="text-muted-foreground">
-                  Loading recovery option details...
-                </p>
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="flex items-center justify-center p-8">
+                <div className="text-center">
+                  <RefreshCw className="h-8 w-8 text-flydubai-blue animate-spin mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    Loading recovery option details...
+                  </p>
+                </div>
+              </div>
+            )}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
 
       {/* Enhanced Rotation Plan Dialog */}
       <Dialog open={showRotationPlan} onOpenChange={setShowRotationPlan}>
         <DialogContent className="max-w-[95vw] max-h-[95vh] flex flex-col">
-          <DialogHeader className="pb-4 flex-shrink-0">
+          <DialogHeader className="pb-4 flex-shrink-0 border-b">
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Eye className="h-6 w-6 text-flydubai-blue" />
               View Rotation Plan
@@ -2492,7 +2496,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex-1 overflow-y-auto min-h-0 pr-2 -mr-2">
+          <ScrollArea className="flex-1 max-h-[calc(95vh-200px)] pr-4">
+            <div className="py-4"></div>
             <Tabs defaultValue="aircraft" className="w-full">
               <TabsList className="grid w-full grid-cols-4 mb-6">
                 <TabsTrigger value="aircraft">
@@ -3198,10 +3203,11 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                 </Card>
               </TabsContent>
             </Tabs>
-          </div>
+            </div>
+          </ScrollArea>
 
           {/* Footer Action Buttons */}
-          <div className="flex justify-between items-center pt-4 border-t flex-shrink-0 mt-4">
+          <div className="flex justify-between items-center pt-4 border-t flex-shrink-0 mt-4"></div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
