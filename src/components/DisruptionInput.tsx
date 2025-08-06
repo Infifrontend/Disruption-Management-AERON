@@ -1557,7 +1557,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="min-w-full">
               <TableHeader>
                 <TableRow>
                   <TableHead>Flight</TableHead>
@@ -1579,34 +1579,34 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     onClick={() => handleFlightSelection(flight)}
                   >
                     <TableCell>
-                      <div className="space-y-1">
+                      <div className="space-y-1 max-w-[120px]">
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-semibold">
+                          <span className="font-mono font-semibold truncate">
                             {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-')
                               ? (flight.flightNumber || '-')
                               : flight.flightNumber}
                           </span>
                           {flight.status === "Incomplete" &&
                            !(flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') && !flight.flightNumber) && (
-                            <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                            <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-xs">
                               Incomplete
                             </Badge>
                           )}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-muted-foreground truncate" title={flight.aircraft}>
                           {flight.aircraft}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium">{flight.origin}</span>
-                        <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                        <span className="font-medium">
+                      <div className="flex items-center gap-2 max-w-[140px]">
+                        <span className="font-medium truncate">{flight.origin}</span>
+                        <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                        <span className="font-medium truncate">
                           {flight.destination}
                         </span>
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground truncate max-w-[140px]" title={`${flight.originCity} → ${flight.destinationCity}`}>
                         {flight.originCity} → {flight.destinationCity}
                       </div>
                     </TableCell>
@@ -1631,15 +1631,18 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="space-y-1">
+                      <div className="space-y-1 max-w-[200px]">
                         <Badge
-                          className={getCategorizationColor(
+                          className={`${getCategorizationColor(
                             flight.categorization,
-                          )}
+                          )} text-xs truncate block max-w-full`}
+                          title={flight.categorization}
                         >
-                          {flight.categorization}
+                          <span className="truncate">
+                            {flight.categorization}
+                          </span>
                         </Badge>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-sm text-muted-foreground truncate" title={flight.disruptionReason}>
                           {flight.disruptionReason}
                         </div>
                       </div>
