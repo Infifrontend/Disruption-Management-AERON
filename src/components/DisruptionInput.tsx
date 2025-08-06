@@ -1831,47 +1831,71 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
       {/* Selected Flight Summary - Fixed at bottom with proper margin */}
       {selectedFlight && (
-        <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-10 mt-4">
+        <div className="sticky bottom-0 left-0 right-0 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 shadow-lg z-10 mt-4">
           <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
-                <Plane className="h-4 w-4 text-flydubai-blue" />
-                <span className="font-medium text-sm">Selected Flight:</span>
+                <Plane className="h-5 w-5 text-white" />
+                <span className="font-semibold text-white">Selected Flight</span>
               </div>
-              <div className="text-sm">
-                <span className="font-semibold">{selectedFlight.flightNumber}</span>
-                <span className="mx-2 text-gray-400">•</span>
-                <span>{selectedFlight.route}</span>
-                <span className="mx-2 text-gray-400">•</span>
-                <span>{selectedFlight.passengers} passengers</span>
+              
+              <div className="flex items-center gap-1">
+                <Plane className="h-4 w-4 text-blue-200" />
+                <span className="font-bold text-lg">{selectedFlight.flightNumber}</span>
               </div>
+              
+              <div className="flex items-center gap-1">
+                <MapPin className="h-4 w-4 text-blue-200" />
+                <span className="font-medium">{selectedFlight.origin}</span>
+                <ArrowRight className="h-3 w-3 text-blue-200 mx-1" />
+                <span className="font-medium">{selectedFlight.destination}</span>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                <Users className="h-4 w-4 text-blue-200" />
+                <span className="font-medium">{selectedFlight.passengers} passengers</span>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                <Plane className="h-4 w-4 text-blue-200" />
+                <span className="font-medium">{selectedFlight.connectionFlights} connections</span>
+              </div>
+              
               <Badge 
-                variant={selectedFlight.severity === 'Critical' ? 'destructive' : 
-                        selectedFlight.severity === 'High' ? 'default' : 'secondary'}
-                className="text-xs"
+                variant={selectedFlight.currentStatus === 'Delayed' ? 'secondary' : 
+                        selectedFlight.currentStatus === 'Cancelled' ? 'destructive' : 'default'}
+                className="bg-yellow-500 text-yellow-900 border-yellow-400"
               >
-                {selectedFlight.severity}
+                {selectedFlight.currentStatus}
+              </Badge>
+              
+              <Badge 
+                variant="secondary"
+                className="bg-red-500 text-white border-red-400"
+              >
+                Critical
               </Badge>
             </div>
+            
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedFlight(null)}
-                className="text-xs"
+                className="text-blue-700 border-white bg-white hover:bg-gray-100"
               >
                 <X className="h-3 w-3 mr-1" />
-                Clear
+                Clear Selection
               </Button>
               <Button
                 size="sm"
                 onClick={handleGenerateRecoveryOptions}
                 disabled={!selectedFlight || isGenerating}
-                className="text-xs bg-flydubai-blue hover:bg-blue-700"
+                className="bg-white text-blue-700 hover:bg-gray-100 font-semibold"
               >
                 {isGenerating ? (
                   <>
-                    <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent mr-1"></div>
+                    <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-700 border-t-transparent mr-1"></div>
                     Generating...
                   </>
                 ) : (
@@ -1881,6 +1905,25 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                   </>
                 )}
               </Button>
+            </div>
+          </div>
+          
+          {/* Second row with additional details */}
+          <div className="flex items-center gap-6 mt-3 pt-3 border-t border-blue-500">
+            <div className="flex items-center gap-1">
+              <span className="text-blue-200 text-sm">Aircraft:</span>
+              <span className="font-medium text-sm">{selectedFlight.aircraft}</span>
+            </div>
+            
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3 text-blue-200" />
+              <span className="text-blue-200 text-sm">Departure:</span>
+              <span className="font-medium text-sm">{formatTime(selectedFlight.scheduledDeparture)} on {formatDate(selectedFlight.scheduledDeparture)}</span>
+            </div>
+            
+            <div className="flex items-center gap-1">
+              <span className="text-blue-200 text-sm">Category:</span>
+              <span className="font-medium text-sm">{selectedFlight.categorization}</span>
             </div>
           </div>
         </div>
