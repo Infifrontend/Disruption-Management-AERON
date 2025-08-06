@@ -1395,8 +1395,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+            <div className="md:col-span-2">
               <label className="text-sm font-medium mb-2 block">Search</label>
               <div className="relative">
                 <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
@@ -1411,7 +1411,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </div>
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="text-sm font-medium mb-2 block">Status</label>
               <Select
                 value={filters.status}
@@ -1431,7 +1431,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </Select>
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="text-sm font-medium mb-2 block">Priority</label>
               <Select
                 value={filters.priority}
@@ -1452,7 +1452,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </Select>
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="text-sm font-medium mb-2 block">Origin</label>
               <Select
                 value={filters.origin}
@@ -1472,7 +1472,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </Select>
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="text-sm font-medium mb-2 block">
                 Categorization
               </label>
@@ -1496,7 +1496,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </Select>
             </div>
 
-            <div>
+            <div className="md:col-span-2">
               <label className="text-sm font-medium mb-2 block">Sort By</label>
               <Select value={sortBy} onValueChange={setSortBy}>
                 <SelectTrigger>
