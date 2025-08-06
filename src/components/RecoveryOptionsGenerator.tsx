@@ -3206,7 +3206,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           </ScrollArea>
 
           {/* Footer Action Buttons */}
-          <div className="flex justify-between items-center pt-4 border-t flex-shrink-0 mt-4"></div>
+          <div className="flex justify-between items-center pt-4 border-t flex-shrink-0 mt-4">
             <div className="flex gap-2">
               <Button
                 variant="outline"
