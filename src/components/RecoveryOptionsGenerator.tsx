@@ -124,15 +124,21 @@ import {
 } from "./passenger-data-helpers";
 import { generateScheduleImpactAnalysis } from "./schedule-impact-helpers";
 
-export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompare, onPassengerServices, onNavigateToPendingSolutions }) {
-  const [isMounted, setIsMounted] = useState(true)
+export function RecoveryOptionsGenerator({
+  selectedFlight,
+  onSelectPlan,
+  onCompare,
+  onPassengerServices,
+  onNavigateToPendingSolutions,
+}) {
+  const [isMounted, setIsMounted] = useState(true);
 
   useEffect(() => {
-    setIsMounted(true)
+    setIsMounted(true);
     return () => {
-      setIsMounted(false)
-    }
-  }, [])
+      setIsMounted(false);
+    };
+  }, []);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
@@ -176,9 +182,12 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       }
 
       // Use flight number as ID if no specific ID exists
-      const flightId = flight.id || flight.flightNumber || 'unknown';
+      const flightId = flight.id || flight.flightNumber || "unknown";
       console.log("Processing flight:", flight, "with ID:", flightId);
-      console.log("Flight categorization:", flight.categorization || flight.disruptionReason);
+      console.log(
+        "Flight categorization:",
+        flight.categorization || flight.disruptionReason,
+      );
 
       if (!useDatabaseData) {
         console.log("Database data disabled, using scenario data");
@@ -191,7 +200,9 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       setLoadingError(null);
 
       try {
-        console.log(`Fetching categorization-based recovery options for flight ID: ${flightId}`);
+        console.log(
+          `Fetching categorization-based recovery options for flight ID: ${flightId}`,
+        );
 
         // Check database connectivity first
         const isHealthy = await databaseService.healthCheck();
@@ -206,9 +217,14 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         // First try to get detailed recovery options based on categorization
         try {
           options = await databaseService.getDetailedRecoveryOptions(flightId);
-          console.log(`Found ${options.length} detailed categorization-based options`);
+          console.log(
+            `Found ${options.length} detailed categorization-based options`,
+          );
         } catch (error) {
-          console.warn("Error fetching detailed recovery options:", error.message);
+          console.warn(
+            "Error fetching detailed recovery options:",
+            error.message,
+          );
           options = [];
         }
 
@@ -217,62 +233,94 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           steps = await databaseService.getDetailedRecoverySteps(flightId);
           console.log(`Found ${steps.length} detailed steps`);
         } catch (error) {
-          console.warn("Error fetching detailed recovery steps:", error.message);
+          console.warn(
+            "Error fetching detailed recovery steps:",
+            error.message,
+          );
           // Fallback to regular steps
           try {
             steps = await databaseService.getRecoverySteps(flightId);
             console.log(`Found ${steps.length} fallback steps`);
           } catch (stepError) {
-            console.warn("Error fetching regular recovery steps:", stepError.message);
+            console.warn(
+              "Error fetching regular recovery steps:",
+              stepError.message,
+            );
             steps = [];
           }
         }
 
         // If no detailed options exist, try to get standard options and generate if needed
         if (options.length === 0) {
-          console.log("No detailed recovery options found, trying standard options...");
+          console.log(
+            "No detailed recovery options found, trying standard options...",
+          );
           try {
             options = await databaseService.getRecoveryOptions(flightId);
             console.log(`Found ${options.length} standard options`);
           } catch (error) {
-            console.warn("Error fetching standard recovery options:", error.message);
+            console.warn(
+              "Error fetching standard recovery options:",
+              error.message,
+            );
             options = [];
           }
 
           // If still no options exist, try to generate them
           if (options.length === 0) {
-            console.log("No recovery options found, attempting to generate new ones...");
+            console.log(
+              "No recovery options found, attempting to generate new ones...",
+            );
             try {
-              const result = await databaseService.generateRecoveryOptions(flightId);
+              const result =
+                await databaseService.generateRecoveryOptions(flightId);
               console.log("Generation result:", result);
 
               if (result.optionsCount > 0) {
                 // Wait a moment and fetch the newly generated options
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise((resolve) => setTimeout(resolve, 1000));
 
                 try {
-                  options = await databaseService.getDetailedRecoveryOptions(flightId);
-                  steps = await databaseService.getDetailedRecoverySteps(flightId);
+                  options =
+                    await databaseService.getDetailedRecoveryOptions(flightId);
+                  steps =
+                    await databaseService.getDetailedRecoverySteps(flightId);
                 } catch (fetchError) {
-                  console.warn("Error fetching newly generated detailed options:", fetchError.message);
+                  console.warn(
+                    "Error fetching newly generated detailed options:",
+                    fetchError.message,
+                  );
                   // Fallback to standard options
                   try {
-                    options = await databaseService.getRecoveryOptions(flightId);
+                    options =
+                      await databaseService.getRecoveryOptions(flightId);
                     steps = await databaseService.getRecoverySteps(flightId);
                   } catch (standardError) {
-                    console.warn("Error fetching standard options after generation:", standardError.message);
+                    console.warn(
+                      "Error fetching standard options after generation:",
+                      standardError.message,
+                    );
                   }
                 }
 
-                console.log(`After generation: ${options.length} options, ${steps.length} steps`);
+                console.log(
+                  `After generation: ${options.length} options, ${steps.length} steps`,
+                );
               } else {
-                console.log("No options generated, falling back to scenario data");
+                console.log(
+                  "No options generated, falling back to scenario data",
+                );
                 setUseDatabaseData(false);
                 return;
               }
             } catch (generateError) {
-              console.error("Error generating recovery options:", generateError.message);
-              setLoadingError("Failed to generate recovery options: " + generateError.message);
+              console.error(
+                "Error generating recovery options:",
+                generateError.message,
+              );
+              setLoadingError(
+                "Failed to generate recovery options: " + generateError.message,
+              );
               setUseDatabaseData(false);
               return;
             }
@@ -284,11 +332,11 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           // Parse JSON fields safely
           const parseJsonField = (field, fallback = []) => {
             if (Array.isArray(field)) return field;
-            if (typeof field === 'string') {
+            if (typeof field === "string") {
               try {
                 return JSON.parse(field);
               } catch (e) {
-                console.warn('Failed to parse JSON field:', field);
+                console.warn("Failed to parse JSON field:", field);
                 return fallback;
               }
             }
@@ -296,12 +344,12 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           };
 
           const parseJsonObject = (field, fallback = {}) => {
-            if (typeof field === 'object' && field !== null) return field;
-            if (typeof field === 'string') {
+            if (typeof field === "object" && field !== null) return field;
+            if (typeof field === "string") {
               try {
                 return JSON.parse(field);
               } catch (e) {
-                console.warn('Failed to parse JSON object:', field);
+                console.warn("Failed to parse JSON object:", field);
                 return fallback;
               }
             }
@@ -316,173 +364,214 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
             timeline: option.timeline || option.estimated_timeline || "TBD",
             confidence: option.confidence || 80,
             impact: option.impact || "Medium impact",
-            status: option.status === "generated" ? "recommended" : (option.status || "recommended"),
+            status:
+              option.status === "generated"
+                ? "recommended"
+                : option.status || "recommended",
             category: option.category_name || option.category_code,
             categoryCode: option.category_code,
             advantages: parseJsonField(option.advantages, [
               "Effective recovery solution",
               "Minimizes operational disruption",
-              "Cost-efficient approach"
+              "Cost-efficient approach",
             ]),
             considerations: parseJsonField(option.considerations, [
               "Requires coordination with multiple teams",
               "Timeline dependent on external factors",
-              "May impact downstream operations"
+              "May impact downstream operations",
             ]),
             metrics: parseJsonObject(option.metrics, {
               costEfficiency: 85,
               timeEfficiency: 80,
               passengerSatisfaction: 75,
-              operationalComplexity: 60
+              operationalComplexity: 60,
             }),
-            resourceRequirements: parseJsonField(option.resource_requirements || option.resources, [
-              {
-                type: 'Personnel',
-                resource: 'Operations Team',
-                availability: 'Available',
-                status: 'Ready',
-                location: 'DXB Operations Center',
-                eta: 'Immediate',
-                details: 'Experienced operations team available for recovery coordination'
-              },
-              {
-                type: 'Equipment',
-                resource: 'Ground Support Equipment',
-                availability: 'Available',
-                status: 'Operational',
-                location: 'DXB Ramp',
-                eta: '15 minutes',
-                details: 'Standard GSE available for aircraft servicing'
-              }
-            ]),
-            costBreakdown: parseJsonField(option.cost_breakdown || option.cost_analysis, [
-              {
-                category: 'Operations Cost',
-                amount: option.cost || 'AED 25,000',
-                percentage: 60,
-                description: 'Direct operational costs including crew and resources'
-              },
-              {
-                category: 'Passenger Services',
-                amount: 'AED 8,000',
-                percentage: 25,
-                description: 'Passenger accommodation and compensation'
-              },
-              {
-                category: 'Administrative',
-                amount: 'AED 5,000',
-                percentage: 15,
-                description: 'Documentation and regulatory compliance'
-              }
-            ]),
-            timelineDetails: parseJsonField(option.timeline_details || option.timeline_steps, [
-              {
-                step: 'Initial Assessment',
-                duration: '15 min',
-                startTime: new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-                endTime: new Date(Date.now() + 15 * 60000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-                details: 'Assess situation and confirm recovery approach',
-                status: 'pending'
-              },
-              {
-                step: 'Resource Coordination',
-                duration: '20 min',
-                startTime: new Date(Date.now() + 15 * 60000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-                endTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-                details: 'Coordinate required resources and personnel',
-                status: 'pending'
-              },
-              {
-                step: 'Implementation',
-                duration: '25 min',
-                startTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-                endTime: new Date(Date.now() + 60 * 60000).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
-                details: 'Execute recovery plan and monitor progress',
-                status: 'pending'
-              }
-            ]),
+            resourceRequirements: parseJsonField(
+              option.resource_requirements || option.resources,
+              [
+                {
+                  type: "Personnel",
+                  resource: "Operations Team",
+                  availability: "Available",
+                  status: "Ready",
+                  location: "DXB Operations Center",
+                  eta: "Immediate",
+                  details:
+                    "Experienced operations team available for recovery coordination",
+                },
+                {
+                  type: "Equipment",
+                  resource: "Ground Support Equipment",
+                  availability: "Available",
+                  status: "Operational",
+                  location: "DXB Ramp",
+                  eta: "15 minutes",
+                  details: "Standard GSE available for aircraft servicing",
+                },
+              ],
+            ),
+            costBreakdown: parseJsonField(
+              option.cost_breakdown || option.cost_analysis,
+              [
+                {
+                  category: "Operations Cost",
+                  amount: option.cost || "AED 25,000",
+                  percentage: 60,
+                  description:
+                    "Direct operational costs including crew and resources",
+                },
+                {
+                  category: "Passenger Services",
+                  amount: "AED 8,000",
+                  percentage: 25,
+                  description: "Passenger accommodation and compensation",
+                },
+                {
+                  category: "Administrative",
+                  amount: "AED 5,000",
+                  percentage: 15,
+                  description: "Documentation and regulatory compliance",
+                },
+              ],
+            ),
+            timelineDetails: parseJsonField(
+              option.timeline_details || option.timeline_steps,
+              [
+                {
+                  step: "Initial Assessment",
+                  duration: "15 min",
+                  startTime: new Date().toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 15 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
+                  details: "Assess situation and confirm recovery approach",
+                  status: "pending",
+                },
+                {
+                  step: "Resource Coordination",
+                  duration: "20 min",
+                  startTime: new Date(
+                    Date.now() + 15 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
+                  details: "Coordinate required resources and personnel",
+                  status: "pending",
+                },
+                {
+                  step: "Implementation",
+                  duration: "25 min",
+                  startTime: new Date(
+                    Date.now() + 35 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 60 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
+                  details: "Execute recovery plan and monitor progress",
+                  status: "pending",
+                },
+              ],
+            ),
             riskAssessment: parseJsonField(option.risk_assessment, [
               {
-                risk: 'Resource Availability',
-                probability: 'Low',
-                impact: 'Medium',
+                risk: "Resource Availability",
+                probability: "Low",
+                impact: "Medium",
                 riskScore: 2,
-                mitigation: 'Maintain backup resource pool and alternative suppliers'
+                mitigation:
+                  "Maintain backup resource pool and alternative suppliers",
               },
               {
-                risk: 'Weather Deterioration',
-                probability: 'Medium',
-                impact: 'High',
+                risk: "Weather Deterioration",
+                probability: "Medium",
+                impact: "High",
                 riskScore: 4,
-                mitigation: 'Continuous weather monitoring with contingency plans'
+                mitigation:
+                  "Continuous weather monitoring with contingency plans",
               },
               {
-                risk: 'Regulatory Compliance',
-                probability: 'Low',
-                impact: 'High',
+                risk: "Regulatory Compliance",
+                probability: "Low",
+                impact: "High",
                 riskScore: 3,
-                mitigation: 'Ensure all actions comply with aviation regulations'
-              }
+                mitigation:
+                  "Ensure all actions comply with aviation regulations",
+              },
             ]),
             technicalSpecs: parseJsonObject(option.technical_specs, {
               aircraftRequirements: [
-                'Aircraft type: B737-800 or equivalent',
-                'ETOPS capability required for route',
-                'Maintenance status: Current and compliant'
+                "Aircraft type: B737-800 or equivalent",
+                "ETOPS capability required for route",
+                "Maintenance status: Current and compliant",
               ],
               operationalConstraints: [
-                'Minimum crew rest requirements: 12 hours',
-                'Airport operating hours: 06:00 - 23:00 local time',
-                'Fuel requirements: Standard + 10% contingency'
+                "Minimum crew rest requirements: 12 hours",
+                "Airport operating hours: 06:00 - 23:00 local time",
+                "Fuel requirements: Standard + 10% contingency",
               ],
               weatherLimitations: [
-                'Minimum visibility: 1200m',
-                'Maximum crosswind: 25 knots',
-                'Ceiling: 200ft minimum'
+                "Minimum visibility: 1200m",
+                "Maximum crosswind: 25 knots",
+                "Ceiling: 200ft minimum",
               ],
               regulatoryCompliance: [
-                'EU261 compensation applicable for delays >3 hours',
-                'Duty time regulations: EASA FTL compliant',
-                'Slot coordination required for schedule changes'
-              ]
+                "EU261 compensation applicable for delays >3 hours",
+                "Duty time regulations: EASA FTL compliant",
+                "Slot coordination required for schedule changes",
+              ],
             }),
             rotationPlan: parseJsonObject(option.rotation_plan, {}),
             templateData: parseJsonObject(option.template_data, {}),
-            detailedDescription: option.description || `This recovery option provides a comprehensive solution for ${flight?.flightNumber || 'the affected flight'} disruption. The plan takes into account operational constraints, passenger impact, and cost considerations to deliver an optimal recovery strategy.`,
+            detailedDescription:
+              option.description ||
+              `This recovery option provides a comprehensive solution for ${flight?.flightNumber || "the affected flight"} disruption. The plan takes into account operational constraints, passenger impact, and cost considerations to deliver an optimal recovery strategy.`,
             editableParameters: [
               {
-                name: 'delayTolerance',
+                name: "delayTolerance",
                 value: 30,
                 min: 0,
                 max: 120,
-                unit: 'minutes',
-                type: 'slider',
-                description: 'Maximum acceptable delay for passengers',
-                impact: 'Passenger satisfaction and compensation costs'
+                unit: "minutes",
+                type: "slider",
+                description: "Maximum acceptable delay for passengers",
+                impact: "Passenger satisfaction and compensation costs",
               },
               {
-                name: 'priorityLevel',
-                value: 'High',
-                options: ['Low', 'Medium', 'High', 'Critical'],
-                type: 'select',
-                description: 'Priority level for resource allocation',
-                impact: 'Resource availability and response time'
+                name: "priorityLevel",
+                value: "High",
+                options: ["Low", "Medium", "High", "Critical"],
+                type: "select",
+                description: "Priority level for resource allocation",
+                impact: "Resource availability and response time",
               },
               {
-                name: 'allowOvertime',
+                name: "allowOvertime",
                 value: true,
-                type: 'switch',
-                description: 'Allow crew overtime for recovery',
-                impact: 'Cost increase but faster resolution'
-              }
+                type: "switch",
+                description: "Allow crew overtime for recovery",
+                impact: "Cost increase but faster resolution",
+              },
             ],
             historicalData: {
               successRate: Math.max(65, option.confidence || 80),
-              averageCost: option.cost || 'AED 25,000',
-              typicalDuration: option.timeline || '60 minutes',
-              lastUsed: 'Within last 30 days',
-              performanceRating: 'Good'
-            }
+              averageCost: option.cost || "AED 25,000",
+              typicalDuration: option.timeline || "60 minutes",
+              lastUsed: "Within last 30 days",
+              performanceRating: "Good",
+            },
           };
         });
 
@@ -496,22 +585,32 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
           data: step.step_data || step.data || {},
         }));
 
-        console.log("Setting transformed categorization-based options:", transformedOptions);
+        console.log(
+          "Setting transformed categorization-based options:",
+          transformedOptions,
+        );
         console.log("Setting transformed steps:", transformedSteps);
 
         setRecoveryOptions(transformedOptions);
         setRecoverySteps(transformedSteps);
 
         if (transformedOptions.length === 0) {
-          setLoadingError("No recovery options available for this disruption categorization");
+          setLoadingError(
+            "No recovery options available for this disruption categorization",
+          );
         }
       } catch (error) {
-        console.error("Error fetching categorization-based recovery options:", error);
+        console.error(
+          "Error fetching categorization-based recovery options:",
+          error,
+        );
         setLoadingError(error.message || "Failed to load recovery options");
         setRecoveryOptions([]);
         setRecoverySteps([]);
         // Automatically fall back to scenario data on database errors
-        console.log("Automatically switching to scenario data due to database error");
+        console.log(
+          "Automatically switching to scenario data due to database error",
+        );
         setUseDatabaseData(false);
       } finally {
         setIsLoadingOptions(false);
@@ -548,13 +647,13 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
   try {
     if (useDatabaseData && recoveryOptions.length > 0 && !isLoadingOptions) {
       // Use database data when available - display category-based title
-      const categoryTitle = flight?.categorization 
+      const categoryTitle = flight?.categorization
         ? `${flight.categorization} Recovery Options`
         : "Recovery Options";
 
       scenarioData = {
         title: categoryTitle,
-        description: `Category-based recovery analysis for ${flight?.disruptionReason || flight?.categorization || 'operational disruption'}`,
+        description: `${flight?.disruptionReason || flight?.categorization || "operational disruption"}`,
         priority: "High",
         estimatedTime: "1-3 hours",
         icon: Plane,
@@ -562,14 +661,17 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         options: recoveryOptions,
       };
     } else {
-      console.log("Using fallback data for flight categorization:", flight?.categorization);
+      console.log(
+        "Using fallback data for flight categorization:",
+        flight?.categorization,
+      );
 
       // Import scenario recovery functions
       const getScenarioDataForFlight = (categorization) => {
         const generateMockOptions = (type) => {
           console.log("Generating recovery options for type:", type);
           switch (type) {
-            case 'Aircraft technical issue (e.g., AOG, maintenance)':
+            case "Aircraft technical issue (e.g., AOG, maintenance)":
               return [
                 {
                   id: "AIRCRAFT_SWAP_MOCK",
@@ -582,7 +684,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   status: "recommended",
                   advantages: ["Same aircraft type", "Available immediately"],
                   considerations: ["Crew briefing required"],
-                  detailedDescription: "Execute immediate aircraft swap using available alternative aircraft. This option provides the fastest resolution with minimal passenger impact, utilizing our standby aircraft fleet to maintain schedule integrity."
+                  detailedDescription:
+                    "Execute immediate aircraft swap using available alternative aircraft. This option provides the fastest resolution with minimal passenger impact, utilizing our standby aircraft fleet to maintain schedule integrity.",
                 },
                 {
                   id: "DELAY_REPAIR_MOCK",
@@ -594,10 +697,10 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   impact: "Significant passenger disruption",
                   status: "caution",
                   advantages: ["Original aircraft maintained"],
-                  considerations: ["Repair time uncertain"]
-                }
+                  considerations: ["Repair time uncertain"],
+                },
               ];
-            case 'Crew issue (e.g., sick report, duty time breach)':
+            case "Crew issue (e.g., sick report, duty time breach)":
               return [
                 {
                   id: "STANDBY_CREW_MOCK",
@@ -609,10 +712,10 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   impact: "Minimal operational disruption",
                   status: "recommended",
                   advantages: ["Standby crew available", "Within duty limits"],
-                  considerations: ["Extended briefing required"]
-                }
+                  considerations: ["Extended briefing required"],
+                },
               ];
-            case 'Weather disruption (e.g., storms, fog)':
+            case "Weather disruption (e.g., storms, fog)":
               return [
                 {
                   id: "DELAY_WEATHER_MOCK",
@@ -624,8 +727,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   impact: "Managed schedule delay",
                   status: "recommended",
                   advantages: ["Weather forecast shows improvement"],
-                  considerations: ["Dependent on weather"]
-                }
+                  considerations: ["Dependent on weather"],
+                },
               ];
             default:
               return [
@@ -640,19 +743,19 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   status: "recommended",
                   advantages: ["Proven procedure"],
                   considerations: ["Generic solution"],
-                  detailedDescription: `Standard recovery protocol for ${categorization || 'operational disruption'} situations. This comprehensive approach follows established procedures to minimize passenger impact while maintaining operational efficiency.`
-                }
+                  detailedDescription: `Standard recovery protocol for ${categorization || "operational disruption"} situations. This comprehensive approach follows established procedures to minimize passenger impact while maintaining operational efficiency.`,
+                },
               ];
           }
         };
 
-        const categoryTitle = categorization 
+        const categoryTitle = categorization
           ? `${categorization} Recovery Options`
           : "Recovery Options";
 
         const result = {
           title: categoryTitle,
-          description: `Category-based recovery analysis for ${flight?.disruptionReason || categorization || 'operational disruption'}`,
+          description: `${flight?.disruptionReason || categorization || "operational disruption"}`,
           priority: "Medium",
           estimatedTime: "2-4 hours",
           icon: Plane,
@@ -664,16 +767,18 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               timestamp: new Date().toLocaleTimeString(),
               system: "AERON System",
               details: "Analyzing disruption impact",
-              data: { type: categorization || "Unknown" }
-            }
+              data: { type: categorization || "Unknown" },
+            },
           ],
-          options: generateMockOptions(categorization)
+          options: generateMockOptions(categorization),
         };
         console.log("Generated scenario data:", result);
         return result;
       };
 
-      scenarioData = getScenarioDataForFlight(flight?.categorization || "Unknown disruption");
+      scenarioData = getScenarioDataForFlight(
+        flight?.categorization || "Unknown disruption",
+      );
     }
   } catch (error) {
     console.error("Error getting scenario data:", error);
@@ -863,22 +968,24 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
   };
 
   const handleViewRotationPlan = async (option) => {
-    console.log('Loading rotation plan data for option:', option.id);
+    console.log("Loading rotation plan data for option:", option.id);
     setLoadingRotationPlan(option.id);
 
     try {
       // Load rotation plan data from database
-      const rotationPlanData = await databaseService.getRotationPlanDetails(option.id);
+      const rotationPlanData = await databaseService.getRotationPlanDetails(
+        option.id,
+      );
 
       if (rotationPlanData) {
-        console.log('Loaded rotation plan from database:', rotationPlanData);
+        console.log("Loaded rotation plan from database:", rotationPlanData);
         // Use database data
         setSelectedRotationData({
           ...option,
-          databaseRotationPlan: rotationPlanData
+          databaseRotationPlan: rotationPlanData,
         });
       } else {
-        console.log('No database rotation plan found, using generated data');
+        console.log("No database rotation plan found, using generated data");
         // Fallback to generated data
         setSelectedRotationData(option);
       }
@@ -891,7 +998,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       setScheduleImpactData(scheduleImpact);
       setShowRotationPlan(true);
     } catch (error) {
-      console.error('Error loading rotation plan data:', error);
+      console.error("Error loading rotation plan data:", error);
 
       // Fallback to generated data
       setSelectedRotationData(option);
@@ -911,37 +1018,43 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
   const generateRotationPlanData = (option, flight) => {
     // Enhanced null checks with better fallback handling
     if (!option || !flight) {
-      console.warn('Missing option or flight data for rotation plan generation', { 
-        hasOption: !!option, 
-        hasOptionId: !!option?.id,
-        hasFlight: !!flight 
-      });
+      console.warn(
+        "Missing option or flight data for rotation plan generation",
+        {
+          hasOption: !!option,
+          hasOptionId: !!option?.id,
+          hasFlight: !!flight,
+        },
+      );
       return {
         aircraftOptions: [],
         crewData: [],
         nextSectors: [],
         operationalConstraints: {
-          gateCompatibility: { status: 'Unknown', details: 'Data unavailable' },
-          slotCapacity: { status: 'Unknown', details: 'Data unavailable' },
-          curfewViolation: { status: 'Unknown', details: 'Data unavailable' },
-          passengerConnections: { status: 'Unknown', details: 'Data unavailable' }
+          gateCompatibility: { status: "Unknown", details: "Data unavailable" },
+          slotCapacity: { status: "Unknown", details: "Data unavailable" },
+          curfewViolation: { status: "Unknown", details: "Data unavailable" },
+          passengerConnections: {
+            status: "Unknown",
+            details: "Data unavailable",
+          },
         },
         costBreakdown: {
           delayCost: 0,
-          fuelEfficiency: 'N/A',
+          fuelEfficiency: "N/A",
           hotelTransport: 0,
-          eu261Risk: 'Unknown'
+          eu261Risk: "Unknown",
         },
-        recommendation: { aircraft: 'N/A', reason: 'Data unavailable' }
+        recommendation: { aircraft: "N/A", reason: "Data unavailable" },
       };
     }
 
     // Ensure option has required fields with safe defaults and proper type checking
     const safeOption = {
-      id: String(option.id || 'UNKNOWN_OPTION'),
-      title: String(option.title || 'Unknown Option'),
-      timeline: String(option.timeline || '60 minutes'),
-      ...option
+      id: String(option.id || "UNKNOWN_OPTION"),
+      title: String(option.title || "Unknown Option"),
+      timeline: String(option.timeline || "60 minutes"),
+      ...option,
     };
 
     // Convert to string for safe string operations
@@ -954,18 +1067,18 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       optionTitleStr.includes("Aircraft Swap") ||
       optionTitleStr.includes("Swap");
     const isDelayOption =
-      optionIdStr.includes("DELAY") || 
-      optionTitleStr.includes("Delay");
+      optionIdStr.includes("DELAY") || optionTitleStr.includes("Delay");
     const isCancellation =
-      optionIdStr.includes("CANCEL") || 
-      optionTitleStr.includes("Cancel");
-    const isCrewIssue = (flight?.categorization || '').includes("Crew issue") ||
-      (flight?.disruptionReason || '').includes("crew");
+      optionIdStr.includes("CANCEL") || optionTitleStr.includes("Cancel");
+    const isCrewIssue =
+      (flight?.categorization || "").includes("Crew issue") ||
+      (flight?.disruptionReason || "").includes("crew");
     const isMaintenanceIssue =
-      (flight?.categorization || '').includes("technical issue") ||
-      (flight?.disruptionReason || '').includes("maintenance");
-    const isWeatherIssue = (flight?.categorization || '').includes("Weather") ||
-      (flight?.disruptionReason || '').includes("weather");
+      (flight?.categorization || "").includes("technical issue") ||
+      (flight?.disruptionReason || "").includes("maintenance");
+    const isWeatherIssue =
+      (flight?.categorization || "").includes("Weather") ||
+      (flight?.disruptionReason || "").includes("weather");
 
     // Aircraft options based on recovery option type
     const aircraftOptions = isAircraftSwap
@@ -1227,9 +1340,9 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         : isDelayOption &&
             (parseInt(safeOption.timeline.replace(/[^0-9]/g, "")) || 60) > 180
           ? 8450
-            : isAircraftSwap
-              ? 840
-              : 0,
+          : isAircraftSwap
+            ? 840
+            : 0,
       eu261Risk: isCancellation
         ? "Critical"
         : isDelayOption &&
@@ -1263,18 +1376,19 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
   };
 
   const handleViewRecoveryOption = async (option) => {
-    console.log('Loading detailed recovery option data for:', option.id);
+    console.log("Loading detailed recovery option data for:", option.id);
     setLoadingRecoveryOption(option.id);
 
     try {
       // Load all detailed data from database
-      const [rotationPlan, costAnalysis, timeline, resources, technical] = await Promise.all([
-        databaseService.getRotationPlanDetails(option.id),
-        databaseService.getCostAnalysisDetails(option.id),
-        databaseService.getTimelineDetails(option.id),
-        databaseService.getResourceDetails(option.id),
-        databaseService.getTechnicalDetails(option.id)
-      ]);
+      const [rotationPlan, costAnalysis, timeline, resources, technical] =
+        await Promise.all([
+          databaseService.getRotationPlanDetails(option.id),
+          databaseService.getCostAnalysisDetails(option.id),
+          databaseService.getTimelineDetails(option.id),
+          databaseService.getResourceDetails(option.id),
+          databaseService.getTechnicalDetails(option.id),
+        ]);
 
       // Merge database data with existing option data
       const detailedOption = {
@@ -1285,7 +1399,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         detailedResources: resources || {},
         detailedTechnical: technical || {},
         // Keep existing fallback data structure
-        ...generateRecoveryOptionDetails(option, flight)
+        ...generateRecoveryOptionDetails(option, flight),
       };
 
       // Override with database data if available
@@ -1299,19 +1413,21 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
         detailedOption.resourceRequirements = [
           ...resources.personnelRequirements,
           ...resources.equipmentRequirements,
-          ...resources.facilityRequirements
+          ...resources.facilityRequirements,
         ];
       }
       if (technical?.aircraftSpecs) {
         detailedOption.technicalSpecs = {
           aircraftRequirements: Object.values(technical.aircraftSpecs),
-          operationalConstraints: Object.values(technical.operationalConstraints),
+          operationalConstraints: Object.values(
+            technical.operationalConstraints,
+          ),
           regulatoryCompliance: technical.regulatoryRequirements,
-          weatherLimitations: Object.values(technical.weatherLimitations || {})
+          weatherLimitations: Object.values(technical.weatherLimitations || {}),
         };
       }
 
-      console.log('Loaded detailed option data:', detailedOption);
+      console.log("Loaded detailed option data:", detailedOption);
 
       setSelectedOptionForDetails(detailedOption);
       setEditedOption(detailedOption);
@@ -1321,7 +1437,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       setActiveSimulation(null);
       setShowRecoveryOptionDetails(true);
     } catch (error) {
-      console.error('Error loading detailed recovery option data:', error);
+      console.error("Error loading detailed recovery option data:", error);
 
       // Fallback to generated data
       const detailedOption = generateRecoveryOptionDetails(option, flight);
@@ -1557,7 +1673,12 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CheckCircle className="h-4 w-4" />
-                    {scenarioData.options.filter(opt => opt.status === 'recommended').length} Recommended
+                    {
+                      scenarioData.options.filter(
+                        (opt) => opt.status === "recommended",
+                      ).length
+                    }{" "}
+                    Recommended
                   </div>
                   {isLoadingOptions && (
                     <Badge
@@ -1596,7 +1717,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
       </Card>
 
       {/* Recovery Steps */}
-      <Card style={{ display: 'none' }}>
+      <Card style={{ display: "none" }}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Workflow className="h-5 w-5 text-flydubai-blue" />
@@ -1668,7 +1789,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               <AlertTriangle className="h-4 w-4 text-red-600" />
               <AlertDescription className="text-red-800">
                 <strong>Connection issue detected:</strong> {loadingError}.
-                Using offline mode with scenario templates. The system will automatically reconnect when available.
+                Using offline mode with scenario templates. The system will
+                automatically reconnect when available.
               </AlertDescription>
             </Alert>
           )}
@@ -1678,7 +1800,9 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               <div className="flex items-center justify-center p-8">
                 <RefreshCw className="h-6 w-6 text-flydubai-blue animate-spin mr-2" />
                 <span className="text-muted-foreground">
-                  {useDatabaseData ? "Generating recovery options..." : "Loading scenario data..."}
+                  {useDatabaseData
+                    ? "Generating recovery options..."
+                    : "Loading scenario data..."}
                 </span>
               </div>
               <div className="space-y-3">
@@ -1703,7 +1827,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                 No Recovery Options Available
               </h3>
               <p className="text-muted-foreground mb-4">
-                {loadingError || "No recovery options found for this disruption type. This may be due to insufficient data or configuration."}
+                {loadingError ||
+                  "No recovery options found for this disruption type. This may be due to insufficient data or configuration."}
               </p>
               <div className="flex gap-2 justify-center">
                 <Button
@@ -2219,7 +2344,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                           <p className="text-xs text-gray-600">
                             Including all operational expenses
                           </p>
-                        </div>                        <span className="text-xl font-bold text-flydubai-orange">
+                        </div>{" "}
+                        <span className="text-xl font-bold text-flydubai-orange">
                           {selectedOptionForDetails.cost}
                         </span>
                       </div>
@@ -2545,12 +2671,24 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                           let rotationData;
                           if (selectedRotationData?.databaseRotationPlan) {
                             rotationData = {
-                              aircraftOptions: selectedRotationData.databaseRotationPlan.aircraftOptions || [],
-                              crewData: selectedRotationData.databaseRotationPlan.crewData || [],
-                              nextSectors: selectedRotationData.databaseRotationPlan.nextSectors || [],
-                              operationalConstraints: selectedRotationData.databaseRotationPlan.operationalConstraints || {},
-                              costBreakdown: selectedRotationData.databaseRotationPlan.costBreakdown || {},
-                              recommendation: selectedRotationData.databaseRotationPlan.recommendation || {}
+                              aircraftOptions:
+                                selectedRotationData.databaseRotationPlan
+                                  .aircraftOptions || [],
+                              crewData:
+                                selectedRotationData.databaseRotationPlan
+                                  .crewData || [],
+                              nextSectors:
+                                selectedRotationData.databaseRotationPlan
+                                  .nextSectors || [],
+                              operationalConstraints:
+                                selectedRotationData.databaseRotationPlan
+                                  .operationalConstraints || {},
+                              costBreakdown:
+                                selectedRotationData.databaseRotationPlan
+                                  .costBreakdown || {},
+                              recommendation:
+                                selectedRotationData.databaseRotationPlan
+                                  .recommendation || {},
                             };
                           } else {
                             rotationData = generateRotationPlanData(
@@ -2562,7 +2700,10 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                           if (!rotationData || !rotationData.aircraftOptions) {
                             return (
                               <TableRow>
-                                <TableCell colSpan={8} className="text-center text-gray-500">
+                                <TableCell
+                                  colSpan={8}
+                                  className="text-center text-gray-500"
+                                >
                                   No aircraft data available
                                 </TableCell>
                               </TableRow>
@@ -2902,26 +3043,39 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                               </Label>
                               <div
                                 className={`mt-2 p-3 rounded-lg ${
-                                  (constraint?.status || '').includes("Risk") ||
-                                  (constraint?.status || '').includes("Major")
+                                  (constraint?.status || "").includes("Risk") ||
+                                  (constraint?.status || "").includes("Major")
                                     ? "bg-red-50"
-                                    : (constraint?.status || '').includes("Required") ||
-                                        (constraint?.status || '').includes("Affected")
+                                    : (constraint?.status || "").includes(
+                                          "Required",
+                                        ) ||
+                                        (constraint?.status || "").includes(
+                                          "Affected",
+                                        )
                                       ? "bg-yellow-50"
                                       : "bg-green-50"
                                 }`}
                               >
                                 <p className="text-sm flex items-center gap-2">
-                                  {(constraint?.status || '').includes("Risk") ||
-                                  (constraint?.status || '').includes("Major") ? (
+                                  {(constraint?.status || "").includes(
+                                    "Risk",
+                                  ) ||
+                                  (constraint?.status || "").includes(
+                                    "Major",
+                                  ) ? (
                                     <XCircle className="h-4 w-4 text-red-600" />
-                                  ) : (constraint?.status || '').includes("Required") ||
-                                    (constraint?.status || '').includes("Affected") ? (
+                                  ) : (constraint?.status || "").includes(
+                                      "Required",
+                                    ) ||
+                                    (constraint?.status || "").includes(
+                                      "Affected",
+                                    ) ? (
                                     <AlertTriangle className="h-4 w-4 text-yellow-600" />
                                   ) : (
                                     <CheckCircle className="h-4 w-4 text-green-600" />
                                   )}
-                                  {constraint?.details || 'No details available'}
+                                  {constraint?.details ||
+                                    "No details available"}
                                 </p>
                               </div>
                             </div>
@@ -2936,110 +3090,125 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
               {/* Tab 4: Cost & Delay Metrics */}
               <TabsContent value="cost" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                    {(() => {
-                      try {
-                        const rotationData = generateRotationPlanData(
-                          selectedRotationData,
-                          flight,
+                  {(() => {
+                    try {
+                      const rotationData = generateRotationPlanData(
+                        selectedRotationData,
+                        flight,
+                      );
+
+                      // Enhanced validation
+                      if (
+                        !rotationData ||
+                        !rotationData.costBreakdown ||
+                        typeof rotationData.costBreakdown !== "object"
+                      ) {
+                        console.warn(
+                          "Invalid rotation data structure:",
+                          rotationData,
                         );
-
-                        // Enhanced validation
-                        if (!rotationData || 
-                            !rotationData.costBreakdown || 
-                            typeof rotationData.costBreakdown !== 'object') {
-                          console.warn('Invalid rotation data structure:', rotationData);
-                          return (
-                            <div className="text-center p-4 text-gray-500">
-                              <p>Unable to load cost breakdown data</p>
-                              <p className="text-xs mt-1">Please try refreshing or contact support</p>
-                            </div>
-                          );
-                        }
-
                         return (
-                          <>
-                        <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-                          <CardContent className="p-4 text-center">
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                              <DollarSign className="h-5 w-5 text-red-600" />
-                              <p className="text-sm font-medium text-red-700">
-                                Estimated Delay Cost
-                              </p>
-                            </div>
-                            <p className="text-2xl font-bold text-red-800">
-                              $
-                              {(rotationData?.costBreakdown?.delayCost || 0).toLocaleString()}
+                          <div className="text-center p-4 text-gray-500">
+                            <p>Unable to load cost breakdown data</p>
+                            <p className="text-xs mt-1">
+                              Please try refreshing or contact support
                             </p>
-                            <p className="text-xs text-red-600 mt-1">
-                              Including compensation
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
-                          <CardContent className="p-4 text-center">
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                              <Activity className="h-5 w-5 text-yellow-600" />
-                              <p className="text-sm font-medium text-yellow-700">
-                                Fuel Efficiency Diff
-                              </p>
-                            </div>
-                            <p className="text-2xl font-bold text-yellow-800">
-                              {rotationData?.costBreakdown?.fuelEfficiency || 'N/A'}
-                            </p>
-                            <p className="text-xs text-yellow-600 mt-1">
-                              vs original aircraft
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                          <CardContent className="p-4 text-center">
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                              <Users className="h-5 w-5 text-blue-600" />
-                              <p className="text-sm font-medium text-blue-700">
-                                Hotel/Transport Cost
-                              </p>
-                            </div>
-                            <p className="text-2xl font-bold text-blue-800">
-                              {(rotationData?.costBreakdown?.hotelTransport || 0) === 0
-                                ? "N/A"
-                                : `$${(rotationData?.costBreakdown?.hotelTransport || 0).toLocaleString()}`}
-                            </p>
-                            <p className="text-xs text-blue-600 mt-1">
-                              Crew accommodation
-                            </p>
-                          </CardContent>
-                        </Card>
-
-                        <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-                          <CardContent className="p-4 text-center">
-                            <div className="flex items-center justify-center gap-2 mb-2">
-                              <AlertTriangle className="h-5 w-5 text-orange-600" />
-                              <p className="text-sm font-medium text-orange-700">
-                                EU261 Risk
-                              </p>
-                            </div>
-                            <p className="text-2xl font-bold text-orange-800">
-                              {rotationData?.costBreakdown?.eu261Risk || 'Unknown'}
-                            </p>
-                            <p className="text-xs text-orange-600 mt-1">
-                              €600 per passenger
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </>
-                    );
-                      } catch (error) {
-                        console.error('Error rendering rotation cost data:', error);
-                        return (
-                          <div className="text-center p-4 text-red-500">
-                            <p>Error loading cost data</p>
-                            <p className="text-xs mt-1">Error: {error.message}</p>
                           </div>
                         );
                       }
-                    })()}
+
+                      return (
+                        <>
+                          <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+                            <CardContent className="p-4 text-center">
+                              <div className="flex items-center justify-center gap-2 mb-2">
+                                <DollarSign className="h-5 w-5 text-red-600" />
+                                <p className="text-sm font-medium text-red-700">
+                                  Estimated Delay Cost
+                                </p>
+                              </div>
+                              <p className="text-2xl font-bold text-red-800">
+                                $
+                                {(
+                                  rotationData?.costBreakdown?.delayCost || 0
+                                ).toLocaleString()}
+                              </p>
+                              <p className="text-xs text-red-600 mt-1">
+                                Including compensation
+                              </p>
+                            </CardContent>
+                          </Card>
+
+                          <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+                            <CardContent className="p-4 text-center">
+                              <div className="flex items-center justify-center gap-2 mb-2">
+                                <Activity className="h-5 w-5 text-yellow-600" />
+                                <p className="text-sm font-medium text-yellow-700">
+                                  Fuel Efficiency Diff
+                                </p>
+                              </div>
+                              <p className="text-2xl font-bold text-yellow-800">
+                                {rotationData?.costBreakdown?.fuelEfficiency ||
+                                  "N/A"}
+                              </p>
+                              <p className="text-xs text-yellow-600 mt-1">
+                                vs original aircraft
+                              </p>
+                            </CardContent>
+                          </Card>
+
+                          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                            <CardContent className="p-4 text-center">
+                              <div className="flex items-center justify-center gap-2 mb-2">
+                                <Users className="h-5 w-5 text-blue-600" />
+                                <p className="text-sm font-medium text-blue-700">
+                                  Hotel/Transport Cost
+                                </p>
+                              </div>
+                              <p className="text-2xl font-bold text-blue-800">
+                                {(rotationData?.costBreakdown?.hotelTransport ||
+                                  0) === 0
+                                  ? "N/A"
+                                  : `$${(rotationData?.costBreakdown?.hotelTransport || 0).toLocaleString()}`}
+                              </p>
+                              <p className="text-xs text-blue-600 mt-1">
+                                Crew accommodation
+                              </p>
+                            </CardContent>
+                          </Card>
+
+                          <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+                            <CardContent className="p-4 text-center">
+                              <div className="flex items-center justify-center gap-2 mb-2">
+                                <AlertTriangle className="h-5 w-5 text-orange-600" />
+                                <p className="text-sm font-medium text-orange-700">
+                                  EU261 Risk
+                                </p>
+                              </div>
+                              <p className="text-2xl font-bold text-orange-800">
+                                {rotationData?.costBreakdown?.eu261Risk ||
+                                  "Unknown"}
+                              </p>
+                              <p className="text-xs text-orange-600 mt-1">
+                                €600 per passenger
+                              </p>
+                            </CardContent>
+                          </Card>
+                        </>
+                      );
+                    } catch (error) {
+                      console.error(
+                        "Error rendering rotation cost data:",
+                        error,
+                      );
+                      return (
+                        <div className="text-center p-4 text-red-500">
+                          <p>Error loading cost data</p>
+                          <p className="text-xs mt-1">Error: {error.message}</p>
+                        </div>
+                      );
+                    }
+                  })()}
                 </div>
 
                 {/* Decision Support Panel */}
@@ -3065,11 +3234,13 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                               <CheckCircle className="h-5 w-5 text-green-600" />
                               <p className="font-medium text-green-800">
                                 Recommended Option: Aircraft{" "}
-                                {rotationData?.recommendation?.aircraft || 'N/A'}
+                                {rotationData?.recommendation?.aircraft ||
+                                  "N/A"}
                               </p>
                             </div>
                             <p className="text-sm text-green-700">
-                              {rotationData?.recommendation?.reason || 'No recommendation details available'}
+                              {rotationData?.recommendation?.reason ||
+                                "No recommendation details available"}
                             </p>
                           </div>
 
@@ -3099,7 +3270,8 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                                     : 65 - index * 5;
                                   const fuelScore = aircraft.recommended
                                     ? 91
-                                    : 89 - index * 14;                                  const overallScore = Math.round(
+                                    : 89 - index * 14;
+                                  const overallScore = Math.round(
                                     (costScore +
                                       delayScore +
                                       crewScore +
@@ -3112,7 +3284,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                                       key={index}
                                       className={
                                         aircraft.recommended
-                                         ? "bg-green-50"
+                                          ? "bg-green-50"
                                           : ""
                                       }
                                     >
@@ -3201,7 +3373,7 @@ export function RecoveryOptionsGenerator({ selectedFlight, onSelectPlan, onCompa
                           </div>
                         </>
                       );
-                    } )()}
+                    })()}
                   </CardContent>
                 </Card>
               </TabsContent>
