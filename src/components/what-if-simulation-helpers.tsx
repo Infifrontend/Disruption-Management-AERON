@@ -16,8 +16,8 @@ import {
 } from './recovery-option-helpers'
 
 export const calculateScenarioImpact = (baseOption, scenario, editedParams = {}) => {
-  const baseCost = parseInt(baseOption.cost?.replace(/[^\d]/g, '') || '50000')
-  const baseTimeMatch = baseOption.timeline?.match(/(\d+)/)
+  const baseCost = parseInt((baseOption.cost || '50000').replace(/[^\d]/g, '') || '50000')
+  const baseTimeMatch = (baseOption.timeline || '').match(/(\d+)/)
   const baseTime = baseTimeMatch ? parseInt(baseTimeMatch[1]) * 60 : 120 // Convert to minutes
   
   let adjustedCost = baseCost
