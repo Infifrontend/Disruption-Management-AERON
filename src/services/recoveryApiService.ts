@@ -1,4 +1,6 @@
 
+import { backendConfig } from "./backendConfig";
+
 // Recovery Options API Client Service
 export interface RecoveryApiResponse<T = any> {
   success: boolean
@@ -83,16 +85,25 @@ class RecoveryApiService {
   private readonly HEALTH_CHECK_CACHE_DURATION = 60000 // 1 minute
 
   constructor() {
-    const hostname = window.location.hostname
-    const protocol = window.location.protocol
-
-    if (hostname === 'localhost') {
-      this.baseUrl = 'http://localhost:3002'
+    const config = backendConfig.getConfig()
+    
+    if (config.isPython) {
+      // For Python backend, use the base URL but potentially different port/path for recovery
+      this.baseUrl = config.apiUrl.replace('/api', '') // Remove /api suffix for recovery service
     } else {
-      // For Replit production, construct the correct URL
-      this.baseUrl = `${protocol}//${hostname.replace('-00-', '-00-').replace('.replit.dev', '.replit.dev')}:3002`
+      // For Express backend, use port 3002
+      const hostname = window.location.hostname
+      const protocol = window.location.protocol
+
+      if (hostname === 'localhost') {
+        this.baseUrl = 'http://localhost:3002'
+      } else {
+        // For Replit production, construct the correct URL
+        this.baseUrl = `${protocol}//${hostname.replace('-00-', '-00-').replace('.replit.dev', '.replit.dev')}:3002`
+      }
     }
-    console.log('Recovery API service initialized with baseUrl:', this.baseUrl)
+    
+    console.log(`Recovery API service initialized with ${config.type.toUpperCase()} backend:`, this.baseUrl)
   }
 
   private isCacheValid(): boolean {
