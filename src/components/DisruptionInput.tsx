@@ -20,6 +20,15 @@ import {
   TableHeader,
   TableRow,
 } from "./ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "./ui/pagination";
 import { Alert, AlertDescription } from "./ui/alert";
 import {
   AlertDialog,
@@ -261,6 +270,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
   });
   const [sortBy, setSortBy] = useState("priority");
   const [view, setView] = useState("table");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [newDisruption, setNewDisruption] = useState({
     flightNumber: "",
     origin: "",
@@ -522,31 +533,45 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
   // Filter flights based on current filters
   const filteredFlights = flights.filter((flight) => {
+    // Status filter
     if (filters.status !== "all" && flight.currentStatus !== filters.status)
       return false;
+    
+    // Priority filter
     if (filters.priority !== "all" && flight.priority !== filters.priority)
       return false;
+    
+    // Origin filter
     if (filters.origin !== "all" && flight.origin !== filters.origin)
       return false;
+    
+    // Categorization filter
     if (
       filters.categorization !== "all" &&
       flight.categorization !== filters.categorization
     )
       return false;
-    if (
-      filters.search &&
-      !flight.flightNumber
-        .toLowerCase()
-        .includes(filters.search.toLowerCase()) &&
-      !flight.originCity.toLowerCase().includes(filters.search.toLowerCase()) &&
-      !flight.destinationCity
-        .toLowerCase()
-        .includes(filters.search.toLowerCase()) &&
-      !flight.disruptionReason
-        .toLowerCase()
-        .includes(filters.search.toLowerCase())
-    )
-      return false;
+    
+    // Search filter - check multiple fields
+    if (filters.search && filters.search.trim() !== "") {
+      const searchTerm = filters.search.toLowerCase().trim();
+      const searchableFields = [
+        flight.flightNumber || "",
+        flight.originCity || "",
+        flight.destinationCity || "",
+        flight.disruptionReason || "",
+        flight.aircraft || "",
+        flight.origin || "",
+        flight.destination || ""
+      ];
+      
+      const matchFound = searchableFields.some(field => 
+        field.toLowerCase().includes(searchTerm)
+      );
+      
+      if (!matchFound) return false;
+    }
+    
     return true;
   });
 
@@ -566,6 +591,17 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         return 0;
     }
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(sortedFlights.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedFlights = sortedFlights.slice(startIndex, endIndex);
+
+  // Reset current page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [filters.status, filters.priority, filters.origin, filters.categorization, filters.search]);
 
   const handleFlightSelection = (flight) => {
     setSelectedFlight(flight);
@@ -1429,10 +1465,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Origins</SelectItem>
-                  <SelectItem value="DXB">DXB</SelectItem>
-                  <SelectItem value="KHI">KHI</SelectItem>
-                  <SelectItem value="IST">IST</SelectItem>
-                  <SelectItem value="BOM">BOM</SelectItem>
+                  {Array.from(new Set(flights.map(f => f.origin))).sort().map(origin => (
+                    <SelectItem key={origin} value={origin}>{origin}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -1452,9 +1487,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
-                  {disruptionCategories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.category_name}>
-                      {cat.category_name}
+                  {Array.from(new Set(flights.map(f => f.categorization))).sort().map(cat => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -1474,6 +1509,32 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                   <SelectItem value="delay">Delay Duration</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between mt-4 pt-4 border-t">
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium">Items per page:</label>
+              <Select 
+                value={itemsPerPage.toString()} 
+                onValueChange={(value) => {
+                  setItemsPerPage(parseInt(value));
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Showing {startIndex + 1}-{Math.min(endIndex, sortedFlights.length)} of {sortedFlights.length} flights
             </div>
           </div>
         </CardContent>
@@ -1511,7 +1572,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedFlights.map((flight) => (
+                {paginatedFlights.map((flight) => (
                   <TableRow
                     key={flight.id}
                     className={`cursor-pointer hover:bg-blue-50 ${selectedFlight?.id === flight.id ? "bg-blue-100 border-blue-200" : ""}`}
@@ -1633,6 +1694,64 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </TableBody>
             </Table>
           </div>
+
+          {/* Pagination Controls */}
+          {sortedFlights.length > itemsPerPage && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-muted-foreground">
+                Page {currentPage} of {totalPages} ({sortedFlights.length} total flights)
+              </div>
+              <Pagination>
+                <PaginationContent>
+                  <PaginationItem>
+                    <PaginationPrevious 
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                  
+                  {/* Page Numbers */}
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+                    if (totalPages <= 5) {
+                      pageNum = i + 1;
+                    } else if (currentPage <= 3) {
+                      pageNum = i + 1;
+                    } else if (currentPage >= totalPages - 2) {
+                      pageNum = totalPages - 4 + i;
+                    } else {
+                      pageNum = currentPage - 2 + i;
+                    }
+                    
+                    return (
+                      <PaginationItem key={pageNum}>
+                        <PaginationLink
+                          onClick={() => setCurrentPage(pageNum)}
+                          isActive={currentPage === pageNum}
+                          className="cursor-pointer"
+                        >
+                          {pageNum}
+                        </PaginationLink>
+                      </PaginationItem>
+                    );
+                  })}
+                  
+                  {totalPages > 5 && currentPage < totalPages - 2 && (
+                    <PaginationItem>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  )}
+                  
+                  <PaginationItem>
+                    <PaginationNext 
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                    />
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          )}
 
           {/* No data state */}
           {sortedFlights.length === 0 && !loading && (
