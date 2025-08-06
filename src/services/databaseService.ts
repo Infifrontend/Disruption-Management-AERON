@@ -133,7 +133,7 @@ class DatabaseService {
   constructor() {
     // Use backend configuration to determine API URL
     const config = backendConfig.getConfig();
-    
+
     if (config.isPython) {
       // For Python backend, use the full URL
       this.baseUrl = config.apiUrl;
@@ -147,7 +147,7 @@ class DatabaseService {
         this.baseUrl = "/api";
       }
     }
-    
+
     console.log(`Database service initialized with ${config.type.toUpperCase()} backend:`, this.baseUrl);
   }
 
@@ -482,7 +482,9 @@ class DatabaseService {
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // Increased timeout for Python backend
+      const config = backendConfig.getConfig();
+      const timeout = config.timeout;
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       const response = await fetch(`${this.baseUrl}/health`, {
         method: "GET",
@@ -825,7 +827,7 @@ class DatabaseService {
   async getDetailedRecoveryOptions(disruptionId: string): Promise<any[]> {
     try {
       console.log(`Fetching detailed recovery options for disruption ${disruptionId}`);
-      
+
       // Check circuit breaker
       if (!this.checkCircuitBreaker()) {
         console.log('Circuit breaker open, returning empty array');
@@ -835,7 +837,7 @@ class DatabaseService {
       const response = await fetch(
         `${this.baseUrl}/recovery-options-detailed/${disruptionId}`,
       );
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           console.log(`No detailed recovery options found for disruption ${disruptionId}`);
@@ -846,7 +848,7 @@ class DatabaseService {
         this.onDatabaseFailure();
         return [];
       }
-      
+
       const options = await response.json();
       console.log(`Found ${options.length} detailed recovery options for disruption ${disruptionId}`);
       this.onDatabaseSuccess();
@@ -886,7 +888,7 @@ class DatabaseService {
   async getDetailedRecoverySteps(disruptionId: string, optionId?: string): Promise<any[]> {
     try {
       console.log(`Fetching detailed recovery steps for disruption ${disruptionId}`);
-      
+
       // Check circuit breaker
       if (!this.checkCircuitBreaker()) {
         console.log('Circuit breaker open, returning empty array');
@@ -896,9 +898,9 @@ class DatabaseService {
       const url = optionId 
         ? `${this.baseUrl}/recovery-steps-detailed/${disruptionId}?option_id=${optionId}`
         : `${this.baseUrl}/recovery-steps-detailed/${disruptionId}`;
-      
+
       const response = await fetch(url);
-      
+
       if (!response.ok) {
         if (response.status === 404) {
           console.log(`No detailed recovery steps found for disruption ${disruptionId}`);
@@ -909,7 +911,7 @@ class DatabaseService {
         this.onDatabaseFailure();
         return [];
       }
-      
+
       const steps = await response.json();
       console.log(`Found ${steps.length} detailed recovery steps for disruption ${disruptionId}`);
       this.onDatabaseSuccess();
@@ -971,7 +973,9 @@ class DatabaseService {
 
       // Add timeout to prevent hanging requests
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+      const config = backendConfig.getConfig();
+      const timeout = config.timeout;
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       const response = await fetch(
         `${this.baseUrl}/recovery-options/generate/${disruptionId}`,
@@ -1228,7 +1232,9 @@ class DatabaseService {
   private async checkApiHealth(): Promise<boolean> {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2000);
+      const config = backendConfig.getConfig();
+      const timeout = config.timeout;
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       const response = await fetch(`${this.baseUrl}/health`, {
         signal: controller.signal,
