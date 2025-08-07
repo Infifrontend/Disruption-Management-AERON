@@ -412,14 +412,33 @@ export function AffectedFlightsList() {
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="inbound" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="inbound">Inbound</TabsTrigger>
-              <TabsTrigger value="outbound">Outbound</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 bg-gray-100 p-1 rounded-lg">
+              <TabsTrigger 
+                value="inbound" 
+                className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-flydubai-blue font-medium transition-all duration-200"
+              >
+                <Plane className="h-4 w-4 transform rotate-180" />
+                Inbound to DXB
+              </TabsTrigger>
+              <TabsTrigger 
+                value="outbound"
+                className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-flydubai-blue font-medium transition-all duration-200"
+              >
+                <Plane className="h-4 w-4" />
+                Outbound from DXB
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="inbound" className="space-y-4">
-              <div className="text-sm text-muted-foreground mb-4">
-                Flights arriving at Dubai International Airport (DXB)
+              <div className="flex items-center gap-2 bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                <Plane className="h-5 w-5 text-blue-600 transform rotate-180" />
+                <div>
+                  <p className="text-sm font-medium text-blue-900">Inbound Flights</p>
+                  <p className="text-xs text-blue-600">Flights arriving at Dubai International Airport (DXB)</p>
+                </div>
+                <Badge variant="outline" className="ml-auto bg-blue-100 text-blue-700 border-blue-300">
+                  {inboundFlights.length} flights
+                </Badge>
               </div>
               {/* Group flights by route direction */}
               {(() => {
@@ -515,8 +534,15 @@ export function AffectedFlightsList() {
             </TabsContent>
 
             <TabsContent value="outbound" className="space-y-4">
-              <div className="text-sm text-muted-foreground mb-4">
-                Flights departing from Dubai International Airport (DXB)
+              <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 rounded-lg p-3 mb-4">
+                <Plane className="h-5 w-5 text-orange-600" />
+                <div>
+                  <p className="text-sm font-medium text-orange-900">Outbound Flights</p>
+                  <p className="text-xs text-orange-600">Flights departing from Dubai International Airport (DXB)</p>
+                </div>
+                <Badge variant="outline" className="ml-auto bg-orange-100 text-orange-700 border-orange-300">
+                  {outboundFlights.length} flights
+                </Badge>
               </div>
               {/* Group flights by route direction */}
               {(() => {
