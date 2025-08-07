@@ -154,9 +154,9 @@ export function Layout({ children }: LayoutProps) {
     );
 
     const options: Intl.DateTimeFormatOptions = {
-      weekday: "short",
+      weekday: "long",
       year: "numeric",
-      month: "short",
+      month: "long",
       day: "numeric",
       timeZone: "Asia/Kolkata",
     };
