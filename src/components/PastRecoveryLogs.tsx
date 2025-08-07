@@ -763,7 +763,7 @@ export function PastRecoveryLogs() {
                     color: "hsl(221, 83%, 53%)",
                   },
                 }}
-                className="h-[300px]"
+                className="h-[500px] w-full"
               >
                 <LineChart data={[
                   { month: "Oct 24", efficiency: 88, delayReduction: 2800 },
