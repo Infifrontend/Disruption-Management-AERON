@@ -2670,7 +2670,9 @@ export function RecoveryOptionsGenerator({
                             Total Cost:
                           </span>
                           <span className="font-semibold text-flydubai-orange">
-                            {selectedOptionForDetails.cost || "TBD"}
+                            {selectedOptionForDetails.totalCost 
+                              ? `AED ${selectedOptionForDetails.totalCost.toLocaleString()}`
+                              : selectedOptionForDetails.cost || "TBD"}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -2763,7 +2765,9 @@ export function RecoveryOptionsGenerator({
                           </p>
                         </div>{" "}
                         <span className="text-xl font-bold text-flydubai-orange">
-                          {selectedOptionForDetails.cost}
+                          {selectedOptionForDetails.totalCost 
+                            ? `AED ${selectedOptionForDetails.totalCost.toLocaleString()}`
+                            : selectedOptionForDetails.cost || 'TBD'}
                         </span>
                       </div>
                     </CardContent>

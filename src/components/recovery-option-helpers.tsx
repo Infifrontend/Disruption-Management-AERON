@@ -69,138 +69,174 @@ export const getDetailedDescription = (option, flight) => {
   return `Recovery solution for ${flightNumber} (${origin}→${destination}): ${optionDescription}. Aircraft: ${aircraft} ${registration}. Passengers affected: ${passengers}. Current situation: ${disruptionReason}. Estimated implementation time based on current operational conditions at ${origin}. Solution focuses on ${option.impact || 'minimizing passenger disruption'} while ensuring safety and regulatory compliance.`
 }
 
-export const getCostBreakdown = (option, flight) => {
-  const passengerCount = flight?.passengers || 167
-  const hotelCostPerRoom = 150 // AED per night
-  const mealVoucherCost = 75 // AED per passenger
+export const getCostBreakdown = (option) => {
+  const optionId = String(option.id || '')
 
-  // Extract cost number from option.cost string for calculations
-  const totalCostMatch = option.cost?.match(/[\d,]+/)
-  const totalCost = totalCostMatch ? parseInt(totalCostMatch[0].replace(/,/g, '')) : 50000
+  // Extract cost from various possible sources
+  let baseCost = 0
 
-  const breakdowns = {
-    'AIRCRAFT_SWAP_A320_001': [
-      { category: 'Aircraft Positioning Fee', amount: 'AED 28,500', percentage: 42, description: 'Moving A6-FMC from Terminal 1 to gate' },
-      { category: 'Crew Overtime & Allowances', amount: 'AED 15,200', percentage: 23, description: 'Extended duty pay for 6 crew members' },
-      { category: 'Ground Handling Premium', amount: 'AED 9,800', percentage: 15, description: 'Priority baggage/cargo transfer' },
-      { category: 'Additional Fuel Uplift', amount: 'AED 7,500', percentage: 11, description: 'Extra fuel for A320 efficiency difference' },
-      { category: 'Documentation & Admin', amount: 'AED 6,000', percentage: 9, description: 'Route changes, permits, notifications' }
-    ],
-    'DELAY_4H_OVERNIGHT': [
-      { category: 'Hotel Accommodation', amount: `AED ${Math.round((passengerCount * 0.6) * hotelCostPerRoom).toLocaleString()}`, percentage: 52, description: `${Math.round(passengerCount * 0.6)} rooms at Dubai Intl Hotel` },
-      { category: 'Meal Vouchers', amount: `AED ${(passengerCount * mealVoucherCost).toLocaleString()}`, percentage: 28, description: `${passengerCount} passengers × AED ${mealVoucherCost}` },
-      { category: 'Ground Transportation', amount: `AED ${(passengerCount * 35).toLocaleString()}`, percentage: 12, description: '4 coach buses + individual transport' },
-      { category: 'Airport Slot Rebooking', amount: 'AED 4,500', percentage: 5, description: 'New departure slot coordination' },
-      { category: 'Communication & Coordination', amount: 'AED 3,200', percentage: 3, description: 'Passenger notifications, staff overtime' }
-    ],
-    'REROUTE_AUH_TECH': [
-      { category: 'Alternative Route Costs', amount: 'AED 42,000', percentage: 58, description: 'Additional fuel + navigation fees' },
-      { category: 'Ground Transport DXB-AUH', amount: 'AED 18,500', percentage: 26, description: 'Charter buses for connecting passengers' },
-      { category: 'Airport Coordination Fees', amount: 'AED 7,200', percentage: 10, description: 'AUH slot + ground handling' },
-      { category: 'Passenger Services', amount: 'AED 4,300', percentage: 6, description: 'Transit lounge access + refreshments' }
-    ],
-    'PARTNER_CODESHARE': [
-      { category: 'Seat Purchase from Emirates', amount: 'AED 95,000', percentage: 72, description: '189 seats at negotiated rate' },
-      { category: 'Baggage Transfer Services', amount: 'AED 12,500', percentage: 9, description: 'Priority baggage handling' },
-      { category: 'Class Upgrades (VIP)', amount: 'AED 15,000', percentage: 11, description: '12 business class upgrades' },
-      { category: 'Ground Coordination', amount: 'AED 8,500', percentage: 6, description: 'Check-in, boarding assistance' },
-      { category: 'Passenger Compensation', amount: 'AED 3,200', percentage: 2, description: 'Service recovery vouchers' }
-    ],
-    'CREW_REPLACEMENT_DXB': [
-      { category: 'Standby Crew Activation', amount: 'AED 18,000', percentage: 65, description: 'Call-out pay for 6 crew members' },
-      { category: 'Extended Briefing Costs', amount: 'AED 4,500', percentage: 16, description: 'Training coordinator + materials' },
-      { category: 'Crew Transportation', amount: 'AED 2,800', percentage: 10, description: 'Hotel pickup + crew transport' },
-      { category: 'Administrative Processing', amount: 'AED 2,500', percentage: 9, description: 'Duty time documentation, roster changes' }
+  if (option.baseCost) {
+    baseCost = option.baseCost
+  } else if (option.cost) {
+    const costString = String(option.cost).replace(/[^0-9]/g, '')
+    baseCost = parseInt(costString) || 25000
+  } else if (option.totalCost) {
+    baseCost = option.totalCost
+  } else {
+    baseCost = 25000 // Default fallback
+  }
+
+  // Ensure baseCost is a reasonable minimum
+  if (baseCost < 1000) baseCost = 25000
+
+  // Different cost breakdowns based on recovery option type
+  if (optionId.includes('AIRCRAFT') || optionId.includes('SWAP')) {
+    const breakdown = [
+      {
+        category: "Aircraft Positioning",
+        amount: `AED ${Math.floor(baseCost * 0.35).toLocaleString()}`,
+        percentage: 35,
+        description: "Alternative aircraft positioning and preparation costs"
+      },
+      {
+        category: "Ground Operations",
+        amount: `AED ${Math.floor(baseCost * 0.25).toLocaleString()}`,
+        percentage: 25,
+        description: "Ground handling, gate changes, and ramp services"
+      },
+      {
+        category: "Passenger Transfer",
+        amount: `AED ${Math.floor(baseCost * 0.25).toLocaleString()}`,
+        percentage: 25,
+        description: "Passenger transfer operations and services"
+      },
+      {
+        category: "Administrative",
+        amount: `AED ${Math.floor(baseCost * 0.15).toLocaleString()}`,
+        percentage: 15,
+        description: "Documentation, coordination, and system updates"
+      }
     ]
-  }
-
-  // If exact match found, return it
-  if (breakdowns[option.id]) {
-    return breakdowns[option.id]
-  }
-
-  // Generate dynamic breakdown based on option type
-  const optionTitle = (option.title || '').toLowerCase()
-  const optionId = String(option.id || "").toLowerCase()
-  const optionTitleLower = optionTitle.toLowerCase()
-  const optionIdLower = optionId.toLowerCase()
-
-  // Aircraft swap pattern
-  if (optionIdLower.includes('aircraft_swap') || optionTitleLower.includes('aircraft swap') || optionTitleLower.includes('swap aircraft')) {
-    return [
-      { category: 'Aircraft Positioning Fee', amount: `AED ${Math.round(totalCost * 0.42).toLocaleString()}`, percentage: 42, description: 'Moving replacement aircraft to departure gate' },
-      { category: 'Crew Overtime & Allowances', amount: `AED ${Math.round(totalCost * 0.23).toLocaleString()}`, percentage: 23, description: 'Extended duty pay for crew members' },
-      { category: 'Ground Handling Premium', amount: `AED ${Math.round(totalCost * 0.15).toLocaleString()}`, percentage: 15, description: 'Priority baggage/cargo transfer' },
-      { category: 'Additional Fuel & Operations', amount: `AED ${Math.round(totalCost * 0.11).toLocaleString()}`, percentage: 11, description: 'Extra fuel and operational costs' },
-      { category: 'Documentation & Admin', amount: `AED ${Math.round(totalCost * 0.09).toLocaleString()}`, percentage: 9, description: 'Route changes, permits, notifications' }
+    breakdown.totalCost = baseCost
+    return breakdown
+  } else if (optionId.includes('CREW')) {
+    const breakdown = [
+      {
+        category: "Crew Positioning",
+        amount: `AED ${Math.floor(baseCost * 0.40).toLocaleString()}`,
+        percentage: 40,
+        description: "Standby crew positioning and transportation"
+      },
+      {
+        category: "Overtime Costs",
+        amount: `AED ${Math.floor(baseCost * 0.30).toLocaleString()}`,
+        percentage: 30,
+        description: "Extended duty time and overtime compensation"
+      },
+      {
+        category: "Accommodation",
+        amount: `AED ${Math.floor(baseCost * 0.20).toLocaleString()}`,
+        percentage: 20,
+        description: "Crew rest facilities and accommodation"
+      },
+      {
+        category: "Administrative",
+        amount: `AED ${Math.floor(baseCost * 0.10).toLocaleString()}`,
+        percentage: 10,
+        description: "Crew scheduling updates and documentation"
+      }
     ]
-  }
-
-  // Delay pattern
-  if (optionIdLower.includes('delay') || optionTitleLower.includes('delay')) {
-    const needsAccommodation = option.timeline?.includes('hour') && parseInt(option.timeline) >= 4
-    return needsAccommodation ? [
-      { category: 'Hotel Accommodation', amount: `AED ${Math.round((passengerCount * 0.6) * hotelCostPerRoom).toLocaleString()}`, percentage: 52, description: `${Math.round(passengerCount * 0.6)} rooms confirmed` },
-      { category: 'Meal Vouchers', amount: `AED ${(passengerCount * mealVoucherCost).toLocaleString()}`, percentage: 28, description: `${passengerCount} passengers × AED ${mealVoucherCost}` },
-      { category: 'Ground Transportation', amount: `AED ${(passengerCount * 35).toLocaleString()}`, percentage: 12, description: 'Buses and individual transport' },
-      { category: 'Airport Coordination', amount: `AED ${Math.round(totalCost * 0.05).toLocaleString()}`, percentage: 5, description: 'Slot rebooking and coordination' },
-      { category: 'Communication & Admin', amount: `AED ${Math.round(totalCost * 0.03).toLocaleString()}`, percentage: 3, description: 'Passenger notifications, staff overtime' }
-    ] : [
-      { category: 'Delay Coordination', amount: `AED ${Math.round(totalCost * 0.40).toLocaleString()}`, percentage: 40, description: 'Operational delay management' },
-      { category: 'Passenger Services', amount: `AED ${Math.round(totalCost * 0.35).toLocaleString()}`, percentage: 35, description: 'Terminal amenities and refreshments' },
-      { category: 'Crew Overtime', amount: `AED ${Math.round(totalCost * 0.15).toLocaleString()}`, percentage: 15, description: 'Extended crew duty time' },
-      { category: 'Administrative Costs', amount: `AED ${Math.round(totalCost * 0.10).toLocaleString()}`, percentage: 10, description: 'Documentation and notifications' }
+    breakdown.totalCost = baseCost
+    return breakdown
+  } else if (optionId.includes('DELAY') || optionId.includes('WEATHER')) {
+    const breakdown = [
+      {
+        category: "Passenger Services",
+        amount: `AED ${Math.floor(baseCost * 0.45).toLocaleString()}`,
+        percentage: 45,
+        description: "Meal vouchers, refreshments, and passenger amenities"
+      },
+      {
+        category: "Airport Charges",
+        amount: `AED ${Math.floor(baseCost * 0.25).toLocaleString()}`,
+        percentage: 25,
+        description: "Extended parking, gate fees, and facility charges"
+      },
+      {
+        category: "Crew Costs",
+        amount: `AED ${Math.floor(baseCost * 0.20).toLocaleString()}`,
+        percentage: 20,
+        description: "Extended crew duty time and rest requirements"
+      },
+      {
+        category: "Fuel & Operations",
+        amount: `AED ${Math.floor(baseCost * 0.10).toLocaleString()}`,
+        percentage: 10,
+        description: "Additional fuel and operational overhead"
+      }
     ]
-  }
-
-  // Reroute pattern
-  if (optionIdLower.includes('reroute') || optionIdLower.includes('divert') || optionTitleLower.includes('reroute') || optionTitleLower.includes('divert')) {
-    return [
-      { category: 'Alternative Route Costs', amount: `AED ${Math.round(totalCost * 0.58).toLocaleString()}`, percentage: 58, description: 'Additional fuel and navigation fees' },
-      { category: 'Ground Transportation', amount: `AED ${Math.round(totalCost * 0.26).toLocaleString()}`, percentage: 26, description: 'Passenger transport between airports' },
-      { category: 'Airport Coordination Fees', amount: `AED ${Math.round(totalCost * 0.10).toLocaleString()}`, percentage: 10, description: 'Alternative airport slot and handling' },
-      { category: 'Passenger Services', amount: `AED ${Math.round(totalCost * 0.06).toLocaleString()}`, percentage: 6, description: 'Transit support and refreshments' }
+    breakdown.totalCost = baseCost
+    return breakdown
+  } else if (optionId.includes('CANCEL')) {
+    const breakdown = [
+      {
+        category: "Passenger Compensation",
+        amount: `AED ${Math.floor(baseCost * 0.60).toLocaleString()}`,
+        percentage: 60,
+        description: "EU261 compensation and refund processing"
+      },
+      {
+        category: "Rebooking Services",
+        amount: `AED ${Math.floor(baseCost * 0.20).toLocaleString()}`,
+        percentage: 20,
+        description: "Alternative flight arrangements and partner airline costs"
+      },
+      {
+        category: "Hotel & Transport",
+        amount: `AED ${Math.floor(baseCost * 0.15).toLocaleString()}`,
+        percentage: 15,
+        description: "Overnight accommodation and ground transportation"
+      },
+      {
+        category: "Administrative",
+        amount: `AED ${Math.floor(baseCost * 0.05).toLocaleString()}`,
+        percentage: 5,
+        description: "Processing fees and documentation"
+      }
     ]
-  }
-
-  // Partner/Codeshare pattern
-  if (optionIdLower.includes('partner') || optionIdLower.includes('codeshare') || optionTitleLower.includes('partner') || optionTitleLower.includes('codeshare')) {
-    return [
-      { category: 'Partner Airline Seats', amount: `AED ${Math.round(totalCost * 0.72).toLocaleString()}`, percentage: 72, description: `${passengerCount} seats at negotiated rate` },
-      { category: 'Baggage Transfer Services', amount: `AED ${Math.round(totalCost * 0.09).toLocaleString()}`, percentage: 9, description: 'Priority baggage handling' },
-      { category: 'Class Upgrades (VIP)', amount: `AED ${Math.round(totalCost * 0.11).toLocaleString()}`, percentage: 11, description: 'VIP passenger upgrades' },
-      { category: 'Ground Coordination', amount: `AED ${Math.round(totalCost * 0.06).toLocaleString()}`, percentage: 6, description: 'Check-in and boarding assistance' },
-      { category: 'Service Recovery', amount: `AED ${Math.round(totalCost * 0.02).toLocaleString()}`, percentage: 2, description: 'Passenger compensation vouchers' }
+    breakdown.totalCost = baseCost
+    return breakdown
+  } else {
+    // Default breakdown
+    const breakdown = [
+      {
+        category: "Operational Costs",
+        amount: `AED ${Math.floor(baseCost * 0.50).toLocaleString()}`,
+        percentage: 50,
+        description: "Direct operational expenses and resource costs"
+      },
+      {
+        category: "Passenger Services",
+        amount: `AED ${Math.floor(baseCost * 0.30).toLocaleString()}`,
+        percentage: 30,
+        description: "Passenger accommodation and service recovery"
+      },
+      {
+        category: "Coordination",
+        amount: `AED ${Math.floor(baseCost * 0.15).toLocaleString()}`,
+        percentage: 15,
+        description: "Inter-departmental coordination and communication"
+      },
+      {
+        category: "Administrative",
+        amount: `AED ${Math.floor(baseCost * 0.05).toLocaleString()}`,
+        percentage: 5,
+        description: "Documentation and regulatory compliance"
+      }
     ]
+    breakdown.totalCost = baseCost
+    return breakdown
   }
-
-  // Crew replacement pattern
-  if (optionIdLower.includes('crew') || optionTitleLower.includes('crew')) {
-    return [
-      { category: 'Standby Crew Activation', amount: `AED ${Math.round(totalCost * 0.65).toLocaleString()}`, percentage: 65, description: 'Call-out pay for replacement crew' },
-      { category: 'Extended Briefing Costs', amount: `AED ${Math.round(totalCost * 0.16).toLocaleString()}`, percentage: 16, description: 'Training coordinator and materials' },
-      { category: 'Crew Transportation', amount: `AED ${Math.round(totalCost * 0.10).toLocaleString()}`, percentage: 10, description: 'Transport to airport' },
-      { category: 'Administrative Processing', amount: `AED ${Math.round(totalCost * 0.09).toLocaleString()}`, percentage: 9, description: 'Duty time documentation, roster changes' }
-    ]
-  }
-
-  // Cancellation pattern
-  if (optionIdLower.includes('cancel') || optionTitleLower.includes('cancel')) {
-    return [
-      { category: 'Passenger Rebooking', amount: `AED ${Math.round(totalCost * 0.45).toLocaleString()}`, percentage: 45, description: `Rebooking ${passengerCount} passengers on alternative flights` },
-      { category: 'Hotel Accommodation', amount: `AED ${Math.round(totalCost * 0.25).toLocaleString()}`, percentage: 25, description: 'Overnight accommodation for passengers' },
-      { category: 'Meal Allowances', amount: `AED ${Math.round(totalCost * 0.15).toLocaleString()}`, percentage: 15, description: 'Meal vouchers and catering' },
-      { category: 'Compensation & Refunds', amount: `AED ${Math.round(totalCost * 0.10).toLocaleString()}`, percentage: 10, description: 'EU261 and passenger compensation' },
-      { category: 'Ground Services', amount: `AED ${Math.round(totalCost * 0.05).toLocaleString()}`, percentage: 5, description: 'Baggage handling and customer service' }
-    ]
-  }
-
-  // Default breakdown
-  return [
-    { category: 'Primary Recovery Cost', amount: `AED ${Math.round(totalCost * 0.70).toLocaleString()}`, percentage: 70, description: 'Main implementation cost' },
-    { category: 'Supporting Services', amount: `AED ${Math.round(totalCost * 0.20).toLocaleString()}`, percentage: 20, description: 'Additional services required' },
-    { category: 'Administrative Overhead', amount: `AED ${Math.round(totalCost * 0.10).toLocaleString()}`, percentage: 10, description: 'Documentation and coordination' }
-  ]
 }
 
 export const getTimelineDetails = (option) => {

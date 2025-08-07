@@ -562,10 +562,25 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
         switch (metric.metric) {
           case 'Total Cost':
             // Use cost from option or calculate from financial breakdown
-            const totalCost = option.metrics?.totalCost || 
-                            parseInt(option.cost?.replace(/[^0-9]/g, "") || "0") ||
-                            (option.financialBreakdown ? 
-                              Object.values(option.financialBreakdown).reduce((sum, cost) => sum + (typeof cost === 'number' ? cost : 0), 0) : 0)
+            let totalCost = 0
+            
+            // Try multiple sources for cost data
+            if (option.totalCost) {
+              totalCost = option.totalCost
+            } else if (option.metrics?.totalCost) {
+              totalCost = option.metrics.totalCost
+            } else if (option.cost) {
+              const costString = String(option.cost).replace(/[^0-9]/g, "")
+              totalCost = parseInt(costString) || 0
+            } else if (option.financialBreakdown) {
+              totalCost = Object.values(option.financialBreakdown).reduce((sum, cost) => sum + (typeof cost === 'number' ? cost : 0), 0)
+            }
+            
+            // Set minimum reasonable cost if zero or too low
+            if (totalCost === 0 || totalCost < 1000) {
+              totalCost = 25000 // Default reasonable cost
+            }
+            
             row[key] = `AED ${totalCost.toLocaleString()}`
             break
           case 'OTP Score':
