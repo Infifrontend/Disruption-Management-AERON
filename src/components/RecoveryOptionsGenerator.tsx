@@ -2186,7 +2186,11 @@ export function RecoveryOptionsGenerator({
             </CardTitle>
             <Button
               variant="outline"
-              onClick={() => onCompare && onCompare()}
+              onClick={() => onCompare && onCompare({
+                flight: flight,
+                options: scenarioData.options,
+                scenarioData: scenarioData
+              })}
               className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
               disabled={!selectedFlight || scenarioData.options.length === 0}
             >

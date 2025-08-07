@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
@@ -22,11 +21,22 @@ export function RecoveryOptions() {
     navigate('/pending')
   }
 
+  const handleCompare = (comparisonData: any) => {
+    // Store comparison data in app context
+    if (comparisonData) {
+      setSelectedRecoveryPlan({
+        ...selectedRecoveryPlan,
+        comparisonData: comparisonData
+      })
+    }
+    navigate('/comparison')
+  }
+
   return (
-    <RecoveryOptionsGenerator 
+    <RecoveryOptionsGenerator
       selectedFlight={selectedFlight}
       onSelectPlan={handleSelectRecoveryPlan}
-      onCompare={() => navigate('/comparison')}
+      onCompare={handleCompare}
       onPassengerServices={handlePassengerServices}
       onNavigateToPendingSolutions={handleNavigateToPendingSolutions}
     />

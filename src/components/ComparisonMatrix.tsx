@@ -15,8 +15,109 @@ import {
   Download
 } from 'lucide-react'
 
-export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
-  const [recoveryOptions, setRecoveryOptions] = useState([])
+interface ComparisonMatrixProps {
+  selectedFlight: any;
+  recoveryOptions?: any[];
+  scenarioData?: any;
+  onSelectPlan: (plan: any) => void;
+}
+
+export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenarioData, onSelectPlan }: ComparisonMatrixProps) {
+  // Use dynamic recovery options from props, with fallback to static data if none provided
+  const comparisonOptions = recoveryOptions.length > 0 ? recoveryOptions.map((option, index) => ({
+    ...option,
+    // Ensure all required fields are present for comparison
+    metrics: option.metrics || {
+      costEfficiency: 75 + Math.random() * 20,
+      timeEfficiency: 70 + Math.random() * 25,
+      passengerSatisfaction: 65 + Math.random() * 30,
+      operationalComplexity: 50 + Math.random() * 40,
+      riskLevel: 20 + Math.random() * 60,
+      resourceAvailability: 80 + Math.random() * 20
+    },
+    passengerImpact: option.passengerImpact || {
+      affected: selectedFlight?.passengers || 167,
+      reaccommodated: option.id?.includes('CANCEL') ? (selectedFlight?.passengers || 167) : 
+                     option.id?.includes('DELAY') ? Math.floor((selectedFlight?.passengers || 167) * 0.3) : 0,
+      compensated: option.id?.includes('CANCEL') ? (selectedFlight?.passengers || 167) :
+                   option.id?.includes('DELAY') ? Math.floor((selectedFlight?.passengers || 167) * 0.5) : 0,
+      missingConnections: option.id?.includes('CANCEL') ? Math.floor((selectedFlight?.passengers || 167) * 0.8) :
+                         option.id?.includes('DELAY') ? Math.floor((selectedFlight?.passengers || 167) * 0.4) :
+                         Math.floor((selectedFlight?.passengers || 167) * 0.1)
+    },
+    operationalImpact: option.operationalImpact || {
+      delayMinutes: parseInt(option.timeline?.replace(/[^0-9]/g, "") || "60"),
+      downstreamFlights: option.id?.includes('CANCEL') ? 0 : option.id?.includes('DELAY') ? 3 : 2,
+      crewChanges: option.id?.includes('CREW') ? 2 : option.id?.includes('CANCEL') ? 1 : 0,
+      gateChanges: option.id?.includes('AIRCRAFT_SWAP') ? 1 : 0
+    },
+    financialBreakdown: option.financialBreakdown || {
+      aircraftCost: option.id?.includes('AIRCRAFT_SWAP') ? 25000 : 0,
+      crewCost: parseInt(option.cost?.replace(/[^0-9]/g, "") || "25000") * 0.3,
+      passengerCost: option.id?.includes('CANCEL') ? parseInt(option.cost?.replace(/[^0-9]/g, "") || "25000") * 0.6 : 
+                     parseInt(option.cost?.replace(/[^0-9]/g, "") || "25000") * 0.2,
+      operationalCost: parseInt(option.cost?.replace(/[^0-9]/g, "") || "25000") * 0.2
+    },
+    riskAssessment: option.riskAssessment || {
+      technicalRisk: option.status === "recommended" ? "Low" : option.status === "caution" ? "Medium" : "High",
+      weatherRisk: selectedFlight?.disruptionReason?.includes('Weather') ? "Medium" : "Low",
+      regulatoryRisk: option.id?.includes('CANCEL') ? "High" : "Low",
+      passengerRisk: option.confidence > 80 ? "Low" : option.confidence > 60 ? "Medium" : "High"
+    }
+  })) : [
+    // Fallback static data when no dynamic options are available
+    {
+      id: "option_1",
+      title: "Aircraft Swap - Immediate",
+      description: "Replace with available aircraft",
+      cost: "AED 45,000",
+      timeline: "75 minutes",
+      confidence: 92,
+      impact: "Medium impact",
+      status: "recommended",
+      category: "Aircraft Substitution",
+      advantages: [
+        "Immediate aircraft availability",
+        "Minimal passenger disruption"
+      ],
+      considerations: [
+        "Higher operational cost",
+        "Requires coordination"
+      ],
+      metrics: {
+        costEfficiency: 78,
+        timeEfficiency: 95,
+        passengerSatisfaction: 88,
+        operationalComplexity: 65,
+        riskLevel: 25,
+        resourceAvailability: 90
+      },
+      passengerImpact: {
+        affected: 167,
+        reaccommodated: 0,
+        compensated: 0,
+        missingConnections: 12
+      },
+      operationalImpact: {
+        delayMinutes: 75,
+        downstreamFlights: 2,
+        crewChanges: 0,
+        gateChanges: 1
+      },
+      financialBreakdown: {
+        aircraftCost: 25000,
+        crewCost: 8000,
+        passengerCost: 3000,
+        operationalCost: 9000
+      },
+      riskAssessment: {
+        technicalRisk: "Low",
+        weatherRisk: "None",
+        regulatoryRisk: "Low",
+        passengerRisk: "Low"
+      }
+    }
+  ];
 
   const flight = Array.isArray(selectedFlight) ? selectedFlight[0] : selectedFlight
 
@@ -398,11 +499,11 @@ export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
   }
 
   useEffect(() => {
-    if (flight) {
+    if (flight && recoveryOptions.length === 0) { // Only fetch if no dynamic options are provided
       const data = getScenarioData(flight.categorization)
-      setRecoveryOptions(data.options)
+      // setRecoveryOptions(data.options) // This line should be in the parent component to pass options
     }
-  }, [flight])
+  }, [flight, recoveryOptions]) // Added recoveryOptions to dependency array
 
   if (!flight) {
     return (
@@ -420,7 +521,7 @@ export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
     )
   }
 
-  if (!recoveryOptions || recoveryOptions.length === 0) {
+  if (!comparisonOptions || comparisonOptions.length === 0) {
     return (
       <div className="space-y-6">
         <Card className="border-flydubai-orange">
@@ -451,10 +552,10 @@ export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
 
     return metrics.map(metric => {
       const row = { metric: metric.metric, type: metric.type, format: metric.format }
-      
-      recoveryOptions.forEach((option, index) => {
+
+      comparisonOptions.forEach((option, index) => {
         const key = `option${String.fromCharCode(65 + index)}`
-        
+
         switch (metric.metric) {
           case 'Total Cost':
             row[key] = `AED ${option.metrics.totalCost.toLocaleString()}`
@@ -519,7 +620,7 @@ export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
         <div>
           <h2 className="text-2xl font-semibold text-flydubai-navy">Recovery Options Comparison</h2>
           <p className="text-muted-foreground">
-            Comparing {recoveryOptions.length} recovery options for {flight.flightNumber} ({flight.route})
+            Comparing {comparisonOptions.length} recovery options for {flight.flightNumber} ({flight.route})
           </p>
           <div className="flex items-center gap-2 mt-2">
             <Badge className={`${flight.priority === 'High' ? 'bg-red-100 text-red-700 border-red-200' : 
@@ -532,6 +633,17 @@ export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
             </Badge>
           </div>
         </div>
+        <div className="text-right">
+            <div className="text-sm text-muted-foreground">
+              Flight Information
+            </div>
+            <div className="font-medium">
+              {selectedFlight?.flightNumber || 'N/A'} • {selectedFlight?.origin}-{selectedFlight?.destination}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {selectedFlight?.aircraft || 'N/A'} • {selectedFlight?.passengers || 0} passengers
+            </div>
+          </div>
         <div className="flex gap-2">
           <Button variant="outline" className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50">
             <Download className="h-4 w-4 mr-2" />
@@ -545,7 +657,7 @@ export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {recoveryOptions.map((option, index) => {
+        {comparisonOptions.map((option, index) => {
           const letter = String.fromCharCode(65 + index)
           return (
             <Card key={option.id} className={`border-2 ${
@@ -600,7 +712,7 @@ export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
               <TableHeader>
                 <TableRow>
                   <TableHead className="font-semibold text-flydubai-navy">Metric</TableHead>
-                  {recoveryOptions.map((option, index) => {
+                  {comparisonOptions.map((option, index) => {
                     const letter = String.fromCharCode(65 + index)
                     return (
                       <TableHead key={option.id} className="text-center">
@@ -624,10 +736,10 @@ export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
                 {comparisonData.map((row, index) => (
                   <TableRow key={index} className="hover:bg-blue-50">
                     <TableCell className="font-medium text-flydubai-navy">{row.metric}</TableCell>
-                    {recoveryOptions.map((option, optionIndex) => {
+                    {comparisonOptions.map((option, optionIndex) => {
                       const letter = String.fromCharCode(65 + optionIndex)
                       const value = row[`option${letter}`]
-                      
+
                       return (
                         <TableCell key={option.id} className="text-center">
                           {row.type === 'risk' ? (
@@ -653,7 +765,7 @@ export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {recoveryOptions.map((option, index) => {
+        {comparisonOptions.map((option, index) => {
           const letter = String.fromCharCode(65 + index)
           return (
             <Card key={option.id}>
@@ -664,7 +776,7 @@ export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
                     {letter}
                   </span>
                 </div>
-                
+
                 <div className="space-y-3">
                   <Button variant="outline" size="sm" className="w-full">
                     View Full Details
@@ -694,8 +806,8 @@ export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
             <div className="flex-1">
               <h3 className="font-medium mb-3 text-flydubai-navy">AERON AI Recommendation Summary</h3>
               <div className="space-y-3">
-                {recoveryOptions.filter(opt => opt.status === 'recommended').map((option) => {
-                  const letter = String.fromCharCode(65 + recoveryOptions.indexOf(option))
+                {comparisonOptions.filter(opt => opt.status === 'recommended').map((option) => {
+                  const letter = String.fromCharCode(65 + comparisonOptions.indexOf(option))
                   return (
                     <div key={option.id} className="flex items-center gap-2">
                       <Badge className="bg-green-100 text-green-700 border-green-200">Best Overall</Badge>
@@ -703,7 +815,7 @@ export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
                     </div>
                   )
                 })}
-                
+
                 <div className="flex items-center gap-2">
                   <Badge className="bg-blue-100 text-blue-700 border-blue-200">Most Cost-Effective</Badge>
                   <span>Option A - Aircraft Swap (AED 45,000)</span>
@@ -714,7 +826,7 @@ export function ComparisonMatrix({ selectedFlight, onSelectPlan }) {
                   <span>Option A - Aircraft Swap (75 minutes)</span>
                 </div>
               </div>
-              
+
               <div className="mt-4 p-3 bg-blue-100 rounded-lg border border-blue-200">
                 <p className="text-sm text-blue-800">
                   <strong>AI Analysis:</strong> Based on current flight conditions, passenger load, and network impact, 

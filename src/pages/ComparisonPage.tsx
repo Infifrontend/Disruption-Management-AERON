@@ -6,16 +6,25 @@ import { ComparisonMatrix } from '../components/ComparisonMatrix'
 
 export function ComparisonPage() {
   const navigate = useNavigate()
-  const { selectedFlight, setSelectedRecoveryPlan } = useAppContext()
+  const { selectedFlight, selectedRecoveryPlan, setSelectedRecoveryPlan } = useAppContext()
 
   const handleSelectPlan = (plan: any) => {
     setSelectedRecoveryPlan(plan)
     navigate('/pending')
   }
 
+  // Get comparison data from context if available
+  const comparisonData = selectedRecoveryPlan?.comparisonData || {
+    flight: selectedFlight,
+    options: [],
+    scenarioData: null
+  }
+
   return (
     <ComparisonMatrix 
-      selectedFlight={selectedFlight}
+      selectedFlight={comparisonData.flight || selectedFlight}
+      recoveryOptions={comparisonData.options}
+      scenarioData={comparisonData.scenarioData}
       onSelectPlan={handleSelectPlan}
     />
   )
