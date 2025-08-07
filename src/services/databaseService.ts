@@ -151,6 +151,17 @@ class DatabaseService {
     console.log(`Database service initialized with ${config.type.toUpperCase()} backend:`, this.baseUrl);
   }
 
+  // Helper method to format URLs correctly for the current backend
+  private formatUrl(endpoint: string): string {
+    const config = backendConfig.getConfig();
+    if (config.requiresTrailingSlash) {
+      const fullUrl = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
+      return fullUrl.endsWith('/') ? fullUrl : `${fullUrl}/`;
+    } else {
+      return `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
+    }
+  }
+
   private checkCircuitBreaker(): boolean {
     if (this.circuitBreakerOpen) {
       console.log("Circuit breaker is open, skipping database call");
@@ -692,15 +703,23 @@ class DatabaseService {
 
       console.log("Transformed data for database:", dbData);
 
-      const response = await fetch(`${this.baseUrl}/disruptions`, {
+      // Use proper URL formatting for the current backend
+      const apiUrl = this.formatUrl('disruptions');
+      console.log("Using API URL:", apiUrl);
+
+      const response = await fetch(apiUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
         body: JSON.stringify(dbData),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
         console.error("Server response error:", response.status, errorText);
+        console.error("Request URL was:", apiUrl);
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
 
@@ -709,6 +728,11 @@ class DatabaseService {
       return true;
     } catch (error) {
       console.error("Failed to save disruption:", error);
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       return false;
     }
   }

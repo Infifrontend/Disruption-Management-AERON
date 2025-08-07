@@ -1,58 +1,64 @@
 export interface BackendConfig {
   type: 'express' | 'python'
   apiUrl: string
-  isExpress: boolean
+  timeout: number
   isPython: boolean
-  timeout: number // Added timeout property
+  isExpress: boolean
+  requiresTrailingSlash: boolean
 }
 
 class BackendConfigService {
   private config: BackendConfig
 
   constructor() {
-    this.config = this.initializeConfig()
+    // Determine backend type based on environment or configuration
+    const backendType = this.detectBackendType()
+
+    this.config = {
+      type: backendType,
+      apiUrl: this.getApiUrl(backendType),
+      timeout: backendType === 'python' ? 10000 : 5000, // Python might be slower
+      isPython: backendType === 'python',
+      isExpress: backendType === 'express',
+      requiresTrailingSlash: backendType === 'python' // Django typically requires trailing slashes
+    }
+
+    console.log(`🔧 Backend Config: Using ${backendType.toUpperCase()} backend at ${this.config.apiUrl}`)
+    console.log(`🔧 Backend Flags: isExpress=${this.config.isExpress}, isPython=${this.config.isPython}`)
+    console.log(`🔧 Timeout Config: ${this.config.timeout}ms for ${backendType.toUpperCase()} backend`)
+    console.log(`🔧 URL Format: requiresTrailingSlash=${this.config.requiresTrailingSlash}`)
   }
 
-  private initializeConfig(): BackendConfig {
-    const backendType = import.meta.env.VITE_BACKEND_TYPE || 'express'
-    const expressUrl = import.meta.env.VITE_API_URL || 'http://0.0.0.0:3001/api'
-    const pythonUrl = import.meta.env.VITE_PYTHON_API_URL || 'https://de8beaee-b5a0-4c60-90f6-8331e3429086-00-37powysl19y12.sisko.replit.dev/api'
+  // Helper method to detect backend type
+  private detectBackendType(): 'express' | 'python' {
+    const envBackendType = import.meta.env.VITE_BACKEND_TYPE?.toLowerCase();
+    if (envBackendType === 'python') {
+      return 'python';
+    }
+    // Default to express if not explicitly python or if env var is missing/invalid
+    return 'express';
+  }
 
-    // Get timeout configurations
-    const expressTimeout = parseInt(import.meta.env.VITE_EXPRESS_TIMEOUT || '2000', 10)
-    const pythonTimeout = parseInt(import.meta.env.VITE_PYTHON_TIMEOUT || '8000', 10)
-
-    // Explicit backend type determination
-    const type = backendType.toLowerCase() === 'python' ? 'python' : 'express'
-    const isPython = type === 'python'
-    const isExpress = type === 'express'
-    let apiUrl = isPython ? pythonUrl : expressUrl
-    const timeout = isPython ? pythonTimeout : expressTimeout
+  // Helper method to get the API URL based on backend type
+  private getApiUrl(backendType: 'express' | 'python'): string {
+    const expressUrl = import.meta.env.VITE_API_URL || 'http://0.0.0.0:3001/api';
+    const pythonUrl = import.meta.env.VITE_PYTHON_API_URL || 'https://de8beaee-b5a0-4c60-90f6-8331e3429086-00-37powysl19y12.sisko.replit.dev/api';
 
     // Validate Python URL format
-    if (isPython && pythonUrl.includes('sisko.replit.dev')) {
-      console.warn('⚠️ Python backend URL may be unreachable. Consider switching to Express backend.')
+    if (backendType === 'python' && pythonUrl.includes('sisko.replit.dev')) {
+      console.warn('⚠️ Python backend URL may be unreachable. Consider switching to Express backend.');
     }
 
-    console.log(`🔧 Backend Config: Using ${type.toUpperCase()} backend at ${apiUrl}`)
-    console.log(`🔧 Backend Flags: isExpress=${isExpress}, isPython=${isPython}`)
-    console.log(`🔧 Timeout Config: ${timeout}ms for ${type.toUpperCase()} backend`)
-
-    return {
-      type,
-      apiUrl,
-      isExpress,
-      isPython,
-      timeout
-    }
+    return backendType === 'python' ? pythonUrl : expressUrl;
   }
 
   getConfig(): BackendConfig {
-    return this.config
+    return { ...this.config }
   }
 
-  getApiUrl(): string {
-    return this.config.apiUrl
+  // Method to get the base API URL
+  getApiUrlBase(): string {
+    return this.config.apiUrl;
   }
 
   getBackendType(): 'express' | 'python' {
@@ -71,6 +77,21 @@ class BackendConfigService {
     return this.config.timeout
   }
 
+  // Format URL with proper trailing slash handling
+  formatApiUrl(endpoint: string): string {
+    const baseUrl = this.config.apiUrl
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint
+
+    if (this.config.requiresTrailingSlash) {
+      // Django-style: ensure trailing slash
+      const fullUrl = `${baseUrl}/${cleanEndpoint}`
+      return fullUrl.endsWith('/') ? fullUrl : `${fullUrl}/`
+    } else {
+      // Express-style: no trailing slash required
+      return `${baseUrl}/${cleanEndpoint}`
+    }
+  }
+
   // Method to switch backend at runtime (optional)
   switchBackend(type: 'express' | 'python'): void {
     const expressUrl = import.meta.env.VITE_API_URL || 'http://0.0.0.0:3001/api'
@@ -83,11 +104,13 @@ class BackendConfigService {
       apiUrl: type === 'python' ? pythonUrl : expressUrl,
       isExpress: type === 'express',
       isPython: type === 'python',
-      timeout: type === 'python' ? pythonTimeout : expressTimeout
+      timeout: type === 'python' ? pythonTimeout : expressTimeout,
+      requiresTrailingSlash: type === 'python'
     }
 
     console.log(`🔄 Backend switched to ${type.toUpperCase()} at ${this.config.apiUrl}`)
     console.log(`🔧 Timeout Config: ${this.config.timeout}ms for ${type.toUpperCase()} backend`)
+    console.log(`🔧 URL Format: requiresTrailingSlash=${this.config.requiresTrailingSlash}`)
   }
 }
 
