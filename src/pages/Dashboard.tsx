@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppContext } from '../context/AppContext'
@@ -212,7 +211,9 @@ export function Dashboard() {
       </Card>
 
       {/* Real-time World Map */}
-      <WorldMap />
+      <div className="w-full">
+        <WorldMap />
+      </div>
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
