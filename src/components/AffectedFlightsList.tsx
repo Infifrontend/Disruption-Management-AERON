@@ -101,6 +101,9 @@ export function AffectedFlightsList() {
     return true
   })
 
+  const inboundFlights = flights.filter(flight => flight.destination === 'DXB');
+  const outboundFlights = flights.filter(flight => flight.origin === 'DXB');
+
   const startIndex = (currentPage - 1) * FLIGHTS_PER_PAGE;
   const endIndex = startIndex + FLIGHTS_PER_PAGE;
   const paginatedFlights = filteredFlights.slice(startIndex, endIndex);
@@ -408,102 +411,206 @@ export function AffectedFlightsList() {
           <CardTitle>Affected Flights ({filteredFlights.length})</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Group flights by route direction */}
-          {(() => {
-            const groupedFlights = filteredFlights.reduce((groups, flight) => {
-              const routeKey = `${flight.originCity} → ${flight.destinationCity}`
-              if (!groups[routeKey]) {
-                groups[routeKey] = []
-              }
-              groups[routeKey].push(flight)
-              return groups
-            }, {} as Record<string, typeof filteredFlights>)
+          <Tabs defaultValue="inbound" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="inbound">Inbound</TabsTrigger>
+              <TabsTrigger value="outbound">Outbound</TabsTrigger>
+            </TabsList>
 
-            return Object.entries(groupedFlights).map(([route, routeFlights]) => (
-              <div key={route} className="mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <MapPin className="h-4 w-4 text-flydubai-blue" />
-                  <h3 className="font-semibold text-lg text-flydubai-blue">{route}</h3>
-                  <Badge variant="outline" className="ml-auto">
-                    {routeFlights.length} flight{routeFlights.length !== 1 ? 's' : ''}
-                  </Badge>
-                </div>
-                <div className="space-y-3 pl-6 border-l-2 border-gray-100">
-                  {routeFlights.map((flight) => (
-              <Card 
-                key={flight.id} 
-                className="cursor-pointer hover:shadow-md transition-shadow"
-                onClick={() => handleFlightSelect(flight)}
-              >
-                <CardContent className="pt-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex flex-col">
-                        <span className="font-mono font-bold text-lg">
-                          {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') 
-                            ? (flight.flightNumber || '-')
-                            : flight.flightNumber}
-                        </span>
-                        <span className="text-sm text-muted-foreground">{flight.originCity} ({flight.origin}) → {flight.destinationCity} ({flight.destination})</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium">{flight.aircraft}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatDateTime(flight.scheduledDeparture)}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Users className="h-4 w-4" />
-                        <span className="text-sm">{flight.passengers}</span>
-                      </div>
-                      {flight.delay > 0 && (
-                        <div className="flex items-center space-x-2">
-                          <Clock className="h-4 w-4 text-orange-500" />
-                          <span className="text-sm text-orange-600">+{flight.delay}m</span>
-                        </div>
-                      )}
+            <TabsContent value="inbound" className="space-y-4">
+              <div className="text-sm text-muted-foreground mb-4">
+                Flights arriving at Dubai International Airport (DXB)
+              </div>
+              {/* Group flights by route direction */}
+              {(() => {
+                const groupedFlights = inboundFlights.reduce((groups, flight) => {
+                  const routeKey = `${flight.originCity} → ${flight.destinationCity}`
+                  if (!groups[routeKey]) {
+                    groups[routeKey] = []
+                  }
+                  groups[routeKey].push(flight)
+                  return groups
+                }, {} as Record<string, typeof inboundFlights>)
+
+                return Object.entries(groupedFlights).map(([route, routeFlights]) => (
+                  <div key={route} className="mb-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <MapPin className="h-4 w-4 text-flydubai-blue" />
+                      <h3 className="font-semibold text-lg text-flydubai-blue">{route}</h3>
+                      <Badge variant="outline" className="ml-auto">
+                        {routeFlights.length} flight{routeFlights.length !== 1 ? 's' : ''}
+                      </Badge>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge className={getSeverityColor(flight.severity)}>
-                        {flight.severity}
-                      </Badge>
-                      <Badge className={getStatusColor(flight.status)}>
-                        {flight.status}
-                      </Badge>
+                    <div className="space-y-3 pl-6 border-l-2 border-gray-100">
+                      {routeFlights.map((flight) => (
+                        <Card 
+                          key={flight.id} 
+                          className="cursor-pointer hover:shadow-md transition-shadow"
+                          onClick={() => handleFlightSelect(flight)}
+                        >
+                          <CardContent className="pt-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-4">
+                                <div className="flex flex-col">
+                                  <span className="font-mono font-bold text-lg">
+                                    {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') 
+                                      ? (flight.flightNumber || '-')
+                                      : flight.flightNumber}
+                                  </span>
+                                  <span className="text-sm text-muted-foreground">{flight.originCity} ({flight.origin}) → {flight.destinationCity} ({flight.destination})</span>
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-sm font-medium">{flight.aircraft}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatDateTime(flight.scheduledDeparture)}
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Users className="h-4 w-4" />
+                                  <span className="text-sm">{flight.passengers}</span>
+                                </div>
+                                {flight.delay > 0 && (
+                                  <div className="flex items-center space-x-2">
+                                    <Clock className="h-4 w-4 text-orange-500" />
+                                    <span className="text-sm text-orange-600">+{flight.delay}m</span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Badge className={getSeverityColor(flight.severity)}>
+                                  {flight.severity}
+                                </Badge>
+                                <Badge className={getStatusColor(flight.status)}>
+                                  {flight.status}
+                                </Badge>
+                              </div>
+                            </div>
+                            {flight.disruptionReason && (
+                              <p className="text-sm text-muted-foreground mt-2">
+                                {flight.disruptionReason}
+                              </p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
                   </div>
-                  {flight.disruptionReason && (
-                    <p className="text-sm text-muted-foreground mt-2">
-                      {flight.disruptionReason}
-                    </p>
-                  )))}
-                </div>
-              </Card>
-            ))
-          })()}
+                ))
+              })()}
 
-          {filteredFlights.length === 0 && (
-            <div className="text-center py-12">
-              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Plane className="h-8 w-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No affected flights found</h3>
-              <p className="text-gray-500 mb-4">
-                {flights.length === 0 
-                  ? "There are currently no flight disruptions in the system."
-                  : "No flights match your current filter criteria."
-                }
-              </p>
-              {flights.length === 0 && (
-                <div className="flex justify-center gap-2">
-                  <Button variant="outline" onClick={fetchFlights} className="flex items-center gap-2">
-                    <RefreshCw className="h-4 w-4" />
-                    Refresh Data
-                  </Button>
+              {inboundFlights.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <Plane className="h-8 w-8 text-gray-400 transform rotate-180" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No inbound flights found</h3>
+                  <p className="text-gray-500 mb-4">
+                    {flights.length === 0 
+                      ? "There are currently no flight disruptions in the system."
+                      : "No inbound flights to DXB match your current filter criteria."
+                    }
+                  </p>
                 </div>
               )}
-            </div>
-          )}
+            </TabsContent>
+
+            <TabsContent value="outbound" className="space-y-4">
+              <div className="text-sm text-muted-foreground mb-4">
+                Flights departing from Dubai International Airport (DXB)
+              </div>
+              {/* Group flights by route direction */}
+              {(() => {
+                const groupedFlights = outboundFlights.reduce((groups, flight) => {
+                  const routeKey = `${flight.originCity} → ${flight.destinationCity}`
+                  if (!groups[routeKey]) {
+                    groups[routeKey] = []
+                  }
+                  groups[routeKey].push(flight)
+                  return groups
+                }, {} as Record<string, typeof outboundFlights>)
+
+                return Object.entries(groupedFlights).slice(startIndex, endIndex).map(([route, routeFlights]) => (
+                  <div key={route} className="mb-6">
+                    <div className="flex items-center gap-2 mb-3">
+                      <MapPin className="h-4 w-4 text-flydubai-blue" />
+                      <h3 className="font-semibold text-lg text-flydubai-blue">{route}</h3>
+                      <Badge variant="outline" className="ml-auto">
+                        {routeFlights.length} flight{routeFlights.length !== 1 ? 's' : ''}
+                      </Badge>
+                    </div>
+                    <div className="space-y-3 pl-6 border-l-2 border-gray-100">
+                      {routeFlights.map((flight) => (
+                        <Card 
+                          key={flight.id} 
+                          className="cursor-pointer hover:shadow-md transition-shadow"
+                          onClick={() => handleFlightSelect(flight)}
+                        >
+                          <CardContent className="pt-6">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-4">
+                                <div className="flex flex-col">
+                                  <span className="font-mono font-bold text-lg">
+                                    {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') 
+                                      ? (flight.flightNumber || '-')
+                                      : flight.flightNumber}
+                                  </span>
+                                  <span className="text-sm text-muted-foreground">{flight.originCity} ({flight.origin}) → {flight.destinationCity} ({flight.destination})</span>
+                                </div>
+                                <div className="flex flex-col">
+                                  <span className="text-sm font-medium">{flight.aircraft}</span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatDateTime(flight.scheduledDeparture)}
+                                  </span>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Users className="h-4 w-4" />
+                                  <span className="text-sm">{flight.passengers}</span>
+                                </div>
+                                {flight.delay > 0 && (
+                                  <div className="flex items-center space-x-2">
+                                    <Clock className="h-4 w-4 text-orange-500" />
+                                    <span className="text-sm text-orange-600">+{flight.delay}m</span>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <Badge className={getSeverityColor(flight.severity)}>
+                                  {flight.severity}
+                                </Badge>
+                                <Badge className={getStatusColor(flight.status)}>
+                                  {flight.status}
+                                </Badge>
+                              </div>
+                            </div>
+                            {flight.disruptionReason && (
+                              <p className="text-sm text-muted-foreground mt-2">
+                                {flight.disruptionReason}
+                              </p>
+                            )}
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              })()}
+
+              {outboundFlights.length === 0 && (
+                <div className="text-center py-12">
+                  <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                    <Plane className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No outbound flights found</h3>
+                  <p className="text-gray-500 mb-4">
+                    {flights.length === 0 
+                      ? "There are currently no flight disruptions in the system."
+                      : "No outbound flights from DXB match your current filter criteria."
+                    }
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
 
           {/* Pagination Navigation */}
           {filteredFlights.length > 0 && totalPages > 1 && (
