@@ -392,6 +392,165 @@ export function RecoveryOptionsGenerator({
             return fallback;
           };
 
+          // Import helper functions to generate rich data
+          const detailedData = {
+            timelineDetails: parseJsonField(option.timeline_details) || [],
+            resourceRequirements: parseJsonField(option.resource_requirements) || [],
+            riskAssessment: parseJsonField(option.risk_assessment) || [],
+            technicalSpecs: parseJsonObject(option.technical_specs) || {},
+          };
+
+          // If database fields are empty, generate comprehensive fallback data
+          if (!detailedData.timelineDetails.length) {
+            detailedData.timelineDetails = [
+              {
+                step: "Initial Assessment",
+                duration: "15 min",
+                startTime: new Date().toLocaleTimeString("en-GB", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                endTime: new Date(Date.now() + 15 * 60000).toLocaleTimeString(
+                  "en-GB",
+                  { hour: "2-digit", minute: "2-digit" },
+                ),
+                details: "Assess situation and confirm recovery approach",
+                status: "pending",
+              },
+              {
+                step: "Resource Coordination",
+                duration: "20 min",
+                startTime: new Date(
+                  Date.now() + 15 * 60000,
+                ).toLocaleTimeString("en-GB", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                endTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString(
+                  "en-GB",
+                  { hour: "2-digit", minute: "2-digit" },
+                ),
+                details: "Coordinate required resources and personnel",
+                status: "pending",
+              },
+              {
+                step: "Implementation",
+                duration: "25 min",
+                startTime: new Date(
+                  Date.now() + 35 * 60000,
+                ).toLocaleTimeString("en-GB", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+                endTime: new Date(Date.now() + 60 * 60000).toLocaleTimeString(
+                  "en-GB",
+                  { hour: "2-digit", minute: "2-digit" },
+                ),
+                details: "Execute recovery plan and monitor progress",
+                status: "pending",
+              },
+            ];
+          }
+
+          if (!detailedData.resourceRequirements.length) {
+            detailedData.resourceRequirements = [
+              {
+                type: "Personnel",
+                resource: "Operations Team",
+                availability: "Available",
+                status: "Ready",
+                location: "DXB Operations Center",
+                eta: "Immediate",
+                details:
+                  "Experienced operations team available for recovery coordination",
+              },
+              {
+                type: "Equipment",
+                resource: "Ground Support Equipment",
+                availability: "Available",
+                status: "Operational",
+                location: "DXB Ramp",
+                eta: "15 minutes",
+                details: "Standard GSE available for aircraft servicing",
+              },
+              {
+                type: "Aircraft",
+                resource: `Replacement ${flight?.aircraft || 'Aircraft'}`,
+                availability: "Available",
+                status: "Ready",
+                location: "DXB Terminal Area",
+                eta: "30 minutes",
+                details: "Alternative aircraft positioned and ready for service",
+              },
+            ];
+          }
+
+          if (!detailedData.riskAssessment.length) {
+            detailedData.riskAssessment = [
+              {
+                risk: "Resource Availability",
+                probability: "Low",
+                impact: "Medium",
+                riskScore: 2,
+                mitigation:
+                  "Maintain backup resource pool and alternative suppliers",
+              },
+              {
+                risk: "Weather Deterioration",
+                probability: "Medium",
+                impact: "High",
+                riskScore: 4,
+                mitigation:
+                  "Continuous weather monitoring with contingency plans",
+              },
+              {
+                risk: "Regulatory Compliance",
+                probability: "Low",
+                impact: "High",
+                riskScore: 3,
+                mitigation:
+                  "Ensure all actions comply with aviation regulations",
+              },
+              {
+                risk: "Passenger Satisfaction Impact",
+                probability: "Medium",
+                impact: "Medium",
+                riskScore: 3,
+                mitigation:
+                  "Proactive communication and service recovery measures",
+              },
+            ];
+          }
+
+          if (!detailedData.technicalSpecs || Object.keys(detailedData.technicalSpecs).length === 0) {
+            detailedData.technicalSpecs = {
+              aircraftRequirements: [
+                `Aircraft type: ${flight?.aircraft || 'B737-800'} or equivalent`,
+                "ETOPS capability required for route",
+                "Maintenance status: Current and compliant",
+                "Fuel capacity: Sufficient for route + reserves",
+              ],
+              operationalConstraints: [
+                "Minimum crew rest requirements: 12 hours",
+                "Airport operating hours: 06:00 - 23:00 local time",
+                "Fuel requirements: Standard + 10% contingency",
+                "Gate compatibility: Standard gates available",
+              ],
+              weatherLimitations: [
+                "Minimum visibility: 1200m",
+                "Maximum crosswind: 25 knots",
+                "Ceiling: 200ft minimum",
+                "Temperature limits: -40°C to +50°C",
+              ],
+              regulatoryCompliance: [
+                "EU261 compensation applicable for delays >3 hours",
+                "Duty time regulations: EASA FTL compliant",
+                "Slot coordination required for schedule changes",
+                "Passenger rights compliance maintained",
+              ],
+            };
+          }
+
           return {
             id: option.id || `option_${index + 1}`,
             title: option.title || `Recovery Option ${index + 1}`,
@@ -422,30 +581,7 @@ export function RecoveryOptionsGenerator({
               passengerSatisfaction: 75,
               operationalComplexity: 60,
             }),
-            resourceRequirements: parseJsonField(
-              option.resource_requirements || option.resources,
-              [
-                {
-                  type: "Personnel",
-                  resource: "Operations Team",
-                  availability: "Available",
-                  status: "Ready",
-                  location: "DXB Operations Center",
-                  eta: "Immediate",
-                  details:
-                    "Experienced operations team available for recovery coordination",
-                },
-                {
-                  type: "Equipment",
-                  resource: "Ground Support Equipment",
-                  availability: "Available",
-                  status: "Operational",
-                  location: "DXB Ramp",
-                  eta: "15 minutes",
-                  details: "Standard GSE available for aircraft servicing",
-                },
-              ],
-            ),
+            resourceRequirements: detailedData.resourceRequirements,
             costBreakdown: parseJsonField(
               option.cost_breakdown || option.cost_analysis,
               [
@@ -470,105 +606,9 @@ export function RecoveryOptionsGenerator({
                 },
               ],
             ),
-            timelineDetails: parseJsonField(
-              option.timeline_details || option.timeline_steps,
-              [
-                {
-                  step: "Initial Assessment",
-                  duration: "15 min",
-                  startTime: new Date().toLocaleTimeString("en-GB", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
-                  endTime: new Date(Date.now() + 15 * 60000).toLocaleTimeString(
-                    "en-GB",
-                    { hour: "2-digit", minute: "2-digit" },
-                  ),
-                  details: "Assess situation and confirm recovery approach",
-                  status: "pending",
-                },
-                {
-                  step: "Resource Coordination",
-                  duration: "20 min",
-                  startTime: new Date(
-                    Date.now() + 15 * 60000,
-                  ).toLocaleTimeString("en-GB", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
-                  endTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString(
-                    "en-GB",
-                    { hour: "2-digit", minute: "2-digit" },
-                  ),
-                  details: "Coordinate required resources and personnel",
-                  status: "pending",
-                },
-                {
-                  step: "Implementation",
-                  duration: "25 min",
-                  startTime: new Date(
-                    Date.now() + 35 * 60000,
-                  ).toLocaleTimeString("en-GB", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }),
-                  endTime: new Date(Date.now() + 60 * 60000).toLocaleTimeString(
-                    "en-GB",
-                    { hour: "2-digit", minute: "2-digit" },
-                  ),
-                  details: "Execute recovery plan and monitor progress",
-                  status: "pending",
-                },
-              ],
-            ),
-            riskAssessment: parseJsonField(option.risk_assessment, [
-              {
-                risk: "Resource Availability",
-                probability: "Low",
-                impact: "Medium",
-                riskScore: 2,
-                mitigation:
-                  "Maintain backup resource pool and alternative suppliers",
-              },
-              {
-                risk: "Weather Deterioration",
-                probability: "Medium",
-                impact: "High",
-                riskScore: 4,
-                mitigation:
-                  "Continuous weather monitoring with contingency plans",
-              },
-              {
-                risk: "Regulatory Compliance",
-                probability: "Low",
-                impact: "High",
-                riskScore: 3,
-                mitigation:
-                  "Ensure all actions comply with aviation regulations",
-              },
-            ]),
-            technicalSpecs: parseJsonObject(option.technical_specs, {
-              aircraftRequirements: [
-                "Aircraft type: B737-800 or equivalent",
-                "ETOPS capability required for route",
-                "Maintenance status: Current and compliant",
-              ],
-              operationalConstraints: [
-                "Minimum crew rest requirements: 12 hours",
-                "Airport operating hours: 06:00 - 23:00 local time",
-                "Fuel requirements: Standard + 10% contingency",
-              ],
-              weatherLimitations: [
-                "Minimum visibility: 1200m",
-                "Maximum crosswind: 25 knots",
-                "Ceiling: 200ft minimum",
-              ],
-              regulatoryCompliance: [
-                "EU261 compensation applicable for delays >3 hours",
-                "Duty time regulations: EASA FTL compliant",
-                "Slot coordination required for schedule changes",
-              ],
-            }),
+            timelineDetails: detailedData.timelineDetails,
+            riskAssessment: detailedData.riskAssessment,
+            technicalSpecs: detailedData.technicalSpecs,
             rotationPlan: parseJsonObject(option.rotation_plan, {}),
             templateData: parseJsonObject(option.template_data, {}),
             detailedDescription:

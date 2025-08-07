@@ -261,15 +261,15 @@ app.post('/flight/:identifier/recovery-options', async (req, res) => {
           option.impact || 'Medium',
           option.status || 'generated',
           i + 1, // priority
-          option.advantages || [],
-          option.considerations || [],
-          option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : null,
-          option.costBreakdown ? JSON.stringify(option.costBreakdown) : null,
-          option.timelineDetails ? JSON.stringify(option.timelineDetails) : null,
-          option.riskAssessment ? JSON.stringify(option.riskAssessment) : null,
-          option.technicalSpecs ? JSON.stringify(option.technicalSpecs) : null,
-          option.metrics ? JSON.stringify(option.metrics) : null,
-          option.rotationPlan ? JSON.stringify(option.rotationPlan) : null
+          Array.isArray(option.advantages) ? option.advantages : [],
+          Array.isArray(option.considerations) ? option.considerations : [],
+          option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : JSON.stringify([]),
+          option.costBreakdown ? JSON.stringify(option.costBreakdown) : JSON.stringify([]),
+          option.timelineDetails ? JSON.stringify(option.timelineDetails) : JSON.stringify([]),
+          option.riskAssessment ? JSON.stringify(option.riskAssessment) : JSON.stringify([]),
+          option.technicalSpecs ? JSON.stringify(option.technicalSpecs) : JSON.stringify({}),
+          option.metrics ? JSON.stringify(option.metrics) : JSON.stringify({}),
+          option.rotationPlan ? JSON.stringify(option.rotationPlan) : JSON.stringify({})
         ]);
       }
 
