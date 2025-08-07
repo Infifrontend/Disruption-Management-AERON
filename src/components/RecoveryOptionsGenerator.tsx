@@ -139,7 +139,7 @@ export function RecoveryOptionsGenerator({
       setIsMounted(false);
       // Cancel any ongoing requests
       abortControllerRef.current.abort();
-      activeRequests.forEach(controller => controller.abort());
+      activeRequests.forEach((controller) => controller.abort());
     };
   }, []);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -189,7 +189,7 @@ export function RecoveryOptionsGenerator({
       // Use flight number as ID if no specific ID exists
       const flightId = flight.id || flight.flightNumber || "unknown";
       const requestKey = `recovery-options-${flightId}`;
-      
+
       // Cancel previous request for same flight
       if (activeRequests.has(requestKey)) {
         activeRequests.get(requestKey).abort();
@@ -214,7 +214,7 @@ export function RecoveryOptionsGenerator({
 
       // Create new abort controller for this request
       const controller = new AbortController();
-      setActiveRequests(prev => new Map(prev.set(requestKey, controller)));
+      setActiveRequests((prev) => new Map(prev.set(requestKey, controller)));
 
       try {
         console.log(
@@ -223,7 +223,7 @@ export function RecoveryOptionsGenerator({
 
         // Add timeout for the entire operation
         const timeoutPromise = new Promise((_, reject) => {
-          setTimeout(() => reject(new Error('Request timeout')), 15000);
+          setTimeout(() => reject(new Error("Request timeout")), 15000);
         });
 
         // Check if request was cancelled
@@ -234,9 +234,9 @@ export function RecoveryOptionsGenerator({
         // Check database connectivity first
         const isHealthy = await Promise.race([
           databaseService.healthCheck(),
-          timeoutPromise
+          timeoutPromise,
         ]);
-        
+
         if (!isHealthy) {
           throw new Error("Database connection failed");
         }
@@ -395,117 +395,222 @@ export function RecoveryOptionsGenerator({
           // Import helper functions to generate rich data
           const detailedData = {
             timelineDetails: parseJsonField(option.timeline_details) || [],
-            resourceRequirements: parseJsonField(option.resource_requirements) || [],
+            resourceRequirements:
+              parseJsonField(option.resource_requirements) || [],
             riskAssessment: parseJsonField(option.risk_assessment) || [],
             technicalSpecs: parseJsonObject(option.technical_specs) || {},
           };
 
           // Generate comprehensive fallback data based on disruption type
-          const disruptionType = flight?.categorization || flight?.disruptionReason || "operational";
-          
+          const disruptionType =
+            flight?.categorization || flight?.disruptionReason || "operational";
+
           // Generate timeline details based on disruption type
           if (!detailedData.timelineDetails.length) {
-            if (disruptionType.includes("technical") || disruptionType.includes("AOG") || disruptionType.includes("maintenance")) {
+            if (
+              disruptionType.includes("technical") ||
+              disruptionType.includes("AOG") ||
+              disruptionType.includes("maintenance")
+            ) {
               detailedData.timelineDetails = [
                 {
                   step: "Technical Assessment",
                   duration: "20 min",
-                  startTime: new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 20 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date().toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 20 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
                   details: "Maintenance crew assess technical issue severity",
                   status: "completed",
                 },
                 {
                   step: "Aircraft Swap Decision",
                   duration: "15 min",
-                  startTime: new Date(Date.now() + 20 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date(
+                    Date.now() + 20 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
                   details: "Operations decide between repair or aircraft swap",
                   status: "in-progress",
                 },
                 {
                   step: "Alternative Aircraft Positioning",
                   duration: "45 min",
-                  startTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 80 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  details: "Position alternative aircraft and complete pre-flight checks",
+                  startTime: new Date(
+                    Date.now() + 35 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 80 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
+                  details:
+                    "Position alternative aircraft and complete pre-flight checks",
                   status: "pending",
                 },
                 {
                   step: "Passenger Transfer & Departure",
                   duration: "30 min",
-                  startTime: new Date(Date.now() + 80 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 110 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date(
+                    Date.now() + 80 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(
+                    Date.now() + 110 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
                   details: "Transfer passengers and prepare for departure",
                   status: "pending",
                 },
               ];
-            } else if (disruptionType.includes("Crew") || disruptionType.includes("crew")) {
+            } else if (
+              disruptionType.includes("Crew") ||
+              disruptionType.includes("crew")
+            ) {
               detailedData.timelineDetails = [
                 {
                   step: "Crew Issue Assessment",
                   duration: "10 min",
-                  startTime: new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 10 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date().toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 10 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
                   details: "Assess duty time limits and crew availability",
                   status: "completed",
                 },
                 {
                   step: "Standby Crew Activation",
                   duration: "25 min",
-                  startTime: new Date(Date.now() + 10 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date(
+                    Date.now() + 10 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
                   details: "Contact and position standby crew members",
                   status: "in-progress",
                 },
                 {
                   step: "Crew Briefing",
                   duration: "20 min",
-                  startTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 55 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date(
+                    Date.now() + 35 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 55 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
                   details: "Brief replacement crew on flight specifics",
                   status: "pending",
                 },
                 {
                   step: "Ready for Departure",
                   duration: "15 min",
-                  startTime: new Date(Date.now() + 55 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 70 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date(
+                    Date.now() + 55 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 70 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
                   details: "Complete final checks and prepare for departure",
                   status: "pending",
                 },
               ];
-            } else if (disruptionType.includes("Weather") || disruptionType.includes("weather")) {
+            } else if (
+              disruptionType.includes("Weather") ||
+              disruptionType.includes("weather")
+            ) {
               detailedData.timelineDetails = [
                 {
                   step: "Weather Assessment",
                   duration: "15 min",
-                  startTime: new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 15 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date().toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 15 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
                   details: "Monitor weather conditions and forecast updates",
                   status: "completed",
                 },
                 {
                   step: "Route Planning",
                   duration: "30 min",
-                  startTime: new Date(Date.now() + 15 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 45 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date(
+                    Date.now() + 15 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 45 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
                   details: "Plan alternative route to avoid weather",
                   status: "in-progress",
                 },
                 {
                   step: "ATC Coordination",
                   duration: "20 min",
-                  startTime: new Date(Date.now() + 45 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 65 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date(
+                    Date.now() + 45 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 65 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
                   details: "Coordinate new routing with air traffic control",
                   status: "pending",
                 },
                 {
                   step: "Weather Window Departure",
                   duration: "25 min",
-                  startTime: new Date(Date.now() + 65 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 90 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date(
+                    Date.now() + 65 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 90 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
                   details: "Depart during favorable weather window",
                   status: "pending",
                 },
@@ -515,32 +620,63 @@ export function RecoveryOptionsGenerator({
                 {
                   step: "Situation Analysis",
                   duration: "15 min",
-                  startTime: new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 15 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  details: "Analyze disruption and determine best recovery approach",
+                  startTime: new Date().toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 15 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
+                  details:
+                    "Analyze disruption and determine best recovery approach",
                   status: "completed",
                 },
                 {
                   step: "Resource Coordination",
                   duration: "20 min",
-                  startTime: new Date(Date.now() + 15 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date(
+                    Date.now() + 15 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
                   details: "Coordinate required resources and personnel",
                   status: "in-progress",
                 },
                 {
                   step: "Recovery Implementation",
                   duration: "35 min",
-                  startTime: new Date(Date.now() + 35 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 70 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date(
+                    Date.now() + 35 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 70 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
                   details: "Execute recovery plan and monitor progress",
                   status: "pending",
                 },
                 {
                   step: "Service Restoration",
                   duration: "15 min",
-                  startTime: new Date(Date.now() + 70 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
-                  endTime: new Date(Date.now() + 85 * 60000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }),
+                  startTime: new Date(
+                    Date.now() + 70 * 60000,
+                  ).toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  endTime: new Date(Date.now() + 85 * 60000).toLocaleTimeString(
+                    "en-GB",
+                    { hour: "2-digit", minute: "2-digit" },
+                  ),
                   details: "Complete recovery and restore normal operations",
                   status: "pending",
                 },
@@ -571,12 +707,15 @@ export function RecoveryOptionsGenerator({
               },
             ];
 
-            if (disruptionType.includes("technical") || disruptionType.includes("AOG")) {
+            if (
+              disruptionType.includes("technical") ||
+              disruptionType.includes("AOG")
+            ) {
               detailedData.resourceRequirements = [
                 ...baseResources,
                 {
                   type: "Aircraft",
-                  resource: `Alternative ${flight?.aircraft || 'Aircraft'}`,
+                  resource: `Alternative ${flight?.aircraft || "Aircraft"}`,
                   availability: "Available",
                   status: "Maintenance Current",
                   location: "DXB Terminal Area",
@@ -590,7 +729,8 @@ export function RecoveryOptionsGenerator({
                   status: "On Standby",
                   location: "DXB Maintenance Hangar",
                   eta: "20 minutes",
-                  details: "Licensed engineers available for technical assessment",
+                  details:
+                    "Licensed engineers available for technical assessment",
                 },
                 {
                   type: "Ground Support",
@@ -617,7 +757,7 @@ export function RecoveryOptionsGenerator({
                 {
                   type: "Personnel",
                   resource: "Standby Cabin Crew",
-                  availability: "Available", 
+                  availability: "Available",
                   status: "Current Training",
                   location: "DXB Crew Base",
                   eta: "30 minutes",
@@ -666,18 +806,23 @@ export function RecoveryOptionsGenerator({
                 probability: "Medium",
                 impact: "Medium",
                 riskScore: 3,
-                mitigation: "Proactive communication and service recovery measures",
+                mitigation:
+                  "Proactive communication and service recovery measures",
               },
               {
                 risk: "Regulatory Compliance",
                 probability: "Low",
                 impact: "High",
                 riskScore: 2,
-                mitigation: "Ensure all actions comply with aviation regulations",
+                mitigation:
+                  "Ensure all actions comply with aviation regulations",
               },
             ];
 
-            if (disruptionType.includes("technical") || disruptionType.includes("AOG")) {
+            if (
+              disruptionType.includes("technical") ||
+              disruptionType.includes("AOG")
+            ) {
               detailedData.riskAssessment = [
                 {
                   risk: "Aircraft Availability",
@@ -691,14 +836,16 @@ export function RecoveryOptionsGenerator({
                   probability: "Medium",
                   impact: "High",
                   riskScore: 4,
-                  mitigation: "Alternative aircraft swap planned as primary solution",
+                  mitigation:
+                    "Alternative aircraft swap planned as primary solution",
                 },
                 {
                   risk: "Network Disruption",
                   probability: "Low",
                   impact: "Medium",
                   riskScore: 2,
-                  mitigation: "Downstream flight impacts minimized through planning",
+                  mitigation:
+                    "Downstream flight impacts minimized through planning",
                 },
                 ...commonRisks,
               ];
@@ -734,21 +881,24 @@ export function RecoveryOptionsGenerator({
                   probability: "Medium",
                   impact: "High",
                   riskScore: 4,
-                  mitigation: "Continuous weather monitoring with multiple contingency plans",
+                  mitigation:
+                    "Continuous weather monitoring with multiple contingency plans",
                 },
                 {
                   risk: "Route Closure",
                   probability: "Low",
                   impact: "High",
                   riskScore: 2,
-                  mitigation: "Alternative routing options identified and filed",
+                  mitigation:
+                    "Alternative routing options identified and filed",
                 },
                 {
                   risk: "Extended Delay",
                   probability: "Medium",
                   impact: "Medium",
                   riskScore: 3,
-                  mitigation: "Passenger accommodation plans activated if needed",
+                  mitigation:
+                    "Passenger accommodation plans activated if needed",
                 },
                 ...commonRisks,
               ];
@@ -759,14 +909,16 @@ export function RecoveryOptionsGenerator({
                   probability: "Low",
                   impact: "Medium",
                   riskScore: 2,
-                  mitigation: "Maintain backup resource pool and alternative suppliers",
+                  mitigation:
+                    "Maintain backup resource pool and alternative suppliers",
                 },
                 {
                   risk: "Operational Complexity",
                   probability: "Medium",
                   impact: "Medium",
                   riskScore: 3,
-                  mitigation: "Experienced operations team managing coordination",
+                  mitigation:
+                    "Experienced operations team managing coordination",
                 },
                 ...commonRisks,
               ];
@@ -774,13 +926,16 @@ export function RecoveryOptionsGenerator({
           }
 
           // Generate technical specifications based on disruption type and aircraft
-          if (!detailedData.technicalSpecs || Object.keys(detailedData.technicalSpecs).length === 0) {
-            const aircraftType = flight?.aircraft || 'B737-800';
-            
+          if (
+            !detailedData.technicalSpecs ||
+            Object.keys(detailedData.technicalSpecs).length === 0
+          ) {
+            const aircraftType = flight?.aircraft || "B737-800";
+
             detailedData.technicalSpecs = {
               aircraftRequirements: [
                 `Primary aircraft: ${aircraftType}`,
-                `Alternative aircraft: Compatible ${aircraftType.includes('737') ? 'B737' : aircraftType.includes('320') ? 'A320' : aircraftType} family`,
+                `Alternative aircraft: Compatible ${aircraftType.includes("737") ? "B737" : aircraftType.includes("320") ? "A320" : aircraftType} family`,
                 "ETOPS capability: 180 minutes minimum for route",
                 "Maintenance status: Current and compliant with all checks",
                 "Fuel capacity: Sufficient for route plus regulatory reserves",
@@ -788,8 +943,8 @@ export function RecoveryOptionsGenerator({
               ],
               operationalConstraints: [
                 "Minimum crew rest requirements: 12 hours between duties",
-                `${flight?.origin || 'Origin'} airport operating hours: 24/7 operations`,
-                `${flight?.destination || 'Destination'} airport curfew: Check for night restrictions`,
+                `${flight?.origin || "Origin"} airport operating hours: 24/7 operations`,
+                `${flight?.destination || "Destination"} airport curfew: Check for night restrictions`,
                 "Gate compatibility: All gates suitable for aircraft type",
                 "Fuel planning: Route fuel + contingency + alternate + final reserve",
                 "Weight and balance: Passenger and cargo distribution limits",
@@ -811,8 +966,8 @@ export function RecoveryOptionsGenerator({
                 "Documentation: Complete records maintained for audit trail",
               ],
               performanceSpecifications: [
-                `${aircraftType} maximum takeoff weight: ${aircraftType.includes('737') ? '79,000 kg' : '77,000 kg'}`,
-                `Range with full passenger load: ${aircraftType.includes('MAX') ? '6,570 km' : '5,765 km'}`,
+                `${aircraftType} maximum takeoff weight: ${aircraftType.includes("737") ? "79,000 kg" : "77,000 kg"}`,
+                `Range with full passenger load: ${aircraftType.includes("MAX") ? "6,570 km" : "5,765 km"}`,
                 "Service ceiling: 41,000 feet",
                 "Approach speed: Typically 130-150 knots depending on weight",
                 "Runway requirements: Minimum 1,800m for most weights",
@@ -963,7 +1118,7 @@ export function RecoveryOptionsGenerator({
           setIsLoadingOptions(false);
         }
         // Clean up the request
-        setActiveRequests(prev => {
+        setActiveRequests((prev) => {
           const newMap = new Map(prev);
           newMap.delete(requestKey);
           return newMap;
@@ -2248,7 +2403,7 @@ export function RecoveryOptionsGenerator({
                       </Button>
 
                       {/* Passenger Services Button - only show when re-accommodation is needed */}
-                      
+
                       {requiresPassengerReaccommodation(option) && (
                         <Button
                           variant="outline"
@@ -2620,57 +2775,72 @@ export function RecoveryOptionsGenerator({
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {selectedOptionForDetails.timelineDetails && selectedOptionForDetails.timelineDetails.length > 0 ? (
+                      {selectedOptionForDetails.timelineDetails &&
+                      selectedOptionForDetails.timelineDetails.length > 0 ? (
                         <div className="space-y-4">
-                          {selectedOptionForDetails.timelineDetails.map((step, index) => (
-                            <div
-                              key={index}
-                              className="flex items-start gap-4 p-4 border rounded-lg"
-                            >
-                              <div className="flex flex-col items-center">
-                                <div
-                                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
-                                    step.status === "completed"
-                                      ? "bg-green-100 text-green-800"
-                                      : step.status === "in-progress"
-                                        ? "bg-blue-100 text-blue-800"
-                                        : "bg-gray-100 text-gray-600"
-                                  }`}
-                                >
-                                  {index + 1}
-                                </div>
-                                {index < selectedOptionForDetails.timelineDetails.length - 1 && (
-                                  <div className="w-0.5 h-12 bg-gray-200 mt-2"></div>
-                                )}
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex justify-between items-start mb-2">
-                                  <div>
-                                    <h4 className="font-medium text-sm">
-                                      {step.step}
-                                    </h4>
-                                    <p className="text-sm text-gray-700">
-                                      {step.details}
-                                    </p>
+                          {selectedOptionForDetails.timelineDetails.map(
+                            (step, index) => (
+                              <div
+                                key={index}
+                                className="flex items-start gap-4 p-4 border rounded-lg"
+                              >
+                                <div className="flex flex-col items-center">
+                                  <div
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                                      step.status === "completed"
+                                        ? "bg-green-100 text-green-800"
+                                        : step.status === "in-progress"
+                                          ? "bg-blue-100 text-blue-800"
+                                          : "bg-gray-100 text-gray-600"
+                                    }`}
+                                  >
+                                    {index + 1}
                                   </div>
-                                  <div className="text-right">
-                                    <Badge variant="outline" className="text-xs mb-1">
-                                      {step.duration}
-                                    </Badge>
-                                    <div className="text-xs text-gray-500">
-                                      {step.startTime} - {step.endTime}
+                                  {index <
+                                    selectedOptionForDetails.timelineDetails
+                                      .length -
+                                      1 && (
+                                    <div className="w-0.5 h-12 bg-gray-200 mt-2"></div>
+                                  )}
+                                </div>
+                                <div className="flex-1">
+                                  <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                      <h4 className="font-medium text-sm">
+                                        {step.step}
+                                      </h4>
+                                      <p className="text-sm text-gray-700">
+                                        {step.details}
+                                      </p>
+                                    </div>
+                                    <div className="text-right">
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs mb-1"
+                                      >
+                                        {step.duration}
+                                      </Badge>
+                                      <div className="text-xs text-gray-500">
+                                        {step.startTime} - {step.endTime}
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            ),
+                          )}
                         </div>
                       ) : (
                         <div className="text-center py-8 text-gray-500">
                           <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>No timeline details available for this recovery option.</p>
-                          <p className="text-xs mt-1">Timeline will be generated when recovery plan is activated.</p>
+                          <p>
+                            No timeline details available for this recovery
+                            option.
+                          </p>
+                          <p className="text-xs mt-1">
+                            Timeline will be generated when recovery plan is
+                            activated.
+                          </p>
                         </div>
                       )}
                     </CardContent>
@@ -2686,57 +2856,73 @@ export function RecoveryOptionsGenerator({
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {selectedOptionForDetails.resourceRequirements && selectedOptionForDetails.resourceRequirements.length > 0 ? (
+                      {selectedOptionForDetails.resourceRequirements &&
+                      selectedOptionForDetails.resourceRequirements.length >
+                        0 ? (
                         <div className="space-y-4">
-                          {selectedOptionForDetails.resourceRequirements.map((resource, index) => (
-                            <div key={index} className="p-4 border rounded-lg">
-                              <div className="flex justify-between items-start mb-2">
-                                <div>
-                                  <h4 className="font-medium text-sm">
-                                    {resource.type}
-                                  </h4>
-                                  <p className="text-sm text-gray-700">
-                                    {resource.resource}
-                                  </p>
+                          {selectedOptionForDetails.resourceRequirements.map(
+                            (resource, index) => (
+                              <div
+                                key={index}
+                                className="p-4 border rounded-lg"
+                              >
+                                <div className="flex justify-between items-start mb-2">
+                                  <div>
+                                    <h4 className="font-medium text-sm">
+                                      {resource.type}
+                                    </h4>
+                                    <p className="text-sm text-gray-700">
+                                      {resource.resource}
+                                    </p>
+                                  </div>
+                                  <div className="flex flex-col gap-1">
+                                    <Badge
+                                      className={
+                                        resource.availability === "Available"
+                                          ? "bg-green-100 text-green-800"
+                                          : resource.availability ===
+                                              "Confirmed"
+                                            ? "bg-blue-100 text-blue-800"
+                                            : resource.availability ===
+                                                "En Route"
+                                              ? "bg-yellow-100 text-yellow-800"
+                                              : "bg-gray-100 text-gray-800"
+                                      }
+                                    >
+                                      {resource.availability}
+                                    </Badge>
+                                    <Badge
+                                      variant="outline"
+                                      className="text-xs"
+                                    >
+                                      {resource.status}
+                                    </Badge>
+                                  </div>
                                 </div>
-                                <div className="flex flex-col gap-1">
-                                  <Badge
-                                    className={
-                                      resource.availability === "Available"
-                                        ? "bg-green-100 text-green-800"
-                                        : resource.availability === "Confirmed"
-                                          ? "bg-blue-100 text-blue-800"
-                                          : resource.availability === "En Route"
-                                            ? "bg-yellow-100 text-yellow-800"
-                                            : "bg-gray-100 text-gray-800"
-                                    }
-                                  >
-                                    {resource.availability}
-                                  </Badge>
-                                  <Badge variant="outline" className="text-xs">
-                                    {resource.status}
-                                  </Badge>
+                                <div className="text-xs text-gray-600 space-y-1">
+                                  <div>
+                                    <strong>Location:</strong>{" "}
+                                    {resource.location}
+                                  </div>
+                                  <div>
+                                    <strong>ETA:</strong> {resource.eta}
+                                  </div>
+                                  <div>
+                                    <strong>Details:</strong> {resource.details}
+                                  </div>
                                 </div>
                               </div>
-                              <div className="text-xs text-gray-600 space-y-1">
-                                <div>
-                                  <strong>Location:</strong> {resource.location}
-                                </div>
-                                <div>
-                                  <strong>ETA:</strong> {resource.eta}
-                                </div>
-                                <div>
-                                  <strong>Details:</strong> {resource.details}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
+                            ),
+                          )}
                         </div>
                       ) : (
                         <div className="text-center py-8 text-gray-500">
                           <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           <p>No specific resource requirements identified.</p>
-                          <p className="text-xs mt-1">Standard operational resources will be allocated as needed.</p>
+                          <p className="text-xs mt-1">
+                            Standard operational resources will be allocated as
+                            needed.
+                          </p>
                         </div>
                       )}
                     </CardContent>
@@ -2752,51 +2938,65 @@ export function RecoveryOptionsGenerator({
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {selectedOptionForDetails.riskAssessment && selectedOptionForDetails.riskAssessment.length > 0 ? (
+                      {selectedOptionForDetails.riskAssessment &&
+                      selectedOptionForDetails.riskAssessment.length > 0 ? (
                         <div className="space-y-4">
-                          {selectedOptionForDetails.riskAssessment.map((riskItem, index) => (
-                            <div key={index} className="p-4 border rounded-lg">
-                              <div className="flex justify-between items-start mb-2">
-                                <h4 className="font-medium text-sm">
-                                  {riskItem.risk}
-                                </h4>
-                                <div className="flex gap-2">
-                                  <Badge
-                                    className={getRiskColor(riskItem.probability)}
-                                    variant="outline"
-                                  >
-                                    {riskItem.probability}
-                                  </Badge>
-                                  <Badge
-                                    className={getRiskColor(riskItem.impact)}
-                                    variant="outline"
-                                  >
-                                    {riskItem.impact}
-                                  </Badge>
-                                  <Badge
-                                    className={`${
-                                      riskItem.riskScore <= 2
-                                        ? "bg-green-100 text-green-800"
-                                        : riskItem.riskScore <= 4
-                                          ? "bg-yellow-100 text-yellow-800"
-                                          : "bg-red-100 text-red-800"
-                                    }`}
-                                  >
-                                    Score: {riskItem.riskScore}
-                                  </Badge>
+                          {selectedOptionForDetails.riskAssessment.map(
+                            (riskItem, index) => (
+                              <div
+                                key={index}
+                                className="p-4 border rounded-lg"
+                              >
+                                <div className="flex justify-between items-start mb-2">
+                                  <h4 className="font-medium text-sm">
+                                    {riskItem.risk}
+                                  </h4>
+                                  <div className="flex gap-2">
+                                    <Badge
+                                      className={getRiskColor(
+                                        riskItem.probability,
+                                      )}
+                                      variant="outline"
+                                    >
+                                      {riskItem.probability}
+                                    </Badge>
+                                    <Badge
+                                      className={getRiskColor(riskItem.impact)}
+                                      variant="outline"
+                                    >
+                                      {riskItem.impact}
+                                    </Badge>
+                                    <Badge
+                                      className={`${
+                                        riskItem.riskScore <= 2
+                                          ? "bg-green-100 text-green-800"
+                                          : riskItem.riskScore <= 4
+                                            ? "bg-yellow-100 text-yellow-800"
+                                            : "bg-red-100 text-red-800"
+                                      }`}
+                                    >
+                                      Score: {riskItem.riskScore}
+                                    </Badge>
+                                  </div>
                                 </div>
+                                <p className="text-sm text-gray-700">
+                                  <strong>Mitigation:</strong>{" "}
+                                  {riskItem.mitigation}
+                                </p>
                               </div>
-                              <p className="text-sm text-gray-700">
-                                <strong>Mitigation:</strong> {riskItem.mitigation}
-                              </p>
-                            </div>
-                          ))}
+                            ),
+                          )}
                         </div>
                       ) : (
                         <div className="text-center py-8 text-gray-500">
                           <Shield className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>No specific risks identified for this recovery option.</p>
-                          <p className="text-xs mt-1">Standard operational risk procedures apply.</p>
+                          <p>
+                            No specific risks identified for this recovery
+                            option.
+                          </p>
+                          <p className="text-xs mt-1">
+                            Standard operational risk procedures apply.
+                          </p>
                         </div>
                       )}
                     </CardContent>
@@ -2812,9 +3012,13 @@ export function RecoveryOptionsGenerator({
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {selectedOptionForDetails.technicalSpecs && Object.keys(selectedOptionForDetails.technicalSpecs).length > 0 ? (
+                      {selectedOptionForDetails.technicalSpecs &&
+                      Object.keys(selectedOptionForDetails.technicalSpecs)
+                        .length > 0 ? (
                         <div className="space-y-4">
-                          {Object.entries(selectedOptionForDetails.technicalSpecs).map(([key, value]) => (
+                          {Object.entries(
+                            selectedOptionForDetails.technicalSpecs,
+                          ).map(([key, value]) => (
                             <div key={key} className="p-3 border rounded-lg">
                               <h4 className="font-medium text-sm capitalize mb-2">
                                 {key
@@ -2824,7 +3028,10 @@ export function RecoveryOptionsGenerator({
                               {Array.isArray(value) ? (
                                 <ul className="text-sm text-gray-700 space-y-1">
                                   {(value || []).map((item, index) => (
-                                    <li key={index} className="flex items-start gap-2">
+                                    <li
+                                      key={index}
+                                      className="flex items-start gap-2"
+                                    >
                                       <div className="w-2 h-2 bg-flydubai-blue rounded-full mt-1.5 flex-shrink-0"></div>
                                       {item}
                                     </li>
@@ -2840,7 +3047,10 @@ export function RecoveryOptionsGenerator({
                         <div className="text-center py-8 text-gray-500">
                           <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
                           <p>No specific technical requirements identified.</p>
-                          <p className="text-xs mt-1">Standard operational procedures and aircraft specifications apply.</p>
+                          <p className="text-xs mt-1">
+                            Standard operational procedures and aircraft
+                            specifications apply.
+                          </p>
                         </div>
                       )}
                     </CardContent>
@@ -3659,18 +3869,17 @@ export function RecoveryOptionsGenerator({
                 <Eye className="h-4 w-4 mr-2" />
                 View All Alternate Options
               </Button>
-              <Button
+              {/* <Button
                 variant="outline"
                 className="border-gray-300 hover:bg-gray-50"
               >
                 <FileText className="h-4 w-4 mr-2" />
                 Attach Maintenance Notes
-              </Button>
+              </Button> */}
             </div>
-            <div className="flex gap-2">
+            {/* <div className="flex gap-2">
               <Button
                 onClick={() => {
-                  // Refresh suggestions logic
                   console.log(
                     "Refreshing suggestions for:",
                     selectedRotationData,
@@ -3694,7 +3903,7 @@ export function RecoveryOptionsGenerator({
                 <CheckCircle className="h-4 w-4 mr-2" />
                 Confirm & Apply Plan
               </Button>
-            </div>
+            </div> */}
           </div>
         </DialogContent>
       </Dialog>
