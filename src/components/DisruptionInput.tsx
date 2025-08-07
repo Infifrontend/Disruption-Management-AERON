@@ -1664,18 +1664,26 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="inbound" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="inbound">
-                    Inbound to DXB (
-                    {
-                      sortedFlights.filter((f) => f.destination === "DXB")
-                        .length
-                    }
-                    )
+                <TabsList className="grid w-full grid-cols-2 bg-gradient-to-r from-gray-50 to-gray-100 p-1.5 rounded-xl shadow-inner border border-gray-200">
+                  <TabsTrigger 
+                    value="inbound"
+                    className="flex items-center justify-center gap-3 py-3 px-6 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-flydubai-blue data-[state=active]:border data-[state=active]:border-blue-200 font-semibold text-gray-600 hover:text-gray-800 transition-all duration-300 rounded-lg data-[state=active]:scale-[1.02]"
+                  >
+                    <Plane className="h-5 w-5 transform rotate-180 data-[state=active]:text-blue-600" />
+                    <span className="text-base">Inbound</span>
+                    <Badge variant="outline" className="ml-1 bg-blue-50 text-blue-700 border-blue-300 font-medium">
+                      {sortedFlights.filter(f => f.destination === 'DXB').length}
+                    </Badge>
                   </TabsTrigger>
-                  <TabsTrigger value="outbound">
-                    Outbound from DXB (
-                    {sortedFlights.filter((f) => f.origin === "DXB").length})
+                  <TabsTrigger 
+                    value="outbound"
+                    className="flex items-center justify-center gap-3 py-3 px-6 data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:text-flydubai-blue data-[state=active]:border data-[state=active]:border-orange-200 font-semibold text-gray-600 hover:text-gray-800 transition-all duration-300 rounded-lg data-[state=active]:scale-[1.02]"
+                  >
+                    <Plane className="h-5 w-5 data-[state=active]:text-orange-600" />
+                    <span className="text-base">Outbound</span>
+                    <Badge variant="outline" className="ml-1 bg-orange-50 text-orange-700 border-orange-300 font-medium">
+                      {sortedFlights.filter(f => f.origin === 'DXB').length}
+                    </Badge>
                   </TabsTrigger>
                 </TabsList>
 
