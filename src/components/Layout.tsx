@@ -26,6 +26,8 @@ import {
   RotateCcw,
   Wifi,
   WifiOff,
+  Bell,
+  User,
 } from "lucide-react";
 
 const iconMap = {
@@ -370,28 +372,78 @@ export function Layout({ children }: LayoutProps) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <div className="bg-card border-b border-border px-6 py-4 flex-shrink-0">
+        <header className="bg-gradient-to-r from-blue-600 to-blue-700 shadow-lg px-6 py-3">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold">
-                {currentScreen?.name || "Dashboard"}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Flydubai AERON - AI-powered recovery and operational excellence
-              </p>
+            <div className="flex items-center gap-4">
+              <img
+                src="/flydubai-logo.png"
+                alt="flydubai"
+                className="h-8 w-auto filter brightness-0 invert"
+              />
+              <div className="hidden sm:block">
+                <h1 className="text-xl font-semibold text-white">
+                  AERON
+                </h1>
+                <p className="text-sm text-blue-100">
+                  Advanced Emergency Recovery Operations Network
+                </p>
+              </div>
             </div>
 
-            {/* {quickStats && (
-              <div className={`flex items-center gap-3 px-4 py-2 bg-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-50 rounded-lg border border-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-200`}>
-                {React.createElement(quickStats.icon, { className: `h-4 w-4 text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-600` })}
-                <div className="text-xs">
-                  <p className={`font-medium text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-700`}>{quickStats.title}</p>
-                  <p className={`text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-600`}>{quickStats.subtitle}</p>
+            {/* Center - Online Status and Date/Time */}
+            <div className="flex flex-col items-center text-white">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="flex items-center gap-1 bg-white/20 px-2 py-1 rounded-full">
+                  <Wifi className="h-4 w-4 text-green-300" />
+                  <span className="text-sm font-medium text-white">Online</span>
                 </div>
               </div>
-            )} */}
+              <div className="text-sm text-blue-100">
+                {new Date().toLocaleDateString('en-GB', {
+                  weekday: 'long',
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                })}{' '}
+                {new Date().toLocaleTimeString('en-GB', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false
+                })}{' '}
+                IST
+              </div>
+            </div>
+
+            {/* Right side navigation items */}
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/settings')}
+                className="text-white hover:bg-white/20 hover:text-white"
+              >
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20 hover:text-white"
+              >
+                <Bell className="h-4 w-4 mr-2" />
+                Alerts
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white hover:bg-white/20 hover:text-white"
+              >
+                <User className="h-4 w-4 mr-2" />
+                Profile
+              </Button>
+            </div>
           </div>
-        </div>
+        </header>
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 scrollable-content">
