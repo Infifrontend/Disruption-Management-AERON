@@ -190,68 +190,33 @@ export function WorldMap() {
           {/* Stats Panel */}
           <div className="w-72 min-w-[288px] border-r border-flydubai-blue/10 bg-white/95 backdrop-blur-sm p-4 space-y-4 overflow-y-auto relative z-20 flex-shrink-0">
             <div className="space-y-3">
-            <div className="space-y-3">
-            <h3 className="font-semibold text-flydubai-navy flex items-center gap-2">
-              <Globe className="w-4 h-4" />
-              World Map Controls
-            </h3>
+              <h3 className="font-semibold text-flydubai-navy flex items-center gap-2">
+                <Radar className="w-4 h-4" />
+                Network Overview
+              </h3>
 
-            <div className="space-y-2">
-              <Button 
-                variant={selectedView === 'routes' ? 'default' : 'outline'} 
-                size="sm" 
-                className="w-full justify-start"
-                onClick={() => setSelectedView('routes')}
-              >
-                <Navigation className="w-4 h-4 mr-2" />
-                Flight Routes
-              </Button>
-              <Button 
-                variant={selectedView === 'flights' ? 'default' : 'outline'} 
-                size="sm" 
-                className="w-full justify-start"
-                onClick={() => setSelectedView('flights')}
-              >
-                <Plane className="w-4 h-4 mr-2" />
-                Live Flights
-              </Button>
-              <Button 
-                variant={selectedView === 'status' ? 'default' : 'outline'} 
-                size="sm" 
-                className="w-full justify-start"
-                onClick={() => setSelectedView('status')}
-              >
-                <AlertTriangle className="w-4 h-4 mr-2" />
-                Disruptions
-              </Button>
-            </div>
-
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="text-sm font-medium text-flydubai-navy mb-1">Quick Stats</div>
-              <div className="text-xs text-gray-600 space-y-1">
-                <div className="flex justify-between">
-                  <span>Total Flights:</span>
-                  <span className="font-medium">89</span>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
+                  <div className="text-lg font-semibold text-flydubai-blue">89</div>
+                  <div className="text-xs text-gray-600">Total Flights</div>
                 </div>
-                <div className="flex justify-between">
-                  <span>On Schedule:</span>
-                  <span className="font-medium text-green-600">47</span>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                  <div className="text-lg font-semibold text-green-600">47</div>
+                  <div className="text-xs text-gray-600">On Schedule</div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Delayed:</span>
-                  <span className="font-medium text-flydubai-orange">18</span>
+                <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
+                  <div className="text-lg font-semibold text-flydubai-orange">18</div>
+                  <div className="text-xs text-gray-600">Delayed</div>
                 </div>
-                <div className="flex justify-between">
-                  <span>Disrupted:</span>
-                  <span className="font-medium text-red-600">3</span>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                  <div className="text-lg font-semibold text-red-600">3</div>
+                  <div className="text-xs text-gray-600">Disrupted</div>
                 </div>
               </div>
             </div>
-          </div>
-          </div>
 
             {selectedView === 'status' && (
-              <div className="space-y-3 mt-4">
+              <div className="space-y-3">
                 <h3 className="font-semibold text-flydubai-navy flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4" />
                   Active Disruptions
@@ -277,7 +242,7 @@ export function WorldMap() {
             )}
 
             {selectedView === 'flights' && (
-              <div className="space-y-3 mt-4">
+              <div className="space-y-3">
                 <h3 className="font-semibold text-flydubai-navy flex items-center gap-2">
                   <Plane className="w-4 h-4" />
                   Active Flights
@@ -442,7 +407,7 @@ export function WorldMap() {
                     }}
                   >
                     <div className="relative">
-                      <div className={`w-4 h-4 rounded-full border-2 bg-white border-flydubai-blue shadow-sm flex items-center justify-center`}>
+                      <div className={`w-4 h-4 rounded-full border-2 bg-white border-flydubai-blue shadow-lg flex items-center justify-center`}>
                         <div className="w-2 h-2 rounded-full bg-flydubai-blue"></div>
                       </div>
                       <div className="absolute -top-1 -right-1 w-2 h-2 bg-green-400 rounded-full border border-white"></div>
