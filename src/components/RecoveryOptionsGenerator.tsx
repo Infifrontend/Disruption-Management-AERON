@@ -2024,10 +2024,21 @@ export function RecoveryOptionsGenerator({
       {/* Recovery Options */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Target className="h-5 w-5 text-flydubai-blue" />
-            Recovery Options ({scenarioData.options.length} Available)
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Target className="h-5 w-5 text-flydubai-blue" />
+              Recovery Options ({scenarioData.options.length} Available)
+            </CardTitle>
+            <Button
+              variant="outline"
+              onClick={() => onCompare && onCompare()}
+              className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+              disabled={!selectedFlight || scenarioData.options.length === 0}
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Comparison
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           {loadingError && (
