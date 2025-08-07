@@ -41,7 +41,7 @@ import {
   CartesianGrid, 
   XAxis, 
   YAxis,
-  Label
+  Label as RechartsLabel
 } from 'recharts'
 
 interface RecoveryLog {
@@ -424,7 +424,7 @@ export function PastRecoveryLogs() {
                       innerRadius={60}
                       strokeWidth={5}
                     >
-                      <Label
+                      <RechartsLabel
                         content={({ viewBox }) => {
                           if (viewBox && "cx" in viewBox && "cy" in viewBox) {
                             return (
