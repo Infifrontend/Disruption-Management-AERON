@@ -973,41 +973,59 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
     let optionsCount = 0
     for (const option of options) {
       try {
-        await pool.query(`
-          INSERT INTO recovery_options (
-            disruption_id, title, description, cost, timeline,
-            confidence, impact, status, priority, advantages, considerations,
-            resource_requirements, cost_breakdown, timeline_details,
-            risk_assessment, technical_specs, metrics, rotation_plan
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-          ON CONFLICT (disruption_id, title) DO UPDATE SET
-            description = EXCLUDED.description,
-            cost = EXCLUDED.cost,
-            timeline = EXCLUDED.timeline,
-            confidence = EXCLUDED.confidence,
-            impact = EXCLUDED.impact,
-            status = EXCLUDED.status,
-            updated_at = CURRENT_TIMESTAMP
-        `, [
-          numericDisruptionId,
-          option.title || `Recovery Option ${options.indexOf(option) + 1}`,
-          option.description || 'Recovery option details',
-          option.cost || 'TBD',
-          option.timeline || 'TBD',
-          option.confidence || 80,
-          option.impact || 'Medium',
-          option.status || 'generated',
-          options.indexOf(option) + 1, // priority
-          option.advantages || [],
-          option.considerations || [],
-          JSON.stringify(option.resourceRequirements || {}),
-          JSON.stringify(option.costBreakdown || {}),
-          JSON.stringify(option.timelineDetails || {}),
-          JSON.stringify(option.riskAssessment || {}),
-          JSON.stringify(option.technicalSpecs || {}),
-          JSON.stringify(option.metrics || {}),
-          JSON.stringify(option.rotationPlan || {})
-        ])
+        // Check if option already exists
+        const existingOption = await pool.query(
+          'SELECT id FROM recovery_options WHERE disruption_id = $1 AND title = $2',
+          [numericDisruptionId, option.title || `Recovery Option ${options.indexOf(option) + 1}`]
+        );
+
+        if (existingOption.rows.length > 0) {
+          // Update existing option
+          await pool.query(`
+            UPDATE recovery_options SET
+              description = $3, cost = $4, timeline = $5, confidence = $6,
+              impact = $7, status = $8, updated_at = CURRENT_TIMESTAMP
+            WHERE disruption_id = $1 AND title = $2
+          `, [
+            numericDisruptionId,
+            option.title || `Recovery Option ${options.indexOf(option) + 1}`,
+            option.description || 'Recovery option details',
+            option.cost || 'TBD',
+            option.timeline || 'TBD',
+            option.confidence || 80,
+            option.impact || 'Medium',
+            option.status || 'generated'
+          ]);
+        } else {
+          // Insert new option
+          await pool.query(`
+            INSERT INTO recovery_options (
+              disruption_id, title, description, cost, timeline,
+              confidence, impact, status, priority, advantages, considerations,
+              resource_requirements, cost_breakdown, timeline_details,
+              risk_assessment, technical_specs, metrics, rotation_plan
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+          `, [
+            numericDisruptionId,
+            option.title || `Recovery Option ${options.indexOf(option) + 1}`,
+            option.description || 'Recovery option details',
+            option.cost || 'TBD',
+            option.timeline || 'TBD',
+            option.confidence || 80,
+            option.impact || 'Medium',
+            option.status || 'generated',
+            options.indexOf(option) + 1, // priority
+            JSON.stringify(option.advantages || []),
+            JSON.stringify(option.considerations || []),
+            JSON.stringify(option.resourceRequirements || {}),
+            JSON.stringify(option.costBreakdown || {}),
+            JSON.stringify(option.timelineDetails || {}),
+            JSON.stringify(option.riskAssessment || {}),
+            JSON.stringify(option.technicalSpecs || {}),
+            JSON.stringify(option.metrics || {}),
+            JSON.stringify(option.rotationPlan || {})
+          ]);
+        }
         optionsCount++
       } catch (insertError) {
         console.error('Error inserting recovery option:', insertError)
@@ -1018,24 +1036,37 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
     let stepsCount = 0
     for (const step of steps) {
       try {
-        await pool.query(`
-          INSERT INTO recovery_steps (
-            disruption_id, step_number, title, status, timestamp,
-            system, details, step_data
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-          ON CONFLICT (disruption_id, step_number) DO UPDATE SET
-            title = EXCLUDED.title,
-            status = EXCLUDED.status,
-            timestamp = EXCLUDED.timestamp,
-            system = EXCLUDED.system,
-            details = EXCLUDED.details,
-            step_data = EXCLUDED.step_data,
-            updated_at = CURRENT_TIMESTAMP
-        `, [
-          numericDisruptionId, step.step, step.title, step.status,
-          step.timestamp, step.system, step.details,
-          step.data ? JSON.stringify(step.data) : null
-        ])
+        // Check if step already exists
+        const existingStep = await pool.query(
+          'SELECT id FROM recovery_steps WHERE disruption_id = $1 AND step_number = $2',
+          [numericDisruptionId, step.step]
+        );
+
+        if (existingStep.rows.length > 0) {
+          // Update existing step
+          await pool.query(`
+            UPDATE recovery_steps SET
+              title = $3, status = $4, timestamp = $5, system = $6,
+              details = $7, step_data = $8, updated_at = CURRENT_TIMESTAMP
+            WHERE disruption_id = $1 AND step_number = $2
+          `, [
+            numericDisruptionId, step.step, step.title, step.status,
+            step.timestamp, step.system, step.details,
+            step.data ? JSON.stringify(step.data) : null
+          ]);
+        } else {
+          // Insert new step
+          await pool.query(`
+            INSERT INTO recovery_steps (
+              disruption_id, step_number, title, status, timestamp,
+              system, details, step_data
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          `, [
+            numericDisruptionId, step.step, step.title, step.status,
+            step.timestamp, step.system, step.details,
+            step.data ? JSON.stringify(step.data) : null
+          ]);
+        }
         stepsCount++
       } catch (insertError) {
         console.error('Error inserting recovery step:', insertError)
@@ -1169,24 +1200,37 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
     // Save recovery steps first
     for (const step of steps) {
       console.log(`Saving step ${step.step}: ${step.title}`)
-      await pool.query(`
-        INSERT INTO recovery_steps (
-          disruption_id, step_number, title, status, timestamp,
-          system, details, step_data
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        ON CONFLICT (disruption_id, step_number) DO UPDATE SET
-          title = EXCLUDED.title,
-          status = EXCLUDED.status,
-          timestamp = EXCLUDED.timestamp,
-          system = EXCLUDED.system,
-          details = EXCLUDED.details,
-          step_data = EXCLUDED.step_data,
-          updated_at = CURRENT_TIMESTAMP
-      `, [
-        disruptionId, step.step, step.title, step.status,
-        step.timestamp, step.system, step.details,
-        step.data ? JSON.stringify(step.data) : null
-      ])
+      // Check if step already exists
+      const existingStep = await pool.query(
+        'SELECT id FROM recovery_steps WHERE disruption_id = $1 AND step_number = $2',
+        [disruptionId, step.step]
+      );
+
+      if (existingStep.rows.length > 0) {
+        // Update existing step
+        await pool.query(`
+          UPDATE recovery_steps SET
+            title = $3, status = $4, timestamp = $5, system = $6,
+            details = $7, step_data = $8, updated_at = CURRENT_TIMESTAMP
+          WHERE disruption_id = $1 AND step_number = $2
+        `, [
+          disruptionId, step.step, step.title, step.status,
+          step.timestamp, step.system, step.details,
+          step.data ? JSON.stringify(step.data) : null
+        ]);
+      } else {
+        // Insert new step
+        await pool.query(`
+          INSERT INTO recovery_steps (
+            disruption_id, step_number, title, status, timestamp,
+            system, details, step_data
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `, [
+          disruptionId, step.step, step.title, step.status,
+          step.timestamp, step.system, step.details,
+          step.data ? JSON.stringify(step.data) : null
+        ]);
+      }
     }
 
     // Save recovery options
