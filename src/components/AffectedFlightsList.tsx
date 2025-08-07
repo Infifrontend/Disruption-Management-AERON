@@ -30,401 +30,6 @@ import { databaseService, FlightDisruption, PassengerData } from '../services/da
 
 const FLIGHTS_PER_PAGE = 10;
 
-interface FlightTabContentProps {
-  flights: FlightDisruption[];
-  filters: any;
-  setFilters: (filters: any) => void;
-  currentPage: number;
-  setCurrentPage: (page: number) => void;
-  handleFlightSelect: (flight: FlightDisruption) => void;
-  fetchFlights: () => void;
-  formatDateTime: (dateString: string) => string;
-  getSeverityColor: (severity: string) => string;
-  getStatusColor: (status: string) => string;
-  tabType: 'inbound' | 'outbound';
-}
-
-function FlightTabContent({
-  flights,
-  filters,
-  setFilters,
-  currentPage,
-  setCurrentPage,
-  handleFlightSelect,
-  fetchFlights,
-  formatDateTime,
-  getSeverityColor,
-  getStatusColor,
-  tabType
-}: FlightTabContentProps) {
-  const filteredFlights = flights.filter(flight => {
-    if (filters.status !== 'all' && flight.status !== filters.status) return false
-    if (filters.severity !== 'all' && flight.severity !== filters.severity) return false
-    if (filters.type !== 'all' && flight.type !== filters.type) return false
-    if (filters.origin !== 'all' && flight.origin !== filters.origin) return false
-    if (filters.destination !== 'all' && flight.destination !== filters.destination) return false
-    if (filters.search && !flight.flightNumber.toLowerCase().includes(filters.search.toLowerCase()) && 
-        !flight.route.toLowerCase().includes(filters.search.toLowerCase()) &&
-        !flight.originCity.toLowerCase().includes(filters.search.toLowerCase()) &&
-        !flight.destinationCity.toLowerCase().includes(filters.search.toLowerCase())) return false
-    return true
-  })
-
-  const startIndex = (currentPage - 1) * FLIGHTS_PER_PAGE;
-  const endIndex = startIndex + FLIGHTS_PER_PAGE;
-  const paginatedFlights = filteredFlights.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(filteredFlights.length / FLIGHTS_PER_PAGE);
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-  };
-
-  return (
-    <>
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filters for {tabType === 'inbound' ? 'Inbound' : 'Outbound'} Flights
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-            <div>
-              <Label htmlFor="search">Search</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="search"
-                  placeholder="Flight number or city"
-                  className="pl-10"
-                  value={filters.search}
-                  onChange={(e) => setFilters({...filters, search: e.target.value})}
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="origin">Origin</Label>
-              <Select value={filters.origin} onValueChange={(value) => setFilters({...filters, origin: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All origins" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Origins</SelectItem>
-                  {[...new Set(flights.map(f => f.origin))].sort().map(origin => (
-                    <SelectItem key={origin} value={origin}>{origin}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="destination">Destination</Label>
-              <Select value={filters.destination} onValueChange={(value) => setFilters({...filters, destination: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All destinations" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Destinations</SelectItem>
-                  {[...new Set(flights.map(f => f.destination))].sort().map(dest => (
-                    <SelectItem key={dest} value={dest}>{dest}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <Select value={filters.status} onValueChange={(value) => setFilters({...filters, status: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="Active">Active</SelectItem>
-                  <SelectItem value="Resolved">Resolved</SelectItem>
-                  <SelectItem value="Cancelled">Cancelled</SelectItem>
-                  <SelectItem value="Delayed">Delayed</SelectItem>
-                  <SelectItem value="Diverted">Diverted</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="severity">Severity</Label>
-              <Select value={filters.severity} onValueChange={(value) => setFilters({...filters, severity: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All severities" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Severities</SelectItem>
-                  <SelectItem value="Critical">Critical</SelectItem>
-                  <SelectItem value="High">High</SelectItem>
-                  <SelectItem value="Medium">Medium</SelectItem>
-                  <SelectItem value="Low">Low</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="type">Type</Label>
-              <Select value={filters.type} onValueChange={(value) => setFilters({...filters, type: value})}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All types" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="Technical">Technical</SelectItem>
-                  <SelectItem value="Weather">Weather</SelectItem>
-                  <SelectItem value="Crew">Crew</SelectItem>
-                  <SelectItem value="Airport">Airport</SelectItem>
-                  <SelectItem value="Rotation">Rotation</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <div className="flex justify-end mt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => setFilters({status: 'all', severity: 'all', type: 'all', origin: 'all', destination: 'all', search: ''})}
-            >
-              Clear Filters
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <Plane className="h-8 w-8 text-red-600" />
-              <div className="ml-4">
-                <p className="text-2xl font-bold">{filteredFlights.length}</p>
-                <p className="text-xs text-muted-foreground">Total Flights</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <Users className="h-8 w-8 text-blue-600" />
-              <div className="ml-4">
-                <p className="text-2xl font-bold">
-                  {filteredFlights.reduce((sum, flight) => sum + flight.passengers, 0)}
-                </p>
-                <p className="text-xs text-muted-foreground">Affected Passengers</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <AlertTriangle className="h-8 w-8 text-orange-600" />
-              <div className="ml-4">
-                <p className="text-2xl font-bold">
-                  {filteredFlights.filter(f => f.status === 'Active').length}
-                </p>
-                <p className="text-xs text-muted-foreground">Active Disruptions</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <Clock className="h-8 w-8 text-green-600" />
-              <div className="ml-4">
-                <p className="text-2xl font-bold">
-                  {Math.round(filteredFlights.reduce((sum, flight) => sum + flight.delay, 0) / Math.max(filteredFlights.length, 1))}m
-                </p>
-                <p className="text-xs text-muted-foreground">Avg Delay</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Flights List */}
-      <Card>
-        <CardHeader>
-          <CardTitle>{tabType === 'inbound' ? 'Inbound' : 'Outbound'} Flights ({filteredFlights.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Group flights by route direction */}
-          {(() => {
-            const groupedFlights = paginatedFlights.reduce((groups, flight) => {
-              const routeKey = `${flight.originCity} → ${flight.destinationCity}`
-              if (!groups[routeKey]) {
-                groups[routeKey] = []
-              }
-              groups[routeKey].push(flight)
-              return groups
-            }, {} as Record<string, typeof filteredFlights>)
-
-            return Object.entries(groupedFlights).map(([route, routeFlights]) => (
-              <div key={route} className="mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <MapPin className="h-4 w-4 text-flydubai-blue" />
-                  <h3 className="font-semibold text-lg text-flydubai-blue">{route}</h3>
-                  <Badge variant="outline" className="ml-auto">
-                    {routeFlights.length} flight{routeFlights.length !== 1 ? 's' : ''}
-                  </Badge>
-                </div>
-                <div className="space-y-3 pl-6 border-l-2 border-gray-100">
-                  {routeFlights.map((flight) => (
-                    <Card 
-                      key={flight.id} 
-                      className="cursor-pointer hover:shadow-md transition-shadow"
-                      onClick={() => handleFlightSelect(flight)}
-                    >
-                      <CardContent className="pt-6">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4">
-                            <div className="flex flex-col">
-                              <span className="font-mono font-bold text-lg">
-                                {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') 
-                                  ? (flight.flightNumber || '-')
-                                  : flight.flightNumber}
-                              </span>
-                              <span className="text-sm text-muted-foreground">{flight.originCity} ({flight.origin}) → {flight.destinationCity} ({flight.destination})</span>
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="text-sm font-medium">{flight.aircraft}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {formatDateTime(flight.scheduledDeparture)}
-                              </span>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <Users className="h-4 w-4" />
-                              <span className="text-sm">{flight.passengers}</span>
-                            </div>
-                            {flight.delay > 0 && (
-                              <div className="flex items-center space-x-2">
-                                <Clock className="h-4 w-4 text-orange-500" />
-                                <span className="text-sm text-orange-600">+{flight.delay}m</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex items-center space-x-2">
-                            <Badge className={getSeverityColor(flight.severity)}>
-                              {flight.severity}
-                            </Badge>
-                            <Badge className={getStatusColor(flight.status)}>
-                              {flight.status}
-                            </Badge>
-                          </div>
-                        </div>
-                        {flight.disruptionReason && (
-                          <p className="text-sm text-muted-foreground mt-2">
-                            {flight.disruptionReason}
-                          </p>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            ))
-          })()}
-
-          {filteredFlights.length === 0 && (
-            <div className="text-center py-12">
-              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Plane className="h-8 w-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No affected flights found</h3>
-              <p className="text-gray-500 mb-4">
-                {flights.length === 0 
-                  ? `There are currently no ${tabType} flight disruptions in the system.`
-                  : "No flights match your current filter criteria."
-                }
-              </p>
-              {flights.length === 0 && (
-                <div className="flex justify-center gap-2">
-                  <Button variant="outline" onClick={fetchFlights} className="flex items-center gap-2">
-                    <RefreshCw className="h-4 w-4" />
-                    Refresh Data
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Pagination Navigation */}
-          {filteredFlights.length > 0 && totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6 pt-4 border-t">
-              <Button
-                variant="outline"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="flex items-center gap-2"
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Previous
-              </Button>
-
-              <div className="flex items-center gap-2">
-                {/* First page */}
-                {currentPage > 3 && (
-                  <>
-                    <Button
-                      variant={1 === currentPage ? "default" : "outline"}
-                      onClick={() => handlePageChange(1)}
-                      size="sm"
-                    >
-                      1
-                    </Button>
-                    {currentPage > 4 && <span className="text-muted-foreground">...</span>}
-                  </>
-                )}
-
-                {/* Page numbers around current page */}
-                {Array.from({ length: totalPages }, (_, i) => i + 1)
-                  .filter(page => page >= currentPage - 2 && page <= currentPage + 2)
-                  .map(page => (
-                    <Button
-                      key={page}
-                      variant={page === currentPage ? "default" : "outline"}
-                      onClick={() => handlePageChange(page)}
-                      size="sm"
-                    >
-                      {page}
-                    </Button>
-                  ))}
-
-                {/* Last page */}
-                {currentPage < totalPages - 2 && (
-                  <>
-                    {currentPage < totalPages - 3 && <span className="text-muted-foreground">...</span>}
-                    <Button
-                      variant={totalPages === currentPage ? "default" : "outline"}
-                      onClick={() => handlePageChange(totalPages)}
-                      size="sm"
-                    >
-                      {totalPages}
-                    </Button>
-                  </>
-                )}
-              </div>
-
-              <Button
-                variant="outline"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="flex items-center gap-2"
-              >
-                Next
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </>
-  )
-}
-
 export function AffectedFlightsList() {
   const [flights, setFlights] = useState<FlightDisruption[]>([])
   const [selectedFlight, setSelectedFlight] = useState<FlightDisruption | null>(null)
@@ -578,10 +183,6 @@ export function AffectedFlightsList() {
     )
   }
 
-  // Filter flights by tab
-  const inboundFlights = flights.filter(flight => flight.destination === 'DXB')
-  const outboundFlights = flights.filter(flight => flight.origin === 'DXB')
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -636,51 +237,344 @@ export function AffectedFlightsList() {
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="inbound" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="inbound" className="flex items-center gap-2">
-            <Plane className="h-4 w-4 rotate-180" />
-            Inbound to DXB ({inboundFlights.length})
-          </TabsTrigger>
-          <TabsTrigger value="outbound" className="flex items-center gap-2">
-            <Plane className="h-4 w-4" />
-            Outbound from DXB ({outboundFlights.length})
-          </TabsTrigger>
-        </TabsList>
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filters
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <div>
+              <Label htmlFor="search">Search</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  placeholder="Flight number or city"
+                  className="pl-10"
+                  value={filters.search}
+                  onChange={(e) => setFilters({...filters, search: e.target.value})}
+                />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="origin">Origin</Label>
+              <Select value={filters.origin} onValueChange={(value) => setFilters({...filters, origin: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All origins" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Origins</SelectItem>
+                  {[...new Set(flights.map(f => f.origin))].sort().map(origin => (
+                    <SelectItem key={origin} value={origin}>{origin}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="destination">Destination</Label>
+              <Select value={filters.destination} onValueChange={(value) => setFilters({...filters, destination: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All destinations" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Destinations</SelectItem>
+                  {[...new Set(flights.map(f => f.destination))].sort().map(dest => (
+                    <SelectItem key={dest} value={dest}>{dest}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <Select value={filters.status} onValueChange={(value) => setFilters({...filters, status: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="Active">Active</SelectItem>
+                  <SelectItem value="Resolved">Resolved</SelectItem>
+                  <SelectItem value="Cancelled">Cancelled</SelectItem>
+                  <SelectItem value="Delayed">Delayed</SelectItem>
+                  <SelectItem value="Diverted">Diverted</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="severity">Severity</Label>
+              <Select value={filters.severity} onValueChange={(value) => setFilters({...filters, severity: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All severities" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Severities</SelectItem>
+                  <SelectItem value="Critical">Critical</SelectItem>
+                  <SelectItem value="High">High</SelectItem>
+                  <SelectItem value="Medium">Medium</SelectItem>
+                  <SelectItem value="Low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="type">Type</Label>
+              <Select value={filters.type} onValueChange={(value) => setFilters({...filters, type: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="Technical">Technical</SelectItem>
+                  <SelectItem value="Weather">Weather</SelectItem>
+                  <SelectItem value="Crew">Crew</SelectItem>
+                  <SelectItem value="Airport">Airport</SelectItem>
+                  <SelectItem value="Rotation">Rotation</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex items-end">
+              <Button 
+                variant="outline" 
+                onClick={() => setFilters({status: 'all', severity: 'all', type: 'all', origin: 'all', destination: 'all', search: ''})}
+                className="w-full"
+              >
+                Clear Filters
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-        <TabsContent value="inbound" className="space-y-6">
-          <FlightTabContent 
-            flights={inboundFlights}
-            filters={filters}
-            setFilters={setFilters}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            handleFlightSelect={handleFlightSelect}
-            fetchFlights={fetchFlights}
-            formatDateTime={formatDateTime}
-            getSeverityColor={getSeverityColor}
-            getStatusColor={getStatusColor}
-            tabType="inbound"
-          />
-        </TabsContent>
+      {/* Summary Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <Plane className="h-8 w-8 text-red-600" />
+              <div className="ml-4">
+                <p className="text-2xl font-bold">{filteredFlights.length}</p>
+                <p className="text-xs text-muted-foreground">Total Flights</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <Users className="h-8 w-8 text-blue-600" />
+              <div className="ml-4">
+                <p className="text-2xl font-bold">
+                  {filteredFlights.reduce((sum, flight) => sum + flight.passengers, 0)}
+                </p>
+                <p className="text-xs text-muted-foreground">Affected Passengers</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <AlertTriangle className="h-8 w-8 text-orange-600" />
+              <div className="ml-4">
+                <p className="text-2xl font-bold">
+                  {filteredFlights.filter(f => f.status === 'Active').length}
+                </p>
+                <p className="text-xs text-muted-foreground">Active Disruptions</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center">
+              <Clock className="h-8 w-8 text-green-600" />
+              <div className="ml-4">
+                <p className="text-2xl font-bold">
+                  {Math.round(filteredFlights.reduce((sum, flight) => sum + flight.delay, 0) / Math.max(filteredFlights.length, 1))}m
+                </p>
+                <p className="text-xs text-muted-foreground">Avg Delay</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-        <TabsContent value="outbound" className="space-y-6">
-          <FlightTabContent 
-            flights={outboundFlights}
-            filters={filters}
-            setFilters={setFilters}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-            handleFlightSelect={handleFlightSelect}
-            fetchFlights={fetchFlights}
-            formatDateTime={formatDateTime}
-            getSeverityColor={getSeverityColor}
-            getStatusColor={getStatusColor}
-            tabType="outbound"
-          />
-        </TabsContent>
-      </Tabs>
+      {/* Flights List */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Affected Flights ({filteredFlights.length})</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Group flights by route direction */}
+          {(() => {
+            const groupedFlights = filteredFlights.reduce((groups, flight) => {
+              const routeKey = `${flight.originCity} → ${flight.destinationCity}`
+              if (!groups[routeKey]) {
+                groups[routeKey] = []
+              }
+              groups[routeKey].push(flight)
+              return groups
+            }, {} as Record<string, typeof filteredFlights>)
+
+            return Object.entries(groupedFlights).map(([route, routeFlights]) => (
+              <div key={route} className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <MapPin className="h-4 w-4 text-flydubai-blue" />
+                  <h3 className="font-semibold text-lg text-flydubai-blue">{route}</h3>
+                  <Badge variant="outline" className="ml-auto">
+                    {routeFlights.length} flight{routeFlights.length !== 1 ? 's' : ''}
+                  </Badge>
+                </div>
+                <div className="space-y-3 pl-6 border-l-2 border-gray-100">
+                  {routeFlights.map((flight) => (
+              <Card 
+                key={flight.id} 
+                className="cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => handleFlightSelect(flight)}
+              >
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="flex flex-col">
+                        <span className="font-mono font-bold text-lg">
+                          {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') 
+                            ? (flight.flightNumber || '-')
+                            : flight.flightNumber}
+                        </span>
+                        <span className="text-sm text-muted-foreground">{flight.originCity} ({flight.origin}) → {flight.destinationCity} ({flight.destination})</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium">{flight.aircraft}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDateTime(flight.scheduledDeparture)}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Users className="h-4 w-4" />
+                        <span className="text-sm">{flight.passengers}</span>
+                      </div>
+                      {flight.delay > 0 && (
+                        <div className="flex items-center space-x-2">
+                          <Clock className="h-4 w-4 text-orange-500" />
+                          <span className="text-sm text-orange-600">+{flight.delay}m</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Badge className={getSeverityColor(flight.severity)}>
+                        {flight.severity}
+                      </Badge>
+                      <Badge className={getStatusColor(flight.status)}>
+                        {flight.status}
+                      </Badge>
+                    </div>
+                  </div>
+                  {flight.disruptionReason && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {flight.disruptionReason}
+                    </p>
+                  )))}
+                </div>
+              </Card>
+            ))
+          })()}
+
+          {filteredFlights.length === 0 && (
+            <div className="text-center py-12">
+              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <Plane className="h-8 w-8 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No affected flights found</h3>
+              <p className="text-gray-500 mb-4">
+                {flights.length === 0 
+                  ? "There are currently no flight disruptions in the system."
+                  : "No flights match your current filter criteria."
+                }
+              </p>
+              {flights.length === 0 && (
+                <div className="flex justify-center gap-2">
+                  <Button variant="outline" onClick={fetchFlights} className="flex items-center gap-2">
+                    <RefreshCw className="h-4 w-4" />
+                    Refresh Data
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Pagination Navigation */}
+          {filteredFlights.length > 0 && totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="flex items-center gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Previous
+              </Button>
+
+              <div className="flex items-center gap-2">
+                {/* First page */}
+                {currentPage > 3 && (
+                  <>
+                    <Button
+                      variant={1 === currentPage ? "default" : "outline"}
+                      onClick={() => handlePageChange(1)}
+                      size="sm"
+                    >
+                      1
+                    </Button>
+                    {currentPage > 4 && <span className="text-muted-foreground">...</span>}
+                  </>
+                )}
+
+                {/* Page numbers around current page */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => page >= currentPage - 2 && page <= currentPage + 2)
+                  .map(page => (
+                    <Button
+                      key={page}
+                      variant={page === currentPage ? "default" : "outline"}
+                      onClick={() => handlePageChange(page)}
+                      size="sm"
+                    >
+                      {page}
+                    </Button>
+                  ))}
+
+                {/* Last page */}
+                {currentPage < totalPages - 2 && (
+                  <>
+                    {currentPage < totalPages - 3 && <span className="text-muted-foreground">...</span>}
+                    <Button
+                      variant={totalPages === currentPage ? "default" : "outline"}
+                      onClick={() => handlePageChange(totalPages)}
+                      size="sm"
+                    >
+                      {totalPages}
+                    </Button>
+                  </>
+                )}
+              </div>
+
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-2"
+              >
+                Next
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Flight Details Dialog */}
       {selectedFlight && (
