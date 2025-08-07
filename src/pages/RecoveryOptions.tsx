@@ -5,7 +5,7 @@ import { RecoveryOptionsGenerator } from '../components/RecoveryOptionsGenerator
 
 export function RecoveryOptions() {
   const navigate = useNavigate()
-  const { selectedFlight, setSelectedRecoveryPlan, setPassengerServicesContext } = useAppContext()
+  const { selectedFlight, selectedRecoveryPlan, setSelectedRecoveryPlan, setPassengerServicesContext } = useAppContext()
 
   const handleSelectRecoveryPlan = (plan: any) => {
     setSelectedRecoveryPlan(plan)
