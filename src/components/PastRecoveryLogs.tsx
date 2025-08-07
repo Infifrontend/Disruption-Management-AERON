@@ -750,9 +750,65 @@ export function PastRecoveryLogs() {
               <p className="text-sm text-muted-foreground">Historical performance showing improvement in recovery metrics</p>
             </CardHeader>
             <CardContent>
-              <div className="h-64 flex items-center justify-center bg-gray-50 rounded">
-                <p className="text-gray-500">Performance trend chart would be displayed here</p>
-              </div>
+              <ChartContainer
+                config={{
+                  efficiency: {
+                    label: "Recovery Efficiency %",
+                    color: "hsl(25, 95%, 53%)",
+                  },
+                  delayReduction: {
+                    label: "Delay Minutes Prevented",
+                    color: "hsl(221, 83%, 53%)",
+                  },
+                }}
+                className="h-[300px]"
+              >
+                <RechartsBarChart data={[
+                  { month: "Oct 24", efficiency: 88, delayReduction: 2800 },
+                  { month: "Nov 24", efficiency: 91, delayReduction: 3100 },
+                  { month: "Dec 24", efficiency: 94, delayReduction: 3400 },
+                  { month: "Jan 25", efficiency: 96, delayReduction: 3600 },
+                ]}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    yAxisId="efficiency"
+                    orientation="right"
+                    domain={[0, 100]}
+                    tick={{ fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    yAxisId="delay"
+                    orientation="left"
+                    domain={[0, 4000]}
+                    tick={{ fontSize: 12 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <ChartTooltip
+                    content={<ChartTooltipContent />}
+                  />
+                  <Bar 
+                    yAxisId="delay"
+                    dataKey="delayReduction" 
+                    fill="var(--color-delayReduction)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar 
+                    yAxisId="efficiency"
+                    dataKey="efficiency" 
+                    fill="var(--color-efficiency)"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </RechartsBarChart>
+              </ChartContainer>
             </CardContent>
           </Card>
 
