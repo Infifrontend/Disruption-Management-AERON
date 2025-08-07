@@ -137,6 +137,9 @@ export function RecoveryOptionsGenerator({
     setIsMounted(true);
     return () => {
       setIsMounted(false);
+      // Cancel any ongoing requests
+      abortControllerRef.current.abort();
+      activeRequests.forEach(controller => controller.abort());
     };
   }, []);
   const [selectedOption, setSelectedOption] = useState(null);
@@ -165,6 +168,8 @@ export function RecoveryOptionsGenerator({
   const [loadingError, setLoadingError] = useState(null);
   const [loadingRecoveryOption, setLoadingRecoveryOption] = useState(null);
   const [loadingRotationPlan, setLoadingRotationPlan] = useState(null);
+  const [activeRequests, setActiveRequests] = useState(new Map());
+  const abortControllerRef = useRef(new AbortController());
 
   // Handle both array and single flight selection
   const flight = Array.isArray(selectedFlight)
@@ -183,6 +188,14 @@ export function RecoveryOptionsGenerator({
 
       // Use flight number as ID if no specific ID exists
       const flightId = flight.id || flight.flightNumber || "unknown";
+      const requestKey = `recovery-options-${flightId}`;
+      
+      // Cancel previous request for same flight
+      if (activeRequests.has(requestKey)) {
+        activeRequests.get(requestKey).abort();
+        activeRequests.delete(requestKey);
+      }
+
       console.log("Processing flight:", flight, "with ID:", flightId);
       console.log(
         "Flight categorization:",
@@ -199,15 +212,38 @@ export function RecoveryOptionsGenerator({
       setIsLoadingOptions(true);
       setLoadingError(null);
 
+      // Create new abort controller for this request
+      const controller = new AbortController();
+      setActiveRequests(prev => new Map(prev.set(requestKey, controller)));
+
       try {
         console.log(
           `Fetching categorization-based recovery options for flight ID: ${flightId}`,
         );
 
+        // Add timeout for the entire operation
+        const timeoutPromise = new Promise((_, reject) => {
+          setTimeout(() => reject(new Error('Request timeout')), 15000);
+        });
+
+        // Check if request was cancelled
+        if (controller.signal.aborted) {
+          return;
+        }
+
         // Check database connectivity first
-        const isHealthy = await databaseService.healthCheck();
+        const isHealthy = await Promise.race([
+          databaseService.healthCheck(),
+          timeoutPromise
+        ]);
+        
         if (!isHealthy) {
           throw new Error("Database connection failed");
+        }
+
+        // Check if request was cancelled
+        if (controller.signal.aborted) {
+          return;
         }
 
         // Initialize variables
@@ -613,7 +649,15 @@ export function RecoveryOptionsGenerator({
         );
         setUseDatabaseData(false);
       } finally {
-        setIsLoadingOptions(false);
+        if (!controller.signal.aborted) {
+          setIsLoadingOptions(false);
+        }
+        // Clean up the request
+        setActiveRequests(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(requestKey);
+          return newMap;
+        });
       }
     };
 

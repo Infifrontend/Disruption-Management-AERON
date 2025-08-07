@@ -117,3 +117,77 @@ async function fixConstraints() {
 
 // Run the fix
 fixConstraints()
+import pkg from 'pg'
+const { Pool } = pkg
+
+// Database connection
+let connectionString = process.env.DATABASE_URL || 'postgresql://0.0.0.0:5432/aeron_settings'
+
+if (connectionString && connectionString.includes('neon.tech')) {
+  try {
+    const url = new URL(connectionString)
+    const endpointId = url.hostname.split('.')[0]
+    const params = new URLSearchParams(url.search)
+    params.set('options', `endpoint=${endpointId}`)
+    params.set('sslmode', 'require')
+    url.search = params.toString()
+    connectionString = url.toString()
+  } catch (error) {
+    console.error('⚠️ Error configuring Neon connection:', error.message)
+  }
+}
+
+const pool = new Pool({
+  connectionString: connectionString,
+  ssl: connectionString.includes('neon.tech') ? { rejectUnauthorized: false } : false,
+  max: 1,
+  connectionTimeoutMillis: 10000,
+})
+
+async function fixConstraints() {
+  try {
+    console.log('🔧 Fixing database constraints...')
+
+    // Add unique constraint to recovery_steps if it doesn't exist
+    await pool.query(`
+      ALTER TABLE recovery_steps 
+      ADD CONSTRAINT IF NOT EXISTS recovery_steps_disruption_step_unique 
+      UNIQUE (disruption_id, step_number)
+    `)
+    
+    console.log('✅ Added unique constraint to recovery_steps')
+
+    // Update recovery_options to handle arrays properly
+    await pool.query(`
+      ALTER TABLE recovery_options 
+      ALTER COLUMN advantages TYPE TEXT[] USING 
+        CASE 
+          WHEN advantages::text ~ '^\\[.*\\]$' THEN 
+            (SELECT array_agg(trim(both '"' from value)) 
+             FROM json_array_elements_text(advantages::json)) 
+          ELSE ARRAY[advantages::text]
+        END
+    `)
+    
+    await pool.query(`
+      ALTER TABLE recovery_options 
+      ALTER COLUMN considerations TYPE TEXT[] USING 
+        CASE 
+          WHEN considerations::text ~ '^\\[.*\\]$' THEN 
+            (SELECT array_agg(trim(both '"' from value)) 
+             FROM json_array_elements_text(considerations::json)) 
+          ELSE ARRAY[considerations::text]
+        END
+    `)
+    
+    console.log('✅ Fixed array columns in recovery_options')
+    console.log('🎉 Database constraints fixed successfully!')
+    
+  } catch (error) {
+    console.error('❌ Error fixing constraints:', error)
+  } finally {
+    await pool.end()
+  }
+}
+
+fixConstraints()

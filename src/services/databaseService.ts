@@ -967,6 +967,7 @@ class DatabaseService {
   // Generate recovery options for a disruption
   async generateRecoveryOptions(
     disruptionId: string,
+    forceRegenerate: boolean = false
   ): Promise<{ optionsCount: number; stepsCount: number }> {
     try {
       console.log(`Generating recovery options for disruption ${disruptionId}`);
@@ -974,14 +975,18 @@ class DatabaseService {
       // Add timeout to prevent hanging requests
       const controller = new AbortController();
       const config = backendConfig.getConfig();
-      const timeout = config.timeout;
-      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      const timeout = Math.max(config.timeout, 10000); // Minimum 10 seconds for generation
+      const timeoutId = setTimeout(() => {
+        console.warn(`Recovery generation timeout after ${timeout}ms for ${disruptionId}`);
+        controller.abort();
+      }, timeout);
 
       const response = await fetch(
         `${this.baseUrl}/recovery-options/generate/${disruptionId}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ forceRegenerate }),
           signal: controller.signal,
         },
       );
