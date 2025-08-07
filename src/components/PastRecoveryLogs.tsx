@@ -7,6 +7,11 @@ import { Input } from './ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Label } from './ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from './ui/chart'
 import { 
   Search, 
   Filter, 
@@ -28,6 +33,16 @@ import {
   FileText
 } from 'lucide-react'
 import { databaseService } from '../services/databaseService'
+import { 
+  Pie, 
+  PieChart as RechartsDonutChart, 
+  Bar, 
+  BarChart as RechartsBarChart, 
+  CartesianGrid, 
+  XAxis, 
+  YAxis,
+  Label
+} from 'recharts'
 
 interface RecoveryLog {
   solution_id: string
@@ -366,41 +381,103 @@ export function PastRecoveryLogs() {
                 <p className="text-sm text-muted-foreground">Breakdown of disruption types handled by AERON</p>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                      <span className="text-sm">Weather</span>
-                    </div>
-                    <span className="text-sm font-medium">1 (20.0%)</span>
+                <ChartContainer
+                  config={{
+                    weather: {
+                      label: "Weather",
+                      color: "hsl(221, 83%, 53%)",
+                    },
+                    crew: {
+                      label: "Crew",
+                      color: "hsl(25, 95%, 53%)",
+                    },
+                    aog: {
+                      label: "AOG",
+                      color: "hsl(0, 0%, 45%)",
+                    },
+                    diversion: {
+                      label: "Diversion",
+                      color: "hsl(173, 58%, 39%)",
+                    },
+                    security: {
+                      label: "Security",
+                      color: "hsl(271, 81%, 56%)",
+                    },
+                  }}
+                  className="mx-auto aspect-square max-h-[250px]"
+                >
+                  <RechartsDonutChart>
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent hideLabel />}
+                    />
+                    <Pie
+                      data={[
+                        { category: "weather", value: 20, fill: "var(--color-weather)" },
+                        { category: "crew", value: 20, fill: "var(--color-crew)" },
+                        { category: "aog", value: 20, fill: "var(--color-aog)" },
+                        { category: "diversion", value: 20, fill: "var(--color-diversion)" },
+                        { category: "security", value: 20, fill: "var(--color-security)" },
+                      ]}
+                      dataKey="value"
+                      nameKey="category"
+                      innerRadius={60}
+                      strokeWidth={5}
+                    >
+                      <Label
+                        content={({ viewBox }) => {
+                          if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                            return (
+                              <text
+                                x={viewBox.cx}
+                                y={viewBox.cy}
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                              >
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={viewBox.cy}
+                                  className="fill-foreground text-3xl font-bold"
+                                >
+                                  5
+                                </tspan>
+                                <tspan
+                                  x={viewBox.cx}
+                                  y={(viewBox.cy || 0) + 24}
+                                  className="fill-muted-foreground"
+                                >
+                                  Categories
+                                </tspan>
+                              </text>
+                            )
+                          }
+                        }}
+                      />
+                    </Pie>
+                  </RechartsDonutChart>
+                </ChartContainer>
+                
+                {/* Legend */}
+                <div className="grid grid-cols-2 gap-2 mt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <span className="text-sm">Weather (20.0%)</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                      <span className="text-sm">Crew</span>
-                    </div>
-                    <span className="text-sm font-medium">1 (20.0%)</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                    <span className="text-sm">Crew (20.0%)</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-                      <span className="text-sm">AOG</span>
-                    </div>
-                    <span className="text-sm font-medium">1 (20.0%)</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
+                    <span className="text-sm">AOG (20.0%)</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-teal-500 rounded-full"></div>
-                      <span className="text-sm">Diversion</span>
-                    </div>
-                    <span className="text-sm font-medium">1 (20.0%)</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-teal-500 rounded-full"></div>
+                    <span className="text-sm">Diversion (20.0%)</span>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                      <span className="text-sm">Security</span>
-                    </div>
-                    <span className="text-sm font-medium">1 (20.0%)</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                    <span className="text-sm">Security (20.0%)</span>
                   </div>
                 </div>
               </CardContent>
@@ -416,36 +493,66 @@ export function PastRecoveryLogs() {
                 <p className="text-sm text-muted-foreground">Effectiveness of recovery solutions in preventing delays</p>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {/* Simulated bar chart data */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs">
-                      <span>FZ215</span>
-                      <span>95%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: '95%' }}></div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs">
-                      <span>FZ181</span>
-                      <span>88%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: '88%' }}></div>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-xs">
-                      <span>FZ147</span>
-                      <span>92%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: '92%' }}></div>
-                    </div>
-                  </div>
-                </div>
+                <ChartContainer
+                  config={{
+                    efficiency: {
+                      label: "Efficiency %",
+                      color: "hsl(221, 83%, 53%)",
+                    },
+                    delayReduction: {
+                      label: "Delay Reduction (min)",
+                      color: "hsl(25, 95%, 53%)",
+                    },
+                  }}
+                  className="min-h-[200px]"
+                >
+                  <RechartsBarChart data={[
+                    { flight: "FZ215", efficiency: 95, delayReduction: 155 },
+                    { flight: "FZ181", efficiency: 88, delayReduction: 210 },
+                    { flight: "FZ147", efficiency: 92, delayReduction: 180 },
+                    { flight: "FZ203", efficiency: 78, delayReduction: 325 },
+                    { flight: "FZ089", efficiency: 82, delayReduction: 240 },
+                  ]}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis 
+                      dataKey="flight" 
+                      tick={{ fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      yAxisId="efficiency"
+                      orientation="left"
+                      domain={[0, 100]}
+                      tick={{ fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <YAxis 
+                      yAxisId="delay"
+                      orientation="right"
+                      domain={[0, 400]}
+                      tick={{ fontSize: 12 }}
+                      axisLine={false}
+                      tickLine={false}
+                    />
+                    <ChartTooltip
+                      content={<ChartTooltipContent />}
+                    />
+                    <Bar 
+                      yAxisId="efficiency"
+                      dataKey="efficiency" 
+                      fill="var(--color-efficiency)"
+                      radius={[4, 4, 0, 0]}
+                    />
+                    <Bar 
+                      yAxisId="delay"
+                      dataKey="delayReduction" 
+                      fill="var(--color-delayReduction)"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </RechartsBarChart>
+                </ChartContainer>
               </CardContent>
             </Card>
           </div>
