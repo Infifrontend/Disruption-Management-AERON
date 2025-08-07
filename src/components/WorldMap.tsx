@@ -252,6 +252,25 @@ export function WorldMap() {
                   </div>
                 </div>
               </div>
+
+              {/* Network Performance Indicator - Repositioned to bottom right */}
+              <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-xs shadow-xl z-30 max-w-[180px]">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isRealtime ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+                  <span className="font-semibold text-flydubai-navy text-xs">Network Status</span>
+                </div>
+                <div className="space-y-1">
+                  <div className="text-green-600 font-medium text-xs">
+                    {liveData.disrupted === 0 ? 'Operational' : liveData.disrupted < 5 ? 'Minor Issues' : 'Disruptions'}
+                  </div>
+                  <div className="text-gray-600 text-xs">
+                    Updated: {lastUpdate.toLocaleTimeString()}
+                  </div>
+                  <div className="text-gray-600 text-xs">
+                    {((liveData.onSchedule / liveData.activeFlights) * 100).toFixed(1)}% OTP
+                  </div>
+                </div>
+              </div>
               {/* Overlay gradient for better contrast */}
               <div className="absolute inset-0 bg-gradient-to-b from-blue-900/40 to-blue-700/60 z-10"></div>
 
@@ -447,71 +466,52 @@ export function WorldMap() {
                 )
               })}
 
-              {/* Enhanced Legend */}
-              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-4 text-xs shadow-xl z-30 max-w-xs">
-                <h4 className="font-semibold mb-3 text-flydubai-navy">Legend</h4>
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
+              {/* Enhanced Legend - Repositioned to avoid overlap */}
+              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-xs shadow-xl z-30 max-w-[200px]">
+                <h4 className="font-semibold mb-2 text-flydubai-navy">Legend</h4>
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
                     <div className="relative flex-shrink-0">
-                      <div className="w-6 h-6 rounded-full bg-flydubai-blue border-2 border-white shadow-sm flex items-center justify-center">
-                        <span className="text-white text-xs font-bold">FZ</span>
+                      <div className="w-5 h-5 rounded-full bg-flydubai-blue border-2 border-white shadow-sm flex items-center justify-center">
+                        <span className="text-white text-[9px] font-bold">FZ</span>
                       </div>
-                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border border-white"></div>
+                      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border border-white"></div>
                     </div>
-                    <span className="text-flydubai-navy">Primary Hub (DXB)</span>
+                    <span className="text-flydubai-navy text-xs">Primary Hub</span>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <div className="relative flex-shrink-0">
-                      <div className="w-4 h-4 rounded-full bg-white border-2 border-flydubai-blue shadow-sm flex items-center justify-center">
-                        <div className="w-2 h-2 rounded-full bg-flydubai-blue"></div>
+                      <div className="w-3 h-3 rounded-full bg-white border-2 border-flydubai-blue shadow-sm flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 rounded-full bg-flydubai-blue"></div>
                       </div>
-                      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-400 rounded-full border border-white"></div>
+                      <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-green-400 rounded-full border border-white"></div>
                     </div>
-                    <span className="text-flydubai-navy">Destinations</span>
+                    <span className="text-flydubai-navy text-xs">Destinations</span>
                   </div>
                   {selectedView === 'flights' && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full bg-flydubai-blue border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0">
-                        <Plane className="w-2.5 h-2.5 text-white transform rotate-45" />
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-flydubai-blue border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0">
+                        <Plane className="w-2 h-2 text-white transform rotate-45" />
                       </div>
-                      <span className="text-flydubai-navy">Active Flights</span>
+                      <span className="text-flydubai-navy text-xs">Active Flights</span>
                     </div>
                   )}
                   {selectedView === 'routes' && (
-                    <div className="flex items-center gap-3">
-                      <svg width="20" height="8" className="flex-shrink-0">
-                        <path d="M0,4 L20,4" stroke="#00A8E6" strokeWidth="2" strokeDasharray="3,2" opacity="0.6"/>
+                    <div className="flex items-center gap-2">
+                      <svg width="16" height="6" className="flex-shrink-0">
+                        <path d="M0,3 L16,3" stroke="#00A8E6" strokeWidth="2" strokeDasharray="2,1" opacity="0.6"/>
                       </svg>
-                      <span className="text-flydubai-navy">Flight Routes</span>
+                      <span className="text-flydubai-navy text-xs">Flight Routes</span>
                     </div>
                   )}
                   {selectedView === 'status' && (
-                    <div className="flex items-center gap-3">
-                      <div className="w-5 h-5 rounded-full bg-red-500 border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0">
-                        <AlertTriangle className="w-3 h-3 text-white" />
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0">
+                        <AlertTriangle className="w-2 h-2 text-white" />
                       </div>
-                      <span className="text-flydubai-navy">Disruptions</span>
+                      <span className="text-flydubai-navy text-xs">Disruptions</span>
                     </div>
                   )}
-                </div>
-              </div>
-
-              {/* Network Performance Indicator */}
-              <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-xs shadow-xl z-30 max-w-xs">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isRealtime ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
-                  <span className="font-semibold text-flydubai-navy">Network Status</span>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-green-600 font-medium">
-                    {liveData.disrupted === 0 ? 'Operational' : liveData.disrupted < 5 ? 'Minor Issues' : 'Disruptions'}
-                  </div>
-                  <div className="text-gray-600">
-                    Last updated: {lastUpdate.toLocaleTimeString()}
-                  </div>
-                  <div className="text-gray-600">
-                    {((liveData.onSchedule / liveData.activeFlights) * 100).toFixed(1)}% On-Time Performance
-                  </div>
                 </div>
               </div>
             </div>
