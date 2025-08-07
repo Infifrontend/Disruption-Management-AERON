@@ -1,0 +1,135 @@
+
+{
+  "tabStructure": {
+    "component": "AffectedFlightsList",
+    "description": "Affected flights organized by inbound and outbound traffic to/from DXB",
+    "tabs": [
+      {
+        "id": "inbound",
+        "label": "Inbound to DXB",
+        "icon": "Plane (rotated 180°)",
+        "description": "Flights arriving at Dubai International Airport (DXB)",
+        "filterCriteria": {
+          "destination": "DXB"
+        },
+        "features": {
+          "filtering": {
+            "status": ["all", "Active", "Resolved", "Cancelled", "Delayed", "Diverted"],
+            "severity": ["all", "Critical", "High", "Medium", "Low"],
+            "type": ["all", "Technical", "Weather", "Crew", "Airport", "Rotation"],
+            "origin": ["all", "dynamic list from flights"],
+            "destination": ["all", "dynamic list from flights"],
+            "search": "text search across flight number, route, cities"
+          },
+          "pagination": {
+            "itemsPerPage": 10,
+            "separatePaginationState": true,
+            "resetOnTabChange": true
+          },
+          "grouping": {
+            "method": "route",
+            "format": "OriginCity → DestinationCity"
+          },
+          "statistics": {
+            "totalFlights": "count of inbound flights",
+            "affectedPassengers": "sum of passengers on inbound flights",
+            "activeDisruptions": "count of active inbound disruptions",
+            "averageDelay": "average delay for inbound flights"
+          }
+        }
+      },
+      {
+        "id": "outbound",
+        "label": "Outbound from DXB",
+        "icon": "Plane",
+        "description": "Flights departing from Dubai International Airport (DXB)",
+        "filterCriteria": {
+          "origin": "DXB"
+        },
+        "features": {
+          "filtering": {
+            "status": ["all", "Active", "Resolved", "Cancelled", "Delayed", "Diverted"],
+            "severity": ["all", "Critical", "High", "Medium", "Low"],
+            "type": ["all", "Technical", "Weather", "Crew", "Airport", "Rotation"],
+            "origin": ["all", "dynamic list from flights"],
+            "destination": ["all", "dynamic list from flights"],
+            "search": "text search across flight number, route, cities"
+          },
+          "pagination": {
+            "itemsPerPage": 10,
+            "separatePaginationState": true,
+            "resetOnTabChange": true
+          },
+          "grouping": {
+            "method": "route",
+            "format": "OriginCity → DestinationCity"
+          },
+          "statistics": {
+            "totalFlights": "count of outbound flights",
+            "affectedPassengers": "sum of passengers on outbound flights",
+            "activeDisruptions": "count of active outbound disruptions",
+            "averageDelay": "average delay for outbound flights"
+          }
+        }
+      }
+    ],
+    "sharedFeatures": {
+      "flightCard": {
+        "displays": [
+          "flightNumber",
+          "route",
+          "aircraft",
+          "scheduledDeparture",
+          "passengers",
+          "delay",
+          "severity",
+          "status",
+          "disruptionReason"
+        ],
+        "interactions": {
+          "onClick": "selectFlight",
+          "hover": "showShadow"
+        }
+      },
+      "filterPanel": {
+        "resetFilters": true,
+        "appliedToCurrentTab": true,
+        "resetPaginationOnChange": true
+      },
+      "summaryStats": {
+        "dynamicBasedOnTab": true,
+        "cards": [
+          "Total Flights (tab-specific)",
+          "Affected Passengers (tab-specific)",
+          "Active Disruptions (tab-specific)",
+          "Average Delay (tab-specific)"
+        ]
+      },
+      "emptyStates": {
+        "inbound": {
+          "icon": "Plane (rotated)",
+          "message": "No inbound flights to DXB found"
+        },
+        "outbound": {
+          "icon": "Plane",
+          "message": "No outbound flights from DXB found"
+        }
+      }
+    },
+    "implementation": {
+      "framework": "React with TypeScript",
+      "uiLibrary": "shadcn/ui",
+      "tabComponent": "Tabs, TabsList, TabsTrigger, TabsContent",
+      "stateManagement": {
+        "activeTab": "useState",
+        "separatePagination": "inboundPage, outboundPage",
+        "sharedFilters": "filters state object"
+      },
+      "dataFlow": {
+        "source": "flights array from databaseService",
+        "filtering": "getFilteredFlightsByTab function",
+        "tabSwitching": "resets pagination, maintains filters"
+      }
+    }
+  }
+}
