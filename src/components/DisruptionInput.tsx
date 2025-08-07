@@ -730,10 +730,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       type:
         newDisruption.disruptionType.charAt(0).toUpperCase() +
         newDisruption.disruptionType.slice(1),
-      status:
-        newDisruption.currentStatus === "Delayed"
-          ? "Active"
-          : newDisruption.currentStatus,
+      status: newDisruption.currentStatus,
       disruptionReason: newDisruption.disruptionReason,
       categorization: newDisruption.categorization || "Manual Entry",
       crew_members: newDisruption.crewMembers || [],
@@ -1669,24 +1666,37 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               <Tabs defaultValue="inbound" className="w-full">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="inbound">
-                    Inbound to DXB ({sortedFlights.filter(f => f.destination === 'DXB').length})
+                    Inbound to DXB (
+                    {
+                      sortedFlights.filter((f) => f.destination === "DXB")
+                        .length
+                    }
+                    )
                   </TabsTrigger>
                   <TabsTrigger value="outbound">
-                    Outbound from DXB ({sortedFlights.filter(f => f.origin === 'DXB').length})
+                    Outbound from DXB (
+                    {sortedFlights.filter((f) => f.origin === "DXB").length})
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="inbound" className="space-y-4">
-                  <div className="text-sm text-muted-foreground mb-4">
+                  {/* <div className="text-sm text-muted-foreground mb-4">
                     Flights arriving at Dubai International Airport (DXB)
-                  </div>
-                  
+                  </div> */}
+
                   {(() => {
-                    const inboundFlights = sortedFlights.filter(f => f.destination === 'DXB');
+                    const inboundFlights = sortedFlights.filter(
+                      (f) => f.destination === "DXB",
+                    );
                     const startIdx = (currentPage - 1) * itemsPerPage;
                     const endIdx = startIdx + itemsPerPage;
-                    const paginatedInboundFlights = inboundFlights.slice(startIdx, endIdx);
-                    const inboundTotalPages = Math.ceil(inboundFlights.length / itemsPerPage);
+                    const paginatedInboundFlights = inboundFlights.slice(
+                      startIdx,
+                      endIdx,
+                    );
+                    const inboundTotalPages = Math.ceil(
+                      inboundFlights.length / itemsPerPage,
+                    );
 
                     return (
                       <>
@@ -1756,7 +1766,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                       className="text-sm text-muted-foreground truncate max-w-[140px]"
                                       title={`${flight.originCity} → ${flight.destinationCity}`}
                                     >
-                                      {flight.originCity} → {flight.destinationCity}
+                                      {flight.originCity} →{" "}
+                                      {flight.destinationCity}
                                     </div>
                                   </TableCell>
                                   <TableCell>
@@ -1771,15 +1782,17 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                   </TableCell>
                                   <TableCell>
                                     <Badge
-                                      className={getStatusColor(flight.currentStatus)}
+                                      className={getStatusColor(
+                                        flight.currentStatus,
+                                      )}
                                     >
                                       {flight.currentStatus}
                                     </Badge>
-                                    {flight.delay > 0 && (
+                                    {/* {flight.delay > 0 && (
                                       <div className="text-sm text-red-600 mt-1">
                                         +{flight.delay}m
                                       </div>
-                                    )}
+                                    )} */}
                                   </TableCell>
                                   <TableCell>
                                     <div className="space-y-1 max-w-[200px]">
@@ -1802,7 +1815,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                     </div>
                                   </TableCell>
                                   <TableCell>
-                                    <Badge className={getPriorityColor(flight.priority)}>
+                                    <Badge
+                                      className={getPriorityColor(
+                                        flight.priority,
+                                      )}
+                                    >
                                       {flight.priority}
                                     </Badge>
                                   </TableCell>
@@ -1821,7 +1838,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                   <TableCell>
                                     <div className="flex items-center gap-2">
                                       <span className="text-lg">
-                                        {getDisruptionIcon(flight.disruptionType)}
+                                        {getDisruptionIcon(
+                                          flight.disruptionType,
+                                        )}
                                       </span>
                                       <div>
                                         <div
@@ -1858,14 +1877,17 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         {inboundFlights.length > itemsPerPage && (
                           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
                             <div className="text-sm text-muted-foreground whitespace-nowrap">
-                              Page {currentPage} of {inboundTotalPages} ({inboundFlights.length} inbound flights)
+                              Page {currentPage} of {inboundTotalPages} (
+                              {inboundFlights.length} inbound flights)
                             </div>
                             <Pagination>
                               <PaginationContent className="flex-wrap justify-center">
                                 <PaginationItem>
                                   <PaginationPrevious
                                     onClick={() =>
-                                      setCurrentPage(Math.max(1, currentPage - 1))
+                                      setCurrentPage(
+                                        Math.max(1, currentPage - 1),
+                                      )
                                     }
                                     className={
                                       currentPage === 1
@@ -1883,7 +1905,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                       pageNum = i + 1;
                                     } else if (currentPage <= 3) {
                                       pageNum = i + 1;
-                                    } else if (currentPage >= inboundTotalPages - 2) {
+                                    } else if (
+                                      currentPage >=
+                                      inboundTotalPages - 2
+                                    ) {
                                       pageNum = inboundTotalPages - 4 + i;
                                     } else {
                                       pageNum = currentPage - 2 + i;
@@ -1892,7 +1917,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                     return (
                                       <PaginationItem key={pageNum}>
                                         <PaginationLink
-                                          onClick={() => setCurrentPage(pageNum)}
+                                          onClick={() =>
+                                            setCurrentPage(pageNum)
+                                          }
                                           isActive={currentPage === pageNum}
                                           className="cursor-pointer"
                                         >
@@ -1903,17 +1930,21 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                   },
                                 )}
 
-                                {inboundTotalPages > 5 && currentPage < inboundTotalPages - 2 && (
-                                  <PaginationItem>
-                                    <PaginationEllipsis />
-                                  </PaginationItem>
-                                )}
+                                {inboundTotalPages > 5 &&
+                                  currentPage < inboundTotalPages - 2 && (
+                                    <PaginationItem>
+                                      <PaginationEllipsis />
+                                    </PaginationItem>
+                                  )}
 
                                 <PaginationItem>
                                   <PaginationNext
                                     onClick={() =>
                                       setCurrentPage(
-                                        Math.min(inboundTotalPages, currentPage + 1),
+                                        Math.min(
+                                          inboundTotalPages,
+                                          currentPage + 1,
+                                        ),
                                       )
                                     }
                                     className={
@@ -1934,12 +1965,13 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                             <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                               <Plane className="h-8 w-8 text-gray-400 transform rotate-180" />
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">No inbound flights found</h3>
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">
+                              No inbound flights found
+                            </h3>
                             <p className="text-gray-500 mb-4">
-                              {flights.length === 0 
+                              {flights.length === 0
                                 ? "There are currently no flight disruptions in the system."
-                                : "No inbound flights to DXB match your current filter criteria."
-                              }
+                                : "No inbound flights to DXB match your current filter criteria."}
                             </p>
                           </div>
                         )}
@@ -1949,16 +1981,23 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                 </TabsContent>
 
                 <TabsContent value="outbound" className="space-y-4">
-                  <div className="text-sm text-muted-foreground mb-4">
+                  {/* <div className="text-sm text-muted-foreground mb-4">
                     Flights departing from Dubai International Airport (DXB)
-                  </div>
-                  
+                  </div> */}
+
                   {(() => {
-                    const outboundFlights = sortedFlights.filter(f => f.origin === 'DXB');
+                    const outboundFlights = sortedFlights.filter(
+                      (f) => f.origin === "DXB",
+                    );
                     const startIdx = (currentPage - 1) * itemsPerPage;
                     const endIdx = startIdx + itemsPerPage;
-                    const paginatedOutboundFlights = outboundFlights.slice(startIdx, endIdx);
-                    const outboundTotalPages = Math.ceil(outboundFlights.length / itemsPerPage);
+                    const paginatedOutboundFlights = outboundFlights.slice(
+                      startIdx,
+                      endIdx,
+                    );
+                    const outboundTotalPages = Math.ceil(
+                      outboundFlights.length / itemsPerPage,
+                    );
 
                     return (
                       <>
@@ -2028,7 +2067,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                       className="text-sm text-muted-foreground truncate max-w-[140px]"
                                       title={`${flight.originCity} → ${flight.destinationCity}`}
                                     >
-                                      {flight.originCity} → {flight.destinationCity}
+                                      {flight.originCity} →{" "}
+                                      {flight.destinationCity}
                                     </div>
                                   </TableCell>
                                   <TableCell>
@@ -2043,15 +2083,17 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                   </TableCell>
                                   <TableCell>
                                     <Badge
-                                      className={getStatusColor(flight.currentStatus)}
+                                      className={getStatusColor(
+                                        flight.currentStatus,
+                                      )}
                                     >
                                       {flight.currentStatus}
                                     </Badge>
-                                    {flight.delay > 0 && (
+                                    {/* {flight.delay > 0 && (
                                       <div className="text-sm text-red-600 mt-1">
                                         +{flight.delay}m
                                       </div>
-                                    )}
+                                    )} */}
                                   </TableCell>
                                   <TableCell>
                                     <div className="space-y-1 max-w-[200px]">
@@ -2074,7 +2116,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                     </div>
                                   </TableCell>
                                   <TableCell>
-                                    <Badge className={getPriorityColor(flight.priority)}>
+                                    <Badge
+                                      className={getPriorityColor(
+                                        flight.priority,
+                                      )}
+                                    >
                                       {flight.priority}
                                     </Badge>
                                   </TableCell>
@@ -2093,7 +2139,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                   <TableCell>
                                     <div className="flex items-center gap-2">
                                       <span className="text-lg">
-                                        {getDisruptionIcon(flight.disruptionType)}
+                                        {getDisruptionIcon(
+                                          flight.disruptionType,
+                                        )}
                                       </span>
                                       <div>
                                         <div
@@ -2130,14 +2178,17 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         {outboundFlights.length > itemsPerPage && (
                           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
                             <div className="text-sm text-muted-foreground whitespace-nowrap">
-                              Page {currentPage} of {outboundTotalPages} ({outboundFlights.length} outbound flights)
+                              Page {currentPage} of {outboundTotalPages} (
+                              {outboundFlights.length} outbound flights)
                             </div>
                             <Pagination>
                               <PaginationContent className="flex-wrap justify-center">
                                 <PaginationItem>
                                   <PaginationPrevious
                                     onClick={() =>
-                                      setCurrentPage(Math.max(1, currentPage - 1))
+                                      setCurrentPage(
+                                        Math.max(1, currentPage - 1),
+                                      )
                                     }
                                     className={
                                       currentPage === 1
@@ -2155,7 +2206,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                       pageNum = i + 1;
                                     } else if (currentPage <= 3) {
                                       pageNum = i + 1;
-                                    } else if (currentPage >= outboundTotalPages - 2) {
+                                    } else if (
+                                      currentPage >=
+                                      outboundTotalPages - 2
+                                    ) {
                                       pageNum = outboundTotalPages - 4 + i;
                                     } else {
                                       pageNum = currentPage - 2 + i;
@@ -2164,7 +2218,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                     return (
                                       <PaginationItem key={pageNum}>
                                         <PaginationLink
-                                          onClick={() => setCurrentPage(pageNum)}
+                                          onClick={() =>
+                                            setCurrentPage(pageNum)
+                                          }
                                           isActive={currentPage === pageNum}
                                           className="cursor-pointer"
                                         >
@@ -2175,17 +2231,21 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                   },
                                 )}
 
-                                {outboundTotalPages > 5 && currentPage < outboundTotalPages - 2 && (
-                                  <PaginationItem>
-                                    <PaginationEllipsis />
-                                  </PaginationItem>
-                                )}
+                                {outboundTotalPages > 5 &&
+                                  currentPage < outboundTotalPages - 2 && (
+                                    <PaginationItem>
+                                      <PaginationEllipsis />
+                                    </PaginationItem>
+                                  )}
 
                                 <PaginationItem>
                                   <PaginationNext
                                     onClick={() =>
                                       setCurrentPage(
-                                        Math.min(outboundTotalPages, currentPage + 1),
+                                        Math.min(
+                                          outboundTotalPages,
+                                          currentPage + 1,
+                                        ),
                                       )
                                     }
                                     className={
@@ -2206,12 +2266,13 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                             <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                               <Plane className="h-8 w-8 text-gray-400" />
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">No outbound flights found</h3>
+                            <h3 className="text-lg font-medium text-gray-900 mb-2">
+                              No outbound flights found
+                            </h3>
                             <p className="text-gray-500 mb-4">
-                              {flights.length === 0 
+                              {flights.length === 0
                                 ? "There are currently no flight disruptions in the system."
-                                : "No outbound flights from DXB match your current filter criteria."
-                              }
+                                : "No outbound flights from DXB match your current filter criteria."}
                             </p>
                           </div>
                         )}
