@@ -447,30 +447,37 @@ export function generateRecoveryOptionsForDisruption(disruption) {
     return { options: [], steps: [] };
   }
 
-  // Validate required fields
-  if (!disruption.flight_number) {
+  // Validate required fields and provide fallbacks
+  if (!disruption.flight_number && !disruption.flightNumber) {
     console.error('Disruption missing flight_number:', disruption);
     return { options: [], steps: [] };
   }
 
+  // Normalize field names
+  const flightNumber = disruption.flight_number || disruption.flightNumber;
+  const disruptionType = disruption.disruption_type || disruption.disruptionType || disruption.type || 'Technical';
+
   // Set defaults for missing fields
   const safeDisruption = {
     ...disruption,
-    disruption_type: disruption.disruption_type || 'Technical',
+    flight_number: flightNumber,
+    disruption_type: disruptionType,
     severity: disruption.severity || 'Medium',
     passengers: disruption.passengers || 150,
     aircraft: disruption.aircraft || 'Unknown',
-    delay_minutes: disruption.delay_minutes || 0
+    delay_minutes: disruption.delay_minutes || disruption.delay || 0,
+    origin: disruption.origin || 'DXB',
+    destination: disruption.destination || 'Unknown'
   };
 
   console.log(`Generating recovery options for flight ${safeDisruption.flight_number}, type: ${safeDisruption.disruption_type}`);
 
-  const disruptionType = safeDisruption.disruption_type?.toLowerCase() || 'technical';
+  const disruptionTypeNormalized = disruptionType.toLowerCase();
   let options = [];
   let steps = [];
 
   // Generate options based on disruption type
-  switch (disruptionType) {
+  switch (disruptionTypeNormalized) {
     case 'weather':
       steps = [
         {
