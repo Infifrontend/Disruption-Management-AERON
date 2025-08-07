@@ -273,7 +273,7 @@ app.post('/api/disruptions/bulk-update', async (req, res) => {
         const {
           flight_number, flightNumber, route, origin, destination, origin_city, destination_city,
           aircraft, scheduled_departure, estimated_departure, delay_minutes,
-          passengers, crew, connection_flights, severity, disruption_type, type, status, disruption_reason
+          passengers, crew, connection_flights, severity, disruption_type, type, status, disruption_reason, categorization
         } = disruption
 
         // Handle field name variations
@@ -317,7 +317,7 @@ app.post('/api/disruptions/bulk-update', async (req, res) => {
                 route = $3, origin = $4, destination = $5, origin_city = $6, destination_city = $7,
                 aircraft = $8, estimated_departure = $9, delay_minutes = $10,
                 passengers = $11, crew = $12, connection_flights = $13, severity = $14,
-                disruption_type = $15, status = $16, disruption_reason = $17, updated_at = NOW()
+                disruption_type = $15, status = $16, disruption_reason = $17, categorization = $18, updated_at = NOW()
               WHERE flight_number = $1 AND DATE(scheduled_departure) = DATE($2)
               RETURNING id
             `
@@ -325,7 +325,7 @@ app.post('/api/disruptions/bulk-update', async (req, res) => {
               flightNum, scheduled_dep, safeRoute, origin || 'UNK', destination || 'UNK',
               origin_city || 'Unknown', destination_city || 'Unknown',
               aircraft || 'Unknown', estimated_dep, delay_mins, passengers || 0, crew || 6,
-              connection_flights_val, safeSeverity, disruption_type_val, safeStatus, disruption_reason_val
+              connection_flights_val, safeSeverity, disruption_type_val, safeStatus, disruption_reason_val, categorization
             ]
             updated++
           } else {
@@ -335,15 +335,15 @@ app.post('/api/disruptions/bulk-update', async (req, res) => {
                 flight_number, route, origin, destination, origin_city, destination_city,
                 aircraft, scheduled_departure, estimated_departure, delay_minutes,
                 passengers, crew, connection_flights, severity, disruption_type,
-                status, disruption_reason, created_at, updated_at
-              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW(), NOW())
+                status, disruption_reason, categorization, created_at, updated_at
+              ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, NOW(), NOW())
               RETURNING id
             `
             params = [
               flightNum, safeRoute, origin || 'UNK', destination || 'UNK',
               origin_city || 'Unknown', destination_city || 'Unknown',
               aircraft || 'Unknown', scheduled_dep, estimated_dep, delay_mins, passengers || 0, crew || 6,
-              connection_flights_val, safeSeverity, disruption_type_val, safeStatus, disruption_reason_val
+              connection_flights_val, safeSeverity, disruption_type_val, safeStatus, disruption_reason_val, categorization
             ]
             inserted++
           }
@@ -975,8 +975,8 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
       try {
         await pool.query(`
           INSERT INTO recovery_options (
-            disruption_id, title, description, cost, timeline, confidence,
-            impact, status, priority, advantages, considerations,
+            disruption_id, title, description, cost, timeline,
+            confidence, impact, status, priority, advantages, considerations,
             resource_requirements, cost_breakdown, timeline_details,
             risk_assessment, technical_specs, metrics, rotation_plan
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
@@ -989,13 +989,20 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
             status = EXCLUDED.status,
             updated_at = CURRENT_TIMESTAMP
         `, [
-          numericDisruptionId, option.title, option.description, option.cost,
-          option.timeline, option.confidence, option.impact, option.status,
-          option.priority || 0, JSON.stringify(option.advantages || []),
-          JSON.stringify(option.considerations || []),
+          numericDisruptionId,
+          option.title || `Recovery Option ${options.indexOf(option) + 1}`,
+          option.description || 'Recovery option details',
+          option.cost || 'TBD',
+          option.timeline || 'TBD',
+          option.confidence || 80,
+          option.impact || 'Medium',
+          option.status || 'generated',
+          options.indexOf(option) + 1, // priority
+          option.advantages || [],
+          option.considerations || [],
           JSON.stringify(option.resourceRequirements || {}),
           JSON.stringify(option.costBreakdown || {}),
-          JSON.stringify(option.timelineDetails || []),
+          JSON.stringify(option.timelineDetails || {}),
           JSON.stringify(option.riskAssessment || {}),
           JSON.stringify(option.technicalSpecs || {}),
           JSON.stringify(option.metrics || {}),
@@ -1027,7 +1034,7 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
         `, [
           numericDisruptionId, step.step, step.title, step.status,
           step.timestamp, step.system, step.details,
-          JSON.stringify(step.data || {})
+          step.data ? JSON.stringify(step.data) : null
         ])
         stepsCount++
       } catch (insertError) {
@@ -1167,6 +1174,14 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
           disruption_id, step_number, title, status, timestamp,
           system, details, step_data
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        ON CONFLICT (disruption_id, step_number) DO UPDATE SET
+          title = EXCLUDED.title,
+          status = EXCLUDED.status,
+          timestamp = EXCLUDED.timestamp,
+          system = EXCLUDED.system,
+          details = EXCLUDED.details,
+          step_data = EXCLUDED.step_data,
+          updated_at = CURRENT_TIMESTAMP
       `, [
         disruptionId, step.step, step.title, step.status,
         step.timestamp, step.system, step.details,
@@ -1216,8 +1231,8 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
         optionData.impact,
         optionData.status,
         i + 1, // priority based on order
-        Array.isArray(optionData.advantages) ? optionData.advantages : [],
-        Array.isArray(optionData.considerations) ? optionData.considerations : [],
+        optionData.advantages,
+        optionData.considerations,
         JSON.stringify(optionData.resourceRequirements),
         JSON.stringify(optionData.costBreakdown),
         JSON.stringify(optionData.timelineDetails),
@@ -1546,7 +1561,7 @@ app.get('/api/recovery-option/:optionId/rotation-plan', async (req, res) => {
 
       // Return the rotation_plan JSON field
       const rotationPlan = result.rows[0].rotation_plan || {}
-      
+
       res.json({
         success: true,
         rotationPlan: {
@@ -1746,12 +1761,17 @@ app.get('/api/recovery-option/:optionId/resources', async (req, res) => {
         }
       }
 
+      // Ensure resourceRequirements is an array before filtering
+      if (!Array.isArray(resourceRequirements)) {
+        resourceRequirements = []
+      }
+
       res.json({
         success: true,
         resources: {
-          personnelRequirements: Array.isArray(resourceRequirements) ? resourceRequirements.filter(r => r.type === 'Personnel') : [],
-          equipmentRequirements: Array.isArray(resourceRequirements) ? resourceRequirements.filter(r => r.type === 'Equipment') : [],
-          facilityRequirements: Array.isArray(resourceRequirements) ? resourceRequirements.filter(r => r.type === 'Facility') : [],
+          personnelRequirements: resourceRequirements.filter(r => r.type === 'Personnel'),
+          equipmentRequirements: resourceRequirements.filter(r => r.type === 'Equipment'),
+          facilityRequirements: resourceRequirements.filter(r => r.type === 'Facility'),
           availabilityStatus: {}
         }
       })

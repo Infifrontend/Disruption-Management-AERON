@@ -1,4 +1,3 @@
-
 -- AERON Settings Database Schema
 -- This schema supports hierarchical settings with categories, versioning, and audit trails
 -- Updated with current schema and sample data for import
@@ -167,44 +166,44 @@ CREATE TABLE IF NOT EXISTS recovery_options_detailed (
     impact VARCHAR(20) DEFAULT 'Medium',
     status VARCHAR(50) DEFAULT 'generated',
     priority INTEGER DEFAULT 0,
-    
+
     -- Cost Analysis
     cost_analysis JSONB,
-    
+
     -- Timeline Steps
     timeline_steps JSONB,
-    
+
     -- Resources Required
     resources JSONB,
-    
+
     -- Risk Assessment
     risk_assessment JSONB,
-    
+
     -- Technical Details
     technical_details JSONB,
-    
+
     -- Additional metadata
     advantages JSONB,
     considerations JSONB,
-    
+
     created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
     updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata')
 );
 
 -- Recovery Steps table
 CREATE TABLE IF NOT EXISTS recovery_steps (
-    id SERIAL PRIMARY KEY,
-    disruption_id INTEGER REFERENCES flight_disruptions(id) ON DELETE CASCADE,
-    step_number INTEGER NOT NULL,
-    title VARCHAR(255) NOT NULL,
-    status VARCHAR(50) DEFAULT 'pending',
-    timestamp VARCHAR(100),
-    system VARCHAR(255),
-    details TEXT,
-    step_data JSONB,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(disruption_id, step_number)
+  id SERIAL PRIMARY KEY,
+  disruption_id INTEGER REFERENCES flight_disruptions(id) ON DELETE CASCADE,
+  step_number INTEGER NOT NULL,
+  title TEXT NOT NULL,
+  status TEXT DEFAULT 'pending',
+  timestamp TEXT,
+  system TEXT,
+  details TEXT,
+  step_data JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(disruption_id, step_number)
 );
 
 -- Recovery Steps Enhanced table
