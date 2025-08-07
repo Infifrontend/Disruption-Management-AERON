@@ -24,6 +24,38 @@ import {
 export function WorldMap() {
   const [selectedView, setSelectedView] = useState('routes')
   const [isRealtime, setIsRealtime] = useState(true)
+  const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [liveData, setLiveData] = useState({
+    activeFlights: 89,
+    onSchedule: 47,
+    delayed: 18,
+    disrupted: 3,
+  });
+
+  // Simulate real-time data updates
+  useEffect(() => {
+    let intervalId;
+    if (isRealtime) {
+      intervalId = setInterval(() => {
+        // In a real app, this would fetch data from an API
+        const newActiveFlights = Math.floor(Math.random() * 20) + 70;
+        const newOnSchedule = Math.floor(Math.random() * 10) + 40;
+        const newDelayed = Math.floor(Math.random() * 5) + 15;
+        const newDisrupted = Math.floor(Math.random() * 2);
+
+        setLiveData({
+          activeFlights: newActiveFlights,
+          onSchedule: newOnSchedule,
+          delayed: newDelayed,
+          disrupted: newDisrupted,
+        });
+        setLastUpdate(new Date());
+      }, 15000); // Update every 15 seconds
+    } else {
+      clearInterval(intervalId);
+    }
+    return () => clearInterval(intervalId);
+  }, [isRealtime]);
 
   // Helper function to convert lat/lng to SVG coordinates
   const latLngToXY = (lat, lng) => {
@@ -197,19 +229,19 @@ export function WorldMap() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-center">
-                  <div className="text-lg font-semibold text-flydubai-blue">89</div>
+                  <div className="text-lg font-semibold text-flydubai-blue">{liveData.activeFlights}</div>
                   <div className="text-xs text-gray-600">Total Flights</div>
                 </div>
                 <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-                  <div className="text-lg font-semibold text-green-600">47</div>
+                  <div className="text-lg font-semibold text-green-600">{liveData.onSchedule}</div>
                   <div className="text-xs text-gray-600">On Schedule</div>
                 </div>
                 <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 text-center">
-                  <div className="text-lg font-semibold text-flydubai-orange">18</div>
+                  <div className="text-lg font-semibold text-flydubai-orange">{liveData.delayed}</div>
                   <div className="text-xs text-gray-600">Delayed</div>
                 </div>
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
-                  <div className="text-lg font-semibold text-red-600">3</div>
+                  <div className="text-lg font-semibold text-red-600">{liveData.disrupted}</div>
                   <div className="text-xs text-gray-600">Disrupted</div>
                 </div>
               </div>
@@ -534,12 +566,19 @@ export function WorldMap() {
 
               {/* Network Performance Indicator */}
               <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-xs shadow-xl z-30">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${isRealtime ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
                   <span className="font-semibold text-flydubai-navy">Network Status</span>
                 </div>
-                <div className="text-green-600 font-medium">Operational</div>
-                <div className="text-gray-600">89.3% On-Time Performance</div>
+                <div className="text-green-600 font-medium">
+                  {liveData.disrupted === 0 ? 'Operational' : liveData.disrupted < 5 ? 'Minor Issues' : 'Disruptions'}
+                </div>
+                <div className="text-gray-600">
+                  Last updated: {lastUpdate.toLocaleTimeString()}
+                </div>
+                <div className="text-gray-600">
+                  {((liveData.onSchedule / liveData.activeFlights) * 100).toFixed(1)}% On-Time Performance
+                </div>
               </div>
             </div>
           </div>
