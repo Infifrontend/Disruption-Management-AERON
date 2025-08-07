@@ -561,31 +561,36 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
 
         switch (metric.metric) {
           case 'Total Cost':
-            row[key] = `AED ${option.metrics.totalCost.toLocaleString()}`
+            // Use cost from option or calculate from financial breakdown
+            const totalCost = option.metrics?.totalCost || 
+                            parseInt(option.cost?.replace(/[^0-9]/g, "") || "0") ||
+                            (option.financialBreakdown ? 
+                              Object.values(option.financialBreakdown).reduce((sum, cost) => sum + (typeof cost === 'number' ? cost : 0), 0) : 0)
+            row[key] = `AED ${totalCost.toLocaleString()}`
             break
           case 'OTP Score':
-            row[key] = `${option.metrics.otpScore}%`
+            row[key] = `${option.metrics?.otpScore || Math.floor(option.confidence || 85)}%`
             break
           case 'Aircraft Swaps':
-            row[key] = option.metrics.aircraftSwaps.toString()
+            row[key] = (option.metrics?.aircraftSwaps || (option.id && optionId.includes('AIRCRAFT') ? 1 : 0)).toString()
             break
           case 'Crew Rule Violations':
-            row[key] = option.metrics.crewViolations.toString()
+            row[key] = (option.metrics?.crewViolations || 0).toString()
             break
           case 'PAX Accommodated':
-            row[key] = `${option.metrics.paxAccommodated}%`
+            row[key] = `${option.metrics?.paxAccommodated || Math.floor(100 - (option.passengerImpact?.missingConnections || 0) / (option.passengerImpact?.affected || 1) * 100)}%`
             break
           case 'Regulatory Risk':
-            row[key] = option.metrics.regulatoryRisk
+            row[key] = option.metrics?.regulatoryRisk || option.riskAssessment?.regulatoryRisk || 'Low'
             break
           case 'Delay (Minutes)':
-            row[key] = option.metrics.delayMinutes.toString()
+            row[key] = (option.metrics?.delayMinutes || option.operationalImpact?.delayMinutes || parseInt(option.timeline?.replace(/[^0-9]/g, "") || "60")).toString()
             break
           case 'Confidence Score':
-            row[key] = `${option.metrics.confidenceScore}%`
+            row[key] = `${option.metrics?.confidenceScore || option.confidence || 85}%`
             break
           case 'Network Impact':
-            row[key] = option.metrics.networkImpact
+            row[key] = option.metrics?.networkImpact || 'Low'
             break
           default:
             row[key] = '-'
