@@ -2237,6 +2237,7 @@ export function RecoveryOptionsGenerator({
                       </Button>
 
                       {/* Passenger Services Button - only show when re-accommodation is needed */}
+                      
                       {requiresPassengerReaccommodation(option) && (
                         <Button
                           variant="outline"
