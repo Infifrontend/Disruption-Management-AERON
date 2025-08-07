@@ -1,4 +1,3 @@
-
 import express from 'express'
 import cors from 'cors'
 import pkg from 'pg'
@@ -36,8 +35,8 @@ if (connectionString && connectionString.includes('neon.tech')) {
 
 const pool = new Pool({
   connectionString: connectionString,
-  ssl: process.env.NODE_ENV === 'production' || connectionString.includes('neon.tech') 
-    ? { rejectUnauthorized: false } 
+  ssl: process.env.NODE_ENV === 'production' || connectionString.includes('neon.tech')
+    ? { rejectUnauthorized: false }
     : false,
   max: 3,
   min: 1,
@@ -62,8 +61,8 @@ testConnection()
 app.get('/health', async (req, res) => {
   try {
     await pool.query('SELECT 1')
-    res.json({ 
-      status: 'healthy', 
+    res.json({
+      status: 'healthy',
       service: 'recovery-options-api',
       timestamp: new Date().toISOString()
     })
@@ -77,7 +76,7 @@ app.get('/health', async (req, res) => {
 app.get('/flight/:identifier', async (req, res) => {
   try {
     const { identifier } = req.params
-    
+
     // Try to find by ID first, then by flight number
     let result = await pool.query(
       'SELECT * FROM flight_disruptions WHERE id = $1 OR flight_number = $1 LIMIT 1',
@@ -85,14 +84,14 @@ app.get('/flight/:identifier', async (req, res) => {
     )
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ 
-        error: 'Flight not found', 
-        identifier: identifier 
+      return res.status(404).json({
+        error: 'Flight not found',
+        identifier: identifier
       })
     }
 
     const disruption = result.rows[0]
-    
+
     // Transform to expected format
     const flight = {
       id: disruption.id?.toString() || disruption.flight_number,
@@ -121,9 +120,9 @@ app.get('/flight/:identifier', async (req, res) => {
     res.json({ success: true, flight })
   } catch (error) {
     console.error('Error fetching flight:', error)
-    res.status(500).json({ 
-      error: 'Failed to fetch flight data', 
-      details: error.message 
+    res.status(500).json({
+      error: 'Failed to fetch flight data',
+      details: error.message
     })
   }
 })
@@ -143,9 +142,9 @@ app.post('/flight/:identifier/recovery-options', async (req, res) => {
     )
 
     if (flightResult.rows.length === 0) {
-      return res.status(404).json({ 
-        error: 'Flight not found', 
-        identifier: identifier 
+      return res.status(404).json({
+        error: 'Flight not found',
+        identifier: identifier
       })
     }
 
@@ -164,7 +163,7 @@ app.post('/flight/:identifier/recovery-options', async (req, res) => {
           'SELECT * FROM recovery_options WHERE disruption_id = $1 ORDER BY confidence DESC, priority ASC',
           [disruptionId]
         )
-        
+
         return res.json({
           success: true,
           flight: {
@@ -216,7 +215,7 @@ app.post('/flight/:identifier/recovery-options', async (req, res) => {
     const savedOptions = []
     for (let i = 0; i < options.length; i++) {
       const option = options[i]
-      
+
       // Check if option already exists
       const existingOption = await pool.query(
         'SELECT id FROM recovery_options WHERE disruption_id = $1 AND title = $2',
@@ -253,7 +252,7 @@ app.post('/flight/:identifier/recovery-options', async (req, res) => {
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
           RETURNING *
         `, [
-          disruptionId, 
+          disruptionId,
           option.title || `Recovery Option ${i + 1}`,
           option.description || 'Recovery option details',
           option.cost || 'TBD',
@@ -262,15 +261,15 @@ app.post('/flight/:identifier/recovery-options', async (req, res) => {
           option.impact || 'Medium',
           option.status || 'generated',
           i + 1, // priority
-          JSON.stringify(option.advantages || []),
-          JSON.stringify(option.considerations || []),
-          JSON.stringify(option.resourceRequirements || {}),
-          JSON.stringify(option.costBreakdown || {}),
-          JSON.stringify(option.timelineDetails || {}),
-          JSON.stringify(option.riskAssessment || {}),
-          JSON.stringify(option.technicalSpecs || {}),
-          JSON.stringify(option.metrics || {}),
-          JSON.stringify(option.rotationPlan || {})
+          option.advantages || [],
+          option.considerations || [],
+          option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : null,
+          option.costBreakdown ? JSON.stringify(option.costBreakdown) : null,
+          option.timelineDetails ? JSON.stringify(option.timelineDetails) : null,
+          option.riskAssessment ? JSON.stringify(option.riskAssessment) : null,
+          option.technicalSpecs ? JSON.stringify(option.technicalSpecs) : null,
+          option.metrics ? JSON.stringify(option.metrics) : null,
+          option.rotationPlan ? JSON.stringify(option.rotationPlan) : null
         ]);
       }
 
@@ -297,9 +296,9 @@ app.post('/flight/:identifier/recovery-options', async (req, res) => {
 
   } catch (error) {
     console.error('Recovery Service: Error generating options:', error)
-    res.status(500).json({ 
-      error: 'Failed to generate recovery options', 
-      details: error.message 
+    res.status(500).json({
+      error: 'Failed to generate recovery options',
+      details: error.message
     })
   }
 })
@@ -316,9 +315,9 @@ app.get('/flight/:identifier/recovery-options', async (req, res) => {
     )
 
     if (flightResult.rows.length === 0) {
-      return res.status(404).json({ 
-        error: 'Flight not found', 
-        identifier: identifier 
+      return res.status(404).json({
+        error: 'Flight not found',
+        identifier: identifier
       })
     }
 
@@ -353,9 +352,9 @@ app.get('/flight/:identifier/recovery-options', async (req, res) => {
 
   } catch (error) {
     console.error('Recovery Service: Error fetching options:', error)
-    res.status(500).json({ 
-      error: 'Failed to fetch recovery options', 
-      details: error.message 
+    res.status(500).json({
+      error: 'Failed to fetch recovery options',
+      details: error.message
     })
   }
 })
@@ -371,9 +370,9 @@ app.get('/recovery-option/:optionId', async (req, res) => {
     )
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ 
-        error: 'Recovery option not found', 
-        optionId: optionId 
+      return res.status(404).json({
+        error: 'Recovery option not found',
+        optionId: optionId
       })
     }
 
@@ -397,9 +396,9 @@ app.get('/recovery-option/:optionId', async (req, res) => {
 
   } catch (error) {
     console.error('Recovery Service: Error fetching option details:', error)
-    res.status(500).json({ 
-      error: 'Failed to fetch recovery option details', 
-      details: error.message 
+    res.status(500).json({
+      error: 'Failed to fetch recovery option details',
+      details: error.message
     })
   }
 })
@@ -411,16 +410,16 @@ app.put('/recovery-option/:optionId/status', async (req, res) => {
     const { status, notes } = req.body
 
     const result = await pool.query(`
-      UPDATE recovery_options 
+      UPDATE recovery_options
       SET status = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
       RETURNING *
     `, [status, optionId])
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ 
-        error: 'Recovery option not found', 
-        optionId: optionId 
+      return res.status(404).json({
+        error: 'Recovery option not found',
+        optionId: optionId
       })
     }
 
@@ -432,9 +431,9 @@ app.put('/recovery-option/:optionId/status', async (req, res) => {
 
   } catch (error) {
     console.error('Recovery Service: Error updating option status:', error)
-    res.status(500).json({ 
-      error: 'Failed to update recovery option status', 
-      details: error.message 
+    res.status(500).json({
+      error: 'Failed to update recovery option status',
+      details: error.message
     })
   }
 })
@@ -445,12 +444,12 @@ app.get('/flights', async (req, res) => {
     const { status = 'Active' } = req.query
 
     const result = await pool.query(`
-      SELECT id, flight_number, route, origin, destination, 
-             aircraft, scheduled_departure, delay_minutes, 
-             passengers, severity, disruption_type, status, 
+      SELECT id, flight_number, route, origin, destination,
+             aircraft, scheduled_departure, delay_minutes,
+             passengers, severity, disruption_type, status,
              disruption_reason, created_at
-      FROM flight_disruptions 
-      WHERE status = $1 
+      FROM flight_disruptions
+      WHERE status = $1
       ORDER BY created_at DESC
       LIMIT 50
     `, [status])
@@ -480,9 +479,9 @@ app.get('/flights', async (req, res) => {
 
   } catch (error) {
     console.error('Recovery Service: Error fetching flights:', error)
-    res.status(500).json({ 
-      error: 'Failed to fetch flights', 
-      details: error.message 
+    res.status(500).json({
+      error: 'Failed to fetch flights',
+      details: error.message
     })
   }
 })

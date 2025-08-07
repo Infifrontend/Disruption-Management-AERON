@@ -1015,15 +1015,15 @@ app.post('/api/recovery-options/generate/:disruptionId', async (req, res) => {
             option.impact || 'Medium',
             option.status || 'generated',
             options.indexOf(option) + 1, // priority
-            JSON.stringify(option.advantages || []),
-            JSON.stringify(option.considerations || []),
-            JSON.stringify(option.resourceRequirements || {}),
-            JSON.stringify(option.costBreakdown || {}),
-            JSON.stringify(option.timelineDetails || {}),
-            JSON.stringify(option.riskAssessment || {}),
-            JSON.stringify(option.technicalSpecs || {}),
-            JSON.stringify(option.metrics || {}),
-            JSON.stringify(option.rotationPlan || {})
+            option.advantages || [],
+            option.considerations || [],
+            option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : null,
+            option.costBreakdown ? JSON.stringify(option.costBreakdown) : null,
+            option.timelineDetails ? JSON.stringify(option.timelineDetails) : null,
+            option.riskAssessment ? JSON.stringify(option.riskAssessment) : null,
+            option.technicalSpecs ? JSON.stringify(option.technicalSpecs) : null,
+            option.metrics ? JSON.stringify(option.metrics) : null,
+            option.rotationPlan ? JSON.stringify(option.rotationPlan) : null
           ]);
         }
         optionsCount++
@@ -1277,13 +1277,13 @@ app.post('/api/generate-recovery-options/:disruptionId', async (req, res) => {
         i + 1, // priority based on order
         optionData.advantages,
         optionData.considerations,
-        JSON.stringify(optionData.resourceRequirements),
-        JSON.stringify(optionData.costBreakdown),
-        JSON.stringify(optionData.timelineDetails),
-        JSON.stringify(optionData.riskAssessment),
-        JSON.stringify(optionData.technicalSpecs),
-        JSON.stringify(optionData.metrics),
-        JSON.stringify(optionData.rotationPlan)
+        optionData.resourceRequirements ? JSON.stringify(optionData.resourceRequirements) : null,
+        optionData.costBreakdown ? JSON.stringify(optionData.costBreakdown) : null,
+        optionData.timelineDetails ? JSON.stringify(optionData.timelineDetails) : null,
+        optionData.riskAssessment ? JSON.stringify(optionData.riskAssessment) : null,
+        optionData.technicalSpecs ? JSON.stringify(optionData.technicalSpecs) : null,
+        optionData.metrics ? JSON.stringify(optionData.metrics) : null,
+        optionData.rotationPlan ? JSON.stringify(optionData.rotationPlan) : null
       ])
     }
 
