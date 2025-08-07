@@ -1664,24 +1664,24 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="inbound" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 bg-gray-50 p-1 rounded-lg border border-gray-200">
+                <TabsList className="grid w-full grid-cols-2 bg-gray-50 p-0.5 rounded border border-gray-200">
                   <TabsTrigger 
                     value="inbound"
-                    className="flex items-center justify-center gap-2 py-2 px-4 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-flydubai-blue data-[state=active]:border data-[state=active]:border-blue-200 font-medium text-gray-600 hover:text-gray-800 transition-all duration-200 rounded-md"
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
-                    <Plane className="h-4 w-4 transform rotate-180" />
-                    <span className="text-sm">Inbound</span>
-                    <span className="bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded text-xs font-medium min-w-[20px] text-center">
+                    <Plane className="h-3.5 w-3.5 transform rotate-180" />
+                    <span className="text-xs">Inbound</span>
+                    <span className="bg-blue-100 text-blue-700 px-1 py-0.5 rounded text-xs font-medium leading-none">
                       {sortedFlights.filter(f => f.destination === 'DXB').length}
                     </span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="outbound"
-                    className="flex items-center justify-center gap-2 py-2 px-4 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-flydubai-blue data-[state=active]:border data-[state=active]:border-blue-200 font-medium text-gray-600 hover:text-gray-800 transition-all duration-200 rounded-md"
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
-                    <Plane className="h-4 w-4" />
-                    <span className="text-sm">Outbound</span>
-                    <span className="bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded text-xs font-medium min-w-[20px] text-center">
+                    <Plane className="h-3.5 w-3.5" />
+                    <span className="text-xs">Outbound</span>
+                    <span className="bg-orange-100 text-orange-700 px-1 py-0.5 rounded text-xs font-medium leading-none">
                       {sortedFlights.filter(f => f.origin === 'DXB').length}
                     </span>
                   </TabsTrigger>
