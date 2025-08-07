@@ -1,0 +1,169 @@
+
+{
+  "affectedFlights": {
+    "component": "AffectedFlightsList",
+    "tabs": [
+      {
+        "id": "inbound",
+        "label": "Inbound to DXB",
+        "icon": "plane-rotate-180",
+        "description": "Flights arriving at Dubai International Airport (DXB)",
+        "filter": {
+          "field": "destination",
+          "value": "DXB"
+        },
+        "features": [
+          "filters",
+          "pagination", 
+          "search",
+          "summary_stats",
+          "flight_grouping"
+        ],
+        "filters": [
+          {
+            "type": "search",
+            "placeholder": "Flight number or city",
+            "fields": ["flightNumber", "route", "originCity", "destinationCity"]
+          },
+          {
+            "type": "select",
+            "field": "origin",
+            "label": "Origin",
+            "options": "dynamic"
+          },
+          {
+            "type": "select", 
+            "field": "destination",
+            "label": "Destination",
+            "options": "dynamic"
+          },
+          {
+            "type": "select",
+            "field": "status", 
+            "label": "Status",
+            "options": ["Active", "Resolved", "Cancelled", "Delayed", "Diverted"]
+          },
+          {
+            "type": "select",
+            "field": "severity",
+            "label": "Severity", 
+            "options": ["Critical", "High", "Medium", "Low"]
+          },
+          {
+            "type": "select",
+            "field": "type",
+            "label": "Type",
+            "options": ["Technical", "Weather", "Crew", "Airport", "Rotation"]
+          }
+        ],
+        "pagination": {
+          "itemsPerPage": 10,
+          "showPageNumbers": true,
+          "showNavigation": true
+        }
+      },
+      {
+        "id": "outbound", 
+        "label": "Outbound from DXB",
+        "icon": "plane",
+        "description": "Flights departing from Dubai International Airport (DXB)",
+        "filter": {
+          "field": "origin",
+          "value": "DXB"
+        },
+        "features": [
+          "filters",
+          "pagination",
+          "search", 
+          "summary_stats",
+          "flight_grouping"
+        ],
+        "filters": [
+          {
+            "type": "search",
+            "placeholder": "Flight number or city",
+            "fields": ["flightNumber", "route", "originCity", "destinationCity"]
+          },
+          {
+            "type": "select",
+            "field": "origin",
+            "label": "Origin", 
+            "options": "dynamic"
+          },
+          {
+            "type": "select",
+            "field": "destination",
+            "label": "Destination",
+            "options": "dynamic"
+          },
+          {
+            "type": "select",
+            "field": "status",
+            "label": "Status",
+            "options": ["Active", "Resolved", "Cancelled", "Delayed", "Diverted"]
+          },
+          {
+            "type": "select",
+            "field": "severity",
+            "label": "Severity",
+            "options": ["Critical", "High", "Medium", "Low"]
+          },
+          {
+            "type": "select", 
+            "field": "type",
+            "label": "Type",
+            "options": ["Technical", "Weather", "Crew", "Airport", "Rotation"]
+          }
+        ],
+        "pagination": {
+          "itemsPerPage": 10,
+          "showPageNumbers": true,
+          "showNavigation": true
+        }
+      }
+    ],
+    "summaryStats": [
+      {
+        "label": "Total Flights",
+        "icon": "plane",
+        "color": "red",
+        "calculation": "count"
+      },
+      {
+        "label": "Affected Passengers", 
+        "icon": "users",
+        "color": "blue",
+        "calculation": "sum_passengers"
+      },
+      {
+        "label": "Active Disruptions",
+        "icon": "alert-triangle", 
+        "color": "orange",
+        "calculation": "count_active_status"
+      },
+      {
+        "label": "Avg Delay",
+        "icon": "clock",
+        "color": "green", 
+        "calculation": "average_delay"
+      }
+    ],
+    "flightCard": {
+      "fields": [
+        "flightNumber",
+        "route", 
+        "aircraft",
+        "scheduledDeparture",
+        "passengers",
+        "delay",
+        "severity",
+        "status",
+        "disruptionReason"
+      ],
+      "actions": [
+        "view_details",
+        "select_flight"
+      ]
+    }
+  }
+}
