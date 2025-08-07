@@ -24,47 +24,50 @@ interface ComparisonMatrixProps {
 
 export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenarioData, onSelectPlan }: ComparisonMatrixProps) {
   // Use dynamic recovery options from props, with fallback to static data if none provided
-  const comparisonOptions = recoveryOptions.length > 0 ? recoveryOptions.map((option, index) => ({
-    ...option,
-    // Ensure all required fields are present for comparison
-    metrics: option.metrics || {
-      costEfficiency: 75 + Math.random() * 20,
-      timeEfficiency: 70 + Math.random() * 25,
-      passengerSatisfaction: 65 + Math.random() * 30,
-      operationalComplexity: 50 + Math.random() * 40,
-      riskLevel: 20 + Math.random() * 60,
-      resourceAvailability: 80 + Math.random() * 20
-    },
-    passengerImpact: option.passengerImpact || {
-      affected: selectedFlight?.passengers || 167,
-      reaccommodated: option.id?.includes('CANCEL') ? (selectedFlight?.passengers || 167) : 
-                     option.id?.includes('DELAY') ? Math.floor((selectedFlight?.passengers || 167) * 0.3) : 0,
-      compensated: option.id?.includes('CANCEL') ? (selectedFlight?.passengers || 167) :
-                   option.id?.includes('DELAY') ? Math.floor((selectedFlight?.passengers || 167) * 0.5) : 0,
-      missingConnections: option.id?.includes('CANCEL') ? Math.floor((selectedFlight?.passengers || 167) * 0.8) :
-                         option.id?.includes('DELAY') ? Math.floor((selectedFlight?.passengers || 167) * 0.4) :
-                         Math.floor((selectedFlight?.passengers || 167) * 0.1)
-    },
-    operationalImpact: option.operationalImpact || {
-      delayMinutes: parseInt(option.timeline?.replace(/[^0-9]/g, "") || "60"),
-      downstreamFlights: option.id?.includes('CANCEL') ? 0 : option.id?.includes('DELAY') ? 3 : 2,
-      crewChanges: option.id?.includes('CREW') ? 2 : option.id?.includes('CANCEL') ? 1 : 0,
-      gateChanges: option.id?.includes('AIRCRAFT_SWAP') ? 1 : 0
-    },
-    financialBreakdown: option.financialBreakdown || {
-      aircraftCost: option.id?.includes('AIRCRAFT_SWAP') ? 25000 : 0,
-      crewCost: parseInt(option.cost?.replace(/[^0-9]/g, "") || "25000") * 0.3,
-      passengerCost: option.id?.includes('CANCEL') ? parseInt(option.cost?.replace(/[^0-9]/g, "") || "25000") * 0.6 : 
-                     parseInt(option.cost?.replace(/[^0-9]/g, "") || "25000") * 0.2,
-      operationalCost: parseInt(option.cost?.replace(/[^0-9]/g, "") || "25000") * 0.2
-    },
+  const comparisonOptions = recoveryOptions.length > 0 ? recoveryOptions.map((option, index) => {
+    const optionId = String(option.id || '');
+    return {
+      ...option,
+      // Ensure all required fields are present for comparison
+      metrics: option.metrics || {
+        costEfficiency: 75 + Math.random() * 20,
+        timeEfficiency: 70 + Math.random() * 25,
+        passengerSatisfaction: 65 + Math.random() * 30,
+        operationalComplexity: 50 + Math.random() * 40,
+        riskLevel: 20 + Math.random() * 60,
+        resourceAvailability: 80 + Math.random() * 20
+      },
+      passengerImpact: option.passengerImpact || {
+        affected: selectedFlight?.passengers || 167,
+        reaccommodated: optionId.includes('CANCEL') ? (selectedFlight?.passengers || 167) : 
+                       optionId.includes('DELAY') ? Math.floor((selectedFlight?.passengers || 167) * 0.3) : 0,
+        compensated: optionId.includes('CANCEL') ? (selectedFlight?.passengers || 167) :
+                     optionId.includes('DELAY') ? Math.floor((selectedFlight?.passengers || 167) * 0.5) : 0,
+        missingConnections: optionId.includes('CANCEL') ? Math.floor((selectedFlight?.passengers || 167) * 0.8) :
+                           optionId.includes('DELAY') ? Math.floor((selectedFlight?.passengers || 167) * 0.4) :
+                           Math.floor((selectedFlight?.passengers || 167) * 0.1)
+      },
+      operationalImpact: option.operationalImpact || {
+        delayMinutes: parseInt(option.timeline?.replace(/[^0-9]/g, "") || "60"),
+        downstreamFlights: optionId.includes('CANCEL') ? 0 : optionId.includes('DELAY') ? 3 : 2,
+        crewChanges: optionId.includes('CREW') ? 2 : optionId.includes('CANCEL') ? 1 : 0,
+        gateChanges: optionId.includes('AIRCRAFT_SWAP') ? 1 : 0
+      },
+      financialBreakdown: option.financialBreakdown || {
+        aircraftCost: optionId.includes('AIRCRAFT_SWAP') ? 25000 : 0,
+        crewCost: parseInt(option.cost?.replace(/[^0-9]/g, "") || "25000") * 0.3,
+        passengerCost: optionId.includes('CANCEL') ? parseInt(option.cost?.replace(/[^0-9]/g, "") || "25000") * 0.6 : 
+                       parseInt(option.cost?.replace(/[^0-9]/g, "") || "25000") * 0.2,
+        operationalCost: parseInt(option.cost?.replace(/[^0-9]/g, "") || "25000") * 0.2
+      },
     riskAssessment: option.riskAssessment || {
-      technicalRisk: option.status === "recommended" ? "Low" : option.status === "caution" ? "Medium" : "High",
-      weatherRisk: selectedFlight?.disruptionReason?.includes('Weather') ? "Medium" : "Low",
-      regulatoryRisk: option.id?.includes('CANCEL') ? "High" : "Low",
-      passengerRisk: option.confidence > 80 ? "Low" : option.confidence > 60 ? "Medium" : "High"
-    }
-  })) : [
+        technicalRisk: option.status === "recommended" ? "Low" : option.status === "caution" ? "Medium" : "High",
+        weatherRisk: selectedFlight?.disruptionReason?.includes('Weather') ? "Medium" : "Low",
+        regulatoryRisk: optionId.includes('CANCEL') ? "High" : "Low",
+        passengerRisk: option.confidence > 80 ? "Low" : option.confidence > 60 ? "Medium" : "High"
+      }
+    };
+  }) : [
     // Fallback static data when no dynamic options are available
     {
       id: "option_1",
