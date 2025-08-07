@@ -572,7 +572,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
             row[key] = `${option.metrics?.otpScore || Math.floor(option.confidence || 85)}%`
             break
           case 'Aircraft Swaps':
-            row[key] = (option.metrics?.aircraftSwaps || (option.id && optionId.includes('AIRCRAFT') ? 1 : 0)).toString()
+            row[key] = (option.metrics?.aircraftSwaps || (option.id && String(option.id).includes('AIRCRAFT') ? 1 : 0)).toString()
             break
           case 'Crew Rule Violations':
             row[key] = (option.metrics?.crewViolations || 0).toString()
