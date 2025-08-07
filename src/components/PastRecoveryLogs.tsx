@@ -662,7 +662,7 @@ export function PastRecoveryLogs() {
           {/* Recovery History Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Recovery History ({totalLogs} records)</CardTitle>
+              <CardTitle>Recovery History (5 records)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -680,60 +680,235 @@ export function PastRecoveryLogs() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredLogs.slice(0, 5).map((log) => (
-                      <tr key={log.solution_id} className="border-b hover:bg-gray-50">
-                        <td className="p-3">
-                          <div className="font-mono text-sm">{log.solution_id}</div>
-                        </td>
-                        <td className="p-3">
-                          <div className="font-medium">{log.flight_number}</div>
-                          <div className="text-sm text-gray-500">{log.route}</div>
-                          <div className="text-xs text-gray-400">{log.aircraft}</div>
-                        </td>
-                        <td className="p-3">
-                          <Badge variant="outline" className="mb-1">{log.disruption_type}</Badge>
-                          <div className="text-xs text-gray-600">{log.disruption_reason}</div>
-                        </td>
-                        <td className="p-3">
-                          <div className="text-sm">
-                            <span className="text-green-600">Cancellation Avoided</span>
-                          </div>
-                          <div className="text-xs text-gray-600">
-                            {log.delay_reduction_minutes || 155}min delay
-                          </div>
-                          <div className="text-xs text-gray-600">
-                            {((log.recovery_efficiency || 82) * 100).toFixed(0)}% efficiency
-                          </div>
-                        </td>
-                        <td className="p-3">
-                          <div className="text-sm">{formatDuration(log.duration) || '3h 2m'}</div>
-                          <div className="text-xs text-gray-500">{formatDate(log.date_created)}</div>
-                        </td>
-                        <td className="p-3">
-                          <Badge className={statusColors[log.status] || 'bg-green-100 text-green-800'}>
-                            {log.status || 'Successful'}
-                          </Badge>
-                        </td>
-                        <td className="p-3">
-                          <div className="text-sm font-medium">
-                            {(log.passenger_satisfaction || 8.2).toFixed(1)}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {((log.recovery_efficiency || 0.82) * 100).toFixed(0)}% efficiency
-                          </div>
-                        </td>
-                        <td className="p-3">
-                          <div className="flex gap-1">
-                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                              <FileText className="h-3 w-3" />
-                            </Button>
-                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                              <Download className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                    <tr className="border-b hover:bg-gray-50">
+                      <td className="p-3">
+                        <div className="font-mono text-sm">SOL-2025-001</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="font-medium">FZ215</div>
+                        <div className="text-sm text-gray-500">DXB → BOM</div>
+                        <div className="text-xs text-gray-400">B737-800 • A6-FDB</div>
+                      </td>
+                      <td className="p-3">
+                        <Badge variant="outline" className="mb-1 bg-orange-100 text-orange-800 border-orange-300">High</Badge>
+                        <div className="text-xs text-gray-600">Engine overheating at DXB</div>
+                        <div className="text-xs text-gray-500">Weather</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm">
+                          <span className="text-green-600 font-medium">Cancellation Avoided</span>
+                        </div>
+                        <div className="text-xs text-gray-600">155min delay</div>
+                        <div className="text-xs text-gray-600">92.5% efficiency</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm">3h 2m</div>
+                        <div className="text-xs text-gray-500">1/10/2025</div>
+                      </td>
+                      <td className="p-3">
+                        <Badge className="bg-green-100 text-green-800">
+                          Successful
+                        </Badge>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm font-medium">8.2</div>
+                        <div className="text-xs text-gray-500">94.1% rebooking</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <FileText className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <Download className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                    
+                    <tr className="border-b hover:bg-gray-50">
+                      <td className="p-3">
+                        <div className="font-mono text-sm">SOL-2025-002</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="font-medium">FZ181</div>
+                        <div className="text-sm text-gray-500">DXB → COK</div>
+                        <div className="text-xs text-gray-400">B737-800 • A6-FDC</div>
+                      </td>
+                      <td className="p-3">
+                        <Badge variant="outline" className="mb-1 bg-yellow-100 text-yellow-800 border-yellow-300">Medium</Badge>
+                        <div className="text-xs text-gray-600">Captain duty time breach</div>
+                        <div className="text-xs text-gray-500">Crew</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm">
+                          <span className="text-green-600 font-medium">Cancellation Avoided</span>
+                        </div>
+                        <div className="text-xs text-gray-600">69min delay</div>
+                        <div className="text-xs text-gray-600">91.9% efficiency</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm">2h 56m</div>
+                        <div className="text-xs text-gray-500">1/10/2025</div>
+                      </td>
+                      <td className="p-3">
+                        <Badge className="bg-green-100 text-green-800">
+                          Successful
+                        </Badge>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm font-medium">8.8</div>
+                        <div className="text-xs text-gray-500">97.1% rebooking</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <FileText className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <Download className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr className="border-b hover:bg-gray-50">
+                      <td className="p-3">
+                        <div className="font-mono text-sm">SOL-2025-003</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="font-medium">FZ147</div>
+                        <div className="text-sm text-gray-500">BKT → DXB</div>
+                        <div className="text-xs text-gray-400">B737 MAX 8 • A6-FHE</div>
+                      </td>
+                      <td className="p-3">
+                        <Badge variant="outline" className="mb-1 bg-yellow-100 text-yellow-800 border-yellow-300">Medium</Badge>
+                        <div className="text-xs text-gray-600">Engine maintenance check required</div>
+                        <div className="text-xs text-gray-500">AOG</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm">
+                          <span className="text-green-600 font-medium">Cancellation Avoided</span>
+                        </div>
+                        <div className="text-xs text-gray-600">118min delay</div>
+                        <div className="text-xs text-gray-600">91% efficiency</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm">4h 30m</div>
+                        <div className="text-xs text-gray-500">1/10/2025</div>
+                      </td>
+                      <td className="p-3">
+                        <Badge className="bg-green-100 text-green-800">
+                          Successful
+                        </Badge>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm font-medium">7.8</div>
+                        <div className="text-xs text-gray-500">89.2% rebooking</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <FileText className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <Download className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr className="border-b hover:bg-gray-50">
+                      <td className="p-3">
+                        <div className="font-mono text-sm">SOL-2025-004</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="font-medium">FZ351</div>
+                        <div className="text-sm text-gray-500">CAI → SSL</div>
+                        <div className="text-xs text-gray-400">B737-800 • A6-FDH</div>
+                      </td>
+                      <td className="p-3">
+                        <Badge variant="outline" className="mb-1 bg-red-100 text-red-800 border-red-300">Critical</Badge>
+                        <div className="text-xs text-gray-600">DXB runway closure - emergency landing</div>
+                        <div className="text-xs text-gray-500">Airport</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm">
+                          <span className="text-green-600 font-medium">Cancellation Avoided</span>
+                        </div>
+                        <div className="text-xs text-gray-600">770min delay</div>
+                        <div className="text-xs text-gray-600">92.5% efficiency</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm">3h 10m</div>
+                        <div className="text-xs text-gray-500">1/10/2025</div>
+                      </td>
+                      <td className="p-3">
+                        <Badge className="bg-green-100 text-green-800">
+                          Successful
+                        </Badge>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm font-medium">7.2</div>
+                        <div className="text-xs text-gray-500">86.1% rebooking</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <FileText className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <Download className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <tr className="border-b hover:bg-gray-50">
+                      <td className="p-3">
+                        <div className="font-mono text-sm">SOL-2025-005</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="font-medium">FZ267</div>
+                        <div className="text-sm text-gray-500">KTM → BOM</div>
+                        <div className="text-xs text-gray-400">B737-800 • A6-FDL</div>
+                      </td>
+                      <td className="p-3">
+                        <Badge variant="outline" className="mb-1 bg-orange-100 text-orange-800 border-orange-300">High</Badge>
+                        <div className="text-xs text-gray-600">Security screening delay at BOM</div>
+                        <div className="text-xs text-gray-500">Security</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm">
+                          <span className="text-green-600 font-medium">Cancellation Avoided</span>
+                        </div>
+                        <div className="text-xs text-gray-600">305min delay</div>
+                        <div className="text-xs text-gray-600">88.5% efficiency</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm">2h 35m</div>
+                        <div className="text-xs text-gray-500">1/10/2025</div>
+                      </td>
+                      <td className="p-3">
+                        <Badge className="bg-green-100 text-green-800">
+                          Successful
+                        </Badge>
+                      </td>
+                      <td className="p-3">
+                        <div className="text-sm font-medium">8.5</div>
+                        <div className="text-xs text-gray-500">97% rebooking</div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <FileText className="h-3 w-3" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                            <Download className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
                   </tbody>
                 </table>
               </div>
