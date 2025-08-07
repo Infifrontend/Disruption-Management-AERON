@@ -686,10 +686,10 @@ export function RecoveryOptionsGenerator({
 
   // Removed redundant fallback function
 
-  // Get scenario-specific recovery data with fallback
+  // Get scenario-specific recovery data
   let scenarioData;
   try {
-    if (useDatabaseData && recoveryOptions.length > 0 && !isLoadingOptions) {
+    if (useDatabaseData || recoveryOptions.length > 0) {
       // Use database data when available - display category-based title
       const categoryTitle = flight?.categorization
         ? `${flight.categorization} Recovery Options`
@@ -705,124 +705,16 @@ export function RecoveryOptionsGenerator({
         options: recoveryOptions,
       };
     } else {
-      console.log(
-        "Using fallback data for flight categorization:",
-        flight?.categorization,
-      );
-
-      // Import scenario recovery functions
-      const getScenarioDataForFlight = (categorization) => {
-        const generateMockOptions = (type) => {
-          console.log("Generating recovery options for type:", type);
-          switch (type) {
-            case "Aircraft technical issue (e.g., AOG, maintenance)":
-              return [
-                {
-                  id: "AIRCRAFT_SWAP_MOCK",
-                  title: "Aircraft Swap - Available Alternative",
-                  description: "Immediate tail swap with available aircraft",
-                  cost: "AED 45,000",
-                  timeline: "75 minutes",
-                  confidence: 95,
-                  impact: "Minimal passenger disruption",
-                  status: "recommended",
-                  advantages: ["Same aircraft type", "Available immediately"],
-                  considerations: ["Crew briefing required"],
-                  detailedDescription:
-                    "Execute immediate aircraft swap using available alternative aircraft. This option provides the fastest resolution with minimal passenger impact, utilizing our standby aircraft fleet to maintain schedule integrity.",
-                },
-                {
-                  id: "DELAY_REPAIR_MOCK",
-                  title: "Delay for Repair Completion",
-                  description: "Wait for aircraft technical issue resolution",
-                  cost: "AED 180,000",
-                  timeline: "4-6 hours",
-                  confidence: 45,
-                  impact: "Significant passenger disruption",
-                  status: "caution",
-                  advantages: ["Original aircraft maintained"],
-                  considerations: ["Repair time uncertain"],
-                },
-              ];
-            case "Crew issue (e.g., sick report, duty time breach)":
-              return [
-                {
-                  id: "STANDBY_CREW_MOCK",
-                  title: "Assign Standby Crew",
-                  description: "Activate standby crew member from roster",
-                  cost: "AED 8,500",
-                  timeline: "30 minutes",
-                  confidence: 92,
-                  impact: "Minimal operational disruption",
-                  status: "recommended",
-                  advantages: ["Standby crew available", "Within duty limits"],
-                  considerations: ["Extended briefing required"],
-                },
-              ];
-            case "Weather disruption (e.g., storms, fog)":
-              return [
-                {
-                  id: "DELAY_WEATHER_MOCK",
-                  title: "Delay for Weather Clearance",
-                  description: "Wait for weather improvement",
-                  cost: "AED 25,000",
-                  timeline: "2-3 hours",
-                  confidence: 90,
-                  impact: "Managed schedule delay",
-                  status: "recommended",
-                  advantages: ["Weather forecast shows improvement"],
-                  considerations: ["Dependent on weather"],
-                },
-              ];
-            default:
-              return [
-                {
-                  id: "STANDARD_RECOVERY_MOCK",
-                  title: "Standard Recovery Protocol",
-                  description: "Apply standard operating procedures",
-                  cost: "AED 20,000",
-                  timeline: "2-3 hours",
-                  confidence: 75,
-                  impact: "Standard operational impact",
-                  status: "recommended",
-                  advantages: ["Proven procedure"],
-                  considerations: ["Generic solution"],
-                  detailedDescription: `Standard recovery protocol for ${categorization || "operational disruption"} situations. This comprehensive approach follows established procedures to minimize passenger impact while maintaining operational efficiency.`,
-                },
-              ];
-          }
-        };
-
-        const categoryTitle = categorization
-          ? `${categorization} Recovery Options`
-          : "Recovery Options";
-
-        const result = {
-          title: categoryTitle,
-          description: `${flight?.disruptionReason || categorization || "operational disruption"}`,
-          priority: "Medium",
-          estimatedTime: "2-4 hours",
-          icon: Plane,
-          steps: [
-            {
-              step: 1,
-              title: "Disruption Assessment",
-              status: "completed",
-              timestamp: new Date().toLocaleTimeString(),
-              system: "AERON System",
-              details: "Analyzing disruption impact",
-              data: { type: categorization || "Unknown" },
-            },
-          ],
-          options: generateMockOptions(categorization),
-        };
-        console.log("Generated scenario data:", result);
-        return result;
+      // No database data and no recovery options - show empty state
+      scenarioData = {
+        title: "Recovery Options",
+        description: "Flight recovery analysis",
+        priority: "Medium",
+        estimatedTime: "2-4 hours",
+        icon: Plane,
+        steps: [],
+        options: [],
       };
-
-      scenarioData = getScenarioDataForFlight(
-        flight?.categorization || "Unknown disruption",
-      );
     }
   } catch (error) {
     console.error("Error getting scenario data:", error);
@@ -1868,7 +1760,7 @@ export function RecoveryOptionsGenerator({
             <div className="text-center p-8">
               <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                No Recovery Options Available
+                No options available
               </h3>
               <p className="text-muted-foreground mb-4">
                 {loadingError ||
