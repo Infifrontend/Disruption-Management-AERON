@@ -1412,9 +1412,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         <CardContent>
           <div className="space-y-4">
             {/* First Row - Search */}
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-2">
               <div>
-                <label className="text-sm font-medium mb-2 block">Search</label>
+                <label className="text-sm font-medium mb-1 block">Search</label>
                 <div className="relative">
                   <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
                   <Input
@@ -1503,15 +1503,21 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                   }
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder="All categories" />
+                    <SelectValue placeholder="All categories">
+                      {filters.categorization !== "all" ? (
+                        <span className="truncate block max-w-[150px]" title={filters.categorization}>
+                          {filters.categorization}
+                        </span>
+                      ) : "All Categories"}
+                    </SelectValue>
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="max-w-[300px]">
                     <SelectItem value="all">All Categories</SelectItem>
                     {Array.from(new Set(flights.map(f => f.categorization))).sort().map(cat => (
                       <SelectItem key={cat} value={cat}>
-                        <span className="truncate block max-w-[200px]" title={cat}>
+                        <div className="truncate max-w-[250px]" title={cat}>
                           {cat}
-                        </span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -1724,12 +1730,12 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
               {/* Pagination Controls */}
               {sortedFlights.length > itemsPerPage && (
-                <div className="flex items-center justify-between mt-4">
-                  <div className="text-sm text-muted-foreground">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+                  <div className="text-sm text-muted-foreground whitespace-nowrap">
                     Page {currentPage} of {totalPages} ({sortedFlights.length} total flights)
                   </div>
                   <Pagination>
-                    <PaginationContent>
+                    <PaginationContent className="flex-wrap justify-center">
                       <PaginationItem>
                         <PaginationPrevious 
                           onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
