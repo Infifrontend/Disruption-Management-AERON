@@ -877,17 +877,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
             </Badge>
           )}
           <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Disruption
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto z-50">
               <DialogHeader>
                 <DialogTitle className="text-flydubai-navy">
                   Add New Flight Disruption
@@ -924,7 +914,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         <SelectTrigger>
                           <SelectValue placeholder="Select aircraft" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[100]">
                           <SelectItem value="B737-800">B737-800</SelectItem>
                           <SelectItem value="B737 MAX 8">B737 MAX 8</SelectItem>
                           <SelectItem value="B737-900ER">B737-900ER</SelectItem>
@@ -1101,7 +1091,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[100]">
                         <SelectItem value="Delayed">Delayed</SelectItem>
                         <SelectItem value="Cancelled">Cancelled</SelectItem>
                         <SelectItem value="Diverted">Diverted</SelectItem>
@@ -1134,7 +1124,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[100]">
                           <SelectItem value="Critical">Critical</SelectItem>
                           <SelectItem value="High">High</SelectItem>
                           <SelectItem value="Medium">Medium</SelectItem>
@@ -1179,7 +1169,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[100]">
                           <SelectItem value="technical">Technical</SelectItem>
                           <SelectItem value="weather">Weather</SelectItem>
                           <SelectItem value="crew">Crew</SelectItem>
@@ -1202,7 +1192,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="z-[100]">
                           <SelectItem value="high">High</SelectItem>
                           <SelectItem value="medium">Medium</SelectItem>
                           <SelectItem value="low">Low</SelectItem>
