@@ -38,6 +38,8 @@ import {
   PieChart as RechartsDonutChart, 
   Bar, 
   BarChart as RechartsBarChart, 
+  LineChart,
+  Line,
   CartesianGrid, 
   XAxis, 
   YAxis,
@@ -763,7 +765,7 @@ export function PastRecoveryLogs() {
                 }}
                 className="h-[300px]"
               >
-                <RechartsBarChart data={[
+                <LineChart data={[
                   { month: "Oct 24", efficiency: 88, delayReduction: 2800 },
                   { month: "Nov 24", efficiency: 91, delayReduction: 3100 },
                   { month: "Dec 24", efficiency: 94, delayReduction: 3400 },
@@ -795,19 +797,23 @@ export function PastRecoveryLogs() {
                   <ChartTooltip
                     content={<ChartTooltipContent />}
                   />
-                  <Bar 
+                  <Line 
                     yAxisId="delay"
+                    type="monotone"
                     dataKey="delayReduction" 
-                    fill="var(--color-delayReduction)"
-                    radius={[4, 4, 0, 0]}
+                    stroke="var(--color-delayReduction)"
+                    strokeWidth={3}
+                    dot={{ fill: "var(--color-delayReduction)", strokeWidth: 2, r: 4 }}
                   />
-                  <Bar 
+                  <Line 
                     yAxisId="efficiency"
+                    type="monotone"
                     dataKey="efficiency" 
-                    fill="var(--color-efficiency)"
-                    radius={[4, 4, 0, 0]}
+                    stroke="var(--color-efficiency)"
+                    strokeWidth={3}
+                    dot={{ fill: "var(--color-efficiency)", strokeWidth: 2, r: 4 }}
                   />
-                </RechartsBarChart>
+                </LineChart>
               </ChartContainer>
             </CardContent>
           </Card>
