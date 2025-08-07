@@ -150,45 +150,19 @@ export function WorldMap() {
 
   return (
     <Card className="w-full min-h-[700px] h-[700px] border-flydubai-blue/30 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 relative z-10">
-      <CardHeader className="border-b border-flydubai-blue/10 bg-white/80 backdrop-blur-sm px-[24px] py-[12px] relative z-20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Globe className="h-6 w-6 text-flydubai-blue" />
-              <div className="absolute inset-0 animate-pulse bg-flydubai-blue rounded-full opacity-20"></div>
+      <CardHeader className="border-b border-flydubai-blue/10 bg-white/80 backdrop-blur-sm px-6 py-4 relative z-20">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Globe className="h-6 w-6 text-flydubai-blue" />
+                <div className="absolute inset-0 animate-pulse bg-flydubai-blue rounded-full opacity-20"></div>
+              </div>
+              <div>
+                <CardTitle className="text-flydubai-navy">Flydubai Global Network</CardTitle>
+                <p className="text-sm text-muted-foreground">Real-time flight operations & network monitoring</p>
+              </div>
             </div>
-            <div>
-              <CardTitle className="text-flydubai-navy">Flydubai Global Network</CardTitle>
-              <p className="text-sm text-muted-foreground underline">Real-time flight operations & network monitoring</p>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-center gap-4">
-            <Tabs value={selectedView} onValueChange={setSelectedView} className="w-auto pb-8 relative z-30">
-              <TabsList className="grid w-full grid-cols-3 bg-white border border-gray-200 shadow-sm">
-                <TabsTrigger 
-                  value="routes" 
-                  className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center "
-                >
-
-                  <span className="text-[14px]  pt-1 pb-1"><Navigation className="flex-shrink-0" />Routes</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="flights" 
-                  className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center gap-1 whitespace-nowrap"
-                >
-
-                  <span className="text-[14px] pt-1 pb-1"><Plane className="flex-shrink-0" />Live Flights</span>
-                </TabsTrigger>
-                <TabsTrigger 
-                  value="status" 
-                  className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] text-m flex items-center justify-center gap-1 whitespace-nowrap"
-                >
-
-                  <span className="text-[14px] pt-1 pb-1"> <AlertTriangle className="flex-shrink-0" />Disruptions</span>
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
 
             <div className="flex items-center gap-2">
               <Button 
@@ -214,6 +188,34 @@ export function WorldMap() {
               </Select>
             </div>
           </div>
+
+          <div className="flex justify-center">
+            <Tabs value={selectedView} onValueChange={setSelectedView} className="w-auto">
+              <TabsList className="grid w-full grid-cols-3 bg-white border border-gray-200 shadow-sm">
+                <TabsTrigger 
+                  value="routes" 
+                  className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center gap-1"
+                >
+                  <Navigation className="h-3 w-3" />
+                  <span className="text-sm">Routes</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="flights" 
+                  className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center gap-1"
+                >
+                  <Plane className="h-3 w-3" />
+                  <span className="text-sm">Live Flights</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="status" 
+                  className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center gap-1"
+                >
+                  <AlertTriangle className="h-3 w-3" />
+                  <span className="text-sm">Disruptions</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
         </div>
       </CardHeader>
 
@@ -232,39 +234,36 @@ export function WorldMap() {
             >
               
               {/* Live Data Summary Bar */}
-              <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg px-4 py-2 shadow-xl z-30">
-                <div className="flex items-center gap-6 text-xs">
-                  <div className="flex items-center gap-2">
+              <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg px-3 py-1.5 shadow-lg z-40">
+                <div className="flex items-center gap-4 text-xs">
+                  <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 bg-flydubai-blue rounded-full"></div>
                     <span className="font-medium text-flydubai-blue">{liveData.activeFlights} Active</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="font-medium text-green-600">{liveData.onSchedule} On-Time</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 bg-flydubai-orange rounded-full"></div>
                     <span className="font-medium text-flydubai-orange">{liveData.delayed} Delayed</span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                     <span className="font-medium text-red-600">{liveData.disrupted} Disrupted</span>
                   </div>
                 </div>
               </div>
 
-              {/* Network Performance Indicator - Repositioned to bottom right */}
-              <div className="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-xs shadow-xl z-30 max-w-[180px]">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isRealtime ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
+              {/* Network Performance Indicator */}
+              <div className="absolute top-2 right-2 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-2 text-xs shadow-lg z-40 max-w-[160px]">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isRealtime ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></div>
                   <span className="font-semibold text-flydubai-navy text-xs">Network Status</span>
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   <div className="text-green-600 font-medium text-xs">
                     {liveData.disrupted === 0 ? 'Operational' : liveData.disrupted < 5 ? 'Minor Issues' : 'Disruptions'}
-                  </div>
-                  <div className="text-gray-600 text-xs">
-                    Updated: {lastUpdate.toLocaleTimeString()}
                   </div>
                   <div className="text-gray-600 text-xs">
                     {((liveData.onSchedule / liveData.activeFlights) * 100).toFixed(1)}% OTP
@@ -466,48 +465,48 @@ export function WorldMap() {
                 )
               })}
 
-              {/* Enhanced Legend - Repositioned to avoid overlap */}
-              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-xs shadow-xl z-30 max-w-[200px]">
-                <h4 className="font-semibold mb-2 text-flydubai-navy">Legend</h4>
-                <div className="space-y-1.5">
+              {/* Enhanced Legend */}
+              <div className="absolute bottom-2 left-2 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-2 text-xs shadow-lg z-40 max-w-[160px]">
+                <h4 className="font-semibold mb-1.5 text-flydubai-navy text-xs">Legend</h4>
+                <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <div className="relative flex-shrink-0">
-                      <div className="w-5 h-5 rounded-full bg-flydubai-blue border-2 border-white shadow-sm flex items-center justify-center">
-                        <span className="text-white text-[9px] font-bold">FZ</span>
+                      <div className="w-4 h-4 rounded-full bg-flydubai-blue border-2 border-white shadow-sm flex items-center justify-center">
+                        <span className="text-white text-[8px] font-bold">FZ</span>
                       </div>
-                      <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-green-500 rounded-full border border-white"></div>
+                      <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-green-500 rounded-full border border-white"></div>
                     </div>
                     <span className="text-flydubai-navy text-xs">Primary Hub</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="relative flex-shrink-0">
-                      <div className="w-3 h-3 rounded-full bg-white border-2 border-flydubai-blue shadow-sm flex items-center justify-center">
-                        <div className="w-1.5 h-1.5 rounded-full bg-flydubai-blue"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-white border-2 border-flydubai-blue shadow-sm flex items-center justify-center">
+                        <div className="w-1 h-1 rounded-full bg-flydubai-blue"></div>
                       </div>
-                      <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-green-400 rounded-full border border-white"></div>
+                      <div className="absolute -top-0.5 -right-0.5 w-1 h-1 bg-green-400 rounded-full border border-white"></div>
                     </div>
                     <span className="text-flydubai-navy text-xs">Destinations</span>
                   </div>
                   {selectedView === 'flights' && (
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-flydubai-blue border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0">
-                        <Plane className="w-2 h-2 text-white transform rotate-45" />
+                      <div className="w-3 h-3 rounded-full bg-flydubai-blue border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0">
+                        <Plane className="w-1.5 h-1.5 text-white transform rotate-45" />
                       </div>
                       <span className="text-flydubai-navy text-xs">Active Flights</span>
                     </div>
                   )}
                   {selectedView === 'routes' && (
                     <div className="flex items-center gap-2">
-                      <svg width="16" height="6" className="flex-shrink-0">
-                        <path d="M0,3 L16,3" stroke="#00A8E6" strokeWidth="2" strokeDasharray="2,1" opacity="0.6"/>
+                      <svg width="12" height="4" className="flex-shrink-0">
+                        <path d="M0,2 L12,2" stroke="#00A8E6" strokeWidth="1" strokeDasharray="1,1" opacity="0.6"/>
                       </svg>
                       <span className="text-flydubai-navy text-xs">Flight Routes</span>
                     </div>
                   )}
                   {selectedView === 'status' && (
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0">
-                        <AlertTriangle className="w-2 h-2 text-white" />
+                      <div className="w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow-sm flex items-center justify-center flex-shrink-0">
+                        <AlertTriangle className="w-1.5 h-1.5 text-white" />
                       </div>
                       <span className="text-flydubai-navy text-xs">Disruptions</span>
                     </div>
