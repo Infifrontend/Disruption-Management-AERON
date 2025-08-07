@@ -1,0 +1,23 @@
+RuntimeError at /api/disruptions
+You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to de8beaee-b5a0-4c60-90f6-8331e3429086-00-37powysl19y12.sisko.replit.dev/api/disruptions/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings.
+Request Method:	POST
+Request URL:	http://de8beaee-b5a0-4c60-90f6-8331e3429086-00-37powysl19y12.sisko.replit.dev/api/disruptions
+Django Version:	5.0.2
+Exception Type:	RuntimeError
+Exception Value:	
+You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to de8beaee-b5a0-4c60-90f6-8331e3429086-00-37powysl19y12.sisko.replit.dev/api/disruptions/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings.
+Exception Location:	/home/runner/workspace/.pythonlibs/lib/python3.10/site-packages/django/middleware/common.py, line 87, in get_full_path_with_slash
+Python Executable:	/home/runner/workspace/.pythonlibs/bin/python
+Python Version:	3.10.18
+Python Path:	
+['/home/runner/workspace',
+ '/nix/store/zz7i75jb78idaz0rb1y1i4rzdyxq28vf-sitecustomize/lib/python/site-packages',
+ '/nix/store/xpxqdrjisrwlpm2dnisd2r08iq2qx930-python3.10-pip-25.0.1/lib/python3.10/site-packages',
+ '/nix/store/jyvjawqnhnqhwrsinpvx1av7q2p2fcym-python3-3.10.18/lib/python310.zip',
+ '/nix/store/jyvjawqnhnqhwrsinpvx1av7q2p2fcym-python3-3.10.18/lib/python3.10',
+ '/nix/store/jyvjawqnhnqhwrsinpvx1av7q2p2fcym-python3-3.10.18/lib/python3.10/lib-dynload',
+ '/home/runner/workspace/.pythonlibs/lib/python3.10/site-packages',
+ '/nix/store/jyvjawqnhnqhwrsinpvx1av7q2p2fcym-python3-3.10.18/lib/python3.10/site-packages',
+ '/home/runner/workspace/.pythonlibs/lib/python3.10/site-packages',
+ '/nix/store/dl6xr8gz142jqd6gzmh43r4za60hfv0c-python3.10-setuptools-80.7.1/lib/python3.10/site-packages']
+Server time:	Thu, 07 Aug 2025 09:49:55 +0000
