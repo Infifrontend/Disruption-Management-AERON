@@ -6,14 +6,20 @@ import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
 import { Progress } from './ui/progress'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
 import { 
   BarChart3, 
   AlertTriangle, 
   CheckCircle, 
   Target,
   Info,
-  Download
+  Download,
+  Eye,
+  MapPin,
+  Clock,
+  Plane
 } from 'lucide-react'
+import { databaseService } from '../services/databaseService'
 
 interface ComparisonMatrixProps {
   selectedFlight: any;
@@ -23,8 +29,43 @@ interface ComparisonMatrixProps {
 }
 
 export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenarioData, onSelectPlan }: ComparisonMatrixProps) {
-  // Use dynamic recovery options from props, with fallback to static data if none provided
-  const comparisonOptions = recoveryOptions.length > 0 ? recoveryOptions.map((option, index) => {
+  const [loading, setLoading] = useState(false)
+  const [dynamicRecoveryOptions, setDynamicRecoveryOptions] = useState([])
+  const [selectedOptionDetails, setSelectedOptionDetails] = useState(null)
+  const [rotationPlanDetails, setRotationPlanDetails] = useState(null)
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false)
+  const [showRotationDialog, setShowRotationDialog] = useState(false)
+
+  // Load recovery options from database based on disruption category
+  useEffect(() => {
+    const loadRecoveryOptions = async () => {
+      if (selectedFlight?.categorization || selectedFlight?.type) {
+        setLoading(true)
+        try {
+          const categoryCode = selectedFlight.categorization || selectedFlight.type
+          const options = await databaseService.getRecoveryOptionsByCategory(categoryCode)
+          
+          if (options.length === 0 && selectedFlight.id) {
+            // Try to get options by flight ID if category-based lookup fails
+            const flightOptions = await databaseService.getDetailedRecoveryOptions(selectedFlight.id)
+            setDynamicRecoveryOptions(flightOptions)
+          } else {
+            setDynamicRecoveryOptions(options)
+          }
+        } catch (error) {
+          console.error('Error loading recovery options:', error)
+        } finally {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadRecoveryOptions()
+  }, [selectedFlight])
+
+  // Use dynamic recovery options from database or props, with fallback to static data
+  const comparisonOptions = dynamicRecoveryOptions.length > 0 
+    ? dynamicRecoveryOptions.map((option, index) => {
     const optionId = String(option.id || '');
     return {
       ...option,
@@ -637,6 +678,52 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
     }
   }
 
+  const handleViewFullDetails = async (option) => {
+    try {
+      setLoading(true)
+      const details = await databaseService.getRecoveryOptionDetails?.(option.id) || option
+      setSelectedOptionDetails(details)
+      setShowDetailsDialog(true)
+    } catch (error) {
+      console.error('Error loading option details:', error)
+      // Fallback to option data
+      setSelectedOptionDetails(option)
+      setShowDetailsDialog(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleViewRotationPlan = async (option) => {
+    try {
+      setLoading(true)
+      const rotationPlan = await databaseService.getRotationPlanDetails?.(option.id) || {
+        aircraftRotations: [
+          { aircraft: selectedFlight?.aircraft || 'A6-FDB', currentFlight: selectedFlight?.flightNumber || 'FZ445', nextFlight: 'FZ446', turnaroundTime: '45 min' },
+          { aircraft: 'A6-FDC', currentFlight: 'Available', nextFlight: 'FZ445', turnaroundTime: '30 min' }
+        ],
+        impactedFlights: [
+          { flightNumber: 'FZ446', delay: '45 min', passengers: 156, status: 'Delayed' },
+          { flightNumber: 'FZ447', delay: '15 min', passengers: 189, status: 'Delayed' }
+        ]
+      }
+      setRotationPlanDetails(rotationPlan)
+      setShowRotationDialog(true)
+    } catch (error) {
+      console.error('Error loading rotation plan:', error)
+      // Fallback rotation plan
+      setRotationPlanDetails({
+        aircraftRotations: [
+          { aircraft: selectedFlight?.aircraft || 'A6-FDB', currentFlight: selectedFlight?.flightNumber || 'FZ445', nextFlight: 'FZ446', turnaroundTime: '45 min' }
+        ],
+        impactedFlights: []
+      })
+      setShowRotationDialog(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -801,11 +888,25 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                 </div>
 
                 <div className="space-y-3">
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => handleViewFullDetails(option)}
+                    disabled={loading}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
                     View Full Details
                   </Button>
 
-                  <Button variant="outline" size="sm" className="w-full">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full"
+                    onClick={() => handleViewRotationPlan(option)}
+                    disabled={loading}
+                  >
+                    <MapPin className="h-4 w-4 mr-2" />
                     Rotation Impact
                   </Button>
 
@@ -860,6 +961,190 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
           </div>
         </CardContent>
       </Card>
+
+      {/* Recovery Option Details Dialog */}
+      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Recovery Option Details
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedOptionDetails && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Option Overview</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Title:</span>
+                        <span className="font-medium">{selectedOptionDetails.title}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Cost:</span>
+                        <span className="font-medium text-flydubai-orange">{selectedOptionDetails.cost}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Timeline:</span>
+                        <span className="font-medium">{selectedOptionDetails.timeline}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Confidence:</span>
+                        <div className="flex items-center gap-2">
+                          <Progress value={selectedOptionDetails.confidence} className="w-16 h-2" />
+                          <span className="font-medium">{selectedOptionDetails.confidence}%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Impact Analysis</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Passenger Impact:</span>
+                        <Badge variant="outline">{selectedOptionDetails.impact}</Badge>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">Status:</span>
+                        <Badge className={selectedOptionDetails.status === 'recommended' 
+                          ? 'bg-green-100 text-green-800' 
+                          : selectedOptionDetails.status === 'caution'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : 'bg-red-100 text-red-800'}>
+                          {selectedOptionDetails.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Description</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{selectedOptionDetails.description}</p>
+                </CardContent>
+              </Card>
+
+              {selectedOptionDetails.advantages && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Advantages & Considerations</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-medium mb-2 text-green-700">Advantages</h4>
+                        <ul className="space-y-1">
+                          {selectedOptionDetails.advantages.map((advantage, idx) => (
+                            <li key={idx} className="text-sm text-muted-foreground">• {advantage}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      {selectedOptionDetails.considerations && (
+                        <div>
+                          <h4 className="font-medium mb-2 text-orange-700">Considerations</h4>
+                          <ul className="space-y-1">
+                            {selectedOptionDetails.considerations.map((consideration, idx) => (
+                              <li key={idx} className="text-sm text-muted-foreground">• {consideration}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Rotation Plan Dialog */}
+      <Dialog open={showRotationDialog} onOpenChange={setShowRotationDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Aircraft Rotation Plan
+            </DialogTitle>
+          </DialogHeader>
+          
+          {rotationPlanDetails && (
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Plane className="h-5 w-5" />
+                    Aircraft Rotations
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {rotationPlanDetails.aircraftRotations?.map((rotation, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div>
+                          <p className="font-medium">{rotation.aircraft}</p>
+                          <p className="text-sm text-muted-foreground">Current: {rotation.currentFlight}</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm font-medium">→</p>
+                          <p className="text-xs text-muted-foreground">{rotation.turnaroundTime}</p>
+                        </div>
+                        <div>
+                          <p className="font-medium">{rotation.nextFlight}</p>
+                          <p className="text-sm text-muted-foreground">Next Flight</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {rotationPlanDetails.impactedFlights?.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Clock className="h-5 w-5" />
+                      Impacted Flights
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {rotationPlanDetails.impactedFlights.map((flight, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div>
+                            <p className="font-medium">{flight.flightNumber}</p>
+                            <p className="text-sm text-muted-foreground">{flight.passengers} passengers</p>
+                          </div>
+                          <div className="text-right">
+                            <Badge className={flight.status === 'Delayed' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}>
+                              {flight.status}
+                            </Badge>
+                            <p className="text-sm text-muted-foreground mt-1">{flight.delay} delay</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
