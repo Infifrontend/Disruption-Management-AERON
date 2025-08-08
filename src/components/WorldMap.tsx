@@ -295,13 +295,7 @@ export function WorldMap() {
           {/* Interactive Map - Full Width */}
           <div className="w-full relative z-10">
             <div
-              className="relative w-full h-full min-h-[620px] rounded-lg border-2 border-flydubai-blue/20 overflow-hidden z-10"
-              style={{
-                backgroundImage: `url(https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80)`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                backgroundRepeat: "no-repeat",
-              }}
+              className="relative w-full h-full min-h-[620px] rounded-lg border-2 border-flydubai-blue/20 overflow-hidden z-10 bg-[#a8c8d8]"
             >
               {/* Live Data Summary Bar */}
               <div className="absolute top-2 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg px-3 py-1.5 shadow-lg z-40">
@@ -360,30 +354,12 @@ export function WorldMap() {
                   </div>
                 </div>
               </div>
-              {/* Overlay gradient for better contrast */}
-              <div className="absolute inset-0 bg-gradient-to-b from-blue-900/40 to-blue-700/60 z-10"></div>
-
               {/* World map SVG overlay */}
               <svg
                 viewBox="0 0 1000 500"
                 className="absolute inset-0 w-full h-full min-h-[620px] z-20"
               >
                 <defs>
-                  <pattern
-                    id="ocean"
-                    patternUnits="userSpaceOnUse"
-                    width="4"
-                    height="4"
-                  >
-                    <rect width="4" height="4" fill="#1e3a8a" opacity="0.1" />
-                    <circle
-                      cx="2"
-                      cy="2"
-                      r="0.5"
-                      fill="#3b82f6"
-                      opacity="0.3"
-                    />
-                  </pattern>
                   <linearGradient
                     id="landGradient"
                     x1="0%"
@@ -393,14 +369,126 @@ export function WorldMap() {
                   >
                     <stop
                       offset="0%"
-                      style={{ stopColor: "#10b981", stopOpacity: 0.2 }}
+                      style={{ stopColor: "#f4e5c1", stopOpacity: 1 }}
                     />
                     <stop
                       offset="100%"
-                      style={{ stopColor: "#059669", stopOpacity: 0.1 }}
+                      style={{ stopColor: "#e6d2a1", stopOpacity: 1 }}
                     />
                   </linearGradient>
+                  <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                    <feDropShadow dx="1" dy="1" stdDeviation="2" floodOpacity="0.3"/>
+                  </filter>
                 </defs>
+
+                {/* World Continents */}
+                {/* North America */}
+                <path
+                  d="M50 80 L60 85 L75 75 L85 70 L100 65 L115 70 L130 75 L145 80 L160 85 L175 90 L185 95 L190 105 L185 115 L180 125 L170 135 L155 140 L140 145 L125 150 L110 155 L95 160 L80 165 L70 170 L60 175 L50 180 L45 170 L40 160 L35 150 L30 140 L25 130 L20 120 L15 110 L20 100 L30 90 L40 85 Z"
+                  fill="url(#landGradient)"
+                  stroke="#d4af37"
+                  strokeWidth="0.5"
+                  filter="url(#shadow)"
+                />
+                
+                {/* South America */}
+                <path
+                  d="M80 200 L90 205 L100 210 L110 220 L115 235 L120 250 L125 265 L130 280 L135 295 L140 310 L145 325 L150 340 L155 355 L160 370 L155 380 L150 375 L145 370 L135 365 L125 360 L115 355 L105 350 L95 345 L85 340 L75 335 L70 325 L65 315 L60 305 L55 295 L50 285 L45 275 L40 265 L45 255 L50 245 L55 235 L60 225 L65 215 L70 205 Z"
+                  fill="url(#landGradient)"
+                  stroke="#d4af37"
+                  strokeWidth="0.5"
+                  filter="url(#shadow)"
+                />
+
+                {/* Europe */}
+                <path
+                  d="M350 90 L370 85 L385 80 L400 75 L415 70 L430 75 L440 80 L450 85 L460 90 L470 95 L475 105 L470 115 L465 125 L455 135 L445 140 L435 145 L425 150 L415 155 L405 160 L395 155 L385 150 L375 145 L365 140 L355 135 L345 130 L340 120 L335 110 L340 100 Z"
+                  fill="url(#landGradient)"
+                  stroke="#d4af37"
+                  strokeWidth="0.5"
+                  filter="url(#shadow)"
+                />
+
+                {/* Africa */}
+                <path
+                  d="M350 170 L370 165 L390 160 L410 155 L430 160 L450 165 L465 170 L480 180 L490 195 L495 210 L500 225 L505 240 L510 255 L515 270 L520 285 L525 300 L530 315 L525 330 L515 340 L500 350 L485 360 L470 365 L455 370 L440 375 L425 380 L410 375 L395 370 L380 365 L365 360 L350 355 L340 345 L330 335 L325 320 L320 305 L315 290 L310 275 L305 260 L300 245 L295 230 L300 215 L305 200 L315 185 L330 175 Z"
+                  fill="url(#landGradient)"
+                  stroke="#d4af37"
+                  strokeWidth="0.5"
+                  filter="url(#shadow)"
+                />
+
+                {/* Asia */}
+                <path
+                  d="M480 50 L520 45 L560 40 L600 35 L640 30 L680 35 L720 40 L760 45 L800 50 L835 55 L870 60 L900 65 L920 75 L930 90 L925 105 L915 120 L900 135 L880 150 L860 165 L840 175 L820 185 L800 195 L780 200 L760 205 L740 210 L720 215 L700 220 L680 225 L660 230 L640 235 L620 240 L600 235 L580 230 L560 225 L540 220 L520 215 L500 210 L485 200 L475 185 L470 170 L465 155 L460 140 L455 125 L450 110 L455 95 L465 80 L475 65 Z"
+                  fill="url(#landGradient)"
+                  stroke="#d4af37"
+                  strokeWidth="0.5"
+                  filter="url(#shadow)"
+                />
+
+                {/* Australia */}
+                <path
+                  d="M750 320 L780 315 L810 320 L835 325 L860 330 L880 340 L895 355 L900 370 L895 385 L885 395 L870 405 L850 410 L830 415 L810 420 L790 415 L770 410 L755 405 L745 395 L740 380 L735 365 L740 350 L745 335 Z"
+                  fill="url(#landGradient)"
+                  stroke="#d4af37"
+                  strokeWidth="0.5"
+                  filter="url(#shadow)"
+                />
+
+                {/* Antarctica */}
+                <path
+                  d="M100 450 L200 445 L300 440 L400 435 L500 430 L600 435 L700 440 L800 445 L900 450 L950 460 L950 480 L900 485 L800 490 L700 495 L600 500 L500 495 L400 490 L300 485 L200 480 L100 475 L50 465 Z"
+                  fill="url(#landGradient)"
+                  stroke="#d4af37"
+                  strokeWidth="0.5"
+                  filter="url(#shadow)"
+                />
+
+                {/* Greenland */}
+                <path
+                  d="M280 20 L320 15 L340 20 L350 35 L345 50 L335 65 L320 75 L300 80 L280 85 L265 80 L255 70 L250 55 L255 40 L265 25 Z"
+                  fill="url(#landGradient)"
+                  stroke="#d4af37"
+                  strokeWidth="0.5"
+                  filter="url(#shadow)"
+                />
+
+                {/* Japan */}
+                <path
+                  d="M850 140 L860 135 L870 130 L875 140 L880 150 L875 160 L870 170 L860 175 L850 180 L845 170 L840 160 L845 150 Z"
+                  fill="url(#landGradient)"
+                  stroke="#d4af37"
+                  strokeWidth="0.5"
+                  filter="url(#shadow)"
+                />
+
+                {/* UK */}
+                <path
+                  d="M330 75 L340 70 L350 75 L355 85 L350 95 L340 100 L330 95 L325 85 Z"
+                  fill="url(#landGradient)"
+                  stroke="#d4af37"
+                  strokeWidth="0.5"
+                  filter="url(#shadow)"
+                />
+
+                {/* Madagascar */}
+                <path
+                  d="M540 310 L550 305 L555 315 L560 325 L565 340 L560 355 L550 365 L540 360 L535 350 L530 340 L535 325 Z"
+                  fill="url(#landGradient)"
+                  stroke="#d4af37"
+                  strokeWidth="0.5"
+                  filter="url(#shadow)"
+                />
+
+                {/* Indonesia */}
+                <path
+                  d="M700 250 L720 245 L740 250 L760 255 L780 260 L800 265 L815 275 L810 285 L795 290 L775 285 L755 280 L735 275 L715 270 L695 265 L680 260 L675 250 L685 245 Z"
+                  fill="url(#landGradient)"
+                  stroke="#d4af37"
+                  strokeWidth="0.5"
+                  filter="url(#shadow)"
+                />
 
                 {/* Flight Routes */}
                 {selectedView === "routes" && (
@@ -639,9 +727,10 @@ export function WorldMap() {
                 })}
 
               {/* Enhanced Legend */}
-              <div className="absolute bottom-2 left-2 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-2 text-xs shadow-lg z-40 max-w-[160px]">
-                <h4 className="font-semibold mb-1.5 text-flydubai-navy text-xs">
-                  Legend
+              <div className="absolute bottom-2 left-2 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-3 text-xs shadow-lg z-40 max-w-[180px]">
+                <h4 className="font-semibold mb-2 text-flydubai-navy text-sm flex items-center gap-1">
+                  <Globe className="h-3 w-3" />
+                  World Map Legend
                 </h4>
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
