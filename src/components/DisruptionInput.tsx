@@ -1484,10 +1484,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* First Row - Search with reduced width */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* First Row - Search, Status, Priority, Origin */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="text-sm font-medium mb-1 block">Search</label>
+                <label className="text-sm font-medium mb-2 block">Search</label>
                 <div className="relative">
                   <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
                   <Input
@@ -1500,10 +1500,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                   />
                 </div>
               </div>
-            </div>
 
-            {/* Second Row - Main Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Status</label>
                 <Select
@@ -1570,7 +1567,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
+            {/* Second Row - Destination, Hub, Categorization, Sort By */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Destination</label>
                 <Select
@@ -1652,10 +1652,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            {/* Third Row - Sort By */}
-            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">
                   Sort By
