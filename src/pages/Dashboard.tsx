@@ -81,9 +81,12 @@ export function Dashboard() {
       <Card className="border-flydubai-blue/30">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Radar className="h-5 w-5 text-flydubai-blue" />
-            Global Network Overview
+            <Globe className="h-5 w-5 text-flydubai-blue" />
+            Flydubai Global Network Overview
           </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Real-time worldwide flight operations and network status
+          </p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -212,6 +215,15 @@ export function Dashboard() {
 
       {/* Real-time World Map */}
       <div className="w-full">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2 text-flydubai-navy">
+            <MapPin className="h-5 w-5" />
+            Live Global Flight Operations
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Interactive world map showing real-time Flydubai flight positions, routes, and operational status
+          </p>
+        </div>
         <WorldMap />
       </div>
 
