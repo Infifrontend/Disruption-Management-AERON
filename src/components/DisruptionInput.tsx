@@ -1740,10 +1740,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                 </TabsList>
 
                 <TabsContent value="inbound" className="space-y-4">
-                  {/* <div className="text-sm text-muted-foreground mb-4">
-                    Flights arriving at Dubai International Airport (DXB)
-                  </div> */}
-
                   {(() => {
                     const inboundFlights = sortedFlights.filter(
                       (f) => f.destination === "DXB",
@@ -1848,11 +1844,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                     >
                                       {flight.currentStatus}
                                     </Badge>
-                                    {/* {flight.delay > 0 && (
-                                      <div className="text-sm text-red-600 mt-1">
-                                        +{flight.delay}m
-                                      </div>
-                                    )} */}
                                   </TableCell>
                                   <TableCell>
                                     <div className="space-y-1 max-w-[200px]">
@@ -1920,11 +1911,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                       size="sm"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        onSelectFlight([flight]);
+                                        window.location.href = `/comparison?flightId=${flight.id}`;
                                       }}
                                     >
                                       <Eye className="h-3 w-3 mr-1" />
-                                      Details
+                                      View Details
                                     </Button>
                                   </TableCell>
                                 </TableRow>
@@ -2041,10 +2032,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                 </TabsContent>
 
                 <TabsContent value="outbound" className="space-y-4">
-                  {/* <div className="text-sm text-muted-foreground mb-4">
-                    Flights departing from Dubai International Airport (DXB)
-                  </div> */}
-
                   {(() => {
                     const outboundFlights = sortedFlights.filter(
                       (f) => f.origin === "DXB",
@@ -2149,11 +2136,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                     >
                                       {flight.currentStatus}
                                     </Badge>
-                                    {/* {flight.delay > 0 && (
-                                      <div className="text-sm text-red-600 mt-1">
-                                        +{flight.delay}m
-                                      </div>
-                                    )} */}
                                   </TableCell>
                                   <TableCell>
                                     <div className="space-y-1 max-w-[200px]">
@@ -2221,11 +2203,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                       size="sm"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        onSelectFlight([flight]);
+                                        window.location.href = `/comparison?flightId=${flight.id}`;
                                       }}
                                     >
                                       <Eye className="h-3 w-3 mr-1" />
-                                      Details
+                                      View Details
                                     </Button>
                                   </TableCell>
                                 </TableRow>
