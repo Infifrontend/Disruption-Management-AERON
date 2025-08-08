@@ -39,21 +39,37 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
   // Load recovery options from database based on disruption category
   useEffect(() => {
     const loadRecoveryOptions = async () => {
-      if (selectedFlight?.categorization || selectedFlight?.type) {
+      if (selectedFlight?.id || selectedFlight?.categorization || selectedFlight?.type) {
         setLoading(true)
         try {
-          const categoryCode = selectedFlight.categorization || selectedFlight.type
-          const options = await databaseService.getRecoveryOptionsByCategory(categoryCode)
+          let options = []
           
-          if (options.length === 0 && selectedFlight.id) {
-            // Try to get options by flight ID if category-based lookup fails
-            const flightOptions = await databaseService.getDetailedRecoveryOptions(selectedFlight.id)
-            setDynamicRecoveryOptions(flightOptions)
-          } else {
-            setDynamicRecoveryOptions(options)
+          // First try to get options by flight ID (most specific)
+          if (selectedFlight.id) {
+            console.log(`Loading recovery options for flight ID: ${selectedFlight.id}`)
+            options = await databaseService.getDetailedRecoveryOptions(selectedFlight.id.toString())
           }
+          
+          // If no options found by ID, try by category
+          if (options.length === 0 && (selectedFlight.categorization || selectedFlight.type)) {
+            const categoryCode = selectedFlight.categorization || selectedFlight.type
+            console.log(`Loading recovery options for category: ${categoryCode}`)
+            options = await databaseService.getRecoveryOptionsByCategory(categoryCode)
+          }
+          
+          // If still no options, generate them
+          if (options.length === 0 && selectedFlight.id) {
+            console.log(`Generating recovery options for flight ID: ${selectedFlight.id}`)
+            await databaseService.generateRecoveryOptions(selectedFlight.id.toString())
+            // Try to fetch again after generation
+            options = await databaseService.getDetailedRecoveryOptions(selectedFlight.id.toString())
+          }
+          
+          console.log(`Loaded ${options.length} recovery options`)
+          setDynamicRecoveryOptions(options)
         } catch (error) {
           console.error('Error loading recovery options:', error)
+          setDynamicRecoveryOptions([])
         } finally {
           setLoading(false)
         }
