@@ -28,13 +28,25 @@ interface ComparisonMatrixProps {
   onSelectPlan: (plan: any) => void;
 }
 
-export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenarioData, onSelectPlan }: ComparisonMatrixProps) {
-  const [loading, setLoading] = useState(false)
-  const [dynamicRecoveryOptions, setDynamicRecoveryOptions] = useState([])
-  const [selectedOptionDetails, setSelectedOptionDetails] = useState(null)
-  const [rotationPlanDetails, setRotationPlanDetails] = useState(null)
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false)
-  const [showRotationDialog, setShowRotationDialog] = useState(false)
+export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenarioData = null, onSelectPlan }) {
+  const [comparisonOptions, setComparisonOptions] = useState([])
+  const [loading, setLoading] = useState(!selectedFlight)
+  const [error, setError] = useState(null)
+  const [selectedOptions, setSelectedOptions] = useState(new Set())
+  const [showDetailedPlan, setShowDetailedPlan] = useState(false)
+  const [detailPlanData, setDetailPlanData] = useState(null)
+  const [sortBy, setSortBy] = useState('cost')
+  const [showViewRecoveryPopup, setShowViewRecoveryPopup] = useState(false)
+  const [showRotationPlanPopup, setShowRotationPlanPopup] = useState(false)
+  const [viewRecoveryData, setViewRecoveryData] = useState(null)
+  const [rotationPlanData, setRotationPlanData] = useState(null)
+
+  const flight = selectedFlight || {
+    flightNumber: 'N/A',
+    route: 'N/A → N/A',
+    priority: 'Medium',
+    categorization: 'Unknown'
+  }
 
   // Load recovery options from database based on disruption category
   useEffect(() => {
@@ -44,24 +56,70 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
         try {
           const categoryCode = selectedFlight.categorization || selectedFlight.type
           const options = await databaseService.getRecoveryOptionsByCategory(categoryCode)
-          
+
           if (options.length === 0 && selectedFlight.id) {
             // Try to get options by flight ID if category-based lookup fails
             const flightOptions = await databaseService.getDetailedRecoveryOptions(selectedFlight.id)
-            setDynamicRecoveryOptions(flightOptions)
+            setComparisonOptions(flightOptions) // Directly update comparisonOptions
           } else {
-            setDynamicRecoveryOptions(options)
+            setComparisonOptions(options) // Directly update comparisonOptions
           }
         } catch (error) {
           console.error('Error loading recovery options:', error)
+          setError('Failed to load recovery options. Please try again.')
+          setComparisonOptions([]) // Clear options on error
         } finally {
           setLoading(false)
         }
       }
     }
 
-    loadRecoveryOptions()
+    if (selectedFlight) {
+      loadRecoveryOptions()
+    } else {
+      // If no selectedFlight, clear options and set loading to false
+      setComparisonOptions([])
+      setLoading(false)
+    }
   }, [selectedFlight])
+
+
+  // Generate recovery options when component mounts or flight changes
+  useEffect(() => {
+    if (selectedFlight) {
+      setLoading(false)
+      generateRecoveryOptions()
+    }
+  }, [selectedFlight])
+
+  // Show loading state if no flight data is available
+  if (loading || !selectedFlight) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue mx-auto mb-4"></div>
+          <p>Loading flight comparison data...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-flydubai-red">
+          <CardContent className="p-8 text-center">
+            <AlertTriangle className="h-12 w-12 text-flydubai-red mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-flydubai-navy mb-2">Error Loading Data</h3>
+            <p className="text-muted-foreground">{error}</p>
+            <Button variant="outline" className="mt-4 border-flydubai-blue text-flydubai-blue" onClick={() => window.location.reload()}>
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   // Use dynamic recovery options from database or props, with fallback to static data
   const comparisonOptions = dynamicRecoveryOptions.length > 0 
@@ -549,31 +607,78 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
     }
   }, [flight, recoveryOptions]) // Added recoveryOptions to dependency array
 
-  if (!flight) {
+  // Generate recovery options when component mounts or flight changes
+  const generateRecoveryOptions = () => {
+    if (!selectedFlight) {
+      setComparisonOptions([]);
+      return;
+    }
+    const category = selectedFlight.categorization || selectedFlight.type || 'Unknown';
+    const scenario = getScenarioData(category);
+    setComparisonOptions(scenario.options);
+  };
+
+  useEffect(() => {
+    if (selectedFlight) {
+      setLoading(false); // Set loading to false once selectedFlight is available
+      generateRecoveryOptions();
+    } else {
+      setLoading(false); // Ensure loading is false if selectedFlight is initially null/undefined
+      setComparisonOptions([]); // Clear options if no flight is selected
+    }
+  }, [selectedFlight]);
+
+  if (!selectedFlight) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Target className="h-12 w-12 text-flydubai-blue mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-flydubai-navy mb-2">No Flight Selected</h3>
+          <p className="text-muted-foreground">
+            Please select a flight from the list to view recovery options and compare plans.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue mx-auto mb-4"></div>
+          <p>Loading recovery options...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
     return (
       <div className="space-y-6">
-        <Card className="border-flydubai-blue">
+        <Card className="border-flydubai-red">
           <CardContent className="p-8 text-center">
-            <BarChart3 className="h-12 w-12 text-flydubai-blue mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-flydubai-navy mb-2">No Recovery Options to Compare</h3>
-            <p className="text-muted-foreground">
-              Please select a flight from the Affected Flights screen and generate recovery options first.
-            </p>
+            <AlertTriangle className="h-12 w-12 text-flydubai-red mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-flydubai-navy mb-2">Error Loading Data</h3>
+            <p className="text-muted-foreground">{error}</p>
+            <Button variant="outline" className="mt-4 border-flydubai-blue text-flydubai-blue" onClick={() => window.location.reload()}>
+              Retry
+            </Button>
           </CardContent>
         </Card>
       </div>
     )
   }
 
-  if (!comparisonOptions || comparisonOptions.length === 0) {
+  if (comparisonOptions.length === 0) {
     return (
       <div className="space-y-6">
         <Card className="border-flydubai-orange">
           <CardContent className="p-8 text-center">
             <Target className="h-12 w-12 text-flydubai-orange mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-flydubai-navy mb-2">Recovery Options Loading</h3>
+            <h3 className="text-lg font-semibold text-flydubai-navy mb-2">No Recovery Options Found</h3>
             <p className="text-muted-foreground">
-              Generating recovery options for {flight.flightNumber} ({flight.route})...
+              No recovery options available for {flight.flightNumber} ({flight.route}) with the current categorization.
             </p>
           </CardContent>
         </Card>
@@ -604,7 +709,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
           case 'Total Cost':
             // Use cost from option or calculate from financial breakdown
             let totalCost = 0
-            
+
             // Try multiple sources for cost data
             if (option.totalCost) {
               totalCost = option.totalCost
@@ -616,12 +721,12 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
             } else if (option.financialBreakdown) {
               totalCost = Object.values(option.financialBreakdown).reduce((sum, cost) => sum + (typeof cost === 'number' ? cost : 0), 0)
             }
-            
+
             // Set minimum reasonable cost if zero or too low
             if (totalCost === 0 || totalCost < 1000) {
               totalCost = 25000 // Default reasonable cost
             }
-            
+
             row[key] = `AED ${totalCost.toLocaleString()}`
             break
           case 'OTP Score':
@@ -682,13 +787,13 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
     try {
       setLoading(true)
       const details = await databaseService.getRecoveryOptionDetails?.(option.id) || option
-      setSelectedOptionDetails(details)
-      setShowDetailsDialog(true)
+      setDetailPlanData(details) // Use setDetailPlanData
+      setShowDetailedPlan(true) // Use setShowDetailedPlan
     } catch (error) {
       console.error('Error loading option details:', error)
       // Fallback to option data
-      setSelectedOptionDetails(option)
-      setShowDetailsDialog(true)
+      setDetailPlanData(option) // Use setDetailPlanData
+      setShowDetailedPlan(true) // Use setShowDetailedPlan
     } finally {
       setLoading(false)
     }
@@ -707,18 +812,18 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
           { flightNumber: 'FZ447', delay: '15 min', passengers: 189, status: 'Delayed' }
         ]
       }
-      setRotationPlanDetails(rotationPlan)
-      setShowRotationDialog(true)
+      setRotationPlanData(rotationPlan) // Use setRotationPlanData
+      setShowRotationPlanPopup(true) // Use setShowRotationPlanPopup
     } catch (error) {
       console.error('Error loading rotation plan:', error)
       // Fallback rotation plan
-      setRotationPlanDetails({
+      setRotationPlanData({ // Use setRotationPlanData
         aircraftRotations: [
           { aircraft: selectedFlight?.aircraft || 'A6-FDB', currentFlight: selectedFlight?.flightNumber || 'FZ445', nextFlight: 'FZ446', turnaroundTime: '45 min' }
         ],
         impactedFlights: []
       })
-      setShowRotationDialog(true)
+      setShowRotationPlanPopup(true) // Use setShowRotationPlanPopup
     } finally {
       setLoading(false)
     }
@@ -963,7 +1068,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
       </Card>
 
       {/* Recovery Option Details Dialog */}
-      <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+      <Dialog open={showDetailedPlan} onOpenChange={setShowDetailedPlan}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -971,8 +1076,8 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
               Recovery Option Details
             </DialogTitle>
           </DialogHeader>
-          
-          {selectedOptionDetails && (
+
+          {detailPlanData && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
@@ -983,21 +1088,21 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Title:</span>
-                        <span className="font-medium">{selectedOptionDetails.title}</span>
+                        <span className="font-medium">{detailPlanData.title}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Cost:</span>
-                        <span className="font-medium text-flydubai-orange">{selectedOptionDetails.cost}</span>
+                        <span className="font-medium text-flydubai-orange">{detailPlanData.cost}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Timeline:</span>
-                        <span className="font-medium">{selectedOptionDetails.timeline}</span>
+                        <span className="font-medium">{detailPlanData.timeline}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Confidence:</span>
                         <div className="flex items-center gap-2">
-                          <Progress value={selectedOptionDetails.confidence} className="w-16 h-2" />
-                          <span className="font-medium">{selectedOptionDetails.confidence}%</span>
+                          <Progress value={detailPlanData.confidence} className="w-16 h-2" />
+                          <span className="font-medium">{detailPlanData.confidence}%</span>
                         </div>
                       </div>
                     </div>
@@ -1012,16 +1117,16 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Passenger Impact:</span>
-                        <Badge variant="outline">{selectedOptionDetails.impact}</Badge>
+                        <Badge variant="outline">{detailPlanData.impact}</Badge>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Status:</span>
-                        <Badge className={selectedOptionDetails.status === 'recommended' 
+                        <Badge className={detailPlanData.status === 'recommended' 
                           ? 'bg-green-100 text-green-800' 
-                          : selectedOptionDetails.status === 'caution'
+                          : detailPlanData.status === 'caution'
                           ? 'bg-yellow-100 text-yellow-800'
                           : 'bg-red-100 text-red-800'}>
-                          {selectedOptionDetails.status}
+                          {detailPlanData.status}
                         </Badge>
                       </div>
                     </div>
@@ -1034,11 +1139,11 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                   <CardTitle>Description</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">{selectedOptionDetails.description}</p>
+                  <p className="text-muted-foreground">{detailPlanData.description}</p>
                 </CardContent>
               </Card>
 
-              {selectedOptionDetails.advantages && (
+              {detailPlanData.advantages && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Advantages & Considerations</CardTitle>
@@ -1048,16 +1153,16 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                       <div>
                         <h4 className="font-medium mb-2 text-green-700">Advantages</h4>
                         <ul className="space-y-1">
-                          {selectedOptionDetails.advantages.map((advantage, idx) => (
+                          {detailPlanData.advantages.map((advantage, idx) => (
                             <li key={idx} className="text-sm text-muted-foreground">• {advantage}</li>
                           ))}
                         </ul>
                       </div>
-                      {selectedOptionDetails.considerations && (
+                      {detailPlanData.considerations && (
                         <div>
                           <h4 className="font-medium mb-2 text-orange-700">Considerations</h4>
                           <ul className="space-y-1">
-                            {selectedOptionDetails.considerations.map((consideration, idx) => (
+                            {detailPlanData.considerations.map((consideration, idx) => (
                               <li key={idx} className="text-sm text-muted-foreground">• {consideration}</li>
                             ))}
                           </ul>
@@ -1073,7 +1178,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
       </Dialog>
 
       {/* Rotation Plan Dialog */}
-      <Dialog open={showRotationDialog} onOpenChange={setShowRotationDialog}>
+      <Dialog open={showRotationPlanPopup} onOpenChange={setShowRotationPlanPopup}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -1081,8 +1186,8 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
               Aircraft Rotation Plan
             </DialogTitle>
           </DialogHeader>
-          
-          {rotationPlanDetails && (
+
+          {rotationPlanData && (
             <div className="space-y-6">
               <Card>
                 <CardHeader>
@@ -1093,7 +1198,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {rotationPlanDetails.aircraftRotations?.map((rotation, idx) => (
+                    {rotationPlanData.aircraftRotations?.map((rotation, idx) => (
                       <div key={idx} className="flex items-center justify-between p-4 border rounded-lg">
                         <div>
                           <p className="font-medium">{rotation.aircraft}</p>
@@ -1113,7 +1218,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                 </CardContent>
               </Card>
 
-              {rotationPlanDetails.impactedFlights?.length > 0 && (
+              {rotationPlanData.impactedFlights?.length > 0 && (
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -1123,7 +1228,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-3">
-                      {rotationPlanDetails.impactedFlights.map((flight, idx) => (
+                      {rotationPlanData.impactedFlights.map((flight, idx) => (
                         <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
                           <div>
                             <p className="font-medium">{flight.flightNumber}</p>
