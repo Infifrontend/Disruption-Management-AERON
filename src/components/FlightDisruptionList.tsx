@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAppContext } from "../context/AppContext";
 import { databaseService } from "../services/databaseService";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
@@ -78,6 +80,8 @@ import {
 } from "lucide-react";
 
 export function FlightDisruptionList() {
+  const navigate = useNavigate();
+  const { setSelectedFlight } = useAppContext();
   const [selectedDisruption, setSelectedDisruption] = useState(null);
   const [disruptions, setDisruptions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -269,6 +273,26 @@ export function FlightDisruptionList() {
 
   const handleViewDetails = (disruption) => {
     setSelectedDisruption(disruption);
+  };
+
+  const handleFlightClick = async (disruption) => {
+    try {
+      // Set the selected flight in context
+      setSelectedFlight(disruption);
+      
+      // Generate recovery options dynamically based on disruption category
+      if (disruption.id) {
+        await databaseService.generateRecoveryOptions(disruption.id.toString());
+      }
+      
+      // Navigate to comparison page with flight ID parameter
+      navigate(`/comparison?flightId=${disruption.id}`);
+    } catch (error) {
+      console.error('Error navigating to comparison:', error);
+      // Fallback navigation without recovery generation
+      setSelectedFlight(disruption);
+      navigate(`/comparison?flightId=${disruption.id}`);
+    }
   };
 
   if (loading) {
@@ -518,7 +542,11 @@ export function FlightDisruptionList() {
               {filteredDisruptions
                 .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                 .map((disruption) => (
-                <TableRow key={disruption.id} className="hover:bg-muted/50">
+                <TableRow 
+                  key={disruption.id} 
+                  className="hover:bg-muted/50 cursor-pointer"
+                  onClick={() => handleFlightClick(disruption)}
+                >
                   <TableCell>
                     <div className="flex items-center gap-2">
                       {getTypeIcon(disruption.type)}
@@ -636,7 +664,10 @@ export function FlightDisruptionList() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleViewDetails(disruption)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleViewDetails(disruption);
+                      }}
                       className="flex items-center gap-1"
                     >
                       <Eye className="h-3 w-3" />
