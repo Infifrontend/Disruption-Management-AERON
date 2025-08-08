@@ -272,6 +272,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     status: "all",
     priority: "all",
     origin: "all",
+    destination: "all",
+    hub: "all",
     categorization: "all",
     search: "",
   });
@@ -592,6 +594,17 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     if (filters.origin !== "all" && flight.origin !== filters.origin)
       return false;
 
+    // Destination filter
+    if (filters.destination !== "all" && flight.destination !== filters.destination)
+      return false;
+
+    // Hub filter
+    if (filters.hub !== "all") {
+      const flightHub = flight.origin === "DXB" || flight.destination === "DXB" ? "DXB" : 
+                       flight.origin === "DWC" || flight.destination === "DWC" ? "DWC" : "DXB";
+      if (flightHub !== filters.hub) return false;
+    }
+
     // Categorization filter
     if (
       filters.categorization !== "all" &&
@@ -652,6 +665,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     filters.status,
     filters.priority,
     filters.origin,
+    filters.destination,
+    filters.hub,
     filters.categorization,
     filters.search,
   ]);
@@ -1469,8 +1484,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* First Row - Search */}
-            <div className="grid grid-cols-1 md:grid-cols-1 gap-2">
+            {/* First Row - Search with reduced width */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="text-sm font-medium mb-1 block">Search</label>
                 <div className="relative">
@@ -1484,6 +1499,47 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     className="pl-10"
                   />
                 </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Destination</label>
+                <Select
+                  value={filters.destination || "all"}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, destination: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All destinations" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Destinations</SelectItem>
+                    {Array.from(new Set(flights.map((f) => f.destination)))
+                      .sort()
+                      .map((destination) => (
+                        <SelectItem key={destination} value={destination}>
+                          {destination}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-1 block">Hub</label>
+                <Select
+                  value={filters.hub || "all"}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, hub: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All hubs" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All hubs</SelectItem>
+                    <SelectItem value="DXB">DXB</SelectItem>
+                    <SelectItem value="DWC">DWC</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
@@ -1670,20 +1726,14 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
                     <Plane className="h-3.5 w-3.5 transform rotate-180" />
-                    <span className="text-xs">Inbound</span>
-                    <span className="bg-blue-100 text-blue-700 px-1 py-0.5 rounded text-xs font-medium leading-none">
-                      {sortedFlights.filter(f => f.destination === 'DXB').length}
-                    </span>
+                    <span className="text-xs">Inbound ({sortedFlights.filter(f => f.destination === 'DXB').length})</span>
                   </TabsTrigger>
                   <TabsTrigger 
                     value="outbound"
                     className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
                     <Plane className="h-3.5 w-3.5" />
-                    <span className="text-xs">Outbound</span>
-                    <span className="bg-orange-100 text-orange-700 px-1 py-0.5 rounded text-xs font-medium leading-none">
-                      {sortedFlights.filter(f => f.origin === 'DXB').length}
-                    </span>
+                    <span className="text-xs">Outbound ({sortedFlights.filter(f => f.origin === 'DXB').length})</span>
                   </TabsTrigger>
                 </TabsList>
 
@@ -2325,6 +2375,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                               status: "all",
                               priority: "all",
                               origin: "all",
+                              destination: "all",
+                              hub: "all",
                               categorization: "all",
                               search: "",
                             })
