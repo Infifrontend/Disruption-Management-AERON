@@ -14,12 +14,26 @@ export function ComparisonPage() {
       const urlParams = new URLSearchParams(window.location.search)
       const flightId = urlParams.get('flightId')
 
-      if (flightId && (!selectedFlight || selectedFlight.id !== flightId)) {
+      if (flightId && (!selectedFlight || selectedFlight.id !== parseInt(flightId))) {
         setLoading(true)
         try {
           const flight = await databaseService.getDisruption(flightId)
           if (flight) {
-            setSelectedFlight(flight)
+            // Transform the flight data to match the expected format
+            const transformedFlight = {
+              ...flight,
+              flightNumber: flight.flight_number || flight.flightNumber,
+              route: flight.route || `${flight.origin} → ${flight.destination}`,
+              scheduledDeparture: flight.scheduled_departure || flight.scheduledDeparture,
+              estimatedDeparture: flight.estimated_departure || flight.estimatedDeparture,
+              type: flight.disruption_type || flight.type,
+              disruptionReason: flight.disruption_reason || flight.disruptionReason,
+              severity: flight.severity,
+              status: flight.status,
+              categorization: flight.categorization || getCategorization(flight.disruption_type || flight.type || 'Technical'),
+              priority: flight.severity || 'Medium'
+            }
+            setSelectedFlight(transformedFlight)
           }
         } catch (error) {
           console.error('Error loading flight details:', error)
@@ -27,6 +41,19 @@ export function ComparisonPage() {
           setLoading(false)
         }
       }
+    }
+
+    // Helper function to get categorization
+    const getCategorization = (type) => {
+      const categoryMap = {
+        Technical: "Aircraft issue (e.g., AOG)",
+        Weather: "ATC/weather delay",
+        Crew: "Crew issue (e.g., sick report, duty time breach)",
+        ATC: "ATC/weather delay",
+        Airport: "Airport curfew/ramp congestion",
+        Rotation: "Rotation misalignment or maintenance hold"
+      }
+      return categoryMap[type] || "Aircraft issue (e.g., AOG)"
     }
 
     loadFlightFromUrl()
