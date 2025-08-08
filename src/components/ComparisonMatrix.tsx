@@ -39,33 +39,54 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
   // Load recovery options from database based on disruption category
   useEffect(() => {
     const loadRecoveryOptions = async () => {
-      if (selectedFlight?.id || selectedFlight?.categorization || selectedFlight?.type) {
+      if (selectedFlight?.id) {
         setLoading(true)
         try {
           let options = []
+          const flightId = selectedFlight.id.toString()
           
-          // First try to get options by flight ID (most specific)
-          if (selectedFlight.id) {
-            console.log(`Loading recovery options for flight ID: ${selectedFlight.id}`)
-            options = await databaseService.getDetailedRecoveryOptions(selectedFlight.id.toString())
+          console.log(`Loading recovery options for flight ID: ${flightId}`)
+          
+          // Use the correct API endpoint: api/recovery-options/
+          try {
+            const response = await fetch(`/api/recovery-options/${flightId}`)
+            if (response.ok) {
+              options = await response.json()
+              console.log(`Found ${options.length} recovery options from API`)
+            } else if (response.status === 404) {
+              console.log(`No recovery options found for flight ${flightId}, generating...`)
+              // Generate new options
+              await databaseService.generateRecoveryOptions(flightId)
+              
+              // Wait a moment and try again
+              await new Promise(resolve => setTimeout(resolve, 2000))
+              const retryResponse = await fetch(`/api/recovery-options/${flightId}`)
+              if (retryResponse.ok) {
+                options = await retryResponse.json()
+                console.log(`Generated ${options.length} recovery options`)
+              }
+            } else {
+              console.error(`API error: ${response.status}`)
+            }
+          } catch (fetchError) {
+            console.error('Error fetching from API:', fetchError)
+            // Fallback to database service
+            options = await databaseService.getDetailedRecoveryOptions(flightId)
           }
           
-          // If no options found by ID, try by category
-          if (options.length === 0 && (selectedFlight.categorization || selectedFlight.type)) {
-            const categoryCode = selectedFlight.categorization || selectedFlight.type
-            console.log(`Loading recovery options for category: ${categoryCode}`)
-            options = await databaseService.getRecoveryOptionsByCategory(categoryCode)
+          // If still no options, try fallback methods
+          if (options.length === 0) {
+            console.log('Trying fallback methods...')
+            
+            // Try by disruption type/category
+            if (selectedFlight.categorization || selectedFlight.type) {
+              const categoryCode = selectedFlight.categorization || selectedFlight.type
+              console.log(`Loading recovery options for category: ${categoryCode}`)
+              options = await databaseService.getRecoveryOptionsByCategory(categoryCode)
+            }
           }
           
-          // If still no options, generate them
-          if (options.length === 0 && selectedFlight.id) {
-            console.log(`Generating recovery options for flight ID: ${selectedFlight.id}`)
-            await databaseService.generateRecoveryOptions(selectedFlight.id.toString())
-            // Try to fetch again after generation
-            options = await databaseService.getDetailedRecoveryOptions(selectedFlight.id.toString())
-          }
-          
-          console.log(`Loaded ${options.length} recovery options`)
+          console.log(`Final result: ${options.length} recovery options loaded`)
           setDynamicRecoveryOptions(options)
         } catch (error) {
           console.error('Error loading recovery options:', error)
@@ -73,6 +94,9 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
         } finally {
           setLoading(false)
         }
+      } else {
+        console.log('No flight ID available for loading recovery options')
+        setDynamicRecoveryOptions([])
       }
     }
 
@@ -697,8 +721,26 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
   const handleViewFullDetails = async (option) => {
     try {
       setLoading(true)
-      const details = await databaseService.getRecoveryOptionDetails?.(option.id) || option
-      setSelectedOptionDetails(details)
+      let details = null
+      
+      // Try to fetch detailed information from API first
+      try {
+        const response = await fetch(`/api/recovery-option-details/${option.id}`)
+        if (response.ok) {
+          details = await response.json()
+          console.log('Loaded detailed option from API:', details)
+        }
+      } catch (fetchError) {
+        console.log('API fetch failed, trying database service:', fetchError)
+      }
+      
+      // Fallback to database service if API fails
+      if (!details && databaseService.getRecoveryOptionDetails) {
+        details = await databaseService.getRecoveryOptionDetails(option.id)
+      }
+      
+      // Final fallback to the option data itself
+      setSelectedOptionDetails(details || option)
       setShowDetailsDialog(true)
     } catch (error) {
       console.error('Error loading option details:', error)
@@ -713,16 +755,39 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
   const handleViewRotationPlan = async (option) => {
     try {
       setLoading(true)
-      const rotationPlan = await databaseService.getRotationPlanDetails?.(option.id) || {
-        aircraftRotations: [
-          { aircraft: selectedFlight?.aircraft || 'A6-FDB', currentFlight: selectedFlight?.flightNumber || 'FZ445', nextFlight: 'FZ446', turnaroundTime: '45 min' },
-          { aircraft: 'A6-FDC', currentFlight: 'Available', nextFlight: 'FZ445', turnaroundTime: '30 min' }
-        ],
-        impactedFlights: [
-          { flightNumber: 'FZ446', delay: '45 min', passengers: 156, status: 'Delayed' },
-          { flightNumber: 'FZ447', delay: '15 min', passengers: 189, status: 'Delayed' }
-        ]
+      let rotationPlan = null
+      
+      // Try to fetch rotation plan from API first
+      try {
+        const response = await fetch(`/api/recovery-option/${option.id}/rotation-plan`)
+        if (response.ok) {
+          const result = await response.json()
+          rotationPlan = result.rotationPlan || result
+          console.log('Loaded rotation plan from API:', rotationPlan)
+        }
+      } catch (fetchError) {
+        console.log('API fetch failed for rotation plan:', fetchError)
       }
+      
+      // Fallback to database service if API fails
+      if (!rotationPlan && databaseService.getRotationPlanDetails) {
+        rotationPlan = await databaseService.getRotationPlanDetails(option.id)
+      }
+      
+      // Final fallback to mock data
+      if (!rotationPlan) {
+        rotationPlan = {
+          aircraftRotations: [
+            { aircraft: selectedFlight?.aircraft || 'A6-FDB', currentFlight: selectedFlight?.flightNumber || 'FZ445', nextFlight: 'FZ446', turnaroundTime: '45 min' },
+            { aircraft: 'A6-FDC', currentFlight: 'Available', nextFlight: 'FZ445', turnaroundTime: '30 min' }
+          ],
+          impactedFlights: [
+            { flightNumber: 'FZ446', delay: '45 min', passengers: 156, status: 'Delayed' },
+            { flightNumber: 'FZ447', delay: '15 min', passengers: 189, status: 'Delayed' }
+          ]
+        }
+      }
+      
       setRotationPlanDetails(rotationPlan)
       setShowRotationDialog(true)
     } catch (error) {
