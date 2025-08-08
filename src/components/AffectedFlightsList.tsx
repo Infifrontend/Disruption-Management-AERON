@@ -43,6 +43,7 @@ export function AffectedFlightsList() {
     type: 'all',
     origin: 'all',
     destination: 'all',
+    hub: 'all',
     search: ''
   })
   const [currentPage, setCurrentPage] = useState(1);
@@ -94,6 +95,7 @@ export function AffectedFlightsList() {
     if (filters.type !== 'all' && flight.type !== filters.type) return false
     if (filters.origin !== 'all' && flight.origin !== filters.origin) return false
     if (filters.destination !== 'all' && flight.destination !== filters.destination) return false
+    if (filters.hub !== 'all' && flight.origin !== filters.hub && flight.destination !== filters.hub) return false
     if (filters.search && !flight.flightNumber.toLowerCase().includes(filters.search.toLowerCase()) && 
         !flight.route.toLowerCase().includes(filters.search.toLowerCase()) &&
         !flight.originCity.toLowerCase().includes(filters.search.toLowerCase()) &&
@@ -249,8 +251,8 @@ export function AffectedFlightsList() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-8 gap-4">
+            <div className="md:col-span-1">
               <Label htmlFor="search">Search</Label>
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
@@ -288,6 +290,19 @@ export function AffectedFlightsList() {
                   {[...new Set(flights.map(f => f.destination))].sort().map(dest => (
                     <SelectItem key={dest} value={dest}>{dest}</SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="hub">Hub</Label>
+              <Select value={filters.hub} onValueChange={(value) => setFilters({...filters, hub: value})}>
+                <SelectTrigger>
+                  <SelectValue placeholder="All hubs" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Hubs</SelectItem>
+                  <SelectItem value="DXB">DXB</SelectItem>
+                  <SelectItem value="DWC">DWC</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -341,7 +356,7 @@ export function AffectedFlightsList() {
             <div className="flex items-end">
               <Button 
                 variant="outline" 
-                onClick={() => setFilters({status: 'all', severity: 'all', type: 'all', origin: 'all', destination: 'all', search: ''})}
+                onClick={() => setFilters({status: 'all', severity: 'all', type: 'all', origin: 'all', destination: 'all', hub: 'all', search: ''})}
                 className="w-full"
               >
                 Clear Filters
@@ -418,14 +433,38 @@ export function AffectedFlightsList() {
                 className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-flydubai-blue font-medium transition-all duration-200"
               >
                 <Plane className="h-4 w-4 transform rotate-180" />
-                Inbound to DXB
+                Inbound to DXB ({inboundFlights.filter(flight => {
+                  if (filters.status !== 'all' && flight.status !== filters.status) return false
+                  if (filters.severity !== 'all' && flight.severity !== filters.severity) return false
+                  if (filters.type !== 'all' && flight.type !== filters.type) return false
+                  if (filters.origin !== 'all' && flight.origin !== filters.origin) return false
+                  if (filters.destination !== 'all' && flight.destination !== filters.destination) return false
+                  if (filters.hub !== 'all' && flight.origin !== filters.hub && flight.destination !== filters.hub) return false
+                  if (filters.search && !flight.flightNumber.toLowerCase().includes(filters.search.toLowerCase()) && 
+                      !flight.route.toLowerCase().includes(filters.search.toLowerCase()) &&
+                      !flight.originCity.toLowerCase().includes(filters.search.toLowerCase()) &&
+                      !flight.destinationCity.toLowerCase().includes(filters.search.toLowerCase())) return false
+                  return true
+                }).length})
               </TabsTrigger>
               <TabsTrigger 
                 value="outbound"
                 className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-flydubai-blue font-medium transition-all duration-200"
               >
                 <Plane className="h-4 w-4" />
-                Outbound from DXB
+                Outbound from DXB ({outboundFlights.filter(flight => {
+                  if (filters.status !== 'all' && flight.status !== filters.status) return false
+                  if (filters.severity !== 'all' && flight.severity !== filters.severity) return false
+                  if (filters.type !== 'all' && flight.type !== filters.type) return false
+                  if (filters.origin !== 'all' && flight.origin !== filters.origin) return false
+                  if (filters.destination !== 'all' && flight.destination !== filters.destination) return false
+                  if (filters.hub !== 'all' && flight.origin !== filters.hub && flight.destination !== filters.hub) return false
+                  if (filters.search && !flight.flightNumber.toLowerCase().includes(filters.search.toLowerCase()) && 
+                      !flight.route.toLowerCase().includes(filters.search.toLowerCase()) &&
+                      !flight.originCity.toLowerCase().includes(filters.search.toLowerCase()) &&
+                      !flight.destinationCity.toLowerCase().includes(filters.search.toLowerCase())) return false
+                  return true
+                }).length})
               </TabsTrigger>
             </TabsList>
 
