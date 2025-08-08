@@ -1008,7 +1008,8 @@ app.post("/api/disruptions/", async (req, res) => {
     );
 
     console.log("Successfully saved/updated disruption:", result.rows[0]);
-    res.json(result.rows[0]);``
+    res.json(result.rows[0]);
+    ``;
   } catch (error) {
     console.error("Error saving disruption:", error.message);
     console.error("Error details:", error);
@@ -1340,27 +1341,6 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
   }
 });
 
-// Detailed Recovery Options endpoints
-app.get("/api/recovery-options-detailed/:disruptionId", async (req, res) => {
-  try {
-    const { disruptionId } = req.params;
-    const result = await pool.query(
-      `
-      SELECT rod.*, dc.category_name, dc.category_code
-      FROM recovery_options_detailed rod
-      LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
-      WHERE rod.disruption_id = $1
-      ORDER BY rod.confidence DESC, rod.priority ASC
-    `,
-      [disruptionId],
-    );
-    res.json(result.rows || []);
-  } catch (error) {
-    console.error("Error fetching detailed recovery options:", error);
-    res.json([]);
-  }
-});
-
 // Recovery Categories endpoints
 app.get("/api/recovery-categories", async (req, res) => {
   try {
@@ -1409,25 +1389,21 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
       disruptionId === "undefined" ||
       disruptionId === "null"
     ) {
-      return res
-        .status(400)
-        .json({
-          error: "Invalid disruption ID",
-          optionsCount: 0,
-          stepsCount: 0,
-        });
+      return res.status(400).json({
+        error: "Invalid disruption ID",
+        optionsCount: 0,
+        stepsCount: 0,
+      });
     }
 
     // Convert disruptionId to integer for database query
     const numericDisruptionId = parseInt(disruptionId);
     if (isNaN(numericDisruptionId)) {
-      return res
-        .status(400)
-        .json({
-          error: "Invalid disruption ID format",
-          optionsCount: 0,
-          stepsCount: 0,
-        });
+      return res.status(400).json({
+        error: "Invalid disruption ID format",
+        optionsCount: 0,
+        stepsCount: 0,
+      });
     }
 
     // First get the disruption details
@@ -1639,12 +1615,10 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
     });
   } catch (error) {
     console.error("Error generating recovery options:", error);
-    res
-      .status(500)
-      .json({
-        error: "Failed to generate recovery options",
-        details: error.message,
-      });
+    res.status(500).json({
+      error: "Failed to generate recovery options",
+      details: error.message,
+    });
   }
 });
 
@@ -2068,12 +2042,10 @@ app.get("/api/recovery-steps-detailed/:disruptionId", async (req, res) => {
     res.json(result.rows || []);
   } catch (error) {
     console.error("Error fetching detailed recovery steps:", error);
-    res
-      .status(500)
-      .json({
-        error: "Failed to fetch recovery steps",
-        details: error.message,
-      });
+    res.status(500).json({
+      error: "Failed to fetch recovery steps",
+      details: error.message,
+    });
   }
 });
 
