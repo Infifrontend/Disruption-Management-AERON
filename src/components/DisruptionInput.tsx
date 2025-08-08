@@ -74,6 +74,7 @@ import {
   FileText,
 } from "lucide-react";
 import { databaseService, FlightDisruption } from "../services/databaseService";
+import { useRouter } from "next/navigation";
 
 // Define interface for disruption categories
 interface DisruptionCategory {
@@ -261,6 +262,7 @@ const getTimeAgo = (dateString: string) => {
 };
 
 export function DisruptionInput({ disruption, onSelectFlight }) {
+  const navigate = useRouter();
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -1912,7 +1914,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                       size="sm"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        window.location.href = `/comparison?flightId=${flight.id}`;
+                                        navigate(`/comparison?flightId=${flight.id}`);
                                       }}
                                     >
                                       <Eye className="h-3 w-3 mr-1" />
@@ -2204,7 +2206,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                       size="sm"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        window.location.href = `/comparison?flightId=${flight.id}`;
+                                        navigate(`/comparison?flightId=${flight.id}`);
                                       }}
                                     >
                                       <Eye className="h-3 w-3 mr-1" />
