@@ -1008,7 +1008,7 @@ app.post("/api/disruptions/", async (req, res) => {
     );
 
     console.log("Successfully saved/updated disruption:", result.rows[0]);
-    res.json(result.rows[0]);
+    res.json(result.rows[0]);``
   } catch (error) {
     console.error("Error saving disruption:", error.message);
     console.error("Error details:", error);

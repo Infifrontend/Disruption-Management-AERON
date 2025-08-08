@@ -1,26 +1,46 @@
 // Helper functions for disruption type mapping and recovery generation
 const mapDisruptionTypeToCategory = (type, reason) => {
-  const lowerType = type.toLowerCase()
-  const lowerReason = reason.toLowerCase()
+  const lowerType = type.toLowerCase();
+  const lowerReason = reason.toLowerCase();
 
-  if (lowerType.includes('technical') || lowerReason.includes('maintenance') || lowerReason.includes('aog')) {
-    return 'Aircraft issue (e.g., AOG)'
+  if (
+    lowerType.includes("technical") ||
+    lowerReason.includes("maintenance") ||
+    lowerReason.includes("aog")
+  ) {
+    return "Aircraft issue (e.g., AOG)";
   }
-  if (lowerType.includes('crew') || lowerReason.includes('crew') || lowerReason.includes('duty time')) {
-    return 'Crew issue (e.g., sick report, duty time breach)'
+  if (
+    lowerType.includes("crew") ||
+    lowerReason.includes("crew") ||
+    lowerReason.includes("duty time")
+  ) {
+    return "Crew issue (e.g., sick report, duty time breach)";
   }
-  if (lowerType.includes('weather') || lowerReason.includes('weather') || lowerReason.includes('atc')) {
-    return 'ATC/weather delay'
+  if (
+    lowerType.includes("weather") ||
+    lowerReason.includes("weather") ||
+    lowerReason.includes("atc")
+  ) {
+    return "ATC/weather delay";
   }
-  if (lowerType.includes('curfew') || lowerReason.includes('curfew') || lowerReason.includes('congestion')) {
-    return 'Airport curfew/ramp congestion'
+  if (
+    lowerType.includes("curfew") ||
+    lowerReason.includes("curfew") ||
+    lowerReason.includes("congestion")
+  ) {
+    return "Airport curfew/ramp congestion";
   }
-  if (lowerType.includes('rotation') || lowerReason.includes('rotation') || lowerReason.includes('misalignment')) {
-    return 'Rotation misalignment or maintenance hold'
+  if (
+    lowerType.includes("rotation") ||
+    lowerReason.includes("rotation") ||
+    lowerReason.includes("misalignment")
+  ) {
+    return "Rotation misalignment or maintenance hold";
   }
 
-  return 'Aircraft issue (e.g., AOG)' // Default fallback
-}
+  return "Aircraft issue (e.g., AOG)"; // Default fallback
+};
 
 const generateAircraftIssueRecovery = (flight) => {
   const steps = [
@@ -34,7 +54,7 @@ const generateAircraftIssueRecovery = (flight) => {
       data: {
         alertType: "Technical System Failure",
         severity: "Ground Stop Required",
-        amosRef: `AMOS-2025-${new Date().getMonth().toString().padStart(2, '0')}-${flight.aircraft?.slice(-3)}-001`,
+        amosRef: `AMOS-2025-${new Date().getMonth().toString().padStart(2, "0")}-${flight.aircraft?.slice(-3)}-001`,
         location: "DXB Gate A12",
       },
     },
@@ -66,8 +86,8 @@ const generateAircraftIssueRecovery = (flight) => {
         curfewBreaches: "None identified",
         overnightImplications: `${flight.destination} turnaround affected`,
       },
-    }
-  ]
+    },
+  ];
 
   const options = [
     {
@@ -79,8 +99,15 @@ const generateAircraftIssueRecovery = (flight) => {
       confidence: 95,
       impact: "Minimal passenger disruption",
       status: "recommended",
-      advantages: ["Same aircraft type - no passenger impact", "Available immediately", "Maintains 97% of schedule integrity"],
-      considerations: ["Crew briefing required for aircraft change", "Passenger transfer time: 30 minutes"],
+      advantages: [
+        "Same aircraft type - no passenger impact",
+        "Available immediately",
+        "Maintains 97% of schedule integrity",
+      ],
+      considerations: [
+        "Crew briefing required for aircraft change",
+        "Passenger transfer time: 30 minutes",
+      ],
       metrics: {
         totalCost: 45000,
         otpScore: 88,
@@ -90,8 +117,8 @@ const generateAircraftIssueRecovery = (flight) => {
         regulatoryRisk: "Low",
         delayMinutes: 75,
         confidenceScore: 95,
-        networkImpact: "Low"
-      }
+        networkImpact: "Low",
+      },
     },
     {
       id: "DELAY_REPAIR",
@@ -102,8 +129,14 @@ const generateAircraftIssueRecovery = (flight) => {
       confidence: 45,
       impact: "Significant passenger disruption",
       status: "caution",
-      advantages: ["Original aircraft maintained", "No aircraft swap complexity"],
-      considerations: ["Repair ETA uncertain", "Massive passenger accommodation needed"],
+      advantages: [
+        "Original aircraft maintained",
+        "No aircraft swap complexity",
+      ],
+      considerations: [
+        "Repair ETA uncertain",
+        "Massive passenger accommodation needed",
+      ],
       metrics: {
         totalCost: 180000,
         otpScore: 45,
@@ -113,8 +146,8 @@ const generateAircraftIssueRecovery = (flight) => {
         regulatoryRisk: "Medium",
         delayMinutes: 360,
         confidenceScore: 45,
-        networkImpact: "High"
-      }
+        networkImpact: "High",
+      },
     },
     {
       id: "CANCEL_REBOOK",
@@ -125,8 +158,14 @@ const generateAircraftIssueRecovery = (flight) => {
       confidence: 75,
       impact: "Complete route cancellation",
       status: "warning",
-      advantages: ["Stops cascade disruption immediately", "Quick passenger rebooking process"],
-      considerations: ["Complete revenue loss for sector", "High passenger compensation costs"],
+      advantages: [
+        "Stops cascade disruption immediately",
+        "Quick passenger rebooking process",
+      ],
+      considerations: [
+        "Complete revenue loss for sector",
+        "High passenger compensation costs",
+      ],
       metrics: {
         totalCost: 520000,
         otpScore: 0,
@@ -136,13 +175,13 @@ const generateAircraftIssueRecovery = (flight) => {
         regulatoryRisk: "High",
         delayMinutes: 0,
         confidenceScore: 75,
-        networkImpact: "Low"
-      }
-    }
-  ]
+        networkImpact: "Low",
+      },
+    },
+  ];
 
-  return { options, steps }
-}
+  return { options, steps };
+};
 
 const generateCrewIssueRecovery = (flight) => {
   const steps = [
@@ -174,8 +213,8 @@ const generateCrewIssueRecovery = (flight) => {
         fdpLegality: "All options within FDP limits",
         aircraftType: flight.aircraft || "B737-800",
       },
-    }
-  ]
+    },
+  ];
 
   const options = [
     {
@@ -187,8 +226,14 @@ const generateCrewIssueRecovery = (flight) => {
       confidence: 92,
       impact: "Minimal operational disruption",
       status: "recommended",
-      advantages: ["Standby crew immediately available", "Within all regulatory duty time limits"],
-      considerations: ["Extended briefing required", "Standby crew pay activation costs"],
+      advantages: [
+        "Standby crew immediately available",
+        "Within all regulatory duty time limits",
+      ],
+      considerations: [
+        "Extended briefing required",
+        "Standby crew pay activation costs",
+      ],
       metrics: {
         totalCost: 8500,
         otpScore: 92,
@@ -198,8 +243,8 @@ const generateCrewIssueRecovery = (flight) => {
         regulatoryRisk: "Low",
         delayMinutes: 30,
         confidenceScore: 92,
-        networkImpact: "Low"
-      }
+        networkImpact: "Low",
+      },
     },
     {
       id: "DELAY_COMPLIANCE",
@@ -210,8 +255,14 @@ const generateCrewIssueRecovery = (flight) => {
       confidence: 65,
       impact: "Significant passenger disruption",
       status: "warning",
-      advantages: ["Uses original qualified crew", "Full regulatory compliance"],
-      considerations: ["3-hour minimum delay", "High passenger compensation liability"],
+      advantages: [
+        "Uses original qualified crew",
+        "Full regulatory compliance",
+      ],
+      considerations: [
+        "3-hour minimum delay",
+        "High passenger compensation liability",
+      ],
       metrics: {
         totalCost: 45000,
         otpScore: 65,
@@ -221,13 +272,13 @@ const generateCrewIssueRecovery = (flight) => {
         regulatoryRisk: "Medium",
         delayMinutes: 180,
         confidenceScore: 65,
-        networkImpact: "Medium"
-      }
-    }
-  ]
+        networkImpact: "Medium",
+      },
+    },
+  ];
 
-  return { options, steps }
-}
+  return { options, steps };
+};
 
 const generateWeatherDelayRecovery = (flight) => {
   const steps = [
@@ -244,8 +295,8 @@ const generateWeatherDelayRecovery = (flight) => {
         atcStatus: "All arrivals on hold",
         forecast: "Improvement expected 16:00-17:00",
       },
-    }
-  ]
+    },
+  ];
 
   const options = [
     {
@@ -257,8 +308,14 @@ const generateWeatherDelayRecovery = (flight) => {
       confidence: 90,
       impact: "Managed schedule delay",
       status: "recommended",
-      advantages: ["Weather forecast shows improvement", "All connections protected"],
-      considerations: ["Dependent on weather improvement", "Crew duty time monitoring"],
+      advantages: [
+        "Weather forecast shows improvement",
+        "All connections protected",
+      ],
+      considerations: [
+        "Dependent on weather improvement",
+        "Crew duty time monitoring",
+      ],
       metrics: {
         totalCost: 25000,
         otpScore: 80,
@@ -268,8 +325,8 @@ const generateWeatherDelayRecovery = (flight) => {
         regulatoryRisk: "Low",
         delayMinutes: 150,
         confidenceScore: 90,
-        networkImpact: "Low"
-      }
+        networkImpact: "Low",
+      },
     },
     {
       id: "CANCEL_WEATHER",
@@ -280,7 +337,10 @@ const generateWeatherDelayRecovery = (flight) => {
       confidence: 60,
       impact: "Complete sector cancellation",
       status: "warning",
-      advantages: ["Immediate resolution", "Weather exemption from compensation"],
+      advantages: [
+        "Immediate resolution",
+        "Weather exemption from compensation",
+      ],
       considerations: ["Complete revenue loss", "Customer dissatisfaction"],
       metrics: {
         totalCost: 180000,
@@ -291,13 +351,13 @@ const generateWeatherDelayRecovery = (flight) => {
         regulatoryRisk: "Medium",
         delayMinutes: 0,
         confidenceScore: 60,
-        networkImpact: "Low"
-      }
-    }
-  ]
+        networkImpact: "Low",
+      },
+    },
+  ];
 
-  return { options, steps }
-}
+  return { options, steps };
+};
 
 const generateCurfewCongestionRecovery = (flight) => {
   const steps = [
@@ -314,8 +374,8 @@ const generateCurfewCongestionRecovery = (flight) => {
         currentETA: "23:15 (15 min past curfew)",
         curfewType: "Noise restriction - strict enforcement",
       },
-    }
-  ]
+    },
+  ];
 
   const options = [
     {
@@ -327,8 +387,15 @@ const generateCurfewCongestionRecovery = (flight) => {
       confidence: 92,
       impact: "Beat curfew timing",
       status: "recommended",
-      advantages: ["Arrive before curfew", "Zero passenger rebooking", "Significant cost savings"],
-      considerations: ["Other flight delayed by 60 minutes", "Quick crew coordination needed"],
+      advantages: [
+        "Arrive before curfew",
+        "Zero passenger rebooking",
+        "Significant cost savings",
+      ],
+      considerations: [
+        "Other flight delayed by 60 minutes",
+        "Quick crew coordination needed",
+      ],
       metrics: {
         totalCost: 45000,
         otpScore: 88,
@@ -338,8 +405,8 @@ const generateCurfewCongestionRecovery = (flight) => {
         regulatoryRisk: "Low",
         delayMinutes: 45,
         confidenceScore: 92,
-        networkImpact: "Medium"
-      }
+        networkImpact: "Medium",
+      },
     },
     {
       id: "OVERNIGHT_DELAY",
@@ -361,13 +428,13 @@ const generateCurfewCongestionRecovery = (flight) => {
         regulatoryRisk: "High",
         delayMinutes: 420,
         confidenceScore: 65,
-        networkImpact: "High"
-      }
-    }
-  ]
+        networkImpact: "High",
+      },
+    },
+  ];
 
-  return { options, steps }
-}
+  return { options, steps };
+};
 
 const generateRotationMisalignmentRecovery = (flight) => {
   const steps = [
@@ -385,8 +452,8 @@ const generateRotationMisalignmentRecovery = (flight) => {
         revisedETA: "14:30:00",
         delay: "3 hours extension",
       },
-    }
-  ]
+    },
+  ];
 
   const options = [
     {
@@ -398,8 +465,14 @@ const generateRotationMisalignmentRecovery = (flight) => {
       confidence: 88,
       impact: "Minimal network disruption",
       status: "recommended",
-      advantages: ["Alternative aircraft immediately available", "Zero passenger impact"],
-      considerations: ["Alternative flight delayed 60 minutes", "Crew briefing for aircraft change"],
+      advantages: [
+        "Alternative aircraft immediately available",
+        "Zero passenger impact",
+      ],
+      considerations: [
+        "Alternative flight delayed 60 minutes",
+        "Crew briefing for aircraft change",
+      ],
       metrics: {
         totalCost: 75000,
         otpScore: 85,
@@ -409,8 +482,8 @@ const generateRotationMisalignmentRecovery = (flight) => {
         regulatoryRisk: "Low",
         delayMinutes: 90,
         confidenceScore: 88,
-        networkImpact: "Low"
-      }
+        networkImpact: "Low",
+      },
     },
     {
       id: "ACCEPT_DELAYS",
@@ -421,7 +494,10 @@ const generateRotationMisalignmentRecovery = (flight) => {
       confidence: 70,
       impact: "Multiple flight delays",
       status: "caution",
-      advantages: ["Original aircraft maintained", "Maintenance completed properly"],
+      advantages: [
+        "Original aircraft maintained",
+        "Maintenance completed properly",
+      ],
       considerations: ["3-hour delay cascade", "Multiple passengers affected"],
       metrics: {
         totalCost: 150000,
@@ -432,45 +508,51 @@ const generateRotationMisalignmentRecovery = (flight) => {
         regulatoryRisk: "Medium",
         delayMinutes: 180,
         confidenceScore: 70,
-        networkImpact: "High"
-      }
-    }
-  ]
+        networkImpact: "High",
+      },
+    },
+  ];
 
-  return { options, steps }
-}
+  return { options, steps };
+};
 
 // Recovery generator for different disruption types
 export function generateRecoveryOptionsForDisruption(disruption) {
   if (!disruption) {
-    console.error('No disruption provided to generator');
+    console.error("No disruption provided to generator");
     return { options: [], steps: [] };
   }
 
   // Validate required fields and provide fallbacks
   if (!disruption.flight_number && !disruption.flightNumber) {
-    console.error('Disruption missing flight_number:', disruption);
+    console.error("Disruption missing flight_number:", disruption);
     return { options: [], steps: [] };
   }
 
   // Normalize field names
   const flightNumber = disruption.flight_number || disruption.flightNumber;
-  const disruptionType = disruption.disruption_type || disruption.disruptionType || disruption.type || 'Technical';
+  const disruptionType =
+    disruption.disruption_type ||
+    disruption.disruptionType ||
+    disruption.type ||
+    "Technical";
 
   // Set defaults for missing fields
   const safeDisruption = {
     ...disruption,
     flight_number: flightNumber,
     disruption_type: disruptionType,
-    severity: disruption.severity || 'Medium',
+    severity: disruption.severity || "Medium",
     passengers: disruption.passengers || 150,
-    aircraft: disruption.aircraft || 'Unknown',
+    aircraft: disruption.aircraft || "Unknown",
     delay_minutes: disruption.delay_minutes || disruption.delay || 0,
-    origin: disruption.origin || 'DXB',
-    destination: disruption.destination || 'Unknown'
+    origin: disruption.origin || "DXB",
+    destination: disruption.destination || "Unknown",
   };
 
-  console.log(`Generating recovery options for flight ${safeDisruption.flight_number}, type: ${safeDisruption.disruption_type}`);
+  console.log(
+    `Generating recovery options for flight ${safeDisruption.flight_number}, type: ${safeDisruption.disruption_type}`,
+  );
 
   const disruptionTypeNormalized = disruptionType.toLowerCase();
   let options = [];
@@ -478,420 +560,732 @@ export function generateRecoveryOptionsForDisruption(disruption) {
 
   // Generate options based on disruption type
   switch (disruptionTypeNormalized) {
-    case 'weather':
+    case "weather":
       steps = [
         {
           step: 1,
-          title: 'Weather Trigger Received',
-          status: 'completed',
-          timestamp: '12:30 PM',
-          system: 'Weather Monitoring',
+          title: "Weather Trigger Received",
+          status: "completed",
+          timestamp: "12:30 PM",
+          system: "Weather Monitoring",
           details: `Severe weather alert received for ${safeDisruption.origin} airport`,
-          data: { severity: safeDisruption.severity, impact: 'High' }
+          data: { severity: safeDisruption.severity, impact: "High" },
         },
         {
           step: 2,
-          title: 'Impact Assessment',
-          status: 'completed',
-          timestamp: '12:35 PM',
-          system: 'AERON System',
-          details: 'Analyzing weather impact on flight operations',
-          data: { expectedDelay: safeDisruption.delay_minutes || 120 }
+          title: "Impact Assessment",
+          status: "completed",
+          timestamp: "12:35 PM",
+          system: "AERON System",
+          details: "Analyzing weather impact on flight operations",
+          data: { expectedDelay: safeDisruption.delay_minutes || 120 },
         },
         {
           step: 3,
-          title: 'Recovery Options Generation',
-          status: 'completed',
-          timestamp: '12:40 PM',
-          system: 'Recovery Engine',
-          details: 'Generating optimal recovery strategies',
-          data: { optionsCount: 3 }
+          title: "Recovery Options Generation",
+          status: "completed",
+          timestamp: "12:40 PM",
+          system: "Recovery Engine",
+          details: "Generating optimal recovery strategies",
+          data: { optionsCount: 3 },
         },
         {
           step: 4,
-          title: 'Resource Availability Check',
-          status: 'standby',
-          timestamp: '12:45 PM',
-          system: 'Resource Manager',
-          details: 'Checking aircraft and crew availability',
-          data: { resourceStatus: 'checking' }
-        }
-      ]
+          title: "Resource Availability Check",
+          status: "standby",
+          timestamp: "12:45 PM",
+          system: "Resource Manager",
+          details: "Checking aircraft and crew availability",
+          data: { resourceStatus: "checking" },
+        },
+      ];
 
       options = [
         {
-          title: 'Weather Delay with Re-routing',
-          description: 'Wait for weather conditions to improve with alternate routing',
-          cost: '$12,500',
-          timeline: '2-3 hours',
+          title: "Weather Delay with Re-routing",
+          description:
+            "Wait for weather conditions to improve with alternate routing",
+          cost: "$12,500",
+          timeline: "2-3 hours",
           confidence: 85,
-          impact: 'Medium delay impact',
-          status: 'recommended',
+          impact: "Medium delay impact",
+          status: "recommended",
           priority: 1,
-          advantages: ["Maintains original aircraft", "Lower cost option", "High success probability"],
-          considerations: ["Weather dependency", "Potential for further delays", "Passenger accommodation required"],
+          advantages: [
+            "Maintains original aircraft",
+            "Lower cost option",
+            "High success probability",
+          ],
+          considerations: [
+            "Weather dependency",
+            "Potential for further delays",
+            "Passenger accommodation required",
+          ],
           resourceRequirements: [
-            { type: 'Aircraft', resource: safeDisruption.aircraft || 'A6-FDZ', availability: 'Available', status: 'On ground', location: 'DXB', eta: 'Immediate', details: 'Original aircraft available' }
+            {
+              type: "Aircraft",
+              resource: safeDisruption.aircraft || "A6-FDZ",
+              availability: "Available",
+              status: "On ground",
+              location: "DXB",
+              eta: "Immediate",
+              details: "Original aircraft available",
+            },
           ],
           costBreakdown: [
-            { category: 'Delay Costs', amount: '$8,500', percentage: 68, description: 'Passenger compensation and handling' },
-            { category: 'Fuel & Operations', amount: '$2,500', percentage: 20, description: 'Additional fuel for re-routing' },
-            { category: 'Crew Overtime', amount: '$1,500', percentage: 12, description: 'Extended duty time compensation' }
+            {
+              category: "Delay Costs",
+              amount: "$8,500",
+              percentage: 68,
+              description: "Passenger compensation and handling",
+            },
+            {
+              category: "Fuel & Operations",
+              amount: "$2,500",
+              percentage: 20,
+              description: "Additional fuel for re-routing",
+            },
+            {
+              category: "Crew Overtime",
+              amount: "$1,500",
+              percentage: 12,
+              description: "Extended duty time compensation",
+            },
           ],
           timelineDetails: [
-            { step: 'Weather Monitoring', duration: '30 min', startTime: '12:30', endTime: '13:00', details: 'Continuous weather tracking', status: 'in-progress' },
-            { step: 'Route Planning', duration: '45 min', startTime: '13:00', endTime: '13:45', details: 'Alternate route calculation', status: 'pending' },
-            { step: 'Passenger Notification', duration: '15 min', startTime: '13:45', endTime: '14:00', details: 'Inform passengers of delay', status: 'pending' },
-            { step: 'Departure Clearance', duration: '30 min', startTime: '14:00', endTime: '14:30', details: 'Weather clearance and takeoff', status: 'pending' }
+            {
+              step: "Weather Monitoring",
+              duration: "30 min",
+              startTime: "12:30",
+              endTime: "13:00",
+              details: "Continuous weather tracking",
+              status: "in-progress",
+            },
+            {
+              step: "Route Planning",
+              duration: "45 min",
+              startTime: "13:00",
+              endTime: "13:45",
+              details: "Alternate route calculation",
+              status: "pending",
+            },
+            {
+              step: "Passenger Notification",
+              duration: "15 min",
+              startTime: "13:45",
+              endTime: "14:00",
+              details: "Inform passengers of delay",
+              status: "pending",
+            },
+            {
+              step: "Departure Clearance",
+              duration: "30 min",
+              startTime: "14:00",
+              endTime: "14:30",
+              details: "Weather clearance and takeoff",
+              status: "pending",
+            },
           ],
           riskAssessment: [
-            { risk: 'Weather deterioration', probability: 'Low', impact: 'High', riskScore: 2, mitigation: 'Continuous monitoring with backup plans ready' },
-            { risk: 'Passenger dissatisfaction', probability: 'Medium', impact: 'Medium', riskScore: 4, mitigation: 'Proactive communication and compensation' }
+            {
+              risk: "Weather deterioration",
+              probability: "Low",
+              impact: "High",
+              riskScore: 2,
+              mitigation: "Continuous monitoring with backup plans ready",
+            },
+            {
+              risk: "Passenger dissatisfaction",
+              probability: "Medium",
+              impact: "Medium",
+              riskScore: 4,
+              mitigation: "Proactive communication and compensation",
+            },
           ],
           technicalSpecs: {
-            weatherMinimums: ['Visibility: 1000m minimum', 'Ceiling: 200ft minimum', 'Wind: 25kt crosswind limit'],
-            alternateAirports: ['SHJ - Sharjah (45km)', 'AUH - Abu Dhabi (120km)'],
-            fuelConsiderations: ['Additional 800kg for alternate routing', 'Weather contingency fuel: 1200kg']
+            weatherMinimums: [
+              "Visibility: 1000m minimum",
+              "Ceiling: 200ft minimum",
+              "Wind: 25kt crosswind limit",
+            ],
+            alternateAirports: [
+              "SHJ - Sharjah (45km)",
+              "AUH - Abu Dhabi (120km)",
+            ],
+            fuelConsiderations: [
+              "Additional 800kg for alternate routing",
+              "Weather contingency fuel: 1200kg",
+            ],
           },
-          metrics: { costEfficiency: 92, timeEfficiency: 78, passengerSatisfaction: 75 },
-          rotationPlan: { nextFlight: 'FZ456', impact: 'Minimal', adjustments: 'None required' }
+          metrics: {
+            costEfficiency: 92,
+            timeEfficiency: 78,
+            passengerSatisfaction: 75,
+          },
+          rotationPlan: {
+            nextFlight: "FZ456",
+            impact: "Minimal",
+            adjustments: "None required",
+          },
         },
         {
-          title: 'Aircraft Swap',
-          description: 'Switch to available aircraft to avoid weather delays',
-          cost: '$18,750',
-          timeline: '1-2 hours',
+          title: "Aircraft Swap",
+          description: "Switch to available aircraft to avoid weather delays",
+          cost: "$18,750",
+          timeline: "1-2 hours",
           confidence: 75,
-          impact: 'Moderate operational complexity',
-          status: 'caution',
+          impact: "Moderate operational complexity",
+          status: "caution",
           priority: 2,
-          advantages: ["Faster departure", "Weather avoidance", "Network protection"],
-          considerations: ["Higher operational cost", "Aircraft availability dependent"],
+          advantages: [
+            "Faster departure",
+            "Weather avoidance",
+            "Network protection",
+          ],
+          considerations: [
+            "Higher operational cost",
+            "Aircraft availability dependent",
+          ],
           resourceRequirements: [
-            { type: 'Aircraft', resource: 'A6-FED', availability: 'Available 14:30', status: 'Maintenance complete', location: 'DXB', eta: '14:30', details: 'B737-800 ready for service' }
+            {
+              type: "Aircraft",
+              resource: "A6-FED",
+              availability: "Available 14:30",
+              status: "Maintenance complete",
+              location: "DXB",
+              eta: "14:30",
+              details: "B737-800 ready for service",
+            },
           ],
           costBreakdown: [
-            { category: 'Aircraft Positioning', amount: '$12,000', percentage: 64, description: 'Aircraft swap and positioning costs' },
-            { category: 'Passenger Handling', amount: '$4,250', percentage: 23, description: 'Gate change and boarding' },
-            { category: 'Crew Coordination', amount: '$2,500', percentage: 13, description: 'Crew briefing and preparation' }
-          ]
+            {
+              category: "Aircraft Positioning",
+              amount: "$12,000",
+              percentage: 64,
+              description: "Aircraft swap and positioning costs",
+            },
+            {
+              category: "Passenger Handling",
+              amount: "$4,250",
+              percentage: 23,
+              description: "Gate change and boarding",
+            },
+            {
+              category: "Crew Coordination",
+              amount: "$2,500",
+              percentage: 13,
+              description: "Crew briefing and preparation",
+            },
+          ],
         },
         {
-          title: 'Flight Cancellation with Rebooking',
+          title: "Flight Cancellation with Rebooking",
           description: `Cancel ${safeDisruption.flight_number} and rebook passengers on next available flights`,
-          cost: '$45,200',
-          timeline: '4-6 hours',
+          cost: "$45,200",
+          timeline: "4-6 hours",
           confidence: 95,
-          impact: 'High passenger impact',
-          status: 'warning',
+          impact: "High passenger impact",
+          status: "warning",
           priority: 3,
-          advantages: ["Guaranteed resolution", "Network stability", "Crew rest compliance"],
-          considerations: ["High passenger compensation", "Reputation impact", "Hotel costs"],
+          advantages: [
+            "Guaranteed resolution",
+            "Network stability",
+            "Crew rest compliance",
+          ],
+          considerations: [
+            "High passenger compensation",
+            "Reputation impact",
+            "Hotel costs",
+          ],
           resourceRequirements: [
-            { type: 'Passenger Services', resource: 'Rebooking Team', availability: 'Available', status: 'On standby', location: 'DXB T2', eta: 'Immediate', details: '6 agents available for rebooking' }
+            {
+              type: "Passenger Services",
+              resource: "Rebooking Team",
+              availability: "Available",
+              status: "On standby",
+              location: "DXB T2",
+              eta: "Immediate",
+              details: "6 agents available for rebooking",
+            },
           ],
           costBreakdown: [
-            { category: 'EU261 Compensation', amount: '$28,200', percentage: 62, description: '€600 per passenger compensation' },
-            { category: 'Hotel & Meals', amount: '$12,500', percentage: 28, description: 'Overnight accommodation' },
-            { category: 'Rebooking Costs', amount: '$4,500', percentage: 10, description: 'Alternative flight arrangements' }
-          ]
-        }
-      ]
-      break
+            {
+              category: "EU261 Compensation",
+              amount: "$28,200",
+              percentage: 62,
+              description: "€600 per passenger compensation",
+            },
+            {
+              category: "Hotel & Meals",
+              amount: "$12,500",
+              percentage: 28,
+              description: "Overnight accommodation",
+            },
+            {
+              category: "Rebooking Costs",
+              amount: "$4,500",
+              percentage: 10,
+              description: "Alternative flight arrangements",
+            },
+          ],
+        },
+      ];
+      break;
 
-    case 'technical':
-    case 'maintenance':
+    case "technical":
+    case "maintenance":
       steps = [
         {
           step: 1,
-          title: 'Technical Issue Reported',
-          status: 'completed',
-          timestamp: '11:15 AM',
-          system: 'Maintenance System',
-          details: 'Aircraft technical fault identified during pre-flight check',
-          data: { faultCode: 'HYD-001', severity: safeDisruption.severity }
+          title: "Technical Issue Reported",
+          status: "completed",
+          timestamp: "11:15 AM",
+          system: "Maintenance System",
+          details:
+            "Aircraft technical fault identified during pre-flight check",
+          data: { faultCode: "HYD-001", severity: safeDisruption.severity },
         },
         {
           step: 2,
-          title: 'Maintenance Assessment',
-          status: 'completed',
-          timestamp: '11:30 AM',
-          system: 'Engineering',
-          details: 'Technical assessment completed - AOG situation',
-          data: { estimatedRepairTime: '4-6 hours' }
+          title: "Maintenance Assessment",
+          status: "completed",
+          timestamp: "11:30 AM",
+          system: "Engineering",
+          details: "Technical assessment completed - AOG situation",
+          data: { estimatedRepairTime: "4-6 hours" },
         },
         {
           step: 3,
-          title: 'Alternative Solutions Analysis',
-          status: 'completed',
-          timestamp: '11:45 AM',
-          system: 'AERON System',
-          details: 'Analyzing aircraft swap and passenger rebooking options',
-          data: { alternativeAircraft: 2, rebookingOptions: 3 }
+          title: "Alternative Solutions Analysis",
+          status: "completed",
+          timestamp: "11:45 AM",
+          system: "AERON System",
+          details: "Analyzing aircraft swap and passenger rebooking options",
+          data: { alternativeAircraft: 2, rebookingOptions: 3 },
         },
         {
           step: 4,
-          title: 'Resource Coordination',
-          status: 'standby',
-          timestamp: '12:00 PM',
-          system: 'Operations Control',
-          details: 'Coordinating replacement aircraft and crew',
-          data: { status: 'in-progress' }
-        }
-      ]
+          title: "Resource Coordination",
+          status: "standby",
+          timestamp: "12:00 PM",
+          system: "Operations Control",
+          details: "Coordinating replacement aircraft and crew",
+          data: { status: "in-progress" },
+        },
+      ];
 
       options = [
         {
-          title: 'Aircraft Swap - Immediate',
-          description: 'Replace with available standby aircraft',
-          cost: '$22,800',
-          timeline: '1.5-2 hours',
+          title: "Aircraft Swap - Immediate",
+          description: "Replace with available standby aircraft",
+          cost: "$22,800",
+          timeline: "1.5-2 hours",
           confidence: 88,
-          impact: 'Minimal passenger disruption',
-          status: 'recommended',
-          priority: 1
+          impact: "Minimal passenger disruption",
+          status: "recommended",
+          priority: 1,
         },
         {
-          title: 'Maintenance Repair',
-          description: 'Complete repairs on original aircraft',
-          cost: '$35,400',
-          timeline: '4-6 hours',
+          title: "Maintenance Repair",
+          description: "Complete repairs on original aircraft",
+          cost: "$35,400",
+          timeline: "4-6 hours",
           confidence: 65,
-          impact: 'Significant delay impact',
-          status: 'caution',
-          priority: 2
+          impact: "Significant delay impact",
+          status: "caution",
+          priority: 2,
         },
         {
-          title: 'Passenger Reaccommodation',
-          description: 'Distribute passengers across multiple flights',
-          cost: '$52,100',
-          timeline: '2-8 hours',
+          title: "Passenger Reaccommodation",
+          description: "Distribute passengers across multiple flights",
+          cost: "$52,100",
+          timeline: "2-8 hours",
           confidence: 90,
-          impact: 'High passenger service impact',
-          status: 'warning',
-          priority: 3
-        }
-      ]
-      break
+          impact: "High passenger service impact",
+          status: "warning",
+          priority: 3,
+        },
+      ];
+      break;
 
-    case 'crew':
+    case "crew":
       steps = [
         {
           step: 1,
-          title: 'Crew Issue Identified',
-          status: 'completed',
-          timestamp: '10:45 AM',
-          system: 'Crew Management',
-          details: 'Crew duty time limitation identified',
-          data: { crewMember: 'Captain', issue: 'Duty time breach' }
+          title: "Crew Issue Identified",
+          status: "completed",
+          timestamp: "10:45 AM",
+          system: "Crew Management",
+          details: "Crew duty time limitation identified",
+          data: { crewMember: "Captain", issue: "Duty time breach" },
         },
         {
           step: 2,
-          title: 'Replacement Crew Search',
-          status: 'completed',
-          timestamp: '11:00 AM',
-          system: 'Crew Scheduling',
-          details: 'Searching for qualified replacement crew',
-          data: { availableCrew: 2, qualificationMatch: 'Type rated' }
+          title: "Replacement Crew Search",
+          status: "completed",
+          timestamp: "11:00 AM",
+          system: "Crew Scheduling",
+          details: "Searching for qualified replacement crew",
+          data: { availableCrew: 2, qualificationMatch: "Type rated" },
         },
         {
           step: 3,
-          title: 'Crew Positioning',
-          status: 'standby',
-          timestamp: '11:15 AM',
-          system: 'Ground Operations',
-          details: 'Arranging crew transportation to aircraft',
-          data: { eta: '45 minutes' }
-        }
-      ]
+          title: "Crew Positioning",
+          status: "standby",
+          timestamp: "11:15 AM",
+          system: "Ground Operations",
+          details: "Arranging crew transportation to aircraft",
+          data: { eta: "45 minutes" },
+        },
+      ];
 
       options = [
         {
-          title: 'Standby Crew Activation',
-          description: 'Deploy qualified standby crew members',
-          cost: '$8,500',
-          timeline: '45-60 minutes',
+          title: "Standby Crew Activation",
+          description: "Deploy qualified standby crew members",
+          cost: "$8,500",
+          timeline: "45-60 minutes",
           confidence: 92,
-          impact: 'Minimal operational impact',
-          status: 'recommended',
-          priority: 1
+          impact: "Minimal operational impact",
+          status: "recommended",
+          priority: 1,
         },
         {
-          title: 'Crew Rest Extension',
-          description: 'Delay flight to comply with duty time regulations',
-          cost: '$15,200',
-          timeline: '3-4 hours',
+          title: "Deadhead Crew",
+          description: "Position qualified Captain",
+          cost: "$25,200",
+          timeline: "120 minutes",
+          confidence: 85,
+          impact: "Moderate schedule delay",
+          status: "caution",
+          priority: 2,
+        },
+        {
+          title: "Crew Rest Extension",
+          description: "Delay flight to comply with duty time regulations",
+          cost: "$15,200",
+          timeline: "3-4 hours",
           confidence: 78,
-          impact: 'Moderate delay impact',
-          status: 'caution',
-          priority: 2
-        }
-      ]
-      break
+          impact: "Moderate delay impact",
+          status: "caution",
+          priority: 3,
+        },
+      ];
+      break;
 
-    case 'airport':
+    case "airport":
       steps = [
         {
           step: 1,
-          title: 'Airport Disruption Notified',
-          status: 'completed',
-          timestamp: '09:15 AM',
-          system: 'Airport Operations',
-          details: 'Airport infrastructure or operational issue affecting flights',
-          data: { airport: safeDisruption.origin, issue_type: 'Runway closure' }
-        }
-      ]
+          title: "Airport Disruption Notified",
+          status: "completed",
+          timestamp: "09:15 AM",
+          system: "Airport Operations",
+          details:
+            "Airport infrastructure or operational issue affecting flights",
+          data: {
+            airport: safeDisruption.origin,
+            issue_type: "Runway closure",
+          },
+        },
+      ];
 
       options = [
         {
-          title: 'Alternative Airport Routing',
-          description: 'Divert to alternative airport and arrange ground transport',
-          cost: 'AED 35,000',
-          timeline: '4-5 hours',
+          title: "Alternative Airport Routingssss",
+          description:
+            "Divert to alternative airport and arrange ground transport",
+          cost: "AED 35,000",
+          timeline: "4-5 hours",
           confidence: 80,
           impact: `${safeDisruption.passengers} passengers diverted`,
-          status: 'recommended',
-          advantages: ['Avoids airport closure', 'Maintains service'],
-          considerations: ['Ground transport arrangements', 'Extended travel time'],
-          resourceRequirements: { alternative_airport: '1', buses: '4-5', coordination: 'Ground handling' },
-          costBreakdown: { diversion: 'AED 20,000', ground_transport: 'AED 15,000' },
-          timelineDetails: { flight_time: '2 hours', ground_transport: '2-3 hours' },
-          riskAssessment: { weather_risk: 'Low', logistics_risk: 'Medium' },
-          technicalSpecs: { alternate_airport: 'Approved alternate', fuel_planning: 'Additional 2000kg' },
-          metrics: { total_time: 300, cost_per_passenger: Math.round(35000 / safeDisruption.passengers) },
-          rotationPlan: { aircraft_positioning: 'Required back to base' }
-        }
-      ]
-      break
+          status: "recommended",
+          advantages: ["Avoids airport closure", "Maintains service"],
+          considerations: [
+            "Ground transport arrangements",
+            "Extended travel time",
+          ],
+          resourceRequirements: {
+            alternative_airport: "1",
+            buses: "4-5",
+            coordination: "Ground handling",
+          },
+          costBreakdown: {
+            diversion: "AED 20,000",
+            ground_transport: "AED 15,000",
+          },
+          timelineDetails: {
+            flight_time: "2 hours",
+            ground_transport: "2-3 hours",
+          },
+          riskAssessment: { weather_risk: "Low", logistics_risk: "Medium" },
+          technicalSpecs: {
+            alternate_airport: "Approved alternate",
+            fuel_planning: "Additional 2000kg",
+          },
+          metrics: {
+            total_time: 300,
+            cost_per_passenger: Math.round(35000 / safeDisruption.passengers),
+          },
+          rotationPlan: { aircraft_positioning: "Required back to base" },
+        },
+      ];
+      break;
 
     default:
-      console.log(`Handling disruption type: ${disruptionType}, generating comprehensive options`);
+      console.log(
+        `Handling disruption type: ${disruptionType}, generating comprehensive options`,
+      );
 
       // Generate multiple options for any disruption type
       options = [
         {
-          title: 'Immediate Recovery Action',
+          title: "Immediate Recovery Action",
           description: `Address ${safeDisruption.disruption_type} disruption with priority response for ${safeDisruption.flight_number}`,
-          cost: 'AED 25,000',
-          timeline: '60 minutes',
+          cost: "AED 25,000",
+          timeline: "60 minutes",
           confidence: 85,
-          impact: 'Low',
-          status: 'generated',
+          impact: "Low",
+          status: "generated",
           priority: 1,
-          advantages: ['Quick resolution', 'Minimal passenger impact', 'Maintains schedule integrity'],
-          considerations: ['Requires immediate resource allocation', 'Higher operational cost'],
-          resourceRequirements: ['Operations team', 'Ground crew', 'Customer service'],
-          costBreakdown: { operations: 15000, crew: 5000, passenger_services: 5000 },
-          timelineDetails: [
-            { phase: 'Assessment', duration: '10 min', description: 'Evaluate situation and options' },
-            { phase: 'Resource allocation', duration: '20 min', description: 'Assign teams and equipment' },
-            { phase: 'Execution', duration: '30 min', description: 'Implement recovery plan' }
+          advantages: [
+            "Quick resolution",
+            "Minimal passenger impact",
+            "Maintains schedule integrity",
           ],
-          riskAssessment: { operational: 'Low', financial: 'Medium', passenger: 'Low' },
-          technicalSpecs: { aircraft_required: safeDisruption.aircraft, crew_required: 6 },
-          metrics: { passenger_impact_score: 15, cost_efficiency: 85, time_efficiency: 90 }
+          considerations: [
+            "Requires immediate resource allocation",
+            "Higher operational cost",
+          ],
+          resourceRequirements: [
+            "Operations team",
+            "Ground crew",
+            "Customer service",
+          ],
+          costBreakdown: {
+            operations: 15000,
+            crew: 5000,
+            passenger_services: 5000,
+          },
+          timelineDetails: [
+            {
+              phase: "Assessment",
+              duration: "10 min",
+              description: "Evaluate situation and options",
+            },
+            {
+              phase: "Resource allocation",
+              duration: "20 min",
+              description: "Assign teams and equipment",
+            },
+            {
+              phase: "Execution",
+              duration: "30 min",
+              description: "Implement recovery plan",
+            },
+          ],
+          riskAssessment: {
+            operational: "Low",
+            financial: "Medium",
+            passenger: "Low",
+          },
+          technicalSpecs: {
+            aircraft_required: safeDisruption.aircraft,
+            crew_required: 6,
+          },
+          metrics: {
+            passenger_impact_score: 15,
+            cost_efficiency: 85,
+            time_efficiency: 90,
+          },
         },
         {
-          title: 'Alternative Recovery Approach',
+          title: "Alternative Recovery Approach",
           description: `Secondary recovery option for ${safeDisruption.flight_number} with resource optimization`,
-          cost: 'AED 18,000',
-          timeline: '90 minutes',
+          cost: "AED 18,000",
+          timeline: "90 minutes",
           confidence: 80,
-          impact: 'Medium',
-          status: 'generated',
+          impact: "Medium",
+          status: "generated",
           priority: 2,
-          advantages: ['Cost-effective', 'Resource efficient', 'Proven approach'],
-          considerations: ['Longer timeline', 'May affect downstream flights'],
-          resourceRequirements: ['Operations team', 'Maintenance crew'],
-          costBreakdown: { operations: 10000, maintenance: 5000, logistics: 3000 },
-          timelineDetails: [
-            { phase: 'Planning', duration: '20 min', description: 'Detailed recovery planning' },
-            { phase: 'Preparation', duration: '30 min', description: 'Resource preparation' },
-            { phase: 'Implementation', duration: '40 min', description: 'Execute recovery plan' }
+          advantages: [
+            "Cost-effective",
+            "Resource efficient",
+            "Proven approach",
           ],
-          riskAssessment: { operational: 'Medium', financial: 'Low', passenger: 'Medium' },
-          technicalSpecs: { aircraft_required: safeDisruption.aircraft, crew_required: 6 },
-          metrics: { passenger_impact_score: 25, cost_efficiency: 90, time_efficiency: 75 }
+          considerations: ["Longer timeline", "May affect downstream flights"],
+          resourceRequirements: ["Operations team", "Maintenance crew"],
+          costBreakdown: {
+            operations: 10000,
+            maintenance: 5000,
+            logistics: 3000,
+          },
+          timelineDetails: [
+            {
+              phase: "Planning",
+              duration: "20 min",
+              description: "Detailed recovery planning",
+            },
+            {
+              phase: "Preparation",
+              duration: "30 min",
+              description: "Resource preparation",
+            },
+            {
+              phase: "Implementation",
+              duration: "40 min",
+              description: "Execute recovery plan",
+            },
+          ],
+          riskAssessment: {
+            operational: "Medium",
+            financial: "Low",
+            passenger: "Medium",
+          },
+          technicalSpecs: {
+            aircraft_required: safeDisruption.aircraft,
+            crew_required: 6,
+          },
+          metrics: {
+            passenger_impact_score: 25,
+            cost_efficiency: 90,
+            time_efficiency: 75,
+          },
         },
         {
-          title: 'Contingency Recovery Plan',
+          title: "Contingency Recovery Plan",
           description: `Backup recovery solution for ${safeDisruption.flight_number} if primary options fail`,
-          cost: 'AED 35,000',
-          timeline: '120 minutes',
+          cost: "AED 35,000",
+          timeline: "120 minutes",
           confidence: 95,
-          impact: 'High',
-          status: 'generated',
+          impact: "High",
+          status: "generated",
           priority: 3,
-          advantages: ['Guaranteed solution', 'Comprehensive coverage', 'High success rate'],
-          considerations: ['Higher cost', 'Extended timeline', 'Significant resource commitment'],
-          resourceRequirements: ['Senior operations team', 'Multiple crew sets', 'Customer service team'],
-          costBreakdown: { operations: 20000, crew: 10000, passenger_services: 5000 },
-          timelineDetails: [
-            { phase: 'Comprehensive assessment', duration: '30 min', description: 'Full situation analysis' },
-            { phase: 'Resource mobilization', duration: '45 min', description: 'Deploy all necessary resources' },
-            { phase: 'Recovery execution', duration: '45 min', description: 'Full recovery implementation' }
+          advantages: [
+            "Guaranteed solution",
+            "Comprehensive coverage",
+            "High success rate",
           ],
-          riskAssessment: { operational: 'Low', financial: 'High', passenger: 'Low' },
-          technicalSpecs: { aircraft_required: 'Backup available', crew_required: 12 },
-          metrics: { passenger_impact_score: 40, cost_efficiency: 60, time_efficiency: 65 }
-        }
+          considerations: [
+            "Higher cost",
+            "Extended timeline",
+            "Significant resource commitment",
+          ],
+          resourceRequirements: [
+            "Senior operations team",
+            "Multiple crew sets",
+            "Customer service team",
+          ],
+          costBreakdown: {
+            operations: 20000,
+            crew: 10000,
+            passenger_services: 5000,
+          },
+          timelineDetails: [
+            {
+              phase: "Comprehensive assessment",
+              duration: "30 min",
+              description: "Full situation analysis",
+            },
+            {
+              phase: "Resource mobilization",
+              duration: "45 min",
+              description: "Deploy all necessary resources",
+            },
+            {
+              phase: "Recovery execution",
+              duration: "45 min",
+              description: "Full recovery implementation",
+            },
+          ],
+          riskAssessment: {
+            operational: "Low",
+            financial: "High",
+            passenger: "Low",
+          },
+          technicalSpecs: {
+            aircraft_required: "Backup available",
+            crew_required: 12,
+          },
+          metrics: {
+            passenger_impact_score: 40,
+            cost_efficiency: 60,
+            time_efficiency: 65,
+          },
+        },
       ];
 
       steps = [
         {
           step: 1,
-          title: 'Disruption Assessment',
-          status: 'pending',
-          timestamp: '15 minutes',
-          system: 'Operations Control Center',
+          title: "Disruption Assessment",
+          status: "pending",
+          timestamp: "15 minutes",
+          system: "Operations Control Center",
           details: `Comprehensive assessment of ${safeDisruption.disruption_type} disruption affecting ${safeDisruption.flight_number}`,
-          data: { priority: 'High', resources_needed: ['Operations team', 'Technical team'] }
+          data: {
+            priority: "High",
+            resources_needed: ["Operations team", "Technical team"],
+          },
         },
         {
           step: 2,
-          title: 'Resource Coordination',
-          status: 'pending',
-          timestamp: '25 minutes',
-          system: 'Resource Management',
+          title: "Resource Coordination",
+          status: "pending",
+          timestamp: "25 minutes",
+          system: "Resource Management",
           details: `Coordinate required resources including crew, aircraft, and ground services for ${safeDisruption.passengers} passengers`,
-          data: { passengers: safeDisruption.passengers, aircraft: safeDisruption.aircraft }
+          data: {
+            passengers: safeDisruption.passengers,
+            aircraft: safeDisruption.aircraft,
+          },
         },
         {
           step: 3,
-          title: 'Passenger Communication',
-          status: 'pending',
-          timestamp: '20 minutes',
-          system: 'Customer Service',
+          title: "Passenger Communication",
+          status: "pending",
+          timestamp: "20 minutes",
+          system: "Customer Service",
           details: `Notify passengers about disruption and recovery plan for flight ${safeDisruption.flight_number}`,
-          data: { notification_methods: ['SMS', 'Email', 'Airport announcements'] }
+          data: {
+            notification_methods: ["SMS", "Email", "Airport announcements"],
+          },
         },
         {
           step: 4,
-          title: 'Recovery Implementation',
-          status: 'pending',
-          timestamp: '45 minutes',
-          system: 'Ground Operations',
+          title: "Recovery Implementation",
+          status: "pending",
+          timestamp: "45 minutes",
+          system: "Ground Operations",
           details: `Execute selected recovery option with full operational support`,
-          data: { expected_delay: safeDisruption.delay_minutes, recovery_type: disruptionType }
+          data: {
+            expected_delay: safeDisruption.delay_minutes,
+            recovery_type: disruptionType,
+          },
         },
         {
           step: 5,
-          title: 'Situation Monitoring',
-          status: 'pending',
-          timestamp: '30 minutes',
-          system: 'Operations Control Center',
+          title: "Situation Monitoring",
+          status: "pending",
+          timestamp: "30 minutes",
+          system: "Operations Control Center",
           details: `Monitor recovery progress and adjust plan as needed`,
-          data: { monitoring_frequency: '5 minutes', escalation_threshold: '15 minutes' }
-        }
+          data: {
+            monitoring_frequency: "5 minutes",
+            escalation_threshold: "15 minutes",
+          },
+        },
       ];
       break;
   }
 
-  console.log(`Generated ${options.length} options and ${steps.length} steps for disruption type: ${disruptionType}`)
-  return { options, steps }
+  console.log(
+    `Generated ${options.length} options and ${steps.length} steps for disruption type: ${disruptionType}`,
+  );
+  return { options, steps };
 }
 
 // For backward compatibility, also export the steps function
 export function generateRecoveryStepsForDisruption(disruption) {
-  return generateRecoveryOptionsForDisruption(disruption).steps
+  return generateRecoveryOptionsForDisruption(disruption).steps;
 }
