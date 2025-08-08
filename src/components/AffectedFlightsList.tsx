@@ -86,7 +86,8 @@ export function AffectedFlightsList() {
 
   const handleFlightSelect = async (flight: FlightDisruption) => {
     setSelectedFlight(flight)
-    await fetchPassengers(flight.flightNumber)
+    // Redirect to Comparison page instead of showing dialog
+    window.location.href = `/comparison?flightId=${flight.id}`
   }
 
   const filteredFlights = flights.filter(flight => {
