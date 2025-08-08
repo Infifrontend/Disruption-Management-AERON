@@ -970,17 +970,30 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                           <SelectValue placeholder="Select origin" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="DXB">DXB - Dubai</SelectItem>
-                          <SelectItem value="AUH">AUH - Abu Dhabi</SelectItem>
-                          <SelectItem value="SLL">SLL - Salalah</SelectItem>
-                          <SelectItem value="KHI">KHI - Karachi</SelectItem>
-                          <SelectItem value="BOM">BOM - Mumbai</SelectItem>
-                          <SelectItem value="DEL">DEL - Delhi</SelectItem>
-                          <SelectItem value="COK">COK - Kochi</SelectItem>
-                          <SelectItem value="CMB">CMB - Colombo</SelectItem>
-                          <SelectItem value="IST">IST - Istanbul</SelectItem>
-                          <SelectItem value="BCN">BCN - Barcelona</SelectItem>
-                          <SelectItem value="PRG">PRG - Prague</SelectItem>
+                          {[
+                            { code: "DXB", name: "Dubai", country: "UAE" },
+                            { code: "DWC", name: "Dubai World Central", country: "UAE" },
+                            { code: "SHJ", name: "Sharjah", country: "UAE" },
+                            { code: "AUH", name: "Abu Dhabi", country: "UAE" },
+                            { code: "FJR", name: "Fujairah", country: "UAE" },
+                            { code: "KWI", name: "Kuwait", country: "Kuwait" },
+                            { code: "MCT", name: "Muscat", country: "Oman" },
+                            { code: "SLL", name: "Salalah", country: "Oman" },
+                            { code: "KHI", name: "Karachi", country: "Pakistan" },
+                            { code: "BOM", name: "Mumbai", country: "India" },
+                            { code: "DEL", name: "Delhi", country: "India" },
+                            { code: "COK", name: "Kochi", country: "India" },
+                            { code: "CMB", name: "Colombo", country: "Sri Lanka" },
+                            { code: "IST", name: "Istanbul", country: "Turkey" },
+                            { code: "BCN", name: "Barcelona", country: "Spain" },
+                            { code: "PRG", name: "Prague", country: "Czech Republic" },
+                          ]
+                            .filter(airport => airport.code !== newDisruption.destination)
+                            .map((airport) => (
+                              <SelectItem key={airport.code} value={airport.code}>
+                                {airport.code} - {airport.name}, {airport.country}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -1010,17 +1023,30 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                           <SelectValue placeholder="Select destination" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="DXB">DXB - Dubai</SelectItem>
-                          <SelectItem value="AUH">AUH - Abu Dhabi</SelectItem>
-                          <SelectItem value="SLL">SLL - Salalah</SelectItem>
-                          <SelectItem value="KHI">KHI - Karachi</SelectItem>
-                          <SelectItem value="BOM">BOM - Mumbai</SelectItem>
-                          <SelectItem value="DEL">DEL - Delhi</SelectItem>
-                          <SelectItem value="COK">COK - Kochi</SelectItem>
-                          <SelectItem value="CMB">CMB - Colombo</SelectItem>
-                          <SelectItem value="IST">IST - Istanbul</SelectItem>
-                          <SelectItem value="BCN">BCN - Barcelona</SelectItem>
-                          <SelectItem value="PRG">PRG - Prague</SelectItem>
+                          {[
+                            { code: "DXB", name: "Dubai", country: "UAE" },
+                            { code: "DWC", name: "Dubai World Central", country: "UAE" },
+                            { code: "SHJ", name: "Sharjah", country: "UAE" },
+                            { code: "AUH", name: "Abu Dhabi", country: "UAE" },
+                            { code: "FJR", name: "Fujairah", country: "UAE" },
+                            { code: "KWI", name: "Kuwait", country: "Kuwait" },
+                            { code: "MCT", name: "Muscat", country: "Oman" },
+                            { code: "SLL", name: "Salalah", country: "Oman" },
+                            { code: "KHI", name: "Karachi", country: "Pakistan" },
+                            { code: "BOM", name: "Mumbai", country: "India" },
+                            { code: "DEL", name: "Delhi", country: "India" },
+                            { code: "COK", name: "Kochi", country: "India" },
+                            { code: "CMB", name: "Colombo", country: "Sri Lanka" },
+                            { code: "IST", name: "Istanbul", country: "Turkey" },
+                            { code: "BCN", name: "Barcelona", country: "Spain" },
+                            { code: "PRG", name: "Prague", country: "Czech Republic" },
+                          ]
+                            .filter(airport => airport.code !== newDisruption.origin)
+                            .map((airport) => (
+                              <SelectItem key={airport.code} value={airport.code}>
+                                {airport.code} - {airport.name}, {airport.country}
+                              </SelectItem>
+                            ))}
                         </SelectContent>
                       </Select>
                     </div>
