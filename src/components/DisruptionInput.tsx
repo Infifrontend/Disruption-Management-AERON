@@ -950,7 +950,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-4">
                     <div>
                       <Label htmlFor="origin">Origin*</Label>
                       <Select
@@ -959,10 +959,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                           handleInputChange("origin", value)
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select origin" />
                         </SelectTrigger>
-                        <SelectContent className="max-h-60 overflow-y-auto">
+                        <SelectContent className="max-h-60 overflow-y-auto z-50">
                           {[
                             { code: "DXB", name: "Dubai", country: "UAE" },
                             { code: "DWC", name: "Dubai World Central", country: "UAE" },
@@ -998,10 +998,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                           handleInputChange("destination", value)
                         }
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Select destination" />
                         </SelectTrigger>
-                        <SelectContent className="max-h-60 overflow-y-auto">
+                        <SelectContent className="max-h-60 overflow-y-auto z-50">
                           {[
                             { code: "DXB", name: "Dubai", country: "UAE" },
                             { code: "DWC", name: "Dubai World Central", country: "UAE" },
