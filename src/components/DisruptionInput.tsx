@@ -1500,51 +1500,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                   />
                 </div>
               </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Destination</label>
-                <Select
-                  value={filters.destination || "all"}
-                  onValueChange={(value) =>
-                    setFilters({ ...filters, destination: value })
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="All destinations" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Destinations</SelectItem>
-                    {Array.from(new Set(flights.map((f) => f.destination)))
-                      .sort()
-                      .map((destination) => (
-                        <SelectItem key={destination} value={destination}>
-                          {destination}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <label className="text-sm font-medium mb-1 block">Hub</label>
-                <Select
-                  value={filters.hub || "all"}
-                  onValueChange={(value) =>
-                    setFilters({ ...filters, hub: value })
-                  }
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="All hubs" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All hubs</SelectItem>
-                    <SelectItem value="DXB">DXB</SelectItem>
-                    <SelectItem value="DWC">DWC</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             {/* Second Row - Main Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">Status</label>
                 <Select
@@ -1613,6 +1572,49 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </div>
 
               <div>
+                <label className="text-sm font-medium mb-2 block">Destination</label>
+                <Select
+                  value={filters.destination || "all"}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, destination: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All destinations" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Destinations</SelectItem>
+                    {Array.from(new Set(flights.map((f) => f.destination)))
+                      .sort()
+                      .map((destination) => (
+                        <SelectItem key={destination} value={destination}>
+                          {destination}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Hub</label>
+                <Select
+                  value={filters.hub || "all"}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, hub: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All hubs" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All hubs</SelectItem>
+                    <SelectItem value="DXB">DXB</SelectItem>
+                    <SelectItem value="DWC">DWC</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <label className="text-sm font-medium mb-2 block">
                   Categorization
                 </label>
@@ -1650,7 +1652,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
+            {/* Third Row - Sort By */}
+            <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
               <div>
                 <label className="text-sm font-medium mb-2 block">
                   Sort By
