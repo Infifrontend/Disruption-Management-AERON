@@ -285,8 +285,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     flightNumber: "",
     origin: "",
     destination: "",
-    originCity: "",
-    destinationCity: "",
     scheduledDeparture: new Date()
       .toLocaleString("sv-SE", { timeZone: "Asia/Kolkata" })
       .slice(0, 16),
@@ -728,11 +726,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       route: `${newDisruption.origin} → ${newDisruption.destination}`,
       origin: newDisruption.origin,
       destination: newDisruption.destination,
-      originCity:
-        newDisruption.originCity || getLocationName(newDisruption.origin),
-      destinationCity:
-        newDisruption.destinationCity ||
-        getLocationName(newDisruption.destination),
+      originCity: getLocationName(newDisruption.origin),
+      destinationCity: getLocationName(newDisruption.destination),
       gate: newDisruption.gate,
       connectionFlights: newDisruption.connectionFlights
         ? parseInt(newDisruption.connectionFlights.toString())
@@ -779,8 +774,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           flightNumber: "",
           origin: "",
           destination: "",
-          originCity: "",
-          destinationCity: "",
           scheduledDeparture: new Date()
             .toLocaleString("sv-SE", { timeZone: "Asia/Kolkata" })
             .slice(0, 16),
@@ -969,7 +962,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         <SelectTrigger>
                           <SelectValue placeholder="Select origin" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-60 overflow-y-auto">
                           {[
                             { code: "DXB", name: "Dubai", country: "UAE" },
                             { code: "DWC", name: "Dubai World Central", country: "UAE" },
@@ -998,20 +991,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="originCity">Origin City</Label>
-                      <Input
-                        id="originCity"
-                        placeholder="Dubai"
-                        value={newDisruption.originCity}
-                        onChange={(e) =>
-                          handleInputChange("originCity", e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
                       <Label htmlFor="destination">Destination*</Label>
                       <Select
                         value={newDisruption.destination}
@@ -1022,7 +1001,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         <SelectTrigger>
                           <SelectValue placeholder="Select destination" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-60 overflow-y-auto">
                           {[
                             { code: "DXB", name: "Dubai", country: "UAE" },
                             { code: "DWC", name: "Dubai World Central", country: "UAE" },
@@ -1049,17 +1028,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                             ))}
                         </SelectContent>
                       </Select>
-                    </div>
-                    <div>
-                      <Label htmlFor="destinationCity">Destination City</Label>
-                      <Input
-                        id="destinationCity"
-                        placeholder="Mumbai"
-                        value={newDisruption.destinationCity}
-                        onChange={(e) =>
-                          handleInputChange("destinationCity", e.target.value)
-                        }
-                      />
                     </div>
                   </div>
 
