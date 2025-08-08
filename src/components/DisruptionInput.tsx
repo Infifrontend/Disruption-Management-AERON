@@ -74,7 +74,7 @@ import {
   FileText,
 } from "lucide-react";
 import { databaseService, FlightDisruption } from "../services/databaseService";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router-dom";
 
 // Define interface for disruption categories
 interface DisruptionCategory {
@@ -262,7 +262,7 @@ const getTimeAgo = (dateString: string) => {
 };
 
 export function DisruptionInput({ disruption, onSelectFlight }) {
-  const navigate = useRouter();
+  const navigate = useNavigate();
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(true);
