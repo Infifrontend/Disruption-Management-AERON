@@ -343,24 +343,26 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
           return {
             ...disruption,
-            flightNumber: disruption.flightNumber || `UNKNOWN-${Date.now()}`,
+            flightNumber: disruption.flight_number || disruption.flightNumber || `UNKNOWN-${Date.now()}`,
             scheduledDeparture:
-              disruption.scheduledDeparture || new Date().toISOString(),
+              disruption.scheduled_departure || disruption.scheduledDeparture || new Date().toISOString(),
+            estimatedDeparture:
+              disruption.estimated_departure || disruption.estimatedDeparture,
             origin: disruption.origin || "DXB",
             destination: disruption.destination || "UNKNOWN",
-            originCity: disruption.originCity || disruption.origin || "Dubai",
+            originCity: disruption.origin_city || disruption.originCity || disruption.origin || "Dubai",
             destinationCity:
-              disruption.destinationCity || disruption.destination || "Unknown",
+              disruption.destination_city || disruption.destinationCity || disruption.destination || "Unknown",
             status: disruption.status || "Unknown",
             severity: disruption.severity || "Medium",
-            type: disruption.type || "Technical",
+            type: disruption.disruption_type || disruption.type || "Technical",
             disruptionReason:
-              disruption.disruptionReason || "Information not available",
+              disruption.disruption_reason || disruption.disruptionReason || "Information not available",
             passengers: disruption.passengers || 0,
             crew: disruption.crew || 6,
-            delay: disruption.delay || 0,
+            delay: disruption.delay_minutes || disruption.delay || 0,
             aircraft: disruption.aircraft || "Unknown",
-            connectionFlights: disruption.connectionFlights || 0,
+            connectionFlights: disruption.connection_flights || disruption.connectionFlights || 0,
           };
         })
         .filter((disruption) => disruption !== null);
@@ -442,22 +444,27 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               return {
                 ...disruption,
                 flightNumber:
-                  disruption.flightNumber || `FALLBACK-${Date.now()}`,
+                  disruption.flight_number || disruption.flightNumber || `FALLBACK-${Date.now()}`,
                 scheduledDeparture:
-                  disruption.scheduledDeparture || new Date().toISOString(),
+                  disruption.scheduled_departure || disruption.scheduledDeparture || new Date().toISOString(),
+                estimatedDeparture:
+                  disruption.estimated_departure || disruption.estimatedDeparture,
                 origin: disruption.origin || "DXB",
                 destination: disruption.destination || "UNKNOWN",
+                originCity: disruption.origin_city || disruption.originCity || disruption.origin || "Dubai",
+                destinationCity:
+                  disruption.destination_city || disruption.destinationCity || disruption.destination || "Unknown",
                 status: disruption.status || "Unknown",
                 severity: disruption.severity || "Medium",
-                type: disruption.type || "Technical",
+                type: disruption.disruption_type || disruption.type || "Technical",
                 disruptionReason:
-                  disruption.disruptionReason ||
+                  disruption.disruption_reason || disruption.disruptionReason ||
                   "Cached data - may be incomplete",
                 passengers: disruption.passengers || 0,
                 crew: disruption.crew || 6,
-                delay: disruption.delay || 0,
+                delay: disruption.delay_minutes || disruption.delay || 0,
                 aircraft: disruption.aircraft || "Unknown",
-                connectionFlights: disruption.connectionFlights || 0,
+                connectionFlights: disruption.connection_flights || disruption.connectionFlights || 0,
               };
             })
             .filter((disruption) => disruption !== null);
