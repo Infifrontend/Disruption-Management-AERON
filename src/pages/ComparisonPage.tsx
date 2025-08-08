@@ -14,14 +14,12 @@ export function ComparisonPage() {
       const urlParams = new URLSearchParams(window.location.search)
       const flightId = urlParams.get('flightId')
 
-      if (flightId && (!selectedFlight || selectedFlight.id !== parseInt(flightId))) {
+      if (flightId && (!selectedFlight || selectedFlight.id !== flightId)) {
         setLoading(true)
         try {
           const flight = await databaseService.getDisruption(flightId)
           if (flight) {
             setSelectedFlight(flight)
-          } else {
-            console.warn(`Flight with ID ${flightId} not found`)
           }
         } catch (error) {
           console.error('Error loading flight details:', error)
