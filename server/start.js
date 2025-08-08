@@ -1900,7 +1900,71 @@ app.post("/api/generate-recovery-options/:disruptionId", async (req, res) => {
   }
 });
 
-// Detailed Recovery Options endpoints
+// Recovery Options endpoint - Main endpoint for loading recovery options
+app.get("/api/recovery-options/:disruptionId", async (req, res) => {
+  try {
+    const { disruptionId } = req.params;
+    console.log(`Fetching recovery options for disruption ID: ${disruptionId}`);
+
+    // First try the detailed recovery options table
+    let result = await pool.query(
+      `
+      SELECT rod.*, dc.category_name, dc.category_code
+      FROM recovery_options_detailed rod
+      LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
+      WHERE rod.disruption_id = $1
+      ORDER BY rod.priority ASC, rod.confidence DESC
+    `,
+      [disruptionId],
+    );
+
+    // If no detailed options found, try the regular recovery options table
+    if (result.rows.length === 0) {
+      result = await pool.query(
+        `SELECT * FROM recovery_options WHERE disruption_id = $1 ORDER BY created_at DESC`,
+        [disruptionId],
+      );
+      console.log(`Found ${result.rows.length} basic recovery options`);
+    } else {
+      console.log(`Found ${result.rows.length} detailed recovery options`);
+    }
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching recovery options:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Recovery Option Details endpoint
+app.get("/api/recovery-option-details/:optionId", async (req, res) => {
+  try {
+    const { optionId } = req.params;
+    console.log(`Fetching details for recovery option ID: ${optionId}`);
+
+    const result = await pool.query(
+      `
+      SELECT rod.*, dc.category_name, dc.category_code
+      FROM recovery_options_detailed rod
+      LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
+      WHERE rod.option_id = $1
+    `,
+      [optionId],
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Recovery option details not found" });
+    }
+
+    console.log(`Found details for recovery option: ${optionId}`);
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error fetching recovery option details:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Detailed Recovery Options endpoints (keep for backward compatibility)
 app.get("/api/recovery-options-detailed/:disruptionId", async (req, res) => {
   try {
     const { disruptionId } = req.params;
