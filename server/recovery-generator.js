@@ -992,7 +992,7 @@ export function generateRecoveryOptionsForDisruption(disruption) {
 
       options = [
         {
-          title: "Alternative Airport Routingssss",
+          title: "Alternative Airport Routing",
           description:
             "Divert to alternative airport and arrange ground transport",
           cost: "AED 35,000",
