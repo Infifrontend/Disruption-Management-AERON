@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS flight_disruptions (
     status VARCHAR(20) NOT NULL,
     disruption_reason TEXT,
     categorization VARCHAR(255),
+    category_id INTEGER REFERENCES disruption_categories(id),
     created_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
     updated_at TIMESTAMPTZ DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Kolkata'),
     CONSTRAINT unique_flight_schedule UNIQUE (flight_number, scheduled_departure)

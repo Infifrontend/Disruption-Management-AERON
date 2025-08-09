@@ -390,12 +390,46 @@ app.post("/api/disruptions", async (req, res) => {
     try {
       await client.query("BEGIN");
 
+      // Get category_id from categorization if provided
+      let category_id = null;
+      if (categorization) {
+        const categoryResult = await client.query(`
+          SELECT id FROM disruption_categories 
+          WHERE category_name = $1 
+          OR category_code = CASE 
+            WHEN $1 LIKE '%Aircraft%' OR $1 LIKE '%AOG%' THEN 'AIRCRAFT_ISSUE'
+            WHEN $1 LIKE '%Crew%' OR $1 LIKE '%duty time%' OR $1 LIKE '%sick%' THEN 'CREW_ISSUE'
+            WHEN $1 LIKE '%Weather%' OR $1 LIKE '%ATC%' THEN 'ATC_WEATHER'
+            WHEN $1 LIKE '%Curfew%' OR $1 LIKE '%Congestion%' OR $1 LIKE '%Airport%' THEN 'CURFEW_CONGESTION'
+            WHEN $1 LIKE '%Rotation%' OR $1 LIKE '%Maintenance%' THEN 'ROTATION_MAINTENANCE'
+            ELSE 'AIRCRAFT_ISSUE'
+          END
+          LIMIT 1
+        `, [categorization]);
+        
+        if (categoryResult.rows.length > 0) {
+          category_id = categoryResult.rows[0].id;
+        }
+      }
+
+      // Default to AIRCRAFT_ISSUE if no category found
+      if (!category_id) {
+        const defaultCategory = await client.query(`
+          SELECT id FROM disruption_categories 
+          WHERE category_code = 'AIRCRAFT_ISSUE' 
+          LIMIT 1
+        `);
+        if (defaultCategory.rows.length > 0) {
+          category_id = defaultCategory.rows[0].id;
+        }
+      }
+
       const insertQuery = `
         INSERT INTO flight_disruptions (
           flight_number, route, origin, destination, origin_city, destination_city,
           aircraft, scheduled_departure, estimated_departure, delay_minutes,
-          passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason, categorization
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+          passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason, categorization, category_id
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
         RETURNING *`;
 
       const values = [
@@ -417,6 +451,7 @@ app.post("/api/disruptions", async (req, res) => {
         status || "Active",
         disruption_reason || "Unknown disruption",
         categorization,
+        category_id,
       ];
 
       const result = await client.query(insertQuery, values);
