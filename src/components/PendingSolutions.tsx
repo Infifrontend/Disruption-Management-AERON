@@ -49,6 +49,7 @@ import {
   Mail,
   Clock3
 } from 'lucide-react'
+import { databaseService } from '../services/databaseService'
 
 export function PendingSolutions() {
   const [activeTab, setActiveTab] = useState('all')
@@ -559,6 +560,7 @@ export function PendingSolutions() {
       case 'Under Review': return 'bg-blue-100 text-blue-700 border-blue-200'
       case 'Approved': return 'bg-green-100 text-green-700 border-green-200'
       case 'Rejected': return 'bg-red-100 text-red-700 border-red-200'
+      case 'Pending': return 'bg-orange-100 text-orange-700 border-orange-200' // Added for Pending status
       default: return 'bg-gray-100 text-gray-700 border-gray-200'
     }
   }
@@ -600,14 +602,50 @@ export function PendingSolutions() {
 
   const tabCounts = getTabCounts()
 
-  const handleApprove = (planId) => {
+  const handleApprove = async (planId) => {
     console.log('Approving plan:', planId)
-    // In a real app, this would make an API call
+    try {
+      await databaseService.updateFlightDisruptionStatus(planId, 'Approved');
+      // Optionally refresh data or update UI
+    } catch (error) {
+      console.error("Failed to approve plan:", error);
+    }
   }
 
-  const handleReject = (planId) => {
+  const handleReject = async (planId) => {
     console.log('Rejecting plan:', planId)
-    // In a real app, this would make an API call
+    try {
+      await databaseService.updateFlightDisruptionStatus(planId, 'Rejected');
+      // Optionally refresh data or update UI
+    } catch (error) {
+      console.error("Failed to reject plan:", error);
+    }
+  }
+
+  const handleExecute = async (plan) => {
+    console.log('Executing plan:', plan.id)
+    try {
+      // Update status to Pending
+      await databaseService.updateFlightDisruptionStatus(plan.id, 'Pending');
+      // Add to pending solutions table with all info
+      await databaseService.addPendingSolution({
+        ...plan,
+        status: 'Pending', // Ensure status is updated
+        // Add other necessary fields from plan here
+        flightDetails: plan.flightDetails,
+        costBreakdown: plan.costBreakdown,
+        recoverySteps: plan.recoverySteps,
+        assignedCrew: plan.assignedCrew,
+      });
+      // Navigate to Pending Solutions menu (or trigger a state change to show it)
+      // For simplicity, we'll just log and assume navigation is handled elsewhere or by a router
+      console.log(`Plan ${plan.id} executed and status set to Pending.`);
+      // You might want to trigger a refetch of the data or redirect the user.
+      // For now, we'll simulate by selecting the plan to show details as if it were pending.
+      setSelectedPlan({...plan, status: 'Pending'}); 
+    } catch (error) {
+      console.error("Failed to execute plan:", error);
+    }
   }
 
   const handleViewDetails = (plan) => {
@@ -930,6 +968,7 @@ export function PendingSolutions() {
                         {plan.status === 'Approved' && (
                           <Button
                             size="sm"
+                            onClick={() => handleExecute(plan)}
                             className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                           >
                             <Send className="h-4 w-4" />
@@ -1492,7 +1531,7 @@ export function PendingSolutions() {
                     className="bg-green-600 hover:bg-green-700"
                   >
                     <ThumbsUp className="h-4 w-4 mr-2" />
-                    Approve Plan
+                    Approve
                   </Button>
                   <Button
                     variant="outline"
@@ -1503,14 +1542,17 @@ export function PendingSolutions() {
                     className="text-red-600 border-red-200 hover:bg-red-50"
                   >
                     <ThumbsDown className="h-4 w-4 mr-2" />
-                    Reject Plan
+                    Reject
                   </Button>
                 </>
               )}
               {selectedPlan.status === 'Approved' && (
-                <Button className="bg-blue-600 hover:bg-blue-700">
+                <Button
+                  onClick={() => handleExecute(selectedPlan)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
                   <Send className="h-4 w-4 mr-2" />
-                  Execute Plan
+                  Execute
                 </Button>
               )}
             </div>

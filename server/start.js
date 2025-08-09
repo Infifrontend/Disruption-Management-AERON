@@ -2659,6 +2659,125 @@ app.get("/api/recovery-option/:optionId/technical", async (req, res) => {
   }
 });
 
+// Get recovery option details
+app.get("/api/recovery-option-details/:optionId", async (req, res) => {
+  try {
+    const { optionId } = req.params;
+
+    const result = await pool.query(`
+      SELECT ro.*, rs.* 
+      FROM recovery_options ro
+      LEFT JOIN recovery_steps rs ON ro.disruption_id = rs.disruption_id
+      WHERE ro.id = $1 OR ro.option_id = $1
+      ORDER BY rs.step_order
+    `, [optionId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Recovery option not found' });
+    }
+
+    // Group the data
+    const option = result.rows[0];
+    const steps = result.rows.filter(row => row.step_order).map(row => ({
+      id: row.step_id,
+      action: row.action,
+      duration: row.duration,
+      responsible: row.responsible_team,
+      location: row.location,
+      estimatedCost: row.estimated_cost,
+      criticalPath: row.critical_path,
+      status: row.step_status
+    }));
+
+    res.json({
+      ...option,
+      steps: steps
+    });
+  } catch (error) {
+    console.error('Error fetching recovery option details:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Pending Recovery Solutions endpoints
+app.post('/api/pending-recovery-solutions', async (req, res) => {
+  try {
+    const {
+      disruption_id,
+      option_id,
+      option_title,
+      option_description,
+      cost,
+      timeline,
+      confidence,
+      impact,
+      status,
+      full_details,
+      rotation_impact,
+      submitted_by,
+      approval_required
+    } = req.body;
+
+    const result = await pool.query(`
+      INSERT INTO pending_recovery_solutions 
+      (disruption_id, option_id, option_title, option_description, cost, timeline, 
+       confidence, impact, status, full_details, rotation_impact, submitted_by, approval_required)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      RETURNING *
+    `, [
+      disruption_id, option_id, option_title, option_description, cost, timeline,
+      confidence, impact, status, JSON.stringify(full_details), JSON.stringify(rotation_impact),
+      submitted_by, approval_required
+    ]);
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error saving pending recovery solution:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/pending-recovery-solutions', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT prs.*, fd.flight_number, fd.route, fd.origin, fd.destination, fd.aircraft
+      FROM pending_recovery_solutions prs
+      LEFT JOIN flight_disruptions fd ON prs.disruption_id = fd.id
+      ORDER BY prs.submitted_at DESC
+    `);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching pending recovery solutions:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update flight recovery status
+app.put('/api/flight-recovery-status/:flightId', async (req, res) => {
+  try {
+    const { flightId } = req.params;
+    const { recovery_status } = req.body;
+
+    const result = await pool.query(`
+      UPDATE flight_disruptions 
+      SET recovery_status = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+    `, [recovery_status, flightId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Flight not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating flight recovery status:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error("Unhandled error:", error);

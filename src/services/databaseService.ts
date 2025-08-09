@@ -1482,6 +1482,60 @@ class DatabaseService {
     console.log('Mock data generation disabled to prevent unknown records');
     return [];
   }
+
+  // Pending Recovery Solutions
+  async savePendingRecoverySolution(solution: any): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/pending-recovery-solutions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          disruption_id: solution.disruptionId,
+          option_id: solution.optionId,
+          option_title: solution.optionTitle,
+          option_description: solution.optionDescription,
+          cost: solution.cost,
+          timeline: solution.timeline,
+          confidence: solution.confidence,
+          impact: solution.impact,
+          status: solution.status,
+          full_details: solution.fullDetails,
+          rotation_impact: solution.rotationImpact,
+          submitted_by: solution.submittedBy,
+          approval_required: solution.approvalRequired
+        })
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Failed to save pending recovery solution:', error);
+      return false;
+    }
+  }
+
+  async getPendingRecoverySolutions(): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/pending-recovery-solutions`);
+      if (!response.ok) return [];
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch pending recovery solutions:', error);
+      return [];
+    }
+  }
+
+  async updateFlightRecoveryStatus(flightId: string, status: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/flight-recovery-status/${flightId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recovery_status: status })
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Failed to update flight recovery status:', error);
+      return false;
+    }
+  }
 }
 
 // Singleton instance
