@@ -67,20 +67,60 @@ export function PendingSolutions() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const fetchPlans = async () => {
-      setLoading(true)
-      try {
-        const data = await databaseService.getPendingSolutions()
-        setPlans(data)
-      } catch (error) {
-        console.error("Failed to fetch pending solutions:", error)
-        // Handle error appropriately, e.g., show an error message
-      } finally {
-        setLoading(false)
-      }
-    }
     fetchPlans()
   }, [])
+
+  const fetchPlans = async () => {
+    setLoading(true)
+    try {
+      console.log('Fetching pending recovery solutions from database...')
+      const data = await databaseService.getPendingRecoverySolutions()
+      console.log('Fetched pending solutions:', data)
+      
+      // Transform the database data to match the expected format
+      const transformedPlans = data.map(plan => ({
+        id: plan.id || `RP-${new Date().getFullYear()}-${String(plan.id || Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
+        title: plan.option_title || plan.title || 'Recovery Plan',
+        flightNumber: plan.flight_number || 'N/A',
+        route: plan.route || 'N/A',
+        aircraft: plan.aircraft || 'N/A',
+        submittedAt: plan.submitted_at || new Date().toISOString(),
+        submittedBy: plan.submitted_by || 'system',
+        submitterName: plan.submitted_by || 'AERON System',
+        priority: plan.severity || 'Medium',
+        status: plan.status || 'Pending',
+        estimatedCost: typeof plan.cost === 'string' ? parseInt(plan.cost.replace(/[^0-9]/g, '')) || 0 : plan.cost || 0,
+        estimatedDelay: parseInt(plan.timeline?.replace(/[^0-9]/g, '') || '0') || 0,
+        affectedPassengers: plan.passengers || 0,
+        confidence: plan.confidence || 80,
+        disruptionReason: plan.disruption_reason || 'N/A',
+        steps: 4,
+        timeline: plan.timeline || 'TBD',
+        approvalRequired: plan.approval_required || 'Operations Manager',
+        slaDeadline: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+        timeRemaining: '2h 0m',
+        tags: ['AERON Generated'],
+        metrics: {
+          successProbability: plan.confidence || 80,
+          customerSatisfaction: 85,
+          onTimePerformance: 90,
+          costEfficiency: 75
+        },
+        flightDetails: plan.full_details || {},
+        costBreakdown: plan.full_details?.costBreakdown || {},
+        recoverySteps: plan.full_details?.recoverySteps || [],
+        assignedCrew: plan.full_details?.assignedCrew || []
+      }))
+      
+      setPlans(transformedPlans)
+    } catch (error) {
+      console.error("Failed to fetch pending solutions:", error)
+      // Set empty array on error to show "No Data Found" message
+      setPlans([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const filteredPlans = plans.filter(plan => {
     const matchesPriority = filters.priority === 'all' || plan.priority.toLowerCase() === filters.priority
@@ -216,8 +256,31 @@ export function PendingSolutions() {
 
   const handleViewDetails = async (plan) => {
     try {
-      const detailedPlan = await databaseService.getFlightDisruptionDetails(plan.id);
-      setSelectedPlan(detailedPlan);
+      console.log('Fetching detailed view for plan:', plan.id)
+      
+      // Try to fetch the most up-to-date data from pending solutions
+      const allSolutions = await databaseService.getPendingRecoverySolutions()
+      const updatedPlan = allSolutions.find(s => s.id === plan.id)
+      
+      if (updatedPlan) {
+        console.log('Found updated plan data:', updatedPlan)
+        // Transform the updated plan data
+        const transformedPlan = {
+          ...plan,
+          title: updatedPlan.option_title || plan.title,
+          status: updatedPlan.status || plan.status,
+          flightDetails: updatedPlan.full_details || plan.flightDetails || {},
+          rotationImpact: updatedPlan.rotation_impact || {},
+          fullDetails: updatedPlan.full_details || {},
+          costBreakdown: updatedPlan.full_details?.costBreakdown || {},
+          recoverySteps: updatedPlan.full_details?.recoverySteps || [],
+          assignedCrew: updatedPlan.full_details?.assignedCrew || []
+        }
+        setSelectedPlan(transformedPlan)
+      } else {
+        console.log('No updated data found, using current plan data')
+        setSelectedPlan(plan)
+      }
     } catch (error) {
       console.error("Failed to fetch plan details:", error);
       // Fallback to showing the plan with available data if details fetch fails
@@ -226,15 +289,7 @@ export function PendingSolutions() {
   }
 
   const refreshPlans = async () => {
-    setLoading(true);
-    try {
-      const data = await databaseService.getPendingSolutions();
-      setPlans(data);
-    } catch (error) {
-      console.error("Failed to refresh pending solutions:", error);
-    } finally {
-      setLoading(false);
-    }
+    await fetchPlans();
   };
 
   const formatIST = (dateString) => {
