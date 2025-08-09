@@ -1600,23 +1600,25 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
               options.indexOf(option) + 1, // priority
               option.advantages || [],
               option.considerations || [],
-              option.resourceRequirements
-                ? JSON.stringify(option.resourceRequirements)
+              option.resourceRequirements || option.resource_requirements
+                ? JSON.stringify(option.resourceRequirements || option.resource_requirements)
                 : null,
-              option.costBreakdown
-                ? JSON.stringify(option.costBreakdown)
+              option.costBreakdown || option.cost_breakdown
+                ? JSON.stringify(option.costBreakdown || option.cost_breakdown)
                 : null,
-              option.timelineDetails
-                ? JSON.stringify(option.timelineDetails)
+              option.timelineDetails || option.timeline_details
+                ? JSON.stringify(option.timelineDetails || option.timeline_details)
                 : null,
-              option.riskAssessment
-                ? JSON.stringify(option.riskAssessment)
+              option.riskAssessment || option.risk_assessment
+                ? JSON.stringify(option.riskAssessment || option.risk_assessment)
                 : null,
-              option.technicalSpecs
-                ? JSON.stringify(option.technicalSpecs)
+              option.technicalSpecs || option.technical_specs
+                ? JSON.stringify(option.technicalSpecs || option.technical_specs)
                 : null,
               option.metrics ? JSON.stringify(option.metrics) : null,
-              option.rotationPlan ? JSON.stringify(option.rotationPlan) : null,
+              option.rotationPlan || option.rotation_plan
+                ? JSON.stringify(option.rotationPlan || option.rotation_plan)
+                : null,
             ],
           );
         }
@@ -1924,11 +1926,11 @@ app.post("/api/generate-recovery-options/:disruptionId", async (req, res) => {
         advantages: option.advantages || [],
         considerations: option.considerations || [],
         resourceRequirements:
-          option.resourceRequirements || option.resource_requirements || {},
-        costBreakdown: option.costBreakdown || option.cost_breakdown || {},
+          option.resourceRequirements || option.resource_requirements || [],
+        costBreakdown: option.costBreakdown || option.cost_breakdown || [],
         timelineDetails:
-          option.timelineDetails || option.timeline_details || {},
-        riskAssessment: option.riskAssessment || option.risk_assessment || {},
+          option.timelineDetails || option.timeline_details || [],
+        riskAssessment: option.riskAssessment || option.risk_assessment || [],
         technicalSpecs: option.technicalSpecs || option.technical_specs || {},
         metrics: option.metrics || {},
         rotationPlan: option.rotationPlan || option.rotation_plan || {},
@@ -1955,24 +1957,24 @@ app.post("/api/generate-recovery-options/:disruptionId", async (req, res) => {
           i + 1, // priority based on order
           optionData.advantages,
           optionData.considerations,
-          optionData.resourceRequirements
-            ? JSON.stringify(optionData.resourceRequirements)
+          optionData.resourceRequirements || optionData.resource_requirements
+            ? JSON.stringify(optionData.resourceRequirements || optionData.resource_requirements)
             : null,
-          optionData.costBreakdown
-            ? JSON.stringify(optionData.costBreakdown)
+          optionData.costBreakdown || optionData.cost_breakdown
+            ? JSON.stringify(optionData.costBreakdown || optionData.cost_breakdown)
             : null,
-          optionData.timelineDetails
-            ? JSON.stringify(optionData.timelineDetails)
+          optionData.timelineDetails || optionData.timeline_details
+            ? JSON.stringify(optionData.timelineDetails || optionData.timeline_details)
             : null,
-          optionData.riskAssessment
-            ? JSON.stringify(optionData.riskAssessment)
+          optionData.riskAssessment || optionData.risk_assessment
+            ? JSON.stringify(optionData.riskAssessment || optionData.risk_assessment)
             : null,
-          optionData.technicalSpecs
-            ? JSON.stringify(optionData.technicalSpecs)
+          optionData.technicalSpecs || optionData.technical_specs
+            ? JSON.stringify(optionData.technicalSpecs || optionData.technical_specs)
             : null,
           optionData.metrics ? JSON.stringify(optionData.metrics) : null,
-          optionData.rotationPlan
-            ? JSON.stringify(optionData.rotationPlan)
+          optionData.rotationPlan || optionData.rotation_plan
+            ? JSON.stringify(optionData.rotationPlan || optionData.rotation_plan)
             : null,
         ],
       );
