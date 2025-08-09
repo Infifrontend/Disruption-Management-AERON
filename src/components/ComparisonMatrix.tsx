@@ -35,6 +35,9 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
   const [rotationPlanDetails, setRotationPlanDetails] = useState(null)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
   const [showRotationDialog, setShowRotationDialog] = useState(false)
+  const [loadingFullDetails, setLoadingFullDetails] = useState(null);
+  const [loadingRotationImpact, setLoadingRotationImpact] = useState(null);
+
 
   // Load recovery options from database based on disruption category
   useEffect(() => {
@@ -45,9 +48,9 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
         try {
           let options = []
           const flightId = selectedFlight.id.toString()
-          
+
           console.log(`Loading recovery options for flight ID: ${flightId}`)
-          
+
           // Use the correct API endpoint: api/recovery-options/
           try {
             const response = await fetch(`/api/recovery-options/${flightId}`)
@@ -58,7 +61,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
               console.log(`No recovery options found for flight ${flightId}, generating...`)
               // Generate new options
               await databaseService.generateRecoveryOptions(flightId)
-              
+
               // Wait a moment and try again
               await new Promise(resolve => setTimeout(resolve, 2000))
               const retryResponse = await fetch(`/api/recovery-options/${flightId}`)
@@ -74,11 +77,11 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
             // Fallback to database service
             options = await databaseService.getDetailedRecoveryOptions(flightId)
           }
-          
+
           // If still no options, try fallback methods
           if (options.length === 0) {
             console.log('Trying fallback methods...')
-            
+
             // Try by disruption type/category
             if (selectedFlight.categorization || selectedFlight.type) {
               const categoryCode = selectedFlight.categorization || selectedFlight.type
@@ -86,7 +89,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
               options = await databaseService.getRecoveryOptionsByCategory(categoryCode)
             }
           }
-          
+
           console.log(`Final result: ${options.length} recovery options loaded`)
           setDynamicRecoveryOptions(options)
         } catch (error) {
@@ -614,7 +617,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
           case 'Total Cost':
             // Use cost from option or calculate from financial breakdown
             let totalCost = 0
-            
+
             // Try multiple sources for cost data
             if (option.totalCost) {
               totalCost = option.totalCost
@@ -626,12 +629,12 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
             } else if (option.financialBreakdown) {
               totalCost = Object.values(option.financialBreakdown).reduce((sum, cost) => sum + (typeof cost === 'number' ? cost : 0), 0)
             }
-            
+
             // Set minimum reasonable cost if zero or too low
             if (totalCost === 0 || totalCost < 1000) {
               totalCost = 25000 // Default reasonable cost
             }
-            
+
             row[key] = `AED ${totalCost.toLocaleString()}`
             break
           case 'OTP Score':
@@ -689,62 +692,70 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
   }
 
   const handleViewFullDetails = async (option) => {
+    setLoadingFullDetails(option.id);
     try {
-      setLoading(true)
-      let details = null
-      
-      // Try to fetch detailed information from API first
-      try {
-        const response = await fetch(`/api/recovery-option-details/${option.id}`)
-        if (response.ok) {
-          details = await response.json()
-          console.log('Loaded detailed option from API:', details)
-        }
-      } catch (fetchError) {
-        console.log('API fetch failed, trying database service:', fetchError)
-      }
-      
-      // Fallback to database service if API fails
-      if (!details && databaseService.getRecoveryOptionDetails) {
-        details = await databaseService.getRecoveryOptionDetails(option.id)
-      }
-      
-      // Final fallback to the option data itself
-      setSelectedOptionDetails(details || option)
-      setShowDetailsDialog(true)
-    } catch (error) {
-      console.error('Error loading option details:', error)
-      // Fallback to option data
-      setSelectedOptionDetails(option)
-      setShowDetailsDialog(true)
-    } finally {
-      setLoading(false)
-    }
-  }
+      let details = null;
 
-  const handleViewRotationPlan = async (option) => {
-    try {
-      setLoading(true)
-      let rotationPlan = null
-      
-      // Try to fetch rotation plan from API first
       try {
-        const response = await fetch(`/api/recovery-option/${option.id}/rotation-plan`)
+        const response = await fetch(`/api/recovery-option-details/${option.id}`);
         if (response.ok) {
-          const result = await response.json()
-          rotationPlan = result.rotationPlan || result
-          console.log('Loaded rotation plan from API:', rotationPlan)
+          details = await response.json();
+          console.log('Loaded detailed option from API:', details);
+        } else {
+          console.log(`API fetch for details failed with status: ${response.status}`);
         }
       } catch (fetchError) {
-        console.log('API fetch failed for rotation plan:', fetchError)
+        console.log('API fetch error for details, trying database service:', fetchError);
       }
-      
-      // Fallback to database service if API fails
+
+      if (!details && databaseService.getRecoveryOptionDetails) {
+        try {
+          details = await databaseService.getRecoveryOptionDetails(option.id);
+          console.log('Loaded detailed option from database service:', details);
+        } catch (dbError) {
+          console.log('Database service error for details:', dbError);
+        }
+      }
+
+      setSelectedOptionDetails(details || option);
+      setShowDetailsDialog(true);
+    } catch (error) {
+      console.error('Error loading option details:', error);
+      setSelectedOptionDetails(option); // Fallback to option data
+      setShowDetailsDialog(true);
+    } finally {
+      setLoadingFullDetails(null);
+    }
+  };
+
+  const handleViewRotationImpact = async (option) => {
+    setLoadingRotationImpact(option.id);
+    try {
+      let rotationPlan = null;
+
+      try {
+        const response = await fetch(`/api/recovery-option/${option.id}/rotation-plan`);
+        if (response.ok) {
+          const result = await response.json();
+          rotationPlan = result.rotationPlan || result;
+          console.log('Loaded rotation plan from API:', rotationPlan);
+        } else {
+          console.log(`API fetch for rotation plan failed with status: ${response.status}`);
+        }
+      } catch (fetchError) {
+        console.log('API fetch error for rotation plan, trying database service:', fetchError);
+      }
+
       if (!rotationPlan && databaseService.getRotationPlanDetails) {
-        rotationPlan = await databaseService.getRotationPlanDetails(option.id)
+        try {
+          rotationPlan = await databaseService.getRotationPlanDetails(option.id);
+          console.log('Loaded rotation plan from database service:', rotationPlan);
+        } catch (dbError) {
+          console.log('Database service error for rotation plan:', dbError);
+        }
       }
-      
-      // Final fallback to mock data
+
+      // Fallback to mock data if no data is found
       if (!rotationPlan) {
         rotationPlan = {
           aircraftRotations: [
@@ -755,25 +766,25 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
             { flightNumber: 'FZ446', delay: '45 min', passengers: 156, status: 'Delayed' },
             { flightNumber: 'FZ447', delay: '15 min', passengers: 189, status: 'Delayed' }
           ]
-        }
+        };
       }
-      
-      setRotationPlanDetails(rotationPlan)
-      setShowRotationDialog(true)
+
+      setRotationPlanDetails(rotationPlan);
+      setShowRotationDialog(true);
     } catch (error) {
-      console.error('Error loading rotation plan:', error)
+      console.error('Error loading rotation plan:', error);
       // Fallback rotation plan
       setRotationPlanDetails({
         aircraftRotations: [
           { aircraft: selectedFlight?.aircraft || 'A6-FDB', currentFlight: selectedFlight?.flightNumber || 'FZ445', nextFlight: 'FZ446', turnaroundTime: '45 min' }
         ],
         impactedFlights: []
-      })
-      setShowRotationDialog(true)
+      });
+      setShowRotationDialog(true);
     } finally {
-      setLoading(false)
+      setLoadingRotationImpact(null);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -944,21 +955,39 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                     size="sm" 
                     className="w-full"
                     onClick={() => handleViewFullDetails(option)}
-                    disabled={loading}
+                    disabled={loadingFullDetails === option.id}
                   >
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Full Details
+                    {loadingFullDetails === option.id ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-flydubai-blue mr-2"></div>
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Full Details
+                      </>
+                    )}
                   </Button>
 
                   <Button 
                     variant="outline" 
                     size="sm" 
                     className="w-full"
-                    onClick={() => handleViewRotationPlan(option)}
-                    disabled={loading}
+                    onClick={() => handleViewRotationImpact(option)}
+                    disabled={loadingRotationImpact === option.id}
                   >
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Rotation Impact
+                    {loadingRotationImpact === option.id ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-flydubai-blue mr-2"></div>
+                        Loading...
+                      </>
+                    ) : (
+                      <>
+                        <MapPin className="h-4 w-4 mr-2" />
+                        Rotation Impact
+                      </>
+                    )}
                   </Button>
 
                   <Button 
@@ -1022,7 +1051,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
               Recovery Option Details
             </DialogTitle>
           </DialogHeader>
-          
+
           {selectedOptionDetails && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1132,7 +1161,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
               Aircraft Rotation Plan
             </DialogTitle>
           </DialogHeader>
-          
+
           {rotationPlanDetails && (
             <div className="space-y-6">
               <Card>
