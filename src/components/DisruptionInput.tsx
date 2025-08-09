@@ -616,7 +616,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
     // Hub filter
     if (filters.hub !== "all") {
-      const flightHub = flight.origin === "DXB" || flight.destination === "DXB" ? "DXB" : 
+      const flightHub = flight.origin === "DXB" || flight.destination === "DXB" ? "DXB" :
                        flight.origin === "DWC" || flight.destination === "DWC" ? "DWC" : "DXB";
       if (flightHub !== filters.hub) return false;
     }
@@ -767,7 +767,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       disruptionReason: newDisruption.disruptionReason,
       categorization: selectedCategory?.category_name || newDisruption.categorization,
       categoryId: selectedCategory?.id,
-      categoryCode: selectedCategory?.category_code, // Pass category_code
+      categoryCode: selectedCategory?.category_code || newDisruption.categorization, // Send the correct category_code
       crewMembers: newDisruption.crewMembers || [],
     };
 
@@ -1742,14 +1742,14 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
             <CardContent>
               <Tabs defaultValue="inbound" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 bg-gray-50 p-0.5 rounded border border-gray-200">
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="inbound"
                     className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
                     <Plane className="h-3.5 w-3.5 transform rotate-180" />
                     <span className="text-xs">Inbound ({sortedFlights.filter(f => f.destination === 'DXB').length})</span>
                   </TabsTrigger>
-                  <TabsTrigger 
+                  <TabsTrigger
                     value="outbound"
                     className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
