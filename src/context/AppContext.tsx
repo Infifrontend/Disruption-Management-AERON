@@ -60,7 +60,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       name: "Recovery Options",
       icon: "Plane",
       category: "operations",
-      enabled: false,
+      enabled: true,
       required: false,
     },
     {
