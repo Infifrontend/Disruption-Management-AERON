@@ -1966,7 +1966,7 @@ export function generateRecoveryOptionsForDisruption(disruption, categoryInfo = 
   }
 
   console.log(
-    `Generated ${options.length} options and ${steps.length} steps for disruption type: ${disruptionType}`,
+    `Generated ${options.length} options and ${steps.length} steps for disruption type: ${categoryCode}`,
   );
   return { options, steps };
 }
