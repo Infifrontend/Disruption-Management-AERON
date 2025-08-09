@@ -1,0 +1,313 @@
+
+{
+  "rotationPlanData": {
+    "aircraftOptions": [
+      {
+        "reg": "A6-FED",
+        "type": "B737-800 (189Y)",
+        "etops": {
+          "status": "available",
+          "value": "180min"
+        },
+        "cabinMatch": {
+          "status": "exact",
+          "value": "Exact"
+        },
+        "availability": "Available Now",
+        "assigned": {
+          "status": "none",
+          "value": "None"
+        },
+        "turnaround": "45 min",
+        "maintenance": {
+          "status": "current",
+          "value": "Current"
+        },
+        "recommended": true
+      },
+      {
+        "reg": "A6-FEL",
+        "type": "B737-MAX8 (189Y)",
+        "etops": {
+          "status": "available",
+          "value": "180min"
+        },
+        "cabinMatch": {
+          "status": "similar",
+          "value": "Similar"
+        },
+        "availability": "Available 14:30",
+        "assigned": {
+          "status": "assigned",
+          "value": "FZ892"
+        },
+        "turnaround": "60 min",
+        "maintenance": {
+          "status": "current",
+          "value": "Current"
+        },
+        "recommended": false
+      },
+      {
+        "reg": "A6-FGH",
+        "type": "B737-800 (164Y)",
+        "etops": {
+          "status": "available",
+          "value": "180min"
+        },
+        "cabinMatch": {
+          "status": "reduced",
+          "value": "Reduced"
+        },
+        "availability": "Available 16:00",
+        "assigned": {
+          "status": "none",
+          "value": "None"
+        },
+        "turnaround": "50 min",
+        "maintenance": {
+          "status": "due",
+          "value": "Due A-Check"
+        },
+        "recommended": false
+      },
+      {
+        "reg": "A6-FIJ",
+        "type": "B737-MAX8 (189Y)",
+        "etops": {
+          "status": "none",
+          "value": "None"
+        },
+        "cabinMatch": {
+          "status": "exact",
+          "value": "Exact"
+        },
+        "availability": "Available 18:00",
+        "assigned": {
+          "status": "assigned",
+          "value": "FZ445"
+        },
+        "turnaround": "75 min",
+        "maintenance": {
+          "status": "aog",
+          "value": "AOG Issue"
+        },
+        "recommended": false
+      }
+    ],
+    "crewData": [
+      {
+        "name": "Capt. Ahmed Al-Mansouri",
+        "role": "Captain",
+        "type": "B737 Type Rating",
+        "status": "Available",
+        "issue": null
+      },
+      {
+        "name": "FO Sarah Johnson",
+        "role": "First Officer",
+        "type": "B737/MAX Type Rating",
+        "status": "Available",
+        "issue": null
+      },
+      {
+        "name": "SSCC Lisa Martinez",
+        "role": "Senior Cabin Crew",
+        "type": "Senior Cabin Crew",
+        "status": "Duty Limit 6h",
+        "issue": "Approaching duty limit"
+      },
+      {
+        "name": "CC Maria Santos",
+        "role": "Cabin Crew",
+        "type": "Cabin Crew",
+        "status": "Standby",
+        "issue": "Standby replacement"
+      }
+    ],
+    "nextSectors": [
+      {
+        "flight": "FZ456 DXB-BOM",
+        "departure": "Dep: 18:30 → 19:45 (+75min)",
+        "impact": "High Impact",
+        "reason": "Aircraft swap delay"
+      },
+      {
+        "flight": "FZ457 BOM-DXB",
+        "departure": "Dep: 22:15 → 23:00 (+45min)",
+        "impact": "Medium Impact",
+        "reason": "Knock-on delay"
+      },
+      {
+        "flight": "FZ890 DXB-DEL",
+        "departure": "Dep: 08:30 (Next Day)",
+        "impact": "Low Impact",
+        "reason": "Overnight recovery"
+      }
+    ],
+    "operationalConstraints": {
+      "gateCompatibility": {
+        "status": "Compatible",
+        "details": "All gates compatible with B737-800"
+      },
+      "slotCapacity": {
+        "status": "Coordination Required",
+        "details": "New departure slot needed"
+      },
+      "curfewViolation": {
+        "status": "No Risk",
+        "details": "Within curfew limits"
+      },
+      "passengerConnections": {
+        "status": "Minimal Impact",
+        "details": "No significant connection issues"
+      }
+    },
+    "costBreakdown": {
+      "delayCost": 34200,
+      "fuelEfficiency": "+2.1%",
+      "hotelTransport": 840,
+      "eu261Risk": "Medium"
+    },
+    "recommendation": {
+      "aircraft": "A6-FED",
+      "reason": "Optimal balance across cost (92%), delay minimization (88%), crew impact (95%), and fuel efficiency (91%). Immediate availability with exact cabin configuration match."
+    }
+  },
+  "dataVariations": {
+    "delayRecovery": {
+      "aircraftOptions": [
+        {
+          "reg": "A6-FDZ",
+          "type": "B737-800 (189Y)",
+          "etops": {
+            "status": "available",
+            "value": "180min"
+          },
+          "cabinMatch": {
+            "status": "exact",
+            "value": "Exact"
+          },
+          "availability": "Delayed 2h",
+          "assigned": {
+            "status": "none",
+            "value": "None"
+          },
+          "turnaround": "30 min",
+          "maintenance": {
+            "status": "aog",
+            "value": "Under Maintenance"
+          },
+          "recommended": true
+        }
+      ],
+      "costBreakdown": {
+        "delayCost": 16800,
+        "fuelEfficiency": "+0.8%",
+        "hotelTransport": 8450,
+        "eu261Risk": "High"
+      }
+    },
+    "crewReplacement": {
+      "crewData": [
+        {
+          "name": "Capt. Ahmed Al-Mansouri",
+          "role": "Captain",
+          "type": "B737 Type Rating",
+          "status": "Available",
+          "issue": "Replacement for fatigued crew"
+        },
+        {
+          "name": "FO Sarah Johnson",
+          "role": "First Officer",
+          "type": "B737/MAX Type Rating",
+          "status": "Available",
+          "issue": null
+        },
+        {
+          "name": "SSCC Lisa Martinez",
+          "role": "Senior Cabin Crew",
+          "type": "Senior Cabin Crew",
+          "status": "Duty Limit 6h",
+          "issue": "Approaching duty limit"
+        },
+        {
+          "name": "CC Maria Santos",
+          "role": "Cabin Crew",
+          "type": "Cabin Crew",
+          "status": "Standby",
+          "issue": "Standby replacement"
+        }
+      ],
+      "costBreakdown": {
+        "delayCost": 5200,
+        "fuelEfficiency": "+0.3%",
+        "hotelTransport": 0,
+        "eu261Risk": "Low"
+      }
+    },
+    "cancellation": {
+      "nextSectors": [
+        {
+          "flight": "FZ456 DXB-BOM",
+          "departure": "Cancelled",
+          "impact": "High Impact",
+          "reason": "Flight cancellation"
+        },
+        {
+          "flight": "FZ457 BOM-DXB",
+          "departure": "Cancelled",
+          "impact": "High Impact",
+          "reason": "Route cancellation"
+        },
+        {
+          "flight": "FZ890 DXB-DEL",
+          "departure": "Dep: 08:30 (Next Day)",
+          "impact": "No Impact",
+          "reason": "Different aircraft"
+        }
+      ],
+      "costBreakdown": {
+        "delayCost": 89200,
+        "fuelEfficiency": "N/A",
+        "hotelTransport": 24500,
+        "eu261Risk": "Critical"
+      },
+      "operationalConstraints": {
+        "passengerConnections": {
+          "status": "Major Impact",
+          "details": "167 passengers need rebooking"
+        }
+      }
+    }
+  },
+  "templateStructure": {
+    "description": "This JSON structure supports the View Rotation Plan dialog with four main tabs",
+    "tabs": [
+      {
+        "name": "aircraft",
+        "title": "Alternate Aircraft Options",
+        "dataSource": "aircraftOptions",
+        "fields": ["reg", "type", "etops", "cabinMatch", "availability", "assigned", "turnaround", "maintenance"]
+      },
+      {
+        "name": "crew",
+        "title": "Crew Availability & Constraints",
+        "dataSource": "crewData",
+        "fields": ["name", "role", "type", "status", "issue"]
+      },
+      {
+        "name": "rotation",
+        "title": "Rotation & Ops Impact",
+        "dataSource": ["nextSectors", "operationalConstraints"],
+        "fields": ["flight", "departure", "impact", "reason", "constraints"]
+      },
+      {
+        "name": "cost",
+        "title": "Cost & Delay Metrics",
+        "dataSource": ["costBreakdown", "recommendation"],
+        "fields": ["delayCost", "fuelEfficiency", "hotelTransport", "eu261Risk", "aircraft", "reason"]
+      }
+    ]
+  }
+}
