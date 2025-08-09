@@ -1975,8 +1975,3 @@ export function generateRecoveryOptionsForDisruption(disruption, categoryInfo = 
 export function generateRecoveryStepsForDisruption(disruption) {
   return generateRecoveryOptionsForDisruption(disruption).steps;
 }
-
-export {
-  generateRecoveryOptionsForDisruption,
-  mapDisruptionTypeToCategory,
-};
