@@ -337,10 +337,14 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
       // Process all data, including incomplete records with fallbacks
       const processedData = data
+        .filter((disruption) => {
+          if (!disruption) return false;
+          // Only include disruptions with recovery_status = 'none' or null/undefined
+          const recoveryStatus = disruption.recovery_status || disruption.recoveryStatus;
+          return recoveryStatus === 'none' || recoveryStatus === null || recoveryStatus === undefined || recoveryStatus === '';
+        })
         .map((disruption) => {
           // Provide defaults for missing required fields
-          if (!disruption) return null;
-
           return {
             ...disruption,
             flightNumber: disruption.flight_number || disruption.flightNumber || `UNKNOWN-${Date.now()}`,
@@ -365,11 +369,6 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
             connectionFlights: disruption.connection_flights || disruption.connectionFlights || 0,
             recoveryStatus: disruption.recovery_status || 'none'
           };
-        })
-        .filter((disruption) => {
-          if (!disruption) return false;
-          const status = disruption.recoveryStatus || disruption.recovery_status || 'none';
-          return status === 'none' || status === null || status === undefined;
         });
 
       const transformedFlights = processedData.map(transformFlightData);
@@ -443,9 +442,13 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         if (fallbackData && fallbackData.length > 0) {
           // Process all fallback data, even if incomplete
           const processedFallbackData = fallbackData
+            .filter((disruption) => {
+              if (!disruption) return false;
+              // Only include disruptions with recovery_status = 'none' or null/undefined
+              const recoveryStatus = disruption.recovery_status || disruption.recoveryStatus;
+              return recoveryStatus === 'none' || recoveryStatus === null || recoveryStatus === undefined || recoveryStatus === '';
+            })
             .map((disruption) => {
-              if (!disruption) return null;
-
               return {
                 ...disruption,
                 flightNumber:
@@ -470,9 +473,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                 delay: disruption.delay_minutes || disruption.delay || 0,
                 aircraft: disruption.aircraft || "Unknown",
                 connectionFlights: disruption.connection_flights || disruption.connectionFlights || 0,
+                recoveryStatus: disruption.recovery_status || 'none'
               };
-            })
-            .filter((disruption) => disruption !== null);
+            });
 
           const transformedFlights =
             processedFallbackData.map(transformFlightData);
