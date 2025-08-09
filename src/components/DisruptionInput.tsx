@@ -732,6 +732,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       return;
     }
 
+    // Find the selected category details
+    const selectedCategory = disruptionCategories.find(
+      (cat) => cat.category_code === newDisruption.categorization,
+    );
+
     const newFlightData = {
       flightNumber: newDisruption.flightNumber,
       route: `${newDisruption.origin} → ${newDisruption.destination}`,
@@ -760,8 +765,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
         newDisruption.disruptionType.slice(1),
       status: newDisruption.currentStatus,
       disruptionReason: newDisruption.disruptionReason,
-      categorization: newDisruption.categorization || "Manual Entry",
-      crew_members: newDisruption.crewMembers || [],
+      categorization: selectedCategory?.category_name || newDisruption.categorization,
+      categoryId: selectedCategory?.id,
+      categoryCode: selectedCategory?.category_code, // Pass category_code
+      crewMembers: newDisruption.crewMembers || [],
     };
 
     try {
