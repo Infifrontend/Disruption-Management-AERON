@@ -41,6 +41,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
     const loadRecoveryOptions = async () => {
       if (selectedFlight?.id) {
         setLoading(true)
+        setDynamicRecoveryOptions([]) // Clear previous options to prevent showing old data
         try {
           let options = []
           const flightId = selectedFlight.id.toString()
@@ -97,14 +98,15 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
       } else {
         console.log('No flight ID available for loading recovery options')
         setDynamicRecoveryOptions([])
+        setLoading(false)
       }
     }
 
     loadRecoveryOptions()
   }, [selectedFlight])
 
-  // Use dynamic recovery options from database or props, with fallback to static data
-  const comparisonOptions = dynamicRecoveryOptions.length > 0 
+  // Use dynamic recovery options from database only when loading is complete
+  const comparisonOptions = !loading && dynamicRecoveryOptions.length > 0 
     ? dynamicRecoveryOptions.map((option, index) => {
     const optionId = String(option.id || '');
     return {
@@ -148,60 +150,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
         passengerRisk: option.confidence > 80 ? "Low" : option.confidence > 60 ? "Medium" : "High"
       }
     };
-  }) : [
-    // Fallback static data when no dynamic options are available
-    {
-      id: "option_1",
-      title: "Aircraft Swap - Immediate",
-      description: "Replace with available aircraft",
-      cost: "AED 45,000",
-      timeline: "75 minutes",
-      confidence: 92,
-      impact: "Medium impact",
-      status: "recommended",
-      category: "Aircraft Substitution",
-      advantages: [
-        "Immediate aircraft availability",
-        "Minimal passenger disruption"
-      ],
-      considerations: [
-        "Higher operational cost",
-        "Requires coordination"
-      ],
-      metrics: {
-        costEfficiency: 78,
-        timeEfficiency: 95,
-        passengerSatisfaction: 88,
-        operationalComplexity: 65,
-        riskLevel: 25,
-        resourceAvailability: 90
-      },
-      passengerImpact: {
-        affected: 167,
-        reaccommodated: 0,
-        compensated: 0,
-        missingConnections: 12
-      },
-      operationalImpact: {
-        delayMinutes: 75,
-        downstreamFlights: 2,
-        crewChanges: 0,
-        gateChanges: 1
-      },
-      financialBreakdown: {
-        aircraftCost: 25000,
-        crewCost: 8000,
-        passengerCost: 3000,
-        operationalCost: 9000
-      },
-      riskAssessment: {
-        technicalRisk: "Low",
-        weatherRisk: "None",
-        regulatoryRisk: "Low",
-        passengerRisk: "Low"
-      }
-    }
-  ];
+  }) : [];
 
   const flight = Array.isArray(selectedFlight) ? selectedFlight[0] : selectedFlight
 
@@ -605,15 +554,36 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
     )
   }
 
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <Card className="border-flydubai-blue">
+          <CardContent className="p-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-flydubai-blue mx-auto mb-4"></div>
+            <h3 className="text-lg font-semibold text-flydubai-navy mb-2">Loading Recovery Options</h3>
+            <p className="text-muted-foreground">
+              Fetching recovery options for {flight.flightNumber} ({flight.route})...
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Show empty state when no options are found
   if (!comparisonOptions || comparisonOptions.length === 0) {
     return (
       <div className="space-y-6">
-        <Card className="border-flydubai-orange">
+        <Card className="border-gray-300">
           <CardContent className="p-8 text-center">
-            <Target className="h-12 w-12 text-flydubai-orange mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-flydubai-navy mb-2">Recovery Options Loading</h3>
+            <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">No Options Found</h3>
             <p className="text-muted-foreground">
-              Generating recovery options for {flight.flightNumber} ({flight.route})...
+              No recovery options are available for {flight.flightNumber} ({flight.route}) at this time.
+            </p>
+            <p className="text-sm text-muted-foreground mt-2">
+              Please check back later or contact the operations team for assistance.
             </p>
           </CardContent>
         </Card>
