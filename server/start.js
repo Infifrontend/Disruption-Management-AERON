@@ -1534,7 +1534,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
     );
     const categoryInfo = {
       category_code: disruption.category_code,
-      category_name: disruption.category_name,
+      category_name: disruption.categorization,
       category_id: disruption.category_id
     };
     const { options, steps } = generateRecoveryOptionsForDisruption(disruption, categoryInfo);
@@ -1800,8 +1800,8 @@ app.post("/api/generate-recovery-options/:disruptionId", async (req, res) => {
       return res.status(404).json({ error: "Disruption not found" });
     }
 
-    const disruption = disruptionResult.rows[0];
-    console.log("Found disruption:", disruption.flight_number);
+    const disruptionData = disruptionResult.rows[0];
+    console.log("Found disruption:", disruptionData.flight_number);
 
     // Check if recovery steps already exist (not just options)
     const existingSteps = await pool.query(
@@ -1828,9 +1828,19 @@ app.post("/api/generate-recovery-options/:disruptionId", async (req, res) => {
       "./recovery-generator.js"
     );
 
-    const { options, steps } = generateRecoveryOptionsForDisruption(disruption);
+    // Get category information from disruption
+    const categoryInfo = {
+      category_code: disruptionData.category_code,
+      category_name: disruptionData.categorization,
+      category_id: disruptionData.category_id
+    };
+
+    const { options, steps } = generateRecoveryOptionsForDisruption(
+      disruptionData,
+      categoryInfo
+    );
     console.log(
-      `Generated ${options.length} options and ${steps.length} steps`,
+      `Generated ${options.length} options and ${steps.length} steps for flight ${flightId}`,
     );
 
     // Clear existing data if partially generated

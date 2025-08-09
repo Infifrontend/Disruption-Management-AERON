@@ -236,6 +236,39 @@ const generateAircraftIssueRecovery = (flight) => {
             turnaround: "40 min",
             maintenance: { status: "current", value: "Current" },
             recommended: true
+          },
+          {
+            reg: "A6-FEQ",
+            type: "B737-MAX8 (189Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "exact", value: "Exact" },
+            availability: "Available 10:30",
+            assigned: { status: "assigned", value: "FZ789" },
+            turnaround: "50 min",
+            maintenance: { status: "current", value: "Current" },
+            recommended: false
+          },
+          {
+            reg: "A6-FER",
+            type: "B737-800 (164Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "reduced", value: "Reduced" },
+            availability: "Available 12:00",
+            assigned: { status: "none", value: "None" },
+            turnaround: "45 min",
+            maintenance: { status: "due", value: "Due A-Check" },
+            recommended: false
+          },
+          {
+            reg: "A6-FES",
+            type: "B737-MAX8 (189Y)",
+            etops: { status: "none", value: "None" },
+            cabinMatch: { status: "exact", value: "Exact" },
+            availability: "Available 13:00",
+            assigned: { status: "assigned", value: "FZ234" },
+            turnaround: "60 min",
+            maintenance: { status: "aog", value: "AOG Issue" },
+            recommended: false
           }
         ],
         crewData: [
@@ -252,6 +285,40 @@ const generateAircraftIssueRecovery = (flight) => {
             type: "B737/MAX Type Rating",
             status: "Available",
             issue: null
+          },
+          {
+            name: "SSCC Layla Ahmed",
+            role: "Senior Cabin Crew",
+            type: "Senior Cabin Crew",
+            status: "Duty Limit 6h",
+            issue: "Approaching duty limit"
+          },
+          {
+            name: "CC Sami Khan",
+            role: "Cabin Crew",
+            type: "Cabin Crew",
+            status: "Standby",
+            issue: "Standby replacement"
+          }
+        ],
+        nextSectors: [
+          {
+            flight: "FZ345 DXB-JED",
+            departure: "Dep: 10:30 → 11:15 (+45min)",
+            impact: "Low Impact",
+            reason: "Aircraft swap delay"
+          },
+          {
+            flight: "FZ346 JED-DXB",
+            departure: "Dep: 14:00 → 14:45 (+45min)",
+            impact: "Low Impact",
+            reason: "Knock-on delay"
+          },
+          {
+            flight: "FZ789 DXB-IST",
+            departure: "Dep: 08:00 (Next Day)",
+            impact: "Low Impact",
+            reason: "Overnight recovery"
           }
         ],
         operationalConstraints: {
@@ -266,7 +333,21 @@ const generateAircraftIssueRecovery = (flight) => {
           curfewViolation: {
             status: "No Risk",
             details: "Within curfew limits"
+          },
+          passengerConnections: {
+            status: "Minimal Impact",
+            details: "No significant connection issues"
           }
+        },
+        costBreakdown: {
+          delayCost: 30000,
+          fuelEfficiency: "+1.2%",
+          hotelTransport: 500,
+          eu261Risk: "Low"
+        },
+        recommendation: {
+          aircraft: "A6-FEP",
+          reason: "Optimal balance across cost (85%), delay minimization (90%), crew impact (95%), and fuel efficiency (88%). Immediate availability with exact cabin configuration match."
         }
       }
     },
@@ -321,7 +402,7 @@ const generateAircraftIssueRecovery = (flight) => {
           amount: "$3,960",
           category: "Crew Overtime",
           percentage: 8,
-          description: "Extended duty compensation"
+          description: "Extended crew duty compensation"
         }
       ],
       timeline_details: [
@@ -394,6 +475,132 @@ const generateAircraftIssueRecovery = (flight) => {
         timeEfficiency: 60,
         passengerSatisfaction: 50,
         operationalComplexity: 70,
+      },
+      rotation_plan: {
+        aircraftOptions: [
+          {
+            reg: "A6-FET",
+            type: "B737-800 (189Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "exact", value: "Exact" },
+            availability: "Available Now",
+            assigned: { status: "none", value: "None" },
+            turnaround: "45 min",
+            maintenance: { status: "current", value: "Current" },
+            recommended: true
+          },
+          {
+            reg: "A6-FEU",
+            type: "B737-MAX8 (189Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "exact", value: "Exact" },
+            availability: "Available 12:00",
+            assigned: { status: "assigned", value: "FZ456" },
+            turnaround: "50 min",
+            maintenance: { status: "current", value: "Current" },
+            recommended: false
+          },
+          {
+            reg: "A6-FEV",
+            type: "B737-800 (164Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "reduced", value: "Reduced" },
+            availability: "Available 14:00",
+            assigned: { status: "none", value: "None" },
+            turnaround: "55 min",
+            maintenance: { status: "due", value: "Due A-Check" },
+            recommended: false
+          },
+          {
+            reg: "A6-FEW",
+            type: "B737-MAX8 (189Y)",
+            etops: { status: "none", value: "None" },
+            cabinMatch: { status: "exact", value: "Exact" },
+            availability: "Available 15:00",
+            assigned: { status: "assigned", value: "FZ901" },
+            turnaround: "60 min",
+            maintenance: { status: "aog", value: "AOG Issue" },
+            recommended: false
+          }
+        ],
+        crewData: [
+          {
+            name: "Capt. Hassan Al-Mazrouei",
+            role: "Captain",
+            type: "B737 Type Rating",
+            status: "Available",
+            issue: null
+          },
+          {
+            name: "FO Amal Saeed",
+            role: "First Officer",
+            type: "B737/MAX Type Rating",
+            status: "Available",
+            issue: null
+          },
+          {
+            name: "SSCC Noor Ibrahim",
+            role: "Senior Cabin Crew",
+            type: "Senior Cabin Crew",
+            status: "Duty Limit 4h",
+            issue: "Approaching duty limit"
+          },
+          {
+            name: "CC Youssef Malik",
+            role: "Cabin Crew",
+            type: "Cabin Crew",
+            status: "Standby",
+            issue: "Standby replacement"
+          }
+        ],
+        nextSectors: [
+          {
+            flight: "FZ678 DXB-AMM",
+            departure: "Dep: 14:30 → 18:30 (+240min)",
+            impact: "High Impact",
+            reason: "Delay due to repair completion"
+          },
+          {
+            flight: "FZ679 AMM-DXB",
+            departure: "Dep: 21:00 → 01:00 (+240min)",
+            impact: "High Impact",
+            reason: "Knock-on delay"
+          },
+          {
+            flight: "FZ234 DXB-CAI",
+            departure: "Dep: 09:00 (Next Day)",
+            impact: "Low Impact",
+            reason: "Overnight recovery"
+          }
+        ],
+        operationalConstraints: {
+          gateCompatibility: {
+            status: "Compatible",
+            details: "All gates compatible with B737-800"
+          },
+          slotCapacity: {
+            status: "Coordination Required",
+            details: "New departure slot needed"
+          },
+          curfewViolation: {
+            status: "Risk",
+            details: "Potential curfew violation due to extended delay"
+          },
+          passengerConnections: {
+            status: "Significant Impact",
+            details: "Missed connections likely"
+          }
+        },
+        costBreakdown: {
+          delayCost: 60000,
+          fuelEfficiency: "+1.8%",
+          hotelTransport: 2000,
+          eu261Risk: "High"
+        },
+        recommendation: {
+          aircraft: "A6-FET",
+          reason: "Retains original aircraft post-repair for cost efficiency (70%) and operational continuity, despite extended delay (60%) and passenger impact (50%)."
+        }
       }
     },
     {
@@ -520,6 +727,132 @@ const generateAircraftIssueRecovery = (flight) => {
         timeEfficiency: 95,
         passengerSatisfaction: 40,
         operationalComplexity: 90,
+      },
+      rotation_plan: {
+        aircraftOptions: [
+          {
+            reg: "A6-FEX",
+            type: "B737-800 (189Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "exact", value: "Exact" },
+            availability: "Available Now",
+            assigned: { status: "none", value: "None" },
+            turnaround: "45 min",
+            maintenance: { status: "current", value: "Current" },
+            recommended: true
+          },
+          {
+            reg: "A6-FEY",
+            type: "B737-MAX8 (189Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "exact", value: "Exact" },
+            availability: "Available 11:00",
+            assigned: { status: "assigned", value: "FZ567" },
+            turnaround: "50 min",
+            maintenance: { status: "current", value: "Current" },
+            recommended: false
+          },
+          {
+            reg: "A6-FEZ",
+            type: "B737-800 (164Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "reduced", value: "Reduced" },
+            availability: "Available 12:30",
+            assigned: { status: "none", value: "None" },
+            turnaround: "55 min",
+            maintenance: { status: "due", value: "Due A-Check" },
+            recommended: false
+          },
+          {
+            reg: "A6-FEA",
+            type: "B737-MAX8 (189Y)",
+            etops: { status: "none", value: "None" },
+            cabinMatch: { status: "exact", value: "Exact" },
+            availability: "Available 13:30",
+            assigned: { status: "assigned", value: "FZ123" },
+            turnaround: "60 min",
+            maintenance: { status: "aog", value: "AOG Issue" },
+            recommended: false
+          }
+        ],
+        crewData: [
+          {
+            name: "Capt. Saeed Al-Maktoum",
+            role: "Captain",
+            type: "B737 Type Rating",
+            status: "Available",
+            issue: null
+          },
+          {
+            name: "FO Haya Al-Kuwaiti",
+            role: "First Officer",
+            type: "B737/MAX Type Rating",
+            status: "Available",
+            issue: null
+          },
+          {
+            name: "SSCC Mariam Salem",
+            role: "Senior Cabin Crew",
+            type: "Senior Cabin Crew",
+            status: "Duty Limit 5h",
+            issue: "Approaching duty limit"
+          },
+          {
+            name: "CC Ahmed Nasser",
+            role: "Cabin Crew",
+            type: "Cabin Crew",
+            status: "Standby",
+            issue: "Standby replacement"
+          }
+        ],
+        nextSectors: [
+          {
+            flight: "FZ901 DXB-BAH",
+            departure: "Dep: 10:30 (Partner Airline)",
+            impact: "High Impact",
+            reason: "Flight cancellation and rebooking"
+          },
+          {
+            flight: "FZ902 BAH-DXB",
+            departure: "Dep: 13:00 (Partner Airline)",
+            impact: "High Impact",
+            reason: "Knock-on cancellation"
+          },
+          {
+            flight: "FZ456 DXB-DOH",
+            departure: "Dep: 08:00 (Next Day)",
+            impact: "Low Impact",
+            reason: "Resumption with flydubai aircraft"
+          }
+        ],
+        operationalConstraints: {
+          gateCompatibility: {
+            status: "Not Applicable",
+            details: "No flydubai aircraft used"
+          },
+          slotCapacity: {
+            status: "Not Applicable",
+            details: "Partner airline slots used"
+          },
+          curfewViolation: {
+            status: "No Risk",
+            details: "Partner airline schedules compliant"
+          },
+          passengerConnections: {
+            status: "Significant Impact",
+            details: "Missed connections due to cancellation"
+          }
+        },
+        costBreakdown: {
+          delayCost: 80000,
+          fuelEfficiency: "0%",
+          hotelTransport: 5000,
+          eu261Risk: "High"
+        },
+        recommendation: {
+          aircraft: "A6-FEX",
+          reason: "No flydubai aircraft used for immediate rebooking; A6-FEX recommended for next-day operations to balance cost (60%) and passenger satisfaction (40%)."
+        }
       }
     },
   ];
