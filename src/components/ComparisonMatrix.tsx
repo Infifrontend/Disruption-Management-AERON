@@ -802,6 +802,19 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
   const handleExecuteOption = async (option, letter) => {
     setExecutingOption(option.id);
     try {
+      // Check if this combination already exists to prevent duplicates
+      const existingSolutions = await databaseService.getPendingRecoverySolutions();
+      const isDuplicate = existingSolutions.some(solution => 
+        solution.disruption_id == selectedFlight?.id && 
+        solution.option_id == option.id
+      );
+
+      if (isDuplicate) {
+        alert('This recovery solution is already pending for this flight.');
+        setExecutingOption(null);
+        return;
+      }
+
       // Get full details and rotation impact before executing
       let fullDetails = null;
       let rotationImpact = null;
