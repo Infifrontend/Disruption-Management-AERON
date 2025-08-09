@@ -1484,32 +1484,42 @@ class DatabaseService {
   }
 
   // Pending Recovery Solutions
-  async savePendingRecoverySolution(solution: any): Promise<boolean> {
+  async addPendingSolution(solution: any): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/pending-recovery-solutions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           disruption_id: solution.disruptionId,
-          option_id: solution.optionId,
-          option_title: solution.optionTitle,
-          option_description: solution.optionDescription,
+          option_id: solution.optionId || solution.id,
+          option_title: solution.optionTitle || solution.title,
+          option_description: solution.optionDescription || solution.description,
           cost: solution.cost,
           timeline: solution.timeline,
           confidence: solution.confidence,
           impact: solution.impact,
-          status: solution.status,
-          full_details: solution.fullDetails,
+          status: solution.status || 'Pending',
+          full_details: solution.fullDetails || solution,
           rotation_impact: solution.rotationImpact,
-          submitted_by: solution.submittedBy,
-          approval_required: solution.approvalRequired
+          submitted_by: solution.submittedBy || 'system',
+          approval_required: solution.approvalRequired || 'Operations Manager',
+          flight_number: solution.flightNumber,
+          route: solution.route,
+          aircraft: solution.aircraft,
+          passengers: solution.affectedPassengers,
+          severity: solution.severity,
+          disruption_reason: solution.disruptionReason
         })
       });
       return response.ok;
     } catch (error) {
-      console.error('Failed to save pending recovery solution:', error);
+      console.error('Failed to add pending solution:', error);
       return false;
     }
+  }
+
+  async savePendingRecoverySolution(solution: any): Promise<boolean> {
+    return this.addPendingSolution(solution);
   }
 
   async getPendingRecoverySolutions(): Promise<any[]> {
@@ -1533,6 +1543,20 @@ class DatabaseService {
       return response.ok;
     } catch (error) {
       console.error('Failed to update flight recovery status:', error);
+      return false;
+    }
+  }
+
+  async updateFlightDisruptionStatus(disruptionId: string, status: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/disruptions/${disruptionId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: status })
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Failed to update disruption status:', error);
       return false;
     }
   }
