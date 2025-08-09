@@ -960,8 +960,10 @@ app.post("/api/disruptions/", async (req, res) => {
     const safeStatus = status || "Active";
     const safeDisruptionReason = disruption_reason_val || "No reason provided";
 
-    // Handle category_code from request body
-    const receivedCategoryCode = category_code || categoryCode;
+    // Handle category_code - check both categoryCode and category_code fields
+    const receivedCategoryCode = req.body.categoryCode || req.body.category_code;
+    console.log(`Received category_code: ${receivedCategoryCode}`);
+
     let category_id = null;
 
     // Get category_id from category_code if provided
@@ -975,14 +977,14 @@ app.post("/api/disruptions/", async (req, res) => {
           category_id = categoryResult.rows[0].id;
           console.log(`Found category_id ${category_id} for category_code: ${receivedCategoryCode}`);
         } else {
-          console.warn(`Category code ${receivedCategoryCode} not found, using default`);
+          console.warn(`Category code ${receivedCategoryCode} not found, will try mapping from categorization`);
         }
       } catch (categoryError) {
         console.error("Error looking up category:", categoryError);
       }
     }
 
-    // Fallback to categorization mapping if category_code not found
+    // Fallback to categorization mapping if category_code not found or invalid
     if (!category_id && categorization) {
       try {
         const categoryResult = await pool.query(`
@@ -998,7 +1000,7 @@ app.post("/api/disruptions/", async (req, res) => {
           END
           LIMIT 1
         `, [categorization]);
-        
+
         if (categoryResult.rows.length > 0) {
           category_id = categoryResult.rows[0].id;
           console.log(`Mapped categorization ${categorization} to category_id: ${category_id}`);
@@ -1080,7 +1082,6 @@ app.post("/api/disruptions/", async (req, res) => {
 
     console.log("Successfully saved/updated disruption:", result.rows[0]);
     res.json(result.rows[0]);
-    ``;
   } catch (error) {
     console.error("Error saving disruption:", error.message);
     console.error("Error details:", error);

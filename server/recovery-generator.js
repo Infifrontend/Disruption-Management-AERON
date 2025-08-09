@@ -876,10 +876,10 @@ export function generateRecoveryOptionsForDisruption(disruption, categoryInfo = 
   // Normalize field names
   const flightNumber = disruption.flight_number || disruption.flightNumber;
   const categoryId = disruption.category_id;
-  
+
   // Use category_code from request if available, otherwise map from disruption type
-  const categoryCode = categoryInfo?.category_code || 
-    disruption.category_code || 
+  const categoryCode = categoryInfo?.category_code ||
+    disruption.category_code ||
     mapDisruptionTypeToCategory(
       disruption.disruption_type || disruption.disruptionType || disruption.type || "Technical",
       disruption.disruption_reason || "Unknown"
@@ -1449,11 +1449,7 @@ export function generateRecoveryOptionsForDisruption(disruption, categoryInfo = 
             "Maintenance completed properly",
             "No crew changes required"
           ],
-          considerations: [
-            "3-hour delay cascade to multiple flights",
-            "High passenger compensation costs",
-            "Network disruption impact"
-          ],
+          considerations: ["3-hour delay cascade to multiple flights", "High passenger compensation costs", "Network disruption impact"],
         },
       ];
       break;
@@ -1715,3 +1711,8 @@ export function generateRecoveryOptionsForDisruption(disruption, categoryInfo = 
 export function generateRecoveryStepsForDisruption(disruption) {
   return generateRecoveryOptionsForDisruption(disruption).steps;
 }
+
+module.exports = {
+  generateRecoveryOptionsForDisruption,
+  mapDisruptionTypeToCategory,
+};
