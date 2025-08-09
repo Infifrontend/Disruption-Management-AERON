@@ -1577,6 +1577,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
             ],
           );
         } else {
+          console.log("cost_breakdown:",option.cost_breakdown)
           // Insert new option
           await pool.query(
             `
