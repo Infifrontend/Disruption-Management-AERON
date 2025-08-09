@@ -1524,11 +1524,32 @@ class DatabaseService {
 
   async getPendingRecoverySolutions(): Promise<any[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/pending-recovery-solutions`);
-      if (!response.ok) return [];
-      return await response.json();
+      const response = await fetch(`${this.baseUrl}/pending-recovery-solutions`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) {
+        console.warn(`Pending solutions API returned ${response.status}`);
+        if (response.status === 404) {
+          // API endpoint might not exist yet, return empty array
+          return [];
+        }
+        throw new Error(`Failed to fetch pending solutions: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Ensure we return an array
+      if (!Array.isArray(data)) {
+        console.warn('Pending solutions response is not an array:', data);
+        return [];
+      }
+
+      return data;
     } catch (error) {
       console.error('Failed to fetch pending recovery solutions:', error);
+      // Return empty array to prevent UI crashes
       return [];
     }
   }

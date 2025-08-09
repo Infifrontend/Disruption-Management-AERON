@@ -366,7 +366,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
             recoveryStatus: disruption.recovery_status || 'none'
           };
         })
-        .filter((disruption) => disruption !== null && (disruption.recoveryStatus === 'none' || !disruption.recoveryStatus));
+        .filter((disruption) => {
+          if (!disruption) return false;
+          const status = disruption.recoveryStatus || disruption.recovery_status || 'none';
+          return status === 'none' || status === null || status === undefined;
+        });
 
       const transformedFlights = processedData.map(transformFlightData);
       setFlights(transformedFlights);
