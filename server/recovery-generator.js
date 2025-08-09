@@ -91,92 +91,427 @@ const generateAircraftIssueRecovery = (flight) => {
 
   const options = [
     {
-      id: "SWAP_AIRCRAFT",
-      title: "Aircraft Swap - Available Alternative",
-      description: "Immediate tail swap with available aircraft",
-      cost: "AED 45,000",
-      timeline: "75 minutes",
-      confidence: 95,
+      id: `AIRCRAFT_SWAP_${flight.aircraft?.slice(-3) || "001"}`,
+      title: "Aircraft Swap - Immediate",
+      description: "Replace with available standby aircraft",
+      cost: "$22,800",
+      timeline: "1.5-2 hours",
+      confidence: 88,
       impact: "Minimal passenger disruption",
       status: "recommended",
+      category: "Aircraft Issue",
+      priority: 1,
       advantages: [
-        "Same aircraft type - no passenger impact",
-        "Available immediately",
-        "Maintains 97% of schedule integrity",
+        "Fastest resolution with minimal delay",
+        "Maintains schedule integrity",
+        "Low passenger compensation cost",
+        "Preserves network connectivity"
       ],
       considerations: [
-        "Crew briefing required for aircraft change",
-        "Passenger transfer time: 30 minutes",
+        "Requires available spare aircraft",
+        "Crew briefing and familiarization needed",
+        "Gate coordination and positioning",
+        "Passenger transfer logistics"
       ],
-      metrics: {
-        totalCost: 45000,
-        otpScore: 88,
-        aircraftSwaps: 1,
-        crewViolations: 0,
-        paxAccommodated: 100,
-        regulatoryRisk: "Low",
-        delayMinutes: 75,
-        confidenceScore: 95,
-        networkImpact: "Low",
+      resource_requirements: [
+        {
+          eta: "30 min",
+          type: "Aircraft",
+          status: "Standby",
+          details: "Standby aircraft ready for immediate swap",
+          location: "DXB",
+          resource: "B737-800",
+          availability: "Available"
+        }
+      ],
+      cost_breakdown: [
+        {
+          amount: "$15,000",
+          category: "Delay Costs",
+          percentage: 66,
+          description: "Passenger compensation and handling"
+        },
+        {
+          amount: "$5,000",
+          category: "Aircraft Swap",
+          percentage: 22,
+          description: "Cost of mobilizing standby aircraft"
+        },
+        {
+          amount: "$2,800",
+          category: "Logistics",
+          percentage: 12,
+          description: "Ground handling and coordination"
+        }
+      ],
+      timeline_details: [
+        {
+          step: "Aircraft Preparation",
+          status: "in-progress",
+          details: "Prepare standby aircraft for operation",
+          endTime: "09:00",
+          duration: "30 min",
+          startTime: "08:30"
+        },
+        {
+          step: "Passenger Transfer",
+          status: "pending",
+          details: "Transfer passengers to new aircraft",
+          endTime: "09:30",
+          duration: "30 min",
+          startTime: "09:00"
+        },
+        {
+          step: "Crew Briefing",
+          status: "pending",
+          details: "Brief crew on updated schedule",
+          endTime: "09:45",
+          duration: "15 min",
+          startTime: "09:30"
+        },
+        {
+          step: "Departure Clearance",
+          status: "pending",
+          details: "Obtain clearance for takeoff",
+          endTime: "10:00",
+          duration: "15 min",
+          startTime: "09:45"
+        }
+      ],
+      risk_assessment: [
+        {
+          risk: "Operational delay",
+          impact: "Low",
+          riskScore: 2,
+          mitigation: "Streamlined ground operations",
+          probability: "Low"
+        },
+        {
+          risk: "Passenger dissatisfaction",
+          impact: "Low",
+          riskScore: 3,
+          mitigation: "Proactive communication and refreshments",
+          probability: "Medium"
+        }
+      ],
+      technical_specs: {
+        weatherMinimums: [
+          "Visibility: 1000m minimum",
+          "Ceiling: 200ft minimum",
+          "Wind: 25kt crosswind limit"
+        ],
+        alternateAirports: [
+          "SHJ - Sharjah (45km)",
+          "DWC - Al Maktoum (50km)"
+        ],
+        fuelConsiderations: [
+          "Standard fuel load",
+          "Contingency fuel: 1000kg"
+        ]
       },
+      metrics: {
+        costEfficiency: 85,
+        timeEfficiency: 90,
+        passengerSatisfaction: 85,
+        operationalComplexity: 60,
+      },
+      rotation_plan: {
+        aircraftOptions: [
+          {
+            reg: "A6-FEP",
+            type: "B737-800 (189Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "exact", value: "Exact" },
+            availability: "Available Now",
+            assigned: { status: "none", value: "None" },
+            turnaround: "40 min",
+            maintenance: { status: "current", value: "Current" },
+            recommended: true
+          }
+        ],
+        crewData: [
+          {
+            name: "Capt. Mohammed Al-Blooshi",
+            role: "Captain",
+            type: "B737 Type Rating",
+            status: "Available",
+            issue: null
+          },
+          {
+            name: "FO Noor Al-Hosani",
+            role: "First Officer",
+            type: "B737/MAX Type Rating",
+            status: "Available",
+            issue: null
+          }
+        ],
+        operationalConstraints: {
+          gateCompatibility: {
+            status: "Compatible",
+            details: "All gates compatible with B737-800"
+          },
+          slotCapacity: {
+            status: "Coordination Required",
+            details: "New departure slot needed"
+          },
+          curfewViolation: {
+            status: "No Risk",
+            details: "Within curfew limits"
+          }
+        }
+      }
     },
     {
-      id: "DELAY_REPAIR",
+      id: `DELAY_REPAIR_${flight.aircraft?.slice(-3) || "002"}`,
       title: "Delay for Repair Completion",
-      description: "Wait for aircraft technical issue resolution",
-      cost: "AED 180,000",
+      description: "Wait for hydraulics system repair",
+      cost: "$48,960",
       timeline: "4-6 hours",
       confidence: 45,
       impact: "Significant passenger disruption",
       status: "caution",
+      category: "Aircraft Issue",
+      priority: 1,
       advantages: [
-        "Original aircraft maintained",
-        "No aircraft swap complexity",
+        "Uses original aircraft",
+        "No crew changes needed",
+        "Maintains aircraft rotation integrity",
+        "Lower operational complexity"
       ],
       considerations: [
-        "Repair ETA uncertain",
-        "Massive passenger accommodation needed",
+        "Extended delay period with passenger impact",
+        "Risk of repair time overrun",
+        "Crew duty time approaching limits",
+        "Potential downstream flight disruptions"
       ],
-      metrics: {
-        totalCost: 180000,
-        otpScore: 45,
-        aircraftSwaps: 0,
-        crewViolations: 0,
-        paxAccommodated: 85,
-        regulatoryRisk: "Medium",
-        delayMinutes: 360,
-        confidenceScore: 45,
-        networkImpact: "High",
+      resource_requirements: [
+        {
+          eta: "3 hours",
+          type: "Maintenance Crew",
+          status: "Dispatched",
+          details: "Specialized team addressing hydraulics issue",
+          location: "DXB",
+          resource: "B737 Maintenance Team",
+          availability: "Available"
+        }
+      ],
+      cost_breakdown: [
+        {
+          amount: "$30,000",
+          category: "Delay Costs",
+          percentage: 61,
+          description: "Passenger compensation and accommodation"
+        },
+        {
+          amount: "$15,000",
+          category: "Maintenance",
+          percentage: 31,
+          description: "Hydraulics system repair costs"
+        },
+        {
+          amount: "$3,960",
+          category: "Crew Overtime",
+          percentage: 8,
+          description: "Extended duty compensation"
+        }
+      ],
+      timeline_details: [
+        {
+          step: "Hydraulics Assessment",
+          status: "in-progress",
+          details: "Diagnosing hydraulics system issue",
+          endTime: "10:00",
+          duration: "60 min",
+          startTime: "09:00"
+        },
+        {
+          step: "Repair Execution",
+          status: "pending",
+          details: "Perform hydraulics system repair",
+          endTime: "12:30",
+          duration: "150 min",
+          startTime: "10:00"
+        },
+        {
+          step: "Safety Checks",
+          status: "pending",
+          details: "Conduct post-repair safety inspections",
+          endTime: "13:30",
+          duration: "60 min",
+          startTime: "12:30"
+        },
+        {
+          step: "Departure Clearance",
+          status: "pending",
+          details: "Obtain clearance for takeoff",
+          endTime: "14:00",
+          duration: "30 min",
+          startTime: "13:30"
+        }
+      ],
+      risk_assessment: [
+        {
+          risk: "Extended repair time",
+          impact: "High",
+          riskScore: 5,
+          mitigation: "Deploy additional maintenance resources",
+          probability: "High"
+        },
+        {
+          risk: "Passenger dissatisfaction",
+          impact: "High",
+          riskScore: 6,
+          mitigation: "Provide accommodations and compensation",
+          probability: "High"
+        }
+      ],
+      technical_specs: {
+        weatherMinimums: [
+          "Visibility: 1000m minimum",
+          "Ceiling: 200ft minimum",
+          "Wind: 25kt crosswind limit"
+        ],
+        alternateAirports: [
+          "SHJ - Sharjah (45km)",
+          "DWC - Al Maktoum (50km)"
+        ],
+        fuelConsiderations: [
+          "Standard fuel load",
+          "Contingency fuel: 1200kg"
+        ]
       },
+      metrics: {
+        costEfficiency: 70,
+        timeEfficiency: 60,
+        passengerSatisfaction: 50,
+        operationalComplexity: 70,
+      }
     },
     {
-      id: "CANCEL_REBOOK",
+      id: `CANCEL_REBOOK_${flight.flightNumber?.slice(-3) || "003"}`,
       title: "Cancel and Rebook",
-      description: `Cancel ${flight.flightNumber} and rebook on partner airlines`,
-      cost: "AED 520,000",
-      timeline: "Immediate",
+      description: "Cancel and rebook on partner airlines",
+      cost: "$141,440",
+      timeline: "0-1 hours",
       confidence: 75,
       impact: "Complete route cancellation",
       status: "warning",
+      category: "Aircraft Issue",
+      priority: 1,
       advantages: [
-        "Stops cascade disruption immediately",
-        "Quick passenger rebooking process",
+        "Immediate decision eliminates uncertainty",
+        "No technical repair risks",
+        "Fastest initial response time",
+        "Preserves aircraft for other operations"
       ],
       considerations: [
-        "Complete revenue loss for sector",
-        "High passenger compensation costs",
+        "Highest passenger impact and compensation",
+        "Complete revenue loss for flight",
+        "Partner airline capacity dependency",
+        "Complex rebooking coordination required"
       ],
-      metrics: {
-        totalCost: 520000,
-        otpScore: 0,
-        aircraftSwaps: 0,
-        crewViolations: 0,
-        paxAccommodated: 75,
-        regulatoryRisk: "High",
-        delayMinutes: 0,
-        confidenceScore: 75,
-        networkImpact: "Low",
+      resource_requirements: [
+        {
+          eta: "Immediate",
+          type: "Partner Airlines",
+          status: "Available",
+          details: "Coordinate with partner airlines for rebooking",
+          location: "DXB",
+          resource: "Partner Airline Capacity",
+          availability: "Available"
+        }
+      ],
+      cost_breakdown: [
+        {
+          amount: "$100,000",
+          category: "Rebooking Costs",
+          percentage: 71,
+          description: "Cost of rebooking on partner airlines"
+        },
+        {
+          amount: "$30,000",
+          category: "Passenger Compensation",
+          percentage: 21,
+          description: "Compensation for cancellation"
+        },
+        {
+          amount: "$11,440",
+          category: "Logistics",
+          percentage: 8,
+          description: "Coordination and communication costs"
+        }
+      ],
+      timeline_details: [
+        {
+          step: "Cancellation Notification",
+          status: "in-progress",
+          details: "Inform passengers of flight cancellation",
+          endTime: "09:00",
+          duration: "15 min",
+          startTime: "08:45"
+        },
+        {
+          step: "Partner Coordination",
+          status: "pending",
+          details: "Arrange seats with partner airlines",
+          endTime: "09:30",
+          duration: "30 min",
+          startTime: "09:00"
+        },
+        {
+          step: "Passenger Rebooking",
+          status: "pending",
+          details: "Rebook passengers on new flights",
+          endTime: "09:45",
+          duration: "15 min",
+          startTime: "09:30"
+        },
+        {
+          step: "Final Confirmation",
+          status: "pending",
+          details: "Confirm rebooking and notify passengers",
+          endTime: "10:00",
+          duration: "15 min",
+          startTime: "09:45"
+        }
+      ],
+      risk_assessment: [
+        {
+          risk: "Limited partner capacity",
+          impact: "High",
+          riskScore: 4,
+          mitigation: "Engage multiple partner airlines",
+          probability: "Medium"
+        },
+        {
+          risk: "Passenger dissatisfaction",
+          impact: "High",
+          riskScore: 5,
+          mitigation: "Offer compensation and priority rebooking",
+          probability: "High"
+        }
+      ],
+      technical_specs: {
+        weatherMinimums: [
+          "Visibility: 1000m minimum",
+          "Ceiling: 200ft minimum",
+          "Wind: 25kt crosswind limit"
+        ],
+        alternateAirports: [
+          "SHJ - Sharjah (45km)",
+          "DWC - Al Maktoum (50km)"
+        ],
+        fuelConsiderations: [
+          "No fuel required",
+          "No contingency fuel needed"
+        ]
       },
+      metrics: {
+        costEfficiency: 60,
+        timeEfficiency: 95,
+        passengerSatisfaction: 40,
+        operationalComplexity: 90,
+      }
     },
   ];
 
