@@ -2821,6 +2821,54 @@ app.put('/api/flight-recovery-status/:flightId', async (req, res) => {
   }
 });
 
+// Update pending solution status
+app.put('/api/pending-recovery-solutions/:solutionId/status', async (req, res) => {
+  try {
+    const { solutionId } = req.params;
+    const { status } = req.body;
+
+    const result = await pool.query(`
+      UPDATE pending_recovery_solutions 
+      SET status = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+    `, [status, solutionId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Pending solution not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating pending solution status:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update disruption status
+app.put('/api/disruptions/:disruptionId/status', async (req, res) => {
+  try {
+    const { disruptionId } = req.params;
+    const { status } = req.body;
+
+    const result = await pool.query(`
+      UPDATE flight_disruptions 
+      SET status = $1, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $2
+      RETURNING *
+    `, [status, disruptionId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Disruption not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating disruption status:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 // Error handling middleware
 app.use((error, req, res, next) => {
