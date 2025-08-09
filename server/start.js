@@ -949,8 +949,7 @@ app.post("/api/disruptions/", async (req, res) => {
     }
 
     // Use defaults for missing fields
-    const safeRoute =
-      route || `${origin || "UNK"} → ${destination || "UNK"}`;
+    const safeRoute = route || `${origin || "UNK"} → ${destination || "UNK"}`;
     const safeOrigin = origin || "UNK";
     const safeDestination = destination || "UNK";
     const safeOriginCity = origin_city_val || "Unknown";
@@ -961,7 +960,8 @@ app.post("/api/disruptions/", async (req, res) => {
     const safeDisruptionReason = disruption_reason_val || "No reason provided";
 
     // Handle category_code - check both categoryCode and category_code fields
-    const receivedCategoryCode = req.body.categoryCode || req.body.category_code;
+    const receivedCategoryCode =
+      req.body.categoryCode || req.body.category_code;
     console.log(`Received category_code: ${receivedCategoryCode}`);
 
     let category_id = null;
@@ -971,13 +971,17 @@ app.post("/api/disruptions/", async (req, res) => {
       try {
         const categoryResult = await pool.query(
           `SELECT id FROM disruption_categories WHERE category_code = $1 AND is_active = true`,
-          [receivedCategoryCode]
+          [receivedCategoryCode],
         );
         if (categoryResult.rows.length > 0) {
           category_id = categoryResult.rows[0].id;
-          console.log(`Found category_id ${category_id} for category_code: ${receivedCategoryCode}`);
+          console.log(
+            `Found category_id ${category_id} for category_code: ${receivedCategoryCode}`,
+          );
         } else {
-          console.warn(`Category code ${receivedCategoryCode} not found, will try mapping from categorization`);
+          console.warn(
+            `Category code ${receivedCategoryCode} not found, will try mapping from categorization`,
+          );
         }
       } catch (categoryError) {
         console.error("Error looking up category:", categoryError);
@@ -987,7 +991,8 @@ app.post("/api/disruptions/", async (req, res) => {
     // Fallback to categorization mapping if category_code not found or invalid
     if (!category_id && categorization) {
       try {
-        const categoryResult = await pool.query(`
+        const categoryResult = await pool.query(
+          `
           SELECT id FROM disruption_categories 
           WHERE category_name = $1 
           OR category_code = CASE 
@@ -999,11 +1004,15 @@ app.post("/api/disruptions/", async (req, res) => {
             ELSE 'AIRCRAFT_ISSUE'
           END
           LIMIT 1
-        `, [categorization]);
+        `,
+          [categorization],
+        );
 
         if (categoryResult.rows.length > 0) {
           category_id = categoryResult.rows[0].id;
-          console.log(`Mapped categorization ${categorization} to category_id: ${category_id}`);
+          console.log(
+            `Mapped categorization ${categorization} to category_id: ${category_id}`,
+          );
         }
       } catch (mappingError) {
         console.error("Error mapping categorization:", mappingError);
@@ -1535,9 +1544,12 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
     const categoryInfo = {
       category_code: disruption.category_code,
       category_name: disruption.categorization,
-      category_id: disruption.category_id
+      category_id: disruption.category_id,
     };
-    const { options, steps } = generateRecoveryOptionsForDisruption(disruption, categoryInfo);
+    const { options, steps } = generateRecoveryOptionsForDisruption(
+      disruption,
+      categoryInfo,
+    );
 
     console.log(
       `Generated ${options.length} options and ${steps.length} steps`,
@@ -1577,7 +1589,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
             ],
           );
         } else {
-          console.log("cost_breakdown:",option.cost_breakdown)
+          console.log("cost_breakdown:", option.cost_breakdown);
           // Insert new option
           await pool.query(
             `
@@ -1601,19 +1613,27 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
               option.advantages || [],
               option.considerations || [],
               option.resourceRequirements || option.resource_requirements
-                ? JSON.stringify(option.resourceRequirements || option.resource_requirements)
+                ? JSON.stringify(
+                    option.resourceRequirements || option.resource_requirements,
+                  )
                 : null,
               option.costBreakdown || option.cost_breakdown
                 ? JSON.stringify(option.costBreakdown || option.cost_breakdown)
                 : null,
               option.timelineDetails || option.timeline_details
-                ? JSON.stringify(option.timelineDetails || option.timeline_details)
+                ? JSON.stringify(
+                    option.timelineDetails || option.timeline_details,
+                  )
                 : null,
               option.riskAssessment || option.risk_assessment
-                ? JSON.stringify(option.riskAssessment || option.risk_assessment)
+                ? JSON.stringify(
+                    option.riskAssessment || option.risk_assessment,
+                  )
                 : null,
               option.technicalSpecs || option.technical_specs
-                ? JSON.stringify(option.technicalSpecs || option.technical_specs)
+                ? JSON.stringify(
+                    option.technicalSpecs || option.technical_specs,
+                  )
                 : null,
               option.metrics ? JSON.stringify(option.metrics) : null,
               option.rotationPlan || option.rotation_plan
@@ -1835,12 +1855,12 @@ app.post("/api/generate-recovery-options/:disruptionId", async (req, res) => {
     const categoryInfo = {
       category_code: disruptionData.category_code,
       category_name: disruptionData.categorization,
-      category_id: disruptionData.category_id
+      category_id: disruptionData.category_id,
     };
 
     const { options, steps } = generateRecoveryOptionsForDisruption(
       disruptionData,
-      categoryInfo
+      categoryInfo,
     );
     console.log(
       `Generated ${options.length} options and ${steps.length} steps for flight ${flightId}`,
@@ -1958,23 +1978,36 @@ app.post("/api/generate-recovery-options/:disruptionId", async (req, res) => {
           optionData.advantages,
           optionData.considerations,
           optionData.resourceRequirements || optionData.resource_requirements
-            ? JSON.stringify(optionData.resourceRequirements || optionData.resource_requirements)
+            ? JSON.stringify(
+                optionData.resourceRequirements ||
+                  optionData.resource_requirements,
+              )
             : null,
           optionData.costBreakdown || optionData.cost_breakdown
-            ? JSON.stringify(optionData.costBreakdown || optionData.cost_breakdown)
+            ? JSON.stringify(
+                optionData.costBreakdown || optionData.cost_breakdown,
+              )
             : null,
           optionData.timelineDetails || optionData.timeline_details
-            ? JSON.stringify(optionData.timelineDetails || optionData.timeline_details)
+            ? JSON.stringify(
+                optionData.timelineDetails || optionData.timeline_details,
+              )
             : null,
           optionData.riskAssessment || optionData.risk_assessment
-            ? JSON.stringify(optionData.riskAssessment || optionData.risk_assessment)
+            ? JSON.stringify(
+                optionData.riskAssessment || optionData.risk_assessment,
+              )
             : null,
           optionData.technicalSpecs || optionData.technical_specs
-            ? JSON.stringify(optionData.technicalSpecs || optionData.technical_specs)
+            ? JSON.stringify(
+                optionData.technicalSpecs || optionData.technical_specs,
+              )
             : null,
           optionData.metrics ? JSON.stringify(optionData.metrics) : null,
           optionData.rotationPlan || optionData.rotation_plan
-            ? JSON.stringify(optionData.rotationPlan || optionData.rotation_plan)
+            ? JSON.stringify(
+                optionData.rotationPlan || optionData.rotation_plan,
+              )
             : null,
         ],
       );
@@ -2049,7 +2082,9 @@ app.get("/api/recovery-option-details/:optionId", async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Recovery option details not found" });
+      return res
+        .status(404)
+        .json({ error: "Recovery option details not found" });
     }
 
     console.log(`Found details for recovery option: ${optionId}`);
@@ -2711,7 +2746,7 @@ app.get("/api/recovery-option/:optionId/resources", async (req, res) => {
 app.get("/api/recovery-option/:optionId/technical", async (req, res) => {
   try {
     const { optionId } = req.params;
-
+    console.log("option id =>", optionId);
     // First try to get from technical_specifications table
     let result = await pool.query(
       `
@@ -2722,12 +2757,16 @@ app.get("/api/recovery-option/:optionId/technical", async (req, res) => {
 
     if (result.rows.length === 0) {
       // Fallback: try to get from recovery_options table
+      console.log("calling recovery option");
       result = await pool.query(
         `
         SELECT technical_specs FROM recovery_options WHERE id = $1
       `,
         [optionId],
       );
+
+      console.log("recovery option details ==>", result);
+      console.log("recovery option ==>", result.rows[0]);
 
       if (result.rows.length === 0) {
         return res.status(404).json({
@@ -2745,9 +2784,10 @@ app.get("/api/recovery-option/:optionId/technical", async (req, res) => {
           technicalSpecs = {};
         }
       }
-
+      console.log("technicalSpecs ==>", technicalSpecs);
       // Ensure technicalSpecs is an object before accessing properties
       if (!technicalSpecs || typeof technicalSpecs !== "object") {
+        console.log("matna da");
         technicalSpecs = {};
       }
 
@@ -2800,82 +2840,114 @@ app.get("/api/recovery-option-details/:optionId", async (req, res) => {
   try {
     const { optionId } = req.params;
 
-    const result = await pool.query(`
+    const result = await pool.query(
+      `
       SELECT ro.*, rs.* 
       FROM recovery_options ro
       LEFT JOIN recovery_steps rs ON ro.disruption_id = rs.disruption_id
       WHERE ro.id = $1 OR ro.option_id = $1
       ORDER BY rs.step_order
-    `, [optionId]);
+    `,
+      [optionId],
+    );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Recovery option not found' });
+      return res.status(404).json({ error: "Recovery option not found" });
     }
 
     // Group the data
     const option = result.rows[0];
-    const steps = result.rows.filter(row => row.step_order).map(row => ({
-      id: row.step_id,
-      action: row.action,
-      duration: row.duration,
-      responsible: row.responsible_team,
-      location: row.location,
-      estimatedCost: row.estimated_cost,
-      criticalPath: row.critical_path,
-      status: row.step_status
-    }));
+    const steps = result.rows
+      .filter((row) => row.step_order)
+      .map((row) => ({
+        id: row.step_id,
+        action: row.action,
+        duration: row.duration,
+        responsible: row.responsible_team,
+        location: row.location,
+        estimatedCost: row.estimated_cost,
+        criticalPath: row.critical_path,
+        status: row.step_status,
+      }));
 
     res.json({
       ...option,
-      steps: steps
+      steps: steps,
     });
   } catch (error) {
-    console.error('Error fetching recovery option details:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching recovery option details:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // Pending Recovery Solutions endpoints
-app.post('/api/pending-recovery-solutions', async (req, res) => {
+app.post("/api/pending-recovery-solutions", async (req, res) => {
   try {
     const {
-      disruption_id, option_id, option_title, option_description, cost, timeline,
-      confidence, impact, status, full_details, rotation_impact, submitted_by, approval_required
+      disruption_id,
+      option_id,
+      option_title,
+      option_description,
+      cost,
+      timeline,
+      confidence,
+      impact,
+      status,
+      full_details,
+      rotation_impact,
+      submitted_by,
+      approval_required,
     } = req.body;
 
     // Check if this combination already exists
-    const existingCheck = await pool.query(`
+    const existingCheck = await pool.query(
+      `
       SELECT id FROM pending_recovery_solutions 
       WHERE disruption_id = $1 AND option_id = $2
-    `, [disruption_id, option_id]);
+    `,
+      [disruption_id, option_id],
+    );
 
     if (existingCheck.rows.length > 0) {
-      return res.status(409).json({ 
-        error: 'Duplicate entry', 
-        message: 'This recovery solution is already pending for this flight.' 
+      return res.status(409).json({
+        error: "Duplicate entry",
+        message: "This recovery solution is already pending for this flight.",
       });
     }
 
-    const result = await pool.query(`
+    const result = await pool.query(
+      `
       INSERT INTO pending_recovery_solutions 
       (disruption_id, option_id, option_title, option_description, cost, timeline, 
        confidence, impact, status, full_details, rotation_impact, submitted_by, approval_required)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *
-    `, [
-      disruption_id, option_id, option_title, option_description, cost, timeline,
-      confidence, impact, status, JSON.stringify(full_details), JSON.stringify(rotation_impact),
-      submitted_by, approval_required
-    ]);
+    `,
+      [
+        disruption_id,
+        option_id,
+        option_title,
+        option_description,
+        cost,
+        timeline,
+        confidence,
+        impact,
+        status,
+        JSON.stringify(full_details),
+        JSON.stringify(rotation_impact),
+        submitted_by,
+        approval_required,
+      ],
+    );
 
     res.json(result.rows[0]);
   } catch (error) {
-    console.error('Error saving pending recovery solution:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error saving pending recovery solution:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
-app.get('/api/pending-recovery-solutions', async (req, res) => {
+app.get("/api/pending-recovery-solutions", async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT prs.*, fd.flight_number, fd.route, fd.origin, fd.destination, fd.aircraft
@@ -2886,83 +2958,94 @@ app.get('/api/pending-recovery-solutions', async (req, res) => {
 
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching pending recovery solutions:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error fetching pending recovery solutions:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // Update flight recovery status
-app.put('/api/flight-recovery-status/:flightId', async (req, res) => {
+app.put("/api/flight-recovery-status/:flightId", async (req, res) => {
   try {
     const { flightId } = req.params;
     const { recovery_status } = req.body;
 
-    const result = await pool.query(`
+    const result = await pool.query(
+      `
       UPDATE flight_disruptions 
       SET recovery_status = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
       RETURNING *
-    `, [recovery_status, flightId]);
+    `,
+      [recovery_status, flightId],
+    );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Flight not found' });
+      return res.status(404).json({ error: "Flight not found" });
     }
 
     res.json(result.rows[0]);
   } catch (error) {
-    console.error('Error updating flight recovery status:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error updating flight recovery status:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // Update pending solution status
-app.put('/api/pending-recovery-solutions/:solutionId/status', async (req, res) => {
-  try {
-    const { solutionId } = req.params;
-    const { status } = req.body;
+app.put(
+  "/api/pending-recovery-solutions/:solutionId/status",
+  async (req, res) => {
+    try {
+      const { solutionId } = req.params;
+      const { status } = req.body;
 
-    const result = await pool.query(`
+      const result = await pool.query(
+        `
       UPDATE pending_recovery_solutions 
       SET status = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
       RETURNING *
-    `, [status, solutionId]);
+    `,
+        [status, solutionId],
+      );
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Pending solution not found' });
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Pending solution not found" });
+      }
+
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error("Error updating pending solution status:", error);
+      res.status(500).json({ error: "Internal server error" });
     }
-
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Error updating pending solution status:', error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
+  },
+);
 
 // Update disruption status
-app.put('/api/disruptions/:disruptionId/status', async (req, res) => {
+app.put("/api/disruptions/:disruptionId/status", async (req, res) => {
   try {
     const { disruptionId } = req.params;
     const { status } = req.body;
 
-    const result = await pool.query(`
+    const result = await pool.query(
+      `
       UPDATE flight_disruptions 
       SET status = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
       RETURNING *
-    `, [status, disruptionId]);
+    `,
+      [status, disruptionId],
+    );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Disruption not found' });
+      return res.status(404).json({ error: "Disruption not found" });
     }
 
     res.json(result.rows[0]);
   } catch (error) {
-    console.error('Error updating disruption status:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Error updating disruption status:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 // Error handling middleware
 app.use((error, req, res, next) => {
