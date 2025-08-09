@@ -1,0 +1,872 @@
+[
+    {
+        "title": "Aircraft Swap - Immediate",
+        "description": "Replace with available standby aircraft",
+        "cost": "$22,800",
+        "timeline": "1.5-2 hours",
+        "confidence": 88,
+        "impact": "Minimal passenger disruption",
+        "status": "recommended",
+        "priority": 1,
+        "advantages": [],
+        "considerations": [],
+        "resource_requirements": [
+            {
+                "eta": "30 min",
+                "type": "Aircraft",
+                "status": "Standby",
+                "details": "Standby aircraft ready for immediate swap",
+                "location": "DXB",
+                "resource": "B737-800",
+                "availability": "Available"
+            }
+        ],
+        "cost_breakdown": [
+            {
+                "amount": "$15,000",
+                "category": "Delay Costs",
+                "percentage": 66,
+                "description": "Passenger compensation and handling"
+            },
+            {
+                "amount": "$5,000",
+                "category": "Aircraft Swap",
+                "percentage": 22,
+                "description": "Cost of mobilizing standby aircraft"
+            },
+            {
+                "amount": "$2,800",
+                "category": "Logistics",
+                "percentage": 12,
+                "description": "Ground handling and coordination"
+            }
+        ],
+        "timeline_details": [
+            {
+                "step": "Aircraft Preparation",
+                "status": "in-progress",
+                "details": "Prepare standby aircraft for operation",
+                "endTime": "09:00",
+                "duration": "30 min",
+                "startTime": "08:30"
+            },
+            {
+                "step": "Passenger Transfer",
+                "status": "pending",
+                "details": "Transfer passengers to new aircraft",
+                "endTime": "09:30",
+                "duration": "30 min",
+                "startTime": "09:00"
+            },
+            {
+                "step": "Crew Briefing",
+                "status": "pending",
+                "details": "Brief crew on updated schedule",
+                "endTime": "09:45",
+                "duration": "15 min",
+                "startTime": "09:30"
+            },
+            {
+                "step": "Departure Clearance",
+                "status": "pending",
+                "details": "Obtain clearance for takeoff",
+                "endTime": "10:00",
+                "duration": "15 min",
+                "startTime": "09:45"
+            }
+        ],
+        "risk_assessment": [
+            {
+                "risk": "Operational delay",
+                "impact": "Low",
+                "riskScore": 2,
+                "mitigation": "Streamlined ground operations",
+                "probability": "Low"
+            },
+            {
+                "risk": "Passenger dissatisfaction",
+                "impact": "Low",
+                "riskScore": 3,
+                "mitigation": "Proactive communication and refreshments",
+                "probability": "Medium"
+            }
+        ],
+        "technical_specs": {
+            "weatherMinimums": [
+                "Visibility: 1000m minimum",
+                "Ceiling: 200ft minimum",
+                "Wind: 25kt crosswind limit"
+            ],
+            "alternateAirports": [
+                "SHJ - Sharjah (45km)",
+                "DWC - Al Maktoum (50km)"
+            ],
+            "fuelConsiderations": [
+                "Standard fuel load",
+                "Contingency fuel: 1000kg"
+            ]
+        },
+        "metrics": {
+            "costEfficiency": 85,
+            "timeEfficiency": 90,
+            "passengerSatisfaction": 85
+        },
+        "rotation_plan": {
+            "aircraftOptions": [
+                {
+                    "reg": "A6-FEP",
+                    "type": "B737-800 (189Y)",
+                    "etops": {
+                        "status": "available",
+                        "value": "180min"
+                    },
+                    "cabinMatch": {
+                        "status": "exact",
+                        "value": "Exact"
+                    },
+                    "availability": "Available Now",
+                    "assigned": {
+                        "status": "none",
+                        "value": "None"
+                    },
+                    "turnaround": "40 min",
+                    "maintenance": {
+                        "status": "current",
+                        "value": "Current"
+                    },
+                    "recommended": true
+                },
+                {
+                    "reg": "A6-FEQ",
+                    "type": "B737-MAX8 (189Y)",
+                    "etops": {
+                        "status": "available",
+                        "value": "180min"
+                    },
+                    "cabinMatch": {
+                        "status": "exact",
+                        "value": "Exact"
+                    },
+                    "availability": "Available 10:30",
+                    "assigned": {
+                        "status": "assigned",
+                        "value": "FZ789"
+                    },
+                    "turnaround": "50 min",
+                    "maintenance": {
+                        "status": "current",
+                        "value": "Current"
+                    },
+                    "recommended": false
+                },
+                {
+                    "reg": "A6-FER",
+                    "type": "B737-800 (164Y)",
+                    "etops": {
+                        "status": "available",
+                        "value": "180min"
+                    },
+                    "cabinMatch": {
+                        "status": "reduced",
+                        "value": "Reduced"
+                    },
+                    "availability": "Available 12:00",
+                    "assigned": {
+                        "status": "none",
+                        "value": "None"
+                    },
+                    "turnaround": "45 min",
+                    "maintenance": {
+                        "status": "due",
+                        "value": "Due A-Check"
+                    },
+                    "recommended": false
+                },
+                {
+                    "reg": "A6-FES",
+                    "type": "B737-MAX8 (189Y)",
+                    "etops": {
+                        "status": "none",
+                        "value": "None"
+                    },
+                    "cabinMatch": {
+                        "status": "exact",
+                        "value": "Exact"
+                    },
+                    "availability": "Available 13:00",
+                    "assigned": {
+                        "status": "assigned",
+                        "value": "FZ234"
+                    },
+                    "turnaround": "60 min",
+                    "maintenance": {
+                        "status": "aog",
+                        "value": "AOG Issue"
+                    },
+                    "recommended": false
+                }
+            ],
+            "crewData": [
+                {
+                    "name": "Capt. Mohammed Al-Blooshi",
+                    "role": "Captain",
+                    "type": "B737 Type Rating",
+                    "status": "Available",
+                    "issue": null
+                },
+                {
+                    "name": "FO Noor Al-Hosani",
+                    "role": "First Officer",
+                    "type": "B737/MAX Type Rating",
+                    "status": "Available",
+                    "issue": null
+                },
+                {
+                    "name": "SSCC Layla Ahmed",
+                    "role": "Senior Cabin Crew",
+                    "type": "Senior Cabin Crew",
+                    "status": "Duty Limit 6h",
+                    "issue": "Approaching duty limit"
+                },
+                {
+                    "name": "CC Sami Khan",
+                    "role": "Cabin Crew",
+                    "type": "Cabin Crew",
+                    "status": "Standby",
+                    "issue": "Standby replacement"
+                }
+            ],
+            "nextSectors": [
+                {
+                    "flight": "FZ345 DXB-JED",
+                    "departure": "Dep: 10:30 → 11:15 (+45min)",
+                    "impact": "Low Impact",
+                    "reason": "Aircraft swap delay"
+                },
+                {
+                    "flight": "FZ346 JED-DXB",
+                    "departure": "Dep: 14:00 → 14:45 (+45min)",
+                    "impact": "Low Impact",
+                    "reason": "Knock-on delay"
+                },
+                {
+                    "flight": "FZ789 DXB-IST",
+                    "departure": "Dep: 08:00 (Next Day)",
+                    "impact": "Low Impact",
+                    "reason": "Overnight recovery"
+                }
+            ],
+            "operationalConstraints": {
+                "gateCompatibility": {
+                    "status": "Compatible",
+                    "details": "All gates compatible with B737-800"
+                },
+                "slotCapacity": {
+                    "status": "Coordination Required",
+                    "details": "New departure slot needed"
+                },
+                "curfewViolation": {
+                    "status": "No Risk",
+                    "details": "Within curfew limits"
+                },
+                "passengerConnections": {
+                    "status": "Minimal Impact",
+                    "details": "No significant connection issues"
+                }
+            },
+            "costBreakdown": {
+                "delayCost": 30000,
+                "fuelEfficiency": "+1.2%",
+                "hotelTransport": 500,
+                "eu261Risk": "Low"
+            },
+            "recommendation": {
+                "aircraft": "A6-FEP",
+                "reason": "Optimal balance across cost (85%), delay minimization (90%), crew impact (95%), and fuel efficiency (88%). Immediate availability with exact cabin configuration match."
+            }
+        },
+        "details": null,
+        "created_at": "2025-08-09T08:02:00.000Z",
+        "updated_at": "2025-08-09T08:02:00.000Z"
+    },
+    {
+        "title": "Delay for Repair Completion",
+        "description": "Wait for hydraulics system repair",
+        "cost": "$48,960",
+        "timeline": "4-6 hours",
+        "confidence": 45,
+        "impact": "Significant passenger disruption",
+        "status": "caution",
+        "priority": 1,
+        "advantages": [],
+        "considerations": [],
+        "resource_requirements": [
+            {
+                "eta": "3 hours",
+                "type": "Maintenance Crew",
+                "status": "Dispatched",
+                "details": "Specialized team addressing hydraulics issue",
+                "location": "DXB",
+                "resource": "B737 Maintenance Team",
+                "availability": "Available"
+            }
+        ],
+        "cost_breakdown": [
+            {
+                "amount": "$30,000",
+                "category": "Delay Costs",
+                "percentage": 61,
+                "description": "Passenger compensation and accommodation"
+            },
+            {
+                "amount": "$15,000",
+                "category": "Maintenance",
+                "percentage": 31,
+                "description": "Hydraulics system repair costs"
+            },
+            {
+                "amount": "$3,960",
+                "category": "Crew Overtime",
+                "percentage": 8,
+                "description": "Extended crew duty compensation"
+            }
+        ],
+        "timeline_details": [
+            {
+                "step": "Hydraulics Assessment",
+                "status": "in-progress",
+                "details": "Diagnosing hydraulics system issue",
+                "endTime": "10:00",
+                "duration": "60 min",
+                "startTime": "09:00"
+            },
+            {
+                "step": "Repair Execution",
+                "status": "pending",
+                "details": "Perform hydraulics system repair",
+                "endTime": "12:30",
+                "duration": "150 min",
+                "startTime": "10:00"
+            },
+            {
+                "step": "Safety Checks",
+                "status": "pending",
+                "details": "Conduct post-repair safety inspections",
+                "endTime": "13:30",
+                "duration": "60 min",
+                "startTime": "12:30"
+            },
+            {
+                "step": "Departure Clearance",
+                "status": "pending",
+                "details": "Obtain clearance for takeoff",
+                "endTime": "14:00",
+                "duration": "30 min",
+                "startTime": "13:30"
+            }
+        ],
+        "risk_assessment": [
+            {
+                "risk": "Extended repair time",
+                "impact": "High",
+                "riskScore": 5,
+                "mitigation": "Deploy additional maintenance resources",
+                "probability": "High"
+            },
+            {
+                "risk": "Passenger dissatisfaction",
+                "impact": "High",
+                "riskScore": 6,
+                "mitigation": "Provide accommodations and compensation",
+                "probability": "High"
+            }
+        ],
+        "technical_specs": {
+            "weatherMinimums": [
+                "Visibility: 1000m minimum",
+                "Ceiling: 200ft minimum",
+                "Wind: 25kt crosswind limit"
+            ],
+            "alternateAirports": [
+                "SHJ - Sharjah (45km)",
+                "DWC - Al Maktoum (50km)"
+            ],
+            "fuelConsiderations": [
+                "Standard fuel load",
+                "Contingency fuel: 1200kg"
+            ]
+        },
+        "metrics": {
+            "costEfficiency": 70,
+            "timeEfficiency": 60,
+            "passengerSatisfaction": 50
+        },
+        "rotation_plan": {
+            "aircraftOptions": [
+                {
+                    "reg": "A6-FET",
+                    "type": "B737-800 (189Y)",
+                    "etops": {
+                        "status": "available",
+                        "value": "180min"
+                    },
+                    "cabinMatch": {
+                        "status": "exact",
+                        "value": "Exact"
+                    },
+                    "availability": "Available Now",
+                    "assigned": {
+                        "status": "none",
+                        "value": "None"
+                    },
+                    "turnaround": "45 min",
+                    "maintenance": {
+                        "status": "current",
+                        "value": "Current"
+                    },
+                    "recommended": true
+                },
+                {
+                    "reg": "A6-FEU",
+                    "type": "B737-MAX8 (189Y)",
+                    "etops": {
+                        "status": "available",
+                        "value": "180min"
+                    },
+                    "cabinMatch": {
+                        "status": "exact",
+                        "value": "Exact"
+                    },
+                    "availability": "Available 12:00",
+                    "assigned": {
+                        "status": "assigned",
+                        "value": "FZ456"
+                    },
+                    "turnaround": "50 min",
+                    "maintenance": {
+                        "status": "current",
+                        "value": "Current"
+                    },
+                    "recommended": false
+                },
+                {
+                    "reg": "A6-FEV",
+                    "type": "B737-800 (164Y)",
+                    "etops": {
+                        "status": "available",
+                        "value": "180min"
+                    },
+                    "cabinMatch": {
+                        "status": "reduced",
+                        "value": "Reduced"
+                    },
+                    "availability": "Available 14:00",
+                    "assigned": {
+                        "status": "none",
+                        "value": "None"
+                    },
+                    "turnaround": "55 min",
+                    "maintenance": {
+                        "status": "due",
+                        "value": "Due A-Check"
+                    },
+                    "recommended": false
+                },
+                {
+                    "reg": "A6-FEW",
+                    "type": "B737-MAX8 (189Y)",
+                    "etops": {
+                        "status": "none",
+                        "value": "None"
+                    },
+                    "cabinMatch": {
+                        "status": "exact",
+                        "value": "Exact"
+                    },
+                    "availability": "Available 15:00",
+                    "assigned": {
+                        "status": "assigned",
+                        "value": "FZ901"
+                    },
+                    "turnaround": "60 min",
+                    "maintenance": {
+                        "status": "aog",
+                        "value": "AOG Issue"
+                    },
+                    "recommended": false
+                }
+            ],
+            "crewData": [
+                {
+                    "name": "Capt. Hassan Al-Mazrouei",
+                    "role": "Captain",
+                    "type": "B737 Type Rating",
+                    "status": "Available",
+                    "issue": null
+                },
+                {
+                    "name": "FO Amal Saeed",
+                    "role": "First Officer",
+                    "type": "B737/MAX Type Rating",
+                    "status": "Available",
+                    "issue": null
+                },
+                {
+                    "name": "SSCC Noor Ibrahim",
+                    "role": "Senior Cabin Crew",
+                    "type": "Senior Cabin Crew",
+                    "status": "Duty Limit 4h",
+                    "issue": "Approaching duty limit"
+                },
+                {
+                    "name": "CC Youssef Malik",
+                    "role": "Cabin Crew",
+                    "type": "Cabin Crew",
+                    "status": "Standby",
+                    "issue": "Standby replacement"
+                }
+            ],
+            "nextSectors": [
+                {
+                    "flight": "FZ678 DXB-AMM",
+                    "departure": "Dep: 14:30 → 18:30 (+240min)",
+                    "impact": "High Impact",
+                    "reason": "Delay due to repair completion"
+                },
+                {
+                    "flight": "FZ679 AMM-DXB",
+                    "departure": "Dep: 21:00 → 01:00 (+240min)",
+                    "impact": "High Impact",
+                    "reason": "Knock-on delay"
+                },
+                {
+                    "flight": "FZ234 DXB-CAI",
+                    "departure": "Dep: 09:00 (Next Day)",
+                    "impact": "Low Impact",
+                    "reason": "Overnight recovery"
+                }
+            ],
+            "operationalConstraints": {
+                "gateCompatibility": {
+                    "status": "Compatible",
+                    "details": "All gates compatible with B737-800"
+                },
+                "slotCapacity": {
+                    "status": "Coordination Required",
+                    "details": "New departure slot needed"
+                },
+                "curfewViolation": {
+                    "status": "Risk",
+                    "details": "Potential curfew violation due to extended delay"
+                },
+                "passengerConnections": {
+                    "status": "Significant Impact",
+                    "details": "Missed connections likely"
+                }
+            },
+            "costBreakdown": {
+                "delayCost": 60000,
+                "fuelEfficiency": "+1.8%",
+                "hotelTransport": 2000,
+                "eu261Risk": "High"
+            },
+            "recommendation": {
+                "aircraft": "A6-FET",
+                "reason": "Retains original aircraft post-repair for cost efficiency (70%) and operational continuity, despite extended delay (60%) and passenger impact (50%)."
+            }
+        },
+        "details": null,
+        "created_at": "2025-08-09T08:22:00.000Z",
+        "updated_at": "2025-08-09T08:22:00.000Z"
+    },
+    {
+        "title": "Cancel and Rebook",
+        "description": "Cancel and rebook on partner airlines",
+        "cost": "$141,440",
+        "timeline": "0-1 hours",
+        "confidence": 75,
+        "impact": "Complete route cancellation",
+        "status": "warning",
+        "priority": 1,
+        "advantages": [],
+        "considerations": [],
+        "resource_requirements": [
+            {
+                "eta": "Immediate",
+                "type": "Partner Airlines",
+                "status": "Available",
+                "details": "Coordinate with partner airlines for rebooking",
+                "location": "DXB",
+                "resource": "Partner Airline Capacity",
+                "availability": "Available"
+            }
+        ],
+        "cost_breakdown": [
+            {
+                "amount": "$100,000",
+                "category": "Rebooking Costs",
+                "percentage": 71,
+                "description": "Cost of rebooking on partner airlines"
+            },
+            {
+                "amount": "$30,000",
+                "category": "Passenger Compensation",
+                "percentage": 21,
+                "description": "Compensation for cancellation"
+            },
+            {
+                "amount": "$11,440",
+                "category": "Logistics",
+                "percentage": 8,
+                "description": "Coordination and communication costs"
+            }
+        ],
+        "timeline_details": [
+            {
+                "step": "Cancellation Notification",
+                "status": "in-progress",
+                "details": "Inform passengers of flight cancellation",
+                "endTime": "09:00",
+                "duration": "15 min",
+                "startTime": "08:45"
+            },
+            {
+                "step": "Partner Coordination",
+                "status": "pending",
+                "details": "Arrange seats with partner airlines",
+                "endTime": "09:30",
+                "duration": "30 min",
+                "startTime": "09:00"
+            },
+            {
+                "step": "Passenger Rebooking",
+                "status": "pending",
+                "details": "Rebook passengers on new flights",
+                "endTime": "09:45",
+                "duration": "15 min",
+                "startTime": "09:30"
+            },
+            {
+                "step": "Final Confirmation",
+                "status": "pending",
+                "details": "Confirm rebooking and notify passengers",
+                "endTime": "10:00",
+                "duration": "15 min",
+                "startTime": "09:45"
+            }
+        ],
+        "risk_assessment": [
+            {
+                "risk": "Limited partner capacity",
+                "impact": "High",
+                "riskScore": 4,
+                "mitigation": "Engage multiple partner airlines",
+                "probability": "Medium"
+            },
+            {
+                "risk": "Passenger dissatisfaction",
+                "impact": "High",
+                "riskScore": 5,
+                "mitigation": "Offer compensation and priority rebooking",
+                "probability": "High"
+            }
+        ],
+        "technical_specs": {
+            "weatherMinimums": [
+                "Visibility: 1000m minimum",
+                "Ceiling: 200ft minimum",
+                "Wind: 25kt crosswind limit"
+            ],
+            "alternateAirports": [
+                "SHJ - Sharjah (45km)",
+                "DWC - Al Maktoum (50km)"
+            ],
+            "fuelConsiderations": [
+                "No fuel required",
+                "No contingency fuel needed"
+            ]
+        },
+        "metrics": {
+            "costEfficiency": 60,
+            "timeEfficiency": 95,
+            "passengerSatisfaction": 40
+        },
+        "rotation_plan": {
+            "aircraftOptions": [
+                {
+                    "reg": "A6-FEX",
+                    "type": "B737-800 (189Y)",
+                    "etops": {
+                        "status": "available",
+                        "value": "180min"
+                    },
+                    "cabinMatch": {
+                        "status": "exact",
+                        "value": "Exact"
+                    },
+                    "availability": "Available Now",
+                    "assigned": {
+                        "status": "none",
+                        "value": "None"
+                    },
+                    "turnaround": "45 min",
+                    "maintenance": {
+                        "status": "current",
+                        "value": "Current"
+                    },
+                    "recommended": true
+                },
+                {
+                    "reg": "A6-FEY",
+                    "type": "B737-MAX8 (189Y)",
+                    "etops": {
+                        "status": "available",
+                        "value": "180min"
+                    },
+                    "cabinMatch": {
+                        "status": "exact",
+                        "value": "Exact"
+                    },
+                    "availability": "Available 11:00",
+                    "assigned": {
+                        "status": "assigned",
+                        "value": "FZ567"
+                    },
+                    "turnaround": "50 min",
+                    "maintenance": {
+                        "status": "current",
+                        "value": "Current"
+                    },
+                    "recommended": false
+                },
+                {
+                    "reg": "A6-FEZ",
+                    "type": "B737-800 (164Y)",
+                    "etops": {
+                        "status": "available",
+                        "value": "180min"
+                    },
+                    "cabinMatch": {
+                        "status": "reduced",
+                        "value": "Reduced"
+                    },
+                    "availability": "Available 12:30",
+                    "assigned": {
+                        "status": "none",
+                        "value": "None"
+                    },
+                    "turnaround": "55 min",
+                    "maintenance": {
+                        "status": "due",
+                        "value": "Due A-Check"
+                    },
+                    "recommended": false
+                },
+                {
+                    "reg": "A6-FEA",
+                    "type": "B737-MAX8 (189Y)",
+                    "etops": {
+                        "status": "none",
+                        "value": "None"
+                    },
+                    "cabinMatch": {
+                        "status": "exact",
+                        "value": "Exact"
+                    },
+                    "availability": "Available 13:30",
+                    "assigned": {
+                        "status": "assigned",
+                        "value": "FZ123"
+                    },
+                    "turnaround": "60 min",
+                    "maintenance": {
+                        "status": "aog",
+                        "value": "AOG Issue"
+                    },
+                    "recommended": false
+                }
+            ],
+            "crewData": [
+                {
+                    "name": "Capt. Saeed Al-Maktoum",
+                    "role": "Captain",
+                    "type": "B737 Type Rating",
+                    "status": "Available",
+                    "issue": null
+                },
+                {
+                    "name": "FO Haya Al-Kuwaiti",
+                    "role": "First Officer",
+                    "type": "B737/MAX Type Rating",
+                    "status": "Available",
+                    "issue": null
+                },
+                {
+                    "name": "SSCC Mariam Salem",
+                    "role": "Senior Cabin Crew",
+                    "type": "Senior Cabin Crew",
+                    "status": "Duty Limit 5h",
+                    "issue": "Approaching duty limit"
+                },
+                {
+                    "name": "CC Ahmed Nasser",
+                    "role": "Cabin Crew",
+                    "type": "Cabin Crew",
+                    "status": "Standby",
+                    "issue": "Standby replacement"
+                }
+            ],
+            "nextSectors": [
+                {
+                    "flight": "FZ901 DXB-BAH",
+                    "departure": "Dep: 10:30 (Partner Airline)",
+                    "impact": "High Impact",
+                    "reason": "Flight cancellation and rebooking"
+                },
+                {
+                    "flight": "FZ902 BAH-DXB",
+                    "departure": "Dep: 13:00 (Partner Airline)",
+                    "impact": "High Impact",
+                    "reason": "Knock-on cancellation"
+                },
+                {
+                    "flight": "FZ456 DXB-DOH",
+                    "departure": "Dep: 08:00 (Next Day)",
+                    "impact": "Low Impact",
+                    "reason": "Resumption with flydubai aircraft"
+                }
+            ],
+            "operationalConstraints": {
+                "gateCompatibility": {
+                    "status": "Not Applicable",
+                    "details": "No flydubai aircraft used"
+                },
+                "slotCapacity": {
+                    "status": "Not Applicable",
+                    "details": "Partner airline slots used"
+                },
+                "curfewViolation": {
+                    "status": "No Risk",
+                    "details": "Partner airline schedules compliant"
+                },
+                "passengerConnections": {
+                    "status": "Significant Impact",
+                    "details": "Missed connections due to cancellation"
+                }
+            },
+            "costBreakdown": {
+                "delayCost": 80000,
+                "fuelEfficiency": "0%",
+                "hotelTransport": 5000,
+                "eu261Risk": "High"
+            },
+            "recommendation": {
+                "aircraft": "A6-FEX",
+                "reason": "No flydubai aircraft used for immediate rebooking; A6-FEX recommended for next-day operations to balance cost (60%) and passenger satisfaction (40%)."
+            }
+        },
+        "details": null,
+        "created_at": "2025-08-09T08:31:00.000Z",
+        "updated_at": "2025-08-09T08:31:00.000Z"
+    }
+]
