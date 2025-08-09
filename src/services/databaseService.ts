@@ -681,6 +681,8 @@ class DatabaseService {
   async saveDisruption(
     disruption: Omit<FlightDisruption, "id" | "createdAt" | "updatedAt"> & {
       crewMembers?: any[];
+      categoryCode?: string;
+      categoryId?: string;
     },
   ): Promise<boolean> {
     try {
@@ -707,6 +709,7 @@ class DatabaseService {
         disruption_reason: disruption.disruptionReason,
         categorization: disruption.categorization,
         category_id: disruption.categoryId,
+        category_code: disruption.categoryCode, // Include category_code in payload
         crew_members: disruption.crewMembers || [],
       };
 
