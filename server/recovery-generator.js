@@ -1514,78 +1514,9 @@ export function generateRecoveryOptionsForDisruption(disruption, categoryInfo = 
       break;
 
     case "AIRCRAFT_ISSUE":
-      steps = [
-        {
-          step: 1,
-          title: "Technical Issue Reported",
-          status: "completed",
-          timestamp: "11:15 AM",
-          system: "Maintenance System",
-          details:
-            "Aircraft technical fault identified during pre-flight check",
-          data: { faultCode: "HYD-001", severity: safeDisruption.severity },
-        },
-        {
-          step: 2,
-          title: "Maintenance Assessment",
-          status: "completed",
-          timestamp: "11:30 AM",
-          system: "Engineering",
-          details: "Technical assessment completed - AOG situation",
-          data: { estimatedRepairTime: "4-6 hours" },
-        },
-        {
-          step: 3,
-          title: "Alternative Solutions Analysis",
-          status: "completed",
-          timestamp: "11:45 AM",
-          system: "AERON System",
-          details: "Analyzing aircraft swap and passenger rebooking options",
-          data: { alternativeAircraft: 2, rebookingOptions: 3 },
-        },
-        {
-          step: 4,
-          title: "Resource Coordination",
-          status: "standby",
-          timestamp: "12:00 PM",
-          system: "Operations Control",
-          details: "Coordinating replacement aircraft and crew",
-          data: { status: "in-progress" },
-        },
-      ];
-
-      options = [
-        {
-          title: "Aircraft Swap - Immediate",
-          description: "Replace with available standby aircraft",
-          cost: "$22,800",
-          timeline: "1.5-2 hours",
-          confidence: 88,
-          impact: "Minimal passenger disruption",
-          status: "recommended",
-          priority: 1,
-        },
-        {
-          title: "Maintenance Repair",
-          description: "Complete repairs on original aircraft",
-          cost: "$35,400",
-          timeline: "4-6 hours",
-          confidence: 65,
-          impact: "Significant delay impact",
-          status: "caution",
-          priority: 2,
-        },
-        {
-          title: "Passenger Reaccommodation",
-          description: "Distribute passengers across multiple flights",
-          cost: "$52,100",
-          timeline: "2-8 hours",
-          confidence: 90,
-          impact: "High passenger service impact",
-          status: "warning",
-          priority: 3,
-        },
-      ];
+      const aircraftResult = generateAircraftIssueRecovery(safeDisruption);
+      options = aircraftResult.options;
+      steps = aircraftResult.steps;
       break;
 
     case "CREW_ISSUE":
