@@ -1427,59 +1427,21 @@ class DatabaseService {
     }
   }
 
-  // Get detailed timeline for a recovery option
-  async getTimelineDetails(optionId: string): Promise<any> {
+  // Get complete recovery option details with all tabs data
+  async getRecoveryOptionDetails(optionId: string): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/timeline`);
+      const response = await fetch(`${this.baseUrl}/recovery-option-details/${optionId}`);
       if (!response.ok) {
         if (response.status === 404) {
-          console.log(`No timeline details found for option ${optionId}`);
+          console.log(`No recovery option details found for option ${optionId}`);
           return null;
         }
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
-      return result.timeline;
+      return result;
     } catch (error) {
-      console.error("Error fetching timeline details:", error);
-      return null;
-    }
-  }
-
-  // Get detailed resource requirements for a recovery option
-  async getResourceDetails(optionId: string): Promise<any> {
-    try {
-      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/resources`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          console.log(`No resource details found for option ${optionId}`);
-          return null;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const result = await response.json();
-      return result.resources;
-    } catch (error) {
-      console.error("Error fetching resource details:", error);
-      return null;
-    }
-  }
-
-  // Get technical specifications for a recovery option
-  async getTechnicalDetails(optionId: string): Promise<any> {
-    try {
-      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/technical`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          console.log(`No technical details found for option ${optionId}`);
-          return null;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const result = await response.json();
-      return result.technical;
-    } catch (error) {
-      console.error("Error fetching technical details:", error);
+      console.error("Error fetching recovery option details:", error);
       return null;
     }
   }

@@ -772,7 +772,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
       if (!rotationPlan) {
         rotationPlan = {
           aircraftRotations: [
-            { aircraft: selectedFlight?.aircraft || 'A6-FDB', currentFlight: selectedFlight?.flightNumber || 'FZ445', nextFlight: 'FZ446', turnaroundTime: '45 min' },
+            { aircraft: selectedFlight?.aircraft || 'A6-FDB', currentFlight: selectedFlight?.flightNumber || 'FZ445', nextFlight: 'FZ446', turnaroundTime: '45 min', recommended: true },
             { aircraft: 'A6-FDC', currentFlight: 'Available', nextFlight: 'FZ445', turnaroundTime: '30 min' }
           ],
           impactedFlights: [
@@ -789,7 +789,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
       // Fallback rotation plan
       setRotationPlanDetails({
         aircraftRotations: [
-          { aircraft: selectedFlight?.aircraft || 'A6-FDB', currentFlight: selectedFlight?.flightNumber || 'FZ445', nextFlight: 'FZ446', turnaroundTime: '45 min' }
+          { aircraft: selectedFlight?.aircraft || 'A6-FDB', currentFlight: selectedFlight?.flightNumber || 'FZ445', nextFlight: 'FZ446', turnaroundTime: '45 min', recommended: true }
         ],
         impactedFlights: []
       });
@@ -858,11 +858,11 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
       };
 
       const success = await databaseService.savePendingRecoverySolution(pendingSolution);
-      
+
       if (success) {
         // Update flight status to pending
         await databaseService.updateFlightRecoveryStatus(selectedFlight?.id, 'pending');
-        
+
         // Navigate to pending solutions
         navigate('/pending');
       } else {
@@ -875,6 +875,15 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
       setExecutingOption(null);
     }
   };
+
+  const getRiskColor = (risk) => {
+    switch (risk.toLowerCase()) {
+      case 'low': return 'bg-green-100 text-green-700 border-green-200'
+      case 'medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
+      case 'high': return 'bg-red-100 text-red-700 border-red-200'
+      default: return 'bg-gray-100 text-gray-700 border-gray-200'
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -1172,7 +1181,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                         <p className="text-sm text-gray-700 leading-relaxed mb-4">
                           {selectedOptionDetails.description}
                         </p>
-                        
+
                         <div className="p-3 bg-blue-50 rounded-lg">
                           <h4 className="text-sm font-medium text-blue-800 mb-2">Flight Context</h4>
                           <div className="grid grid-cols-2 gap-2 text-xs">
@@ -1663,7 +1672,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                       <p className="text-xs text-red-600 mt-1">Including compensation</p>
                     </CardContent>
                   </Card>
-                  
+
                   <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
                     <CardContent className="p-4 text-center">
                       <div className="flex items-center justify-center gap-2 mb-2">
@@ -1706,16 +1715,34 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="mb-4 p-4 bg-green-100 border border-green-200 rounded-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle className="h-5 w-5 text-green-600" />
-                        <p className="font-medium text-green-800">Recommended Option: Aircraft A6-FED</p>
+                    {rotationPlanDetails?.aircraftRotations?.find(a => a.recommended) ? (
+                      <div className="mb-4 p-4 bg-green-100 border border-green-200 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                          <p className="font-medium text-green-800">
+                            Recommended Option: Aircraft {rotationPlanDetails.aircraftRotations.find(a => a.recommended)?.aircraft}
+                          </p>
+                        </div>
+                        <p className="text-sm text-green-700">
+                          {selectedOptionDetails?.title} provides optimal balance across cost efficiency, delay minimization, 
+                          and operational impact. {rotationPlanDetails.operationalMetrics ? 
+                            `Expected impact: ${rotationPlanDetails.operationalMetrics.totalDelayMinutes} min delay, ${rotationPlanDetails.operationalMetrics.affectedFlights} flights affected.` :
+                            'Immediate availability with minimal network disruption.'}
+                        </p>
                       </div>
-                      <p className="text-sm text-green-700">
-                        Optimal balance across cost (92%), delay minimization (88%), crew impact (95%), and fuel efficiency (91%). 
-                        Immediate availability with exact cabin configuration match.
-                      </p>
-                    </div>
+                    ) : (
+                      <div className="mb-4 p-4 bg-blue-100 border border-blue-200 rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Info className="h-5 w-5 text-blue-600" />
+                          <p className="font-medium text-blue-800">Analysis for: {selectedOptionDetails?.title}</p>
+                        </div>
+                        <p className="text-sm text-blue-700">
+                          Review operational impact and resource requirements before implementation. 
+                          {rotationPlanDetails?.operationalMetrics && 
+                            `Estimated cost: ${rotationPlanDetails.operationalMetrics.estimatedCost}, passengers affected: ${rotationPlanDetails.operationalMetrics.passengerImpact}.`}
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
