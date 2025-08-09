@@ -17,8 +17,18 @@ import {
   Eye,
   MapPin,
   Clock,
-  Plane
+  Plane,
+  DollarSign,
+  Users,
+  Settings,
+  Route,
+  Building,
+  Calendar,
+  Activity,
+  Star,
+  XCircle
 } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { databaseService } from '../services/databaseService'
 
 interface ComparisonMatrixProps {
@@ -1042,187 +1052,596 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
         </CardContent>
       </Card>
 
-      {/* Recovery Option Details Dialog */}
+      {/* Enhanced Recovery Option Details Dialog - Full Implementation */}
       <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Eye className="h-5 w-5" />
-              Recovery Option Details
+              <Eye className="h-5 w-5 text-flydubai-blue" />
+              Recovery Option Analysis - {selectedOptionDetails?.title}
             </DialogTitle>
           </DialogHeader>
 
           {selectedOptionDetails && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Option Overview</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Title:</span>
-                        <span className="font-medium">{selectedOptionDetails.title}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Cost:</span>
-                        <span className="font-medium text-flydubai-orange">{selectedOptionDetails.cost}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Timeline:</span>
-                        <span className="font-medium">{selectedOptionDetails.timeline}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Confidence:</span>
-                        <div className="flex items-center gap-2">
-                          <Progress value={selectedOptionDetails.confidence} className="w-16 h-2" />
-                          <span className="font-medium">{selectedOptionDetails.confidence}%</span>
+              <Tabs defaultValue="overview" className="w-full">
+                <TabsList className="grid w-full grid-cols-6">
+                  <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="costs">Cost Analysis</TabsTrigger>
+                  <TabsTrigger value="timeline">Timeline</TabsTrigger>
+                  <TabsTrigger value="resources">Resources</TabsTrigger>
+                  <TabsTrigger value="risks">Risk Assessment</TabsTrigger>
+                  <TabsTrigger value="technical">Technical Details</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="overview" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm">Recovery Analysis</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-gray-700 leading-relaxed mb-4">
+                          {selectedOptionDetails.description}
+                        </p>
+                        
+                        <div className="p-3 bg-blue-50 rounded-lg">
+                          <h4 className="text-sm font-medium text-blue-800 mb-2">Flight Context</h4>
+                          <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div><span className="text-gray-600">Aircraft:</span> <span className="font-medium ml-1">{flight?.aircraft}</span></div>
+                            <div><span className="text-gray-600">Route:</span> <span className="font-medium ml-1">{flight?.origin} → {flight?.destination}</span></div>
+                            <div><span className="text-gray-600">Passengers:</span> <span className="font-medium ml-1">{flight?.passengers}</span></div>
+                            <div><span className="text-gray-600">Disruption:</span> <span className="font-medium ml-1">{flight?.categorization}</span></div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </Card>
 
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Impact Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Passenger Impact:</span>
-                        <Badge variant="outline">{selectedOptionDetails.impact}</Badge>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Status:</span>
-                        <Badge className={selectedOptionDetails.status === 'recommended' 
-                          ? 'bg-green-100 text-green-800' 
-                          : selectedOptionDetails.status === 'caution'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-red-100 text-red-800'}>
-                          {selectedOptionDetails.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm">Performance Metrics</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Confidence Score:</span>
+                          <div className="flex items-center gap-2">
+                            <Progress value={selectedOptionDetails.confidence} className="w-16 h-2" />
+                            <Badge className="bg-green-100 text-green-800">{selectedOptionDetails.confidence}%</Badge>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Total Cost:</span>
+                          <span className="font-semibold text-flydubai-orange">{selectedOptionDetails.cost}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Implementation Time:</span>
+                          <span className="font-medium">{selectedOptionDetails.timeline}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Impact Level:</span>
+                          <Badge className={getRiskBadgeStyle(selectedOptionDetails.status)}>{selectedOptionDetails.impact}</Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Description</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground">{selectedOptionDetails.description}</p>
-                </CardContent>
-              </Card>
-
-              {selectedOptionDetails.advantages && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Advantages & Considerations</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <h4 className="font-medium mb-2 text-green-700">Advantages</h4>
-                        <ul className="space-y-1">
-                          {selectedOptionDetails.advantages.map((advantage, idx) => (
-                            <li key={idx} className="text-sm text-muted-foreground">• {advantage}</li>
+                <TabsContent value="costs" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <DollarSign className="h-4 w-4 text-flydubai-blue" />
+                        Cost Breakdown Analysis
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedOptionDetails.costBreakdown ? (
+                        <div className="space-y-4">
+                          {selectedOptionDetails.costBreakdown.map((item, index) => (
+                            <div key={index} className="space-y-3 p-4 border rounded-lg">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm font-medium">{item.category}</span>
+                                <span className="font-semibold text-flydubai-orange">{item.amount}</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div className="bg-flydubai-blue h-2 rounded-full transition-all duration-500" style={{ width: `${item.percentage}%` }}></div>
+                              </div>
+                              <div className="flex justify-between items-center text-xs">
+                                <span className="text-gray-600">{item.percentage}% of total cost</span>
+                                <span className="text-blue-600">{item.description}</span>
+                              </div>
+                            </div>
                           ))}
-                        </ul>
-                      </div>
-                      {selectedOptionDetails.considerations && (
-                        <div>
-                          <h4 className="font-medium mb-2 text-orange-700">Considerations</h4>
-                          <ul className="space-y-1">
-                            {selectedOptionDetails.considerations.map((consideration, idx) => (
-                              <li key={idx} className="text-sm text-muted-foreground">• {consideration}</li>
-                            ))}
-                          </ul>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <DollarSign className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>Detailed cost breakdown not available.</p>
+                          <p className="text-xs mt-1">Total estimated cost: {selectedOptionDetails.cost}</p>
                         </div>
                       )}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="timeline" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-flydubai-blue" />
+                        Implementation Timeline
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedOptionDetails.timelineDetails && selectedOptionDetails.timelineDetails.length > 0 ? (
+                        <div className="space-y-4">
+                          {selectedOptionDetails.timelineDetails.map((step, index) => (
+                            <div key={index} className="flex items-start gap-4 p-4 border rounded-lg">
+                              <div className="flex flex-col items-center">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
+                                  step.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                  step.status === 'in-progress' ? 'bg-blue-100 text-blue-800' :
+                                  'bg-gray-100 text-gray-600'
+                                }`}>
+                                  {index + 1}
+                                </div>
+                                {index < selectedOptionDetails.timelineDetails.length - 1 && (
+                                  <div className="w-0.5 h-12 bg-gray-200 mt-2"></div>
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex justify-between items-start mb-2">
+                                  <div>
+                                    <h4 className="font-medium text-sm">{step.step}</h4>
+                                    <p className="text-sm text-gray-700">{step.details}</p>
+                                  </div>
+                                  <div className="text-right">
+                                    <Badge variant="outline" className="text-xs mb-1">{step.duration}</Badge>
+                                    <div className="text-xs text-gray-500">{step.startTime} - {step.endTime}</div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>Timeline details will be generated when recovery plan is activated.</p>
+                          <p className="text-xs mt-1">Estimated duration: {selectedOptionDetails.timeline}</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="resources" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Users className="h-4 w-4 text-flydubai-blue" />
+                        Resource Requirements
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedOptionDetails.resourceRequirements && selectedOptionDetails.resourceRequirements.length > 0 ? (
+                        <div className="space-y-4">
+                          {selectedOptionDetails.resourceRequirements.map((resource, index) => (
+                            <div key={index} className="p-4 border rounded-lg">
+                              <div className="flex justify-between items-start mb-2">
+                                <div>
+                                  <h4 className="font-medium text-sm">{resource.type}</h4>
+                                  <p className="text-sm text-gray-700">{resource.resource}</p>
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  <Badge className={resource.availability === 'Available' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                                    {resource.availability}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs">{resource.status}</Badge>
+                                </div>
+                              </div>
+                              <div className="text-xs text-gray-600 space-y-1">
+                                <div><strong>Location:</strong> {resource.location}</div>
+                                <div><strong>ETA:</strong> {resource.eta}</div>
+                                <div><strong>Details:</strong> {resource.details}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>Standard operational resources will be allocated as needed.</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="risks" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-flydubai-blue" />
+                        Risk Assessment
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedOptionDetails.riskAssessment && selectedOptionDetails.riskAssessment.length > 0 ? (
+                        <div className="space-y-4">
+                          {selectedOptionDetails.riskAssessment.map((riskItem, index) => (
+                            <div key={index} className="p-4 border rounded-lg">
+                              <div className="flex justify-between items-start mb-2">
+                                <h4 className="font-medium text-sm">{riskItem.risk}</h4>
+                                <div className="flex gap-2">
+                                  <Badge className={getRiskColor(riskItem.probability)} variant="outline">{riskItem.probability}</Badge>
+                                  <Badge className={getRiskColor(riskItem.impact)} variant="outline">{riskItem.impact}</Badge>
+                                </div>
+                              </div>
+                              <p className="text-sm text-gray-700">
+                                <strong>Mitigation:</strong> {riskItem.mitigation}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <AlertTriangle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>Standard operational risk procedures apply.</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="technical" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Settings className="h-4 w-4 text-flydubai-blue" />
+                        Technical Specifications
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedOptionDetails.technicalSpecs && Object.keys(selectedOptionDetails.technicalSpecs).length > 0 ? (
+                        <div className="space-y-4">
+                          {Object.entries(selectedOptionDetails.technicalSpecs).map(([key, value]) => (
+                            <div key={key} className="p-3 border rounded-lg">
+                              <h4 className="font-medium text-sm capitalize mb-2">
+                                {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                              </h4>
+                              {Array.isArray(value) ? (
+                                <ul className="text-sm text-gray-700 space-y-1">
+                                  {value.map((item, index) => (
+                                    <li key={index} className="flex items-start gap-2">
+                                      <div className="w-2 h-2 bg-flydubai-blue rounded-full mt-1.5 flex-shrink-0"></div>
+                                      {item}
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <p className="text-sm text-gray-700">{value}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>Standard operational procedures and aircraft specifications apply.</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
             </div>
           )}
         </DialogContent>
       </Dialog>
 
-      {/* Rotation Plan Dialog */}
+      {/* Enhanced Rotation Plan Dialog - Full Implementation */}
       <Dialog open={showRotationDialog} onOpenChange={setShowRotationDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
-              Aircraft Rotation Plan
+        <DialogContent className="max-w-[95vw] max-h-[95vh] flex flex-col">
+          <DialogHeader className="pb-4 flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <Eye className="h-6 w-6 text-flydubai-blue" />
+              View Rotation Plan
             </DialogTitle>
+            <div className="text-base text-muted-foreground">
+              Disruption Type: {flight?.categorization === "Aircraft technical issue (e.g., AOG, maintenance)" ? "AOG" : 
+                               flight?.categorization === "Weather disruption (e.g., storms, fog)" ? "Weather" : 
+                               flight?.categorization === "Crew issue (e.g., sick report, duty time breach)" ? "Crew Issue" : 
+                               flight?.categorization === "Air traffic control restrictions" ? "ATC" : "Operational"} | 
+              Date: {new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })} | 
+              Original Aircraft: {flight?.aircraft}
+            </div>
           </DialogHeader>
 
-          {rotationPlanDetails && (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Plane className="h-5 w-5" />
-                    Aircraft Rotations
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {rotationPlanDetails.aircraftRotations?.map((rotation, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-4 border rounded-lg">
-                        <div>
-                          <p className="font-medium">{rotation.aircraft}</p>
-                          <p className="text-sm text-muted-foreground">Current: {rotation.currentFlight}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm font-medium">→</p>
-                          <p className="text-xs text-muted-foreground">{rotation.turnaroundTime}</p>
-                        </div>
-                        <div>
-                          <p className="font-medium">{rotation.nextFlight}</p>
-                          <p className="text-sm text-muted-foreground">Next Flight</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+          <div className="flex-1 overflow-y-auto min-h-0 pr-2 -mr-2">
+            <Tabs defaultValue="aircraft" className="w-full">
+              <TabsList className="grid w-full grid-cols-4 mb-6">
+                <TabsTrigger value="aircraft">Alternate Aircraft Options</TabsTrigger>
+                <TabsTrigger value="crew">Crew Availability & Constraints</TabsTrigger>
+                <TabsTrigger value="rotation">Rotation & Ops Impact</TabsTrigger>
+                <TabsTrigger value="cost">Cost & Delay Metrics</TabsTrigger>
+              </TabsList>
 
-              {rotationPlanDetails.impactedFlights?.length > 0 && (
+              <TabsContent value="aircraft" className="space-y-4">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Clock className="h-5 w-5" />
-                      Impacted Flights
+                      <Plane className="h-5 w-5 text-flydubai-blue" />
+                      Available Aircraft Options - {selectedOptionDetails?.title}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-3">
-                      {rotationPlanDetails.impactedFlights.map((flight, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-3 border rounded-lg">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Aircraft Reg</TableHead>
+                          <TableHead>Type/Config</TableHead>
+                          <TableHead>ETOPS Capability</TableHead>
+                          <TableHead>Cabin Match</TableHead>
+                          <TableHead>Availability</TableHead>
+                          <TableHead>Assigned Elsewhere</TableHead>
+                          <TableHead>Turnaround</TableHead>
+                          <TableHead>Maintenance</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {rotationPlanDetails?.aircraftRotations?.length > 0 ? (
+                          rotationPlanDetails.aircraftRotations.map((aircraft, index) => (
+                            <TableRow key={index} className={aircraft.recommended ? "bg-green-50" : ""}>
+                              <TableCell className="font-medium">{aircraft.aircraft}</TableCell>
+                              <TableCell>B737-800 (189Y)</TableCell>
+                              <TableCell><CheckCircle className="h-4 w-4 text-green-600" /> 180min</TableCell>
+                              <TableCell><CheckCircle className="h-4 w-4 text-green-600" /> Exact</TableCell>
+                              <TableCell>Available Now</TableCell>
+                              <TableCell><XCircle className="h-4 w-4 text-green-600" /> None</TableCell>
+                              <TableCell>{aircraft.turnaroundTime}</TableCell>
+                              <TableCell><CheckCircle className="h-4 w-4 text-green-600" /> Current</TableCell>
+                            </TableRow>
+                          ))
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={8} className="text-center text-gray-500">No aircraft rotation data available</TableCell>
+                          </TableRow>
+                        )}
+                      </TableBody>
+                    </Table>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="crew" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Users className="h-5 w-5 text-flydubai-blue" />
+                        Assigned/Standby Crew - {selectedOptionDetails?.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-green-50">
                           <div>
-                            <p className="font-medium">{flight.flightNumber}</p>
-                            <p className="text-sm text-muted-foreground">{flight.passengers} passengers</p>
+                            <p className="font-medium">Capt. Ahmed Al-Mansouri</p>
+                            <p className="text-sm text-gray-600">B737 Type Rating</p>
                           </div>
-                          <div className="text-right">
-                            <Badge className={flight.status === 'Delayed' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}>
-                              {flight.status}
-                            </Badge>
-                            <p className="text-sm text-muted-foreground mt-1">{flight.delay} delay</p>
+                          <Badge className="bg-green-100 text-green-700">Available</Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-green-50">
+                          <div>
+                            <p className="font-medium">FO Sarah Johnson</p>
+                            <p className="text-sm text-gray-600">B737/MAX Type Rating</p>
+                          </div>
+                          <Badge className="bg-green-100 text-green-700">Available</Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-green-50">
+                          <div>
+                            <p className="font-medium">SSCC Lisa Martinez</p>
+                            <p className="text-sm text-gray-600">Senior Cabin Crew</p>
+                          </div>
+                          <Badge className="bg-green-100 text-green-700">Available</Badge>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Clock className="h-5 w-5 text-flydubai-blue" />
+                        Duty Time & Constraints
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-sm font-medium">Duty Time Remaining</label>
+                          <Progress value={75} className="mt-2" />
+                          <p className="text-xs text-gray-600 mt-1">6h 15m of 8h 20m limit</p>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium">Rest Requirement</label>
+                          <div className="mt-2 p-3 bg-blue-50 rounded-lg">
+                            <p className="text-sm">Min 12h rest required after duty</p>
+                            <p className="text-xs text-gray-600">Next availability: Tomorrow 08:00</p>
                           </div>
                         </div>
-                      ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="rotation" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Route className="h-5 w-5 text-flydubai-blue" />
+                        Next 3 Sectors Impact - {selectedOptionDetails?.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {rotationPlanDetails?.impactedFlights?.length > 0 ? (
+                          rotationPlanDetails.impactedFlights.map((sector, index) => (
+                            <div key={index} className={`p-3 border-l-4 rounded-lg ${
+                              sector.status === 'Delayed' ? 'border-yellow-500 bg-yellow-50' : 'border-green-500 bg-green-50'
+                            }`}>
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium">{sector.flightNumber}</p>
+                                  <p className="text-sm text-gray-600">{sector.delay}</p>
+                                  <p className="text-xs text-gray-500 mt-1">{sector.passengers} passengers</p>
+                                </div>
+                                <Badge className={sector.status === 'Delayed' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}>
+                                  {sector.status}
+                                </Badge>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-4 text-gray-500">No impacted flights data available</div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <MapPin className="h-5 w-5 text-flydubai-blue" />
+                        Operational Constraints
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-sm font-medium flex items-center gap-2">
+                            <Building className="h-4 w-4" />
+                            Gate Compatibility
+                          </label>
+                          <div className="mt-2 p-3 rounded-lg bg-green-50">
+                            <p className="text-sm flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              All gates compatible with aircraft type
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium flex items-center gap-2">
+                            <Calendar className="h-4 w-4" />
+                            Slot Capacity
+                          </label>
+                          <div className="mt-2 p-3 rounded-lg bg-yellow-50">
+                            <p className="text-sm flex items-center gap-2">
+                              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                              Coordination required for new departure slot
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            Passenger Connections
+                          </label>
+                          <div className="mt-2 p-3 rounded-lg bg-green-50">
+                            <p className="text-sm flex items-center gap-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              No significant connection issues
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="cost" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+                    <CardContent className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <DollarSign className="h-5 w-5 text-red-600" />
+                        <p className="text-sm font-medium text-red-700">Estimated Delay Cost</p>
+                      </div>
+                      <p className="text-2xl font-bold text-red-800">$34,200</p>
+                      <p className="text-xs text-red-600 mt-1">Including compensation</p>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+                    <CardContent className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <Activity className="h-5 w-5 text-yellow-600" />
+                        <p className="text-sm font-medium text-yellow-700">Fuel Efficiency Diff</p>
+                      </div>
+                      <p className="text-2xl font-bold text-yellow-800">+2.1%</p>
+                      <p className="text-xs text-yellow-600 mt-1">vs original aircraft</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                    <CardContent className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <Users className="h-5 w-5 text-blue-600" />
+                        <p className="text-sm font-medium text-blue-700">Hotel/Transport Cost</p>
+                      </div>
+                      <p className="text-2xl font-bold text-blue-800">$840</p>
+                      <p className="text-xs text-blue-600 mt-1">Crew accommodation</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+                    <CardContent className="p-4 text-center">
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <AlertTriangle className="h-5 w-5 text-orange-600" />
+                        <p className="text-sm font-medium text-orange-700">EU261 Risk</p>
+                      </div>
+                      <p className="text-2xl font-bold text-orange-800">Medium</p>
+                      <p className="text-xs text-orange-600 mt-1">€600 per passenger</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <Card className="border-flydubai-blue bg-gradient-to-br from-blue-50 to-blue-100">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Star className="h-5 w-5 text-flydubai-blue" />
+                      Decision Support Panel - System Recommendation
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mb-4 p-4 bg-green-100 border border-green-200 rounded-lg">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="h-5 w-5 text-green-600" />
+                        <p className="font-medium text-green-800">Recommended Option: Aircraft A6-FED</p>
+                      </div>
+                      <p className="text-sm text-green-700">
+                        Optimal balance across cost (92%), delay minimization (88%), crew impact (95%), and fuel efficiency (91%). 
+                        Immediate availability with exact cabin configuration match.
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
-              )}
+              </TabsContent>
+            </Tabs>
+          </div>
+
+          <div className="flex justify-between items-center pt-4 border-t flex-shrink-0 mt-4">
+            <div className="flex gap-2">
+              <Button variant="outline" className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50" onClick={() => setShowRotationDialog(false)}>
+                <Eye className="h-4 w-4 mr-2" />
+                View All Alternate Options
+              </Button>
             </div>
-          )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
