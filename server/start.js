@@ -922,6 +922,8 @@ app.post("/api/disruptions/", async (req, res) => {
       disruption_reason,
       disruptionReason,
       categorization,
+      category_code,
+      categoryCode,
     } = req.body;
 
     // Handle both camelCase and snake_case field names with proper fallbacks
@@ -958,14 +960,79 @@ app.post("/api/disruptions/", async (req, res) => {
     const safeStatus = status || "Active";
     const safeDisruptionReason = disruption_reason_val || "No reason provided";
 
+    // Handle category_code from request body
+    const receivedCategoryCode = category_code || categoryCode;
+    let category_id = null;
+
+    // Get category_id from category_code if provided
+    if (receivedCategoryCode) {
+      try {
+        const categoryResult = await pool.query(
+          `SELECT id FROM disruption_categories WHERE category_code = $1 AND is_active = true`,
+          [receivedCategoryCode]
+        );
+        if (categoryResult.rows.length > 0) {
+          category_id = categoryResult.rows[0].id;
+          console.log(`Found category_id ${category_id} for category_code: ${receivedCategoryCode}`);
+        } else {
+          console.warn(`Category code ${receivedCategoryCode} not found, using default`);
+        }
+      } catch (categoryError) {
+        console.error("Error looking up category:", categoryError);
+      }
+    }
+
+    // Fallback to categorization mapping if category_code not found
+    if (!category_id && categorization) {
+      try {
+        const categoryResult = await pool.query(`
+          SELECT id FROM disruption_categories 
+          WHERE category_name = $1 
+          OR category_code = CASE 
+            WHEN $1 LIKE '%Aircraft%' OR $1 LIKE '%AOG%' THEN 'AIRCRAFT_ISSUE'
+            WHEN $1 LIKE '%Crew%' OR $1 LIKE '%duty time%' OR $1 LIKE '%sick%' THEN 'CREW_ISSUE'
+            WHEN $1 LIKE '%Weather%' OR $1 LIKE '%ATC%' THEN 'ATC_WEATHER'
+            WHEN $1 LIKE '%Curfew%' OR $1 LIKE '%Congestion%' OR $1 LIKE '%Airport%' THEN 'CURFEW_CONGESTION'
+            WHEN $1 LIKE '%Rotation%' OR $1 LIKE '%Maintenance%' THEN 'ROTATION_MAINTENANCE'
+            ELSE 'AIRCRAFT_ISSUE'
+          END
+          LIMIT 1
+        `, [categorization]);
+        
+        if (categoryResult.rows.length > 0) {
+          category_id = categoryResult.rows[0].id;
+          console.log(`Mapped categorization ${categorization} to category_id: ${category_id}`);
+        }
+      } catch (mappingError) {
+        console.error("Error mapping categorization:", mappingError);
+      }
+    }
+
+    // Default to AIRCRAFT_ISSUE if no category found
+    if (!category_id) {
+      try {
+        const defaultCategory = await pool.query(`
+          SELECT id FROM disruption_categories 
+          WHERE category_code = 'AIRCRAFT_ISSUE' 
+          LIMIT 1
+        `);
+        if (defaultCategory.rows.length > 0) {
+          category_id = defaultCategory.rows[0].id;
+          console.log(`Using default category_id: ${category_id}`);
+        }
+      } catch (defaultError) {
+        console.error("Error getting default category:", defaultError);
+      }
+    }
+
     // Use UPSERT to prevent duplicates - update if flight_number and scheduled_departure match
     const result = await pool.query(
       `
       INSERT INTO flight_disruptions (
         flight_number, route, origin, destination, origin_city, destination_city,
         aircraft, scheduled_departure, estimated_departure, delay_minutes,
-        passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason, categorization
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+        passengers, crew, connection_flights, severity, disruption_type, status, disruption_reason, categorization, category_id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
       ON CONFLICT (flight_number, scheduled_departure)
       DO UPDATE SET
         route = EXCLUDED.route,
@@ -983,6 +1050,8 @@ app.post("/api/disruptions/", async (req, res) => {
         disruption_type = EXCLUDED.disruption_type,
         status = EXCLUDED.status,
         disruption_reason = EXCLUDED.disruption_reason,
+        categorization = EXCLUDED.categorization,
+        category_id = EXCLUDED.category_id,
         updated_at = CURRENT_TIMESTAMP
       RETURNING *
     `,
@@ -1005,6 +1074,7 @@ app.post("/api/disruptions/", async (req, res) => {
         safeStatus,
         safeDisruptionReason,
         categorization,
+        category_id,
       ],
     );
 
@@ -1407,11 +1477,13 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
       });
     }
 
-    // First get the disruption details
+    // First get the disruption details with category information
     const result = await pool.query(
       `
-      SELECT * FROM flight_disruptions
-      WHERE id = $1
+      SELECT fd.*, dc.category_code, dc.category_name
+      FROM flight_disruptions fd
+      LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
+      WHERE fd.id = $1
     `,
       [numericDisruptionId],
     );
@@ -1455,11 +1527,16 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
       disruption.disruption_type,
     );
 
-    // Generate recovery options using the recovery generator
+    // Generate recovery options using the recovery generator with category information
     const { generateRecoveryOptionsForDisruption } = await import(
       "./recovery-generator.js"
     );
-    const { options, steps } = generateRecoveryOptionsForDisruption(disruption);
+    const categoryInfo = {
+      category_code: disruption.category_code,
+      category_name: disruption.category_name,
+      category_id: disruption.category_id
+    };
+    const { options, steps } = generateRecoveryOptionsForDisruption(disruption, categoryInfo);
 
     console.log(
       `Generated ${options.length} options and ${steps.length} steps`,

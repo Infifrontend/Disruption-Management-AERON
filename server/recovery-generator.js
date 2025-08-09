@@ -876,10 +876,14 @@ export function generateRecoveryOptionsForDisruption(disruption, categoryInfo = 
   // Normalize field names
   const flightNumber = disruption.flight_number || disruption.flightNumber;
   const categoryId = disruption.category_id;
-  const categoryCode = categoryInfo?.category_code || mapDisruptionTypeToCategory(
-    disruption.disruption_type || disruption.disruptionType || disruption.type || "Technical",
-    disruption.disruption_reason || "Unknown"
-  );
+  
+  // Use category_code from request if available, otherwise map from disruption type
+  const categoryCode = categoryInfo?.category_code || 
+    disruption.category_code || 
+    mapDisruptionTypeToCategory(
+      disruption.disruption_type || disruption.disruptionType || disruption.type || "Technical",
+      disruption.disruption_reason || "Unknown"
+    );
 
   // Set defaults for missing fields
   const safeDisruption = {
