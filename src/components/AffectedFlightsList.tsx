@@ -57,10 +57,11 @@ export function AffectedFlightsList() {
   const fetchFlights = async () => {
     try {
       setError(null)
-      const data = await databaseService.getAllDisruptions()
+      // Fetch only flights where recovery_status = 'none'
+      const data = await databaseService.getAllDisruptions('none')
       setFlights(data)
       if (data.length === 0) {
-        console.log('No flight disruptions found in database')
+        console.log('No flight disruptions with recovery_status = none found in database')
       }
     } catch (error) {
       console.error('Error fetching flights:', error)

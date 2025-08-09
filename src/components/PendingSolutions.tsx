@@ -116,7 +116,7 @@ export function PendingSolutions() {
         status: plan.status || 'Pending Approval',
         estimatedCost: typeof plan.cost === 'string' ? parseInt(plan.cost.replace(/[^0-9]/g, '')) || 0 : plan.cost || 0,
         estimatedDelay: parseInt(plan.timeline?.replace(/[^0-9]/g, '') || '0') || 0,
-        affectedPassengers: plan.passengers || 0,
+        affectedPassengers: plan.passengers || plan.affected_passengers || 0,
         confidence: plan.confidence || 80,
         disruptionReason: plan.disruption_reason || 'N/A',
         steps: 4,
@@ -247,7 +247,7 @@ export function PendingSolutions() {
       pending: plans.filter(p => ['Pending Approval', 'Under Review', 'Pending'].includes(p.status)).length,
       approved: plans.filter(p => p.status === 'Approved').length,
       rejected: plans.filter(p => p.status === 'Rejected').length,
-      critical: plans.filter(p => p.priority === 'Critical' || p.priority === 'High').length
+      critical: plans.filter(p => ['Critical', 'High'].includes(p.priority)).length
     }
   }
 
@@ -628,7 +628,7 @@ export function PendingSolutions() {
                           View Details
                         </Button>
 
-                        {['Pending Approval', 'Under Review'].includes(plan.status) && (
+                        {['Pending Approval', 'Under Review', 'Pending'].includes(plan.status) && (
                           <>
                             <Button
                               size="sm"
@@ -1196,7 +1196,7 @@ export function PendingSolutions() {
               <Button variant="outline" onClick={() => setSelectedPlan(null)}>
                 Close
               </Button>
-              {['Pending Approval', 'Under Review'].includes(selectedPlan.status) && (
+              {['Pending Approval', 'Under Review', 'Pending'].includes(selectedPlan.status) && (
                 <>
                   <Button
                     onClick={() => {
