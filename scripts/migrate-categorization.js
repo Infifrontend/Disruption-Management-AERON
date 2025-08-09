@@ -1,5 +1,5 @@
 
-const { Pool } = require("pg");
+import { Pool } from "pg";
 
 const pool = new Pool({
   connectionString:
@@ -139,7 +139,7 @@ async function migrateCategorization() {
 }
 
 // Run migration if called directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   migrateCategorization()
     .then(() => {
       console.log('Migration script completed');
@@ -151,4 +151,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { migrateCategorization };
+export { migrateCategorization };
