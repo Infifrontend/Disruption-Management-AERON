@@ -2285,7 +2285,7 @@ app.get("/api/recovery-options/category/:categoryCode", async (req, res) => {
   }
 });
 
-// Get recovery option details by ID
+// Get recovery option details
 app.get("/api/recovery-option/:optionId", async (req, res) => {
   try {
     const { optionId } = req.params;
