@@ -250,18 +250,43 @@ export function RecoveryOptionsGenerator({
         let options = [];
         let steps = [];
 
-        // First try to get detailed recovery options based on categorization
+        // First map disruption to category code
+        let categoryCode = null;
         try {
-          options = await databaseService.getDetailedRecoveryOptions(flightId);
-          console.log(
-            `Found ${options.length} detailed categorization-based options`,
+          categoryCode = await databaseService.mapDisruptionToCategory(
+            flight.type || flight.disruption_type || "Technical",
+            flight.disruptionReason || flight.categorization || ""
           );
+          console.log(`Mapped to category code: ${categoryCode}`);
         } catch (error) {
-          console.warn(
-            "Error fetching detailed recovery options:",
-            error.message,
-          );
-          options = [];
+          console.warn("Error mapping disruption to category:", error.message);
+        }
+
+        // Try to get recovery options by category first
+        if (categoryCode) {
+          try {
+            options = await databaseService.getRecoveryOptionsByCategory(categoryCode);
+            console.log(`Found ${options.length} options for category ${categoryCode}`);
+          } catch (error) {
+            console.warn("Error fetching options by category:", error.message);
+            options = [];
+          }
+        }
+
+        // Fallback to detailed recovery options
+        if (options.length === 0) {
+          try {
+            options = await databaseService.getDetailedRecoveryOptions(flightId);
+            console.log(
+              `Found ${options.length} detailed categorization-based options`,
+            );
+          } catch (error) {
+            console.warn(
+              "Error fetching detailed recovery options:",
+              error.message,
+            );
+            options = [];
+          }
         }
 
         // Try to get detailed recovery steps
