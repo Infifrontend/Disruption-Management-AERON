@@ -363,9 +363,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
             delay: disruption.delay_minutes || disruption.delay || 0,
             aircraft: disruption.aircraft || "Unknown",
             connectionFlights: disruption.connection_flights || disruption.connectionFlights || 0,
+            recoveryStatus: disruption.recovery_status || 'none'
           };
         })
-        .filter((disruption) => disruption !== null);
+        .filter((disruption) => disruption !== null && disruption.recoveryStatus !== 'pending');
 
       const transformedFlights = processedData.map(transformFlightData);
       setFlights(transformedFlights);

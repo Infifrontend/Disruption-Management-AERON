@@ -30,6 +30,7 @@ import {
 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { databaseService } from '../services/databaseService'
+import { useNavigate } from 'react-router-dom'
 
 interface ComparisonMatrixProps {
   selectedFlight: any;
@@ -39,6 +40,7 @@ interface ComparisonMatrixProps {
 }
 
 export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenarioData, onSelectPlan }: ComparisonMatrixProps) {
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [dynamicRecoveryOptions, setDynamicRecoveryOptions] = useState([])
   const [selectedOptionDetails, setSelectedOptionDetails] = useState(null)
@@ -47,6 +49,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
   const [showRotationDialog, setShowRotationDialog] = useState(false)
   const [loadingFullDetails, setLoadingFullDetails] = useState(null);
   const [loadingRotationImpact, setLoadingRotationImpact] = useState(null);
+  const [executingOption, setExecutingOption] = useState(null);
 
 
   // Load recovery options from database based on disruption category
@@ -796,6 +799,70 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
     }
   };
 
+  const handleExecuteOption = async (option, letter) => {
+    setExecutingOption(option.id);
+    try {
+      // Get full details and rotation impact before executing
+      let fullDetails = null;
+      let rotationImpact = null;
+
+      // Fetch full details
+      try {
+        const detailsResponse = await fetch(`/api/recovery-option-details/${option.id}`);
+        if (detailsResponse.ok) {
+          fullDetails = await detailsResponse.json();
+        }
+      } catch (error) {
+        console.warn('Could not fetch full details:', error);
+      }
+
+      // Fetch rotation impact
+      try {
+        const rotationResponse = await fetch(`/api/recovery-option/${option.id}/rotation-plan`);
+        if (rotationResponse.ok) {
+          const result = await rotationResponse.json();
+          rotationImpact = result.rotationPlan || result;
+        }
+      } catch (error) {
+        console.warn('Could not fetch rotation impact:', error);
+      }
+
+      // Submit to pending solutions
+      const pendingSolution = {
+        disruptionId: selectedFlight?.id,
+        optionId: option.id,
+        optionTitle: option.title,
+        optionDescription: option.description,
+        cost: option.cost,
+        timeline: option.timeline,
+        confidence: option.confidence,
+        impact: option.impact,
+        status: 'Pending',
+        fullDetails: fullDetails,
+        rotationImpact: rotationImpact,
+        submittedBy: 'operations_user',
+        approvalRequired: 'Operations Manager'
+      };
+
+      const success = await databaseService.savePendingRecoverySolution(pendingSolution);
+      
+      if (success) {
+        // Update flight status to pending
+        await databaseService.updateFlightRecoveryStatus(selectedFlight?.id, 'pending');
+        
+        // Navigate to pending solutions
+        navigate('/pending');
+      } else {
+        alert('Failed to execute recovery option. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error executing recovery option:', error);
+      alert('An error occurred while executing the recovery option.');
+    } finally {
+      setExecutingOption(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -1002,9 +1069,17 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
 
                   <Button 
                     className="w-full bg-flydubai-orange hover:bg-flydubai-orange/90 text-white" 
-                    onClick={() => onSelectPlan({ id: option.id, option: letter, data: option })}
+                    onClick={() => handleExecuteOption(option, letter)}
+                    disabled={executingOption === option.id}
                   >
-                    Select Option {letter}
+                    {executingOption === option.id ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Executing...
+                      </>
+                    ) : (
+                      'Execute'
+                    )}
                   </Button>
                 </div>
               </CardContent>
