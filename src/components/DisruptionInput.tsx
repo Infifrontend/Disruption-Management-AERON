@@ -80,6 +80,7 @@ import { useNavigate } from "react-router-dom";
 interface DisruptionCategory {
   id: string;
   category_name: string;
+  category_code: string; // Added category_code
   description: string;
 }
 
@@ -302,8 +303,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     disruptionType: "technical",
     categorization:
       disruptionCategories.length > 0
-        ? disruptionCategories[0]?.category_name
-        : "Aircraft issue (e.g., AOG)",
+        ? disruptionCategories[0]?.category_code
+        : "AIRCRAFT_ISSUE",
     disruptionReason: "",
     severity: "medium",
     impact: "",
@@ -799,8 +800,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
           disruptionType: "technical",
           categorization:
             disruptionCategories.length > 0
-              ? disruptionCategories[0]?.category_name
-              : "Aircraft issue (e.g., AOG)",
+              ? disruptionCategories[0]?.category_code
+              : "AIRCRAFT_ISSUE",
           disruptionReason: "",
           severity: "medium",
           impact: "",
@@ -1185,7 +1186,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       </SelectTrigger>
                       <SelectContent>
                         {disruptionCategories.map((cat) => (
-                          <SelectItem key={cat.id} value={cat.category_name}>
+                          <SelectItem key={cat.id} value={cat.category_code}>
                             {cat.category_name}
                           </SelectItem>
                         ))}

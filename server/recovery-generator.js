@@ -1,45 +1,54 @@
 // Helper functions for disruption type mapping and recovery generation
-const mapDisruptionTypeToCategory = (type, reason) => {
+const mapDisruptionTypeToCategory = (type, reason = "") => {
   const lowerType = type.toLowerCase();
   const lowerReason = reason.toLowerCase();
 
   if (
     lowerType.includes("technical") ||
+    lowerType.includes("maintenance") ||
     lowerReason.includes("maintenance") ||
-    lowerReason.includes("aog")
+    lowerReason.includes("aog") ||
+    lowerReason.includes("engine") ||
+    lowerReason.includes("bird strike")
   ) {
-    return "Aircraft issue (e.g., AOG)";
+    return "AIRCRAFT_ISSUE";
   }
   if (
     lowerType.includes("crew") ||
     lowerReason.includes("crew") ||
-    lowerReason.includes("duty time")
+    lowerReason.includes("duty time") ||
+    lowerReason.includes("sick")
   ) {
-    return "Crew issue (e.g., sick report, duty time breach)";
+    return "CREW_ISSUE";
   }
   if (
     lowerType.includes("weather") ||
     lowerReason.includes("weather") ||
-    lowerReason.includes("atc")
+    lowerReason.includes("atc") ||
+    lowerReason.includes("fog") ||
+    lowerReason.includes("storm")
   ) {
-    return "ATC/weather delay";
+    return "ATC_WEATHER";
   }
   if (
     lowerType.includes("curfew") ||
     lowerReason.includes("curfew") ||
-    lowerReason.includes("congestion")
+    lowerReason.includes("congestion") ||
+    lowerReason.includes("airport") ||
+    lowerReason.includes("runway")
   ) {
-    return "Airport curfew/ramp congestion";
+    return "CURFEW_CONGESTION";
   }
   if (
     lowerType.includes("rotation") ||
     lowerReason.includes("rotation") ||
-    lowerReason.includes("misalignment")
+    lowerReason.includes("misalignment") ||
+    lowerReason.includes("schedule")
   ) {
-    return "Rotation misalignment or maintenance hold";
+    return "ROTATION_MAINTENANCE";
   }
 
-  return "Aircraft issue (e.g., AOG)"; // Default fallback
+  return "AIRCRAFT_ISSUE"; // Default fallback
 };
 
 const generateAircraftIssueRecovery = (flight) => {
@@ -851,8 +860,8 @@ const generateRotationMisalignmentRecovery = (flight) => {
   return { options, steps };
 };
 
-// Recovery generator for different disruption types
-export function generateRecoveryOptionsForDisruption(disruption) {
+// Recovery generator for different disruption types based on category
+export function generateRecoveryOptionsForDisruption(disruption, categoryInfo = null) {
   if (!disruption) {
     console.error("No disruption provided to generator");
     return { options: [], steps: [] };
@@ -866,17 +875,18 @@ export function generateRecoveryOptionsForDisruption(disruption) {
 
   // Normalize field names
   const flightNumber = disruption.flight_number || disruption.flightNumber;
-  const disruptionType =
-    disruption.disruption_type ||
-    disruption.disruptionType ||
-    disruption.type ||
-    "Technical";
+  const categoryId = disruption.category_id;
+  const categoryCode = categoryInfo?.category_code || mapDisruptionTypeToCategory(
+    disruption.disruption_type || disruption.disruptionType || disruption.type || "Technical",
+    disruption.disruption_reason || "Unknown"
+  );
 
   // Set defaults for missing fields
   const safeDisruption = {
     ...disruption,
     flight_number: flightNumber,
-    disruption_type: disruptionType,
+    category_id: categoryId,
+    category_code: categoryCode,
     severity: disruption.severity || "Medium",
     passengers: disruption.passengers || 150,
     aircraft: disruption.aircraft || "Unknown",
@@ -886,16 +896,15 @@ export function generateRecoveryOptionsForDisruption(disruption) {
   };
 
   console.log(
-    `Generating recovery options for flight ${safeDisruption.flight_number}, type: ${safeDisruption.disruption_type}`,
+    `Generating recovery options for flight ${safeDisruption.flight_number}, category: ${categoryCode}`,
   );
 
-  const disruptionTypeNormalized = disruptionType.toLowerCase();
   let options = [];
   let steps = [];
 
-  // Generate options based on disruption type
-  switch (disruptionTypeNormalized) {
-    case "weather":
+  // Generate options based on category code
+  switch (categoryCode) {
+    case "ATC_WEATHER":
       steps = [
         {
           step: 1,
@@ -1167,8 +1176,7 @@ export function generateRecoveryOptionsForDisruption(disruption) {
       ];
       break;
 
-    case "technical":
-    case "maintenance":
+    case "AIRCRAFT_ISSUE":
       steps = [
         {
           step: 1,
@@ -1243,7 +1251,7 @@ export function generateRecoveryOptionsForDisruption(disruption) {
       ];
       break;
 
-    case "crew":
+    case "CREW_ISSUE":
       steps = [
         {
           step: 1,
@@ -1308,7 +1316,7 @@ export function generateRecoveryOptionsForDisruption(disruption) {
       ];
       break;
 
-    case "airport":
+    case "CURFEW_CONGESTION":
       steps = [
         {
           step: 1,
@@ -1367,9 +1375,88 @@ export function generateRecoveryOptionsForDisruption(disruption) {
       ];
       break;
 
+    case "ROTATION_MAINTENANCE":
+      steps = [
+        {
+          step: 1,
+          title: "Maintenance Hold Identified",
+          status: "completed",
+          timestamp: "11:30 AM",
+          system: "Maintenance System",
+          details: "Aircraft maintenance extended beyond scheduled window",
+          data: { maintenanceType: "Line Check", delay: "3 hours extension" },
+        },
+        {
+          step: 2,
+          title: "Alternative Aircraft Search",
+          status: "completed",
+          timestamp: "11:45 AM",
+          system: "Fleet Management",
+          details: "Searching for available alternative aircraft",
+          data: { availableAircraft: 2, matchingType: true },
+        },
+        {
+          step: 3,
+          title: "Rotation Impact Analysis",
+          status: "completed",
+          timestamp: "12:00 PM",
+          system: "AERON System",
+          details: "Analyzing downstream rotation effects",
+          data: { affectedFlights: 3, cascadeDelay: "90 minutes" },
+        },
+      ];
+
+      options = [
+        {
+          title: "Aircraft Rotation Swap",
+          description: "Reassign aircraft from another rotation to maintain schedule",
+          cost: "AED 75,000",
+          timeline: "90 minutes",
+          confidence: 88,
+          impact: "Minimal network disruption",
+          status: "recommended",
+          priority: 1,
+          category: "Rotation/Maintenance",
+          advantages: [
+            "Alternative aircraft immediately available",
+            "Zero passenger impact on this flight",
+            "Maintains original crew assignment",
+            "Preserves schedule integrity"
+          ],
+          considerations: [
+            "Alternative flight delayed by 60 minutes",
+            "Crew briefing required for aircraft change",
+            "Ground coordination needed",
+            "Potential cascade effects"
+          ],
+        },
+        {
+          title: "Accept Cascade Delays",
+          description: "Wait for original aircraft maintenance completion",
+          cost: "AED 150,000",
+          timeline: "3 hours",
+          confidence: 70,
+          impact: "Multiple flight delays",
+          status: "caution",
+          priority: 2,
+          category: "Rotation/Maintenance",
+          advantages: [
+            "Original aircraft maintained in rotation",
+            "Maintenance completed properly",
+            "No crew changes required"
+          ],
+          considerations: [
+            "3-hour delay cascade to multiple flights",
+            "High passenger compensation costs",
+            "Network disruption impact"
+          ],
+        },
+      ];
+      break;
+
     default:
       console.log(
-        `Handling disruption type: ${disruptionType}, generating comprehensive options`,
+        `Handling unknown category: ${categoryCode}, generating comprehensive options`,
       );
 
       // Generate multiple options for any disruption type
