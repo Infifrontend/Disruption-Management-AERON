@@ -2183,158 +2183,84 @@ app.post("/api/recovery-steps", async (req, res) => {
   }
 });
 
-// Map disruption type to category code
+// Map disruption type to category
 app.post("/api/map-disruption-category", async (req, res) => {
   try {
     const { disruptionType, disruptionReason } = req.body;
 
-    if (!disruptionType) {
-      return res.status(400).json({ error: "Disruption type is required" });
+    console.log("Mapping disruption to category:", {
+      disruptionType,
+      disruptionReason,
+    });
+
+    // Try to find matching category based on disruption type and reason
+    let query = `
+      SELECT category_code, category_name, priority_level
+      FROM disruption_categories
+      WHERE is_active = true AND (
+        LOWER(category_name) LIKE LOWER($1) OR
+        LOWER(description) LIKE LOWER($1)
+    `;
+    const params = [`%${disruptionType || ""}%`];
+
+    if (disruptionReason) {
+      query += ` OR LOWER(category_name) LIKE LOWER($2) OR LOWER(description) LIKE LOWER($2)`;
+      params.push(`%${disruptionReason}%`);
     }
 
-    const lowerType = disruptionType.toLowerCase();
-    const lowerReason = (disruptionReason || "").toLowerCase();
+    query += `) ORDER BY priority_level ASC LIMIT 1`;
 
-    let categoryCode;
+    const result = await pool.query(query, params);
 
-    // Map disruption to category code
-    if (
-      lowerType.includes("technical") ||
-      lowerReason.includes("maintenance") ||
-      lowerReason.includes("aog") ||
-      lowerReason.includes("aircraft") ||
-      lowerReason.includes("engine") ||
-      lowerReason.includes("hydraulics") ||
-      lowerReason.includes("bird strike")
-    ) {
-      categoryCode = "AIRCRAFT_ISSUE";
-    } else if (
-      lowerType.includes("crew") ||
-      lowerReason.includes("crew") ||
-      lowerReason.includes("duty time") ||
-      lowerReason.includes("sick") ||
-      lowerReason.includes("fatigue")
-    ) {
-      categoryCode = "CREW_ISSUE";
-    } else if (
-      lowerType.includes("weather") ||
-      lowerReason.includes("weather") ||
-      lowerReason.includes("atc") ||
-      lowerReason.includes("fog") ||
-      lowerReason.includes("storm") ||
-      lowerReason.includes("wind")
-    ) {
-      categoryCode = "ATC_WEATHER";
-    } else if (
-      lowerType.includes("curfew") ||
-      lowerReason.includes("curfew") ||
-      lowerReason.includes("congestion") ||
-      lowerReason.includes("airport") ||
-      lowerReason.includes("runway") ||
-      lowerReason.includes("gate")
-    ) {
-      categoryCode = "CURFEW_CONGESTION";
-    } else if (
-      lowerType.includes("rotation") ||
-      lowerReason.includes("rotation") ||
-      lowerReason.includes("misalignment") ||
-      lowerReason.includes("schedule")
-    ) {
-      categoryCode = "ROTATION_MAINTENANCE";
-    } else {
-      categoryCode = "AIRCRAFT_ISSUE"; // Default fallback
-    }
-
-    // Get category name from database
-    const categoryResult = await pool.query(
-      "SELECT category_name FROM disruption_categories WHERE category_code = $1",
-      [categoryCode],
-    );
-
-    if (categoryResult.rows.length > 0) {
+    if (result.rows.length > 0) {
       res.json({
-        categoryCode,
-        categoryName: categoryResult.rows[0].category_name,
+        categoryCode: result.rows[0].category_code,
+        categoryName: result.rows[0].category_name,
+        priorityLevel: result.rows[0].priority_level,
       });
     } else {
-      // Fallback if category not found in database
-      res.json({
-        categoryCode: "AIRCRAFT_ISSUE",
-        categoryName: "Aircraft Issue",
-      });
+      // Fallback mapping based on common patterns
+      let categoryCode = "OTHER";
+      const lowerType = (disruptionType || "").toLowerCase();
+      const lowerReason = (disruptionReason || "").toLowerCase();
+
+      if (
+        lowerType.includes("aircraft") ||
+        lowerType.includes("technical") ||
+        lowerReason.includes("maintenance") ||
+        lowerReason.includes("aog")
+      ) {
+        categoryCode = "AIRCRAFT_ISSUE";
+      } else if (
+        lowerType.includes("crew") ||
+        lowerReason.includes("crew") ||
+        lowerReason.includes("duty") ||
+        lowerReason.includes("fatigue")
+      ) {
+        categoryCode = "CREW_ISSUE";
+      } else if (
+        lowerType.includes("weather") ||
+        lowerReason.includes("weather") ||
+        lowerReason.includes("storm") ||
+        lowerReason.includes("fog")
+      ) {
+        categoryCode = "ATC_WEATHER";
+      } else if (
+        lowerType.includes("atc") ||
+        lowerReason.includes("atc") ||
+        lowerReason.includes("slot") ||
+        lowerReason.includes("traffic")
+      ) {
+        categoryCode = "ATC_WEATHER";
+      }
+
+      res.json({ categoryCode, categoryName: categoryCode.replace("_", " ") });
     }
   } catch (error) {
     console.error("Error mapping disruption to category:", error);
     res.status(500).json({ error: error.message });
   }
 });
-
-// Generate recovery options based on category code
-app.post("/api/recovery-options/generate-by-category/:categoryCode", async (req, res) => {
-  try {
-    const { categoryCode } = req.params;
-    const { flightData } = req.body;
-
-    console.log(`Generating recovery options for category: ${categoryCode}`);
-
-    // Validate category code exists
-    const categoryResult = await pool.query(
-      "SELECT * FROM disruption_categories WHERE category_code = $1 AND is_active = true",
-      [categoryCode]
-    );
-
-    if (categoryResult.rows.length === 0) {
-      return res.status(404).json({
-        error: "Category not found",
-        categoryCode: categoryCode
-      });
-    }
-
-    const category = categoryResult.rows[0];
-
-    // Create a mock disruption for the generator
-    const mockDisruption = {
-      id: flightData?.id || 999999,
-      flight_number: flightData?.flightNumber || "TEST-FLIGHT",
-      disruption_type: "Technical", // Will be mapped by category
-      disruption_reason: flightData?.disruptionReason || category.description,
-      severity: flightData?.severity || "Medium",
-      passengers: flightData?.passengers || 150,
-      aircraft: flightData?.aircraft || "B737-800",
-      delay_minutes: flightData?.delay || 0,
-      origin: flightData?.origin || "DXB",
-      destination: flightData?.destination || "Unknown",
-      ...flightData
-    };
-
-    // Generate recovery options using the recovery generator
-    const { generateRecoveryOptionsForDisruption } = await import("./recovery-generator.js");
-    const { options, steps } = generateRecoveryOptionsForDisruption(mockDisruption);
-
-    // Add category information to each option
-    const enhancedOptions = options.map(option => ({
-      ...option,
-      category_code: categoryCode,
-      category_name: category.category_name,
-      category_id: category.id
-    }));
-
-    res.json({
-      success: true,
-      categoryCode,
-      categoryName: category.category_name,
-      options: enhancedOptions,
-      steps: steps,
-      optionsCount: enhancedOptions.length,
-      stepsCount: steps.length
-    });
-
-  } catch (error) {
-    console.error("Error generating recovery options by category:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
 
 // Get recovery options by category
 app.get("/api/recovery-options/category/:categoryCode", async (req, res) => {
