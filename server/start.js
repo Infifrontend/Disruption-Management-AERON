@@ -947,7 +947,8 @@ app.post("/api/disruptions/", async (req, res) => {
     }
 
     // Use defaults for missing fields
-    const safeRoute = route || `${origin || "UNK"} → ${destination || "UNK"}`;
+    const safeRoute =
+      route || `${origin || "UNK"} → ${destination || "UNK"}`;
     const safeOrigin = origin || "UNK";
     const safeDestination = destination || "UNK";
     const safeOriginCity = origin_city_val || "Unknown";
@@ -1352,7 +1353,7 @@ app.get("/api/recovery-categories", async (req, res) => {
     res.json(result.rows);
   } catch (error) {
     console.error("Error fetching recovery categories:", error);
-    res.json([]);
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -1896,7 +1897,10 @@ app.post("/api/generate-recovery-options/:disruptionId", async (req, res) => {
     });
   } catch (error) {
     console.error("Error generating recovery options:", error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: "Failed to generate recovery options",
+      details: error.message,
+    });
   }
 });
 
@@ -2135,6 +2139,46 @@ app.get("/api/recovery-steps/:disruptionId", async (req, res) => {
   } catch (error) {
     console.error("Error fetching recovery steps:", error);
     res.status(500).json({ error: error.message, rows: [] });
+  }
+});
+
+app.post("/api/recovery-steps", async (req, res) => {
+  try {
+    const {
+      disruption_id,
+      step_number,
+      title,
+      status,
+      timestamp,
+      system,
+      details,
+      step_data,
+    } = req.body;
+
+    const result = await pool.query(
+      `
+      INSERT INTO recovery_steps (
+        disruption_id, step_number, title, status, timestamp,
+        system, details, step_data
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *
+    `,
+      [
+        disruption_id,
+        step_number,
+        title,
+        status || "pending",
+        timestamp,
+        system,
+        details,
+        step_data ? JSON.stringify(step_data) : null,
+      ],
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error saving recovery step:", error);
+    res.status(500).json({ error: error.message });
   }
 });
 

@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
@@ -63,452 +63,28 @@ export function PendingSolutions() {
   })
   const [sortBy, setSortBy] = useState('submitted')
   const [sortOrder, setSortOrder] = useState('desc')
+  const [plans, setPlans] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  // Mock data for pending recovery plans with enhanced details
-  const pendingPlans = [
-    {
-      id: 'RP-2025-001',
-      title: 'Aircraft Swap & Route Optimization Recovery Plan',
-      flightNumber: 'EK123',
-      route: 'JFK → DXB',
-      aircraft: 'A321-001',
-      submittedAt: '2025-06-06 14:25:00',
-      submittedBy: 'ops.manager@airline.com',
-      submitterName: 'Sarah Mitchell',
-      priority: 'High',
-      status: 'Pending Approval',
-      estimatedCost: 45200,
-      estimatedDelay: 87,
-      affectedPassengers: 158,
-      confidence: 94.2,
-      disruptionReason: 'Technical Issue - Engine warning light',
-      steps: 6,
-      timeline: '2h 15m',
-      approvalRequired: 'Operations Manager',
-      slaDeadline: '2025-06-06 16:00:00',
-      timeRemaining: '1h 35m',
-      tags: ['Aircraft Substitution', 'High Cost', 'Passenger Impact'],
-      metrics: {
-        successProbability: 94.2,
-        customerSatisfaction: 78,
-        onTimePerformance: 85,
-        costEfficiency: 92
-      },
-      // Enhanced flight details
-      flightDetails: {
-        aircraftType: 'Airbus A321-200',
-        scheduledDeparture: '2025-06-06 14:30',
-        scheduledArrival: '2025-06-07 05:15',
-        gate: 'B12',
-        terminal: '4',
-        cargo: '12.5 tons',
-        disruptionSeverity: 'High'
-      },
-      // Cost breakdown
-      costBreakdown: {
-        aircraftSwap: 28000,
-        passengerCompensation: 8500,
-        crewCosts: 4200,
-        groundHandling: 2800,
-        fuelCosts: 1700
-      },
-      // Recovery steps
-      recoverySteps: [
-        {
-          id: 1,
-          action: 'Ground current aircraft (A321-001) at Gate B12',
-          duration: '15 mins',
-          status: 'pending',
-          responsible: 'Ground Crew Team A',
-          location: 'Gate B12',
-          criticalPath: true,
-          estimatedCost: 2800,
-          description: 'Safely ground and secure the affected aircraft, coordinate with passengers for disembarkation'
-        },
-        {
-          id: 2,
-          action: 'Prepare substitute aircraft (A321-007)',
-          duration: '45 mins',
-          status: 'pending',
-          responsible: 'Maintenance Team',
-          location: 'Maintenance Bay 3',
-          criticalPath: true,
-          estimatedCost: 28000,
-          description: 'Complete pre-flight checks, fuel, and prepare substitute aircraft for passenger transfer'
-        },
-        {
-          id: 3,
-          action: 'Transfer passengers and cargo',
-          duration: '30 mins',
-          status: 'pending',
-          responsible: 'Ground Services',
-          location: 'Gate B15',
-          criticalPath: true,
-          estimatedCost: 4200,
-          description: 'Coordinate passenger transfer, baggage handling, and cargo relocation to new aircraft'
-        },
-        {
-          id: 4,
-          action: 'Crew briefing and aircraft familiarization',
-          duration: '20 mins',
-          status: 'pending',
-          responsible: 'Flight Crew',
-          location: 'Crew Briefing Room',
-          criticalPath: false,
-          estimatedCost: 1500,
-          description: 'Brief crew on aircraft differences, route changes, and emergency procedures'
-        }
-      ],
-      // Assigned crew
-      assignedCrew: [
-        {
-          id: 'CREW-001',
-          name: 'Captain Sarah Johnson',
-          role: 'Captain',
-          certification: 'A321/A320',
-          dutyTime: '4h 30m',
-          restTime: '10h 45m',
-          status: 'Available',
-          phone: '+1-555-0123',
-          email: 'sarah.johnson@airline.com',
-          location: 'JFK Crew Lounge',
-          experience: '15,000 hours'
-        },
-        {
-          id: 'CREW-002',
-          name: 'First Officer Mike Chen',
-          role: 'First Officer',
-          certification: 'A321/A320',
-          dutyTime: '3h 15m',
-          restTime: '11h 30m',
-          status: 'Available',
-          phone: '+1-555-0124',
-          email: 'mike.chen@airline.com',
-          location: 'JFK Crew Lounge',
-          experience: '8,500 hours'
-        },
-        {
-          id: 'CREW-003',
-          name: 'Senior FA Lisa Martinez',
-          role: 'Senior Flight Attendant',
-          certification: 'Cabin Crew',
-          dutyTime: '2h 45m',
-          restTime: '12h 15m',
-          status: 'Available',
-          phone: '+1-555-0125',
-          email: 'lisa.martinez@airline.com',
-          location: 'JFK Terminal 4',
-          experience: '12 years'
-        },
-        {
-          id: 'CREW-004',
-          name: 'FA James Wilson',
-          role: 'Flight Attendant',
-          certification: 'Cabin Crew',
-          dutyTime: '5h 20m',
-          restTime: '8h 40m',
-          status: 'Near Limit',
-          phone: '+1-555-0126',
-          email: 'james.wilson@airline.com',
-          location: 'JFK Terminal 4',
-          experience: '6 years'
-        }
-      ]
-    },
-    {
-      id: 'RP-2025-002',
-      title: 'Weather Delay Crew Optimization Plan',
-      flightNumber: 'EK456',
-      route: 'LHR → DXB',
-      aircraft: 'A330-012',
-      submittedAt: '2025-06-06 13:45:30',
-      submittedBy: 'crew.scheduler@airline.com',
-      submitterName: 'Michael Chen',
-      priority: 'Medium',
-      status: 'Under Review',
-      estimatedCost: 28900,
-      estimatedDelay: 145,
-      affectedPassengers: 295,
-      confidence: 87.5,
-      disruptionReason: 'Weather - Thunderstorms at LHR',
-      steps: 4,
-      timeline: '3h 45m',
-      approvalRequired: 'Crew Manager',
-      slaDeadline: '2025-06-06 15:30:00',
-      timeRemaining: '2h 5m',
-      tags: ['Weather', 'Crew Change', 'Extended Delay'],
-      metrics: {
-        successProbability: 87.5,
-        customerSatisfaction: 65,
-        onTimePerformance: 72,
-        costEfficiency: 88
-      },
-      flightDetails: {
-        aircraftType: 'Airbus A330-300',
-        scheduledDeparture: '2025-06-06 11:30',
-        scheduledArrival: '2025-06-06 20:45',
-        gate: 'A15',
-        terminal: '2',
-        cargo: '18.2 tons',
-        disruptionSeverity: 'Medium'
-      },
-      costBreakdown: {
-        crewChanges: 15000,
-        passengerCompensation: 9800,
-        hotelAccommodation: 3200,
-        mealVouchers: 900
-      },
-      recoverySteps: [
-        {
-          id: 1,
-          action: 'Replace crew due to duty time limits',
-          duration: '60 mins',
-          status: 'pending',
-          responsible: 'Crew Scheduling',
-          location: 'LHR Crew Center',
-          criticalPath: true,
-          estimatedCost: 15000
-        },
-        {
-          id: 2,
-          action: 'Arrange passenger accommodation',
-          duration: '45 mins',
-          status: 'pending',
-          responsible: 'Passenger Services',
-          location: 'LHR Terminal 2',
-          criticalPath: false,
-          estimatedCost: 13900
-        }
-      ],
-      assignedCrew: [
-        {
-          id: 'CREW-005',
-          name: 'Captain David Thompson',
-          role: 'Captain',
-          certification: 'A330/A340',
-          dutyTime: '2h 15m',
-          restTime: '14h 30m',
-          status: 'Available',
-          phone: '+44-20-7946-0958',
-          email: 'david.thompson@airline.com',
-          location: 'LHR Crew Lounge',
-          experience: '18,000 hours'
-        }
-      ]
-    },
-    {
-      id: 'RP-2025-003',
-      title: 'Maintenance Hold Passenger Rebooking',
-      flightNumber: 'EK789',
-      route: 'DXB → SYD',
-      aircraft: 'A380-001',
-      submittedAt: '2025-06-06 12:30:15',
-      submittedBy: 'maintenance.ops@airline.com',
-      submitterName: 'Lisa Rodriguez',
-      priority: 'Critical',
-      status: 'Pending Approval',
-      estimatedCost: 67800,
-      estimatedDelay: 240,
-      affectedPassengers: 425,
-      confidence: 91.8,
-      disruptionReason: 'Maintenance - Hydraulic system check required',
-      steps: 8,
-      timeline: '5h 30m',
-      approvalRequired: 'Senior Operations Manager',
-      slaDeadline: '2025-06-06 14:00:00',
-      timeRemaining: 'OVERDUE',
-      tags: ['Maintenance', 'High Impact', 'Wide-body', 'Critical'],
-      metrics: {
-        successProbability: 91.8,
-        customerSatisfaction: 58,
-        onTimePerformance: 45,
-        costEfficiency: 75
-      },
-      flightDetails: {
-        aircraftType: 'Airbus A380-800',
-        scheduledDeparture: '2025-06-06 08:15',
-        scheduledArrival: '2025-06-06 22:30',
-        gate: 'C1',
-        terminal: '3',
-        cargo: '28.7 tons',
-        disruptionSeverity: 'Critical'
-      },
-      costBreakdown: {
-        passengerRebooking: 42000,
-        hotelAccommodation: 18500,
-        mealCompensation: 4800,
-        alternativeTransport: 2500
-      },
-      recoverySteps: [
-        {
-          id: 1,
-          action: 'Ground A380 aircraft for hydraulic inspection',
-          duration: '120 mins',
-          status: 'pending',
-          responsible: 'Maintenance Team Alpha',
-          location: 'DXB Maintenance Hangar 2',
-          criticalPath: true,
-          estimatedCost: 35000
-        },
-        {
-          id: 2,
-          action: 'Initiate passenger rebooking process',
-          duration: '180 mins',
-          status: 'pending',
-          responsible: 'Passenger Services',
-          location: 'DXB Terminal 3',
-          criticalPath: true,
-          estimatedCost: 32800
-        }
-      ],
-      assignedCrew: [
-        {
-          id: 'CREW-006',
-          name: 'Captain Ahmed Al-Mansouri',
-          role: 'Captain',
-          certification: 'A380/A350',
-          dutyTime: '1h 45m',
-          restTime: '16h 20m',
-          status: 'Available',
-          phone: '+971-4-555-0190',
-          email: 'ahmed.almansouri@airline.com',
-          location: 'DXB Crew Rest',
-          experience: '22,000 hours'
-        }
-      ]
-    },
-    {
-      id: 'RP-2025-004',
-      title: 'ATC Slot Optimization Recovery',
-      flightNumber: 'EK101',
-      route: 'FRA → DXB',
-      aircraft: 'A350-001',
-      submittedAt: '2025-06-06 11:15:45',
-      submittedBy: 'slot.coordinator@airline.com',
-      submitterName: 'David Park',
-      priority: 'Low',
-      status: 'Approved',
-      estimatedCost: 12400,
-      estimatedDelay: 65,
-      affectedPassengers: 280,
-      confidence: 96.1,
-      disruptionReason: 'ATC - Flow control restrictions',
-      steps: 3,
-      timeline: '1h 30m',
-      approvalRequired: 'Slot Coordinator',
-      slaDeadline: '2025-06-06 13:00:00',
-      timeRemaining: 'Completed',
-      tags: ['ATC', 'Low Cost', 'Quick Resolution'],
-      metrics: {
-        successProbability: 96.1,
-        customerSatisfaction: 85,
-        onTimePerformance: 78,
-        costEfficiency: 95
-      },
-      flightDetails: {
-        aircraftType: 'Airbus A350-900',
-        scheduledDeparture: '2025-06-06 09:45',
-        scheduledArrival: '2025-06-06 17:30',
-        gate: 'A8',
-        terminal: '1',
-        cargo: '15.3 tons',
-        disruptionSeverity: 'Low'
-      },
-      costBreakdown: {
-        slotRescheduling: 8000,
-        passengerServices: 3200,
-        fuelAdjustment: 1200
-      },
-      recoverySteps: [
-        {
-          id: 1,
-          action: 'Request new ATC slot',
-          duration: '30 mins',
-          status: 'completed',
-          responsible: 'Slot Coordination',
-          location: 'FRA Operations',
-          criticalPath: true,
-          estimatedCost: 8000
-        }
-      ],
-      assignedCrew: [
-        {
-          id: 'CREW-007',
-          name: 'Captain Hans Mueller',
-          role: 'Captain',
-          certification: 'A350/A330',
-          dutyTime: '3h 20m',
-          restTime: '12h 40m',
-          status: 'Available',
-          phone: '+49-69-555-0234',
-          email: 'hans.mueller@airline.com',
-          location: 'FRA Operations',
-          experience: '16,500 hours'
-        }
-      ]
-    },
-    {
-      id: 'RP-2025-005',
-      title: 'Ground Equipment Failure Response',
-      flightNumber: 'EK234',
-      route: 'SIN → DXB',
-      aircraft: 'B777-001',
-      submittedAt: '2025-06-06 10:45:20',
-      submittedBy: 'ground.ops@airline.com',
-      submitterName: 'Jennifer Williams',
-      priority: 'Medium',
-      status: 'Rejected',
-      estimatedCost: 34500,
-      estimatedDelay: 120,
-      affectedPassengers: 320,
-      confidence: 82.3,
-      disruptionReason: 'Ground Equipment - Jetbridge malfunction',
-      steps: 5,
-      timeline: '2h 45m',
-      approvalRequired: 'Ground Operations Manager',
-      slaDeadline: '2025-06-06 12:30:00',
-      timeRemaining: 'Completed',
-      tags: ['Ground Equipment', 'Gate Change', 'Moderate Cost'],
-      rejectionReason: 'Alternative lower-cost solution identified',
-      metrics: {
-        successProbability: 82.3,
-        customerSatisfaction: 72,
-        onTimePerformance: 68,
-        costEfficiency: 81
-      },
-      flightDetails: {
-        aircraftType: 'Boeing 777-300ER',
-        scheduledDeparture: '2025-06-06 06:20',
-        scheduledArrival: '2025-06-06 10:45',
-        gate: 'B8',
-        terminal: '2',
-        cargo: '19.1 tons',
-        disruptionSeverity: 'Medium'
-      },
-      costBreakdown: {
-        gateChange: 18000,
-        equipmentReplacement: 12000,
-        passengerServices: 4500
-      },
-      recoverySteps: [
-        {
-          id: 1,
-          action: 'Move aircraft to alternative gate',
-          duration: '45 mins',
-          status: 'rejected',
-          responsible: 'Ground Operations',
-          location: 'SIN Terminal 2',
-          criticalPath: true,
-          estimatedCost: 18000
-        }
-      ],
-      assignedCrew: []
+  useEffect(() => {
+    const fetchPlans = async () => {
+      setLoading(true)
+      try {
+        const data = await databaseService.getPendingSolutions()
+        setPlans(data)
+      } catch (error) {
+        console.error("Failed to fetch pending solutions:", error)
+        // Handle error appropriately, e.g., show an error message
+      } finally {
+        setLoading(false)
+      }
     }
-  ]
+    fetchPlans()
+  }, [])
 
-  const filteredPlans = pendingPlans.filter(plan => {
+  const filteredPlans = plans.filter(plan => {
     const matchesPriority = filters.priority === 'all' || plan.priority.toLowerCase() === filters.priority
-    const matchesSubmitter = filters.submitter === 'all' || plan.submittedBy.includes(filters.submitter)
+    const matchesSubmitter = filters.submitter === 'all' || plan.submittedBy.toLowerCase().includes(filters.submitter.toLowerCase())
     const matchesFlightNumber = !filters.flightNumber || plan.flightNumber.toLowerCase().includes(filters.flightNumber.toLowerCase())
     const matchesPlanId = !filters.planId || plan.id.toLowerCase().includes(filters.planId.toLowerCase())
 
@@ -531,8 +107,8 @@ export function PendingSolutions() {
         break
       case 'priority':
         const priorityOrder = { 'Critical': 4, 'High': 3, 'Medium': 2, 'Low': 1 }
-        aValue = priorityOrder[a.priority]
-        bValue = priorityOrder[b.priority]
+        aValue = priorityOrder[a.priority] || 0
+        bValue = priorityOrder[b.priority] || 0
         break
       case 'cost':
         aValue = a.estimatedCost
@@ -592,75 +168,87 @@ export function PendingSolutions() {
 
   const getTabCounts = () => {
     return {
-      all: pendingPlans.length,
-      pending: pendingPlans.filter(p => ['Pending Approval', 'Under Review'].includes(p.status)).length,
-      approved: pendingPlans.filter(p => p.status === 'Approved').length,
-      rejected: pendingPlans.filter(p => p.status === 'Rejected').length,
-      critical: pendingPlans.filter(p => p.priority === 'Critical').length
+      all: plans.length,
+      pending: plans.filter(p => ['Pending Approval', 'Under Review'].includes(p.status)).length,
+      approved: plans.filter(p => p.status === 'Approved').length,
+      rejected: plans.filter(p => p.status === 'Rejected').length,
+      critical: plans.filter(p => p.priority === 'Critical').length
     }
   }
 
   const tabCounts = getTabCounts()
 
   const handleApprove = async (planId) => {
-    console.log('Approving plan:', planId)
     try {
       await databaseService.updateFlightDisruptionStatus(planId, 'Approved');
-      // Optionally refresh data or update UI
+      setPlans(plans.map(plan => plan.id === planId ? { ...plan, status: 'Approved' } : plan));
     } catch (error) {
       console.error("Failed to approve plan:", error);
     }
   }
 
   const handleReject = async (planId) => {
-    console.log('Rejecting plan:', planId)
     try {
       await databaseService.updateFlightDisruptionStatus(planId, 'Rejected');
-      // Optionally refresh data or update UI
+      setPlans(plans.map(plan => plan.id === planId ? { ...plan, status: 'Rejected' } : plan));
     } catch (error) {
       console.error("Failed to reject plan:", error);
     }
   }
 
   const handleExecute = async (plan) => {
-    console.log('Executing plan:', plan.id)
     try {
-      // Update status to Pending
       await databaseService.updateFlightDisruptionStatus(plan.id, 'Pending');
-      // Add to pending solutions table with all info
       await databaseService.addPendingSolution({
         ...plan,
-        status: 'Pending', // Ensure status is updated
-        // Add other necessary fields from plan here
+        status: 'Pending',
         flightDetails: plan.flightDetails,
         costBreakdown: plan.costBreakdown,
         recoverySteps: plan.recoverySteps,
         assignedCrew: plan.assignedCrew,
       });
-      // Navigate to Pending Solutions menu (or trigger a state change to show it)
-      // For simplicity, we'll just log and assume navigation is handled elsewhere or by a router
-      console.log(`Plan ${plan.id} executed and status set to Pending.`);
-      // You might want to trigger a refetch of the data or redirect the user.
-      // For now, we'll simulate by selecting the plan to show details as if it were pending.
-      setSelectedPlan({...plan, status: 'Pending'}); 
+      setPlans(plans.map(p => p.id === plan.id ? { ...p, status: 'Pending' } : p));
+      setSelectedPlan({ ...plan, status: 'Pending' });
     } catch (error) {
       console.error("Failed to execute plan:", error);
     }
   }
 
-  const handleViewDetails = (plan) => {
-    setSelectedPlan(plan)
+  const handleViewDetails = async (plan) => {
+    try {
+      const detailedPlan = await databaseService.getFlightDisruptionDetails(plan.id);
+      setSelectedPlan(detailedPlan);
+    } catch (error) {
+      console.error("Failed to fetch plan details:", error);
+      // Fallback to showing the plan with available data if details fetch fails
+      setSelectedPlan(plan);
+    }
   }
 
-  // Function to format date in IST
+  const refreshPlans = async () => {
+    setLoading(true);
+    try {
+      const data = await databaseService.getPendingSolutions();
+      setPlans(data);
+    } catch (error) {
+      console.error("Failed to refresh pending solutions:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatIST = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+    if (!dateString) return 'N/A';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true });
+    } catch (e) {
+      return 'Invalid Date';
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold">Pending Recovery Solutions</h2>
@@ -669,8 +257,8 @@ export function PendingSolutions() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" className="flex items-center gap-2">
-            <RefreshCw className="h-4 w-4" />
+          <Button variant="outline" onClick={refreshPlans} className="flex items-center gap-2" disabled={loading}>
+            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           <Button variant="outline" className="flex items-center gap-2">
@@ -680,7 +268,6 @@ export function PendingSolutions() {
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
           <CardContent className="p-4">
@@ -735,7 +322,6 @@ export function PendingSolutions() {
         </Card>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -825,7 +411,6 @@ export function PendingSolutions() {
         </CardContent>
       </Card>
 
-      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="all" className="flex items-center gap-1 whitespace-nowrap">
@@ -852,7 +437,17 @@ export function PendingSolutions() {
 
         <TabsContent value={activeTab} className="mt-6">
           <div className="space-y-4">
-            {sortedPlans.length > 0 ? (
+            {loading ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-spin" />
+                  <h3 className="text-lg font-semibold mb-2">Loading Plans...</h3>
+                  <p className="text-muted-foreground">
+                    Fetching the latest recovery plans from the database.
+                  </p>
+                </CardContent>
+              </Card>
+            ) : sortedPlans.length > 0 ? (
               sortedPlans.map((plan) => (
                 <Card key={plan.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
@@ -995,7 +590,6 @@ export function PendingSolutions() {
         </TabsContent>
       </Tabs>
 
-      {/* Enhanced Plan Details Dialog - MUCH WIDER */}
       {selectedPlan && (
         <Dialog open={!!selectedPlan} onOpenChange={() => setSelectedPlan(null)}>
           <DialogContent className="max-w-[95vw] w-[95vw] max-h-[95vh] overflow-y-auto">
@@ -1019,7 +613,6 @@ export function PendingSolutions() {
               </TabsList>
 
               <TabsContent value="overview" className="space-y-6">
-                {/* Plan Summary - Enhanced for wider layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   <Card>
                     <CardHeader>
@@ -1130,7 +723,6 @@ export function PendingSolutions() {
                   </Card>
                 </div>
 
-                {/* Disruption Details */}
                 <Card>
                   <CardHeader>
                     <CardTitle>Disruption Details</CardTitle>
@@ -1152,7 +744,6 @@ export function PendingSolutions() {
               </TabsContent>
 
               <TabsContent value="flight" className="space-y-6">
-                {/* Flight Information - Enhanced for wider layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader>
@@ -1224,7 +815,6 @@ export function PendingSolutions() {
                     </CardContent>
                   </Card>
 
-                  {/* Additional flight details card for wider layout */}
                   <Card>
                     <CardHeader>
                       <CardTitle>Operational Context</CardTitle>
@@ -1268,7 +858,6 @@ export function PendingSolutions() {
               </TabsContent>
 
               <TabsContent value="crew" className="space-y-6">
-                {/* Assigned Crew - Enhanced for wider layout */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -1330,7 +919,6 @@ export function PendingSolutions() {
               </TabsContent>
 
               <TabsContent value="steps" className="space-y-6">
-                {/* Recovery Steps - Enhanced for wider layout */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
@@ -1407,7 +995,6 @@ export function PendingSolutions() {
               </TabsContent>
 
               <TabsContent value="costs" className="space-y-6">
-                {/* Cost Breakdown - Enhanced for wider layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <Card>
                     <CardHeader>
@@ -1449,7 +1036,6 @@ export function PendingSolutions() {
                     </CardContent>
                   </Card>
 
-                  {/* Cost Analysis */}
                   <Card>
                     <CardHeader>
                       <CardTitle>Cost Analysis & Comparison</CardTitle>
@@ -1486,7 +1072,7 @@ export function PendingSolutions() {
                               </span>
                             </div>
                             <Progress 
-                              value={(Math.round(selectedPlan.estimatedCost / selectedPlan.affectedPassengers) / 287) * 100} 
+                              value={Math.min(100, Math.round((Math.round(selectedPlan.estimatedCost / selectedPlan.affectedPassengers) / 287) * 100))} 
                               className="mt-2" 
                             />
                           </div>
@@ -1516,7 +1102,6 @@ export function PendingSolutions() {
               </TabsContent>
             </Tabs>
 
-            {/* Action Buttons */}
             <div className="flex justify-end gap-2 pt-4 border-t">
               <Button variant="outline" onClick={() => setSelectedPlan(null)}>
                 Close
