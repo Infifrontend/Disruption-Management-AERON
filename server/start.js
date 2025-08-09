@@ -1891,9 +1891,10 @@ app.post("/api/generate-recovery-options/:disruptionId", async (req, res) => {
 
     console.log("Successfully saved all recovery options and steps");
     res.json({
-      message: "Recovery options generated successfully",
+      success: true,
       optionsCount: options.length,
       stepsCount: steps.length,
+      message: `Generated ${options.length} recovery options and ${steps.length} steps`,
     });
   } catch (error) {
     console.error("Error generating recovery options:", error);
@@ -2747,20 +2748,22 @@ app.get("/api/recovery-option-details/:optionId", async (req, res) => {
 app.post('/api/pending-recovery-solutions', async (req, res) => {
   try {
     const {
-      disruption_id,
-      option_id,
-      option_title,
-      option_description,
-      cost,
-      timeline,
-      confidence,
-      impact,
-      status,
-      full_details,
-      rotation_impact,
-      submitted_by,
-      approval_required
+      disruption_id, option_id, option_title, option_description, cost, timeline,
+      confidence, impact, status, full_details, rotation_impact, submitted_by, approval_required
     } = req.body;
+
+    // Check if this combination already exists
+    const existingCheck = await pool.query(`
+      SELECT id FROM pending_recovery_solutions 
+      WHERE disruption_id = $1 AND option_id = $2
+    `, [disruption_id, option_id]);
+
+    if (existingCheck.rows.length > 0) {
+      return res.status(409).json({ 
+        error: 'Duplicate entry', 
+        message: 'This recovery solution is already pending for this flight.' 
+      });
+    }
 
     const result = await pool.query(`
       INSERT INTO pending_recovery_solutions 

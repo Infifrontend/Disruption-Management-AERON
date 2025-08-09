@@ -77,8 +77,23 @@ export function PendingSolutions() {
       const data = await databaseService.getPendingRecoverySolutions()
       console.log('Fetched pending solutions:', data)
       
+      // Remove duplicates based on disruption_id and option_id combination
+      const uniqueData = data.reduce((acc, plan) => {
+        const key = `${plan.disruption_id}-${plan.option_id}`
+        if (!acc.has(key)) {
+          acc.set(key, plan)
+        } else {
+          // Keep the most recent one if duplicates exist
+          const existing = acc.get(key)
+          if (new Date(plan.submitted_at || 0) > new Date(existing.submitted_at || 0)) {
+            acc.set(key, plan)
+          }
+        }
+        return acc
+      }, new Map())
+      
       // Transform the database data to match the expected format
-      const transformedPlans = data.map(plan => ({
+      const transformedPlans = Array.from(uniqueData.values()).map(plan => ({
         id: plan.id || `RP-${new Date().getFullYear()}-${String(plan.id || Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
         title: plan.option_title || plan.title || 'Recovery Plan',
         flightNumber: plan.flight_number || 'N/A',
@@ -109,7 +124,9 @@ export function PendingSolutions() {
         flightDetails: plan.full_details || {},
         costBreakdown: plan.full_details?.costBreakdown || {},
         recoverySteps: plan.full_details?.recoverySteps || [],
-        assignedCrew: plan.full_details?.assignedCrew || []
+        assignedCrew: plan.full_details?.assignedCrew || [],
+        disruptionId: plan.disruption_id,
+        optionId: plan.option_id
       }))
       
       setPlans(transformedPlans)
