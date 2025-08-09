@@ -54,6 +54,8 @@ export interface FlightDisruption {
   recoveryStatus?: string;
   createdAt: string;
   updatedAt: string;
+  categorization?: string; // Added for context, though not directly used in this method
+  disruption_type?: string; // Added for context, though not directly used in this method
 }
 
 export interface RecoveryOption {
@@ -606,7 +608,7 @@ class DatabaseService {
       if (recoveryStatus) {
         url += `?recovery_status=${encodeURIComponent(recoveryStatus)}`
       }
-      
+
       console.log('Fetching disruptions from:', url)
 
       // Check if API server is available first
@@ -630,7 +632,7 @@ class DatabaseService {
         const transformedFlights = data.map((flight) => {
           // Handle unknown IDs by using flight_number as display value
           const isUnknownId = flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-');
-          const displayFlightNumber = isUnknownId 
+          const displayFlightNumber = isUnknownId
             ? (flight.flight_number || '-')
             : flight.flight_number;
 
@@ -717,7 +719,7 @@ class DatabaseService {
 
       const response = await fetch(apiUrl, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
           "Accept": "application/json"
         },
@@ -905,7 +907,7 @@ class DatabaseService {
 
   async getRecoveryOptionTemplates(categoryId?: string): Promise<any[]> {
     try {
-      const url = categoryId 
+      const url = categoryId
         ? `${this.baseUrl}/recovery-option-templates?category_id=${categoryId}`
         : `${this.baseUrl}/recovery-option-templates`;
       const response = await fetch(url);
@@ -927,7 +929,7 @@ class DatabaseService {
         return [];
       }
 
-      const url = optionId 
+      const url = optionId
         ? `${this.baseUrl}/recovery-steps-detailed/${disruptionId}?option_id=${optionId}`
         : `${this.baseUrl}/recovery-steps-detailed/${disruptionId}`;
 
@@ -982,9 +984,9 @@ class DatabaseService {
       const response = await fetch(`${this.baseUrl}/map-disruption-category`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          disruptionType, 
-          disruptionReason: disruptionReason || '' 
+        body: JSON.stringify({
+          disruptionType,
+          disruptionReason: disruptionReason || ''
         }),
       });
       if (!response.ok) return null;
@@ -1550,6 +1552,45 @@ class DatabaseService {
       console.error('Failed to update disruption status:', error);
       return false;
     }
+  }
+
+  /**
+   * Fetches recovery options based on the disruption's category code.
+   * It first maps the disruption type and reason to a category code,
+   * then uses that code to retrieve relevant recovery options.
+   *
+   * @param disruption - The flight disruption object containing type and reason.
+   * @returns A promise that resolves to an array of recovery options.
+   */
+  async getRecoveryOptionsForDisruptionCategory(disruption: FlightDisruption): Promise<any[]> {
+    if (!disruption) {
+      console.log("No disruption provided");
+      return [];
+    }
+
+    const disruptionId = disruption.id || disruption.flightNumber || "unknown";
+    console.log("Processing disruption:", disruption, "with ID:", disruptionId);
+    console.log(
+      "Disruption categorization:",
+      disruption.categorization || disruption.disruptionReason,
+    );
+
+    // Map categorization to category code
+    const categoryCode = await this.mapDisruptionToCategory(
+      disruption.type || disruption.disruption_type || "Technical",
+      disruption.disruptionReason || disruption.categorization || ""
+    );
+
+    console.log("Mapped category code:", categoryCode);
+
+    if (!categoryCode) {
+      console.warn("Could not determine category code for disruption. Fetching all options.");
+      // Fallback: Fetch all recovery options if category code cannot be determined
+      return this.getRecoveryOptions(disruptionId);
+    }
+
+    // Fetch recovery options based on the determined category code
+    return this.getRecoveryOptionsByCategory(categoryCode);
   }
 }
 

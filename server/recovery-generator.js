@@ -6,40 +6,53 @@ const mapDisruptionTypeToCategory = (type, reason) => {
   if (
     lowerType.includes("technical") ||
     lowerReason.includes("maintenance") ||
-    lowerReason.includes("aog")
+    lowerReason.includes("aog") ||
+    lowerReason.includes("aircraft") ||
+    lowerReason.includes("engine") ||
+    lowerReason.includes("hydraulics")
   ) {
-    return "Aircraft issue (e.g., AOG)";
+    return "AIRCRAFT_ISSUE";
   }
   if (
     lowerType.includes("crew") ||
     lowerReason.includes("crew") ||
-    lowerReason.includes("duty time")
+    lowerReason.includes("duty time") ||
+    lowerReason.includes("sick") ||
+    lowerReason.includes("fatigue")
   ) {
-    return "Crew issue (e.g., sick report, duty time breach)";
+    return "CREW_ISSUE";
   }
   if (
     lowerType.includes("weather") ||
     lowerReason.includes("weather") ||
-    lowerReason.includes("atc")
+    lowerReason.includes("atc") ||
+    lowerReason.includes("fog") ||
+    lowerReason.includes("storm") ||
+    lowerReason.includes("wind")
   ) {
-    return "ATC/weather delay";
+    return "ATC_WEATHER";
   }
   if (
     lowerType.includes("curfew") ||
     lowerReason.includes("curfew") ||
-    lowerReason.includes("congestion")
+    lowerReason.includes("congestion") ||
+    lowerReason.includes("airport") ||
+    lowerReason.includes("runway") ||
+    lowerReason.includes("gate")
   ) {
-    return "Airport curfew/ramp congestion";
+    return "CURFEW_CONGESTION";
   }
   if (
     lowerType.includes("rotation") ||
     lowerReason.includes("rotation") ||
-    lowerReason.includes("misalignment")
+    lowerReason.includes("misalignment") ||
+    lowerReason.includes("maintenance") ||
+    lowerReason.includes("schedule")
   ) {
-    return "Rotation misalignment or maintenance hold";
+    return "ROTATION_MAINTENANCE";
   }
 
-  return "Aircraft issue (e.g., AOG)"; // Default fallback
+  return "AIRCRAFT_ISSUE"; // Default fallback
 };
 
 const generateAircraftIssueRecovery = (flight) => {
@@ -889,9 +902,43 @@ export function generateRecoveryOptionsForDisruption(disruption) {
     `Generating recovery options for flight ${safeDisruption.flight_number}, type: ${safeDisruption.disruption_type}`,
   );
 
-  const disruptionTypeNormalized = disruptionType.toLowerCase();
+  // Map disruption to category code
+  const categoryCode = mapDisruptionTypeToCategory(
+    safeDisruption.disruption_type,
+    safeDisruption.disruption_reason || ""
+  );
+
+  console.log(`Mapped to category code: ${categoryCode}`);
+
   let options = [];
   let steps = [];
+
+  // Generate options based on category code
+  switch (categoryCode) {
+    case "AIRCRAFT_ISSUE":
+      return generateAircraftIssueRecovery(safeDisruption);
+
+    case "CREW_ISSUE":
+      return generateCrewIssueRecovery(safeDisruption);
+
+    case "ATC_WEATHER":
+      return generateWeatherDelayRecovery(safeDisruption);
+
+    case "CURFEW_CONGESTION":
+      return generateCurfewCongestionRecovery(safeDisruption);
+
+    case "ROTATION_MAINTENANCE":
+      return generateRotationMisalignmentRecovery(safeDisruption);
+
+    default:
+      console.log(
+        `Using default aircraft issue recovery for category: ${categoryCode}`,
+      );
+      return generateAircraftIssueRecovery(safeDisruption);
+  }
+
+  // Legacy fallback for old disruption type matching
+  const disruptionTypeNormalized = disruptionType.toLowerCase();
 
   // Generate options based on disruption type
   switch (disruptionTypeNormalized) {
