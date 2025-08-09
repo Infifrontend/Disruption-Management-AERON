@@ -51,6 +51,7 @@ export interface FlightDisruption {
   type: string;
   status: string;
   disruptionReason: string;
+  recoveryStatus?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -598,9 +599,15 @@ class DatabaseService {
   }
 
   // Flight Disruptions
-  async getAllDisruptions(): Promise<FlightDisruption[]> {
+  async getAllDisruptions(recoveryStatus?: string): Promise<FlightDisruption[]> {
     try {
-      console.log('Fetching disruptions from:', `${this.baseUrl}/disruptions`)
+      // Build URL with recovery_status filter if provided
+      let url = `${this.baseUrl}/disruptions`
+      if (recoveryStatus) {
+        url += `?recovery_status=${encodeURIComponent(recoveryStatus)}`
+      }
+      
+      console.log('Fetching disruptions from:', url)
 
       // Check if API server is available first
       const healthCheck = await this.checkApiHealth()
@@ -609,7 +616,7 @@ class DatabaseService {
         return []
       }
 
-      const response = await fetch(`${this.baseUrl}/disruptions`)
+      const response = await fetch(url)
 
       if (!response.ok) {
         console.error(`HTTP error! status: ${response.status}`)
@@ -646,6 +653,7 @@ class DatabaseService {
             type: flight.disruption_type || "Unknown",
             status: isUnknownId && !flight.flight_number ? "Unknown" : flight.status,
             disruptionReason: flight.disruption_reason,
+            recoveryStatus: flight.recovery_status || 'none',
             categorization: flight.categorization || "Uncategorized",
             createdAt: flight.created_at,
             updatedAt: flight.updated_at,
