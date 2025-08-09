@@ -77,15 +77,25 @@ export function PendingSolutions() {
       const data = await databaseService.getPendingRecoverySolutions()
       console.log('Fetched pending solutions:', data)
       
+      if (!data || !Array.isArray(data)) {
+        console.warn('Invalid data received:', data)
+        setPlans([])
+        return
+      }
+      
       // Remove duplicates based on disruption_id and option_id combination
       const uniqueData = data.reduce((acc, plan) => {
-        const key = `${plan.disruption_id}-${plan.option_id}`
+        if (!plan) return acc
+        
+        const key = `${plan.disruption_id || 'unknown'}-${plan.option_id || 'unknown'}`
         if (!acc.has(key)) {
           acc.set(key, plan)
         } else {
           // Keep the most recent one if duplicates exist
           const existing = acc.get(key)
-          if (new Date(plan.submitted_at || 0) > new Date(existing.submitted_at || 0)) {
+          const planDate = new Date(plan.submitted_at || plan.created_at || 0)
+          const existingDate = new Date(existing.submitted_at || existing.created_at || 0)
+          if (planDate > existingDate) {
             acc.set(key, plan)
           }
         }
@@ -103,7 +113,7 @@ export function PendingSolutions() {
         submittedBy: plan.submitted_by || 'system',
         submitterName: plan.submitted_by || 'AERON System',
         priority: plan.severity || 'Medium',
-        status: plan.status || 'Pending',
+        status: plan.status || 'Pending Approval',
         estimatedCost: typeof plan.cost === 'string' ? parseInt(plan.cost.replace(/[^0-9]/g, '')) || 0 : plan.cost || 0,
         estimatedDelay: parseInt(plan.timeline?.replace(/[^0-9]/g, '') || '0') || 0,
         affectedPassengers: plan.passengers || 0,
@@ -132,8 +142,16 @@ export function PendingSolutions() {
       setPlans(transformedPlans)
     } catch (error) {
       console.error("Failed to fetch pending solutions:", error)
-      // Set empty array on error to show "No Data Found" message
+      // Try to show cached data or empty array
       setPlans([])
+      
+      // You could add a retry mechanism here
+      setTimeout(() => {
+        if (plans.length === 0) {
+          console.log('Retrying to fetch pending solutions...')
+          // Could implement a retry mechanism
+        }
+      }, 5000)
     } finally {
       setLoading(false)
     }
@@ -146,10 +164,10 @@ export function PendingSolutions() {
     const matchesPlanId = !filters.planId || plan.id.toLowerCase().includes(filters.planId.toLowerCase())
 
     const matchesTab = activeTab === 'all' || 
-                     (activeTab === 'pending' && ['Pending Approval', 'Under Review'].includes(plan.status)) ||
+                     (activeTab === 'pending' && ['Pending Approval', 'Under Review', 'Pending'].includes(plan.status)) ||
                      (activeTab === 'approved' && plan.status === 'Approved') ||
                      (activeTab === 'rejected' && plan.status === 'Rejected') ||
-                     (activeTab === 'critical' && plan.priority === 'Critical')
+                     (activeTab === 'critical' && (plan.priority === 'Critical' || plan.priority === 'High'))
 
     return matchesPriority && matchesSubmitter && matchesFlightNumber && matchesPlanId && matchesTab
   })
@@ -226,10 +244,10 @@ export function PendingSolutions() {
   const getTabCounts = () => {
     return {
       all: plans.length,
-      pending: plans.filter(p => ['Pending Approval', 'Under Review'].includes(p.status)).length,
+      pending: plans.filter(p => ['Pending Approval', 'Under Review', 'Pending'].includes(p.status)).length,
       approved: plans.filter(p => p.status === 'Approved').length,
       rejected: plans.filter(p => p.status === 'Rejected').length,
-      critical: plans.filter(p => p.priority === 'Critical').length
+      critical: plans.filter(p => p.priority === 'Critical' || p.priority === 'High').length
     }
   }
 
