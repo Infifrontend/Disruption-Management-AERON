@@ -2804,6 +2804,9 @@ app.get("/api/recovery-option/:optionId/technical", async (req, res) => {
             technicalSpecs.regulatoryRequirements ||
             [],
           weatherLimitations: technicalSpecs.weatherLimitations || {},
+          weatherMinimums: technicalSpecs.weatherMinimums || [],
+          alternateAirports: technicalSpecs.alternateAirports || [],
+          fuelConsiderations: technicalSpecs.fuelConsiderations || [],
         },
       });
     } else {
@@ -2816,6 +2819,9 @@ app.get("/api/recovery-option/:optionId/technical", async (req, res) => {
           operationalConstraints: technical.operational_constraints || {},
           regulatoryRequirements: technical.regulatory_requirements || [],
           weatherLimitations: technical.weather_limitations || {},
+          weatherMinimums: technical.weather_minimums || [],
+          alternateAirports: technical.alternate_airports || [],
+          fuelConsiderations: technical.fuel_considerations || [],
         },
       });
     }
