@@ -1976,7 +1976,7 @@ export function generateRecoveryStepsForDisruption(disruption) {
   return generateRecoveryOptionsForDisruption(disruption).steps;
 }
 
-module.exports = {
+export {
   generateRecoveryOptionsForDisruption,
   mapDisruptionTypeToCategory,
 };
