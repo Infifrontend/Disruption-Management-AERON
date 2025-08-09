@@ -114,13 +114,13 @@ const generateAircraftIssueRecovery = (flight) => {
         "Fastest resolution with minimal delay",
         "Maintains schedule integrity",
         "Low passenger compensation cost",
-        "Preserves network connectivity"
+        "Preserves network connectivity",
       ],
       considerations: [
         "Requires available spare aircraft",
         "Crew briefing and familiarization needed",
         "Gate coordination and positioning",
-        "Passenger transfer logistics"
+        "Passenger transfer logistics",
       ],
       resource_requirements: [
         {
@@ -130,28 +130,28 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Standby aircraft ready for immediate swap",
           location: "DXB",
           resource: "B737-800",
-          availability: "Available"
-        }
+          availability: "Available",
+        },
       ],
       cost_breakdown: [
         {
           amount: "$15,000",
           category: "Delay Costs",
           percentage: 66,
-          description: "Passenger compensation and handling"
+          description: "Passenger compensation and handling",
         },
         {
           amount: "$5,000",
           category: "Aircraft Swap",
           percentage: 22,
-          description: "Cost of mobilizing standby aircraft"
+          description: "Cost of mobilizing standby aircraft",
         },
         {
           amount: "$2,800",
           category: "Logistics",
           percentage: 12,
-          description: "Ground handling and coordination"
-        }
+          description: "Ground handling and coordination",
+        },
       ],
       timeline_details: [
         {
@@ -160,7 +160,7 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Prepare standby aircraft for operation",
           endTime: "09:00",
           duration: "30 min",
-          startTime: "08:30"
+          startTime: "08:30",
         },
         {
           step: "Passenger Transfer",
@@ -168,7 +168,7 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Transfer passengers to new aircraft",
           endTime: "09:30",
           duration: "30 min",
-          startTime: "09:00"
+          startTime: "09:00",
         },
         {
           step: "Crew Briefing",
@@ -176,7 +176,7 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Brief crew on updated schedule",
           endTime: "09:45",
           duration: "15 min",
-          startTime: "09:30"
+          startTime: "09:30",
         },
         {
           step: "Departure Clearance",
@@ -184,8 +184,8 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Obtain clearance for takeoff",
           endTime: "10:00",
           duration: "15 min",
-          startTime: "09:45"
-        }
+          startTime: "09:45",
+        },
       ],
       risk_assessment: [
         {
@@ -193,30 +193,24 @@ const generateAircraftIssueRecovery = (flight) => {
           impact: "Low",
           riskScore: 2,
           mitigation: "Streamlined ground operations",
-          probability: "Low"
+          probability: "Low",
         },
         {
           risk: "Passenger dissatisfaction",
           impact: "Low",
           riskScore: 3,
           mitigation: "Proactive communication and refreshments",
-          probability: "Medium"
-        }
+          probability: "Medium",
+        },
       ],
       technical_specs: {
         weatherMinimums: [
           "Visibility: 1000m minimum",
           "Ceiling: 200ft minimum",
-          "Wind: 25kt crosswind limit"
+          "Wind: 25kt crosswind limit",
         ],
-        alternateAirports: [
-          "SHJ - Sharjah (45km)",
-          "DWC - Al Maktoum (50km)"
-        ],
-        fuelConsiderations: [
-          "Standard fuel load",
-          "Contingency fuel: 1000kg"
-        ]
+        alternateAirports: ["SHJ - Sharjah (45km)", "DWC - Al Maktoum (50km)"],
+        fuelConsiderations: ["Standard fuel load", "Contingency fuel: 1000kg"],
       },
       metrics: {
         costEfficiency: 85,
@@ -235,7 +229,7 @@ const generateAircraftIssueRecovery = (flight) => {
             assigned: { status: "none", value: "None" },
             turnaround: "40 min",
             maintenance: { status: "current", value: "Current" },
-            recommended: true
+            recommended: true,
           },
           {
             reg: "A6-FEQ",
@@ -246,7 +240,7 @@ const generateAircraftIssueRecovery = (flight) => {
             assigned: { status: "assigned", value: "FZ789" },
             turnaround: "50 min",
             maintenance: { status: "current", value: "Current" },
-            recommended: false
+            recommended: false,
           },
           {
             reg: "A6-FER",
@@ -257,7 +251,7 @@ const generateAircraftIssueRecovery = (flight) => {
             assigned: { status: "none", value: "None" },
             turnaround: "45 min",
             maintenance: { status: "due", value: "Due A-Check" },
-            recommended: false
+            recommended: false,
           },
           {
             reg: "A6-FES",
@@ -268,8 +262,8 @@ const generateAircraftIssueRecovery = (flight) => {
             assigned: { status: "assigned", value: "FZ234" },
             turnaround: "60 min",
             maintenance: { status: "aog", value: "AOG Issue" },
-            recommended: false
-          }
+            recommended: false,
+          },
         ],
         crewData: [
           {
@@ -277,79 +271,80 @@ const generateAircraftIssueRecovery = (flight) => {
             role: "Captain",
             type: "B737 Type Rating",
             status: "Available",
-            issue: null
+            issue: null,
           },
           {
             name: "FO Noor Al-Hosani",
             role: "First Officer",
             type: "B737/MAX Type Rating",
             status: "Available",
-            issue: null
+            issue: null,
           },
           {
             name: "SSCC Layla Ahmed",
             role: "Senior Cabin Crew",
             type: "Senior Cabin Crew",
             status: "Duty Limit 6h",
-            issue: "Approaching duty limit"
+            issue: "Approaching duty limit",
           },
           {
             name: "CC Sami Khan",
             role: "Cabin Crew",
             type: "Cabin Crew",
             status: "Standby",
-            issue: "Standby replacement"
-          }
+            issue: "Standby replacement",
+          },
         ],
         nextSectors: [
           {
             flight: "FZ345 DXB-JED",
             departure: "Dep: 10:30 → 11:15 (+45min)",
             impact: "Low Impact",
-            reason: "Aircraft swap delay"
+            reason: "Aircraft swap delay",
           },
           {
             flight: "FZ346 JED-DXB",
             departure: "Dep: 14:00 → 14:45 (+45min)",
             impact: "Low Impact",
-            reason: "Knock-on delay"
+            reason: "Knock-on delay",
           },
           {
             flight: "FZ789 DXB-IST",
             departure: "Dep: 08:00 (Next Day)",
             impact: "Low Impact",
-            reason: "Overnight recovery"
-          }
+            reason: "Overnight recovery",
+          },
         ],
         operationalConstraints: {
           gateCompatibility: {
             status: "Compatible",
-            details: "All gates compatible with B737-800"
+            details: "All gates compatible with B737-800",
           },
           slotCapacity: {
             status: "Coordination Required",
-            details: "New departure slot needed"
+            details: "New departure slot needed",
           },
           curfewViolation: {
             status: "No Risk",
-            details: "Within curfew limits"
+            details: "Within curfew limits",
           },
           passengerConnections: {
             status: "Minimal Impact",
-            details: "No significant connection issues"
-          }
+            details: "No significant connection issues",
+          },
         },
         costBreakdown: {
           delayCost: 30000,
           fuelEfficiency: "+1.2%",
           hotelTransport: 500,
-          eu261Risk: "Low"
+          eu261Risk: "Low",
         },
         recommendation: {
           aircraft: "A6-FEP",
-          reason: "Optimal balance across cost (85%), delay minimization (90%), crew impact (95%), and fuel efficiency (88%). Immediate availability with exact cabin configuration match."
-        }
-      }
+          reason:
+            "Optimal balance across cost (85%), delay minimization (90%), crew impact (95%), and fuel efficiency (88%). Immediate availability with exact cabin configuration match.",
+        },
+      },
     },
     {
       id: `DELAY_REPAIR_${flight.aircraft?.slice(-3) || "002"}`,
@@ -366,13 +361,13 @@ const generateAircraftIssueRecovery = (flight) => {
         "Uses original aircraft",
         "No crew changes needed",
         "Maintains aircraft rotation integrity",
-        "Lower operational complexity"
+        "Lower operational complexity",
       ],
       considerations: [
         "Extended delay period with passenger impact",
         "Risk of repair time overrun",
         "Crew duty time approaching limits",
-        "Potential downstream flight disruptions"
+        "Potential downstream flight disruptions",
       ],
       resource_requirements: [
         {
@@ -382,28 +377,28 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Specialized team addressing hydraulics issue",
           location: "DXB",
           resource: "B737 Maintenance Team",
-          availability: "Available"
-        }
+          availability: "Available",
+        },
       ],
       cost_breakdown: [
         {
           amount: "$30,000",
           category: "Delay Costs",
           percentage: 61,
-          description: "Passenger compensation and accommodation"
+          description: "Passenger compensation and accommodation",
         },
         {
           amount: "$15,000",
           category: "Maintenance",
           percentage: 31,
-          description: "Hydraulics system repair costs"
+          description: "Hydraulics system repair costs",
         },
         {
           amount: "$3,960",
           category: "Crew Overtime",
           percentage: 8,
-          description: "Extended crew duty compensation"
-        }
+          description: "Extended crew duty compensation",
+        },
       ],
       timeline_details: [
         {
@@ -412,7 +407,7 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Diagnosing hydraulics system issue",
           endTime: "10:00",
           duration: "60 min",
-          startTime: "09:00"
+          startTime: "09:00",
         },
         {
           step: "Repair Execution",
@@ -420,7 +415,7 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Perform hydraulics system repair",
           endTime: "12:30",
           duration: "150 min",
-          startTime: "10:00"
+          startTime: "10:00",
         },
         {
           step: "Safety Checks",
@@ -428,7 +423,7 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Conduct post-repair safety inspections",
           endTime: "13:30",
           duration: "60 min",
-          startTime: "12:30"
+          startTime: "12:30",
         },
         {
           step: "Departure Clearance",
@@ -436,8 +431,8 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Obtain clearance for takeoff",
           endTime: "14:00",
           duration: "30 min",
-          startTime: "13:30"
-        }
+          startTime: "13:30",
+        },
       ],
       risk_assessment: [
         {
@@ -445,30 +440,24 @@ const generateAircraftIssueRecovery = (flight) => {
           impact: "High",
           riskScore: 5,
           mitigation: "Deploy additional maintenance resources",
-          probability: "High"
+          probability: "High",
         },
         {
           risk: "Passenger dissatisfaction",
           impact: "High",
           riskScore: 6,
           mitigation: "Provide accommodations and compensation",
-          probability: "High"
-        }
+          probability: "High",
+        },
       ],
       technical_specs: {
         weatherMinimums: [
           "Visibility: 1000m minimum",
           "Ceiling: 200ft minimum",
-          "Wind: 25kt crosswind limit"
+          "Wind: 25kt crosswind limit",
         ],
-        alternateAirports: [
-          "SHJ - Sharjah (45km)",
-          "DWC - Al Maktoum (50km)"
-        ],
-        fuelConsiderations: [
-          "Standard fuel load",
-          "Contingency fuel: 1200kg"
-        ]
+        alternateAirports: ["SHJ - Sharjah (45km)", "DWC - Al Maktoum (50km)"],
+        fuelConsiderations: ["Standard fuel load", "Contingency fuel: 1200kg"],
       },
       metrics: {
         costEfficiency: 70,
@@ -487,7 +476,7 @@ const generateAircraftIssueRecovery = (flight) => {
             assigned: { status: "none", value: "None" },
             turnaround: "45 min",
             maintenance: { status: "current", value: "Current" },
-            recommended: true
+            recommended: true,
           },
           {
             reg: "A6-FEU",
@@ -498,7 +487,7 @@ const generateAircraftIssueRecovery = (flight) => {
             assigned: { status: "assigned", value: "FZ456" },
             turnaround: "50 min",
             maintenance: { status: "current", value: "Current" },
-            recommended: false
+            recommended: false,
           },
           {
             reg: "A6-FEV",
@@ -509,7 +498,7 @@ const generateAircraftIssueRecovery = (flight) => {
             assigned: { status: "none", value: "None" },
             turnaround: "55 min",
             maintenance: { status: "due", value: "Due A-Check" },
-            recommended: false
+            recommended: false,
           },
           {
             reg: "A6-FEW",
@@ -520,8 +509,8 @@ const generateAircraftIssueRecovery = (flight) => {
             assigned: { status: "assigned", value: "FZ901" },
             turnaround: "60 min",
             maintenance: { status: "aog", value: "AOG Issue" },
-            recommended: false
-          }
+            recommended: false,
+          },
         ],
         crewData: [
           {
@@ -529,79 +518,80 @@ const generateAircraftIssueRecovery = (flight) => {
             role: "Captain",
             type: "B737 Type Rating",
             status: "Available",
-            issue: null
+            issue: null,
           },
           {
             name: "FO Amal Saeed",
             role: "First Officer",
             type: "B737/MAX Type Rating",
             status: "Available",
-            issue: null
+            issue: null,
           },
           {
             name: "SSCC Noor Ibrahim",
             role: "Senior Cabin Crew",
             type: "Senior Cabin Crew",
             status: "Duty Limit 4h",
-            issue: "Approaching duty limit"
+            issue: "Approaching duty limit",
           },
           {
             name: "CC Youssef Malik",
             role: "Cabin Crew",
             type: "Cabin Crew",
             status: "Standby",
-            issue: "Standby replacement"
-          }
+            issue: "Standby replacement",
+          },
         ],
         nextSectors: [
           {
             flight: "FZ678 DXB-AMM",
             departure: "Dep: 14:30 → 18:30 (+240min)",
             impact: "High Impact",
-            reason: "Delay due to repair completion"
+            reason: "Delay due to repair completion",
           },
           {
             flight: "FZ679 AMM-DXB",
             departure: "Dep: 21:00 → 01:00 (+240min)",
             impact: "High Impact",
-            reason: "Knock-on delay"
+            reason: "Knock-on delay",
           },
           {
             flight: "FZ234 DXB-CAI",
             departure: "Dep: 09:00 (Next Day)",
             impact: "Low Impact",
-            reason: "Overnight recovery"
-          }
+            reason: "Overnight recovery",
+          },
         ],
         operationalConstraints: {
           gateCompatibility: {
             status: "Compatible",
-            details: "All gates compatible with B737-800"
+            details: "All gates compatible with B737-800",
           },
           slotCapacity: {
             status: "Coordination Required",
-            details: "New departure slot needed"
+            details: "New departure slot needed",
           },
           curfewViolation: {
             status: "Risk",
-            details: "Potential curfew violation due to extended delay"
+            details: "Potential curfew violation due to extended delay",
           },
           passengerConnections: {
             status: "Significant Impact",
-            details: "Missed connections likely"
-          }
+            details: "Missed connections likely",
+          },
         },
         costBreakdown: {
           delayCost: 60000,
           fuelEfficiency: "+1.8%",
           hotelTransport: 2000,
-          eu261Risk: "High"
+          eu261Risk: "High",
         },
         recommendation: {
           aircraft: "A6-FET",
-          reason: "Retains original aircraft post-repair for cost efficiency (70%) and operational continuity, despite extended delay (60%) and passenger impact (50%)."
-        }
-      }
+          reason:
+            "Retains original aircraft post-repair for cost efficiency (70%) and operational continuity, despite extended delay (60%) and passenger impact (50%).",
+        },
+      },
     },
     {
       id: `CANCEL_REBOOK_${flight.flightNumber?.slice(-3) || "003"}`,
@@ -618,13 +608,13 @@ const generateAircraftIssueRecovery = (flight) => {
         "Immediate decision eliminates uncertainty",
         "No technical repair risks",
         "Fastest initial response time",
-        "Preserves aircraft for other operations"
+        "Preserves aircraft for other operations",
       ],
       considerations: [
         "Highest passenger impact and compensation",
         "Complete revenue loss for flight",
         "Partner airline capacity dependency",
-        "Complex rebooking coordination required"
+        "Complex rebooking coordination required",
       ],
       resource_requirements: [
         {
@@ -634,28 +624,28 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Coordinate with partner airlines for rebooking",
           location: "DXB",
           resource: "Partner Airline Capacity",
-          availability: "Available"
-        }
+          availability: "Available",
+        },
       ],
       cost_breakdown: [
         {
           amount: "$100,000",
           category: "Rebooking Costs",
           percentage: 71,
-          description: "Cost of rebooking on partner airlines"
+          description: "Cost of rebooking on partner airlines",
         },
         {
           amount: "$30,000",
           category: "Passenger Compensation",
           percentage: 21,
-          description: "Compensation for cancellation"
+          description: "Compensation for cancellation",
         },
         {
           amount: "$11,440",
           category: "Logistics",
           percentage: 8,
-          description: "Coordination and communication costs"
-        }
+          description: "Coordination and communication costs",
+        },
       ],
       timeline_details: [
         {
@@ -664,7 +654,7 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Inform passengers of flight cancellation",
           endTime: "09:00",
           duration: "15 min",
-          startTime: "08:45"
+          startTime: "08:45",
         },
         {
           step: "Partner Coordination",
@@ -672,7 +662,7 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Arrange seats with partner airlines",
           endTime: "09:30",
           duration: "30 min",
-          startTime: "09:00"
+          startTime: "09:00",
         },
         {
           step: "Passenger Rebooking",
@@ -680,7 +670,7 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Rebook passengers on new flights",
           endTime: "09:45",
           duration: "15 min",
-          startTime: "09:30"
+          startTime: "09:30",
         },
         {
           step: "Final Confirmation",
@@ -688,8 +678,8 @@ const generateAircraftIssueRecovery = (flight) => {
           details: "Confirm rebooking and notify passengers",
           endTime: "10:00",
           duration: "15 min",
-          startTime: "09:45"
-        }
+          startTime: "09:45",
+        },
       ],
       risk_assessment: [
         {
@@ -697,30 +687,24 @@ const generateAircraftIssueRecovery = (flight) => {
           impact: "High",
           riskScore: 4,
           mitigation: "Engage multiple partner airlines",
-          probability: "Medium"
+          probability: "Medium",
         },
         {
           risk: "Passenger dissatisfaction",
           impact: "High",
           riskScore: 5,
           mitigation: "Offer compensation and priority rebooking",
-          probability: "High"
-        }
+          probability: "High",
+        },
       ],
       technical_specs: {
         weatherMinimums: [
           "Visibility: 1000m minimum",
           "Ceiling: 200ft minimum",
-          "Wind: 25kt crosswind limit"
+          "Wind: 25kt crosswind limit",
         ],
-        alternateAirports: [
-          "SHJ - Sharjah (45km)",
-          "DWC - Al Maktoum (50km)"
-        ],
-        fuelConsiderations: [
-          "No fuel required",
-          "No contingency fuel needed"
-        ]
+        alternateAirports: ["SHJ - Sharjah (45km)", "DWC - Al Maktoum (50km)"],
+        fuelConsiderations: ["No fuel required", "No contingency fuel needed"],
       },
       metrics: {
         costEfficiency: 60,
@@ -739,7 +723,7 @@ const generateAircraftIssueRecovery = (flight) => {
             assigned: { status: "none", value: "None" },
             turnaround: "45 min",
             maintenance: { status: "current", value: "Current" },
-            recommended: true
+            recommended: true,
           },
           {
             reg: "A6-FEY",
@@ -750,7 +734,7 @@ const generateAircraftIssueRecovery = (flight) => {
             assigned: { status: "assigned", value: "FZ567" },
             turnaround: "50 min",
             maintenance: { status: "current", value: "Current" },
-            recommended: false
+            recommended: false,
           },
           {
             reg: "A6-FEZ",
@@ -761,7 +745,7 @@ const generateAircraftIssueRecovery = (flight) => {
             assigned: { status: "none", value: "None" },
             turnaround: "55 min",
             maintenance: { status: "due", value: "Due A-Check" },
-            recommended: false
+            recommended: false,
           },
           {
             reg: "A6-FEA",
@@ -772,8 +756,8 @@ const generateAircraftIssueRecovery = (flight) => {
             assigned: { status: "assigned", value: "FZ123" },
             turnaround: "60 min",
             maintenance: { status: "aog", value: "AOG Issue" },
-            recommended: false
-          }
+            recommended: false,
+          },
         ],
         crewData: [
           {
@@ -781,79 +765,80 @@ const generateAircraftIssueRecovery = (flight) => {
             role: "Captain",
             type: "B737 Type Rating",
             status: "Available",
-            issue: null
+            issue: null,
           },
           {
             name: "FO Haya Al-Kuwaiti",
             role: "First Officer",
             type: "B737/MAX Type Rating",
             status: "Available",
-            issue: null
+            issue: null,
           },
           {
             name: "SSCC Mariam Salem",
             role: "Senior Cabin Crew",
             type: "Senior Cabin Crew",
             status: "Duty Limit 5h",
-            issue: "Approaching duty limit"
+            issue: "Approaching duty limit",
           },
           {
             name: "CC Ahmed Nasser",
             role: "Cabin Crew",
             type: "Cabin Crew",
             status: "Standby",
-            issue: "Standby replacement"
-          }
+            issue: "Standby replacement",
+          },
         ],
         nextSectors: [
           {
             flight: "FZ901 DXB-BAH",
             departure: "Dep: 10:30 (Partner Airline)",
             impact: "High Impact",
-            reason: "Flight cancellation and rebooking"
+            reason: "Flight cancellation and rebooking",
           },
           {
             flight: "FZ902 BAH-DXB",
             departure: "Dep: 13:00 (Partner Airline)",
             impact: "High Impact",
-            reason: "Knock-on cancellation"
+            reason: "Knock-on cancellation",
           },
           {
             flight: "FZ456 DXB-DOH",
             departure: "Dep: 08:00 (Next Day)",
             impact: "Low Impact",
-            reason: "Resumption with flydubai aircraft"
-          }
+            reason: "Resumption with flydubai aircraft",
+          },
         ],
         operationalConstraints: {
           gateCompatibility: {
             status: "Not Applicable",
-            details: "No flydubai aircraft used"
+            details: "No flydubai aircraft used",
           },
           slotCapacity: {
             status: "Not Applicable",
-            details: "Partner airline slots used"
+            details: "Partner airline slots used",
           },
           curfewViolation: {
             status: "No Risk",
-            details: "Partner airline schedules compliant"
+            details: "Partner airline schedules compliant",
           },
           passengerConnections: {
             status: "Significant Impact",
-            details: "Missed connections due to cancellation"
-          }
+            details: "Missed connections due to cancellation",
+          },
         },
         costBreakdown: {
           delayCost: 80000,
           fuelEfficiency: "0%",
           hotelTransport: 5000,
-          eu261Risk: "High"
+          eu261Risk: "High",
         },
         recommendation: {
           aircraft: "A6-FEX",
-          reason: "No flydubai aircraft used for immediate rebooking; A6-FEX recommended for next-day operations to balance cost (60%) and passenger satisfaction (40%)."
-        }
-      }
+          reason:
+            "No flydubai aircraft used for immediate rebooking; A6-FEX recommended for next-day operations to balance cost (60%) and passenger satisfaction (40%).",
+        },
+      },
     },
   ];
 
@@ -1194,7 +1179,10 @@ const generateRotationMisalignmentRecovery = (flight) => {
 };
 
 // Recovery generator for different disruption types based on category
-export function generateRecoveryOptionsForDisruption(disruption, categoryInfo = null) {
+export function generateRecoveryOptionsForDisruption(
+  disruption,
+  categoryInfo = null,
+) {
   if (!disruption) {
     console.error("No disruption provided to generator");
     return { options: [], steps: [] };
@@ -1211,11 +1199,15 @@ export function generateRecoveryOptionsForDisruption(disruption, categoryInfo = 
   const categoryId = disruption.category_id;
 
   // Use category_code from request if available, otherwise map from disruption type
-  const categoryCode = categoryInfo?.category_code ||
+  const categoryCode =
+    categoryInfo?.category_code ||
     disruption.category_code ||
     mapDisruptionTypeToCategory(
-      disruption.disruption_type || disruption.disruptionType || disruption.type || "Technical",
-      disruption.disruption_reason || "Unknown"
+      disruption.disruption_type ||
+        disruption.disruptionType ||
+        disruption.type ||
+        "Technical",
+      disruption.disruption_reason || "Unknown",
     );
 
   // Set defaults for missing fields
@@ -1677,7 +1669,8 @@ export function generateRecoveryOptionsForDisruption(disruption, categoryInfo = 
       options = [
         {
           title: "Aircraft Rotation Swap",
-          description: "Reassign aircraft from another rotation to maintain schedule",
+          description:
+            "Reassign aircraft from another rotation to maintain schedule",
           cost: "AED 75,000",
           timeline: "90 minutes",
           confidence: 88,
@@ -1689,13 +1682,13 @@ export function generateRecoveryOptionsForDisruption(disruption, categoryInfo = 
             "Alternative aircraft immediately available",
             "Zero passenger impact on this flight",
             "Maintains original crew assignment",
-            "Preserves schedule integrity"
+            "Preserves schedule integrity",
           ],
           considerations: [
             "Alternative flight delayed by 60 minutes",
             "Crew briefing required for aircraft change",
             "Ground coordination needed",
-            "Potential cascade effects"
+            "Potential cascade effects",
           ],
         },
         {
@@ -1711,9 +1704,13 @@ export function generateRecoveryOptionsForDisruption(disruption, categoryInfo = 
           advantages: [
             "Original aircraft maintained in rotation",
             "Maintenance completed properly",
-            "No crew changes required"
+            "No crew changes required",
           ],
-          considerations: ["3-hour delay cascade to multiple flights", "High passenger compensation costs", "Network disruption impact"],
+          considerations: [
+            "3-hour delay cascade to multiple flights",
+            "High passenger compensation costs",
+            "Network disruption impact",
+          ],
         },
       ];
       break;
