@@ -1942,7 +1942,7 @@ const generateWeatherDelayRecovery = (flight) => {
         atcStatus: "All arrivals on hold",
         forecast: "Improvement expected 16:00-17:00",
         severity: flight.severity || "High",
-        impact: "High"
+        impact: "High",
       },
     },
     {
@@ -1952,10 +1952,10 @@ const generateWeatherDelayRecovery = (flight) => {
       timestamp: "12:35:00",
       system: "AERON System",
       details: "Analyzing weather impact on flight operations",
-      data: { 
+      data: {
         expectedDelay: flight.delay_minutes || 120,
         affectedFlights: 3,
-        passengerCount: flight.passengers || 150
+        passengerCount: flight.passengers || 150,
       },
     },
     {
@@ -1982,7 +1982,8 @@ const generateWeatherDelayRecovery = (flight) => {
     {
       id: "WEATHER_DELAY_REROUTE",
       title: "Weather Delay with Re-routing",
-      description: "Wait for weather conditions to improve with alternate routing",
+      description:
+        "Wait for weather conditions to improve with alternate routing",
       cost: "AED 12,500",
       timeline: "2-3 hours",
       confidence: 85,
@@ -2087,10 +2088,7 @@ const generateWeatherDelayRecovery = (flight) => {
           "Ceiling: 200ft minimum",
           "Wind: 25kt crosswind limit",
         ],
-        alternateAirports: [
-          "SHJ - Sharjah (45km)",
-          "AUH - Abu Dhabi (120km)",
-        ],
+        alternateAirports: ["SHJ - Sharjah (45km)", "AUH - Abu Dhabi (120km)"],
         fuelConsiderations: [
           "Additional 800kg for alternate routing",
           "Weather contingency fuel: 1200kg",
@@ -2464,7 +2462,8 @@ export function generateRecoveryOptionsForDisruption(
       break;
 
     case "ROTATION_MAINTENANCE":
-      const rotationResult = generateRotationMisalignmentRecovery(safeDisruption);
+      const rotationResult =
+        generateRotationMisalignmentRecovery(safeDisruption);
       options = rotationResult.options;
       steps = rotationResult.steps;
       break;
@@ -2720,9 +2719,4 @@ export function generateRecoveryOptionsForDisruption(
     `Generated ${options.length} options and ${steps.length} steps for disruption type: ${categoryCode}`,
   );
   return { options, steps };
-}
-
-// For backward compatibility, also export the steps function
-export function generateRecoveryStepsForDisruption(disruption) {
-  return generateRecoveryOptionsForDisruption(disruption).steps;
 }
