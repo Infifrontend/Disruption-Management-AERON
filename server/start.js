@@ -875,7 +875,7 @@ async function withDatabaseFallback(operation, fallbackValue = []) {
 app.get("/api/disruptions/", async (req, res) => {
   const result = await withDatabaseFallback(async () => {
     const { recovery_status, category_code } = req.query;
-    
+
     // Build the base query with JOIN
     let query = `
       SELECT 
@@ -890,37 +890,37 @@ app.get("/api/disruptions/", async (req, res) => {
       FROM flight_disruptions fd
       LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
     `;
-    
+
     // Build WHERE conditions
     const conditions = [];
     const params = [];
     let paramCount = 0;
-    
+
     // Filter by recovery_status if provided
     if (recovery_status) {
       paramCount++;
       conditions.push(`fd.recovery_status = $${paramCount}`);
       params.push(recovery_status);
     }
-    
+
     // Filter by category_code if provided
     if (category_code) {
       paramCount++;
       conditions.push(`dc.category_code = $${paramCount}`);
       params.push(category_code);
     }
-    
+
     // Add WHERE clause if there are conditions
     if (conditions.length > 0) {
       query += ` WHERE ${conditions.join(' AND ')}`;
     }
-    
+
     // Add ORDER BY
     query += ` ORDER BY fd.created_at DESC`;
-    
+
     console.log('Executing disruptions query:', query);
     console.log('With parameters:', params);
-    
+
     const queryResult = await pool.query(query, params);
     return queryResult.rows || [];
   }, []);
@@ -3229,14 +3229,14 @@ app.get("/api/pending-recovery-solutions", async (req, res) => {
       // Get recovery option details for cost analysis
       let costAnalysis = {};
       let operationsUser = 'Operations Manager';
-      
+
       if (solution.option_id) {
         const optionResult = await pool.query(`
           SELECT cost_breakdown, resource_requirements, technical_specs 
           FROM recovery_options 
           WHERE id = $1
         `, [solution.option_id]);
-        
+
         if (optionResult.rows.length > 0) {
           const option = optionResult.rows[0];
           costAnalysis = {
@@ -3314,23 +3314,32 @@ app.put("/api/flight-recovery-status/:flightId", async (req, res) => {
     const { recovery_status } = req.body;
 
     const result = await pool.query(
-      `
-      UPDATE flight_disruptions
-      SET recovery_status = $1, updated_at = CURRENT_TIMESTAMP
-      WHERE id = $2
-      RETURNING *
-    `,
-      [recovery_status, flightId],
+      `UPDATE flight_disruptions 
+       SET recovery_status = $1, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $2 
+       RETURNING *`,
+      [recovery_status, flightId]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Flight not found" });
+      return res.status(404).json({ 
+        error: "Flight not found",
+        flightId: flightId 
+      });
     }
 
-    res.json(result.rows[0]);
+    res.json({
+      success: true,
+      message: "Flight recovery status updated successfully",
+      flight: result.rows[0]
+    });
+
   } catch (error) {
     console.error("Error updating flight recovery status:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ 
+      error: "Internal server error",
+      details: error.message 
+    });
   }
 });
 
