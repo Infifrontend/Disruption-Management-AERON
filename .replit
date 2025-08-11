@@ -9,7 +9,7 @@ packages = ["vim-full", "postgresql_13"]
 run = ["sh", "-c", "npm run dev"]
 
 [workflows]
-runButton = "Start Full Stack with Recovery API"
+runButton = "Run"
 
 [[workflows.workflow]]
 name = "Run"
