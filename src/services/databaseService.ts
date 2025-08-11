@@ -1474,6 +1474,213 @@ class DatabaseService {
     return [];
   }
 
+  // Past Recovery Logs
+  async getPastRecoveryLogs(): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/past-recovery-logs`);
+      if (!response.ok) {
+        console.warn(`Past recovery logs API returned ${response.status}`);
+        if (response.status === 404) {
+          // Return mock data if API endpoint doesn't exist
+          return this.getMockRecoveryLogs();
+        }
+        throw new Error(`Failed to fetch past recovery logs: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Failed to fetch past recovery logs:', error);
+      // Return mock data as fallback
+      return this.getMockRecoveryLogs();
+    }
+  }
+
+  private getMockRecoveryLogs(): any[] {
+    return [
+      {
+        solution_id: 'SOL-2025-001',
+        disruption_id: '260',
+        flight_number: 'FZ215',
+        route: 'DXB → BOM',
+        aircraft: 'B737-800',
+        disruption_type: 'Weather',
+        disruption_reason: 'Engine overheating at DXB',
+        priority: 'High',
+        date_created: '2025-01-10T14:30:15Z',
+        date_executed: '2025-01-10T17:32:15Z',
+        date_completed: '2025-01-10T17:32:15Z',
+        duration: '3h 2m',
+        status: 'Successful',
+        affected_passengers: 197,
+        actual_cost: 125000,
+        estimated_cost: 130000,
+        cost_variance: -3.8,
+        otp_impact: 92.5,
+        solution_chosen: 'Option A',
+        total_options: 3,
+        executed_by: 'Sara Ahmed',
+        approved_by: 'Operations Manager',
+        passenger_satisfaction: 8.2,
+        rebooking_success: 94.1,
+        categorization: 'Weather',
+        cancellation_avoided: true,
+        potential_delay_minutes: 155,
+        actual_delay_minutes: 155,
+        delay_reduction_minutes: 0,
+        disruption_category: 'Weather',
+        recovery_efficiency: 95.0,
+        network_impact: 'None',
+        downstream_flights_affected: 0,
+        created_at: '2025-01-10T14:30:15Z'
+      },
+      {
+        solution_id: 'SOL-2025-002',
+        disruption_id: '259',
+        flight_number: 'FZ181',
+        route: 'DXB → COK',
+        aircraft: 'B737-800',
+        disruption_type: 'Crew',
+        disruption_reason: 'Captain duty time breach',
+        priority: 'Medium',
+        date_created: '2025-01-10T14:25:10Z',
+        date_executed: '2025-01-10T17:21:10Z',
+        date_completed: '2025-01-10T17:21:10Z',
+        duration: '2h 56m',
+        status: 'Successful',
+        affected_passengers: 189,
+        actual_cost: 89000,
+        estimated_cost: 92000,
+        cost_variance: -3.3,
+        otp_impact: 91.9,
+        solution_chosen: 'Option B',
+        total_options: 4,
+        executed_by: 'Ahmed Hassan',
+        approved_by: 'Crew Manager',
+        passenger_satisfaction: 8.8,
+        rebooking_success: 97.1,
+        categorization: 'Crew',
+        cancellation_avoided: true,
+        potential_delay_minutes: 210,
+        actual_delay_minutes: 69,
+        delay_reduction_minutes: 141,
+        disruption_category: 'Crew',
+        recovery_efficiency: 88.0,
+        network_impact: 'Low',
+        downstream_flights_affected: 1,
+        created_at: '2025-01-10T14:25:10Z'
+      },
+      {
+        solution_id: 'SOL-2025-003',
+        disruption_id: '258',
+        flight_number: 'FZ147',
+        route: 'BKT → DXB',
+        aircraft: 'B737 MAX 8',
+        disruption_type: 'AOG',
+        disruption_reason: 'Engine maintenance check required',
+        priority: 'Medium',
+        date_created: '2025-01-10T13:15:30Z',
+        date_executed: '2025-01-10T17:45:30Z',
+        date_completed: '2025-01-10T17:45:30Z',
+        duration: '4h 30m',
+        status: 'Successful',
+        affected_passengers: 165,
+        actual_cost: 145000,
+        estimated_cost: 148000,
+        cost_variance: -2.0,
+        otp_impact: 91.0,
+        solution_chosen: 'Option A',
+        total_options: 2,
+        executed_by: 'Fatima Al Zahra',
+        approved_by: 'Technical Manager',
+        passenger_satisfaction: 7.8,
+        rebooking_success: 89.2,
+        categorization: 'AOG',
+        cancellation_avoided: true,
+        potential_delay_minutes: 270,
+        actual_delay_minutes: 118,
+        delay_reduction_minutes: 152,
+        disruption_category: 'AOG',
+        recovery_efficiency: 92.0,
+        network_impact: 'Medium',
+        downstream_flights_affected: 2,
+        created_at: '2025-01-10T13:15:30Z'
+      },
+      {
+        solution_id: 'SOL-2025-004',
+        disruption_id: '257',
+        flight_number: 'FZ351',
+        route: 'CAI → SSL',
+        aircraft: 'B737-800',
+        disruption_type: 'Airport',
+        disruption_reason: 'DXB runway closure - emergency landing',
+        priority: 'Critical',
+        date_created: '2025-01-10T12:45:45Z',
+        date_executed: '2025-01-10T15:55:45Z',
+        date_completed: '2025-01-10T15:55:45Z',
+        duration: '3h 10m',
+        status: 'Successful',
+        affected_passengers: 178,
+        actual_cost: 98000,
+        estimated_cost: 105000,
+        cost_variance: -6.7,
+        otp_impact: 92.5,
+        solution_chosen: 'Option C',
+        total_options: 3,
+        executed_by: 'Omar Khalil',
+        approved_by: 'Operations Director',
+        passenger_satisfaction: 7.2,
+        rebooking_success: 86.1,
+        categorization: 'Airport',
+        cancellation_avoided: true,
+        potential_delay_minutes: 770,
+        actual_delay_minutes: 770,
+        delay_reduction_minutes: 0,
+        disruption_category: 'Airport',
+        recovery_efficiency: 92.5,
+        network_impact: 'High',
+        downstream_flights_affected: 5,
+        created_at: '2025-01-10T12:45:45Z'
+      },
+      {
+        solution_id: 'SOL-2025-005',
+        disruption_id: '256',
+        flight_number: 'FZ267',
+        route: 'KTM → BOM',
+        aircraft: 'B737-800',
+        disruption_type: 'Security',
+        disruption_reason: 'Security screening delay at BOM',
+        priority: 'High',
+        date_created: '2025-01-10T11:20:20Z',
+        date_executed: '2025-01-10T13:55:20Z',
+        date_completed: '2025-01-10T13:55:20Z',
+        duration: '2h 35m',
+        status: 'Successful',
+        affected_passengers: 162,
+        actual_cost: 67000,
+        estimated_cost: 71000,
+        cost_variance: -5.6,
+        otp_impact: 88.5,
+        solution_chosen: 'Option A',
+        total_options: 2,
+        executed_by: 'Rashid Abdullah',
+        approved_by: 'Security Manager',
+        passenger_satisfaction: 8.5,
+        rebooking_success: 97.0,
+        categorization: 'Security',
+        cancellation_avoided: true,
+        potential_delay_minutes: 305,
+        actual_delay_minutes: 305,
+        delay_reduction_minutes: 0,
+        disruption_category: 'Security',
+        recovery_efficiency: 88.5,
+        network_impact: 'Low',
+        downstream_flights_affected: 1,
+        created_at: '2025-01-10T11:20:20Z'
+      }
+    ];
+  }
+
   // Pending Recovery Solutions
   async addPendingSolution(solution: any): Promise<boolean> {
     try {

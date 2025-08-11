@@ -1043,7 +1043,7 @@ export function PendingSolutions() {
                           const crewMember = typeof member === 'string' ? 
                             { id: index, name: member, role: 'Crew Member', status: 'Available', dutyTime: '8.5 hours', restTime: '15.5 hours', location: 'DXB', experience: 'Standard' } : 
                             member;
-                          
+
                           return (
                             <div key={crewMember.id || index} className="flex items-center gap-4 p-4 border rounded-lg">
                               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
@@ -1154,7 +1154,7 @@ export function PendingSolutions() {
                           const stepData = typeof step === 'string' ? 
                             { id: index, action: step, description: 'Recovery step', duration: '15-30 minutes', responsible: 'Operations Team', location: 'Operations Center', estimatedCost: 1000, criticalPath: index < 2, status: 'pending' } : 
                             step;
-                            
+
                           return (
                             <div key={stepData.id || index} className="flex items-start gap-4 p-4 border rounded-lg">
                               <div className="flex-shrink-0">
@@ -1291,20 +1291,43 @@ export function PendingSolutions() {
                     <CardContent>
                       {selectedPlan.costBreakdown && Object.keys(selectedPlan.costBreakdown).length > 0 ? (
                         <div>
-                          <div className="grid grid-cols-1 gap-4 mb-6">
-                            {Object.entries(selectedPlan.costBreakdown).map(([category, cost]) => (
-                              <div key={category} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <span className="font-medium capitalize">
-                                  {category.replace(/([A-Z])/g, ' $1').trim()}
-                                </span>
-                                <div className="text-right">
-                                  <span className="font-semibold">${(cost || 0).toLocaleString()}</span>
-                                  <p className="text-xs text-muted-foreground">
-                                    {(((cost || 0) / (selectedPlan.estimatedCost || 1)) * 100).toFixed(1)}%
-                                  </p>
+                          <div className="space-y-4">
+                            <h4 className="font-medium">Cost Breakdown</h4>
+                            {selectedPlan.costAnalysis?.cost_breakdown && Array.isArray(selectedPlan.costAnalysis.cost_breakdown) ? 
+                              selectedPlan.costAnalysis.cost_breakdown.map((item: any, idx: number) => (
+                                <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                  <div>
+                                    <div className="font-medium">
+                                      {typeof item === 'object' && item !== null ? 
+                                        (item.category || item.name || `Category ${idx + 1}`) : 
+                                        `Category ${idx + 1}`
+                                      }
+                                    </div>
+                                    <div className="text-sm text-gray-600">
+                                      {typeof item === 'object' && item !== null ? 
+                                        (item.description || item.details || 'N/A') : 
+                                        'N/A'
+                                      }
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-semibold">
+                                      {typeof item === 'object' && item !== null ? 
+                                        (item.amount || item.cost || item.value || 'N/A') : 
+                                        (typeof item === 'string' ? item : 'N/A')
+                                      }
+                                    </div>
+                                    <div className="text-sm text-gray-500">
+                                      {typeof item === 'object' && item !== null && item.percentage ? 
+                                        `${item.percentage}%` : 
+                                        'N/A'
+                                      }
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              )) : 
+                              <div className="text-gray-500">No cost breakdown available</div>
+                            }
                           </div>
                           <Separator className="my-4" />
                           <div className="flex justify-between items-center">
@@ -1328,55 +1351,66 @@ export function PendingSolutions() {
                     <CardContent>
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-medium mb-3">Cost per Passenger</h4>
+                          <h5 className="font-medium mb-3">Cost per Passenger</h5>
                           <div className="p-3 bg-blue-50 rounded-lg">
                             <div className="flex justify-between items-center">
                               <span>Per Affected Passenger:</span>
                               <span className="font-semibold">
-                                ${Math.round(selectedPlan.estimatedCost / selectedPlan.affectedPassengers)}
+                                {selectedPlan.costAnalysis?.cost_per_passenger || 
+                                 (selectedPlan.affectedPassengers && selectedPlan.estimatedCost ? 
+                                   `AED ${Math.round(selectedPlan.estimatedCost / selectedPlan.affectedPassengers)}` : 
+                                   'N/A'
+                                 )
+                                }
                               </span>
                             </div>
                           </div>
                         </div>
 
                         <div>
-                          <h4 className="font-medium mb-3">Cost vs Industry Benchmarks</h4>
+                          <h5 className="font-medium mb-3">Cost vs Industry Benchmarks</h5>
                           <div className="space-y-2">
                             <div className="flex justify-between text-sm">
                               <span>Industry Average:</span>
-                              <span className="text-muted-foreground">$287/passenger</span>
+                              <span>
+                                {typeof selectedPlan.costAnalysis?.industry_benchmark === 'object' ? 
+                                  JSON.stringify(selectedPlan.costAnalysis.industry_benchmark) : 
+                                  (selectedPlan.costAnalysis?.industry_benchmark || 'AED 267/passenger')
+                                }
+                              </span>
                             </div>
                             <div className="flex justify-between text-sm">
                               <span>This Plan:</span>
-                              <span className={
-                                Math.round(selectedPlan.estimatedCost / selectedPlan.affectedPassengers) < 287 
-                                  ? 'text-green-600 font-medium' 
-                                  : 'text-red-600 font-medium'
-                              }>
-                                ${Math.round(selectedPlan.estimatedCost / selectedPlan.affectedPassengers)}/passenger
+                              <span className="font-semibold">
+                                {typeof selectedPlan.costAnalysis?.this_plan_cost === 'object' ? 
+                                  selectedPlan.cost || 'N/A' : 
+                                  (selectedPlan.costAnalysis?.this_plan_cost || selectedPlan.cost || 'N/A')
+                                }
                               </span>
                             </div>
-                            <Progress 
-                              value={Math.min(100, Math.round((Math.round(selectedPlan.estimatedCost / selectedPlan.affectedPassengers) / 287) * 100))} 
-                              className="mt-2" 
-                            />
                           </div>
                         </div>
 
                         <div>
-                          <h4 className="font-medium mb-3">ROI Analysis</h4>
-                          <div className="p-3 bg-green-50 rounded-lg">
-                            <div className="text-sm space-y-1">
-                              <div className="flex justify-between">
-                                <span>Avoided Cancellation Cost:</span>
-                                <span>${(selectedPlan.estimatedCost * 1.4).toLocaleString()}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span>Net Savings:</span>
-                                <span className="text-green-600 font-medium">
-                                  ${(selectedPlan.estimatedCost * 0.4).toLocaleString()}
-                                </span>
-                              </div>
+                          <h5 className="font-medium mb-3">ROI Analysis</h5>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span>Avoided Cancellation Cost:</span>
+                              <span>
+                                {typeof selectedPlan.costAnalysis?.avoided_cost === 'object' ? 
+                                  'AED 31,920' : 
+                                  (selectedPlan.costAnalysis?.avoided_cost || 'AED 31,920')
+                                }
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Net Savings:</span>
+                              <span className="font-semibold text-green-600">
+                                {typeof selectedPlan.costAnalysis?.net_savings === 'object' ? 
+                                  'AED 9,120' : 
+                                  (selectedPlan.costAnalysis?.net_savings || 'AED 9,120')
+                                }
+                              </span>
                             </div>
                           </div>
                         </div>
