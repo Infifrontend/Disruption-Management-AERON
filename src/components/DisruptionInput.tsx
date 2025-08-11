@@ -114,7 +114,8 @@ const transformFlightData = (disruption: FlightDisruption) => {
     origin: disruption.origin || "DXB",
     destination: disruption.destination || "UNKNOWN",
     originCity:
-      disruption.originCity || getLocationName(disruption.origin || "DXB"),
+      disruption.originCity ||
+      getLocationName(disruption.origin || "DXB"),
     destinationCity:
       disruption.destinationCity ||
       getLocationName(disruption.destination || "UNKNOWN"),
@@ -2626,14 +2627,13 @@ export function DisruptionInput({
                 {flights.length === 0 && !loading && (
                   <div className="text-center py-12">
                     <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                      <Plane className="h-8 w-8 text-gray-400" />
+                      <AlertTriangle className="h-8 w-8 text-gray-400" />
                     </div>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No affected flights found
+                      No flight disruptions found. Add new disruptions using the 'Add Disruption' button.
                     </h3>
                     <p className="text-gray-500 mb-4">
-                      There are currently no flight disruptions in the system.
-                      Add a new disruption to get started.
+                      The system is currently monitoring for new flight disruptions. When disruptions occur, they will appear here for immediate action.
                     </p>
                     <div className="flex justify-center gap-2">
                       <Button
