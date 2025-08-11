@@ -872,7 +872,7 @@ export function ComparisonMatrix({
     try {
       // Store the selected option details for consistent title display
       setSelectedOptionDetails(option);
-
+      
       // Use the rotation_plan data that's already included in the option from the API
       console.log("Processing rotation plan data for option:", option.id);
       console.log("Available rotation plan data:", option.rotation_plan);
@@ -937,18 +937,15 @@ export function ComparisonMatrix({
           },
         ],
 
-        // Crew data from API - handle both crewData and crew arrays, plus loaded crew information
+        // Crew data from API - handle both crewData and crew arrays
         crew:
-          (rotationPlanDetails?.crewData || rotationPlanDetails?.crew || option.crewInformation || [])?.map((crew) => ({
+          (rotationPlan?.crewData || rotationPlan?.crew || [])?.map((crew) => ({
             name: crew.name,
             type: crew.type || crew.role || crew.position,
             status: crew.status || crew.availability,
-            issue: crew.issue || crew.disruption_reason,
-            location: crew.location || crew.base_location,
+            issue: crew.issue,
+            location: crew.location,
             availability: crew.availability || crew.status,
-            qualifications: crew.qualifications,
-            dutyTimeRemaining: crew.duty_time_remaining,
-            resolutionStatus: crew.resolution_status
           })) || [],
 
         // Operational metrics calculated from API data
@@ -986,7 +983,7 @@ export function ComparisonMatrix({
       setShowRotationDialog(true);
     } catch (error) {
       console.error("Error processing rotation plan:", error);
-
+      
       // Ensure selectedOptionDetails is still set even on error
       if (!selectedOptionDetails || selectedOptionDetails.id !== option.id) {
         setSelectedOptionDetails(option);
@@ -2204,8 +2201,7 @@ export function ComparisonMatrix({
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Users className="h-5 w-5 text-flydubai-blue" />
-                        Crew Status -{" "}
-                        {selectedOptionDetails?.title || "Recovery Option"}
+                        Crew Status - {selectedOptionDetails?.title || "Recovery Option"}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -2242,17 +2238,6 @@ export function ComparisonMatrix({
                                     {crewMember.issue}
                                   </p>
                                 )}
-                                {crewMember.qualifications && (
-                                  <p className="text-xs text-gray-600">
-                                    Qualifications: {crewMember.qualifications}
-                                  </p>
-                                )}
-                                {crewMember.dutyTimeRemaining && (
-                                  <p className="text-xs text-gray-600">
-                                    Duty Remaining:{" "}
-                                    {crewMember.dutyTimeRemaining}
-                                  </p>
-                                )}
                               </div>
                               <div className="flex flex-col gap-1">
                                 <Badge
@@ -2279,14 +2264,6 @@ export function ComparisonMatrix({
                                       {crewMember.availability}
                                     </Badge>
                                   )}
-                                {crewMember.resolutionStatus && (
-                                  <Badge
-                                    variant="outline"
-                                    className="text-xs border-purple-300 text-purple-700"
-                                  >
-                                    {crewMember.resolutionStatus}
-                                  </Badge>
-                                )}
                               </div>
                             </div>
                           ))
@@ -2325,7 +2302,7 @@ export function ComparisonMatrix({
                           <label className="text-sm font-medium">
                             Rest Requirement
                           </label>
-                          <div className="mt-2 p-3 rounded-lg bg-blue-50">
+                          <div className="mt-2 p-3 bg-blue-50 rounded-lg">
                             <p className="text-sm">
                               Min 12h rest required after duty
                             </p>
@@ -2346,8 +2323,7 @@ export function ComparisonMatrix({
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Route className="h-5 w-5 text-flydubai-blue" />
-                        Impacted Flights -{" "}
-                        {selectedOptionDetails?.title || "Recovery Option"}
+                        Impacted Flights - {selectedOptionDetails?.title || "Recovery Option"}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
