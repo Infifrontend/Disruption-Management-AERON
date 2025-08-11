@@ -40,6 +40,9 @@ import {
   Activity,
   Star,
   XCircle,
+  ArrowRight,
+  Zap,
+  UserCheck,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { databaseService } from "../services/databaseService";
@@ -60,6 +63,28 @@ export function ComparisonMatrix({
 }: ComparisonMatrixProps) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+
+  // Function to check if option requires passenger services based on keywords
+  const requiresPassengerServices = (option) => {
+    const title = option.title?.toLowerCase() || '';
+    const description = option.description?.toLowerCase() || '';
+    
+    const passengerServiceKeywords = [
+      'delay for crew rest completion',
+      'delay for repair completion',
+      'reroute',
+      'cancel due to weather',
+      'divert to',
+      'overnight delay',
+      'accept cascade delays',
+      'cancel selected legs',
+      'cancel and rebook'
+    ];
+    
+    return passengerServiceKeywords.some(keyword => 
+      title.includes(keyword) || description.includes(keyword)
+    );
+  };
   const [dynamicRecoveryOptions, setDynamicRecoveryOptions] = useState([]);
   const [selectedOptionDetails, setSelectedOptionDetails] = useState(null);
   const [rotationPlanDetails, setRotationPlanDetails] = useState(null);
@@ -67,10 +92,7 @@ export function ComparisonMatrix({
   const [showRotationDialog, setShowRotationDialog] = useState(false);
   const [loadingFullDetails, setLoadingFullDetails] = useState(null);
   const [loadingRotationImpact, setLoadingRotationImpact] = useState(null);
-  const [loadingPassengerServices, setLoadingPassengerServices] = useState(null);
   const [executingOption, setExecutingOption] = useState(null);
-  const [showPassengerServicesDialog, setShowPassengerServicesDialog] = useState(false);
-  const [passengerServicesDetails, setPassengerServicesDetails] = useState(null);
 
   // Load recovery options from database based on disruption category
   useEffect(() => {
@@ -845,224 +867,7 @@ export function ComparisonMatrix({
     }
   };
 
-  const handleViewPassengerServices = async (option) => {
-    setLoadingPassengerServices(option.id);
-    try {
-      // Generate passenger services data based on recovery option type
-      const title = option.title?.toLowerCase() || '';
-      const description = option.description?.toLowerCase() || '';
-      
-      let serviceType = 'standard';
-      let serviceActions = [];
-      let impactLevel = 'Low';
-      
-      // Determine service type based on keywords
-      if (title.includes('delay') && (title.includes('crew') || title.includes('rest'))) {
-        serviceType = 'crew_delay';
-        serviceActions = ['Crew Rest Accommodation', 'Schedule Adjustment', 'Passenger Notification'];
-        impactLevel = 'Medium';
-      } else if (title.includes('delay') && title.includes('repair')) {
-        serviceType = 'maintenance_delay';
-        serviceActions = ['Maintenance Completion', 'Technical Assessment', 'Passenger Updates'];
-        impactLevel = 'High';
-      } else if (title.includes('reroute')) {
-        serviceType = 'reroute';
-        serviceActions = ['Route Planning', 'Flight Path Optimization', 'Passenger Rebooking'];
-        impactLevel = 'Medium';
-      } else if (title.includes('cancel') && title.includes('weather')) {
-        serviceType = 'weather_cancel';
-        serviceActions = ['Weather Assessment', 'Full Refund Processing', 'Alternative Flight Options'];
-        impactLevel = 'High';
-      } else if (title.includes('divert')) {
-        serviceType = 'divert';
-        serviceActions = ['Alternate Airport Coordination', 'Ground Transport', 'Passenger Assistance'];
-        impactLevel = 'High';
-      } else if (title.includes('overnight')) {
-        serviceType = 'overnight';
-        serviceActions = ['Hotel Accommodation', 'Meal Vouchers', 'Transportation'];
-        impactLevel = 'High';
-      } else if (title.includes('cascade')) {
-        serviceType = 'cascade';
-        serviceActions = ['Network Impact Assessment', 'Multiple Flight Coordination', 'Passenger Prioritization'];
-        impactLevel = 'Very High';
-      } else if (title.includes('cancel') && (title.includes('legs') || title.includes('rebook'))) {
-        serviceType = 'cancel_rebook';
-        serviceActions = ['Route Cancellation', 'Alternative Booking', 'Compensation Processing'];
-        impactLevel = 'High';
-      }
-
-      const passengerServicesData = {
-        serviceType,
-        title: option.title,
-        impactLevel,
-        affectedPassengers: flight?.passengers || 167,
-        estimatedCost: option.cost,
-        timeline: option.timeline,
-        confidence: option.confidence,
-        
-        services: {
-          immediate: serviceActions,
-          communication: [
-            'SMS/Email Notifications',
-            'Airport Announcements',
-            'Website Updates',
-            'Customer Service Calls'
-          ],
-          compensation: getCompensationDetails(serviceType, option),
-          accommodation: getAccommodationDetails(serviceType, option),
-          rebooking: getRebookingOptions(serviceType, option)
-        },
-        
-        metrics: {
-          notificationTime: getNotificationTime(serviceType),
-          processingTime: getProcessingTime(serviceType),
-          satisfactionRating: getSatisfactionRating(serviceType),
-          compensationCost: getCompensationCost(serviceType, flight?.passengers || 167)
-        }
-      };
-
-      setPassengerServicesDetails(passengerServicesData);
-      setShowPassengerServicesDialog(true);
-    } catch (error) {
-      console.error('Error processing passenger services:', error);
-      // Fallback data
-      setPassengerServicesDetails({
-        serviceType: 'standard',
-        title: option.title,
-        impactLevel: 'Medium',
-        affectedPassengers: flight?.passengers || 167,
-        services: {
-          immediate: ['Standard Passenger Care'],
-          communication: ['Basic Notifications'],
-          compensation: [],
-          accommodation: [],
-          rebooking: []
-        }
-      });
-      setShowPassengerServicesDialog(true);
-    } finally {
-      setLoadingPassengerServices(null);
-    }
-  };
-
-  const getCompensationDetails = (serviceType, option) => {
-    switch (serviceType) {
-      case 'weather_cancel':
-      case 'cancel_rebook':
-        return [
-          'Full ticket refund within 7 days',
-          'EU261 compensation (€250-€600 per passenger)',
-          'Meal vouchers during wait time',
-          'Accommodation if overnight'
-        ];
-      case 'overnight':
-        return [
-          'Hotel accommodation',
-          'Meal allowances (€25-€50 per person)',
-          'Transportation to/from hotel',
-          'Communication allowances'
-        ];
-      case 'crew_delay':
-      case 'maintenance_delay':
-        return [
-          'Meal vouchers for delays >2 hours',
-          'EU261 compensation for delays >3 hours',
-          'Refreshment vouchers',
-          'Lounge access for premium passengers'
-        ];
-      case 'divert':
-        return [
-          'Ground transportation to final destination',
-          'Meal vouchers during transit',
-          'Accommodation if required',
-          'Compensation for inconvenience'
-        ];
-      default:
-        return ['Standard delay compensation', 'Refreshment vouchers'];
-    }
-  };
-
-  const getAccommodationDetails = (serviceType, option) => {
-    if (['overnight', 'weather_cancel', 'cancel_rebook', 'cascade'].includes(serviceType)) {
-      return [
-        '4-star hotel accommodation',
-        'Breakfast included',
-        'Airport shuttle service',
-        'Late check-out available'
-      ];
-    }
-    return [];
-  };
-
-  const getRebookingOptions = (serviceType, option) => {
-    switch (serviceType) {
-      case 'weather_cancel':
-      case 'cancel_rebook':
-        return [
-          'Next available flydubai flight',
-          'Partner airline alternatives',
-          'Full refund option',
-          'Travel date flexibility'
-        ];
-      case 'reroute':
-        return [
-          'Alternative routing via hub',
-          'Direct flight when available',
-          'Multi-stop options',
-          'Premium cabin upgrade compensation'
-        ];
-      default:
-        return [
-          'Same-day rebooking priority',
-          'Next available flight',
-          'Flexible rebooking terms'
-        ];
-    }
-  };
-
-  const getNotificationTime = (serviceType) => {
-    switch (serviceType) {
-      case 'weather_cancel': return '2-4 hours advance';
-      case 'maintenance_delay': return '30-60 minutes';
-      case 'crew_delay': return '45-90 minutes';
-      default: return '15-30 minutes';
-    }
-  };
-
-  const getProcessingTime = (serviceType) => {
-    switch (serviceType) {
-      case 'cancel_rebook': return '2-6 hours';
-      case 'overnight': return '1-2 hours';
-      case 'divert': return '3-4 hours';
-      default: return '30-60 minutes';
-    }
-  };
-
-  const getSatisfactionRating = (serviceType) => {
-    switch (serviceType) {
-      case 'weather_cancel': return '65%';
-      case 'overnight': return '70%';
-      case 'crew_delay': return '75%';
-      case 'maintenance_delay': return '68%';
-      case 'reroute': return '72%';
-      case 'divert': return '60%';
-      default: return '70%';
-    }
-  };
-
-  const getCompensationCost = (serviceType, passengers) => {
-    const baseCost = {
-      'weather_cancel': 400,
-      'cancel_rebook': 350,
-      'overnight': 150,
-      'maintenance_delay': 75,
-      'crew_delay': 50,
-      'divert': 200,
-      'cascade': 300,
-      'reroute': 100
-    };
-    return `AED ${((baseCost[serviceType] || 25) * passengers).toLocaleString()}`;
-  };
+  
 
   const handleViewRotationImpact = async (option) => {
     setLoadingRotationImpact(option.id);
@@ -1567,25 +1372,22 @@ export function ComparisonMatrix({
                     )}
                   </Button>
 
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => handleViewPassengerServices(option)}
-                    disabled={loadingPassengerServices === option.id}
-                  >
-                    {loadingPassengerServices === option.id ? (
-                      <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-flydubai-blue mr-2"></div>
-                        Loading...
-                      </>
-                    ) : (
-                      <>
-                        <Users className="h-4 w-4 mr-2" />
-                        Passenger Services
-                      </>
-                    )}
-                  </Button>
+                  {requiresPassengerServices(option) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-orange-500 text-orange-700 hover:bg-orange-50"
+                      onClick={() => navigate('/passenger-services', { 
+                        state: { 
+                          selectedFlight: flight,
+                          recoveryOption: option 
+                        } 
+                      })}
+                    >
+                      <UserCheck className="h-4 w-4 mr-2" />
+                      Passenger Services
+                    </Button>
+                  )}
 
                   <Button
                     className="w-full bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
@@ -2817,235 +2619,7 @@ export function ComparisonMatrix({
         </DialogContent>
       </Dialog>
 
-      {/* Passenger Services Dialog */}
-      <Dialog open={showPassengerServicesDialog} onOpenChange={setShowPassengerServicesDialog}>
-        <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-flydubai-blue" />
-              Passenger Services - {passengerServicesDetails?.title}
-            </DialogTitle>
-          </DialogHeader>
-
-          {passengerServicesDetails && (
-            <div className="space-y-6">
-              {/* Overview Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                  <CardContent className="p-4 text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Users className="h-5 w-5 text-blue-600" />
-                      <p className="text-sm font-medium text-blue-700">Affected Passengers</p>
-                    </div>
-                    <p className="text-2xl font-bold text-blue-800">
-                      {passengerServicesDetails.affectedPassengers}
-                    </p>
-                    <p className="text-xs text-blue-600 mt-1">Total passengers</p>
-                  </CardContent>
-                </Card>
-
-                <Card className={`bg-gradient-to-br border-2 ${
-                  passengerServicesDetails.impactLevel === 'Very High' ? 'from-red-50 to-red-100 border-red-200' :
-                  passengerServicesDetails.impactLevel === 'High' ? 'from-orange-50 to-orange-100 border-orange-200' :
-                  passengerServicesDetails.impactLevel === 'Medium' ? 'from-yellow-50 to-yellow-100 border-yellow-200' :
-                  'from-green-50 to-green-100 border-green-200'
-                }`}>
-                  <CardContent className="p-4 text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <AlertTriangle className={`h-5 w-5 ${
-                        passengerServicesDetails.impactLevel === 'Very High' ? 'text-red-600' :
-                        passengerServicesDetails.impactLevel === 'High' ? 'text-orange-600' :
-                        passengerServicesDetails.impactLevel === 'Medium' ? 'text-yellow-600' :
-                        'text-green-600'
-                      }`} />
-                      <p className={`text-sm font-medium ${
-                        passengerServicesDetails.impactLevel === 'Very High' ? 'text-red-700' :
-                        passengerServicesDetails.impactLevel === 'High' ? 'text-orange-700' :
-                        passengerServicesDetails.impactLevel === 'Medium' ? 'text-yellow-700' :
-                        'text-green-700'
-                      }`}>Service Impact</p>
-                    </div>
-                    <p className={`text-2xl font-bold ${
-                      passengerServicesDetails.impactLevel === 'Very High' ? 'text-red-800' :
-                      passengerServicesDetails.impactLevel === 'High' ? 'text-orange-800' :
-                      passengerServicesDetails.impactLevel === 'Medium' ? 'text-yellow-800' :
-                      'text-green-800'
-                    }`}>
-                      {passengerServicesDetails.impactLevel}
-                    </p>
-                    <p className={`text-xs mt-1 ${
-                      passengerServicesDetails.impactLevel === 'Very High' ? 'text-red-600' :
-                      passengerServicesDetails.impactLevel === 'High' ? 'text-orange-600' :
-                      passengerServicesDetails.impactLevel === 'Medium' ? 'text-yellow-600' :
-                      'text-green-600'
-                    }`}>Impact level</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
-                  <CardContent className="p-4 text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Clock className="h-5 w-5 text-purple-600" />
-                      <p className="text-sm font-medium text-purple-700">Processing Time</p>
-                    </div>
-                    <p className="text-2xl font-bold text-purple-800">
-                      {passengerServicesDetails.metrics?.processingTime || passengerServicesDetails.timeline}
-                    </p>
-                    <p className="text-xs text-purple-600 mt-1">Estimated duration</p>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-                  <CardContent className="p-4 text-center">
-                    <div className="flex items-center justify-center gap-2 mb-2">
-                      <Star className="h-5 w-5 text-green-600" />
-                      <p className="text-sm font-medium text-green-700">Satisfaction Rating</p>
-                    </div>
-                    <p className="text-2xl font-bold text-green-800">
-                      {passengerServicesDetails.metrics?.satisfactionRating || '75%'}
-                    </p>
-                    <p className="text-xs text-green-600 mt-1">Expected satisfaction</p>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Tabs defaultValue="immediate" className="w-full">
-                <TabsList className="grid w-full grid-cols-5">
-                  <TabsTrigger value="immediate">Immediate Actions</TabsTrigger>
-                  <TabsTrigger value="communication">Communication</TabsTrigger>
-                  <TabsTrigger value="compensation">Compensation</TabsTrigger>
-                  <TabsTrigger value="accommodation">Accommodation</TabsTrigger>
-                  <TabsTrigger value="rebooking">Rebooking Options</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="immediate" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Zap className="h-5 w-5 text-flydubai-blue" />
-                        Immediate Service Actions
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {passengerServicesDetails.services.immediate.map((action, index) => (
-                          <div key={index} className="flex items-center gap-3 p-3 border rounded-lg">
-                            <CheckCircle className="h-5 w-5 text-green-600" />
-                            <span className="font-medium">{action}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="communication" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-flydubai-blue" />
-                        Communication Channels
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {passengerServicesDetails.services.communication.map((channel, index) => (
-                          <div key={index} className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                            <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                            <span>{channel}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                        <p className="text-sm font-medium">Notification Timeline:</p>
-                        <p className="text-sm text-gray-600">
-                          {passengerServicesDetails.metrics?.notificationTime || '15-30 minutes'}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="compensation" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <DollarSign className="h-5 w-5 text-flydubai-blue" />
-                        Compensation & Benefits
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {passengerServicesDetails.services.compensation.map((comp, index) => (
-                          <div key={index} className="flex items-start gap-3 p-3 border-l-4 border-green-400 bg-green-50">
-                            <DollarSign className="h-4 w-4 text-green-600 mt-0.5" />
-                            <span className="text-sm">{comp}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="mt-4 p-3 bg-orange-50 rounded-lg border border-orange-200">
-                        <p className="text-sm font-medium text-orange-800">Total Estimated Compensation Cost:</p>
-                        <p className="text-lg font-bold text-orange-900">
-                          {passengerServicesDetails.metrics?.compensationCost}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="accommodation" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Building className="h-5 w-5 text-flydubai-blue" />
-                        Accommodation Services
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {passengerServicesDetails.services.accommodation.length > 0 ? (
-                        <div className="space-y-3">
-                          {passengerServicesDetails.services.accommodation.map((service, index) => (
-                            <div key={index} className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
-                              <Building className="h-4 w-4 text-blue-600" />
-                              <span>{service}</span>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-4 text-gray-500">
-                          <Building className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>No accommodation services required for this recovery option</p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="rebooking" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Plane className="h-5 w-5 text-flydubai-blue" />
-                        Rebooking & Alternatives
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {passengerServicesDetails.services.rebooking.map((option, index) => (
-                          <div key={index} className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50">
-                            <ArrowRight className="h-4 w-4 text-flydubai-blue" />
-                            <span>{option}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      
     </div>
   );
 }
