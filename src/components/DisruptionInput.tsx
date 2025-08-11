@@ -333,8 +333,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
       const syncResult = await databaseService.syncDisruptionsFromExternalAPI();
       console.log("External API sync result:", syncResult);
 
-      // Then fetch all current disruptions from database
-      const data = await databaseService.getAllDisruptions();
+      // Then fetch all current disruptions from database, filtering by recovery_status = 'none'
+      const data = await databaseService.getAllDisruptions('none');
 
       // Process all data, including incomplete records with fallbacks
       const processedData = data
@@ -439,16 +439,10 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
       // Try to load existing data from database as fallback
       try {
-        const fallbackData = await databaseService.getAllDisruptions();
+        const fallbackData = await databaseService.getAllDisruptions('none');
         if (fallbackData && fallbackData.length > 0) {
           // Process all fallback data, even if incomplete
           const processedFallbackData = fallbackData
-            .filter((disruption) => {
-              if (!disruption) return false;
-              // Only include disruptions with recovery_status = 'none' or null/undefined
-              const recoveryStatus = disruption.recovery_status || disruption.recoveryStatus;
-              return recoveryStatus === 'none' || recoveryStatus === null || recoveryStatus === undefined || recoveryStatus === '';
-            })
             .map((disruption) => {
               return {
                 ...disruption,
@@ -1747,28 +1741,28 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
                     <Plane className="h-3.5 w-3.5 transform rotate-180" />
-                    <span className="text-xs">Inbound ({
-                      filters.hub === "all" 
-                        ? sortedFlights.filter(f => f.destination === 'DXB' || f.destination === 'DWC').length
-                        : sortedFlights.filter(f => f.destination === filters.hub).length
-                    })</span>
+                    <span className="text-xs">{`Inbound (${
+                      filters.hub === "all"
+                        ? sortedFlights.filter((f) => f.destination === "DXB" || f.destination === "DWC").length
+                        : sortedFlights.filter((f) => f.destination === filters.hub).length
+                    })`}</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="outbound"
                     className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
                     <Plane className="h-3.5 w-3.5" />
-                    <span className="text-xs">Outbound ({
-                      filters.hub === "all" 
-                        ? sortedFlights.filter(f => f.origin === 'DXB' || f.origin === 'DWC').length
-                        : sortedFlights.filter(f => f.origin === filters.hub).length
-                    })</span>
+                    <span className="text-xs">{`Outbound (${
+                      filters.hub === "all"
+                        ? sortedFlights.filter((f) => f.origin === "DXB" || f.origin === "DWC").length
+                        : sortedFlights.filter((f) => f.origin === filters.hub).length
+                    })`}</span>
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="inbound" className="space-y-4">
                   {(() => {
-                    const inboundFlights = filters.hub === "all" 
+                    const inboundFlights = filters.hub === "all"
                       ? sortedFlights.filter((f) => f.destination === "DXB" || f.destination === "DWC")
                       : sortedFlights.filter((f) => f.destination === filters.hub);
                     const startIdx = (currentPage - 1) * itemsPerPage;
@@ -2060,7 +2054,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
                 <TabsContent value="outbound" className="space-y-4">
                   {(() => {
-                    const outboundFlights = filters.hub === "all" 
+                    const outboundFlights = filters.hub === "all"
                       ? sortedFlights.filter((f) => f.origin === "DXB" || f.origin === "DWC")
                       : sortedFlights.filter((f) => f.origin === filters.hub);
                     const startIdx = (currentPage - 1) * itemsPerPage;
