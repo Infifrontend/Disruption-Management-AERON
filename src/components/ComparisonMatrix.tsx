@@ -1189,31 +1189,84 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
             <div className="flex-1">
               <h3 className="font-medium mb-3 text-flydubai-navy">AERON AI Recommendation Summary</h3>
               <div className="space-y-3">
-                {comparisonOptions.filter(opt => opt.status === 'recommended').map((option) => {
-                  const letter = String.fromCharCode(65 + comparisonOptions.indexOf(option))
-                  return (
-                    <div key={option.id} className="flex items-center gap-2">
-                      <Badge className="bg-green-100 text-green-700 border-green-200">Best Overall</Badge>
-                      <span>Option {letter} - {option.title} ({option.confidence}% confidence)</span>
-                    </div>
-                  )
-                })}
+                {/* Best Overall - Highest confidence recommended option */}
+                {(() => {
+                  const bestOverall = comparisonOptions
+                    .filter(opt => opt.status === 'recommended')
+                    .sort((a, b) => (b.confidence || 0) - (a.confidence || 0))[0]
+                  
+                  if (bestOverall) {
+                    const letter = String.fromCharCode(65 + comparisonOptions.indexOf(bestOverall))
+                    return (
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-green-100 text-green-700 border-green-200">Best Overall</Badge>
+                        <span>Option {letter} - {bestOverall.title} ({bestOverall.confidence}% confidence)</span>
+                      </div>
+                    )
+                  }
+                  return null
+                })()}
 
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-blue-100 text-blue-700 border-blue-200">Most Cost-Effective</Badge>
-                  <span>Option A - Aircraft Swap (AED 45,000)</span>
-                </div>
+                {/* Most Cost-Effective - Lowest cost option */}
+                {(() => {
+                  const mostCostEffective = comparisonOptions
+                    .slice()
+                    .sort((a, b) => {
+                      const costA = parseInt(a.cost?.replace(/[^0-9]/g, "") || "999999")
+                      const costB = parseInt(b.cost?.replace(/[^0-9]/g, "") || "999999")
+                      return costA - costB
+                    })[0]
+                  
+                  if (mostCostEffective) {
+                    const letter = String.fromCharCode(65 + comparisonOptions.indexOf(mostCostEffective))
+                    return (
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-blue-100 text-blue-700 border-blue-200">Most Cost-Effective</Badge>
+                        <span>Option {letter} - {mostCostEffective.title} ({mostCostEffective.cost})</span>
+                      </div>
+                    )
+                  }
+                  return null
+                })()}
 
-                <div className="flex items-center gap-2">
-                  <Badge className="bg-purple-100 text-purple-700 border-purple-200">Fastest Recovery</Badge>
-                  <span>Option A - Aircraft Swap (75 minutes)</span>
-                </div>
+                {/* Fastest Recovery - Shortest timeline option */}
+                {(() => {
+                  const fastestRecovery = comparisonOptions
+                    .slice()
+                    .sort((a, b) => {
+                      const timeA = parseInt(a.timeline?.replace(/[^0-9]/g, "") || "999")
+                      const timeB = parseInt(b.timeline?.replace(/[^0-9]/g, "") || "999")
+                      return timeA - timeB
+                    })[0]
+                  
+                  if (fastestRecovery) {
+                    const letter = String.fromCharCode(65 + comparisonOptions.indexOf(fastestRecovery))
+                    return (
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-purple-100 text-purple-700 border-purple-200">Fastest Recovery</Badge>
+                        <span>Option {letter} - {fastestRecovery.title} ({fastestRecovery.timeline})</span>
+                      </div>
+                    )
+                  }
+                  return null
+                })()}
               </div>
 
               <div className="mt-4 p-3 bg-blue-100 rounded-lg border border-blue-200">
                 <p className="text-sm text-blue-800">
-                  <strong>AI Analysis:</strong> Based on current flight conditions, passenger load, and network impact, 
-                  the recommended option balances operational efficiency with cost control while maintaining regulatory compliance.
+                  <strong>AI Analysis:</strong> {(() => {
+                    const recommendedOption = comparisonOptions.find(opt => opt.status === 'recommended')
+                    const totalOptions = comparisonOptions.length
+                    const avgConfidence = Math.round(
+                      comparisonOptions.reduce((sum, opt) => sum + (opt.confidence || 0), 0) / totalOptions
+                    )
+                    
+                    if (recommendedOption) {
+                      return `Based on current flight conditions for ${flight?.flightNumber || 'this flight'} (${flight?.passengers || 0} passengers), the recommended ${recommendedOption.title.toLowerCase()} provides optimal balance across cost efficiency (${recommendedOption.cost}), recovery time (${recommendedOption.timeline}), and operational impact. System confidence: ${recommendedOption.confidence}% vs ${avgConfidence}% average across ${totalOptions} analyzed options.`
+                    } else {
+                      return `Analysis complete for ${totalOptions} recovery options with average confidence of ${avgConfidence}%. No single option meets all optimization criteria - review individual trade-offs between cost, time, and operational complexity.`
+                    }
+                  })()}
                 </p>
               </div>
             </div>
