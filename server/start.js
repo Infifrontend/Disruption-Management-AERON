@@ -1651,7 +1651,21 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
       optionsCount,
       stepsCount,
       message: `Generated ${optionsCount} recovery options and ${stepsCount} steps`,
-    });sruptionId],
+    });
+  } catch (error) {
+    console.error('Error generating recovery options:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate recovery options', 
+      details: error.message 
+    });
+  }
+});
+
+// Get recovery options by disruption ID
+app.get('/api/recovery-options/:disruptionId', async (req, res) => {
+  try {
+    const { disruptionId } = req.params;
+    console.log('📊 Fetching recovery options for disruption:', disruptionId);
     );
 
     if (result.rows.length === 0) {
