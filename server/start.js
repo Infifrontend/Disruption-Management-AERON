@@ -875,7 +875,7 @@ async function withDatabaseFallback(operation, fallbackValue = []) {
 app.get("/api/disruptions/", async (req, res) => {
   const result = await withDatabaseFallback(async () => {
     const { recovery_status, category_code } = req.query;
-
+    
     // Build the base query with JOIN
     let query = `
       SELECT 
@@ -890,37 +890,37 @@ app.get("/api/disruptions/", async (req, res) => {
       FROM flight_disruptions fd
       LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
     `;
-
+    
     // Build WHERE conditions
     const conditions = [];
     const params = [];
     let paramCount = 0;
-
+    
     // Filter by recovery_status if provided
     if (recovery_status) {
       paramCount++;
       conditions.push(`fd.recovery_status = $${paramCount}`);
       params.push(recovery_status);
     }
-
+    
     // Filter by category_code if provided
     if (category_code) {
       paramCount++;
       conditions.push(`dc.category_code = $${paramCount}`);
       params.push(category_code);
     }
-
+    
     // Add WHERE clause if there are conditions
     if (conditions.length > 0) {
       query += ` WHERE ${conditions.join(' AND ')}`;
     }
-
+    
     // Add ORDER BY
     query += ` ORDER BY fd.created_at DESC`;
-
+    
     console.log('Executing disruptions query:', query);
     console.log('With parameters:', params);
-
+    
     const queryResult = await pool.query(query, params);
     return queryResult.rows || [];
   }, []);
@@ -3042,7 +3042,7 @@ app.get("/api/recovery-option/:optionId/technical", async (req, res) => {
             [],
           weatherLimitations: technicalSpecs.weatherLimitations || {},
           weatherMinimums: technicalSpecs.weatherMinimums || [],
-          alternateAirports: technical.alternateAirports || [],
+          alternateAirports: technicalSpecs.alternateAirports || [],
           fuelConsiderations: technicalSpecs.fuelConsiderations || [],
         },
       });
@@ -3193,43 +3193,16 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
 app.get("/api/pending-recovery-solutions", async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT 
-        prs.*,
-        fd.flight_number, fd.route, fd.aircraft, fd.passengers, 
-        fd.severity, fd.disruption_reason
+      SELECT prs.*, fd.flight_number, fd.route, fd.origin, fd.destination, fd.aircraft
       FROM pending_recovery_solutions prs
       LEFT JOIN flight_disruptions fd ON prs.disruption_id = fd.id
-      ORDER BY prs.created_at DESC
+      ORDER BY prs.submitted_at DESC
     `);
 
     res.json(result.rows);
   } catch (error) {
-    console.error('Error fetching pending recovery solutions:', error);
-    res.status(500).json({ error: 'Failed to fetch pending recovery solutions' });
-  }
-});
-
-// Get operations user information
-app.get('/api/operations-users/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-
-    // Mock operations user data for now
-    const mockUser = {
-      id: userId,
-      name: userId === 'system' ? 'AERON System' : `Operations User ${userId}`,
-      role: userId === 'system' ? 'Automated System' : 'Operations Manager',
-      department: 'Flight Operations',
-      contact: userId === 'system' ? 'system@flydubai.com' : `${userId}@flydubai.com`,
-      location: 'Dubai International Airport',
-      shift: 'Day Shift (06:00 - 18:00)',
-      experience: userId === 'system' ? 'AI System' : '5+ years'
-    };
-
-    res.json(mockUser);
-  } catch (error) {
-    console.error('Error fetching operations user:', error);
-    res.status(500).json({ error: 'Failed to fetch operations user' });
+    console.error("Error fetching pending recovery solutions:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
