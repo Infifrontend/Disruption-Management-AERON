@@ -879,7 +879,7 @@ app.get("/api/disruptions/", async (req, res) => {
              aircraft, scheduled_departure, estimated_departure, delay_minutes,
              passengers, crew, connection_flights, severity, disruption_type, status,
              disruption_reason, created_at, updated_at
-      FROM flight_disruptions
+      FROM flight_disruptions WHERE recovery_status = 'assigned'
       ORDER BY created_at DESC
     `);
     return queryResult.rows || [];
@@ -1549,7 +1549,9 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
       categoryInfo,
     );
 
-    console.log(`Generated ${options.length} options and ${steps.length} steps`);
+    console.log(
+      `Generated ${options.length} options and ${steps.length} steps`,
+    );
 
     let optionsCount = 0;
     let stepsCount = 0;
@@ -1560,7 +1562,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
         // First check if step already exists
         const existingStep = await pool.query(
           "SELECT id FROM recovery_steps WHERE disruption_id = $1 AND step_number = $2",
-          [numericDisruptionId, step.step]
+          [numericDisruptionId, step.step],
         );
 
         if (existingStep.rows.length === 0) {
@@ -1571,7 +1573,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
               system, details, step_data
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
           `,
-          [
+            [
               numericDisruptionId,
               step.step,
               step.title,
@@ -1580,7 +1582,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
               step.system,
               step.details,
               step.data ? JSON.stringify(step.data) : null,
-            ]
+            ],
           );
         }
         stepsCount++;
@@ -1596,7 +1598,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
         // Check if option already exists
         const existingOption = await pool.query(
           "SELECT id FROM recovery_options WHERE disruption_id = $1 AND title = $2",
-          [numericDisruptionId, option.title || `Recovery Option ${i + 1}`]
+          [numericDisruptionId, option.title || `Recovery Option ${i + 1}`],
         );
 
         if (existingOption.rows.length === 0) {
@@ -1609,7 +1611,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
               risk_assessment, technical_specs, metrics, rotation_plan
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
           `,
-          [
+            [
               numericDisruptionId,
               option.title || `Recovery Option ${i + 1}`,
               option.description || "Recovery option details",
@@ -1621,14 +1623,28 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
               i + 1, // priority
               Array.isArray(option.advantages) ? option.advantages : [],
               Array.isArray(option.considerations) ? option.considerations : [],
-              option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : JSON.stringify([]),
-              option.costBreakdown ? JSON.stringify(option.costBreakdown) : JSON.stringify([]),
-              option.timelineDetails ? JSON.stringify(option.timelineDetails) : JSON.stringify([]),
-              option.riskAssessment ? JSON.stringify(option.riskAssessment) : JSON.stringify([]),
-              option.technicalSpecs ? JSON.stringify(option.technicalSpecs) : JSON.stringify({}),
-              option.metrics ? JSON.stringify(option.metrics) : JSON.stringify({}),
-              option.rotationPlan ? JSON.stringify(option.rotationPlan) : JSON.stringify({}),
-            ]
+              option.resourceRequirements
+                ? JSON.stringify(option.resourceRequirements)
+                : JSON.stringify([]),
+              option.costBreakdown
+                ? JSON.stringify(option.costBreakdown)
+                : JSON.stringify([]),
+              option.timelineDetails
+                ? JSON.stringify(option.timelineDetails)
+                : JSON.stringify([]),
+              option.riskAssessment
+                ? JSON.stringify(option.riskAssessment)
+                : JSON.stringify([]),
+              option.technicalSpecs
+                ? JSON.stringify(option.technicalSpecs)
+                : JSON.stringify({}),
+              option.metrics
+                ? JSON.stringify(option.metrics)
+                : JSON.stringify({}),
+              option.rotationPlan
+                ? JSON.stringify(option.rotationPlan)
+                : JSON.stringify({}),
+            ],
           );
         }
         optionsCount++;
@@ -1645,19 +1661,19 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
       message: `Generated ${optionsCount} recovery options and ${stepsCount} steps`,
     });
   } catch (error) {
-    console.error('Error generating recovery options:', error);
-    res.status(500).json({ 
-      error: 'Failed to generate recovery options', 
-      details: error.message 
+    console.error("Error generating recovery options:", error);
+    res.status(500).json({
+      error: "Failed to generate recovery options",
+      details: error.message,
     });
   }
 });
 
 // Get recovery options by disruption ID
-app.get('/api/recovery-options/:disruptionId', async (req, res) => {
+app.get("/api/recovery-options/:disruptionId", async (req, res) => {
   try {
     const { disruptionId } = req.params;
-    console.log('📊 Fetching recovery options for disruption:', disruptionId);
+    console.log("📊 Fetching recovery options for disruption:", disruptionId);
 
     if (result.rows.length === 0) {
       console.log(`No disruption found for ID: ${disruptionId}`);
