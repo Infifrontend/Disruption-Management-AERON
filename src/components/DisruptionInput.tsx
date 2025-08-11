@@ -263,7 +263,15 @@ const getTimeAgo = (dateString: string) => {
   return `${diffDays} days ago`;
 };
 
-export function DisruptionInput({ disruption, onSelectFlight, onNavigateToComparison }) {
+export function DisruptionInput({ 
+  disruption, 
+  onSelectFlight, 
+  onNavigateToComparison 
+}: {
+  disruption?: any;
+  onSelectFlight?: (flight: any) => void;
+  onNavigateToComparison?: (flight: any, options?: any[]) => void;
+}) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedFlight, setSelectedFlight] = useState(null);
@@ -794,7 +802,12 @@ export function DisruptionInput({ disruption, onSelectFlight, onNavigateToCompar
       }
 
       // Navigate to comparison with options (even if empty)
-      onNavigateToComparison(flight, options);
+      if (onNavigateToComparison) {
+        onNavigateToComparison(flight, options);
+      } else {
+        // Fallback navigation
+        navigate(`/comparison?flightId=${flight.id || flight.flightNumber}`);
+      }
     } catch (error) {
       console.error('Error viewing details:', error);
       toast({
