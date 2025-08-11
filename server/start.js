@@ -874,14 +874,54 @@ async function withDatabaseFallback(operation, fallbackValue = []) {
 // Flight Disruptions endpoints
 app.get("/api/disruptions/", async (req, res) => {
   const result = await withDatabaseFallback(async () => {
-    const queryResult = await pool.query(`
-      SELECT id, flight_number, route, origin, destination, origin_city, destination_city,
-             aircraft, scheduled_departure, estimated_departure, delay_minutes,
-             passengers, crew, connection_flights, severity, disruption_type, status,
-             disruption_reason, created_at, updated_at
-      FROM flight_disruptions WHERE recovery_status = 'assigned'
-      ORDER BY created_at DESC
-    `);
+    const { recovery_status, category_code } = req.query;
+    
+    // Build the base query with JOIN
+    let query = `
+      SELECT 
+        fd.id, fd.flight_number, fd.route, fd.origin, fd.destination, 
+        fd.origin_city, fd.destination_city, fd.aircraft, fd.scheduled_departure, 
+        fd.estimated_departure, fd.delay_minutes, fd.passengers, fd.crew, 
+        fd.connection_flights, fd.severity, fd.disruption_type, fd.status,
+        fd.disruption_reason, fd.recovery_status, fd.categorization,
+        fd.created_at, fd.updated_at,
+        dc.id as category_id, dc.category_code, dc.category_name, 
+        dc.description as category_description
+      FROM flight_disruptions fd
+      LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
+    `;
+    
+    // Build WHERE conditions
+    const conditions = [];
+    const params = [];
+    let paramCount = 0;
+    
+    // Filter by recovery_status if provided
+    if (recovery_status) {
+      paramCount++;
+      conditions.push(`fd.recovery_status = $${paramCount}`);
+      params.push(recovery_status);
+    }
+    
+    // Filter by category_code if provided
+    if (category_code) {
+      paramCount++;
+      conditions.push(`dc.category_code = $${paramCount}`);
+      params.push(category_code);
+    }
+    
+    // Add WHERE clause if there are conditions
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
+    }
+    
+    // Add ORDER BY
+    query += ` ORDER BY fd.created_at DESC`;
+    
+    console.log('Executing disruptions query:', query);
+    console.log('With parameters:', params);
+    
+    const queryResult = await pool.query(query, params);
     return queryResult.rows || [];
   }, []);
 
