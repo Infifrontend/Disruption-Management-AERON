@@ -94,11 +94,11 @@ export function WorldMap() {
 
   // Zoom control functions
   const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(prev + 0.2, 3));
+    setZoomLevel((prev) => Math.min(prev + 0.2, 3));
   };
 
   const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(prev - 0.2, 0.5));
+    setZoomLevel((prev) => Math.max(prev - 0.2, 0.5));
   };
 
   const handleResetView = () => {
@@ -130,11 +130,11 @@ export function WorldMap() {
     { id: "COK", name: "Kochi", lat: 10.1556, lng: 76.4019, flights: 7 },
     { id: "HYD", name: "Hyderabad", lat: 17.2403, lng: 78.4294, flights: 6 },
     // Europe
-    { id: 'IST', name: 'Istanbul', lat: 41.2619, lng: 28.7419, flights: 9 },
-    { id: 'PRG', name: 'Prague', lat: 50.1008, lng: 14.2632, flights: 4 },
-    { id: 'BCN', name: 'Barcelona', lat: 41.2974, lng: 2.0833, flights: 3 },
-    { id: 'BEG', name: 'Belgrade', lat: 44.8184, lng: 20.3090, flights: 4 },
-    { id: 'SKP', name: 'Skopje', lat: 41.9614, lng: 21.6214, flights: 3 },
+    { id: "IST", name: "Istanbul", lat: 41.2619, lng: 28.7419, flights: 9 },
+    { id: "PRG", name: "Prague", lat: 50.1008, lng: 14.2632, flights: 4 },
+    { id: "BCN", name: "Barcelona", lat: 41.2974, lng: 2.0833, flights: 3 },
+    { id: "BEG", name: "Belgrade", lat: 44.8184, lng: 20.309, flights: 4 },
+    { id: "SKP", name: "Skopje", lat: 41.9614, lng: 21.6214, flights: 3 },
 
     // From DXB to UK
     {
@@ -231,7 +231,7 @@ export function WorldMap() {
   ];
 
   return (
-    <Card className="w-full min-h-[700px] h-[700px] border-flydubai-blue/30 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 relative z-10">
+    <Card className="w-full min-h-[700px] border-flydubai-blue/30 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50 relative z-10">
       <CardHeader className="border-b border-flydubai-blue/10 bg-white/80 backdrop-blur-sm px-6 py-4 relative z-20">
         <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between">
@@ -357,7 +357,8 @@ export function WorldMap() {
                 backgroundRepeat: "no-repeat",
                 transform: `scale(${zoomLevel}) translate(${panX}px, ${panY}px)`,
                 transformOrigin: "center center",
-                transition: "transform 0.2s ease-out, background-size 0.2s ease-out, background-position 0.2s ease-out",
+                transition:
+                  "transform 0.2s ease-out, background-size 0.2s ease-out, background-position 0.2s ease-out",
               }}
             >
               {/* Live Data Summary Bar */}
