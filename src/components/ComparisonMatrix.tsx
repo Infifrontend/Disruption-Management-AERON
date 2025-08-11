@@ -707,33 +707,27 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
   const handleViewFullDetails = async (option) => {
     setLoadingFullDetails(option.id);
     try {
-      let details = null;
+      // Use the option data that already contains all the detailed information
+      // The API response includes: resource_requirements, cost_breakdown, timeline_details, 
+      // risk_assessment, technical_specs which are all needed for the details popup
+      
+      console.log('Using existing option data for details:', option);
+      
+      // The option already contains all the required data from /api/recovery-options/:disruptionId
+      const enrichedDetails = {
+        ...option,
+        // Map the existing data to the expected structure for the details dialog
+        costBreakdown: option.cost_breakdown || [],
+        timelineDetails: option.timeline_details || [],
+        resourceRequirements: option.resource_requirements || [],
+        riskAssessment: option.risk_assessment || [],
+        technicalSpecs: option.technical_specs || {}
+      };
 
-      try {
-        const response = await fetch(`/api/recovery-option-details/${option.id}`);
-        if (response.ok) {
-          details = await response.json();
-          console.log('Loaded detailed option from API:', details);
-        } else {
-          console.log(`API fetch for details failed with status: ${response.status}`);
-        }
-      } catch (fetchError) {
-        console.log('API fetch error for details, trying database service:', fetchError);
-      }
-
-      if (!details && databaseService.getRecoveryOptionDetails) {
-        try {
-          details = await databaseService.getRecoveryOptionDetails(option.id);
-          console.log('Loaded detailed option from database service:', details);
-        } catch (dbError) {
-          console.log('Database service error for details:', dbError);
-        }
-      }
-
-      setSelectedOptionDetails(details || option);
+      setSelectedOptionDetails(enrichedDetails);
       setShowDetailsDialog(true);
     } catch (error) {
-      console.error('Error loading option details:', error);
+      console.error('Error processing option details:', error);
       setSelectedOptionDetails(option); // Fallback to option data
       setShowDetailsDialog(true);
     } finally {
@@ -744,48 +738,46 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
   const handleViewRotationImpact = async (option) => {
     setLoadingRotationImpact(option.id);
     try {
-      let rotationPlan = null;
-
-      try {
-        const response = await fetch(`/api/recovery-option/${option.id}/rotation-plan`);
-        if (response.ok) {
-          const result = await response.json();
-          rotationPlan = result.rotationPlan || result;
-          console.log('Loaded rotation plan from API:', rotationPlan);
-        } else {
-          console.log(`API fetch for rotation plan failed with status: ${response.status}`);
-        }
-      } catch (fetchError) {
-        console.log('API fetch error for rotation plan, trying database service:', fetchError);
-      }
-
-      if (!rotationPlan && databaseService.getRotationPlanDetails) {
-        try {
-          rotationPlan = await databaseService.getRotationPlanDetails(option.id);
-          console.log('Loaded rotation plan from database service:', rotationPlan);
-        } catch (dbError) {
-          console.log('Database service error for rotation plan:', dbError);
-        }
-      }
-
-      // Fallback to mock data if no data is found
+      // Use the rotation_plan data that's already included in the option
+      // The API response includes rotation_plan with all necessary information
+      
+      console.log('Using existing rotation plan data:', option.rotation_plan);
+      
+      let rotationPlan = option.rotation_plan;
+      
+      // If rotation_plan exists, use it directly, otherwise create fallback structure
       if (!rotationPlan) {
         rotationPlan = {
           aircraftRotations: [
-            { aircraft: selectedFlight?.aircraft || 'A6-FDB', currentFlight: selectedFlight?.flightNumber || 'FZ445', nextFlight: 'FZ446', turnaroundTime: '45 min', recommended: true },
-            { aircraft: 'A6-FDC', currentFlight: 'Available', nextFlight: 'FZ445', turnaroundTime: '30 min' }
+            { aircraft: selectedFlight?.aircraft || 'A6-FDB', currentFlight: selectedFlight?.flightNumber || 'FZ445', nextFlight: 'FZ446', turnaroundTime: '45 min', recommended: true }
           ],
           impactedFlights: [
-            { flightNumber: 'FZ446', delay: '45 min', passengers: 156, status: 'Delayed' },
-            { flightNumber: 'FZ447', delay: '15 min', passengers: 189, status: 'Delayed' }
+            { flightNumber: 'FZ446', delay: '45 min', passengers: 156, status: 'Delayed' }
           ]
         };
       }
 
-      setRotationPlanDetails(rotationPlan);
+      // Transform the data to match the expected structure for the rotation dialog
+      const enrichedRotationPlan = {
+        aircraftRotations: rotationPlan.aircraftOptions || rotationPlan.aircraftRotations || [],
+        impactedFlights: rotationPlan.nextSectors || rotationPlan.impactedFlights || [],
+        operationalMetrics: {
+          totalDelayMinutes: parseInt(option.timeline?.replace(/[^0-9]/g, "") || "60"),
+          affectedFlights: rotationPlan.nextSectors?.length || 0,
+          estimatedCost: option.cost,
+          passengerImpact: flight?.passengers || 0
+        },
+        crew: rotationPlan.crew || [],
+        costBreakdown: rotationPlan.costBreakdown || {},
+        crewConstraint: rotationPlan.crewConstraint || {},
+        operationalConstraints: rotationPlan.operationalConstraints || {},
+        recommendedOption: rotationPlan.recommendedOption || {}
+      };
+
+      setRotationPlanDetails(enrichedRotationPlan);
       setShowRotationDialog(true);
     } catch (error) {
-      console.error('Error loading rotation plan:', error);
+      console.error('Error processing rotation plan:', error);
       // Fallback rotation plan
       setRotationPlanDetails({
         aircraftRotations: [
@@ -1232,7 +1224,7 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {selectedOptionDetails.costBreakdown ? (
+                      {selectedOptionDetails.costBreakdown && selectedOptionDetails.costBreakdown.length > 0 ? (
                         <div className="space-y-4">
                           {selectedOptionDetails.costBreakdown.map((item, index) => (
                             <div key={index} className="space-y-3 p-4 border rounded-lg">
@@ -1327,11 +1319,11 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                             <div key={index} className="p-4 border rounded-lg">
                               <div className="flex justify-between items-start mb-2">
                                 <div>
-                                  <h4 className="font-medium text-sm">{resource.type}</h4>
-                                  <p className="text-sm text-gray-700">{resource.resource}</p>
+                                  <h4 className="font-medium text-sm">{resource.title || resource.type}</h4>
+                                  <p className="text-sm text-gray-700">{resource.subtitle || resource.resource}</p>
                                 </div>
                                 <div className="flex flex-col gap-1">
-                                  <Badge className={resource.availability === 'Available' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
+                                  <Badge className={resource.availability === 'Available' || resource.availability === 'Ready' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
                                     {resource.availability}
                                   </Badge>
                                   <Badge variant="outline" className="text-xs">{resource.status}</Badge>
@@ -1371,13 +1363,22 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                               <div className="flex justify-between items-start mb-2">
                                 <h4 className="font-medium text-sm">{riskItem.risk}</h4>
                                 <div className="flex gap-2">
-                                  <Badge className={getRiskColor(riskItem.probability)} variant="outline">{riskItem.probability}</Badge>
-                                  <Badge className={getRiskColor(riskItem.impact)} variant="outline">{riskItem.impact}</Badge>
+                                  <Badge className={getRiskColor(riskItem.riskImpact || riskItem.probability)} variant="outline">
+                                    {riskItem.riskImpact || riskItem.probability}
+                                  </Badge>
+                                  <Badge className={getRiskColor(riskItem.mitigationImpact || riskItem.impact)} variant="outline">
+                                    {riskItem.mitigationImpact || riskItem.impact}
+                                  </Badge>
                                 </div>
                               </div>
                               <p className="text-sm text-gray-700">
                                 <strong>Mitigation:</strong> {riskItem.mitigation}
                               </p>
+                              {riskItem.score && (
+                                <p className="text-xs text-gray-600 mt-1">
+                                  <strong>Risk Score:</strong> {riskItem.score}/10
+                                </p>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -1489,15 +1490,45 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                       <TableBody>
                         {rotationPlanDetails?.aircraftRotations?.length > 0 ? (
                           rotationPlanDetails.aircraftRotations.map((aircraft, index) => (
-                            <TableRow key={index} className={aircraft.recommended ? "bg-green-50" : ""}>
-                              <TableCell className="font-medium">{aircraft.aircraft}</TableCell>
-                              <TableCell>B737-800 (189Y)</TableCell>
-                              <TableCell><CheckCircle className="h-4 w-4 text-green-600" /> 180min</TableCell>
-                              <TableCell><CheckCircle className="h-4 w-4 text-green-600" /> Exact</TableCell>
-                              <TableCell>Available Now</TableCell>
-                              <TableCell><XCircle className="h-4 w-4 text-green-600" /> None</TableCell>
-                              <TableCell>{aircraft.turnaroundTime}</TableCell>
-                              <TableCell><CheckCircle className="h-4 w-4 text-green-600" /> Current</TableCell>
+                            <TableRow key={index} className={aircraft.recommended || aircraft.optionScore?.overall === "92%" ? "bg-green-50" : ""}>
+                              <TableCell className="font-medium">{aircraft.reg || aircraft.aircraft}</TableCell>
+                              <TableCell>{aircraft.type || "B737-800 (189Y)"}</TableCell>
+                              <TableCell>
+                                {aircraft.etops?.status === 'available' ? (
+                                  <><CheckCircle className="h-4 w-4 text-green-600" /> {aircraft.etops.value}</>
+                                ) : (
+                                  <><XCircle className="h-4 w-4 text-red-600" /> None</>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                {aircraft.cabinMatch?.status === 'exact' ? (
+                                  <><CheckCircle className="h-4 w-4 text-green-600" /> Exact</>
+                                ) : aircraft.cabinMatch?.status === 'similar' ? (
+                                  <><AlertTriangle className="h-4 w-4 text-yellow-600" /> Similar</>
+                                ) : (
+                                  <><XCircle className="h-4 w-4 text-red-600" /> {aircraft.cabinMatch?.value || 'Different'}</>
+                                )}
+                              </TableCell>
+                              <TableCell>{aircraft.availability}</TableCell>
+                              <TableCell>
+                                {aircraft.assigned?.status === 'none' ? (
+                                  <><CheckCircle className="h-4 w-4 text-green-600" /> None</>
+                                ) : (
+                                  <><XCircle className="h-4 w-4 text-red-600" /> {aircraft.assigned?.value}</>
+                                )}
+                              </TableCell>
+                              <TableCell>{aircraft.turnaround || aircraft.turnaroundTime}</TableCell>
+                              <TableCell>
+                                {aircraft.maintenance?.status === 'current' ? (
+                                  <><CheckCircle className="h-4 w-4 text-green-600" /> Current</>
+                                ) : aircraft.maintenance?.status === 'due' ? (
+                                  <><AlertTriangle className="h-4 w-4 text-yellow-600" /> {aircraft.maintenance.value}</>
+                                ) : aircraft.maintenance?.status === 'aog' ? (
+                                  <><XCircle className="h-4 w-4 text-red-600" /> {aircraft.maintenance.value}</>
+                                ) : (
+                                  <><CheckCircle className="h-4 w-4 text-green-600" /> Current</>
+                                )}
+                              </TableCell>
                             </TableRow>
                           ))
                         ) : (
@@ -1522,27 +1553,33 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-green-50">
-                          <div>
-                            <p className="font-medium">Capt. Ahmed Al-Mansouri</p>
-                            <p className="text-sm text-gray-600">B737 Type Rating</p>
+                        {rotationPlanDetails?.crew?.length > 0 ? (
+                          rotationPlanDetails.crew.map((crewMember, index) => (
+                            <div key={index} className={`flex items-center justify-between p-3 rounded-lg ${
+                              crewMember.status === 'Available' ? 'bg-green-50' : 
+                              crewMember.status === 'Reassigned' ? 'bg-yellow-50' : 'bg-red-50'
+                            }`}>
+                              <div>
+                                <p className="font-medium">{crewMember.name}</p>
+                                <p className="text-sm text-gray-600">{crewMember.type}</p>
+                                {crewMember.issue && (
+                                  <p className="text-xs text-red-600">{crewMember.issue}</p>
+                                )}
+                              </div>
+                              <Badge className={
+                                crewMember.status === 'Available' ? 'bg-green-100 text-green-700' :
+                                crewMember.status === 'Reassigned' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-red-100 text-red-700'
+                              }>
+                                {crewMember.status}
+                              </Badge>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="text-center py-4 text-gray-500">
+                            <p>No specific crew data available</p>
                           </div>
-                          <Badge className="bg-green-100 text-green-700">Available</Badge>
-                        </div>
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-green-50">
-                          <div>
-                            <p className="font-medium">FO Sarah Johnson</p>
-                            <p className="text-sm text-gray-600">B737/MAX Type Rating</p>
-                          </div>
-                          <Badge className="bg-green-100 text-green-700">Available</Badge>
-                        </div>
-                        <div className="flex items-center justify-between p-3 rounded-lg bg-green-50">
-                          <div>
-                            <p className="font-medium">SSCC Lisa Martinez</p>
-                            <p className="text-sm text-gray-600">Senior Cabin Crew</p>
-                          </div>
-                          <Badge className="bg-green-100 text-green-700">Available</Badge>
-                        </div>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -1588,16 +1625,22 @@ export function ComparisonMatrix({ selectedFlight, recoveryOptions = [], scenari
                         {rotationPlanDetails?.impactedFlights?.length > 0 ? (
                           rotationPlanDetails.impactedFlights.map((sector, index) => (
                             <div key={index} className={`p-3 border-l-4 rounded-lg ${
-                              sector.status === 'Delayed' ? 'border-yellow-500 bg-yellow-50' : 'border-green-500 bg-green-50'
+                              sector.impact === 'High Impact' ? 'border-red-500 bg-red-50' :
+                              sector.impact === 'Medium Impact' ? 'border-yellow-500 bg-yellow-50' : 
+                              'border-green-500 bg-green-50'
                             }`}>
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <p className="font-medium">{sector.flightNumber}</p>
-                                  <p className="text-sm text-gray-600">{sector.delay}</p>
-                                  <p className="text-xs text-gray-500 mt-1">{sector.passengers} passengers</p>
+                                  <p className="font-medium">{sector.flight}</p>
+                                  <p className="text-sm text-gray-600">{sector.departure}</p>
+                                  <p className="text-xs text-gray-500 mt-1">{sector.reason}</p>
                                 </div>
-                                <Badge className={sector.status === 'Delayed' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}>
-                                  {sector.status}
+                                <Badge className={
+                                  sector.impact === 'High Impact' ? 'bg-red-100 text-red-700' :
+                                  sector.impact === 'Medium Impact' ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-green-100 text-green-700'
+                                }>
+                                  {sector.impact}
                                 </Badge>
                               </div>
                             </div>
