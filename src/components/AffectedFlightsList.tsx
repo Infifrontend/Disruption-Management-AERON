@@ -50,18 +50,21 @@ export function AffectedFlightsList() {
 
   useEffect(() => {
     fetchFlights()
-    const interval = setInterval(fetchFlights, 60000) // Refresh every 60 seconds instead of 30
+    const interval = setInterval(() => {
+      // Run in background without affecting UI state
+      fetchFlightsBackground()
+    }, 180000) // Refresh every 3 minutes (180 seconds)
     return () => clearInterval(interval)
   }, [])
 
   const fetchFlights = async () => {
     try {
       setError(null)
-      // Fetch only flights where recovery_status = 'none'
-      const data = await databaseService.getAllDisruptions('none')
+      // Fetch only flights where recovery_status = 'assigned'
+      const data = await databaseService.getAllDisruptions('assigned')
       setFlights(data)
       if (data.length === 0) {
-        console.log('No flight disruptions with recovery_status = none found in database')
+        console.log('No flight disruptions with recovery_status = assigned found in database')
       }
     } catch (error) {
       console.error('Error fetching flights:', error)
@@ -69,6 +72,20 @@ export function AffectedFlightsList() {
       setFlights([])
     } finally {
       setLoading(false)
+    }
+  }
+
+  // Background fetch that doesn't trigger loading states or UI updates
+  const fetchFlightsBackground = async () => {
+    try {
+      const data = await databaseService.getAllDisruptions('assigned')
+      // Only update flights if there are actual changes
+      if (JSON.stringify(data) !== JSON.stringify(flights)) {
+        setFlights(data)
+      }
+    } catch (error) {
+      console.error('Background fetch error:', error)
+      // Don't set error state for background fetches
     }
   }
 
@@ -565,10 +582,7 @@ export function AffectedFlightsList() {
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No inbound flights found</h3>
                   <p className="text-gray-500 mb-4">
-                    {flights.length === 0 
-                      ? "There are currently no flight disruptions in the system."
-                      : "No inbound flights to DXB match your current filter criteria."
-                    }
+                    No inbound flights to DXB match your current filter criteria.
                   </p>
                 </div>
               )}
@@ -669,10 +683,7 @@ export function AffectedFlightsList() {
                   </div>
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No outbound flights found</h3>
                   <p className="text-gray-500 mb-4">
-                    {flights.length === 0 
-                      ? "There are currently no flight disruptions in the system."
-                      : "No outbound flights from DXB match your current filter criteria."
-                    }
+                    No outbound flights from DXB match your current filter criteria.
                   </p>
                 </div>
               )}
