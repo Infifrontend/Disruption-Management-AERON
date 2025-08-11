@@ -1537,11 +1537,69 @@ class DatabaseService {
         return [];
       }
 
-      return data;
+      // Fetch additional data for each solution
+      const enrichedData = await Promise.all(data.map(async (solution) => {
+        try {
+          // Fetch operations user info
+          const operationsUser = await this.getOperationsUser(solution.submitted_by);
+          
+          // Fetch crew information
+          const crewInfo = solution.flight_number ? await this.getCrewByFlight(solution.flight_number) : [];
+          
+          // Fetch passenger information
+          const passengerInfo = solution.flight_number ? await this.getPassengersByFlight(solution.flight_number) : [];
+          
+          // Fetch recovery steps
+          const recoverySteps = solution.disruption_id ? await this.getRecoverySteps(solution.disruption_id) : [];
+          
+          // Fetch cost analysis
+          const costAnalysis = solution.option_id ? await this.getCostAnalysisDetails(solution.option_id) : null;
+
+          return {
+            ...solution,
+            operations_user: operationsUser,
+            crew_information: crewInfo,
+            passenger_information: passengerInfo,
+            recovery_steps: recoverySteps,
+            cost_analysis: costAnalysis
+          };
+        } catch (error) {
+          console.error(`Error enriching solution ${solution.id}:`, error);
+          return solution; // Return original data if enrichment fails
+        }
+      }));
+
+      return enrichedData;
     } catch (error) {
       console.error('Failed to fetch pending recovery solutions:', error);
       // Return empty array to prevent UI crashes
       return [];
+    }
+  }
+
+  // Helper method to get operations user information
+  async getOperationsUser(userId: string): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/operations-users/${userId}`);
+      if (!response.ok) {
+        return {
+          id: userId,
+          name: userId === 'system' ? 'AERON System' : 'Operations User',
+          role: 'Operations Manager',
+          department: 'Flight Operations',
+          contact: 'ops@flydubai.com'
+        };
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch operations user:', error);
+      return {
+        id: userId,
+        name: userId === 'system' ? 'AERON System' : 'Operations User',
+        role: 'Operations Manager',
+        department: 'Flight Operations',
+        contact: 'ops@flydubai.com'
+      };
     }
   }
 

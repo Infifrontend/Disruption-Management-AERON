@@ -111,7 +111,8 @@ export function PendingSolutions() {
         aircraft: plan.aircraft || 'N/A',
         submittedAt: plan.submitted_at || new Date().toISOString(),
         submittedBy: plan.submitted_by || 'system',
-        submitterName: plan.submitted_by || 'AERON System',
+        submitterName: plan.operations_user?.name || plan.submitted_by || 'AERON System',
+        operationsUser: plan.operations_user || null,
         priority: plan.severity || 'Medium',
         status: plan.status || 'Pending Approval',
         estimatedCost: typeof plan.cost === 'string' ? parseInt(plan.cost.replace(/[^0-9]/g, '')) || 0 : plan.cost || 0,
@@ -119,7 +120,6 @@ export function PendingSolutions() {
         affectedPassengers: plan.passengers || plan.affected_passengers || 0,
         confidence: plan.confidence || 80,
         disruptionReason: plan.disruption_reason || 'N/A',
-        steps: 4,
         timeline: plan.timeline || 'TBD',
         approvalRequired: plan.approval_required || 'Operations Manager',
         slaDeadline: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
@@ -132,9 +132,11 @@ export function PendingSolutions() {
           costEfficiency: 75
         },
         flightDetails: plan.full_details || {},
-        costBreakdown: plan.full_details?.costBreakdown || {},
-        recoverySteps: plan.full_details?.recoverySteps || [],
-        assignedCrew: plan.full_details?.assignedCrew || [],
+        costBreakdown: plan.cost_analysis?.costBreakdown || plan.full_details?.costBreakdown || {},
+        recoverySteps: plan.recovery_steps || plan.full_details?.recoverySteps || [],
+        assignedCrew: plan.crew_information || plan.full_details?.assignedCrew || [],
+        passengerInformation: plan.passenger_information || [],
+        costAnalysis: plan.cost_analysis || {},
         disruptionId: plan.disruption_id,
         optionId: plan.option_id
       }))
@@ -619,7 +621,7 @@ export function PendingSolutions() {
               sortedPlans.map((plan) => (
                 <Card key={plan.id} className="hover:shadow-md transition-shadow">
                   <CardContent className="p-6">
-                    <div className="flex items-start justify-between">
+                    <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-4 mb-3">
                           <h3 className="text-lg font-semibold">{plan.title}</h3>
@@ -664,10 +666,6 @@ export function PendingSolutions() {
 
                         <div className="flex items-center gap-4 mb-4">
                           <div className="flex items-center gap-2">
-                            <Target className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{plan.steps} steps</span>
-                          </div>
-                          <div className="flex items-center gap-2">
                             <UserCheck className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm">Requires {plan.approvalRequired}</span>
                           </div>
@@ -695,7 +693,7 @@ export function PendingSolutions() {
                         )}
                       </div>
 
-                      <div className="flex flex-col gap-2 ml-6">
+                      <div className="flex flex-col gap-2 ml-6 justify-center">
                         <Button
                           variant="outline"
                           size="sm"
@@ -761,13 +759,75 @@ export function PendingSolutions() {
             </DialogHeader>
 
             <Tabs defaultValue="overview" className="w-full">
-              <TabsList className="grid w-full grid-cols-5">
+              <TabsList className="grid w-full grid-cols-7">
                 <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="operations">Operations User</TabsTrigger>
                 <TabsTrigger value="flight">Flight Details</TabsTrigger>
                 <TabsTrigger value="crew">Crew Assignment</TabsTrigger>
+                <TabsTrigger value="passengers">Passengers</TabsTrigger>
                 <TabsTrigger value="steps">Recovery Steps</TabsTrigger>
                 <TabsTrigger value="costs">Cost Analysis</TabsTrigger>
               </TabsList>
+
+              <TabsContent value="operations" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <UserCheck className="h-5 w-5" />
+                      Operations User Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedPlan.operationsUser ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          <h4 className="font-medium mb-3">User Details</h4>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span>Name:</span>
+                              <span className="font-medium">{selectedPlan.operationsUser.name}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Role:</span>
+                              <span className="font-medium">{selectedPlan.operationsUser.role}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Department:</span>
+                              <span className="font-medium">{selectedPlan.operationsUser.department}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Contact:</span>
+                              <span className="font-medium">{selectedPlan.operationsUser.contact}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-3">Submission Details</h4>
+                          <div className="space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span>Submitted At:</span>
+                              <span className="font-medium">{formatIST(selectedPlan.submittedAt)}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Plan ID:</span>
+                              <span className="font-medium font-mono">{selectedPlan.id}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Approval Required:</span>
+                              <span className="font-medium">{selectedPlan.approvalRequired}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <UserCheck className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No operations user information available</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
               <TabsContent value="overview" className="space-y-6">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1025,8 +1085,8 @@ export function PendingSolutions() {
                   <CardContent>
                     {selectedPlan.assignedCrew && selectedPlan.assignedCrew.length > 0 ? (
                       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
-                        {selectedPlan.assignedCrew.map((member) => (
-                          <div key={member.id} className="flex items-center gap-4 p-4 border rounded-lg">
+                        {selectedPlan.assignedCrew.map((member, index) => (
+                          <div key={member.id || index} className="flex items-center gap-4 p-4 border rounded-lg">
                             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                               <Users className="h-5 w-5 text-blue-600" />
                             </div>
@@ -1036,17 +1096,17 @@ export function PendingSolutions() {
                               <div className="grid grid-cols-1 gap-1 mt-2 text-xs text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                   <Clock3 className="h-3 w-3" />
-                                  Duty: {member.dutyTime}
+                                  Duty: {member.dutyTime || member.dutyTimeRemaining || 'N/A'}
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <Timer className="h-3 w-3" />
-                                  Rest: {member.restTime}
+                                  Rest: {member.restTime || 'N/A'}
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <MapPin className="h-3 w-3" />
-                                  {member.location}
+                                  {member.location || member.baseLocation || 'N/A'}
                                 </span>
-                                <span>Experience: {member.experience}</span>
+                                <span>Experience: {member.experience || 'N/A'}</span>
                               </div>
                             </div>
                             <div className="flex flex-col items-center gap-2">
@@ -1069,6 +1129,59 @@ export function PendingSolutions() {
                       <div className="text-center py-8 text-muted-foreground">
                         <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
                         <p>No crew assignments available for this plan</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="passengers" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Passenger Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedPlan.passengerInformation && selectedPlan.passengerInformation.length > 0 ? (
+                      <div className="space-y-4">
+                        {selectedPlan.passengerInformation.map((passenger, index) => (
+                          <div key={passenger.id || index} className="flex items-center justify-between p-4 border rounded-lg">
+                            <div className="flex items-center space-x-4">
+                              <User className="h-8 w-8 text-blue-600" />
+                              <div>
+                                <p className="font-medium">{passenger.name}</p>
+                                <p className="text-sm text-muted-foreground">PNR: {passenger.pnr}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {passenger.ticketClass} - {passenger.seatNumber || 'No seat assigned'}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-4">
+                              <div className="text-right">
+                                <Badge className={getLoyaltyColor(passenger.loyaltyTier)}>
+                                  {passenger.loyaltyTier}
+                                </Badge>
+                                {passenger.specialNeeds && (
+                                  <p className="text-xs text-orange-600 mt-1">
+                                    Special: {passenger.specialNeeds}
+                                  </p>
+                                )}
+                              </div>
+                              {passenger.rebookingStatus && (
+                                <Badge variant="outline">
+                                  {passenger.rebookingStatus}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p>No passenger information available for this plan</p>
                       </div>
                     )}
                   </CardContent>
