@@ -810,7 +810,7 @@ export function ComparisonMatrix({
   const comparisonData = generateComparisonData();
 
   const getRiskBadgeStyle = (risk) => {
-    switch (risk.toLowerCase()) {
+    switch (risk?.toLowerCase()) {
       case "none":
       case "low":
         return "bg-green-100 text-green-700 border-green-200";
@@ -872,7 +872,7 @@ export function ComparisonMatrix({
     try {
       // Store the selected option details for consistent title display
       setSelectedOptionDetails(option);
-      
+
       // Use the rotation_plan data that's already included in the option from the API
       console.log("Processing rotation plan data for option:", option.id);
       console.log("Available rotation plan data:", option.rotation_plan);
@@ -983,7 +983,7 @@ export function ComparisonMatrix({
       setShowRotationDialog(true);
     } catch (error) {
       console.error("Error processing rotation plan:", error);
-      
+
       // Ensure selectedOptionDetails is still set even on error
       if (!selectedOptionDetails || selectedOptionDetails.id !== option.id) {
         setSelectedOptionDetails(option);
@@ -1112,7 +1112,7 @@ export function ComparisonMatrix({
   };
 
   const getRiskColor = (risk) => {
-    switch (risk.toLowerCase()) {
+    switch (risk?.toLowerCase()) {
       case "low":
         return "bg-green-100 text-green-700 border-green-200";
       case "medium":
@@ -2017,7 +2017,8 @@ export function ComparisonMatrix({
           <DialogHeader className="pb-4 flex-shrink-0">
             <DialogTitle className="flex items-center gap-2 text-xl">
               <Eye className="h-6 w-6 text-flydubai-blue" />
-              Rotation Impact - {selectedOptionDetails?.title || "Recovery Option"}
+              Rotation Impact -{" "}
+              {selectedOptionDetails?.title || "Recovery Option"}
             </DialogTitle>
             <div className="text-base text-muted-foreground">
               Disruption Type:{" "}
@@ -2201,7 +2202,8 @@ export function ComparisonMatrix({
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Users className="h-5 w-5 text-flydubai-blue" />
-                        Crew Status - {selectedOptionDetails?.title || "Recovery Option"}
+                        Crew Status -{" "}
+                        {selectedOptionDetails?.title || "Recovery Option"}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -2323,7 +2325,8 @@ export function ComparisonMatrix({
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Route className="h-5 w-5 text-flydubai-blue" />
-                        Impacted Flights - {selectedOptionDetails?.title || "Recovery Option"}
+                        Impacted Flights -{" "}
+                        {selectedOptionDetails?.title || "Recovery Option"}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
