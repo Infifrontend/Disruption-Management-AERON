@@ -653,6 +653,8 @@ class DatabaseService {
             disruptionReason: flight.disruption_reason,
             recoveryStatus: flight.recovery_status || 'none',
             categorization: flight.categorization || "Uncategorized",
+            categoryInfo: flight.category_info || null,
+            categoryId: flight.category_id,
             createdAt: flight.created_at,
             updatedAt: flight.updated_at,
           };

@@ -872,20 +872,59 @@ async function withDatabaseFallback(operation, fallbackValue = []) {
 }
 
 // Flight Disruptions endpoints
-app.get("/api/disruptions/", async (req, res) => {
-  const result = await withDatabaseFallback(async () => {
-    const queryResult = await pool.query(`
-      SELECT id, flight_number, route, origin, destination, origin_city, destination_city,
-             aircraft, scheduled_departure, estimated_departure, delay_minutes,
-             passengers, crew, connection_flights, severity, disruption_type, status,
-             disruption_reason, created_at, updated_at
-      FROM flight_disruptions WHERE recovery_status = 'assigned'
-      ORDER BY created_at DESC
-    `);
-    return queryResult.rows || [];
-  }, []);
+app.get("/api/disruptions", async (req, res) => {
+  try {
+    const { recovery_status = 'none' } = req.query;
 
-  res.json(result);
+    let whereClause = "";
+    const params = [];
+
+    if (recovery_status && recovery_status !== 'all') {
+      whereClause = "WHERE COALESCE(fd.recovery_status, 'none') = $1";
+      params.push(recovery_status);
+    }
+
+    const result = await pool.query(`
+      SELECT 
+        fd.*,
+        dc.id as category_table_id,
+        dc.category_name,
+        dc.category_code,
+        dc.description as category_description,
+        dc.priority as category_priority,
+        dc.default_timeline,
+        dc.escalation_required
+      FROM flight_disruptions fd
+      LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
+      ${whereClause}
+      ORDER BY fd.created_at DESC
+    `, params);
+
+    // Transform the result to include category info in a nested structure
+    const transformedRows = result.rows.map(row => ({
+      ...row,
+      category_info: row.category_name ? {
+        id: row.category_table_id,
+        category_name: row.category_name,
+        category_code: row.category_code,
+        description: row.category_description,
+        priority: row.category_priority,
+        default_timeline: row.default_timeline,
+        escalation_required: row.escalation_required
+      } : null,
+      // Remove the flattened category fields from the main object
+      category_table_id: undefined,
+      category_description: undefined,
+      category_priority: undefined,
+      default_timeline: undefined,
+      escalation_required: undefined
+    }));
+
+    res.json(transformedRows);
+  } catch (error) {
+    console.error("Error fetching disruptions:", error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Save new flight disruption
@@ -1675,7 +1714,18 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
     const { disruptionId } = req.params;
     console.log("📊 Fetching recovery options for disruption:", disruptionId);
 
-    if (result.rows.length === 0) {
+    // Convert disruptionId to integer
+    const numericDisruptionId = parseInt(disruptionId);
+    if (isNaN(numericDisruptionId)) {
+      return res.status(400).json({ error: "Invalid disruption ID format" });
+    }
+
+    const disruptionResult = await pool.query(
+      "SELECT * FROM flight_disruptions WHERE id = $1",
+      [numericDisruptionId],
+    );
+
+    if (disruptionResult.rows.length === 0) {
       console.log(`No disruption found for ID: ${disruptionId}`);
       // Instead of returning 404, create a placeholder disruption for generation
       const placeholderDisruption = {
@@ -1706,7 +1756,7 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
       });
     }
 
-    const disruption = result.rows[0];
+    const disruption = disruptionResult.rows[0];
     console.log(
       "Found disruption:",
       disruption.flight_number,
@@ -1795,7 +1845,9 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
                   )
                 : null,
               option.costBreakdown || option.cost_breakdown
-                ? JSON.stringify(option.costBreakdown || option.cost_breakdown)
+                ? JSON.stringify(
+                    option.costBreakdown || option.cost_breakdown,
+                  )
                 : null,
               option.timelineDetails || option.timeline_details
                 ? JSON.stringify(
@@ -1898,444 +1950,6 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
       error: "Failed to generate recovery options",
       details: error.message,
     });
-  }
-});
-
-// Recovery Steps endpoints
-app.get("/api/recovery-steps/:disruptionId", async (req, res) => {
-  try {
-    const { disruptionId } = req.params;
-    console.log(`Fetching recovery steps for disruption ID: ${disruptionId}`);
-
-    const result = await pool.query(
-      `
-      SELECT * FROM recovery_steps
-      WHERE disruption_id = $1
-      ORDER BY step_number ASC
-    `,
-      [disruptionId],
-    );
-
-    console.log(
-      `Found ${result.rows.length} recovery steps for disruption ${disruptionId}`,
-    );
-    res.json(result.rows || []);
-  } catch (error) {
-    console.error("Error fetching recovery steps:", error);
-    res.status(500).json({ error: error.message, rows: [] });
-  }
-});
-
-app.post("/api/recovery-steps", async (req, res) => {
-  try {
-    const {
-      disruption_id,
-      step_number,
-      title,
-      status,
-      timestamp,
-      system,
-      details,
-      step_data,
-    } = req.body;
-
-    const result = await pool.query(
-      `
-      INSERT INTO recovery_steps (
-        disruption_id, step_number, title, status, timestamp,
-        system, details, step_data
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-      RETURNING *
-    `,
-      [
-        disruption_id,
-        step_number,
-        title,
-        status || "pending",
-        timestamp,
-        system,
-        details,
-        step_data ? JSON.stringify(step_data) : null,
-      ],
-    );
-
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error("Error saving recovery step:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Debug endpoint to check recovery steps table
-app.get("/api/debug/recovery-steps", async (req, res) => {
-  try {
-    const result = await pool.query(
-      "SELECT * FROM recovery_steps ORDER BY disruption_id, step_number",
-    );
-    res.json({
-      totalSteps: result.rows.length,
-      steps: result.rows,
-    });
-  } catch (error) {
-    console.error("Error fetching all recovery steps:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Generate and save recovery options for a disruption
-app.post("/api/generate-recovery-options/:disruptionId", async (req, res) => {
-  try {
-    const { disruptionId } = req.params;
-    console.log(
-      `Generating recovery options for disruption ID: ${disruptionId}`,
-    );
-
-    // First get the disruption details
-    const disruptionResult = await pool.query(
-      "SELECT * FROM flight_disruptions WHERE id = $1::integer OR flight_number = $1",
-      [disruptionId],
-    );
-
-    if (disruptionResult.rows.length === 0) {
-      return res.status(404).json({ error: "Disruption not found" });
-    }
-
-    const disruptionData = disruptionResult.rows[0];
-    console.log("Found disruption:", disruptionData.flight_number);
-
-    // Check if recovery steps already exist (not just options)
-    const existingSteps = await pool.query(
-      "SELECT COUNT(*) as count FROM recovery_steps WHERE disruption_id = $1",
-      [disruptionId],
-    );
-
-    const existingOptions = await pool.query(
-      "SELECT COUNT(*) as count FROM recovery_options WHERE disruption_id = $1",
-      [disruptionId],
-    );
-
-    if (existingOptions.rows[0].count > 0 && existingSteps.rows[0].count > 0) {
-      return res.json({
-        message: "Recovery options and steps already exist",
-        exists: true,
-        optionsCount: existingOptions.rows[0].count,
-        stepsCount: existingSteps.rows[0].count,
-      });
-    }
-
-    // Generate recovery options based on disruption type
-    const { generateRecoveryOptionsForDisruption } = await import(
-      "./recovery-generator.js"
-    );
-
-    // Get category information from disruption
-    const categoryInfo = {
-      category_code: disruptionData.category_code,
-      category_name: disruptionData.categorization,
-      category_id: disruptionData.category_id,
-    };
-
-    const { options, steps } = generateRecoveryOptionsForDisruption(
-      disruptionData,
-      categoryInfo,
-    );
-    console.log(
-      `Generated ${options.length} options and ${steps.length} steps for flight ${flightId}`,
-    );
-
-    // Clear existing data if partially generated
-    await pool.query("DELETE FROM recovery_steps WHERE disruption_id = $1", [
-      disruptionId,
-    ]);
-    await pool.query("DELETE FROM recovery_options WHERE disruption_id = $1", [
-      disruptionId,
-    ]);
-
-    // Save recovery steps first
-    for (const step of steps) {
-      console.log(`Saving step ${step.step}: ${step.title}`);
-      // Check if step already exists
-      const existingStep = await pool.query(
-        "SELECT id FROM recovery_steps WHERE disruption_id = $1 AND step_number = $2",
-        [disruptionId, step.step],
-      );
-
-      if (existingStep.rows.length > 0) {
-        // Update existing step
-        await pool.query(
-          `
-          UPDATE recovery_steps SET
-            title = $3, status = $4, timestamp = $5, system = $6,
-            details = $7, step_data = $8, updated_at = CURRENT_TIMESTAMP
-          WHERE disruption_id = $1 AND step_number = $2
-        `,
-          [
-            disruptionId,
-            step.step,
-            step.title,
-            step.status,
-            step.timestamp,
-            step.system,
-            step.details,
-            step.data ? JSON.stringify(step.data) : null,
-          ],
-        );
-      } else {
-        // Insert new step
-        await pool.query(
-          `
-          INSERT INTO recovery_steps (
-            disruption_id, step_number, title, status, timestamp,
-            system, details, step_data
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        `,
-          [
-            disruptionId,
-            step.step,
-            step.title,
-            step.status,
-            step.timestamp,
-            step.system,
-            step.details,
-            step.data ? JSON.stringify(step.data) : null,
-          ],
-        );
-      }
-    }
-
-    // Save recovery options
-    for (let i = 0; i < options.length; i++) {
-      const option = options[i];
-      console.log(`Saving option ${i + 1}: ${option.title}`);
-
-      // Ensure all required fields have defaults
-      const optionData = {
-        title: option.title || option.option_name || `Recovery Option ${i + 1}`,
-        description: option.description || "Recovery option details",
-        cost: option.cost || "TBD",
-        timeline:
-          option.timeline || option.duration_minutes
-            ? `${option.duration_minutes} minutes`
-            : "TBD",
-        confidence: option.confidence || 80,
-        impact: option.impact || option.passenger_impact || "Medium",
-        status: option.status || "generated",
-        advantages: option.advantages || [],
-        considerations: option.considerations || [],
-        resourceRequirements:
-          option.resourceRequirements || option.resource_requirements || [],
-        costBreakdown: option.costBreakdown || option.cost_breakdown || [],
-        timelineDetails:
-          option.timelineDetails || option.timeline_details || [],
-        riskAssessment: option.riskAssessment || option.risk_assessment || [],
-        technicalSpecs: option.technicalSpecs || option.technical_specs || {},
-        metrics: option.metrics || {},
-        rotationPlan: option.rotationPlan || option.rotation_plan || {},
-      };
-
-      await pool.query(
-        `
-        INSERT INTO recovery_options (
-          disruption_id, title, description, cost, timeline,
-          confidence, impact, status, priority, advantages, considerations,
-          resource_requirements, cost_breakdown, timeline_details,
-          risk_assessment, technical_specs, metrics, rotation_plan
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-      `,
-        [
-          disruptionId,
-          optionData.title,
-          optionData.description,
-          optionData.cost,
-          optionData.timeline,
-          optionData.confidence,
-          optionData.impact,
-          optionData.status,
-          i + 1, // priority based on order
-          optionData.advantages,
-          optionData.considerations,
-          optionData.resourceRequirements || optionData.resource_requirements
-            ? JSON.stringify(
-                optionData.resourceRequirements ||
-                  optionData.resource_requirements,
-              )
-            : null,
-          optionData.costBreakdown || optionData.cost_breakdown
-            ? JSON.stringify(
-                optionData.costBreakdown || optionData.cost_breakdown,
-              )
-            : null,
-          optionData.timelineDetails || optionData.timeline_details
-            ? JSON.stringify(
-                optionData.timelineDetails || optionData.timeline_details,
-              )
-            : null,
-          optionData.riskAssessment || optionData.risk_assessment
-            ? JSON.stringify(
-                optionData.riskAssessment || optionData.risk_assessment,
-              )
-            : null,
-          optionData.technicalSpecs || optionData.technical_specs
-            ? JSON.stringify(
-                optionData.technicalSpecs || optionData.technical_specs,
-              )
-            : null,
-          optionData.metrics ? JSON.stringify(optionData.metrics) : null,
-          optionData.rotationPlan || optionData.rotation_plan
-            ? JSON.stringify(
-                optionData.rotationPlan || optionData.rotation_plan,
-              )
-            : null,
-        ],
-      );
-    }
-
-    console.log("Successfully saved all recovery options and steps");
-    res.json({
-      success: true,
-      optionsCount: options.length,
-      stepsCount: steps.length,
-      message: `Generated ${options.length} recovery options and ${steps.length} steps`,
-    });
-  } catch (error) {
-    console.error("Error generating recovery options:", error);
-    res.status(500).json({
-      error: "Failed to generate recovery options",
-      details: error.message,
-    });
-  }
-});
-
-// Recovery Options endpoint - Main endpoint for loading recovery options
-app.get("/api/recovery-options/:disruptionId", async (req, res) => {
-  try {
-    const { disruptionId } = req.params;
-    console.log(`Fetching recovery options for disruption ID: ${disruptionId}`);
-
-    // First try the detailed recovery options table
-    let result = await pool.query(
-      `
-      SELECT rod.*, dc.category_name, dc.category_code
-      FROM recovery_options_detailed rod
-      LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
-      WHERE rod.disruption_id = $1
-      ORDER BY rod.priority ASC, rod.confidence DESC
-    `,
-      [disruptionId],
-    );
-
-    // If no detailed options found, try the regular recovery options table
-    if (result.rows.length === 0) {
-      result = await pool.query(
-        `SELECT * FROM recovery_options WHERE disruption_id = $1 ORDER BY created_at DESC`,
-        [disruptionId],
-      );
-      console.log(`Found ${result.rows.length} basic recovery options`);
-    } else {
-      console.log(`Found ${result.rows.length} detailed recovery options`);
-    }
-
-    res.json(result.rows);
-  } catch (error) {
-    console.error("Error fetching recovery options:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Recovery Option Details endpoint
-app.get("/api/recovery-option-details/:optionId", async (req, res) => {
-  try {
-    const { optionId } = req.params;
-    console.log(`Fetching details for recovery option ID: ${optionId}`);
-
-    const result = await pool.query(
-      `
-      SELECT rod.*, dc.category_name, dc.category_code
-      FROM recovery_options_detailed rod
-      LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
-      WHERE rod.option_id = $1
-    `,
-      [optionId],
-    );
-
-    if (result.rows.length === 0) {
-      return res
-        .status(404)
-        .json({ error: "Recovery option details not found" });
-    }
-
-    console.log(`Found details for recovery option: ${optionId}`);
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error("Error fetching recovery option details:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Detailed Recovery Options endpoints (keep for backward compatibility)
-app.get("/api/recovery-options-detailed/:disruptionId", async (req, res) => {
-  try {
-    const { disruptionId } = req.params;
-    console.log(
-      `Fetching detailed recovery options for disruption ID: ${disruptionId}`,
-    );
-
-    const result = await pool.query(
-      `
-      SELECT rod.*, dc.category_name, dc.category_code
-      FROM recovery_options_detailed rod
-      LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
-      WHERE rod.disruption_id = $1
-      ORDER BY rod.priority ASC, rod.confidence DESC
-    `,
-      [disruptionId],
-    );
-
-    console.log(`Found ${result.rows.length} detailed recovery options`);
-    res.json(result.rows);
-  } catch (error) {
-    console.error("Error fetching detailed recovery options:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get("/api/disruption-categories", async (req, res) => {
-  try {
-    const result = await pool.query(`
-      SELECT * FROM disruption_categories
-      WHERE is_active = true
-      ORDER BY priority_level ASC
-    `);
-    res.json(result.rows);
-  } catch (error) {
-    console.error("Error fetching disruption categories:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-app.get("/api/recovery-option-templates", async (req, res) => {
-  try {
-    const { category_id } = req.query;
-    let query = `
-      SELECT rot.*, dc.category_name, dc.category_code
-      FROM recovery_option_templates rot
-      LEFT JOIN disruption_categories dc ON rot.category_id = dc.id
-      WHERE rot.is_active = true
-    `;
-    const params = [];
-
-    if (category_id) {
-      query += ` AND rot.category_id = $1`;
-      params.push(category_id);
-    }
-
-    query += ` ORDER BY dc.priority_level ASC, rot.title ASC`;
-
-    const result = await pool.query(query, params);
-    res.json(result.rows);
-  } catch (error) {
-    console.error("Error fetching recovery option templates:", error);
-    res.status(500).json({ error: error.message });
   }
 });
 
