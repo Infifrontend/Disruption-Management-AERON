@@ -993,9 +993,9 @@ app.post("/api/disruptions/", async (req, res) => {
       try {
         const categoryResult = await pool.query(
           `
-          SELECT id FROM disruption_categories 
-          WHERE category_name = $1 
-          OR category_code = CASE 
+          SELECT id FROM disruption_categories
+          WHERE category_name = $1
+          OR category_code = CASE
             WHEN $1 LIKE '%Aircraft%' OR $1 LIKE '%AOG%' THEN 'AIRCRAFT_ISSUE'
             WHEN $1 LIKE '%Crew%' OR $1 LIKE '%duty time%' OR $1 LIKE '%sick%' THEN 'CREW_ISSUE'
             WHEN $1 LIKE '%Weather%' OR $1 LIKE '%ATC%' THEN 'ATC_WEATHER'
@@ -1023,8 +1023,8 @@ app.post("/api/disruptions/", async (req, res) => {
     if (!category_id) {
       try {
         const defaultCategory = await pool.query(`
-          SELECT id FROM disruption_categories 
-          WHERE category_code = 'AIRCRAFT_ISSUE' 
+          SELECT id FROM disruption_categories
+          WHERE category_code = 'AIRCRAFT_ISSUE'
           LIMIT 1
         `);
         if (defaultCategory.rows.length > 0) {
@@ -1675,6 +1675,22 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
     const { disruptionId } = req.params;
     console.log("📊 Fetching recovery options for disruption:", disruptionId);
 
+    // Convert disruptionId to integer
+    const numericDisruptionId = parseInt(disruptionId);
+    if (isNaN(numericDisruptionId)) {
+      return res.status(400).json({ error: "Invalid disruption ID format" });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT fd.*, dc.category_name, dc.category_code
+      FROM flight_disruptions fd
+      LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
+      WHERE fd.id = $1::integer
+    `,
+      [numericDisruptionId],
+    );
+
     if (result.rows.length === 0) {
       console.log(`No disruption found for ID: ${disruptionId}`);
       // Instead of returning 404, create a placeholder disruption for generation
@@ -1795,7 +1811,9 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
                   )
                 : null,
               option.costBreakdown || option.cost_breakdown
-                ? JSON.stringify(option.costBreakdown || option.cost_breakdown)
+                ? JSON.stringify(
+                    option.costBreakdown || option.cost_breakdown,
+                  )
                 : null,
               option.timelineDetails || option.timeline_details
                 ? JSON.stringify(
@@ -1814,7 +1832,9 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
                 : null,
               option.metrics ? JSON.stringify(option.metrics) : null,
               option.rotationPlan || option.rotation_plan
-                ? JSON.stringify(option.rotationPlan || option.rotation_plan)
+                ? JSON.stringify(
+                    option.rotationPlan || option.rotation_plan,
+                  )
                 : null,
             ],
           );
@@ -3025,7 +3045,7 @@ app.get("/api/recovery-option-details/:optionId", async (req, res) => {
 
     const result = await pool.query(
       `
-      SELECT ro.*, rs.* 
+      SELECT ro.*, rs.*
       FROM recovery_options ro
       LEFT JOIN recovery_steps rs ON ro.disruption_id = rs.disruption_id
       WHERE ro.id = $1 OR ro.option_id = $1
@@ -3085,7 +3105,7 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
     // Check if this combination already exists
     const existingCheck = await pool.query(
       `
-      SELECT id FROM pending_recovery_solutions 
+      SELECT id FROM pending_recovery_solutions
       WHERE disruption_id = $1 AND option_id = $2
     `,
       [disruption_id, option_id],
@@ -3100,8 +3120,8 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
 
     const result = await pool.query(
       `
-      INSERT INTO pending_recovery_solutions 
-      (disruption_id, option_id, option_title, option_description, cost, timeline, 
+      INSERT INTO pending_recovery_solutions
+      (disruption_id, option_id, option_title, option_description, cost, timeline,
        confidence, impact, status, full_details, rotation_impact, submitted_by, approval_required)
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *
@@ -3154,7 +3174,7 @@ app.put("/api/flight-recovery-status/:flightId", async (req, res) => {
 
     const result = await pool.query(
       `
-      UPDATE flight_disruptions 
+      UPDATE flight_disruptions
       SET recovery_status = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
       RETURNING *
@@ -3183,7 +3203,7 @@ app.put(
 
       const result = await pool.query(
         `
-      UPDATE pending_recovery_solutions 
+      UPDATE pending_recovery_solutions
       SET status = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
       RETURNING *
@@ -3198,7 +3218,9 @@ app.put(
       res.json(result.rows[0]);
     } catch (error) {
       console.error("Error updating pending solution status:", error);
-      res.status(500).json({ error: "Internal server error" });
+      res.status(500).json({
+        error: "Internal server error",
+      });
     }
   },
 );
@@ -3211,7 +3233,7 @@ app.put("/api/disruptions/:disruptionId/status", async (req, res) => {
 
     const result = await pool.query(
       `
-      UPDATE flight_disruptions 
+      UPDATE flight_disruptions
       SET status = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
       RETURNING *
