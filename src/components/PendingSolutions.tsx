@@ -163,10 +163,13 @@ export function PendingSolutions() {
     const matchesFlightNumber = !filters.flightNumber || plan.flightNumber.toLowerCase().includes(filters.flightNumber.toLowerCase())
     const matchesPlanId = !filters.planId || plan.id.toLowerCase().includes(filters.planId.toLowerCase())
 
+    // Normalize status for consistent comparison
+    const normalizedStatus = plan.status.trim()
+    
     const matchesTab = activeTab === 'all' || 
-                     (activeTab === 'pending' && ['Pending Approval', 'Under Review', 'Pending'].includes(plan.status)) ||
-                     (activeTab === 'approved' && plan.status === 'Approved') ||
-                     (activeTab === 'rejected' && plan.status === 'Rejected') ||
+                     (activeTab === 'pending' && ['Pending Approval', 'Under Review', 'Pending'].includes(normalizedStatus)) ||
+                     (activeTab === 'approved' && normalizedStatus === 'Approved') ||
+                     (activeTab === 'rejected' && normalizedStatus === 'Rejected') ||
                      (activeTab === 'critical' && (plan.priority === 'Critical' || plan.priority === 'High'))
 
     return matchesPriority && matchesSubmitter && matchesFlightNumber && matchesPlanId && matchesTab
@@ -244,9 +247,9 @@ export function PendingSolutions() {
   const getTabCounts = () => {
     return {
       all: plans.length,
-      pending: plans.filter(p => ['Pending Approval', 'Under Review', 'Pending'].includes(p.status)).length,
-      approved: plans.filter(p => p.status === 'Approved').length,
-      rejected: plans.filter(p => p.status === 'Rejected').length,
+      pending: plans.filter(p => ['Pending Approval', 'Under Review', 'Pending'].includes(p.status.trim())).length,
+      approved: plans.filter(p => p.status.trim() === 'Approved').length,
+      rejected: plans.filter(p => p.status.trim() === 'Rejected').length,
       critical: plans.filter(p => ['Critical', 'High'].includes(p.priority)).length
     }
   }
@@ -264,7 +267,17 @@ export function PendingSolutions() {
       
       // Update the pending solution status
       await databaseService.updateFlightDisruptionStatus(planId, 'Approved');
-      setPlans(plans.map(plan => plan.id === planId ? { ...plan, status: 'Approved' } : plan));
+      
+      // Update local state with the new status
+      const updatedPlans = plans.map(plan => 
+        plan.id === planId ? { ...plan, status: 'Approved' } : plan
+      );
+      setPlans([...updatedPlans]); // Force re-render with new array reference
+      
+      // Refresh data from server to ensure consistency
+      setTimeout(() => {
+        fetchPlans();
+      }, 500);
     } catch (error) {
       console.error("Failed to approve plan:", error);
     }
@@ -281,7 +294,17 @@ export function PendingSolutions() {
       
       // Update the pending solution status
       await databaseService.updateFlightDisruptionStatus(planId, 'Rejected');
-      setPlans(plans.map(plan => plan.id === planId ? { ...plan, status: 'Rejected' } : plan));
+      
+      // Update local state with the new status
+      const updatedPlans = plans.map(plan => 
+        plan.id === planId ? { ...plan, status: 'Rejected' } : plan
+      );
+      setPlans([...updatedPlans]); // Force re-render with new array reference
+      
+      // Refresh data from server to ensure consistency
+      setTimeout(() => {
+        fetchPlans();
+      }, 500);
     } catch (error) {
       console.error("Failed to reject plan:", error);
     }
@@ -1204,8 +1227,8 @@ export function PendingSolutions() {
               {['Pending Approval', 'Under Review', 'Pending'].includes(selectedPlan.status) && (
                 <>
                   <Button
-                    onClick={() => {
-                      handleApprove(selectedPlan.id)
+                    onClick={async () => {
+                      await handleApprove(selectedPlan.id)
                       setSelectedPlan(null)
                     }}
                     className="bg-green-600 hover:bg-green-700"
@@ -1215,8 +1238,8 @@ export function PendingSolutions() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      handleReject(selectedPlan.id)
+                    onClick={async () => {
+                      await handleReject(selectedPlan.id)
                       setSelectedPlan(null)
                     }}
                     className="text-red-600 border-red-200 hover:bg-red-50"
