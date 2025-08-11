@@ -3305,8 +3305,6 @@ app.get("/api/pending-recovery-solutions", async (req, res) => {
     console.error("Error fetching pending recovery solutions:", error);
     res.status(500).json({ error: "Internal server error" });
   }
-});ver error" });
-  }
 });
 
 // Update flight recovery status
