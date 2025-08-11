@@ -1,17 +1,696 @@
-import fs from 'fs';
-import path from 'path';
+// File system imports removed - using embedded data instead
 
-// Load crew issues recovery data
-let crewIssuesRecoveryData = [];
-try {
-  const crewIssuesPath = path.join(process.cwd(), 'attached_assets', 'crew_issues_1754916255486.json');
-  const crewIssuesContent = fs.readFileSync(crewIssuesPath, 'utf8');
-  crewIssuesRecoveryData = JSON.parse(crewIssuesContent);
-  console.log(`Loaded ${crewIssuesRecoveryData.length} crew issue recovery options`);
-} catch (error) {
-  console.warn('Failed to load crew issues recovery data:', error.message);
-  crewIssuesRecoveryData = [];
-}
+// Embedded crew issues recovery data
+const getCrewIssuesRecoveryData = () => {
+  return [
+    {
+      "title": "Assign Standby Crew",
+      "description": "Capt. Mohammed Al-Zaabi from standby roster",
+      "cost": "AED 8,500",
+      "timeline": "30 minutes",
+      "confidence": 92,
+      "impact": "Minimal operational disruption",
+      "status": "recommended",
+      "priority": 1,
+      "advantages": [],
+      "considerations": [],
+      "resource_requirements": [
+        {
+          "title": "Replacement Captain",
+          "subtitle": "Standby Captain",
+          "availability": "Confirmed",
+          "status": "En Route",
+          "location": "Crew Hotel/Rest Area",
+          "eta": "25 minutes",
+          "details": "Type-rated captain with required flight hours"
+        },
+        {
+          "title": "Replacement First Officer",
+          "subtitle": "Standby First Officer",
+          "availability": "Confirmed",
+          "status": "Ready",
+          "location": "Crew Rest Area",
+          "eta": "5 minutes",
+          "details": "Qualified first officer within duty limits"
+        },
+        {
+          "title": "Cabin Crew",
+          "subtitle": "Original/Replacement Cabin Crew",
+          "availability": "Available",
+          "status": "Ready",
+          "location": "Gate Area",
+          "eta": "On Location",
+          "details": "Cabin crew assessment and replacement if needed"
+        },
+        {
+          "title": "Training Coordinator",
+          "subtitle": "Training Captain (TRI)",
+          "availability": "On Call",
+          "status": "Responding",
+          "location": "Training Center",
+          "eta": "15 minutes",
+          "details": "Extended crew briefing and documentation support"
+        }
+      ],
+      "cost_breakdown": [
+        {
+          "amount": "AED 5,525",
+          "category": "Standby Crew Activation",
+          "percentage": 65,
+          "description": "Call-out pay for replacement crew"
+        },
+        {
+          "amount": "AED 1,360",
+          "category": "Extended Briefing Costs",
+          "percentage": 16,
+          "description": "Training coordinator and materials"
+        },
+        {
+          "amount": "AED 850",
+          "category": "Crew Transportation",
+          "percentage": 10,
+          "description": "Transport to airport"
+        },
+        {
+          "amount": "AED 765",
+          "category": "Administrative Processing",
+          "percentage": 9,
+          "description": "Duty time documentation, roster changes"
+        }
+      ],
+      "timeline_details": [
+        {
+          "step": "Standby Crew Activation",
+          "status": "completed",
+          "details": "Contact and confirm availability of standby crew",
+          "startTime": "15:58",
+          "endTime": "16:06",
+          "duration": "8 min"
+        },
+        {
+          "step": "Crew Transportation",
+          "status": "in-progress",
+          "details": "Transport crew to airport",
+          "startTime": "16:06",
+          "endTime": "23:36",
+          "duration": "450 min"
+        },
+        {
+          "step": "Extended Safety Briefing",
+          "status": "pending",
+          "details": "Route-specific briefing and documentation",
+          "startTime": "23:28",
+          "endTime": "09:58",
+          "duration": "630 min"
+        },
+        {
+          "step": "Pre-flight Preparation",
+          "status": "pending",
+          "details": "Aircraft checks and passenger boarding prep",
+          "startTime": "09:58",
+          "endTime": "17:28",
+          "duration": "450 min"
+        },
+        {
+          "step": "Departure Clearance",
+          "status": "pending",
+          "details": "Final clearances and departure",
+          "startTime": "21:48",
+          "endTime": "21:58",
+          "duration": "10 min"
+        }
+      ],
+      "risk_assessment": [
+        {
+          "risk": "Standby Crew Unavailable",
+          "risk_impact": "Low",
+          "mitigation_impact": "High",
+          "score": 3,
+          "mitigation": "Multiple qualified crew members confirmed available"
+        },
+        {
+          "risk": "Extended Briefing Time",
+          "risk_impact": "Medium",
+          "mitigation_impact": "Low",
+          "score": 2,
+          "mitigation": "Pre-briefing materials prepared, time buffers included"
+        },
+        {
+          "risk": "Regulatory Compliance Issues",
+          "risk_impact": "Low",
+          "mitigation_impact": "High",
+          "score": 3,
+          "mitigation": "All crew qualifications verified, documentation current"
+        },
+        {
+          "risk": "Crew Coordination Challenges",
+          "risk_impact": "Low",
+          "mitigation_impact": "Medium",
+          "score": 2,
+          "mitigation": "Training coordinator available, standardized procedures"
+        }
+      ],
+      "technical_specs": {
+        "implementation": "Emergency crew replacement with extended briefing and qualification verification",
+        "systems_required": [
+          "Crew Management System",
+          "Training Records Database",
+          "Duty Time Tracking",
+          "Qualification Verification System"
+        ],
+        "certifications": [
+          "GCAA Crew Licensing",
+          "Flydubai Type Ratings",
+          "Current Medical Certificates",
+          "Route Qualifications"
+        ],
+        "crew_qualifications": "All replacement crew verified current on aircraft type, route qualified",
+        "duty_time_compliance": "Fresh crew well within all regulatory duty time limitations and rest requirements",
+        "briefing_requirements": "Extended briefing for crew pairing, weather, NOTAMs, special procedures, and current conditions",
+        "backup_resources": "Additional standby crew available if primary replacement unavailable",
+        "training_status": "All crew current on recurrent training, emergency procedures, and company standards"
+      },
+      "metrics": {},
+      "rotation_plan": {
+        "aircraftOptions": [
+          {
+            "reg": "A6-FED",
+            "type": "B737-800 (189Y)",
+            "etops": {
+              "status": "available",
+              "value": "180min"
+            },
+            "cabinMatch": {
+              "status": "exact",
+              "value": "Exact"
+            },
+            "availability": "Original Aircraft",
+            "assigned": {
+              "status": "none",
+              "value": "None"
+            },
+            "turnaround": "45 min",
+            "maintenance": {
+              "status": "current",
+              "value": "Current"
+            },
+            "option_score": {
+              "cost_score": "92%",
+              "delay_score": "88%",
+              "crew_impact": "95%",
+              "fuel_score": "91%",
+              "overall": "92%"
+            }
+          }
+        ],
+        "crew": [
+          {
+            "name": "Capt. Ahmed Al-Mansouri",
+            "role": "Captain",
+            "type": "B737 Type Rating",
+            "status": "Available",
+            "issue": "Replacement for fatigued crew"
+          },
+          {
+            "name": "FO Sarah Johnson",
+            "role": "First Officer",
+            "type": "B737/MAX Type Rating",
+            "status": "Available",
+            "issue": null
+          },
+          {
+            "name": "SSCC Lisa Martinez",
+            "role": "Senior Cabin Crew",
+            "type": "Senior Cabin Crew",
+            "status": "Available",
+            "issue": "Approaching duty limit (6h)"
+          },
+          {
+            "name": "CC Maria Santos",
+            "role": "Cabin Crew",
+            "type": "Cabin Crew",
+            "status": "Standby",
+            "issue": "Standby replacement"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Deadhead Crew",
+      "description": "Position qualified Captain from Abu Dhabi",
+      "cost": "AED 25,000",
+      "timeline": "120 minutes",
+      "confidence": 85,
+      "impact": "Moderate schedule delay",
+      "status": "caution",
+      "priority": 1,
+      "advantages": [],
+      "considerations": [],
+      "resource_requirements": [
+        {
+          "title": "Replacement Captain",
+          "subtitle": "Standby Captain",
+          "availability": "Confirmed",
+          "status": "En Route",
+          "location": "Crew Hotel/Rest Area",
+          "eta": "25 minutes",
+          "details": "Type-rated captain with required flight hours"
+        },
+        {
+          "title": "Replacement First Officer",
+          "subtitle": "Standby First Officer",
+          "availability": "Confirmed",
+          "status": "Ready",
+          "location": "Crew Rest Area",
+          "eta": "5 minutes",
+          "details": "Qualified first officer within duty limits"
+        },
+        {
+          "title": "Cabin Crew",
+          "subtitle": "Original/Replacement Cabin Crew",
+          "availability": "Available",
+          "status": "Ready",
+          "location": "Gate Area",
+          "eta": "On Location",
+          "details": "Cabin crew assessment and replacement if needed"
+        },
+        {
+          "title": "Training Coordinator",
+          "subtitle": "Training Captain (TRI)",
+          "availability": "On Call",
+          "status": "Responding",
+          "location": "Training Center",
+          "eta": "15 minutes",
+          "details": "Extended crew briefing and documentation support"
+        }
+      ],
+      "cost_breakdown": [
+        {
+          "amount": "AED 16,250",
+          "category": "Standby Crew Activation",
+          "percentage": 65,
+          "description": "Call-out pay for replacement crew"
+        },
+        {
+          "amount": "AED 4,000",
+          "category": "Extended Briefing Costs",
+          "percentage": 16,
+          "description": "Training coordinator and materials"
+        },
+        {
+          "amount": "AED 2,500",
+          "category": "Crew Transportation",
+          "percentage": 10,
+          "description": "Transport to airport"
+        },
+        {
+          "amount": "AED 2,250",
+          "category": "Administrative Processing",
+          "percentage": 9,
+          "description": "Duty time documentation, roster changes"
+        }
+      ],
+      "timeline_details": [
+        {
+          "step": "Standby Crew Activation",
+          "status": "completed",
+          "details": "Contact and confirm availability of standby crew",
+          "startTime": "16:48",
+          "endTime": "16:56",
+          "duration": "8 min"
+        },
+        {
+          "step": "Crew Transportation",
+          "status": "in-progress",
+          "details": "Transport crew to airport",
+          "startTime": "16:56",
+          "endTime": "22:56",
+          "duration": "1800 min"
+        },
+        {
+          "step": "Extended Safety Briefing",
+          "status": "pending",
+          "details": "Route-specific briefing and documentation",
+          "startTime": "22:48",
+          "endTime": "16:48",
+          "duration": "2520 min"
+        },
+        {
+          "step": "Pre-flight Preparation",
+          "status": "pending",
+          "details": "Aircraft checks and passenger boarding prep",
+          "startTime": "16:48",
+          "endTime": "22:48",
+          "duration": "1800 min"
+        },
+        {
+          "step": "Departure Clearance",
+          "status": "pending",
+          "details": "Final clearances and departure",
+          "startTime": "16:38",
+          "endTime": "16:48",
+          "duration": "10 min"
+        }
+      ],
+      "risk_assessment": [
+        {
+          "risk": "Standby Crew Unavailable",
+          "risk_impact": "Low",
+          "mitigation_impact": "High",
+          "score": 3,
+          "mitigation": "Multiple qualified crew members confirmed available"
+        },
+        {
+          "risk": "Extended Briefing Time",
+          "risk_impact": "Medium",
+          "mitigation_impact": "Low",
+          "score": 2,
+          "mitigation": "Pre-briefing materials prepared, time buffers included"
+        },
+        {
+          "risk": "Regulatory Compliance Issues",
+          "risk_impact": "Low",
+          "mitigation_impact": "High",
+          "score": 3,
+          "mitigation": "All crew qualifications verified, documentation current"
+        },
+        {
+          "risk": "Crew Coordination Challenges",
+          "risk_impact": "Low",
+          "mitigation_impact": "Medium",
+          "score": 2,
+          "mitigation": "Training coordinator available, standardized procedures"
+        }
+      ],
+      "technical_specs": {
+        "implementation": "Emergency crew replacement with extended briefing and qualification verification",
+        "systems_required": [
+          "Crew Management System",
+          "Training Records Database",
+          "Duty Time Tracking",
+          "Qualification Verification System"
+        ],
+        "certifications": [
+          "GCAA Crew Licensing",
+          "Flydubai Type Ratings",
+          "Current Medical Certificates",
+          "Route Qualifications"
+        ],
+        "crew_qualifications": "All replacement crew verified current on aircraft type, route qualified",
+        "duty_time_compliance": "Fresh crew well within all regulatory duty time limitations and rest requirements",
+        "briefing_requirements": "Extended briefing for crew pairing, weather, NOTAMs, special procedures, and current conditions",
+        "backup_resources": "Additional standby crew available if primary replacement unavailable",
+        "training_status": "All crew current on recurrent training, emergency procedures, and company standards"
+      },
+      "metrics": {},
+      "rotation_plan": {
+        "aircraftOptions": [
+          {
+            "reg": "A6-FED",
+            "type": "B737-800 (189Y)",
+            "etops": {
+              "status": "available",
+              "value": "180min"
+            },
+            "cabinMatch": {
+              "status": "exact",
+              "value": "Exact"
+            },
+            "availability": "Original Aircraft",
+            "assigned": {
+              "status": "none",
+              "value": "None"
+            },
+            "turnaround": "45 min",
+            "maintenance": {
+              "status": "current",
+              "value": "Current"
+            },
+            "option_score": {
+              "cost_score": "92%",
+              "delay_score": "88%",
+              "crew_impact": "95%",
+              "fuel_score": "91%",
+              "overall": "92%"
+            }
+          }
+        ],
+        "crew": [
+          {
+            "name": "Capt. Ahmed Al-Mansouri",
+            "role": "Captain",
+            "type": "B737 Type Rating",
+            "status": "Available",
+            "issue": "Replacement for fatigued crew"
+          },
+          {
+            "name": "FO Sarah Johnson",
+            "role": "First Officer",
+            "type": "B737/MAX Type Rating",
+            "status": "Available",
+            "issue": null
+          },
+          {
+            "name": "SSCC Lisa Martinez",
+            "role": "Senior Cabin Crew",
+            "type": "Senior Cabin Crew",
+            "status": "Available",
+            "issue": "Approaching duty limit (6h)"
+          },
+          {
+            "name": "CC Maria Santos",
+            "role": "Cabin Crew",
+            "type": "Cabin Crew",
+            "status": "Standby",
+            "issue": "Standby replacement"
+          }
+        ]
+      }
+    },
+    {
+      "title": "Delay for Crew Rest Completion",
+      "description": "Wait for original crew mandatory rest period",
+      "cost": "AED 45,000",
+      "timeline": "3 hours",
+      "confidence": 65,
+      "impact": "Significant passenger disruption",
+      "status": "warning",
+      "priority": 1,
+      "advantages": [],
+      "considerations": [],
+      "resource_requirements": [
+        {
+          "title": "Terminal Services",
+          "subtitle": "Passenger Amenities",
+          "availability": "Available",
+          "status": "Ready",
+          "location": "Terminal Lounges",
+          "eta": "Immediate",
+          "details": "Lounge access and refreshment services"
+        },
+        {
+          "title": "Technical Support",
+          "subtitle": "Maintenance Team",
+          "availability": "Available",
+          "status": "Responding",
+          "location": "Aircraft Stand",
+          "eta": "15 minutes",
+          "details": "Quick resolution team and equipment"
+        },
+        {
+          "title": "Customer Service",
+          "subtitle": "Ground Staff",
+          "availability": "Available",
+          "status": "Deployed",
+          "location": "Gate Area",
+          "eta": "On Location",
+          "details": "Customer service team for passenger updates"
+        },
+        {
+          "title": "Communication",
+          "subtitle": "Passenger Information System",
+          "availability": "Active",
+          "status": "Broadcasting",
+          "location": "Terminal Wide",
+          "eta": "Immediate",
+          "details": "Real-time updates via displays and announcements"
+        }
+      ],
+      "cost_breakdown": [
+        {
+          "amount": "AED 18,000",
+          "category": "Delay Coordination",
+          "percentage": 40,
+          "description": "Operational delay management"
+        },
+        {
+          "amount": "AED 15,750",
+          "category": "Passenger Services",
+          "percentage": 35,
+          "description": "Terminal amenities and refreshments"
+        },
+        {
+          "amount": "AED 6,750",
+          "category": "Crew Overtime",
+          "percentage": 15,
+          "description": "Extended crew duty time"
+        },
+        {
+          "amount": "AED 4,500",
+          "category": "Administrative Costs",
+          "percentage": 10,
+          "description": "Documentation and notifications"
+        }
+      ],
+      "timeline_details": [
+        {
+          "step": "Passenger Notification",
+          "status": "completed",
+          "details": "Immediate passenger notification",
+          "startTime": "17:05",
+          "endTime": "17:10",
+          "duration": "5 min"
+        },
+        {
+          "step": "Terminal Services Setup",
+          "status": "completed",
+          "details": "Arrange terminal amenities and refreshments",
+          "startTime": "17:10",
+          "endTime": "17:25",
+          "duration": "15 min"
+        },
+        {
+          "step": "Issue Resolution",
+          "status": "in-progress",
+          "details": "Resolve technical or operational issues",
+          "startTime": "17:25",
+          "endTime": "19:55",
+          "duration": "150 min"
+        },
+        {
+          "step": "Boarding & Departure",
+          "status": "pending",
+          "details": "Complete boarding and departure",
+          "startTime": "19:55",
+          "endTime": "20:05",
+          "duration": "10 min"
+        }
+      ],
+      "risk_assessment": [
+        {
+          "risk": "Extended Resolution Time",
+          "risk_impact": "Medium",
+          "mitigation_impact": "Medium",
+          "score": 4,
+          "mitigation": "Technical teams responding, time buffers included"
+        },
+        {
+          "risk": "Passenger Dissatisfaction",
+          "risk_impact": "Medium",
+          "mitigation_impact": "Low",
+          "score": 2,
+          "mitigation": "Terminal amenities and regular updates provided"
+        },
+        {
+          "risk": "Connecting Flight Impacts",
+          "risk_impact": "High",
+          "mitigation_impact": "Medium",
+          "score": 6,
+          "mitigation": "Rebooking team active, partner airline coordination"
+        },
+        {
+          "risk": "Weather Window Closure",
+          "risk_impact": "Low",
+          "mitigation_impact": "High",
+          "score": 3,
+          "mitigation": "Weather monitoring, alternative plans prepared"
+        }
+      ],
+      "technical_specs": {
+        "implementation": "Comprehensive delay management with passenger care and issue resolution",
+        "systems_required": [
+          "Terminal Services System",
+          "Passenger Notification Platform",
+          "Maintenance Support Systems"
+        ],
+        "certifications": [
+          "EU261 Compliance",
+          "UAE Passenger Rights Compliance",
+          "IATA Resolution 824"
+        ],
+        "maintenance_status": "Technical teams assigned for issue resolution during delay period",
+        "time_framework": "3-hour window allows for comprehensive issue resolution and passenger care",
+        "weather_limitations": "Weather conditions monitored, improvement timeline assessed",
+        "passenger_care": "Terminal amenities and refreshment services provided",
+        "regulatory_compliance": "Meets all passenger care requirements for delay duration and circumstances"
+      },
+      "metrics": {},
+      "rotation_plan": {
+        "aircraftOptions": [
+          {
+            "reg": "A6-FED",
+            "type": "B737-800 (189Y)",
+            "etops": {
+              "status": "available",
+              "value": "180min"
+            },
+            "cabinMatch": {
+              "status": "exact",
+              "value": "Exact"
+            },
+            "availability": "Delayed 3 hours",
+            "assigned": {
+              "status": "none",
+              "value": "None"
+            },
+            "turnaround": "30 min",
+            "maintenance": {
+              "status": "current",
+              "value": "Current"
+            },
+            "option_score": {
+              "cost_score": "92%",
+              "delay_score": "88%",
+              "crew_impact": "95%",
+              "fuel_score": "91%",
+              "overall": "92%"
+            }
+          }
+        ],
+        "crew": [
+          {
+            "name": "Capt. Ahmed Al-Mansouri",
+            "role": "Captain",
+            "type": "B737 Type Rating",
+            "status": "Available",
+            "issue": "Replacement for fatigued crew"
+          },
+          {
+            "name": "FO Sarah Johnson",
+            "role": "First Officer",
+            "type": "B737/MAX Type Rating",
+            "status": "Available",
+            "issue": null
+          },
+          {
+            "name": "SSCC Lisa Martinez",
+            "role": "Senior Cabin Crew",
+            "type": "Senior Cabin Crew",
+            "status": "Available",
+            "issue": "Approaching duty limit (6h)"
+          },
+          {
+            "name": "CC Maria Santos",
+            "role": "Cabin Crew",
+            "type": "Cabin Crew",
+            "status": "Standby",
+            "issue": "Standby replacement"
+          }
+        ]
+      }
+    }
+  ];
+};
 
 // Helper functions for disruption type mapping and recovery generation
 const mapDisruptionTypeToCategory = (type, reason = "") => {
@@ -1152,121 +1831,51 @@ const generateCrewIssueRecovery = (flight) => {
       status: "completed", 
       timestamp: "13:50:00",
       system: "Recovery Engine",
-      details: "Crew issue recovery options generated from templates",
+      details: "Crew issue recovery options generated from embedded templates",
       data: {
-        optionsGenerated: crewIssuesRecoveryData.length,
-        source: "Pre-configured crew recovery templates"
+        optionsGenerated: 3,
+        source: "Embedded crew recovery templates"
       }
     }
   ];
 
-  // Use loaded crew issues recovery data if available, otherwise fallback to basic options
-  let options = [];
+  // Use embedded crew issues recovery data
+  const crewIssuesRecoveryData = getCrewIssuesRecoveryData();
+  console.log(`Using ${crewIssuesRecoveryData.length} crew issue recovery options from embedded data`);
   
-  if (crewIssuesRecoveryData && crewIssuesRecoveryData.length > 0) {
-    console.log(`Using ${crewIssuesRecoveryData.length} crew issue recovery options from JSON`);
-    
-    options = crewIssuesRecoveryData.map((option, index) => ({
-      id: `CREW_ISSUE_${index + 1}`,
-      title: option.title,
-      description: option.description,
-      cost: option.cost,
-      timeline: option.timeline,
-      confidence: option.confidence,
-      impact: option.impact,
-      status: option.status,
-      priority: option.priority || 1,
-      category: "Crew Issue",
-      advantages: option.advantages || [
-        "Qualified crew replacement available",
-        "Regulatory compliance maintained",
-        "Minimal network disruption"
-      ],
-      considerations: option.considerations || [
-        "Crew coordination required",
-        "Extended briefing time",
-        "Additional operational costs"
-      ],
-      resourceRequirements: option.resource_requirements || [],
-      costBreakdown: option.cost_breakdown || [],
-      timelineDetails: option.timeline_details || [],
-      riskAssessment: option.risk_assessment || [],
-      technicalSpecs: option.technical_specs || {},
-      metrics: option.metrics || {
-        costEfficiency: 85,
-        timeEfficiency: 80,
-        passengerSatisfaction: 75
-      },
-      rotationPlan: option.rotation_plan || {}
-    }));
-  } else {
-    // Fallback options if JSON data is not available
-    console.log("Using fallback crew issue recovery options");
-    options = [
-      {
-        id: "STANDBY_CREW",
-        title: "Assign Standby Crew",
-        description: "Activate standby crew member from roster",
-        cost: "AED 8,500",
-        timeline: "30 minutes",
-        confidence: 92,
-        impact: "Minimal operational disruption",
-        status: "recommended",
-        priority: 1,
-        category: "Crew Issue",
-        advantages: [
-          "Standby crew immediately available",
-          "Within all regulatory duty time limits",
-        ],
-        considerations: [
-          "Extended briefing required",
-          "Standby crew pay activation costs",
-        ],
-        metrics: {
-          totalCost: 8500,
-          otpScore: 92,
-          aircraftSwaps: 0,
-          crewViolations: 0,
-          paxAccommodated: 100,
-          regulatoryRisk: "Low",
-          delayMinutes: 30,
-          confidenceScore: 92,
-          networkImpact: "Low",
-        },
-      },
-      {
-        id: "DELAY_COMPLIANCE",
-        title: "Delay for Crew Rest Completion",
-        description: "Wait for original crew mandatory rest period",
-        cost: "AED 45,000",
-        timeline: "3 hours",
-        confidence: 65,
-        impact: "Significant passenger disruption",
-        status: "warning",
-        priority: 2,
-        category: "Crew Issue",
-        advantages: [
-          "Uses original qualified crew",
-          "Full regulatory compliance",
-        ],
-        considerations: [
-          "3-hour minimum delay",
-          "High passenger compensation liability",
-        ],
-        metrics: {
-          totalCost: 45000,
-          otpScore: 65,
-          aircraftSwaps: 0,
-          crewViolations: 1,
-          paxAccommodated: 85,
-          regulatoryRisk: "Medium",
-          delayMinutes: 180,
-          confidenceScore: 65,
-          networkImpact: "Medium",
-        },
-      },
-    ];
-  }
+  const options = crewIssuesRecoveryData.map((option, index) => ({
+    id: `CREW_ISSUE_${index + 1}`,
+    title: option.title,
+    description: option.description,
+    cost: option.cost,
+    timeline: option.timeline,
+    confidence: option.confidence,
+    impact: option.impact,
+    status: option.status,
+    priority: option.priority || 1,
+    category: "Crew Issue",
+    advantages: option.advantages || [
+      "Qualified crew replacement available",
+      "Regulatory compliance maintained",
+      "Minimal network disruption"
+    ],
+    considerations: option.considerations || [
+      "Crew coordination required",
+      "Extended briefing time",
+      "Additional operational costs"
+    ],
+    resourceRequirements: option.resource_requirements || [],
+    costBreakdown: option.cost_breakdown || [],
+    timelineDetails: option.timeline_details || [],
+    riskAssessment: option.risk_assessment || [],
+    technicalSpecs: option.technical_specs || {},
+    metrics: option.metrics || {
+      costEfficiency: 85,
+      timeEfficiency: 80,
+      passengerSatisfaction: 75
+    },
+    rotationPlan: option.rotation_plan || {}
+  }));
 
   return { options, steps };
 };
