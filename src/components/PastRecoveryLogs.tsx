@@ -84,8 +84,31 @@ interface RecoveryLog {
   created_at: string
 }
 
+interface KPIData {
+  totalRecoveries: number
+  successRate: number
+  avgResolutionTime: number
+  costEfficiency: number
+  passengerSatisfaction: number
+  totalPassengers: number
+  avgRecoveryEfficiency: number
+  totalDelayReduction: number
+  cancellationsAvoided: number
+  totalCostSavings: number
+}
+
+interface TrendData {
+  month: string
+  efficiency: number
+  delayReduction: number
+  costSavings: number
+  satisfaction: number
+}
+
 export function PastRecoveryLogs() {
   const [recoveryLogs, setRecoveryLogs] = useState<RecoveryLog[]>([])
+  const [kpiData, setKpiData] = useState<KPIData | null>(null)
+  const [trendData, setTrendData] = useState<TrendData[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('key-metrics')
   const [filters, setFilters] = useState({
@@ -97,8 +120,8 @@ export function PastRecoveryLogs() {
   })
 
   useEffect(() => {
-    fetchRecoveryLogs()
-    const interval = setInterval(() => fetchRecoveryLogs(), 60000) // Refresh every minute
+    fetchAllData()
+    const interval = setInterval(() => fetchAllData(), 300000) // Refresh every 5 minutes
     return () => clearInterval(interval)
   }, [])
 
@@ -109,17 +132,159 @@ export function PastRecoveryLogs() {
     }
   }, [filters.status, filters.category, filters.priority, filters.dateRange])
 
-  const fetchRecoveryLogs = async (filterParams = filters) => {
+  const fetchAllData = async () => {
     try {
       setLoading(true)
-      const data = await databaseService.getPastRecoveryLogs(filterParams)
-      setRecoveryLogs(data)
+      await Promise.all([
+        fetchRecoveryLogs(),
+        fetchKPIData(),
+        fetchTrendData()
+      ])
     } catch (error) {
-      console.error('Error fetching recovery logs:', error)
+      console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
     }
   }
+
+  const fetchRecoveryLogs = async (filterParams = filters) => {
+    try {
+      const data = await databaseService.getPastRecoveryLogs(filterParams)
+      setRecoveryLogs(data)
+    } catch (error) {
+      console.error('Error fetching recovery logs:', error)
+      setRecoveryLogs([])
+    }
+  }
+
+  const fetchKPIData = async () => {
+    try {
+      const response = await fetch('/api/past-recovery-kpi')
+      if (response.ok) {
+        const data = await response.json()
+        setKpiData(data)
+      } else {
+        // Calculate KPIs from logs if API endpoint doesn't exist
+        calculateKPIFromLogs()
+      }
+    } catch (error) {
+      console.error('Error fetching KPI data:', error)
+      calculateKPIFromLogs()
+    }
+  }
+
+  const fetchTrendData = async () => {
+    try {
+      const response = await fetch('/api/past-recovery-trends')
+      if (response.ok) {
+        const data = await response.json()
+        setTrendData(data)
+      } else {
+        // Calculate trends from logs if API endpoint doesn't exist
+        calculateTrendsFromLogs()
+      }
+    } catch (error) {
+      console.error('Error fetching trend data:', error)
+      calculateTrendsFromLogs()
+    }
+  }
+
+  const calculateKPIFromLogs = () => {
+    if (recoveryLogs.length === 0) return
+
+    const totalRecoveries = recoveryLogs.length
+    const successfulRecoveries = recoveryLogs.filter(log => log.status === 'Successful').length
+    const successRate = (successfulRecoveries / totalRecoveries) * 100
+
+    const totalPassengers = recoveryLogs.reduce((sum, log) => sum + (log.affected_passengers || 0), 0)
+    const totalDelayReduction = recoveryLogs.reduce((sum, log) => sum + (log.delay_reduction_minutes || 0), 0)
+    const cancellationsAvoided = recoveryLogs.filter(log => log.cancellation_avoided).length
+
+    const avgSatisfaction = totalRecoveries > 0 
+      ? recoveryLogs.reduce((sum, log) => sum + (log.passenger_satisfaction || 0), 0) / totalRecoveries 
+      : 0
+
+    const avgRecoveryEfficiency = totalRecoveries > 0
+      ? recoveryLogs.reduce((sum, log) => sum + (log.recovery_efficiency || 0), 0) / totalRecoveries
+      : 0
+
+    const totalCostSavings = recoveryLogs.reduce((sum, log) => {
+      const estimated = Number(log.estimated_cost) || 0
+      const actual = Number(log.actual_cost) || 0
+      return sum + (estimated - actual)
+    }, 0)
+
+    const avgCostVariance = totalRecoveries > 0
+      ? recoveryLogs.reduce((sum, log) => sum + (log.cost_variance || 0), 0) / totalRecoveries
+      : 0
+
+    // Calculate average resolution time from duration strings
+    const avgResolutionMinutes = totalRecoveries > 0
+      ? recoveryLogs.reduce((sum, log) => {
+          const duration = log.duration || '0h 0m'
+          const hours = parseInt(duration.match(/(\d+)h/)?.[1] || '0')
+          const minutes = parseInt(duration.match(/(\d+)m/)?.[1] || '0')
+          return sum + (hours * 60 + minutes)
+        }, 0) / totalRecoveries
+      : 0
+
+    setKpiData({
+      totalRecoveries,
+      successRate,
+      avgResolutionTime: avgResolutionMinutes,
+      costEfficiency: Math.abs(avgCostVariance),
+      passengerSatisfaction: avgSatisfaction,
+      totalPassengers,
+      avgRecoveryEfficiency,
+      totalDelayReduction,
+      cancellationsAvoided,
+      totalCostSavings
+    })
+  }
+
+  const calculateTrendsFromLogs = () => {
+    const monthlyData: { [key: string]: any } = {}
+    
+    recoveryLogs.forEach(log => {
+      const date = new Date(log.created_at)
+      const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+      
+      if (!monthlyData[monthKey]) {
+        monthlyData[monthKey] = {
+          month: monthKey,
+          efficiencySum: 0,
+          delaySum: 0,
+          costSavingsSum: 0,
+          satisfactionSum: 0,
+          count: 0
+        }
+      }
+      
+      monthlyData[monthKey].efficiencySum += log.recovery_efficiency || 0
+      monthlyData[monthKey].delaySum += log.delay_reduction_minutes || 0
+      monthlyData[monthKey].costSavingsSum += (log.estimated_cost || 0) - (log.actual_cost || 0)
+      monthlyData[monthKey].satisfactionSum += log.passenger_satisfaction || 0
+      monthlyData[monthKey].count += 1
+    })
+
+    const trends = Object.values(monthlyData).map((data: any) => ({
+      month: data.month,
+      efficiency: Math.round(data.efficiencySum / data.count),
+      delayReduction: Math.round(data.delaySum / data.count),
+      costSavings: Math.round(data.costSavingsSum / data.count),
+      satisfaction: Math.round((data.satisfactionSum / data.count) * 10) / 10
+    })).slice(-6) // Last 6 months
+
+    setTrendData(trends)
+  }
+
+  // Update KPIs when logs change
+  useEffect(() => {
+    if (recoveryLogs.length > 0 && !kpiData) {
+      calculateKPIFromLogs()
+      calculateTrendsFromLogs()
+    }
+  }, [recoveryLogs])
 
   const statusColors: Record<string, string> = {
     'Successful': 'bg-green-100 text-green-800',
@@ -172,26 +337,11 @@ export function PastRecoveryLogs() {
     }).format(amount)
   }
 
-  const formatDuration = (duration: string | null) => {
-    if (!duration) return 'N/A'
-    return duration
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60)
+    const mins = minutes % 60
+    return `${hours}h ${mins}m`
   }
-
-  const totalLogs = filteredLogs.length
-  const successfulLogs = filteredLogs.filter(log => log.status === 'Successful').length
-  const totalSavings = filteredLogs.reduce((sum, log) => {
-    const estimated = Number(log.estimated_cost) || 0
-    const actual = Number(log.actual_cost) || 0
-    return sum + (estimated - actual)
-  }, 0)
-  const avgSatisfaction = totalLogs > 0 
-    ? filteredLogs.reduce((sum, log) => sum + (Number(log.passenger_satisfaction) || 0), 0) / totalLogs 
-    : 0
-  const totalPassengers = filteredLogs.reduce((sum, log) => sum + (Number(log.affected_passengers) || 0), 0)
-  const avgRecoveryEfficiency = totalLogs > 0
-    ? filteredLogs.reduce((sum, log) => sum + (Number(log.recovery_efficiency) || 0), 0) / totalLogs
-    : 0
-  const totalDelayReduction = filteredLogs.reduce((sum, log) => sum + (Number(log.delay_reduction_minutes) || 0), 0)
 
   if (loading) {
     return (
@@ -249,19 +399,24 @@ export function PastRecoveryLogs() {
               
               <div className="grid grid-cols-4 gap-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">{filteredLogs.filter(log => log.cancellation_avoided).length}</div>
+                  <div className="text-2xl font-bold text-orange-600">{kpiData?.cancellationsAvoided || 0}</div>
                   <div className="text-sm text-gray-600">Cancellations Avoided</div>
                   <div className="text-xs text-gray-500">Flights kept operational through smart recovery</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{Math.round(totalDelayReduction / 60)}h</div>
+                  <div className="text-2xl font-bold text-blue-600">{Math.round((kpiData?.totalDelayReduction || 0) / 60)}h</div>
                   <div className="text-sm text-gray-600">Total Delay Reduction</div>
-                  <div className="text-xs text-gray-500">{totalDelayReduction} minutes saved across all recoveries</div>
+                  <div className="text-xs text-gray-500">{kpiData?.totalDelayReduction || 0} minutes saved across all recoveries</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{avgRecoveryEfficiency.toFixed(1)}%</div>
+                  <div className="text-2xl font-bold text-green-600">{(kpiData?.avgRecoveryEfficiency || 0).toFixed(1)}%</div>
                   <div className="text-sm text-gray-600">Recovery Efficiency</div>
                   <div className="text-xs text-gray-500">Average efficiency in preventing potential delays</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">{formatCurrency(kpiData?.totalCostSavings || 0)}</div>
+                  <div className="text-sm text-gray-600">Total Cost Savings</div>
+                  <div className="text-xs text-gray-500">Saved vs estimated costs</div>
                 </div>
               </div>
             </CardContent>
@@ -275,10 +430,10 @@ export function PastRecoveryLogs() {
                   <CheckCircle className="h-4 w-4 text-green-600" />
                   <span className="text-sm text-gray-600">Success Rate</span>
                 </div>
-                <div className="text-2xl font-bold text-green-600">100.0%</div>
+                <div className="text-2xl font-bold text-green-600">{(kpiData?.successRate || 0).toFixed(1)}%</div>
                 <div className="text-xs text-gray-500">All recovery attempts</div>
                 <div className="w-full bg-gray-200 rounded-full h-1 mt-2">
-                  <div className="bg-green-600 h-1 rounded-full" style={{ width: '100%' }}></div>
+                  <div className="bg-green-600 h-1 rounded-full" style={{ width: `${kpiData?.successRate || 0}%` }}></div>
                 </div>
               </CardContent>
             </Card>
@@ -289,7 +444,7 @@ export function PastRecoveryLogs() {
                   <Clock className="h-4 w-4 text-blue-600" />
                   <span className="text-sm text-gray-600">Avg Resolution</span>
                 </div>
-                <div className="text-2xl font-bold text-blue-600">3h 13m</div>
+                <div className="text-2xl font-bold text-blue-600">{formatDuration(kpiData?.avgResolutionTime || 0)}</div>
                 <div className="text-xs text-gray-500">Time from disruption to resolution</div>
                 <div className="w-full bg-gray-200 rounded-full h-1 mt-2">
                   <div className="bg-blue-600 h-1 rounded-full" style={{ width: '65%' }}></div>
@@ -303,7 +458,7 @@ export function PastRecoveryLogs() {
                   <DollarSign className="h-4 w-4 text-green-600" />
                   <span className="text-sm text-gray-600">Cost Efficiency</span>
                 </div>
-                <div className="text-2xl font-bold text-green-600">-3.7%</div>
+                <div className="text-2xl font-bold text-green-600">{(kpiData?.costEfficiency || 0) > 0 ? '-' : ''}{(kpiData?.costEfficiency || 0).toFixed(1)}%</div>
                 <div className="text-xs text-gray-500">vs estimated cost</div>
                 <div className="w-full bg-gray-200 rounded-full h-1 mt-2">
                   <div className="bg-green-600 h-1 rounded-full" style={{ width: '70%' }}></div>
@@ -317,10 +472,10 @@ export function PastRecoveryLogs() {
                   <Users className="h-4 w-4 text-purple-600" />
                   <span className="text-sm text-gray-600">Passenger Satisfaction</span>
                 </div>
-                <div className="text-2xl font-bold text-purple-600">8.1/10</div>
+                <div className="text-2xl font-bold text-purple-600">{(kpiData?.passengerSatisfaction || 0).toFixed(1)}/10</div>
                 <div className="text-xs text-gray-500">Average rating across recoveries</div>
                 <div className="w-full bg-gray-200 rounded-full h-1 mt-2">
-                  <div className="bg-purple-600 h-1 rounded-full" style={{ width: '81%' }}></div>
+                  <div className="bg-purple-600 h-1 rounded-full" style={{ width: `${(kpiData?.passengerSatisfaction || 0) * 10}%` }}></div>
                 </div>
               </CardContent>
             </Card>
@@ -334,15 +489,15 @@ export function PastRecoveryLogs() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm">Total Passengers Served:</span>
-                    <span className="font-medium">891</span>
+                    <span className="font-medium">{kpiData?.totalPassengers || 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Avg Rebooking Success:</span>
-                    <span className="font-medium">94.3%</span>
+                    <span className="font-medium">{filteredLogs.length > 0 ? (filteredLogs.reduce((sum, log) => sum + (log.rebooking_success || 0), 0) / filteredLogs.length).toFixed(1) : '0'}%</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Satisfaction Rating:</span>
-                    <span className="font-medium">8.1/10</span>
+                    <span className="font-medium">{(kpiData?.passengerSatisfaction || 0).toFixed(1)}/10</span>
                   </div>
                 </div>
               </CardContent>
@@ -354,15 +509,15 @@ export function PastRecoveryLogs() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm">Delay Reduction:</span>
-                    <span className="font-medium text-green-600">83.5%</span>
+                    <span className="font-medium text-green-600">{(kpiData?.avgRecoveryEfficiency || 0).toFixed(1)}%</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Minutes Saved:</span>
-                    <span className="font-medium">2,231</span>
+                    <span className="font-medium">{kpiData?.totalDelayReduction || 0}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Avg Efficiency:</span>
-                    <span className="font-medium">83.5%</span>
+                    <span className="font-medium">{(kpiData?.avgRecoveryEfficiency || 0).toFixed(1)}%</span>
                   </div>
                 </div>
               </CardContent>
@@ -374,15 +529,15 @@ export function PastRecoveryLogs() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-sm">Total Recovery Cost:</span>
-                    <span className="font-medium">AED 440K</span>
+                    <span className="font-medium">{formatCurrency(filteredLogs.reduce((sum, log) => sum + (log.actual_cost || 0), 0))}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Cost Variance:</span>
-                    <span className="font-medium text-green-600">-3.7%</span>
+                    <span className="font-medium text-green-600">{(kpiData?.costEfficiency || 0) > 0 ? '-' : ''}{(kpiData?.costEfficiency || 0).toFixed(1)}%</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm">Avg Cost/Flight:</span>
-                    <span className="font-medium">AED 89K</span>
+                    <span className="font-medium">{filteredLogs.length > 0 ? formatCurrency(filteredLogs.reduce((sum, log) => sum + (log.actual_cost || 0), 0) / filteredLogs.length) : formatCurrency(0)}</span>
                   </div>
                 </div>
               </CardContent>
@@ -721,7 +876,7 @@ export function PastRecoveryLogs() {
           {/* Recovery History Table */}
           <Card>
             <CardHeader>
-              <CardTitle>Recovery History (5 records)</CardTitle>
+              <CardTitle>Recovery History ({filteredLogs.length} records)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -739,235 +894,61 @@ export function PastRecoveryLogs() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr className="border-b hover:bg-gray-50">
-                      <td className="p-3">
-                        <div className="font-mono text-sm">SOL-2025-001</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="font-medium">FZ215</div>
-                        <div className="text-sm text-gray-500">DXB → BOM</div>
-                        <div className="text-xs text-gray-400">B737-800 • A6-FDB</div>
-                      </td>
-                      <td className="p-3">
-                        <Badge variant="outline" className="mb-1 bg-orange-100 text-orange-800 border-orange-300">High</Badge>
-                        <div className="text-xs text-gray-600">Engine overheating at DXB</div>
-                        <div className="text-xs text-gray-500">Weather</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm">
-                          <span className="text-green-600 font-medium">Cancellation Avoided</span>
-                        </div>
-                        <div className="text-xs text-gray-600">155min delay</div>
-                        <div className="text-xs text-gray-600">92.5% efficiency</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm">3h 2m</div>
-                        <div className="text-xs text-gray-500">1/10/2025</div>
-                      </td>
-                      <td className="p-3">
-                        <Badge className="bg-green-100 text-green-800">
-                          Successful
-                        </Badge>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm font-medium">8.2</div>
-                        <div className="text-xs text-gray-500">94.1% rebooking</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                            <FileText className="h-3 w-3" />
-                          </Button>
-                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                            <Download className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                    
-                    <tr className="border-b hover:bg-gray-50">
-                      <td className="p-3">
-                        <div className="font-mono text-sm">SOL-2025-002</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="font-medium">FZ181</div>
-                        <div className="text-sm text-gray-500">DXB → COK</div>
-                        <div className="text-xs text-gray-400">B737-800 • A6-FDC</div>
-                      </td>
-                      <td className="p-3">
-                        <Badge variant="outline" className="mb-1 bg-yellow-100 text-yellow-800 border-yellow-300">Medium</Badge>
-                        <div className="text-xs text-gray-600">Captain duty time breach</div>
-                        <div className="text-xs text-gray-500">Crew</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm">
-                          <span className="text-green-600 font-medium">Cancellation Avoided</span>
-                        </div>
-                        <div className="text-xs text-gray-600">69min delay</div>
-                        <div className="text-xs text-gray-600">91.9% efficiency</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm">2h 56m</div>
-                        <div className="text-xs text-gray-500">1/10/2025</div>
-                      </td>
-                      <td className="p-3">
-                        <Badge className="bg-green-100 text-green-800">
-                          Successful
-                        </Badge>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm font-medium">8.8</div>
-                        <div className="text-xs text-gray-500">97.1% rebooking</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                            <FileText className="h-3 w-3" />
-                          </Button>
-                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                            <Download className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr className="border-b hover:bg-gray-50">
-                      <td className="p-3">
-                        <div className="font-mono text-sm">SOL-2025-003</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="font-medium">FZ147</div>
-                        <div className="text-sm text-gray-500">BKT → DXB</div>
-                        <div className="text-xs text-gray-400">B737 MAX 8 • A6-FHE</div>
-                      </td>
-                      <td className="p-3">
-                        <Badge variant="outline" className="mb-1 bg-yellow-100 text-yellow-800 border-yellow-300">Medium</Badge>
-                        <div className="text-xs text-gray-600">Engine maintenance check required</div>
-                        <div className="text-xs text-gray-500">AOG</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm">
-                          <span className="text-green-600 font-medium">Cancellation Avoided</span>
-                        </div>
-                        <div className="text-xs text-gray-600">118min delay</div>
-                        <div className="text-xs text-gray-600">91% efficiency</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm">4h 30m</div>
-                        <div className="text-xs text-gray-500">1/10/2025</div>
-                      </td>
-                      <td className="p-3">
-                        <Badge className="bg-green-100 text-green-800">
-                          Successful
-                        </Badge>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm font-medium">7.8</div>
-                        <div className="text-xs text-gray-500">89.2% rebooking</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                            <FileText className="h-3 w-3" />
-                          </Button>
-                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                            <Download className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr className="border-b hover:bg-gray-50">
-                      <td className="p-3">
-                        <div className="font-mono text-sm">SOL-2025-004</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="font-medium">FZ351</div>
-                        <div className="text-sm text-gray-500">CAI → SSL</div>
-                        <div className="text-xs text-gray-400">B737-800 • A6-FDH</div>
-                      </td>
-                      <td className="p-3">
-                        <Badge variant="outline" className="mb-1 bg-red-100 text-red-800 border-red-300">Critical</Badge>
-                        <div className="text-xs text-gray-600">DXB runway closure - emergency landing</div>
-                        <div className="text-xs text-gray-500">Airport</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm">
-                          <span className="text-green-600 font-medium">Cancellation Avoided</span>
-                        </div>
-                        <div className="text-xs text-gray-600">770min delay</div>
-                        <div className="text-xs text-gray-600">92.5% efficiency</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm">3h 10m</div>
-                        <div className="text-xs text-gray-500">1/10/2025</div>
-                      </td>
-                      <td className="p-3">
-                        <Badge className="bg-green-100 text-green-800">
-                          Successful
-                        </Badge>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm font-medium">7.2</div>
-                        <div className="text-xs text-gray-500">86.1% rebooking</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                            <FileText className="h-3 w-3" />
-                          </Button>
-                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                            <Download className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-
-                    <tr className="border-b hover:bg-gray-50">
-                      <td className="p-3">
-                        <div className="font-mono text-sm">SOL-2025-005</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="font-medium">FZ267</div>
-                        <div className="text-sm text-gray-500">KTM → BOM</div>
-                        <div className="text-xs text-gray-400">B737-800 • A6-FDL</div>
-                      </td>
-                      <td className="p-3">
-                        <Badge variant="outline" className="mb-1 bg-orange-100 text-orange-800 border-orange-300">High</Badge>
-                        <div className="text-xs text-gray-600">Security screening delay at BOM</div>
-                        <div className="text-xs text-gray-500">Security</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm">
-                          <span className="text-green-600 font-medium">Cancellation Avoided</span>
-                        </div>
-                        <div className="text-xs text-gray-600">305min delay</div>
-                        <div className="text-xs text-gray-600">88.5% efficiency</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm">2h 35m</div>
-                        <div className="text-xs text-gray-500">1/10/2025</div>
-                      </td>
-                      <td className="p-3">
-                        <Badge className="bg-green-100 text-green-800">
-                          Successful
-                        </Badge>
-                      </td>
-                      <td className="p-3">
-                        <div className="text-sm font-medium">8.5</div>
-                        <div className="text-xs text-gray-500">97% rebooking</div>
-                      </td>
-                      <td className="p-3">
-                        <div className="flex gap-1">
-                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                            <FileText className="h-3 w-3" />
-                          </Button>
-                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                            <Download className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
+                    {filteredLogs.slice(0, 10).map((log) => (
+                      <tr key={log.solution_id} className="border-b hover:bg-gray-50">
+                        <td className="p-3">
+                          <div className="font-mono text-sm">{log.solution_id}</div>
+                        </td>
+                        <td className="p-3">
+                          <div className="font-medium">{log.flight_number}</div>
+                          <div className="text-sm text-gray-500">{log.route}</div>
+                          <div className="text-xs text-gray-400">{log.aircraft}</div>
+                        </td>
+                        <td className="p-3">
+                          <Badge variant="outline" className={`mb-1 ${
+                            log.priority === 'Critical' ? 'bg-red-100 text-red-800 border-red-300' :
+                            log.priority === 'High' ? 'bg-orange-100 text-orange-800 border-orange-300' :
+                            'bg-yellow-100 text-yellow-800 border-yellow-300'
+                          }`}>
+                            {log.priority}
+                          </Badge>
+                          <div className="text-xs text-gray-600">{log.disruption_reason}</div>
+                          <div className="text-xs text-gray-500">{log.disruption_category}</div>
+                        </td>
+                        <td className="p-3">
+                          <div className="text-sm">
+                            {log.cancellation_avoided && (
+                              <span className="text-green-600 font-medium">Cancellation Avoided</span>
+                            )}
+                          </div>
+                          <div className="text-xs text-gray-600">{log.actual_delay_minutes}min delay</div>
+                          <div className="text-xs text-gray-600">{log.recovery_efficiency}% efficiency</div>
+                        </td>
+                        <td className="p-3">
+                          <div className="text-sm">{log.duration}</div>
+                          <div className="text-xs text-gray-500">{formatDate(log.date_created)}</div>
+                        </td>
+                        <td className="p-3">
+                          <Badge className={statusColors[log.status] || 'bg-gray-100 text-gray-800'}>
+                            {log.status}
+                          </Badge>
+                        </td>
+                        <td className="p-3">
+                          <div className="text-sm font-medium">{log.passenger_satisfaction}</div>
+                          <div className="text-xs text-gray-500">{log.rebooking_success}% rebooking</div>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex gap-1">
+                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                              <FileText className="h-3 w-3" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                              <Download className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -999,26 +980,7 @@ export function PastRecoveryLogs() {
                 }}
                 className="h-[500px] w-full"
               >
-                <LineChart data={(() => {
-                  const monthlyData = {}
-                  filteredLogs.forEach(log => {
-                    const date = new Date(log.created_at)
-                    const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
-                    if (!monthlyData[monthKey]) {
-                      monthlyData[monthKey] = { month: monthKey, efficiencySum: 0, delaySum: 0, count: 0 }
-                    }
-                    monthlyData[monthKey].efficiencySum += log.recovery_efficiency || 80
-                    monthlyData[monthKey].delaySum += log.delay_reduction_minutes || 0
-                    monthlyData[monthKey].count += 1
-                  })
-                  
-                  return Object.values(monthlyData).map(data => ({
-                    month: data.month,
-                    efficiency: Math.round(data.efficiencySum / data.count),
-                    delayReduction: Math.round(data.delaySum / data.count)
-                  })).slice(-4) // Last 4 months
-                })()}
-                >
+                <LineChart data={trendData}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="month" 
@@ -1073,8 +1035,13 @@ export function PastRecoveryLogs() {
                   <TrendingUp className="h-4 w-4 text-green-600" />
                   <span className="text-sm font-medium">Efficiency Trend</span>
                 </div>
-                <div className="text-2xl font-bold text-green-600">+6.0%</div>
-                <div className="text-xs text-green-700">Recovery efficiency improvement over 4 months</div>
+                <div className="text-2xl font-bold text-green-600">
+                  {trendData.length >= 2 ? 
+                    `+${((trendData[trendData.length - 1]?.efficiency || 0) - (trendData[0]?.efficiency || 0)).toFixed(1)}%` :
+                    '+0.0%'
+                  }
+                </div>
+                <div className="text-xs text-green-700">Recovery efficiency improvement over time</div>
               </CardContent>
             </Card>
 
@@ -1084,7 +1051,12 @@ export function PastRecoveryLogs() {
                   <Clock className="h-4 w-4 text-blue-600" />
                   <span className="text-sm font-medium">Delay Reduction</span>
                 </div>
-                <div className="text-2xl font-bold text-blue-600">+47%</div>
+                <div className="text-2xl font-bold text-blue-600">
+                  {trendData.length >= 2 ? 
+                    `+${Math.round(((trendData[trendData.length - 1]?.delayReduction || 0) - (trendData[0]?.delayReduction || 0)) / (trendData[0]?.delayReduction || 1) * 100)}%` :
+                    '+0%'
+                  }
+                </div>
                 <div className="text-xs text-blue-700">Increase in delay minutes prevented</div>
               </CardContent>
             </Card>
@@ -1093,10 +1065,12 @@ export function PastRecoveryLogs() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2 mb-2">
                   <TrendingDown className="h-4 w-4 text-red-600" />
-                  <span className="text-sm font-medium">Cancellation Prevention</span>
+                  <span className="text-sm font-medium">Cost Savings</span>
                 </div>
-                <div className="text-2xl font-bold text-red-600">-67%</div>
-                <div className="text-xs text-red-700">Reduction in potential cancellations</div>
+                <div className="text-2xl font-bold text-red-600">
+                  {formatCurrency(kpiData?.totalCostSavings || 0)}
+                </div>
+                <div className="text-xs text-red-700">Total cost savings achieved</div>
               </CardContent>
             </Card>
           </div>
@@ -1175,8 +1149,8 @@ export function PastRecoveryLogs() {
                       <CheckCircle className="h-4 w-4 text-green-600" />
                       <span className="text-sm text-gray-600">Success Rate</span>
                     </div>
-                    <div className="text-xl font-bold">98.9%</div>
-                    <div className="text-xs text-gray-500">out of 36 days</div>
+                    <div className="text-xl font-bold">{(kpiData?.successRate || 0).toFixed(1)}%</div>
+                    <div className="text-xs text-gray-500">out of {kpiData?.totalRecoveries || 0} attempts</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -1195,8 +1169,8 @@ export function PastRecoveryLogs() {
                       <DollarSign className="h-4 w-4 text-orange-600" />
                       <span className="text-sm text-gray-600">Cost Impact</span>
                     </div>
-                    <div className="text-xl font-bold">AED 2.8M</div>
-                    <div className="text-xs text-gray-500">Total managed this month</div>
+                    <div className="text-xl font-bold">{formatCurrency(filteredLogs.reduce((sum, log) => sum + (log.actual_cost || 0), 0))}</div>
+                    <div className="text-xs text-gray-500">Total managed</div>
                   </CardContent>
                 </Card>
                 <Card>
@@ -1205,7 +1179,7 @@ export function PastRecoveryLogs() {
                       <Users className="h-4 w-4 text-purple-600" />
                       <span className="text-sm text-gray-600">Passengers Served</span>
                     </div>
-                    <div className="text-xl font-bold">47,389</div>
+                    <div className="text-xl font-bold">{kpiData?.totalPassengers || 0}</div>
                     <div className="text-xs text-gray-500">Passengers</div>
                   </CardContent>
                 </Card>
@@ -1213,7 +1187,7 @@ export function PastRecoveryLogs() {
 
               {/* Audit Records Table */}
               <div>
-                <h4 className="font-medium mb-3">Audit Records (5 records)</h4>
+                <h4 className="font-medium mb-3">Audit Records ({filteredLogs.length} records)</h4>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
@@ -1229,42 +1203,45 @@ export function PastRecoveryLogs() {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr className="border-b hover:bg-gray-50">
-                        <td className="p-3">
-                          <div className="text-sm">14:32:15</div>
-                          <div className="text-xs text-gray-500">2025-01-06</div>
-                        </td>
-                        <td className="p-3">
-                          <div className="text-sm font-medium">Recovery plan executed</div>
-                          <div className="text-xs text-gray-500">Option A</div>
-                        </td>
-                        <td className="p-3">
-                          <div className="text-sm font-medium">FZ215</div>
-                          <div className="text-xs text-gray-500">DXB → BOM</div>
-                          <div className="text-xs text-gray-500">197 passengers</div>
-                        </td>
-                        <td className="p-3">
-                          <div className="text-sm">Sara Ahmed</div>
-                          <div className="text-xs text-gray-500">ops.manager@flydubai.com</div>
-                        </td>
-                        <td className="p-3">
-                          <div className="text-sm">AED 125,000</div>
-                          <div className="text-xs text-gray-500">45.2k Ton</div>
-                        </td>
-                        <td className="p-3">
-                          <div className="text-sm">Confidence: <span className="text-green-600">94.0%</span></div>
-                          <div className="text-xs text-gray-500">Response: 4.2 seconds</div>
-                        </td>
-                        <td className="p-3">
-                          <Badge className="bg-green-100 text-green-800">Success</Badge>
-                        </td>
-                        <td className="p-3">
-                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
-                            <FileText className="h-3 w-3" />
-                          </Button>
-                        </td>
-                      </tr>
-                      {/* Additional rows would follow similar pattern */}
+                      {filteredLogs.slice(0, 10).map((log) => (
+                        <tr key={`${log.solution_id}-audit`} className="border-b hover:bg-gray-50">
+                          <td className="p-3">
+                            <div className="text-sm">{formatDateTime(log.date_executed)}</div>
+                            <div className="text-xs text-gray-500">{formatDate(log.date_created)}</div>
+                          </td>
+                          <td className="p-3">
+                            <div className="text-sm font-medium">Recovery plan executed</div>
+                            <div className="text-xs text-gray-500">{log.solution_chosen}</div>
+                          </td>
+                          <td className="p-3">
+                            <div className="text-sm font-medium">{log.flight_number}</div>
+                            <div className="text-xs text-gray-500">{log.route}</div>
+                            <div className="text-xs text-gray-500">{log.affected_passengers} passengers</div>
+                          </td>
+                          <td className="p-3">
+                            <div className="text-sm">{log.executed_by}</div>
+                            <div className="text-xs text-gray-500">Approved by: {log.approved_by}</div>
+                          </td>
+                          <td className="p-3">
+                            <div className="text-sm">{formatCurrency(log.actual_cost)}</div>
+                            <div className="text-xs text-gray-500">{log.delay_reduction_minutes}min saved</div>
+                          </td>
+                          <td className="p-3">
+                            <div className="text-sm">Efficiency: <span className="text-green-600">{log.recovery_efficiency}%</span></div>
+                            <div className="text-xs text-gray-500">Response: <4 seconds</div>
+                          </td>
+                          <td className="p-3">
+                            <Badge className={statusColors[log.status] || 'bg-gray-100 text-gray-800'}>
+                              {log.status}
+                            </Badge>
+                          </td>
+                          <td className="p-3">
+                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                              <FileText className="h-3 w-3" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
                     </tbody>
                   </table>
                 </div>

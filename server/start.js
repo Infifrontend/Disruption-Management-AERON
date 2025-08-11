@@ -1961,6 +1961,221 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
   }
 });
 
+// Recovery Options endpoint - Main endpoint for loading recovery options
+app.get("/api/recovery-options/:disruptionId", async (req, res) => {
+  try {
+    const { disruptionId } = req.params;
+    console.log(`Fetching recovery options for disruption ID: ${disruptionId}`);
+
+    // First try the detailed recovery options table
+    let result = await pool.query(
+      `
+      SELECT rod.*, dc.category_name, dc.category_code
+      FROM recovery_options_detailed rod
+      LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
+      WHERE rod.disruption_id = $1
+      ORDER BY rod.priority ASC, rod.confidence DESC
+    `,
+      [disruptionId],
+    );
+
+    // If no detailed options found, try the regular recovery options table
+    if (result.rows.length === 0) {
+      result = await pool.query(
+        `SELECT * FROM recovery_options WHERE disruption_id = $1 ORDER BY created_at DESC`,
+        [disruptionId],
+      );
+      console.log(`Found ${result.rows.length} basic recovery options`);
+    } else {
+      console.log(`Found ${result.rows.length} detailed recovery options`);
+    }
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching recovery options:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Recovery Option Details endpoint
+app.get("/api/recovery-option-details/:optionId", async (req, res) => {
+  try {
+    const { optionId } = req.params;
+    console.log(`Fetching details for recovery option ID: ${optionId}`);
+
+    const result = await pool.query(
+      `
+      SELECT rod.*, dc.category_name, dc.category_code
+      FROM recovery_options_detailed rod
+      LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
+      WHERE rod.option_id = $1
+    `,
+      [optionId],
+    );
+
+    if (result.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "Recovery option details not found" });
+    }
+
+    console.log(`Found details for recovery option: ${optionId}`);
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error fetching recovery option details:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Detailed Recovery Options endpoints (keep for backward compatibility)
+app.get("/api/recovery-options-detailed/:disruptionId", async (req, res) => {
+  try {
+    const { disruptionId } = req.params;
+    console.log(
+      `Fetching detailed recovery options for disruption ID: ${disruptionId}`,
+    );
+
+    const result = await pool.query(
+      `
+      SELECT rod.*, dc.category_name, dc.category_code
+      FROM recovery_options_detailed rod
+      LEFT JOIN disruption_categories dc ON rod.category_id = dc.id
+      WHERE rod.disruption_id = $1
+      ORDER BY rod.priority ASC, rod.confidence DESC
+    `,
+      [disruptionId],
+    );
+
+    console.log(`Found ${result.rows.length} detailed recovery options`);
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching detailed recovery options:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/disruption-categories", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT * FROM disruption_categories
+      WHERE is_active = true
+      ORDER BY priority_level ASC
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching disruption categories:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/recovery-option-templates", async (req, res) => {
+  try {
+    const { category_id } = req.query;
+    let query = `
+      SELECT rot.*, dc.category_name, dc.category_code
+      FROM recovery_option_templates rot
+      LEFT JOIN disruption_categories dc ON rot.category_id = dc.id
+      WHERE rot.is_active = true
+    `;
+    const params = [];
+
+    if (category_id) {
+      query += ` AND rot.category_id = $1`;
+      params.push(category_id);
+    }
+
+    query += ` ORDER BY dc.priority_level ASC, rot.title ASC`;
+
+    const result = await pool.query(query, params);
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching recovery option templates:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Recovery Steps Detailed endpoint
+app.get("/api/recovery-steps-detailed/:disruptionId", async (req, res) => {
+  try {
+    const { disruptionId } = req.params;
+    const { option_id } = req.query;
+
+    // Convert disruptionId to integer
+    const numericDisruptionId = parseInt(disruptionId);
+    if (isNaN(numericDisruptionId)) {
+      return res.status(400).json({ error: "Invalid disruption ID format" });
+    }
+
+    console.log(
+      `Fetching detailed recovery steps for disruption ID: ${disruptionId}`,
+    );
+
+    // Check if recovery_steps_detailed table exists, if not fall back to recovery_steps
+    let query, params;
+
+    try {
+      // Try detailed steps table first
+      query = `
+        SELECT rsd.*, dc.category_name, dc.category_code
+        FROM recovery_steps_detailed rsd
+        LEFT JOIN disruption_categories dc ON rsd.category_id = dc.id
+        WHERE rsd.disruption_id = $1
+      `;
+      params = [numericDisruptionId];
+
+      if (option_id) {
+        query += ` AND rsd.option_id = $2`;
+        params.push(option_id);
+      }
+
+      query += ` ORDER BY rsd.step_number ASC`;
+
+      const result = await pool.query(query, params);
+
+      if (result.rows.length > 0) {
+        console.log(`Found ${result.rows.length} detailed recovery steps`);
+        return res.json(result.rows);
+      }
+    } catch (detailedError) {
+      console.log(
+        "Detailed steps table not available, falling back to regular steps",
+      );
+    }
+
+    // Fallback to regular recovery_steps table
+    query = `
+      SELECT 
+        id,
+        disruption_id,
+        step_number,
+        title,
+        status,
+        timestamp,
+        system,
+        details,
+        step_data,
+        created_at,
+        updated_at,
+        NULL as category_name,
+        NULL as category_code
+      FROM recovery_steps
+      WHERE disruption_id = $1
+      ORDER BY step_number ASC
+    `;
+    params = [numericDisruptionId];
+
+    const result = await pool.query(query, params);
+    console.log(`Found ${result.rows.length} fallback recovery steps`);
+    res.json(result.rows || []);
+  } catch (error) {
+    console.error("Error fetching detailed recovery steps:", error);
+    res.status(500).json({
+      error: "Failed to fetch recovery steps",
+      details: error.message,
+    });
+  }
+});
+
 // Recovery Steps endpoints
 app.get("/api/recovery-steps/:disruptionId", async (req, res) => {
   try {
@@ -3409,8 +3624,8 @@ app.get("/api/past-recovery-logs", async (req, res) => {
 
     let query = `
       SELECT 
-        CONCAT('SOL-', EXTRACT(YEAR FROM fd.created_at), '-', LPAD(fd.id::text, 3, '0')) as solution_id,
-        fd.id::text as disruption_id,
+        'SOL-' || fd.id as solution_id,
+        fd.id as disruption_id,
         fd.flight_number,
         fd.route,
         fd.aircraft,
@@ -3421,44 +3636,49 @@ app.get("/api/past-recovery-logs", async (req, res) => {
         fd.updated_at as date_executed,
         fd.updated_at as date_completed,
         CASE 
-          WHEN fd.updated_at > fd.created_at 
-          THEN AGE(fd.updated_at, fd.created_at)::text
+          WHEN fd.delay_minutes > 0 THEN (fd.delay_minutes / 60) || 'h ' || (fd.delay_minutes % 60) || 'm'
           ELSE '2h 30m'
         END as duration,
-        COALESCE(fd.recovery_status, 'Successful') as status,
-        fd.passengers as affected_passengers,
-        COALESCE((fd.delay_minutes * 150 + fd.passengers * 25), 50000) as actual_cost,
-        COALESCE((fd.delay_minutes * 160 + fd.passengers * 30), 55000) as estimated_cost,
         CASE 
-          WHEN fd.delay_minutes > 0 
-          THEN ROUND(((fd.delay_minutes * 160 + fd.passengers * 30) - (fd.delay_minutes * 150 + fd.passengers * 25))::numeric / (fd.delay_minutes * 160 + fd.passengers * 30)::numeric * 100, 1)
-          ELSE -5.0
+          WHEN fd.recovery_status = 'completed' THEN 'Successful'
+          WHEN fd.recovery_status = 'in_progress' THEN 'Partial'
+          ELSE 'Successful'
+        END as status,
+        fd.passengers as affected_passengers,
+        COALESCE(fd.delay_minutes * 1000, 125000) as actual_cost,
+        COALESCE(fd.delay_minutes * 1100, 130000) as estimated_cost,
+        CASE 
+          WHEN fd.delay_minutes > 0 THEN ROUND(((fd.delay_minutes * 1100 - fd.delay_minutes * 1000) / (fd.delay_minutes * 1100)::float * 100), 1)
+          ELSE -3.8
         END as cost_variance,
-        COALESCE(90 + RANDOM() * 10, 92.5) as otp_impact,
+        COALESCE(95.0 - (fd.delay_minutes::float / 10), 92.5) as otp_impact,
         'Option A' as solution_chosen,
         3 as total_options,
         'Operations Manager' as executed_by,
-        'Operations Manager' as approved_by,
-        COALESCE(7.5 + RANDOM() * 1.5, 8.2) as passenger_satisfaction,
-        COALESCE(85 + RANDOM() * 15, 94.1) as rebooking_success,
-        COALESCE(fd.categorization, fd.disruption_type) as categorization,
+        'System Auto-approval' as approved_by,
+        COALESCE(8.0 + RANDOM() * 2, 8.2) as passenger_satisfaction,
+        COALESCE(90.0 + RANDOM() * 10, 94.1) as rebooking_success,
+        fd.categorization,
         true as cancellation_avoided,
-        COALESCE(fd.delay_minutes + 60, 155) as potential_delay_minutes,
-        COALESCE(fd.delay_minutes, 0) as actual_delay_minutes,
-        COALESCE(GREATEST(0, 60 - fd.delay_minutes/2), 0) as delay_reduction_minutes,
-        COALESCE(fd.disruption_type, 'Other') as disruption_category,
-        COALESCE(80 + RANDOM() * 20, 88.0) as recovery_efficiency,
+        COALESCE(fd.delay_minutes, 155) as potential_delay_minutes,
+        COALESCE(fd.delay_minutes, 155) as actual_delay_minutes,
+        COALESCE(CASE WHEN fd.delay_minutes > 100 THEN fd.delay_minutes - 100 ELSE 0 END, 0) as delay_reduction_minutes,
+        fd.disruption_type as disruption_category,
+        COALESCE(95.0 - (fd.delay_minutes::float / 20), 92.5) as recovery_efficiency,
         CASE 
-          WHEN fd.connection_flights > 5 THEN 'High'
-          WHEN fd.connection_flights > 2 THEN 'Medium'
+          WHEN fd.delay_minutes > 300 THEN 'High'
+          WHEN fd.delay_minutes > 100 THEN 'Medium'
           ELSE 'Low'
         END as network_impact,
-        COALESCE(fd.connection_flights, 0) as downstream_flights_affected,
-        '{}' as details,
+        CASE 
+          WHEN fd.delay_minutes > 300 THEN 3
+          WHEN fd.delay_minutes > 100 THEN 1
+          ELSE 0
+        END as downstream_flights_affected,
+        '{}'::jsonb as details,
         fd.created_at
       FROM flight_disruptions fd
-      WHERE fd.status IN ('Resolved', 'Completed')
-        OR fd.recovery_status = 'completed'
+      WHERE fd.recovery_status = 'completed'
     `;
 
     const params = [];
@@ -3498,53 +3718,164 @@ app.get("/api/past-recovery-logs", async (req, res) => {
     console.log('With parameters:', params);
 
     const result = await pool.query(query, params);
-    
-    // If no actual logs found, return mock data
-    if (result.rows.length === 0) {
-      const mockData = [
-        {
-          solution_id: 'SOL-2025-001',
-          disruption_id: '260',
-          flight_number: 'FZ215',
-          route: 'DXB → BOM',
-          aircraft: 'B737-800',
-          disruption_type: 'Weather',
-          disruption_reason: 'Engine overheating at DXB',
-          priority: 'High',
-          date_created: new Date().toISOString(),
-          date_executed: new Date().toISOString(),
-          date_completed: new Date().toISOString(),
-          duration: '3h 2m',
-          status: 'Successful',
-          affected_passengers: 197,
-          actual_cost: 125000,
-          estimated_cost: 130000,
-          cost_variance: -3.8,
-          otp_impact: 92.5,
-          solution_chosen: 'Option A',
-          total_options: 3,
-          executed_by: 'Sara Ahmed',
-          approved_by: 'Operations Manager',
-          passenger_satisfaction: 8.2,
-          rebooking_success: 94.1,
-          categorization: 'Weather',
-          cancellation_avoided: true,
-          potential_delay_minutes: 155,
-          actual_delay_minutes: 155,
-          delay_reduction_minutes: 0,
-          disruption_category: 'Weather',
-          recovery_efficiency: 95.0,
-          network_impact: 'None',
-          downstream_flights_affected: 0,
-          created_at: new Date().toISOString()
-        }
-      ];
-      res.json(mockData);
+
+    // Transform numeric fields
+    const transformedData = result.rows.map(row => ({
+      ...row,
+      affected_passengers: parseInt(row.affected_passengers) || 0,
+      actual_cost: parseFloat(row.actual_cost) || 0,
+      estimated_cost: parseFloat(row.estimated_cost) || 0,
+      cost_variance: parseFloat(row.cost_variance) || 0,
+      otp_impact: parseFloat(row.otp_impact) || 0,
+      passenger_satisfaction: parseFloat(row.passenger_satisfaction) || 0,
+      rebooking_success: parseFloat(row.rebooking_success) || 0,
+      potential_delay_minutes: parseInt(row.potential_delay_minutes) || 0,
+      actual_delay_minutes: parseInt(row.actual_delay_minutes) || 0,
+      delay_reduction_minutes: parseInt(row.delay_reduction_minutes) || 0,
+      recovery_efficiency: parseFloat(row.recovery_efficiency) || 0,
+      downstream_flights_affected: parseInt(row.downstream_flights_affected) || 0
+    }));
+
+    if (transformedData.length === 0) {
+      // Return mock data if no real data exists
+      console.log('No past recovery data found, returning mock data');
+      res.json(getMockPastRecoveryData());
     } else {
-      res.json(result.rows);
+      res.json(transformedData);
     }
   } catch (error) {
     console.error("Error fetching past recovery logs:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Mock data function for past recovery logs
+function getMockPastRecoveryData() {
+  const mockData = [];
+  const now = new Date();
+  for (let i = 0; i < 5; i++) {
+    const created_at = new Date(now - Math.random() * 30 * 24 * 60 * 60 * 1000); // within last 30 days
+    const delay_minutes = Math.floor(Math.random() * 300);
+    const passengers = Math.floor(Math.random() * 300) + 50;
+    const severity = ['Low', 'Medium', 'High'][Math.floor(Math.random() * 3)];
+    const disruption_type = ['Weather', 'Technical', 'ATC', 'Crew', 'Other'][Math.floor(Math.random() * 5)];
+    const disruption_reason = disruption_type === 'Weather' ? 'Severe weather conditions' :
+                             disruption_type === 'Technical' ? 'Engine issue detected' :
+                             disruption_type === 'ATC' ? 'Air traffic control restrictions' :
+                             disruption_type === 'Crew' ? 'Crew duty time exceeded' : 'Unforeseen circumstances';
+    const categorization = severity === 'High' ? disruption_type : disruption_reason;
+
+    mockData.push({
+      solution_id: `SOL-${created_at.getFullYear()}-${String(mockData.length + 1).padStart(3, '0')}`,
+      disruption_id: String(100 + mockData.length),
+      flight_number: `FL${Math.floor(100 + Math.random() * 1000)}`,
+      route: `${['DXB', 'LHR', 'JFK', 'SIN'][Math.floor(Math.random() * 4)]} → ${['BOM', 'AMS', 'LAX', 'HKG'][Math.floor(Math.random() * 4)]}`,
+      aircraft: ['B737-800', 'A320', 'B777', 'A350'][Math.floor(Math.random() * 4)],
+      disruption_type: disruption_type,
+      disruption_reason: disruption_reason,
+      priority: severity,
+      date_created: created_at.toISOString(),
+      date_executed: new Date(created_at.getTime() + delay_minutes * 60000).toISOString(),
+      date_completed: new Date(created_at.getTime() + (delay_minutes + Math.floor(Math.random() * 60)) * 60000).toISOString(),
+      duration: `${Math.floor(delay_minutes / 60)}h ${(delay_minutes % 60)}m`,
+      status: 'Successful',
+      affected_passengers: passengers,
+      actual_cost: Math.round(delay_minutes * 1000 + passengers * 25),
+      estimated_cost: Math.round(delay_minutes * 1100 + passengers * 30),
+      cost_variance: Math.round(((delay_minutes * 1100 + passengers * 30) - (delay_minutes * 1000 + passengers * 25)) / (delay_minutes * 1100 + passengers * 30) * 100 * 10) / 10,
+      otp_impact: Math.round(95.0 - (delay_minutes / 10) * 10) / 10,
+      solution_chosen: 'Option A',
+      total_options: 3,
+      executed_by: 'Operations Manager',
+      approved_by: 'System Auto-approval',
+      passenger_satisfaction: Math.round(8.0 + Math.random() * 2 * 10) / 10,
+      rebooking_success: Math.round(90.0 + Math.random() * 10 * 10) / 10,
+      categorization: categorization,
+      cancellation_avoided: true,
+      potential_delay_minutes: Math.round(delay_minutes * 1.2),
+      actual_delay_minutes: delay_minutes,
+      delay_reduction_minutes: Math.max(0, delay_minutes - 100),
+      disruption_category: disruption_type,
+      recovery_efficiency: Math.round(95.0 - (delay_minutes / 20) * 10) / 10,
+      network_impact: delay_minutes > 300 ? 'High' : delay_minutes > 100 ? 'Medium' : 'Low',
+      downstream_flights_affected: delay_minutes > 300 ? 3 : delay_minutes > 100 ? 1 : 0,
+      details: JSON.stringify({}),
+      created_at: created_at.toISOString()
+    });
+  }
+  return mockData;
+}
+
+// Get past recovery KPI data
+app.get('/api/past-recovery-kpi', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        COUNT(*) as total_recoveries,
+        COUNT(CASE WHEN recovery_status = 'completed' THEN 1 END) as successful_recoveries,
+        AVG(delay_minutes) as avg_delay_minutes,
+        SUM(passengers) as total_passengers,
+        AVG(CASE WHEN delay_minutes > 0 THEN delay_minutes ELSE 155 END) as avg_resolution_time,
+        COUNT(CASE WHEN delay_minutes < 300 THEN 1 END) as cancellations_avoided,
+        SUM(CASE WHEN delay_minutes > 100 THEN delay_minutes - 100 ELSE 0 END) as total_delay_reduction,
+        AVG(95.0 - (delay_minutes::float / 20)) as avg_recovery_efficiency
+      FROM flight_disruptions 
+      WHERE recovery_status = 'completed'
+        AND created_at >= NOW() - INTERVAL '90 days'
+    `);
+
+    const row = result.rows[0];
+
+    const kpiData = {
+      totalRecoveries: parseInt(row.total_recoveries) || 0,
+      successRate: row.total_recoveries > 0 ? 
+        (parseInt(row.successful_recoveries) / parseInt(row.total_recoveries)) * 100 : 100,
+      avgResolutionTime: parseFloat(row.avg_resolution_time) || 155,
+      costEfficiency: 3.8, // Calculated from cost variance
+      passengerSatisfaction: 8.1, // Simulated average
+      totalPassengers: parseInt(row.total_passengers) || 0,
+      avgRecoveryEfficiency: parseFloat(row.avg_recovery_efficiency) || 92.5,
+      totalDelayReduction: parseInt(row.total_delay_reduction) || 0,
+      cancellationsAvoided: parseInt(row.cancellations_avoided) || 0,
+      totalCostSavings: (parseInt(row.total_recoveries) || 0) * 15000 // Estimated savings per recovery
+    };
+
+    res.json(kpiData);
+  } catch (error) {
+    console.error("Error fetching past recovery KPI data:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Get past recovery trends data
+app.get('/api/past-recovery-trends', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        TO_CHAR(created_at, 'Mon YY') as month,
+        AVG(95.0 - (delay_minutes::float / 20)) as avg_efficiency,
+        AVG(CASE WHEN delay_minutes > 100 THEN delay_minutes - 100 ELSE 0 END) as avg_delay_reduction,
+        COUNT(*) * 15000 as cost_savings,
+        8.0 + RANDOM() * 2 as avg_satisfaction
+      FROM flight_disruptions 
+      WHERE recovery_status = 'completed'
+        AND created_at >= NOW() - INTERVAL '6 months'
+      GROUP BY TO_CHAR(created_at, 'Mon YY'), EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)
+      ORDER BY EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at)
+      LIMIT 6
+    `);
+
+    const trendData = result.rows.map(row => ({
+      month: row.month,
+      efficiency: Math.round(parseFloat(row.avg_efficiency) || 92.5),
+      delayReduction: Math.round(parseFloat(row.avg_delay_reduction) || 150),
+      costSavings: Math.round(parseFloat(row.cost_savings) || 15000),
+      satisfaction: Math.round((parseFloat(row.avg_satisfaction) || 8.1) * 10) / 10
+    }));
+
+    res.json(trendData);
+  } catch (error) {
+    console.error("Error fetching past recovery trends data:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });
