@@ -164,12 +164,12 @@ export function PendingSolutions() {
     const matchesPlanId = !filters.planId || plan.id.toLowerCase().includes(filters.planId.toLowerCase())
 
     // Normalize status for consistent comparison
-    const normalizedStatus = plan.status.trim()
+    const normalizedStatus = plan.status ? plan.status.trim().toLowerCase() : 'pending'
     
     const matchesTab = activeTab === 'all' || 
-                     (activeTab === 'pending' && ['Pending Approval', 'Under Review', 'Pending'].includes(normalizedStatus)) ||
-                     (activeTab === 'approved' && normalizedStatus === 'Approved') ||
-                     (activeTab === 'rejected' && normalizedStatus === 'Rejected') ||
+                     (activeTab === 'pending' && ['pending approval', 'under review', 'pending'].includes(normalizedStatus)) ||
+                     (activeTab === 'approved' && normalizedStatus === 'approved') ||
+                     (activeTab === 'rejected' && normalizedStatus === 'rejected') ||
                      (activeTab === 'critical' && (plan.priority === 'Critical' || plan.priority === 'High'))
 
     return matchesPriority && matchesSubmitter && matchesFlightNumber && matchesPlanId && matchesTab
@@ -247,9 +247,18 @@ export function PendingSolutions() {
   const getTabCounts = () => {
     return {
       all: plans.length,
-      pending: plans.filter(p => ['Pending Approval', 'Under Review', 'Pending'].includes(p.status.trim())).length,
-      approved: plans.filter(p => p.status.trim() === 'Approved').length,
-      rejected: plans.filter(p => p.status.trim() === 'Rejected').length,
+      pending: plans.filter(p => {
+        const status = p.status ? p.status.trim().toLowerCase() : 'pending'
+        return ['pending approval', 'under review', 'pending'].includes(status)
+      }).length,
+      approved: plans.filter(p => {
+        const status = p.status ? p.status.trim().toLowerCase() : ''
+        return status === 'approved'
+      }).length,
+      rejected: plans.filter(p => {
+        const status = p.status ? p.status.trim().toLowerCase() : ''
+        return status === 'rejected'
+      }).length,
       critical: plans.filter(p => ['Critical', 'High'].includes(p.priority)).length
     }
   }
@@ -258,55 +267,85 @@ export function PendingSolutions() {
 
   const handleApprove = async (planId) => {
     try {
+      console.log('Approving plan:', planId);
+      
       // Find the plan to get the disruption ID
       const plan = plans.find(p => p.id === planId);
-      if (plan && plan.disruptionId) {
-        // Update the flight recovery status to 'approved'
+      if (!plan) {
+        console.error('Plan not found:', planId);
+        return;
+      }
+
+      // Update the pending solution in the database using the correct endpoint
+      const response = await fetch(`/api/pending-recovery-solutions/${planId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Approved' })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update pending solution: ${response.status}`);
+      }
+
+      // If there's a disruption ID, also update the flight recovery status
+      if (plan.disruptionId) {
         await databaseService.updateFlightRecoveryStatus(plan.disruptionId, 'approved');
       }
       
-      // Update the pending solution status
-      await databaseService.updateFlightDisruptionStatus(planId, 'Approved');
-      
-      // Update local state with the new status
-      const updatedPlans = plans.map(plan => 
-        plan.id === planId ? { ...plan, status: 'Approved' } : plan
+      // Update local state immediately for better UX
+      setPlans(prevPlans => 
+        prevPlans.map(p => 
+          p.id === planId ? { ...p, status: 'Approved' } : p
+        )
       );
-      setPlans([...updatedPlans]); // Force re-render with new array reference
       
-      // Refresh data from server to ensure consistency
-      setTimeout(() => {
-        fetchPlans();
-      }, 500);
+      console.log('Plan approved successfully');
     } catch (error) {
       console.error("Failed to approve plan:", error);
+      // Refresh data to ensure consistency even on error
+      fetchPlans();
     }
   }
 
   const handleReject = async (planId) => {
     try {
+      console.log('Rejecting plan:', planId);
+      
       // Find the plan to get the disruption ID
       const plan = plans.find(p => p.id === planId);
-      if (plan && plan.disruptionId) {
-        // Update the flight recovery status to 'rejected'
+      if (!plan) {
+        console.error('Plan not found:', planId);
+        return;
+      }
+
+      // Update the pending solution in the database using the correct endpoint
+      const response = await fetch(`/api/pending-recovery-solutions/${planId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'Rejected' })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update pending solution: ${response.status}`);
+      }
+
+      // If there's a disruption ID, also update the flight recovery status
+      if (plan.disruptionId) {
         await databaseService.updateFlightRecoveryStatus(plan.disruptionId, 'rejected');
       }
       
-      // Update the pending solution status
-      await databaseService.updateFlightDisruptionStatus(planId, 'Rejected');
-      
-      // Update local state with the new status
-      const updatedPlans = plans.map(plan => 
-        plan.id === planId ? { ...plan, status: 'Rejected' } : plan
+      // Update local state immediately for better UX
+      setPlans(prevPlans => 
+        prevPlans.map(p => 
+          p.id === planId ? { ...p, status: 'Rejected' } : p
+        )
       );
-      setPlans([...updatedPlans]); // Force re-render with new array reference
       
-      // Refresh data from server to ensure consistency
-      setTimeout(() => {
-        fetchPlans();
-      }, 500);
+      console.log('Plan rejected successfully');
     } catch (error) {
       console.error("Failed to reject plan:", error);
+      // Refresh data to ensure consistency even on error
+      fetchPlans();
     }
   }
 
