@@ -1018,6 +1018,7 @@ export function PastRecoveryLogs() {
                     delayReduction: Math.round(data.delaySum / data.count)
                   })).slice(-4) // Last 4 months
                 })()}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="month" 
