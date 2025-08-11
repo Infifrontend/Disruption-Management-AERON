@@ -76,6 +76,7 @@ import {
 import { databaseService, FlightDisruption } from "../services/databaseService";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
+import { Console } from "console";
 
 // Define interface for disruption categories
 interface DisruptionCategory {
@@ -107,15 +108,14 @@ const transformFlightData = (disruption: FlightDisruption) => {
     !disruption.origin ||
     !disruption.destination ||
     disruption.destination === "UNKNOWN";
-
+  console.log(disruption, "teststs");
   return {
     id: disruption.id,
     flightNumber: disruption.flightNumber || "UNKNOWN",
     origin: disruption.origin || "DXB",
     destination: disruption.destination || "UNKNOWN",
     originCity:
-      disruption.originCity ||
-      getLocationName(disruption.origin || "DXB"),
+      disruption.originCity || getLocationName(disruption.origin || "DXB"),
     destinationCity:
       disruption.destinationCity ||
       getLocationName(disruption.destination || "UNKNOWN"),
@@ -130,7 +130,7 @@ const transformFlightData = (disruption: FlightDisruption) => {
     disruptionType: disruption.type
       ? disruption.type.toLowerCase()
       : "technical",
-    categorization: disruption?.category_name,
+    categorization: disruption?.categoryName,
     disruptionReason:
       disruption.disruptionReason ||
       (isIncomplete
@@ -472,7 +472,8 @@ export function DisruptionInput({
 
       // Try to load existing data from database as fallback
       try {
-        const fallbackData = await databaseService.getAllDisruptions("assigned");
+        const fallbackData =
+          await databaseService.getAllDisruptions("assigned");
         if (fallbackData && fallbackData.length > 0) {
           // Process all fallback data, even if incomplete
           const processedFallbackData = fallbackData.map((disruption) => {
