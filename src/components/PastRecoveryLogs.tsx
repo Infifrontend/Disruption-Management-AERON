@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
@@ -244,11 +243,11 @@ export function PastRecoveryLogs() {
 
   const calculateTrendsFromLogs = () => {
     const monthlyData: { [key: string]: any } = {}
-    
+
     recoveryLogs.forEach(log => {
       const date = new Date(log.created_at)
       const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
-      
+
       if (!monthlyData[monthKey]) {
         monthlyData[monthKey] = {
           month: monthKey,
@@ -259,7 +258,7 @@ export function PastRecoveryLogs() {
           count: 0
         }
       }
-      
+
       monthlyData[monthKey].efficiencySum += log.recovery_efficiency || 0
       monthlyData[monthKey].delaySum += log.delay_reduction_minutes || 0
       monthlyData[monthKey].costSavingsSum += (log.estimated_cost || 0) - (log.actual_cost || 0)
@@ -396,7 +395,7 @@ export function PastRecoveryLogs() {
                 <h3 className="font-semibold text-blue-900">AERON Recovery Impact Summary</h3>
               </div>
               <p className="text-sm text-blue-700 mb-6">Quantified operational improvements through intelligent recovery management</p>
-              
+
               <div className="grid grid-cols-4 gap-6">
                 <div className="text-center">
                   <div className="text-2xl font-bold text-orange-600">{kpiData?.cancellationsAvoided || 0}</div>
@@ -595,7 +594,7 @@ export function PastRecoveryLogs() {
                           const category = log.disruption_category?.toLowerCase() || 'other'
                           categoryCount[category] = (categoryCount[category] || 0) + 1
                         })
-                        
+
                         const colorMap = {
                           weather: "var(--color-weather)",
                           crew: "var(--color-crew)", 
@@ -606,7 +605,7 @@ export function PastRecoveryLogs() {
                           security: "var(--color-security)",
                           other: "hsl(210, 40%, 60%)"
                         }
-                        
+
                         return Object.entries(categoryCount).map(([category, count]) => ({
                           category,
                           value: count,
@@ -651,18 +650,18 @@ export function PastRecoveryLogs() {
                     </Pie>
                   </RechartsDonutChart>
                 </ChartContainer>
-                
+
                 {/* Legend */}
                 <div className="grid grid-cols-2 gap-2 mt-4">
                   {(() => {
                     const categoryCount = {}
                     const totalLogs = filteredLogs.length
-                    
+
                     filteredLogs.forEach(log => {
                       const category = log.disruption_category || 'Other'
                       categoryCount[category] = (categoryCount[category] || 0) + 1
                     })
-                    
+
                     const colorMap = {
                       Weather: "bg-blue-500",
                       Crew: "bg-orange-500", 
@@ -672,7 +671,7 @@ export function PastRecoveryLogs() {
                       Security: "bg-purple-500",
                       Other: "bg-slate-500"
                     }
-                    
+
                     return Object.entries(categoryCount).map(([category, count]) => {
                       const percentage = totalLogs > 0 ? ((count / totalLogs) * 100).toFixed(1) : 0
                       return (
