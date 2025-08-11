@@ -66,23 +66,23 @@ export function ComparisonMatrix({
 
   // Function to check if option requires passenger services based on keywords
   const requiresPassengerServices = (option) => {
-    const title = option.title?.toLowerCase() || '';
-    const description = option.description?.toLowerCase() || '';
-    
+    const title = option.title?.toLowerCase() || "";
+    const description = option.description?.toLowerCase() || "";
+
     const passengerServiceKeywords = [
-      'delay for crew rest completion',
-      'delay for repair completion',
-      'reroute',
-      'cancel due to weather',
-      'divert to',
-      'overnight delay',
-      'accept cascade delays',
-      'cancel selected legs',
-      'cancel and rebook'
+      "delay for crew rest completion",
+      "delay for repair completion",
+      "reroute",
+      "cancel due to weather",
+      "divert to",
+      "overnight delay",
+      "accept cascade delays",
+      "cancel selected legs",
+      "cancel and rebook",
     ];
-    
-    return passengerServiceKeywords.some(keyword => 
-      title.includes(keyword) || description.includes(keyword)
+
+    return passengerServiceKeywords.some(
+      (keyword) => title.includes(keyword) || description.includes(keyword),
     );
   };
   const [dynamicRecoveryOptions, setDynamicRecoveryOptions] = useState([]);
@@ -867,8 +867,6 @@ export function ComparisonMatrix({
     }
   };
 
-  
-
   const handleViewRotationImpact = async (option) => {
     setLoadingRotationImpact(option.id);
     try {
@@ -1127,7 +1125,7 @@ export function ComparisonMatrix({
           </h2>
           <p className="text-muted-foreground">
             Comparing {comparisonOptions.length} recovery options for{" "}
-            {flight.flightNumber} 
+            {flight.flightNumber}
           </p>
           <div className="flex items-center gap-2 mt-2">
             <Badge
@@ -1377,12 +1375,14 @@ export function ComparisonMatrix({
                       variant="outline"
                       size="sm"
                       className="w-full border-orange-500 text-orange-700 hover:bg-orange-50"
-                      onClick={() => navigate('/passenger-services', { 
-                        state: { 
-                          selectedFlight: flight,
-                          recoveryOption: option 
-                        } 
-                      })}
+                      onClick={() =>
+                        navigate("/passengers", {
+                          state: {
+                            selectedFlight: flight,
+                            recoveryOption: option,
+                          },
+                        })
+                      }
                     >
                       <UserCheck className="h-4 w-4 mr-2" />
                       Passenger Services
@@ -2216,7 +2216,9 @@ export function ComparisonMatrix({
                               <div className="flex-1">
                                 <p className="font-medium">{crewMember.name}</p>
                                 <p className="text-sm text-gray-600">
-                                  {crewMember.type || crewMember.role || crewMember.position}
+                                  {crewMember.type ||
+                                    crewMember.role ||
+                                    crewMember.position}
                                 </p>
                                 {crewMember.location && (
                                   <p className="text-xs text-gray-500">
@@ -2618,8 +2620,6 @@ export function ComparisonMatrix({
           </div>
         </DialogContent>
       </Dialog>
-
-      
     </div>
   );
 }
