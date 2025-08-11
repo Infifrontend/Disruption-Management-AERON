@@ -2032,7 +2032,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         )}
 
                         {/* No inbound flights state */}
-                        {inboundFlights.length === 0 && (
+                        {inboundFlights.length === 0 && filteredFlights.length > 0 && (
                           <div className="text-center py-12">
                             <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                               <Plane className="h-8 w-8 text-gray-400 transform rotate-180" />
@@ -2041,9 +2041,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                               No inbound flights found
                             </h3>
                             <p className="text-gray-500 mb-4">
-                              {flights.length === 0
-                                ? "There are currently no flight disruptions in the system."
-                                : "No inbound flights to the selected hub(s) match your current filter criteria."}
+                              No inbound flights to the selected hub(s) match your current filter criteria.
                             </p>
                           </div>
                         )}
@@ -2324,7 +2322,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                         )}
 
                         {/* No outbound flights state */}
-                        {outboundFlights.length === 0 && (
+                        {outboundFlights.length === 0 && filteredFlights.length > 0 && (
                           <div className="text-center py-12">
                             <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                               <Plane className="h-8 w-8 text-gray-400" />
@@ -2333,9 +2331,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                               No outbound flights found
                             </h3>
                             <p className="text-gray-500 mb-4">
-                              {flights.length === 0
-                                ? "There are currently no flight disruptions in the system."
-                                : "No outbound flights from the selected hub(s) match your current filter criteria."}
+                              No outbound flights from the selected hub(s) match your current filter criteria.
                             </p>
                           </div>
                         )}
@@ -2344,8 +2340,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                   })()}
                 </TabsContent>
 
-                {/* Overall no data state */}
-                {sortedFlights.length === 0 && !loading && (
+                {/* Overall no data state - only show when absolutely no flights exist */}
+                {flights.length === 0 && !loading && (
                   <div className="text-center py-12">
                     <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                       <Plane className="h-8 w-8 text-gray-400" />
@@ -2354,43 +2350,62 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                       No affected flights found
                     </h3>
                     <p className="text-gray-500 mb-4">
-                      {flights.length === 0
-                        ? "There are currently no flight disruptions in the system. Add a new disruption to get started."
-                        : "No flights match your current filter criteria. Try adjusting your filters."}
+                      There are currently no flight disruptions in the system. Add a new disruption to get started.
                     </p>
                     <div className="flex justify-center gap-2">
-                      {flights.length === 0 && (
-                        <Button
-                          variant="outline"
-                          onClick={fetchFlights}
-                          className="flex items-center gap-2"
-                          disabled={loading}
-                        >
-                          <RefreshCw
-                            className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
-                          />
-                          Refresh Data
-                        </Button>
-                      )}
-                      {filteredFlights.length === 0 && flights.length > 0 && (
-                        <Button
-                          variant="outline"
-                          onClick={() =>
-                            setFilters({
-                              status: "all",
-                              priority: "all",
-                              origin: "all",
-                              destination: "all",
-                              hub: "all",
-                              categorization: "all",
-                              search: "",
-                            })
-                          }
-                          className="flex items-center gap-2"
-                        >
-                          Clear Filters
-                        </Button>
-                      )}
+                      <Button
+                        variant="outline"
+                        onClick={fetchFlights}
+                        className="flex items-center gap-2"
+                        disabled={loading}
+                      >
+                        <RefreshCw
+                          className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                        />
+                        Refresh Data
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setIsAddDialogOpen(true)}
+                        className="flex items-center gap-2 border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
+                      >
+                        <Plus className="h-4 w-4" />
+                        Add Disruption
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* No flights match filters state */}
+                {flights.length > 0 && filteredFlights.length === 0 && !loading && (
+                  <div className="text-center py-12">
+                    <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                      <Filter className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      No flights match your filters
+                    </h3>
+                    <p className="text-gray-500 mb-4">
+                      Try adjusting your filter criteria to see more results.
+                    </p>
+                    <div className="flex justify-center gap-2">
+                      <Button
+                        variant="outline"
+                        onClick={() =>
+                          setFilters({
+                            status: "all",
+                            priority: "all",
+                            origin: "all",
+                            destination: "all",
+                            hub: "all",
+                            categorization: "all",
+                            search: "",
+                          })
+                        }
+                        className="flex items-center gap-2"
+                      >
+                        Clear Filters
+                      </Button>
                     </div>
                   </div>
                 )}
