@@ -1666,7 +1666,6 @@ app.get('/api/recovery-options/:disruptionId', async (req, res) => {
   try {
     const { disruptionId } = req.params;
     console.log('📊 Fetching recovery options for disruption:', disruptionId);
-    );
 
     if (result.rows.length === 0) {
       console.log(`No disruption found for ID: ${disruptionId}`);
