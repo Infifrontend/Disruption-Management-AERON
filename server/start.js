@@ -1499,6 +1499,162 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
     );
 
     if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: "Disruption not found",
+        optionsCount: 0,
+        stepsCount: 0,
+      });
+    }
+
+    const disruptionData = result.rows[0];
+    console.log("Found disruption:", disruptionData.flight_number);
+
+    // Check if recovery steps already exist (not just options)
+    const existingSteps = await pool.query(
+      "SELECT COUNT(*) as count FROM recovery_steps WHERE disruption_id = $1",
+      [numericDisruptionId],
+    );
+
+    const existingOptions = await pool.query(
+      "SELECT COUNT(*) as count FROM recovery_options WHERE disruption_id = $1",
+      [numericDisruptionId],
+    );
+
+    if (existingOptions.rows[0].count > 0 && existingSteps.rows[0].count > 0) {
+      return res.json({
+        success: true,
+        message: "Recovery options and steps already exist",
+        exists: true,
+        optionsCount: parseInt(existingOptions.rows[0].count),
+        stepsCount: parseInt(existingSteps.rows[0].count),
+      });
+    }
+
+    // Generate recovery options based on disruption type
+    const { generateRecoveryOptionsForDisruption } = await import(
+      "./recovery-generator.js"
+    );
+
+    // Get category information from disruption
+    const categoryInfo = {
+      category_code: disruptionData.category_code,
+      category_name: disruptionData.categorization,
+      category_id: disruptionData.category_id,
+    };
+
+    console.log("Using category info:", categoryInfo);
+
+    const { options, steps } = generateRecoveryOptionsForDisruption(
+      disruptionData,
+      categoryInfo,
+    );
+
+    console.log(`Generated ${options.length} options and ${steps.length} steps`);
+
+    let optionsCount = 0;
+    let stepsCount = 0;
+
+    // Save recovery steps
+    for (const step of steps) {
+      try {
+        await pool.query(
+          `
+          INSERT INTO recovery_steps (
+            disruption_id, step_number, title, status, timestamp,
+            system, details, step_data
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          ON CONFLICT (disruption_id, step_number) DO UPDATE SET
+            title = EXCLUDED.title,
+            status = EXCLUDED.status,
+            timestamp = EXCLUDED.timestamp,
+            system = EXCLUDED.system,
+            details = EXCLUDED.details,
+            step_data = EXCLUDED.step_data
+        `,
+          [
+            numericDisruptionId,
+            step.step,
+            step.title,
+            step.status,
+            step.timestamp,
+            step.system,
+            step.details,
+            step.data ? JSON.stringify(step.data) : null,
+          ],
+        );
+        stepsCount++;
+      } catch (error) {
+        console.error("Error saving recovery step:", error);
+      }
+    }
+
+    // Save recovery options
+    for (let i = 0; i < options.length; i++) {
+      const option = options[i];
+      try {
+        await pool.query(
+          `
+          INSERT INTO recovery_options (
+            disruption_id, title, description, cost, timeline,
+            confidence, impact, status, priority, advantages, considerations,
+            resource_requirements, cost_breakdown, timeline_details,
+            risk_assessment, technical_specs, metrics, rotation_plan
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+          ON CONFLICT (disruption_id, title) DO UPDATE SET
+            description = EXCLUDED.description,
+            cost = EXCLUDED.cost,
+            timeline = EXCLUDED.timeline,
+            confidence = EXCLUDED.confidence,
+            impact = EXCLUDED.impact,
+            status = EXCLUDED.status,
+            priority = EXCLUDED.priority,
+            advantages = EXCLUDED.advantages,
+            considerations = EXCLUDED.considerations,
+            resource_requirements = EXCLUDED.resource_requirements,
+            cost_breakdown = EXCLUDED.cost_breakdown,
+            timeline_details = EXCLUDED.timeline_details,
+            risk_assessment = EXCLUDED.risk_assessment,
+            technical_specs = EXCLUDED.technical_specs,
+            metrics = EXCLUDED.metrics,
+            rotation_plan = EXCLUDED.rotation_plan
+        `,
+          [
+            numericDisruptionId,
+            option.title || `Recovery Option ${i + 1}`,
+            option.description || "Recovery option details",
+            option.cost || "TBD",
+            option.timeline || "TBD",
+            option.confidence || 80,
+            option.impact || "Medium",
+            option.status || "generated",
+            i + 1, // priority
+            Array.isArray(option.advantages) ? option.advantages : [],
+            Array.isArray(option.considerations) ? option.considerations : [],
+            option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : JSON.stringify([]),
+            option.costBreakdown ? JSON.stringify(option.costBreakdown) : JSON.stringify([]),
+            option.timelineDetails ? JSON.stringify(option.timelineDetails) : JSON.stringify([]),
+            option.riskAssessment ? JSON.stringify(option.riskAssessment) : JSON.stringify([]),
+            option.technicalSpecs ? JSON.stringify(option.technicalSpecs) : JSON.stringify({}),
+            option.metrics ? JSON.stringify(option.metrics) : JSON.stringify({}),
+            option.rotationPlan ? JSON.stringify(option.rotationPlan) : JSON.stringify({}),
+          ],
+        );
+        optionsCount++;
+      } catch (error) {
+        console.error("Error saving recovery option:", error);
+      }
+    }
+
+    console.log("Successfully saved all recovery options and steps");
+    res.json({
+      success: true,
+      optionsCount,
+      stepsCount,
+      message: `Generated ${optionsCount} recovery options and ${stepsCount} steps`,
+    });sruptionId],
+    );
+
+    if (result.rows.length === 0) {
       console.log(`No disruption found for ID: ${disruptionId}`);
       // Instead of returning 404, create a placeholder disruption for generation
       const placeholderDisruption = {
