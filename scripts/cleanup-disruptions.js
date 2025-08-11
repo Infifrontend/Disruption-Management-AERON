@@ -245,6 +245,7 @@ async function main() {
       console.log("  node cleanup-disruptions.js bulk resolved");
       console.log("  node cleanup-disruptions.js bulk cancelled");
       console.log("  node cleanup-disruptions.js bulk flight <flight_number>");
+      console.log("  node cleanup-disruptions.js bulk all");
     }
   } catch (error) {
     console.error("Script failed:", error);
