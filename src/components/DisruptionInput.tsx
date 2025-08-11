@@ -75,6 +75,7 @@ import {
 } from "lucide-react";
 import { databaseService, FlightDisruption } from "../services/databaseService";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "./ui/use-toast";
 
 // Define interface for disruption categories
 interface DisruptionCategory {
@@ -262,8 +263,9 @@ const getTimeAgo = (dateString: string) => {
   return `${diffDays} days ago`;
 };
 
-export function DisruptionInput({ disruption, onSelectFlight }) {
+export function DisruptionInput({ disruption, onSelectFlight, onNavigateToComparison }) {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [flights, setFlights] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -314,7 +316,8 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
   });
 
   // State for generating recovery options
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingOptions, setIsGeneratingOptions] = useState(false);
+  const [loadingRecovery, setLoadingRecovery] = useState({});
 
   // Fetch flights from database
   useEffect(() => {
@@ -685,11 +688,126 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     setSelectedFlight(flight);
   };
 
-  const handleProceedToRecovery = () => {
-    if (selectedFlight) {
-      onSelectFlight([selectedFlight]);
+  // Fix Generate Recovery Option button to call API and navigate properly
+  const handleGenerateRecoveryOptions = async (flight) => {
+    console.log('Generating recovery options for:', flight);
+    setIsGeneratingOptions(true);
+
+    try {
+      // Call API to generate recovery options
+      const flightId = flight.id || flight.flightNumber;
+      console.log('Calling recovery options generation API for flight ID:', flightId);
+
+      // Set loading for this specific flight
+      setLoadingRecovery(prev => ({ ...prev, [flightId]: true }));
+
+      // Make API call to generate recovery options
+      const response = await fetch(`/api/recovery-options/generate/${flightId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ forceRegenerate: false }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API call failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Recovery options generation result:', result);
+
+      if (result.success && (result.optionsCount > 0 || result.exists)) {
+        // Show success message
+        toast({
+          title: "Recovery Options Generated",
+          description: `Generated ${result.optionsCount} recovery options for flight ${flight.flightNumber}`,
+          duration: 3000,
+        });
+
+        // Fetch the generated options
+        const optionsResponse = await fetch(`/api/recovery-options/${flightId}`);
+        const options = optionsResponse.ok ? await optionsResponse.json() : [];
+
+        // Navigate to comparison view with the flight data and options
+        onNavigateToComparison(flight, options);
+      } else {
+        toast({
+          title: "No Options Generated",
+          description: "Unable to generate recovery options for this flight",
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error('Error generating recovery options:', error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate recovery options",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setIsGeneratingOptions(false);
+      setLoadingRecovery(prev => ({ ...prev, [flight.id || flight.flightNumber]: false }));
     }
   };
+
+
+  // Fix handleViewDetails to fetch and pass recovery options
+  const handleViewDetails = async (flight) => {
+    console.log('Viewing details for:', flight);
+    setLoadingRecovery(prev => ({ ...prev, [flight.id || flight.flightNumber]: true }));
+
+    try {
+      // Check if recovery options exist, if not generate them
+      const flightId = flight.id || flight.flightNumber;
+
+      // First try to fetch existing options
+      const optionsResponse = await fetch(`/api/recovery-options/${flightId}`);
+      let options = [];
+
+      if (optionsResponse.ok) {
+        options = await optionsResponse.json();
+      }
+
+      if (options.length === 0) {
+        // Generate options first
+        const generateResponse = await fetch(`/api/recovery-options/generate/${flightId}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ forceRegenerate: false }),
+        });
+
+        if (generateResponse.ok) {
+          const generateResult = await generateResponse.json();
+          if (generateResult.success) {
+            // Fetch the newly generated options
+            const newOptionsResponse = await fetch(`/api/recovery-options/${flightId}`);
+            if (newOptionsResponse.ok) {
+              options = await newOptionsResponse.json();
+            }
+          }
+        }
+      }
+
+      // Navigate to comparison with options (even if empty)
+      onNavigateToComparison(flight, options);
+    } catch (error) {
+      console.error('Error viewing details:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load flight details",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setLoadingRecovery(prev => ({ ...prev, [flight.id || flight.flightNumber]: false }));
+    }
+  };
+
 
   const getSelectedFlightImpact = () => {
     if (!selectedFlight) {
@@ -842,19 +960,19 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
   };
 
   // Handle Generate Recovery Options - redirect to Comparison page
-  const handleGenerateRecoveryOptions = () => {
-    if (!selectedFlight) return;
+  // const handleGenerateRecoveryOptions = () => {
+  //   if (!selectedFlight) return;
 
-    setIsGenerating(true);
+  //   setIsGenerating(true);
 
-    // Navigate directly to comparison page with the selected flight
-    navigate(`/comparison?flightId=${selectedFlight.id}`);
+  //   // Navigate directly to comparison page with the selected flight
+  //   navigate(`/comparison?flightId=${selectedFlight.id}`);
 
-    // Reset generating state after navigation
-    setTimeout(() => {
-      setIsGenerating(false);
-    }, 500);
-  };
+  //   // Reset generating state after navigation
+  //   setTimeout(() => {
+  //     setIsGenerating(false);
+  //   }, 500);
+  // };
 
   if (loading) {
     return (
@@ -1932,7 +2050,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                       size="sm"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        navigate(`/comparison?flightId=${flight.id}`);
+                                        handleViewDetails(flight);
                                       }}
                                     >
                                       <Eye className="h-3 w-3 mr-1" />
@@ -2222,7 +2340,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                                       size="sm"
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        navigate(`/comparison?flightId=${flight.id}`);
+                                        handleViewDetails(flight);
                                       }}
                                     >
                                       <Eye className="h-3 w-3 mr-1" />
@@ -2458,11 +2576,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
               </Button>
               <Button
                 size="sm"
-                onClick={handleGenerateRecoveryOptions}
-                disabled={!selectedFlight || isGenerating}
+                onClick={() => handleGenerateRecoveryOptions(selectedFlight)}
+                disabled={!selectedFlight || isGeneratingOptions}
                 className="text-xs bg-flydubai-blue hover:bg-blue-700"
               >
-                {isGenerating ? (
+                {isGeneratingOptions ? (
                   <>
                     <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent mr-1"></div>
                     Generating...
