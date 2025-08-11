@@ -255,6 +255,14 @@ export function PendingSolutions() {
 
   const handleApprove = async (planId) => {
     try {
+      // Find the plan to get the disruption ID
+      const plan = plans.find(p => p.id === planId);
+      if (plan && plan.disruptionId) {
+        // Update the flight recovery status to 'approved'
+        await databaseService.updateFlightRecoveryStatus(plan.disruptionId, 'approved');
+      }
+      
+      // Update the pending solution status
       await databaseService.updateFlightDisruptionStatus(planId, 'Approved');
       setPlans(plans.map(plan => plan.id === planId ? { ...plan, status: 'Approved' } : plan));
     } catch (error) {
@@ -264,6 +272,14 @@ export function PendingSolutions() {
 
   const handleReject = async (planId) => {
     try {
+      // Find the plan to get the disruption ID
+      const plan = plans.find(p => p.id === planId);
+      if (plan && plan.disruptionId) {
+        // Update the flight recovery status to 'rejected'
+        await databaseService.updateFlightRecoveryStatus(plan.disruptionId, 'rejected');
+      }
+      
+      // Update the pending solution status
       await databaseService.updateFlightDisruptionStatus(planId, 'Rejected');
       setPlans(plans.map(plan => plan.id === planId ? { ...plan, status: 'Rejected' } : plan));
     } catch (error) {
@@ -648,17 +664,6 @@ export function PendingSolutions() {
                               Reject
                             </Button>
                           </>
-                        )}
-
-                        {plan.status === 'Approved' && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleExecute(plan)}
-                            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
-                          >
-                            <Send className="h-4 w-4" />
-                            Execute
-                          </Button>
                         )}
                       </div>
                     </div>
@@ -1221,15 +1226,7 @@ export function PendingSolutions() {
                   </Button>
                 </>
               )}
-              {selectedPlan.status === 'Approved' && (
-                <Button
-                  onClick={() => handleExecute(selectedPlan)}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  <Send className="h-4 w-4 mr-2" />
-                  Execute
-                </Button>
-              )}
+              
             </div>
           </DialogContent>
         </Dialog>

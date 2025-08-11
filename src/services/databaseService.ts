@@ -601,11 +601,10 @@ class DatabaseService {
   // Flight Disruptions
   async getAllDisruptions(recoveryStatus?: string): Promise<FlightDisruption[]> {
     try {
-      // Build URL with recovery_status filter if provided
+      // Build URL with recovery_status filter - default to 'none' if not specified
       let url = `${this.baseUrl}/disruptions`
-      if (recoveryStatus) {
-        url += `?recovery_status=${encodeURIComponent(recoveryStatus)}`
-      }
+      const statusFilter = recoveryStatus || 'none'
+      url += `?recovery_status=${encodeURIComponent(statusFilter)}`
       
       console.log('Fetching disruptions from:', url)
 
