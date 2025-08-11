@@ -34,17 +34,13 @@ task = "shell.exec"
 args = "npm run dev"
 
 [[workflows.workflow]]
-name = "Start Full Stack with Recovery API"
+name = "backend"
+mode = "sequential"
 author = 45149410
-mode = "parallel"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "node server/start.js"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm run dev"
 
 [[ports]]
 localPort = 3001
