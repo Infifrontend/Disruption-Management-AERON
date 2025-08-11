@@ -1935,70 +1935,291 @@ const generateWeatherDelayRecovery = (flight) => {
       status: "completed",
       timestamp: "12:30:00",
       system: "Weather Monitoring",
-      details: `ATC holding all arrivals at ${flight.destination} due to severe weather`,
+      details: `Severe weather alert received for ${flight.origin || flight.origin_city} airport`,
       data: {
         weatherType: "Thunderstorms + Low Visibility",
         visibility: "800m (Required: 1200m)",
         atcStatus: "All arrivals on hold",
         forecast: "Improvement expected 16:00-17:00",
+        severity: flight.severity || "High",
+        impact: "High"
       },
+    },
+    {
+      step: 2,
+      title: "Impact Assessment",
+      status: "completed",
+      timestamp: "12:35:00",
+      system: "AERON System",
+      details: "Analyzing weather impact on flight operations",
+      data: { 
+        expectedDelay: flight.delay_minutes || 120,
+        affectedFlights: 3,
+        passengerCount: flight.passengers || 150
+      },
+    },
+    {
+      step: 3,
+      title: "Recovery Options Generation",
+      status: "completed",
+      timestamp: "12:40:00",
+      system: "Recovery Engine",
+      details: "Generating optimal recovery strategies",
+      data: { optionsCount: 3 },
+    },
+    {
+      step: 4,
+      title: "Resource Availability Check",
+      status: "standby",
+      timestamp: "12:45:00",
+      system: "Resource Manager",
+      details: "Checking aircraft and crew availability",
+      data: { resourceStatus: "checking" },
     },
   ];
 
   const options = [
     {
-      id: "DELAY_WEATHER",
-      title: "Delay for Weather Clearance",
-      description: `Wait for weather improvement at ${flight.destination}`,
-      cost: "AED 25,000",
+      id: "WEATHER_DELAY_REROUTE",
+      title: "Weather Delay with Re-routing",
+      description: "Wait for weather conditions to improve with alternate routing",
+      cost: "AED 12,500",
       timeline: "2-3 hours",
-      confidence: 90,
-      impact: "Managed schedule delay",
+      confidence: 85,
+      impact: "Medium delay impact",
       status: "recommended",
+      priority: 1,
+      category: "ATC/Weather",
       advantages: [
-        "Weather forecast shows improvement",
-        "All connections protected",
+        "Maintains original aircraft",
+        "Lower cost option",
+        "High success probability",
       ],
       considerations: [
-        "Dependent on weather improvement",
-        "Crew duty time monitoring",
+        "Weather dependency",
+        "Potential for further delays",
+        "Passenger accommodation required",
       ],
+      resourceRequirements: [
+        {
+          type: "Aircraft",
+          resource: flight.aircraft || "A6-FDZ",
+          availability: "Available",
+          status: "On ground",
+          location: "DXB",
+          eta: "Immediate",
+          details: "Original aircraft available",
+        },
+      ],
+      costBreakdown: [
+        {
+          category: "Delay Costs",
+          amount: "AED 8,500",
+          percentage: 68,
+          description: "Passenger compensation and handling",
+        },
+        {
+          category: "Fuel & Operations",
+          amount: "AED 2,500",
+          percentage: 20,
+          description: "Additional fuel for re-routing",
+        },
+        {
+          category: "Crew Overtime",
+          amount: "AED 1,500",
+          percentage: 12,
+          description: "Extended duty time compensation",
+        },
+      ],
+      timelineDetails: [
+        {
+          step: "Weather Monitoring",
+          duration: "30 min",
+          startTime: "12:30",
+          endTime: "13:00",
+          details: "Continuous weather tracking",
+          status: "in-progress",
+        },
+        {
+          step: "Route Planning",
+          duration: "45 min",
+          startTime: "13:00",
+          endTime: "13:45",
+          details: "Alternate route calculation",
+          status: "pending",
+        },
+        {
+          step: "Passenger Notification",
+          duration: "15 min",
+          startTime: "13:45",
+          endTime: "14:00",
+          details: "Inform passengers of delay",
+          status: "pending",
+        },
+        {
+          step: "Departure Clearance",
+          duration: "30 min",
+          startTime: "14:00",
+          endTime: "14:30",
+          details: "Weather clearance and takeoff",
+          status: "pending",
+        },
+      ],
+      riskAssessment: [
+        {
+          risk: "Weather deterioration",
+          riskImpact: "High",
+          mitigationImpact: "High",
+          score: 2,
+          mitigation: "Continuous monitoring with backup plans ready",
+        },
+        {
+          risk: "Passenger dissatisfaction",
+          riskImpact: "Medium",
+          mitigationImpact: "Medium",
+          score: 4,
+          mitigation: "Proactive communication and compensation",
+        },
+      ],
+      technicalSpecs: {
+        weatherMinimums: [
+          "Visibility: 1000m minimum",
+          "Ceiling: 200ft minimum",
+          "Wind: 25kt crosswind limit",
+        ],
+        alternateAirports: [
+          "SHJ - Sharjah (45km)",
+          "AUH - Abu Dhabi (120km)",
+        ],
+        fuelConsiderations: [
+          "Additional 800kg for alternate routing",
+          "Weather contingency fuel: 1200kg",
+        ],
+      },
       metrics: {
-        totalCost: 25000,
-        otpScore: 80,
-        aircraftSwaps: 0,
-        crewViolations: 0,
-        paxAccommodated: 95,
-        regulatoryRisk: "Low",
-        delayMinutes: 150,
-        confidenceScore: 90,
-        networkImpact: "Low",
+        costEfficiency: 92,
+        timeEfficiency: 78,
+        passengerSatisfaction: 75,
+      },
+      rotationPlan: {
+        nextFlight: "FZ456",
+        impact: "Minimal",
+        adjustments: "None required",
       },
     },
     {
-      id: "CANCEL_WEATHER",
-      title: "Cancel Due to Weather",
-      description: "Cancel flight and rebook passengers",
-      cost: "AED 180,000",
-      timeline: "Immediate",
-      confidence: 60,
-      impact: "Complete sector cancellation",
-      status: "warning",
+      id: "AIRCRAFT_SWAP_WEATHER",
+      title: "Aircraft Swap",
+      description: "Switch to available aircraft to avoid weather delays",
+      cost: "AED 18,750",
+      timeline: "1-2 hours",
+      confidence: 75,
+      impact: "Moderate operational complexity",
+      status: "caution",
+      priority: 2,
+      category: "ATC/Weather",
       advantages: [
-        "Immediate resolution",
-        "Weather exemption from compensation",
+        "Faster departure",
+        "Weather avoidance",
+        "Network protection",
       ],
-      considerations: ["Complete revenue loss", "Customer dissatisfaction"],
+      considerations: [
+        "Higher operational cost",
+        "Aircraft availability dependent",
+      ],
+      resourceRequirements: [
+        {
+          type: "Aircraft",
+          resource: "A6-FED",
+          availability: "Available 14:30",
+          status: "Maintenance complete",
+          location: "DXB",
+          eta: "14:30",
+          details: "B737-800 ready for service",
+        },
+      ],
+      costBreakdown: [
+        {
+          category: "Aircraft Positioning",
+          amount: "AED 12,000",
+          percentage: 64,
+          description: "Aircraft swap and positioning costs",
+        },
+        {
+          category: "Passenger Handling",
+          amount: "AED 4,250",
+          percentage: 23,
+          description: "Gate change and boarding",
+        },
+        {
+          category: "Crew Coordination",
+          amount: "AED 2,500",
+          percentage: 13,
+          description: "Crew briefing and preparation",
+        },
+      ],
       metrics: {
-        totalCost: 180000,
-        otpScore: 0,
-        aircraftSwaps: 0,
-        crewViolations: 0,
-        paxAccommodated: 70,
-        regulatoryRisk: "Medium",
-        delayMinutes: 0,
-        confidenceScore: 60,
-        networkImpact: "Low",
+        costEfficiency: 75,
+        timeEfficiency: 85,
+        passengerSatisfaction: 70,
+      },
+    },
+    {
+      id: "CANCEL_REBOOK_WEATHER",
+      title: "Flight Cancellation with Rebooking",
+      description: `Cancel ${flight.flight_number} and rebook passengers on next available flights`,
+      cost: "AED 45,200",
+      timeline: "4-6 hours",
+      confidence: 95,
+      impact: "High passenger impact",
+      status: "warning",
+      priority: 3,
+      category: "ATC/Weather",
+      advantages: [
+        "Guaranteed resolution",
+        "Network stability",
+        "Crew rest compliance",
+      ],
+      considerations: [
+        "High passenger compensation",
+        "Reputation impact",
+        "Hotel costs",
+      ],
+      resourceRequirements: [
+        {
+          type: "Passenger Services",
+          resource: "Rebooking Team",
+          availability: "Available",
+          status: "On standby",
+          location: "DXB T2",
+          eta: "Immediate",
+          details: "6 agents available for rebooking",
+        },
+      ],
+      costBreakdown: [
+        {
+          category: "EU261 Compensation",
+          amount: "AED 28,200",
+          percentage: 62,
+          description: "€600 per passenger compensation",
+        },
+        {
+          category: "Hotel & Meals",
+          amount: "AED 12,500",
+          percentage: 28,
+          description: "Overnight accommodation",
+        },
+        {
+          category: "Rebooking Costs",
+          amount: "AED 4,500",
+          percentage: 10,
+          description: "Alternative flight arrangements",
+        },
+      ],
+      metrics: {
+        costEfficiency: 60,
+        timeEfficiency: 95,
+        passengerSatisfaction: 40,
       },
     },
   ];
@@ -2219,275 +2440,9 @@ export function generateRecoveryOptionsForDisruption(
   // Generate options based on category code
   switch (categoryCode) {
     case "ATC_WEATHER":
-      steps = [
-        {
-          step: 1,
-          title: "Weather Trigger Received",
-          status: "completed",
-          timestamp: "12:30 PM",
-          system: "Weather Monitoring",
-          details: `Severe weather alert received for ${safeDisruption.origin} airport`,
-          data: { severity: safeDisruption.severity, impact: "High" },
-        },
-        {
-          step: 2,
-          title: "Impact Assessment",
-          status: "completed",
-          timestamp: "12:35 PM",
-          system: "AERON System",
-          details: "Analyzing weather impact on flight operations",
-          data: { expectedDelay: safeDisruption.delay_minutes || 120 },
-        },
-        {
-          step: 3,
-          title: "Recovery Options Generation",
-          status: "completed",
-          timestamp: "12:40 PM",
-          system: "Recovery Engine",
-          details: "Generating optimal recovery strategies",
-          data: { optionsCount: 3 },
-        },
-        {
-          step: 4,
-          title: "Resource Availability Check",
-          status: "standby",
-          timestamp: "12:45 PM",
-          system: "Resource Manager",
-          details: "Checking aircraft and crew availability",
-          data: { resourceStatus: "checking" },
-        },
-      ];
-
-      options = [
-        {
-          title: "Weather Delay with Re-routing",
-          description:
-            "Wait for weather conditions to improve with alternate routing",
-          cost: "AED 12,500",
-          timeline: "2-3 hours",
-          confidence: 85,
-          impact: "Medium delay impact",
-          status: "recommended",
-          priority: 1,
-          advantages: [
-            "Maintains original aircraft",
-            "Lower cost option",
-            "High success probability",
-          ],
-          considerations: [
-            "Weather dependency",
-            "Potential for further delays",
-            "Passenger accommodation required",
-          ],
-          resourceRequirements: [
-            {
-              type: "Aircraft",
-              resource: safeDisruption.aircraft || "A6-FDZ",
-              availability: "Available",
-              status: "On ground",
-              location: "DXB",
-              eta: "Immediate",
-              details: "Original aircraft available",
-            },
-          ],
-          costBreakdown: [
-            {
-              category: "Delay Costs",
-              amount: "AED 8,500",
-              percentage: 68,
-              description: "Passenger compensation and handling",
-            },
-            {
-              category: "Fuel & Operations",
-              amount: "AED 2,500",
-              percentage: 20,
-              description: "Additional fuel for re-routing",
-            },
-            {
-              category: "Crew Overtime",
-              amount: "AED 1,500",
-              percentage: 12,
-              description: "Extended duty time compensation",
-            },
-          ],
-          timelineDetails: [
-            {
-              step: "Weather Monitoring",
-              duration: "30 min",
-              startTime: "12:30",
-              endTime: "13:00",
-              details: "Continuous weather tracking",
-              status: "in-progress",
-            },
-            {
-              step: "Route Planning",
-              duration: "45 min",
-              startTime: "13:00",
-              endTime: "13:45",
-              details: "Alternate route calculation",
-              status: "pending",
-            },
-            {
-              step: "Passenger Notification",
-              duration: "15 min",
-              startTime: "13:45",
-              endTime: "14:00",
-              details: "Inform passengers of delay",
-              status: "pending",
-            },
-            {
-              step: "Departure Clearance",
-              duration: "30 min",
-              startTime: "14:00",
-              endTime: "14:30",
-              details: "Weather clearance and takeoff",
-              status: "pending",
-            },
-          ],
-          riskAssessment: [
-            {
-              risk: "Weather deterioration",
-              probability: "Low",
-              impact: "High",
-              riskScore: 2,
-              mitigation: "Continuous monitoring with backup plans ready",
-            },
-            {
-              risk: "Passenger dissatisfaction",
-              probability: "Medium",
-              impact: "Medium",
-              riskScore: 4,
-              mitigation: "Proactive communication and compensation",
-            },
-          ],
-          technicalSpecs: {
-            weatherMinimums: [
-              "Visibility: 1000m minimum",
-              "Ceiling: 200ft minimum",
-              "Wind: 25kt crosswind limit",
-            ],
-            alternateAirports: [
-              "SHJ - Sharjah (45km)",
-              "AUH - Abu Dhabi (120km)",
-            ],
-            fuelConsiderations: [
-              "Additional 800kg for alternate routing",
-              "Weather contingency fuel: 1200kg",
-            ],
-          },
-          metrics: {
-            costEfficiency: 92,
-            timeEfficiency: 78,
-            passengerSatisfaction: 75,
-          },
-          rotationPlan: {
-            nextFlight: "FZ456",
-            impact: "Minimal",
-            adjustments: "None required",
-          },
-        },
-        {
-          title: "Aircraft Swap",
-          description: "Switch to available aircraft to avoid weather delays",
-          cost: "AED 18,750",
-          timeline: "1-2 hours",
-          confidence: 75,
-          impact: "Moderate operational complexity",
-          status: "caution",
-          priority: 2,
-          advantages: [
-            "Faster departure",
-            "Weather avoidance",
-            "Network protection",
-          ],
-          considerations: [
-            "Higher operational cost",
-            "Aircraft availability dependent",
-          ],
-          resourceRequirements: [
-            {
-              type: "Aircraft",
-              resource: "A6-FED",
-              availability: "Available 14:30",
-              status: "Maintenance complete",
-              location: "DXB",
-              eta: "14:30",
-              details: "B737-800 ready for service",
-            },
-          ],
-          costBreakdown: [
-            {
-              category: "Aircraft Positioning",
-              amount: "AED 12,000",
-              percentage: 64,
-              description: "Aircraft swap and positioning costs",
-            },
-            {
-              category: "Passenger Handling",
-              amount: "AED 4,250",
-              percentage: 23,
-              description: "Gate change and boarding",
-            },
-            {
-              category: "Crew Coordination",
-              amount: "AED 2,500",
-              percentage: 13,
-              description: "Crew briefing and preparation",
-            },
-          ],
-        },
-        {
-          title: "Flight Cancellation with Rebooking",
-          description: `Cancel ${safeDisruption.flight_number} and rebook passengers on next available flights`,
-          cost: "AED 45,200",
-          timeline: "4-6 hours",
-          confidence: 95,
-          impact: "High passenger impact",
-          status: "warning",
-          priority: 3,
-          advantages: [
-            "Guaranteed resolution",
-            "Network stability",
-            "Crew rest compliance",
-          ],
-          considerations: [
-            "High passenger compensation",
-            "Reputation impact",
-            "Hotel costs",
-          ],
-          resourceRequirements: [
-            {
-              type: "Passenger Services",
-              resource: "Rebooking Team",
-              availability: "Available",
-              status: "On standby",
-              location: "DXB T2",
-              eta: "Immediate",
-              details: "6 agents available for rebooking",
-            },
-          ],
-          costBreakdown: [
-            {
-              category: "EU261 Compensation",
-              amount: "AED 28,200",
-              percentage: 62,
-              description: "€600 per passenger compensation",
-            },
-            {
-              category: "Hotel & Meals",
-              amount: "AED 12,500",
-              percentage: 28,
-              description: "Overnight accommodation",
-            },
-            {
-              category: "Rebooking Costs",
-              amount: "AED 4,500",
-              percentage: 10,
-              description: "Alternative flight arrangements",
-            },
-          ],
-        },
-      ];
+      const weatherResult = generateWeatherDelayRecovery(safeDisruption);
+      options = weatherResult.options;
+      steps = weatherResult.steps;
       break;
 
     case "AIRCRAFT_ISSUE":
@@ -2497,207 +2452,21 @@ export function generateRecoveryOptionsForDisruption(
       break;
 
     case "CREW_ISSUE":
-      steps = [
-        {
-          step: 1,
-          title: "Crew Issue Identified",
-          status: "completed",
-          timestamp: "10:45 AM",
-          system: "Crew Management",
-          details: "Crew duty time limitation identified",
-          data: { crewMember: "Captain", issue: "Duty time breach" },
-        },
-        {
-          step: 2,
-          title: "Replacement Crew Search",
-          status: "completed",
-          timestamp: "11:00 AM",
-          system: "Crew Scheduling",
-          details: "Searching for qualified replacement crew",
-          data: { availableCrew: 2, qualificationMatch: "Type rated" },
-        },
-        {
-          step: 3,
-          title: "Crew Positioning",
-          status: "standby",
-          timestamp: "11:15 AM",
-          system: "Ground Operations",
-          details: "Arranging crew transportation to aircraft",
-          data: { eta: "45 minutes" },
-        },
-      ];
-
-      options = [
-        {
-          title: "Standby Crew Activation",
-          description: "Deploy qualified standby crew members",
-          cost: "AED 8,500",
-          timeline: "45-60 minutes",
-          confidence: 92,
-          impact: "Minimal operational impact",
-          status: "recommended",
-          priority: 1,
-        },
-        {
-          title: "Deadhead Crew",
-          description: "Position qualified Captain",
-          cost: "AED 25,200",
-          timeline: "120 minutes",
-          confidence: 85,
-          impact: "Moderate schedule delay",
-          status: "caution",
-          priority: 2,
-        },
-        {
-          title: "Crew Rest Extension",
-          description: "Delay flight to comply with duty time regulations",
-          cost: "AED 15,200",
-          timeline: "3-4 hours",
-          confidence: 78,
-          impact: "Moderate delay impact",
-          status: "caution",
-          priority: 3,
-        },
-      ];
+      const crewResult = generateCrewIssueRecovery(safeDisruption);
+      options = crewResult.options;
+      steps = crewResult.steps;
       break;
 
     case "CURFEW_CONGESTION":
-      steps = [
-        {
-          step: 1,
-          title: "Airport Disruption Notified",
-          status: "completed",
-          timestamp: "09:15 AM",
-          system: "Airport Operations",
-          details:
-            "Airport infrastructure or operational issue affecting flights",
-          data: {
-            airport: safeDisruption.origin,
-            issue_type: "Runway closure",
-          },
-        },
-      ];
-
-      options = [
-        {
-          title: "Alternative Airport Routing",
-          description:
-            "Divert to alternative airport and arrange ground transport",
-          cost: "AED 35,000",
-          timeline: "4-5 hours",
-          confidence: 80,
-          impact: `${safeDisruption.passengers} passengers diverted`,
-          status: "recommended",
-          advantages: ["Avoids airport closure", "Maintains service"],
-          considerations: [
-            "Ground transport arrangements",
-            "Extended travel time",
-          ],
-          resourceRequirements: {
-            alternative_airport: "1",
-            buses: "4-5",
-            coordination: "Ground handling",
-          },
-          costBreakdown: {
-            diversion: "AED 20,000",
-            ground_transport: "AED 15,000",
-          },
-          timelineDetails: {
-            flight_time: "2 hours",
-            ground_transport: "2-3 hours",
-          },
-          riskAssessment: { weather_risk: "Low", logistics_risk: "Medium" },
-          technicalSpecs: {
-            alternate_airport: "Approved alternate",
-            fuel_planning: "Additional 2000kg",
-          },
-          metrics: {
-            total_time: 300,
-            cost_per_passenger: Math.round(35000 / safeDisruption.passengers),
-          },
-          rotationPlan: { aircraft_positioning: "Required back to base" },
-        },
-      ];
+      const curfewResult = generateCurfewCongestionRecovery(safeDisruption);
+      options = curfewResult.options;
+      steps = curfewResult.steps;
       break;
 
     case "ROTATION_MAINTENANCE":
-      steps = [
-        {
-          step: 1,
-          title: "Maintenance Hold Identified",
-          status: "completed",
-          timestamp: "11:30 AM",
-          system: "Maintenance System",
-          details: "Aircraft maintenance extended beyond scheduled window",
-          data: { maintenanceType: "Line Check", delay: "3 hours extension" },
-        },
-        {
-          step: 2,
-          title: "Alternative Aircraft Search",
-          status: "completed",
-          timestamp: "11:45 AM",
-          system: "Fleet Management",
-          details: "Searching for available alternative aircraft",
-          data: { availableAircraft: 2, matchingType: true },
-        },
-        {
-          step: 3,
-          title: "Rotation Impact Analysis",
-          status: "completed",
-          timestamp: "12:00 PM",
-          system: "AERON System",
-          details: "Analyzing downstream rotation effects",
-          data: { affectedFlights: 3, cascadeDelay: "90 minutes" },
-        },
-      ];
-
-      options = [
-        {
-          title: "Aircraft Rotation Swap",
-          description:
-            "Reassign aircraft from another rotation to maintain schedule",
-          cost: "AED 75,000",
-          timeline: "90 minutes",
-          confidence: 88,
-          impact: "Minimal network disruption",
-          status: "recommended",
-          priority: 1,
-          category: "Rotation/Maintenance",
-          advantages: [
-            "Alternative aircraft immediately available",
-            "Zero passenger impact on this flight",
-            "Maintains original crew assignment",
-            "Preserves schedule integrity",
-          ],
-          considerations: [
-            "Alternative flight delayed by 60 minutes",
-            "Crew briefing required for aircraft change",
-            "Ground coordination needed",
-            "Potential cascade effects",
-          ],
-        },
-        {
-          title: "Accept Cascade Delays",
-          description: "Wait for original aircraft maintenance completion",
-          cost: "AED 150,000",
-          timeline: "3 hours",
-          confidence: 70,
-          impact: "Multiple flight delays",
-          status: "caution",
-          priority: 2,
-          category: "Rotation/Maintenance",
-          advantages: [
-            "Original aircraft maintained in rotation",
-            "Maintenance completed properly",
-            "No crew changes required",
-          ],
-          considerations: [
-            "3-hour delay cascade to multiple flights",
-            "High passenger compensation costs",
-            "Network disruption impact",
-          ],
-        },
-      ];
+      const rotationResult = generateRotationMisalignmentRecovery(safeDisruption);
+      options = rotationResult.options;
+      steps = rotationResult.steps;
       break;
 
     default:
