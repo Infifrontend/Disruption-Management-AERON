@@ -1475,9 +1475,27 @@ class DatabaseService {
   }
 
   // Past Recovery Logs
-  async getPastRecoveryLogs(): Promise<any[]> {
+  async getPastRecoveryLogs(filters: any = {}): Promise<any[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/past-recovery-logs`);
+      // Build query parameters for filters
+      const queryParams = new URLSearchParams();
+      if (filters.status && filters.status !== 'all') {
+        queryParams.append('status', filters.status);
+      }
+      if (filters.category && filters.category !== 'all') {
+        queryParams.append('category', filters.category);
+      }
+      if (filters.priority && filters.priority !== 'all') {
+        queryParams.append('priority', filters.priority);
+      }
+      if (filters.dateRange && filters.dateRange !== 'all') {
+        queryParams.append('dateRange', filters.dateRange);
+      }
+
+      const url = `${this.baseUrl}/past-recovery-logs${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
+      console.log('Fetching past recovery logs from:', url);
+
+      const response = await fetch(url);
       if (!response.ok) {
         console.warn(`Past recovery logs API returned ${response.status}`);
         if (response.status === 404) {
@@ -1488,6 +1506,7 @@ class DatabaseService {
       }
 
       const data = await response.json();
+      console.log('Fetched past recovery logs:', data.length, 'records');
       return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('Failed to fetch past recovery logs:', error);

@@ -98,13 +98,21 @@ export function PastRecoveryLogs() {
 
   useEffect(() => {
     fetchRecoveryLogs()
-    const interval = setInterval(fetchRecoveryLogs, 60000) // Refresh every minute
+    const interval = setInterval(() => fetchRecoveryLogs(), 60000) // Refresh every minute
     return () => clearInterval(interval)
   }, [])
 
-  const fetchRecoveryLogs = async () => {
+  // Refetch data when filters change
+  useEffect(() => {
+    if (filters.status !== 'all' || filters.category !== 'all' || filters.priority !== 'all' || filters.dateRange !== 'all') {
+      fetchRecoveryLogs(filters)
+    }
+  }, [filters.status, filters.category, filters.priority, filters.dateRange])
+
+  const fetchRecoveryLogs = async (filterParams = filters) => {
     try {
-      const data = await databaseService.getPastRecoveryLogs()
+      setLoading(true)
+      const data = await databaseService.getPastRecoveryLogs(filterParams)
       setRecoveryLogs(data)
     } catch (error) {
       console.error('Error fetching recovery logs:', error)
@@ -124,8 +132,15 @@ export function PastRecoveryLogs() {
     if (filters.status !== 'all' && log.status !== filters.status) return false
     if (filters.category !== 'all' && log.categorization !== filters.category) return false
     if (filters.priority !== 'all' && log.priority !== filters.priority) return false
-    if (filters.search && !log.flight_number.toLowerCase().includes(filters.search.toLowerCase()) && 
-        !log.route.toLowerCase().includes(filters.search.toLowerCase())) return false
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase()
+      const matchesSearch = 
+        log.flight_number?.toLowerCase().includes(searchTerm) ||
+        log.route?.toLowerCase().includes(searchTerm) ||
+        log.disruption_reason?.toLowerCase().includes(searchTerm) ||
+        log.executed_by?.toLowerCase().includes(searchTerm)
+      if (!matchesSearch) return false
+    }
     return true
   })
 
@@ -165,13 +180,18 @@ export function PastRecoveryLogs() {
   const totalLogs = filteredLogs.length
   const successfulLogs = filteredLogs.filter(log => log.status === 'Successful').length
   const totalSavings = filteredLogs.reduce((sum, log) => {
-    const estimated = log.estimated_cost || 0
-    const actual = log.actual_cost || 0
+    const estimated = Number(log.estimated_cost) || 0
+    const actual = Number(log.actual_cost) || 0
     return sum + (estimated - actual)
   }, 0)
   const avgSatisfaction = totalLogs > 0 
     ? filteredLogs.reduce((sum, log) => sum + (Number(log.passenger_satisfaction) || 0), 0) / totalLogs 
     : 0
+  const totalPassengers = filteredLogs.reduce((sum, log) => sum + (Number(log.affected_passengers) || 0), 0)
+  const avgRecoveryEfficiency = totalLogs > 0
+    ? filteredLogs.reduce((sum, log) => sum + (Number(log.recovery_efficiency) || 0), 0) / totalLogs
+    : 0
+  const totalDelayReduction = filteredLogs.reduce((sum, log) => sum + (Number(log.delay_reduction_minutes) || 0), 0)
 
   if (loading) {
     return (
@@ -229,17 +249,17 @@ export function PastRecoveryLogs() {
               
               <div className="grid grid-cols-4 gap-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-orange-600">4</div>
+                  <div className="text-2xl font-bold text-orange-600">{filteredLogs.filter(log => log.cancellation_avoided).length}</div>
                   <div className="text-sm text-gray-600">Cancellations Avoided</div>
                   <div className="text-xs text-gray-500">Flights kept operational through smart recovery</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">54h</div>
+                  <div className="text-2xl font-bold text-blue-600">{Math.round(totalDelayReduction / 60)}h</div>
                   <div className="text-sm text-gray-600">Total Delay Reduction</div>
-                  <div className="text-xs text-gray-500">2,231 minutes saved across all recoveries</div>
+                  <div className="text-xs text-gray-500">{totalDelayReduction} minutes saved across all recoveries</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">83.5%</div>
+                  <div className="text-2xl font-bold text-green-600">{avgRecoveryEfficiency.toFixed(1)}%</div>
                   <div className="text-sm text-gray-600">Recovery Efficiency</div>
                   <div className="text-xs text-gray-500">Average efficiency in preventing potential delays</div>
                 </div>
@@ -414,13 +434,30 @@ export function PastRecoveryLogs() {
                       content={<ChartTooltipContent hideLabel />}
                     />
                     <Pie
-                      data={[
-                        { category: "weather", value: 20, fill: "var(--color-weather)" },
-                        { category: "crew", value: 20, fill: "var(--color-crew)" },
-                        { category: "aog", value: 20, fill: "var(--color-aog)" },
-                        { category: "diversion", value: 20, fill: "var(--color-diversion)" },
-                        { category: "security", value: 20, fill: "var(--color-security)" },
-                      ]}
+                      data={(() => {
+                        const categoryCount = {}
+                        filteredLogs.forEach(log => {
+                          const category = log.disruption_category?.toLowerCase() || 'other'
+                          categoryCount[category] = (categoryCount[category] || 0) + 1
+                        })
+                        
+                        const colorMap = {
+                          weather: "var(--color-weather)",
+                          crew: "var(--color-crew)", 
+                          aog: "var(--color-aog)",
+                          aircraft: "var(--color-aog)",
+                          airport: "var(--color-diversion)",
+                          diversion: "var(--color-diversion)",
+                          security: "var(--color-security)",
+                          other: "hsl(210, 40%, 60%)"
+                        }
+                        
+                        return Object.entries(categoryCount).map(([category, count]) => ({
+                          category,
+                          value: count,
+                          fill: colorMap[category] || colorMap.other
+                        }))
+                      })()}
                       dataKey="value"
                       nameKey="category"
                       innerRadius={60}
@@ -429,6 +466,7 @@ export function PastRecoveryLogs() {
                       <RechartsLabel
                         content={({ viewBox }) => {
                           if (viewBox && "cx" in viewBox && "cy" in viewBox) {
+                            const categoryCount = new Set(filteredLogs.map(log => log.disruption_category)).size
                             return (
                               <text
                                 x={viewBox.cx}
@@ -441,7 +479,7 @@ export function PastRecoveryLogs() {
                                   y={viewBox.cy}
                                   className="fill-foreground text-3xl font-bold"
                                 >
-                                  5
+                                  {categoryCount}
                                 </tspan>
                                 <tspan
                                   x={viewBox.cx}
@@ -461,26 +499,35 @@ export function PastRecoveryLogs() {
                 
                 {/* Legend */}
                 <div className="grid grid-cols-2 gap-2 mt-4">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm">Weather (20.0%)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                    <span className="text-sm">Crew (20.0%)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-                    <span className="text-sm">AOG (20.0%)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-teal-500 rounded-full"></div>
-                    <span className="text-sm">Diversion (20.0%)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
-                    <span className="text-sm">Security (20.0%)</span>
-                  </div>
+                  {(() => {
+                    const categoryCount = {}
+                    const totalLogs = filteredLogs.length
+                    
+                    filteredLogs.forEach(log => {
+                      const category = log.disruption_category || 'Other'
+                      categoryCount[category] = (categoryCount[category] || 0) + 1
+                    })
+                    
+                    const colorMap = {
+                      Weather: "bg-blue-500",
+                      Crew: "bg-orange-500", 
+                      AOG: "bg-gray-500",
+                      Aircraft: "bg-gray-500",
+                      Airport: "bg-teal-500",
+                      Security: "bg-purple-500",
+                      Other: "bg-slate-500"
+                    }
+                    
+                    return Object.entries(categoryCount).map(([category, count]) => {
+                      const percentage = totalLogs > 0 ? ((count / totalLogs) * 100).toFixed(1) : 0
+                      return (
+                        <div key={category} className="flex items-center gap-2">
+                          <div className={`w-3 h-3 rounded-full ${colorMap[category] || colorMap.Other}`}></div>
+                          <span className="text-sm">{category} ({percentage}%)</span>
+                        </div>
+                      )
+                    })
+                  })()}
                 </div>
               </CardContent>
             </Card>
@@ -508,13 +555,13 @@ export function PastRecoveryLogs() {
                   }}
                   className="min-h-[200px]"
                 >
-                  <RechartsBarChart data={[
-                    { flight: "FZ215", efficiency: 95, delayReduction: 155 },
-                    { flight: "FZ181", efficiency: 88, delayReduction: 210 },
-                    { flight: "FZ147", efficiency: 92, delayReduction: 180 },
-                    { flight: "FZ203", efficiency: 78, delayReduction: 325 },
-                    { flight: "FZ089", efficiency: 82, delayReduction: 240 },
-                  ]}>
+                  <RechartsBarChart data={
+                    filteredLogs.slice(0, 5).map(log => ({
+                      flight: log.flight_number,
+                      efficiency: log.recovery_efficiency || 80,
+                      delayReduction: log.delay_reduction_minutes || 0
+                    }))
+                  }>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis 
                       dataKey="flight" 
@@ -654,7 +701,19 @@ export function PastRecoveryLogs() {
                 </div>
               </div>
               <div className="flex justify-end mt-4">
-                <Button variant="outline" size="sm">Clear Filters</Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setFilters({
+                    status: 'all',
+                    category: 'all',
+                    priority: 'all',
+                    dateRange: 'all',
+                    search: ''
+                  })}
+                >
+                  Clear Filters
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -940,12 +999,25 @@ export function PastRecoveryLogs() {
                 }}
                 className="h-[500px] w-full"
               >
-                <LineChart data={[
-                  { month: "Oct 24", efficiency: 88, delayReduction: 2800 },
-                  { month: "Nov 24", efficiency: 91, delayReduction: 3100 },
-                  { month: "Dec 24", efficiency: 94, delayReduction: 3400 },
-                  { month: "Jan 25", efficiency: 96, delayReduction: 3600 },
-                ]}>
+                <LineChart data={(() => {
+                  const monthlyData = {}
+                  filteredLogs.forEach(log => {
+                    const date = new Date(log.created_at)
+                    const monthKey = date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
+                    if (!monthlyData[monthKey]) {
+                      monthlyData[monthKey] = { month: monthKey, efficiencySum: 0, delaySum: 0, count: 0 }
+                    }
+                    monthlyData[monthKey].efficiencySum += log.recovery_efficiency || 80
+                    monthlyData[monthKey].delaySum += log.delay_reduction_minutes || 0
+                    monthlyData[monthKey].count += 1
+                  })
+                  
+                  return Object.values(monthlyData).map(data => ({
+                    month: data.month,
+                    efficiency: Math.round(data.efficiencySum / data.count),
+                    delayReduction: Math.round(data.delaySum / data.count)
+                  })).slice(-4) // Last 4 months
+                })()}
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="month" 
