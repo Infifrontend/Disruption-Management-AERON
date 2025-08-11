@@ -331,7 +331,8 @@ export function DisruptionInput({
   // Fetch flights from database
   useEffect(() => {
     fetchFlights();
-    const interval = setInterval(fetchFlights, 120000); // Refresh every 120 seconds
+    // Changed interval to 3 minutes (180000 ms) as requested
+    const interval = setInterval(fetchFlights, 180000);
     return () => clearInterval(interval);
   }, []);
 
@@ -345,22 +346,19 @@ export function DisruptionInput({
       const syncResult = await databaseService.syncDisruptionsFromExternalAPI();
       console.log("External API sync result:", syncResult);
 
-      // Then fetch all current disruptions from database, filtering by recovery_status = 'none'
-      const data = await databaseService.getAllDisruptions("none");
+      // Then fetch all current disruptions from database, filtering by recovery_status = 'assigned'
+      // Changed filter to 'assigned' as per the requirement
+      const data = await databaseService.getAllDisruptions("assigned");
 
       // Process all data, including incomplete records with fallbacks
       const processedData = data
         .filter((disruption) => {
           if (!disruption) return false;
-          // Only include disruptions with recovery_status = 'none' or null/undefined
+          // Only include disruptions with recovery_status = 'assigned' or null/undefined
+          // This filter ensures we only process assigned recovery status flights
           const recoveryStatus =
             disruption.recovery_status || disruption.recoveryStatus;
-          return (
-            recoveryStatus === "none" ||
-            recoveryStatus === null ||
-            recoveryStatus === undefined ||
-            recoveryStatus === ""
-          );
+          return recoveryStatus === "assigned";
         })
         .map((disruption) => {
           // Provide defaults for missing required fields
@@ -403,7 +401,7 @@ export function DisruptionInput({
               disruption.connection_flights ||
               disruption.connectionFlights ||
               0,
-            recoveryStatus: disruption.recovery_status || "none",
+            recoveryStatus: disruption.recovery_status || "assigned",
           };
         });
 
@@ -443,7 +441,7 @@ export function DisruptionInput({
       // Clear any previous errors if we have any data
       if (transformedFlights.length === 0 && data.length === 0) {
         setError(
-          "No flight disruptions found. Add new disruptions using the 'Add Disruption' button.",
+          "No flight disruptions found with assigned recovery status. Add new disruptions using the 'Add Disruption' button.",
         );
       } else if (incompleteCount > 0 && incompleteCount < data.length) {
         setSuccess(
@@ -474,7 +472,7 @@ export function DisruptionInput({
 
       // Try to load existing data from database as fallback
       try {
-        const fallbackData = await databaseService.getAllDisruptions("none");
+        const fallbackData = await databaseService.getAllDisruptions("assigned");
         if (fallbackData && fallbackData.length > 0) {
           // Process all fallback data, even if incomplete
           const processedFallbackData = fallbackData.map((disruption) => {
@@ -518,7 +516,7 @@ export function DisruptionInput({
                 disruption.connection_flights ||
                 disruption.connectionFlights ||
                 0,
-              recoveryStatus: disruption.recovery_status || "none",
+              recoveryStatus: disruption.recovery_status || "assigned",
             };
           });
 
@@ -2622,42 +2620,6 @@ export function DisruptionInput({
                     );
                   })()}
                 </TabsContent>
-
-                {/* Overall no data state - only show when absolutely no flights exist */}
-                {flights.length === 0 && !loading && (
-                  <div className="text-center py-12">
-                    <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                      <AlertTriangle className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No flight disruptions found. Add new disruptions using the 'Add Disruption' button.
-                    </h3>
-                    <p className="text-gray-500 mb-4">
-                      The system is currently monitoring for new flight disruptions. When disruptions occur, they will appear here for immediate action.
-                    </p>
-                    <div className="flex justify-center gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={fetchFlights}
-                        className="flex items-center gap-2"
-                        disabled={loading}
-                      >
-                        <RefreshCw
-                          className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
-                        />
-                        Refresh Data
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsAddDialogOpen(true)}
-                        className="flex items-center gap-2 border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
-                      >
-                        <Plus className="h-4 w-4" />
-                        Add Disruption
-                      </Button>
-                    </div>
-                  </div>
-                )}
 
                 {/* No flights match filters state */}
                 {flights.length > 0 &&
