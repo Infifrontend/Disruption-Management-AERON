@@ -1,3 +1,18 @@
+import fs from 'fs';
+import path from 'path';
+
+// Load crew issues recovery data
+let crewIssuesRecoveryData = [];
+try {
+  const crewIssuesPath = path.join(process.cwd(), 'attached_assets', 'crew_issues_1754916255486.json');
+  const crewIssuesContent = fs.readFileSync(crewIssuesPath, 'utf8');
+  crewIssuesRecoveryData = JSON.parse(crewIssuesContent);
+  console.log(`Loaded ${crewIssuesRecoveryData.length} crew issue recovery options`);
+} catch (error) {
+  console.warn('Failed to load crew issues recovery data:', error.message);
+  crewIssuesRecoveryData = [];
+}
+
 // Helper functions for disruption type mapping and recovery generation
 const mapDisruptionTypeToCategory = (type, reason = "") => {
   const lowerType = type.toLowerCase();
@@ -1108,9 +1123,9 @@ const generateCrewIssueRecovery = (flight) => {
       status: "completed",
       timestamp: "13:45:00",
       system: "AIMS Crew System",
-      details: `Crew duty time breach detected for ${flight.flightNumber}`,
+      details: `Crew duty time breach detected for ${flight.flightNumber || flight.flight_number}`,
       data: {
-        flightNumber: flight.flightNumber,
+        flightNumber: flight.flightNumber || flight.flight_number,
         crewMember: "Capt. Ahmed Al-Rashid",
         reason: "Duty Time Breach - FDP Limit Exceeded",
         currentFDP: "13.5 hours",
@@ -1131,68 +1146,127 @@ const generateCrewIssueRecovery = (flight) => {
         aircraftType: flight.aircraft || "B737-800",
       },
     },
+    {
+      step: 3,
+      title: "Recovery Options Generated",
+      status: "completed", 
+      timestamp: "13:50:00",
+      system: "Recovery Engine",
+      details: "Crew issue recovery options generated from templates",
+      data: {
+        optionsGenerated: crewIssuesRecoveryData.length,
+        source: "Pre-configured crew recovery templates"
+      }
+    }
   ];
 
-  const options = [
-    {
-      id: "STANDBY_CREW",
-      title: "Assign Standby Crew",
-      description: "Activate standby crew member from roster",
-      cost: "AED 8,500",
-      timeline: "30 minutes",
-      confidence: 92,
-      impact: "Minimal operational disruption",
-      status: "recommended",
-      advantages: [
-        "Standby crew immediately available",
-        "Within all regulatory duty time limits",
+  // Use loaded crew issues recovery data if available, otherwise fallback to basic options
+  let options = [];
+  
+  if (crewIssuesRecoveryData && crewIssuesRecoveryData.length > 0) {
+    console.log(`Using ${crewIssuesRecoveryData.length} crew issue recovery options from JSON`);
+    
+    options = crewIssuesRecoveryData.map((option, index) => ({
+      id: `CREW_ISSUE_${index + 1}`,
+      title: option.title,
+      description: option.description,
+      cost: option.cost,
+      timeline: option.timeline,
+      confidence: option.confidence,
+      impact: option.impact,
+      status: option.status,
+      priority: option.priority || 1,
+      category: "Crew Issue",
+      advantages: option.advantages || [
+        "Qualified crew replacement available",
+        "Regulatory compliance maintained",
+        "Minimal network disruption"
       ],
-      considerations: [
-        "Extended briefing required",
-        "Standby crew pay activation costs",
+      considerations: option.considerations || [
+        "Crew coordination required",
+        "Extended briefing time",
+        "Additional operational costs"
       ],
-      metrics: {
-        totalCost: 8500,
-        otpScore: 92,
-        aircraftSwaps: 0,
-        crewViolations: 0,
-        paxAccommodated: 100,
-        regulatoryRisk: "Low",
-        delayMinutes: 30,
-        confidenceScore: 92,
-        networkImpact: "Low",
+      resourceRequirements: option.resource_requirements || [],
+      costBreakdown: option.cost_breakdown || [],
+      timelineDetails: option.timeline_details || [],
+      riskAssessment: option.risk_assessment || [],
+      technicalSpecs: option.technical_specs || {},
+      metrics: option.metrics || {
+        costEfficiency: 85,
+        timeEfficiency: 80,
+        passengerSatisfaction: 75
       },
-    },
-    {
-      id: "DELAY_COMPLIANCE",
-      title: "Delay for Crew Rest Completion",
-      description: "Wait for original crew mandatory rest period",
-      cost: "AED 45,000",
-      timeline: "3 hours",
-      confidence: 65,
-      impact: "Significant passenger disruption",
-      status: "warning",
-      advantages: [
-        "Uses original qualified crew",
-        "Full regulatory compliance",
-      ],
-      considerations: [
-        "3-hour minimum delay",
-        "High passenger compensation liability",
-      ],
-      metrics: {
-        totalCost: 45000,
-        otpScore: 65,
-        aircraftSwaps: 0,
-        crewViolations: 1,
-        paxAccommodated: 85,
-        regulatoryRisk: "Medium",
-        delayMinutes: 180,
-        confidenceScore: 65,
-        networkImpact: "Medium",
+      rotationPlan: option.rotation_plan || {}
+    }));
+  } else {
+    // Fallback options if JSON data is not available
+    console.log("Using fallback crew issue recovery options");
+    options = [
+      {
+        id: "STANDBY_CREW",
+        title: "Assign Standby Crew",
+        description: "Activate standby crew member from roster",
+        cost: "AED 8,500",
+        timeline: "30 minutes",
+        confidence: 92,
+        impact: "Minimal operational disruption",
+        status: "recommended",
+        priority: 1,
+        category: "Crew Issue",
+        advantages: [
+          "Standby crew immediately available",
+          "Within all regulatory duty time limits",
+        ],
+        considerations: [
+          "Extended briefing required",
+          "Standby crew pay activation costs",
+        ],
+        metrics: {
+          totalCost: 8500,
+          otpScore: 92,
+          aircraftSwaps: 0,
+          crewViolations: 0,
+          paxAccommodated: 100,
+          regulatoryRisk: "Low",
+          delayMinutes: 30,
+          confidenceScore: 92,
+          networkImpact: "Low",
+        },
       },
-    },
-  ];
+      {
+        id: "DELAY_COMPLIANCE",
+        title: "Delay for Crew Rest Completion",
+        description: "Wait for original crew mandatory rest period",
+        cost: "AED 45,000",
+        timeline: "3 hours",
+        confidence: 65,
+        impact: "Significant passenger disruption",
+        status: "warning",
+        priority: 2,
+        category: "Crew Issue",
+        advantages: [
+          "Uses original qualified crew",
+          "Full regulatory compliance",
+        ],
+        considerations: [
+          "3-hour minimum delay",
+          "High passenger compensation liability",
+        ],
+        metrics: {
+          totalCost: 45000,
+          otpScore: 65,
+          aircraftSwaps: 0,
+          crewViolations: 1,
+          paxAccommodated: 85,
+          regulatoryRisk: "Medium",
+          delayMinutes: 180,
+          confidenceScore: 65,
+          networkImpact: "Medium",
+        },
+      },
+    ];
+  }
 
   return { options, steps };
 };
