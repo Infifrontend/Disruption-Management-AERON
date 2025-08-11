@@ -22,6 +22,7 @@ export function DisruptionPage() {
     <DisruptionInput
       disruption={selectedDisruption}
       onSelectFlight={handleNavigateToComparison}
+      onNavigateToComparison={handleNavigateToComparison}
     />
   )
 }
