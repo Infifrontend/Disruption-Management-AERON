@@ -254,8 +254,9 @@ async function main() {
   }
 }
 
-if (require.main === module) {
+// Check if this script is being run directly (ES module equivalent of require.main === module)
+if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-module.exports = { deleteFlightDisruption, bulkDeleteDisruptions };
+export { deleteFlightDisruption, bulkDeleteDisruptions };
