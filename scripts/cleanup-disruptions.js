@@ -212,6 +212,9 @@ async function main() {
       } else if (args[1] === 'flight' && args[2]) {
         await bulkDeleteDisruptions({ flightNumber: args[2] });
       }
+      else if (args[1] === 'flight' && args[2]) {
+        await bulkDeleteDisruptions({ flightNumber: args[2] });
+      }
     } else {
       console.log('Usage:');
       console.log('  node cleanup-disruptions.js single <disruption_id>');
