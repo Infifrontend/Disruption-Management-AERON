@@ -875,7 +875,7 @@ async function withDatabaseFallback(operation, fallbackValue = []) {
 app.get("/api/disruptions/", async (req, res) => {
   const result = await withDatabaseFallback(async () => {
     const { recovery_status, category_code } = req.query;
-
+    
     // Build the base query with JOIN
     let query = `
       SELECT 
@@ -890,37 +890,37 @@ app.get("/api/disruptions/", async (req, res) => {
       FROM flight_disruptions fd
       LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
     `;
-
+    
     // Build WHERE conditions
     const conditions = [];
     const params = [];
     let paramCount = 0;
-
+    
     // Filter by recovery_status if provided
     if (recovery_status) {
       paramCount++;
       conditions.push(`fd.recovery_status = $${paramCount}`);
       params.push(recovery_status);
     }
-
+    
     // Filter by category_code if provided
     if (category_code) {
       paramCount++;
       conditions.push(`dc.category_code = $${paramCount}`);
       params.push(category_code);
     }
-
+    
     // Add WHERE clause if there are conditions
     if (conditions.length > 0) {
       query += ` WHERE ${conditions.join(' AND ')}`;
     }
-
+    
     // Add ORDER BY
     query += ` ORDER BY fd.created_at DESC`;
-
+    
     console.log('Executing disruptions query:', query);
     console.log('With parameters:', params);
-
+    
     const queryResult = await pool.query(query, params);
     return queryResult.rows || [];
   }, []);
@@ -1882,6 +1882,63 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
         optionsCount++;
       } catch (insertError) {
         console.error("Error inserting recovery option:", insertError);
+      }
+    }
+
+    // Insert recovery steps into database
+    let stepsCount = 0;
+    for (const step of steps) {
+      try {
+        // Check if step already exists
+        const existingStep = await pool.query(
+          "SELECT id FROM recovery_steps WHERE disruption_id = $1 AND step_number = $2",
+          [numericDisruptionId, step.step],
+        );
+
+        if (existingStep.rows.length > 0) {
+          // Update existing step
+          await pool.query(
+            `
+            UPDATE recovery_steps SET
+              title = $3, status = $4, timestamp = $5, system = $6,
+              details = $7, step_data = $8, updated_at = CURRENT_TIMESTAMP
+            WHERE disruption_id = $1 AND step_number = $2
+          `,
+            [
+              numericDisruptionId,
+              step.step,
+              step.title,
+              step.status,
+              step.timestamp,
+              step.system,
+              step.details,
+              step.data ? JSON.stringify(step.data) : null,
+            ],
+          );
+        } else {
+          // Insert new step
+          await pool.query(
+            `
+            INSERT INTO recovery_steps (
+              disruption_id, step_number, title, status, timestamp,
+              system, details, step_data
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          `,
+            [
+              numericDisruptionId,
+              step.step,
+              step.title,
+              step.status,
+              step.timestamp,
+              step.system,
+              step.details,
+              step.data ? JSON.stringify(step.data) : null,
+            ],
+          );
+        }
+        stepsCount++;
+      } catch (insertError) {
+        console.error("Error inserting recovery step:", insertError);
       }
     }
 

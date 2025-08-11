@@ -1467,60 +1467,6 @@ class DatabaseService {
     }
   }
 
-  // Get crew information for a disruption
-  async getCrewInformation(disruptionId: string): Promise<any[]> {
-    try {
-      const response = await fetch(`${this.baseUrl}/disruptions/${disruptionId}/crew`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          console.log(`No crew information found for disruption ${disruptionId}`);
-          return [];
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching crew information:", error);
-      return [];
-    }
-  }
-
-  // Get passenger information for a disruption
-  async getPassengerInformation(disruptionId: string): Promise<any[]> {
-    try {
-      const response = await fetch(`${this.baseUrl}/disruptions/${disruptionId}/passengers`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          console.log(`No passenger information found for disruption ${disruptionId}`);
-          return [];
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching passenger information:", error);
-      return [];
-    }
-  }
-
-  // Get cost analysis for a disruption
-  async getCostAnalysis(disruptionId: string): Promise<any> {
-    try {
-      const response = await fetch(`${this.baseUrl}/disruptions/${disruptionId}/cost-analysis`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          console.log(`No cost analysis found for disruption ${disruptionId}`);
-          return null;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching cost analysis:", error);
-      return null;
-    }
-  }
-
   // Generate mock external API data for testing - disabled to prevent unknown records
   private generateMockExternalData(): any[] {
     // Return empty array to stop generating mock data that creates unknown records
