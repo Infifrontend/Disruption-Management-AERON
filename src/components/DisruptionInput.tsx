@@ -614,11 +614,11 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     if (filters.destination !== "all" && flight.destination !== filters.destination)
       return false;
 
-    // Hub filter
+    // Hub filter - properly handle DWC and DXB flights
     if (filters.hub !== "all") {
-      const flightHub = flight.origin === "DXB" || flight.destination === "DXB" ? "DXB" :
-                       flight.origin === "DWC" || flight.destination === "DWC" ? "DWC" : "DXB";
-      if (flightHub !== filters.hub) return false;
+      // Check if flight is related to the selected hub (either origin or destination)
+      const isRelatedToHub = flight.origin === filters.hub || flight.destination === filters.hub;
+      if (!isRelatedToHub) return false;
     }
 
     // Categorization filter
@@ -847,14 +847,14 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
     }));
   };
 
-  // Handle Generate Recovery Options - redirect to Recovery Options page
+  // Handle Generate Recovery Options - redirect to Comparison page
   const handleGenerateRecoveryOptions = () => {
     if (!selectedFlight) return;
 
     setIsGenerating(true);
 
-    // Pass the selected flight to the parent and navigate to recovery options
-    onSelectFlight([selectedFlight]);
+    // Navigate directly to comparison page with the selected flight
+    navigate(`/comparison?flightId=${selectedFlight.id}`);
 
     // Reset generating state after navigation
     setTimeout(() => {
@@ -1747,22 +1747,30 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
                     <Plane className="h-3.5 w-3.5 transform rotate-180" />
-                    <span className="text-xs">Inbound ({sortedFlights.filter(f => f.destination === 'DXB' || f.destination === 'DWC').length})</span>
+                    <span className="text-xs">Inbound ({
+                      filters.hub === "all" 
+                        ? sortedFlights.filter(f => f.destination === 'DXB' || f.destination === 'DWC').length
+                        : sortedFlights.filter(f => f.destination === filters.hub).length
+                    })</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="outbound"
                     className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
                     <Plane className="h-3.5 w-3.5" />
-                    <span className="text-xs">Outbound ({sortedFlights.filter(f => f.origin === 'DXB' || f.origin === 'DWC').length})</span>
+                    <span className="text-xs">Outbound ({
+                      filters.hub === "all" 
+                        ? sortedFlights.filter(f => f.origin === 'DXB' || f.origin === 'DWC').length
+                        : sortedFlights.filter(f => f.origin === filters.hub).length
+                    })</span>
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="inbound" className="space-y-4">
                   {(() => {
-                    const inboundFlights = sortedFlights.filter(
-                      (f) => f.destination === "DXB" || f.destination === "DWC",
-                    );
+                    const inboundFlights = filters.hub === "all" 
+                      ? sortedFlights.filter((f) => f.destination === "DXB" || f.destination === "DWC")
+                      : sortedFlights.filter((f) => f.destination === filters.hub);
                     const startIdx = (currentPage - 1) * itemsPerPage;
                     const endIdx = startIdx + itemsPerPage;
                     const paginatedInboundFlights = inboundFlights.slice(
@@ -2052,9 +2060,9 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
 
                 <TabsContent value="outbound" className="space-y-4">
                   {(() => {
-                    const outboundFlights = sortedFlights.filter(
-                      (f) => f.origin === "DXB" || f.origin === "DWC",
-                    );
+                    const outboundFlights = filters.hub === "all" 
+                      ? sortedFlights.filter((f) => f.origin === "DXB" || f.origin === "DWC")
+                      : sortedFlights.filter((f) => f.origin === filters.hub);
                     const startIdx = (currentPage - 1) * itemsPerPage;
                     const endIdx = startIdx + itemsPerPage;
                     const paginatedOutboundFlights = outboundFlights.slice(
