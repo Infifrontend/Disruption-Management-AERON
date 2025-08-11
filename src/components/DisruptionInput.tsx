@@ -129,7 +129,7 @@ const transformFlightData = (disruption: FlightDisruption) => {
     disruptionType: disruption.type
       ? disruption.type.toLowerCase()
       : "technical",
-    categorization: getCategorization(disruption.type || "Technical"),
+    categorization: disruption?.category_name,
     disruptionReason:
       disruption.disruptionReason ||
       (isIncomplete
@@ -263,10 +263,10 @@ const getTimeAgo = (dateString: string) => {
   return `${diffDays} days ago`;
 };
 
-export function DisruptionInput({ 
-  disruption, 
-  onSelectFlight, 
-  onNavigateToComparison 
+export function DisruptionInput({
+  disruption,
+  onSelectFlight,
+  onNavigateToComparison,
 }: {
   disruption?: any;
   onSelectFlight?: (flight: any) => void;
@@ -345,41 +345,64 @@ export function DisruptionInput({
       console.log("External API sync result:", syncResult);
 
       // Then fetch all current disruptions from database, filtering by recovery_status = 'none'
-      const data = await databaseService.getAllDisruptions('none');
+      const data = await databaseService.getAllDisruptions("none");
 
       // Process all data, including incomplete records with fallbacks
       const processedData = data
         .filter((disruption) => {
           if (!disruption) return false;
           // Only include disruptions with recovery_status = 'none' or null/undefined
-          const recoveryStatus = disruption.recovery_status || disruption.recoveryStatus;
-          return recoveryStatus === 'none' || recoveryStatus === null || recoveryStatus === undefined || recoveryStatus === '';
+          const recoveryStatus =
+            disruption.recovery_status || disruption.recoveryStatus;
+          return (
+            recoveryStatus === "none" ||
+            recoveryStatus === null ||
+            recoveryStatus === undefined ||
+            recoveryStatus === ""
+          );
         })
         .map((disruption) => {
           // Provide defaults for missing required fields
           return {
             ...disruption,
-            flightNumber: disruption.flight_number || disruption.flightNumber || `UNKNOWN-${Date.now()}`,
+            flightNumber:
+              disruption.flight_number ||
+              disruption.flightNumber ||
+              `UNKNOWN-${Date.now()}`,
             scheduledDeparture:
-              disruption.scheduled_departure || disruption.scheduledDeparture || new Date().toISOString(),
+              disruption.scheduled_departure ||
+              disruption.scheduledDeparture ||
+              new Date().toISOString(),
             estimatedDeparture:
               disruption.estimated_departure || disruption.estimatedDeparture,
             origin: disruption.origin || "DXB",
             destination: disruption.destination || "UNKNOWN",
-            originCity: disruption.origin_city || disruption.originCity || disruption.origin || "Dubai",
+            originCity:
+              disruption.origin_city ||
+              disruption.originCity ||
+              disruption.origin ||
+              "Dubai",
             destinationCity:
-              disruption.destination_city || disruption.destinationCity || disruption.destination || "Unknown",
+              disruption.destination_city ||
+              disruption.destinationCity ||
+              disruption.destination ||
+              "Unknown",
             status: disruption.status || "Unknown",
             severity: disruption.severity || "Medium",
             type: disruption.disruption_type || disruption.type || "Technical",
             disruptionReason:
-              disruption.disruption_reason || disruption.disruptionReason || "Information not available",
+              disruption.disruption_reason ||
+              disruption.disruptionReason ||
+              "Information not available",
             passengers: disruption.passengers || 0,
             crew: disruption.crew || 6,
             delay: disruption.delay_minutes || disruption.delay || 0,
             aircraft: disruption.aircraft || "Unknown",
-            connectionFlights: disruption.connection_flights || disruption.connectionFlights || 0,
-            recoveryStatus: disruption.recovery_status || 'none'
+            connectionFlights:
+              disruption.connection_flights ||
+              disruption.connectionFlights ||
+              0,
+            recoveryStatus: disruption.recovery_status || "none",
           };
         });
 
@@ -450,38 +473,53 @@ export function DisruptionInput({
 
       // Try to load existing data from database as fallback
       try {
-        const fallbackData = await databaseService.getAllDisruptions('none');
+        const fallbackData = await databaseService.getAllDisruptions("none");
         if (fallbackData && fallbackData.length > 0) {
           // Process all fallback data, even if incomplete
-          const processedFallbackData = fallbackData
-            .map((disruption) => {
-              return {
-                ...disruption,
-                flightNumber:
-                  disruption.flight_number || disruption.flightNumber || `FALLBACK-${Date.now()}`,
-                scheduledDeparture:
-                  disruption.scheduled_departure || disruption.scheduledDeparture || new Date().toISOString(),
-                estimatedDeparture:
-                  disruption.estimated_departure || disruption.estimatedDeparture,
-                origin: disruption.origin || "DXB",
-                destination: disruption.destination || "UNKNOWN",
-                originCity: disruption.origin_city || disruption.originCity || disruption.origin || "Dubai",
-                destinationCity:
-                  disruption.destination_city || disruption.destinationCity || disruption.destination || "Unknown",
-                status: disruption.status || "Unknown",
-                severity: disruption.severity || "Medium",
-                type: disruption.disruption_type || disruption.type || "Technical",
-                disruptionReason:
-                  disruption.disruption_reason || disruption.disruptionReason ||
-                  "Cached data - may be incomplete",
-                passengers: disruption.passengers || 0,
-                crew: disruption.crew || 6,
-                delay: disruption.delay_minutes || disruption.delay || 0,
-                aircraft: disruption.aircraft || "Unknown",
-                connectionFlights: disruption.connection_flights || disruption.connectionFlights || 0,
-                recoveryStatus: disruption.recovery_status || 'none'
-              };
-            });
+          const processedFallbackData = fallbackData.map((disruption) => {
+            return {
+              ...disruption,
+              flightNumber:
+                disruption.flight_number ||
+                disruption.flightNumber ||
+                `FALLBACK-${Date.now()}`,
+              scheduledDeparture:
+                disruption.scheduled_departure ||
+                disruption.scheduledDeparture ||
+                new Date().toISOString(),
+              estimatedDeparture:
+                disruption.estimated_departure || disruption.estimatedDeparture,
+              origin: disruption.origin || "DXB",
+              destination: disruption.destination || "UNKNOWN",
+              originCity:
+                disruption.origin_city ||
+                disruption.originCity ||
+                disruption.origin ||
+                "Dubai",
+              destinationCity:
+                disruption.destination_city ||
+                disruption.destinationCity ||
+                disruption.destination ||
+                "Unknown",
+              status: disruption.status || "Unknown",
+              severity: disruption.severity || "Medium",
+              type:
+                disruption.disruption_type || disruption.type || "Technical",
+              disruptionReason:
+                disruption.disruption_reason ||
+                disruption.disruptionReason ||
+                "Cached data - may be incomplete",
+              passengers: disruption.passengers || 0,
+              crew: disruption.crew || 6,
+              delay: disruption.delay_minutes || disruption.delay || 0,
+              aircraft: disruption.aircraft || "Unknown",
+              connectionFlights:
+                disruption.connection_flights ||
+                disruption.connectionFlights ||
+                0,
+              recoveryStatus: disruption.recovery_status || "none",
+            };
+          });
 
           const transformedFlights =
             processedFallbackData.map(transformFlightData);
@@ -616,13 +654,17 @@ export function DisruptionInput({
       return false;
 
     // Destination filter
-    if (filters.destination !== "all" && flight.destination !== filters.destination)
+    if (
+      filters.destination !== "all" &&
+      flight.destination !== filters.destination
+    )
       return false;
 
     // Hub filter - properly handle DWC and DXB flights
     if (filters.hub !== "all") {
       // Check if flight is related to the selected hub (either origin or destination)
-      const isRelatedToHub = flight.origin === filters.hub || flight.destination === filters.hub;
+      const isRelatedToHub =
+        flight.origin === filters.hub || flight.destination === filters.hub;
       if (!isRelatedToHub) return false;
     }
 
@@ -698,32 +740,38 @@ export function DisruptionInput({
 
   // Fix Generate Recovery Option button to call API and navigate properly
   const handleGenerateRecoveryOptions = async (flight) => {
-    console.log('Generating recovery options for:', flight);
+    console.log("Generating recovery options for:", flight);
     setIsGeneratingOptions(true);
 
     try {
       // Call API to generate recovery options
       const flightId = flight.id || flight.flightNumber;
-      console.log('Calling recovery options generation API for flight ID:', flightId);
+      console.log(
+        "Calling recovery options generation API for flight ID:",
+        flightId,
+      );
 
       // Set loading for this specific flight
-      setLoadingRecovery(prev => ({ ...prev, [flightId]: true }));
+      setLoadingRecovery((prev) => ({ ...prev, [flightId]: true }));
 
       // Make API call to generate recovery options
-      const response = await fetch(`/api/recovery-options/generate/${flightId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `/api/recovery-options/generate/${flightId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ forceRegenerate: false }),
         },
-        body: JSON.stringify({ forceRegenerate: false }),
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`API call failed: ${response.status}`);
       }
 
       const result = await response.json();
-      console.log('Recovery options generation result:', result);
+      console.log("Recovery options generation result:", result);
 
       if (result.success && (result.optionsCount > 0 || result.exists)) {
         // Show success message
@@ -734,7 +782,9 @@ export function DisruptionInput({
         });
 
         // Fetch the generated options
-        const optionsResponse = await fetch(`/api/recovery-options/${flightId}`);
+        const optionsResponse = await fetch(
+          `/api/recovery-options/${flightId}`,
+        );
         const options = optionsResponse.ok ? await optionsResponse.json() : [];
 
         // Navigate to comparison view with the flight data and options
@@ -748,7 +798,7 @@ export function DisruptionInput({
         });
       }
     } catch (error) {
-      console.error('Error generating recovery options:', error);
+      console.error("Error generating recovery options:", error);
       toast({
         title: "Generation Failed",
         description: "Failed to generate recovery options",
@@ -757,15 +807,20 @@ export function DisruptionInput({
       });
     } finally {
       setIsGeneratingOptions(false);
-      setLoadingRecovery(prev => ({ ...prev, [flight.id || flight.flightNumber]: false }));
+      setLoadingRecovery((prev) => ({
+        ...prev,
+        [flight.id || flight.flightNumber]: false,
+      }));
     }
   };
 
-
   // Fix handleViewDetails to fetch and pass recovery options
   const handleViewDetails = async (flight) => {
-    console.log('Viewing details for:', flight);
-    setLoadingRecovery(prev => ({ ...prev, [flight.id || flight.flightNumber]: true }));
+    console.log("Viewing details for:", flight);
+    setLoadingRecovery((prev) => ({
+      ...prev,
+      [flight.id || flight.flightNumber]: true,
+    }));
 
     try {
       // Check if recovery options exist, if not generate them
@@ -781,19 +836,24 @@ export function DisruptionInput({
 
       if (options.length === 0) {
         // Generate options first
-        const generateResponse = await fetch(`/api/recovery-options/generate/${flightId}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        const generateResponse = await fetch(
+          `/api/recovery-options/generate/${flightId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ forceRegenerate: false }),
           },
-          body: JSON.stringify({ forceRegenerate: false }),
-        });
+        );
 
         if (generateResponse.ok) {
           const generateResult = await generateResponse.json();
           if (generateResult.success) {
             // Fetch the newly generated options
-            const newOptionsResponse = await fetch(`/api/recovery-options/${flightId}`);
+            const newOptionsResponse = await fetch(
+              `/api/recovery-options/${flightId}`,
+            );
             if (newOptionsResponse.ok) {
               options = await newOptionsResponse.json();
             }
@@ -809,7 +869,7 @@ export function DisruptionInput({
         navigate(`/comparison?flightId=${flight.id || flight.flightNumber}`);
       }
     } catch (error) {
-      console.error('Error viewing details:', error);
+      console.error("Error viewing details:", error);
       toast({
         title: "Error",
         description: "Failed to load flight details",
@@ -817,10 +877,12 @@ export function DisruptionInput({
         duration: 3000,
       });
     } finally {
-      setLoadingRecovery(prev => ({ ...prev, [flight.id || flight.flightNumber]: false }));
+      setLoadingRecovery((prev) => ({
+        ...prev,
+        [flight.id || flight.flightNumber]: false,
+      }));
     }
   };
-
 
   const getSelectedFlightImpact = () => {
     if (!selectedFlight) {
@@ -890,9 +952,11 @@ export function DisruptionInput({
         newDisruption.disruptionType.slice(1),
       status: newDisruption.currentStatus,
       disruptionReason: newDisruption.disruptionReason,
-      categorization: selectedCategory?.category_name || newDisruption.categorization,
+      categorization:
+        selectedCategory?.category_name || newDisruption.categorization,
       categoryId: selectedCategory?.id,
-      categoryCode: selectedCategory?.category_code || newDisruption.categorization, // Send the correct category_code
+      categoryCode:
+        selectedCategory?.category_code || newDisruption.categorization, // Send the correct category_code
       crewMembers: newDisruption.crewMembers || [],
     };
 
@@ -1108,26 +1172,57 @@ export function DisruptionInput({
                         <SelectContent className="max-h-60 overflow-y-auto z-50">
                           {[
                             { code: "DXB", name: "Dubai", country: "UAE" },
-                            { code: "DWC", name: "Dubai World Central", country: "UAE" },
+                            {
+                              code: "DWC",
+                              name: "Dubai World Central",
+                              country: "UAE",
+                            },
                             { code: "SHJ", name: "Sharjah", country: "UAE" },
                             { code: "AUH", name: "Abu Dhabi", country: "UAE" },
                             { code: "FJR", name: "Fujairah", country: "UAE" },
                             { code: "KWI", name: "Kuwait", country: "Kuwait" },
                             { code: "MCT", name: "Muscat", country: "Oman" },
                             { code: "SLL", name: "Salalah", country: "Oman" },
-                            { code: "KHI", name: "Karachi", country: "Pakistan" },
+                            {
+                              code: "KHI",
+                              name: "Karachi",
+                              country: "Pakistan",
+                            },
                             { code: "BOM", name: "Mumbai", country: "India" },
                             { code: "DEL", name: "Delhi", country: "India" },
                             { code: "COK", name: "Kochi", country: "India" },
-                            { code: "CMB", name: "Colombo", country: "Sri Lanka" },
-                            { code: "IST", name: "Istanbul", country: "Turkey" },
-                            { code: "BCN", name: "Barcelona", country: "Spain" },
-                            { code: "PRG", name: "Prague", country: "Czech Republic" },
+                            {
+                              code: "CMB",
+                              name: "Colombo",
+                              country: "Sri Lanka",
+                            },
+                            {
+                              code: "IST",
+                              name: "Istanbul",
+                              country: "Turkey",
+                            },
+                            {
+                              code: "BCN",
+                              name: "Barcelona",
+                              country: "Spain",
+                            },
+                            {
+                              code: "PRG",
+                              name: "Prague",
+                              country: "Czech Republic",
+                            },
                           ]
-                            .filter(airport => airport.code !== newDisruption.destination)
+                            .filter(
+                              (airport) =>
+                                airport.code !== newDisruption.destination,
+                            )
                             .map((airport) => (
-                              <SelectItem key={airport.code} value={airport.code}>
-                                {airport.code} - {airport.name}, {airport.country}
+                              <SelectItem
+                                key={airport.code}
+                                value={airport.code}
+                              >
+                                {airport.code} - {airport.name},{" "}
+                                {airport.country}
                               </SelectItem>
                             ))}
                         </SelectContent>
@@ -1147,26 +1242,57 @@ export function DisruptionInput({
                         <SelectContent className="max-h-60 overflow-y-auto z-50">
                           {[
                             { code: "DXB", name: "Dubai", country: "UAE" },
-                            { code: "DWC", name: "Dubai World Central", country: "UAE" },
+                            {
+                              code: "DWC",
+                              name: "Dubai World Central",
+                              country: "UAE",
+                            },
                             { code: "SHJ", name: "Sharjah", country: "UAE" },
                             { code: "AUH", name: "Abu Dhabi", country: "UAE" },
                             { code: "FJR", name: "Fujairah", country: "UAE" },
                             { code: "KWI", name: "Kuwait", country: "Kuwait" },
                             { code: "MCT", name: "Muscat", country: "Oman" },
                             { code: "SLL", name: "Salalah", country: "Oman" },
-                            { code: "KHI", name: "Karachi", country: "Pakistan" },
+                            {
+                              code: "KHI",
+                              name: "Karachi",
+                              country: "Pakistan",
+                            },
                             { code: "BOM", name: "Mumbai", country: "India" },
                             { code: "DEL", name: "Delhi", country: "India" },
                             { code: "COK", name: "Kochi", country: "India" },
-                            { code: "CMB", name: "Colombo", country: "Sri Lanka" },
-                            { code: "IST", name: "Istanbul", country: "Turkey" },
-                            { code: "BCN", name: "Barcelona", country: "Spain" },
-                            { code: "PRG", name: "Prague", country: "Czech Republic" },
+                            {
+                              code: "CMB",
+                              name: "Colombo",
+                              country: "Sri Lanka",
+                            },
+                            {
+                              code: "IST",
+                              name: "Istanbul",
+                              country: "Turkey",
+                            },
+                            {
+                              code: "BCN",
+                              name: "Barcelona",
+                              country: "Spain",
+                            },
+                            {
+                              code: "PRG",
+                              name: "Prague",
+                              country: "Czech Republic",
+                            },
                           ]
-                            .filter(airport => airport.code !== newDisruption.origin)
+                            .filter(
+                              (airport) =>
+                                airport.code !== newDisruption.origin,
+                            )
                             .map((airport) => (
-                              <SelectItem key={airport.code} value={airport.code}>
-                                {airport.code} - {airport.name}, {airport.country}
+                              <SelectItem
+                                key={airport.code}
+                                value={airport.code}
+                              >
+                                {airport.code} - {airport.name},{" "}
+                                {airport.country}
                               </SelectItem>
                             ))}
                         </SelectContent>
@@ -1716,7 +1842,9 @@ export function DisruptionInput({
             {/* Second Row - Destination, Hub, Categorization, Sort By */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
-                <label className="text-sm font-medium mb-2 block">Destination</label>
+                <label className="text-sm font-medium mb-2 block">
+                  Destination
+                </label>
                 <Select
                   value={filters.destination || "all"}
                   onValueChange={(value) =>
@@ -1874,8 +2002,14 @@ export function DisruptionInput({
                     <Plane className="h-3.5 w-3.5 transform rotate-180" />
                     <span className="text-xs">{`Inbound (${
                       filters.hub === "all"
-                        ? sortedFlights.filter((f) => f.destination === "DXB" || f.destination === "DWC").length
-                        : sortedFlights.filter((f) => f.destination === filters.hub).length
+                        ? sortedFlights.filter(
+                            (f) =>
+                              f.destination === "DXB" ||
+                              f.destination === "DWC",
+                          ).length
+                        : sortedFlights.filter(
+                            (f) => f.destination === filters.hub,
+                          ).length
                     })`}</span>
                   </TabsTrigger>
                   <TabsTrigger
@@ -1885,17 +2019,27 @@ export function DisruptionInput({
                     <Plane className="h-3.5 w-3.5" />
                     <span className="text-xs">{`Outbound (${
                       filters.hub === "all"
-                        ? sortedFlights.filter((f) => f.origin === "DXB" || f.origin === "DWC").length
-                        : sortedFlights.filter((f) => f.origin === filters.hub).length
+                        ? sortedFlights.filter(
+                            (f) => f.origin === "DXB" || f.origin === "DWC",
+                          ).length
+                        : sortedFlights.filter((f) => f.origin === filters.hub)
+                            .length
                     })`}</span>
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="inbound" className="space-y-4">
                   {(() => {
-                    const inboundFlights = filters.hub === "all"
-                      ? sortedFlights.filter((f) => f.destination === "DXB" || f.destination === "DWC")
-                      : sortedFlights.filter((f) => f.destination === filters.hub);
+                    const inboundFlights =
+                      filters.hub === "all"
+                        ? sortedFlights.filter(
+                            (f) =>
+                              f.destination === "DXB" ||
+                              f.destination === "DWC",
+                          )
+                        : sortedFlights.filter(
+                            (f) => f.destination === filters.hub,
+                          );
                     const startIdx = (currentPage - 1) * itemsPerPage;
                     const endIdx = startIdx + itemsPerPage;
                     const paginatedInboundFlights = inboundFlights.slice(
@@ -2163,19 +2307,21 @@ export function DisruptionInput({
                         )}
 
                         {/* No inbound flights state */}
-                        {inboundFlights.length === 0 && filteredFlights.length > 0 && (
-                          <div className="text-center py-12">
-                            <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                              <Plane className="h-8 w-8 text-gray-400 transform rotate-180" />
+                        {inboundFlights.length === 0 &&
+                          filteredFlights.length > 0 && (
+                            <div className="text-center py-12">
+                              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <Plane className="h-8 w-8 text-gray-400 transform rotate-180" />
+                              </div>
+                              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                No inbound flights found
+                              </h3>
+                              <p className="text-gray-500 mb-4">
+                                No inbound flights to the selected hub(s) match
+                                your current filter criteria.
+                              </p>
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">
-                              No inbound flights found
-                            </h3>
-                            <p className="text-gray-500 mb-4">
-                              No inbound flights to the selected hub(s) match your current filter criteria.
-                            </p>
-                          </div>
-                        )}
+                          )}
                       </>
                     );
                   })()}
@@ -2183,9 +2329,12 @@ export function DisruptionInput({
 
                 <TabsContent value="outbound" className="space-y-4">
                   {(() => {
-                    const outboundFlights = filters.hub === "all"
-                      ? sortedFlights.filter((f) => f.origin === "DXB" || f.origin === "DWC")
-                      : sortedFlights.filter((f) => f.origin === filters.hub);
+                    const outboundFlights =
+                      filters.hub === "all"
+                        ? sortedFlights.filter(
+                            (f) => f.origin === "DXB" || f.origin === "DWC",
+                          )
+                        : sortedFlights.filter((f) => f.origin === filters.hub);
                     const startIdx = (currentPage - 1) * itemsPerPage;
                     const endIdx = startIdx + itemsPerPage;
                     const paginatedOutboundFlights = outboundFlights.slice(
@@ -2453,19 +2602,21 @@ export function DisruptionInput({
                         )}
 
                         {/* No outbound flights state */}
-                        {outboundFlights.length === 0 && filteredFlights.length > 0 && (
-                          <div className="text-center py-12">
-                            <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                              <Plane className="h-8 w-8 text-gray-400" />
+                        {outboundFlights.length === 0 &&
+                          filteredFlights.length > 0 && (
+                            <div className="text-center py-12">
+                              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <Plane className="h-8 w-8 text-gray-400" />
+                              </div>
+                              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                No outbound flights found
+                              </h3>
+                              <p className="text-gray-500 mb-4">
+                                No outbound flights from the selected hub(s)
+                                match your current filter criteria.
+                              </p>
                             </div>
-                            <h3 className="text-lg font-medium text-gray-900 mb-2">
-                              No outbound flights found
-                            </h3>
-                            <p className="text-gray-500 mb-4">
-                              No outbound flights from the selected hub(s) match your current filter criteria.
-                            </p>
-                          </div>
-                        )}
+                          )}
                       </>
                     );
                   })()}
@@ -2481,7 +2632,8 @@ export function DisruptionInput({
                       No affected flights found
                     </h3>
                     <p className="text-gray-500 mb-4">
-                      There are currently no flight disruptions in the system. Add a new disruption to get started.
+                      There are currently no flight disruptions in the system.
+                      Add a new disruption to get started.
                     </p>
                     <div className="flex justify-center gap-2">
                       <Button
@@ -2508,38 +2660,40 @@ export function DisruptionInput({
                 )}
 
                 {/* No flights match filters state */}
-                {flights.length > 0 && filteredFlights.length === 0 && !loading && (
-                  <div className="text-center py-12">
-                    <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                      <Filter className="h-8 w-8 text-gray-400" />
+                {flights.length > 0 &&
+                  filteredFlights.length === 0 &&
+                  !loading && (
+                    <div className="text-center py-12">
+                      <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <Filter className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        No flights match your filters
+                      </h3>
+                      <p className="text-gray-500 mb-4">
+                        Try adjusting your filter criteria to see more results.
+                      </p>
+                      <div className="flex justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            setFilters({
+                              status: "all",
+                              priority: "all",
+                              origin: "all",
+                              destination: "all",
+                              hub: "all",
+                              categorization: "all",
+                              search: "",
+                            })
+                          }
+                          className="flex items-center gap-2"
+                        >
+                          Clear Filters
+                        </Button>
+                      </div>
                     </div>
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
-                      No flights match your filters
-                    </h3>
-                    <p className="text-gray-500 mb-4">
-                      Try adjusting your filter criteria to see more results.
-                    </p>
-                    <div className="flex justify-center gap-2">
-                      <Button
-                        variant="outline"
-                        onClick={() =>
-                          setFilters({
-                            status: "all",
-                            priority: "all",
-                            origin: "all",
-                            destination: "all",
-                            hub: "all",
-                            categorization: "all",
-                            search: "",
-                          })
-                        }
-                        className="flex items-center gap-2"
-                      >
-                        Clear Filters
-                      </Button>
-                    </div>
-                  </div>
-                )}
+                  )}
               </Tabs>
             </CardContent>
           </Card>
