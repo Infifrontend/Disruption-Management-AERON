@@ -25,12 +25,18 @@ import {
   Filter,
   RefreshCw,
   Info,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
 } from "lucide-react";
 
 export function WorldMap() {
   const [selectedView, setSelectedView] = useState("routes");
   const [isRealtime, setIsRealtime] = useState(true);
   const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [panX, setPanX] = useState(0);
+  const [panY, setPanY] = useState(0);
   const [liveData, setLiveData] = useState({
     activeFlights: 89,
     onSchedule: 47,
@@ -84,6 +90,21 @@ export function WorldMap() {
       default:
         return "text-gray-600";
     }
+  };
+
+  // Zoom control functions
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev + 0.2, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel(prev => Math.max(prev - 0.2, 0.5));
+  };
+
+  const handleResetView = () => {
+    setZoomLevel(1);
+    setPanX(0);
+    setPanY(0);
   };
 
   // Enhanced sample data for Flydubai network
@@ -230,6 +251,39 @@ export function WorldMap() {
             </div>
 
             <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 border border-flydubai-blue/30 rounded-md p-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleZoomOut}
+                  className="h-6 w-6 p-0 hover:bg-blue-50"
+                  disabled={zoomLevel <= 0.5}
+                >
+                  <ZoomOut className="w-3 h-3 text-flydubai-blue" />
+                </Button>
+                <span className="text-xs text-flydubai-blue font-medium px-1 min-w-[40px] text-center">
+                  {Math.round(zoomLevel * 100)}%
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleZoomIn}
+                  className="h-6 w-6 p-0 hover:bg-blue-50"
+                  disabled={zoomLevel >= 3}
+                >
+                  <ZoomIn className="w-3 h-3 text-flydubai-blue" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleResetView}
+                  className="h-6 w-6 p-0 hover:bg-blue-50"
+                  title="Reset View"
+                >
+                  <RotateCcw className="w-3 h-3 text-flydubai-blue" />
+                </Button>
+              </div>
+
               <Button
                 variant="outline"
                 size="sm"
@@ -293,14 +347,17 @@ export function WorldMap() {
       <CardContent className="p-0 h-full min-h-[620px] relative z-10">
         <div className="h-full min-h-[620px] relative">
           {/* Interactive Map - Full Width */}
-          <div className="w-full relative z-10">
+          <div className="w-full relative z-10 overflow-hidden">
             <div
-              className="relative w-full h-full min-h-[620px] rounded-lg border-2 border-flydubai-blue/20 overflow-hidden z-10"
+              className="relative w-full h-full min-h-[620px] rounded-lg border-2 border-flydubai-blue/20 overflow-hidden cursor-grab active:cursor-grabbing"
               style={{
                 backgroundImage: `url(https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2000&q=80)`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
+                backgroundSize: `${100 * zoomLevel}%`,
+                backgroundPosition: `${50 + panX}% ${50 + panY}%`,
                 backgroundRepeat: "no-repeat",
+                transform: `scale(${zoomLevel}) translate(${panX}px, ${panY}px)`,
+                transformOrigin: "center center",
+                transition: "transform 0.2s ease-out, background-size 0.2s ease-out, background-position 0.2s ease-out",
               }}
             >
               {/* Live Data Summary Bar */}
@@ -367,6 +424,11 @@ export function WorldMap() {
               <svg
                 viewBox="0 0 1000 500"
                 className="absolute inset-0 w-full h-full min-h-[620px] z-20"
+                style={{
+                  transform: `scale(${zoomLevel}) translate(${panX}px, ${panY}px)`,
+                  transformOrigin: "center center",
+                  transition: "transform 0.2s ease-out",
+                }}
               >
                 <defs>
                   <pattern
@@ -484,10 +546,13 @@ export function WorldMap() {
                 return (
                   <div
                     key={hub.id}
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-10"
+                    className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-30"
                     style={{
                       left: `${(coords.x / 1000) * 100}%`,
                       top: `${(coords.y / 500) * 100}%`,
+                      transform: `translate(-50%, -50%) scale(${zoomLevel}) translate(${panX}px, ${panY}px)`,
+                      transformOrigin: "center center",
+                      transition: "transform 0.2s ease-out",
                     }}
                   >
                     <div className={`relative`}>
@@ -522,10 +587,13 @@ export function WorldMap() {
                 return (
                   <div
                     key={dest.id}
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-10"
+                    className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-30"
                     style={{
                       left: `${(coords.x / 1000) * 100}%`,
                       top: `${(coords.y / 500) * 100}%`,
+                      transform: `translate(-50%, -50%) scale(${zoomLevel}) translate(${panX}px, ${panY}px)`,
+                      transformOrigin: "center center",
+                      transition: "transform 0.2s ease-out",
                     }}
                   >
                     <div className="relative">
@@ -558,10 +626,13 @@ export function WorldMap() {
                   return (
                     <div
                       key={flight.id}
-                      className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-10"
+                      className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-30"
                       style={{
                         left: `${(coords.x / 1000) * 100}%`,
                         top: `${(coords.y / 500) * 100}%`,
+                        transform: `translate(-50%, -50%) scale(${zoomLevel}) translate(${panX}px, ${panY}px)`,
+                        transformOrigin: "center center",
+                        transition: "transform 0.2s ease-out",
                       }}
                     >
                       <div className="relative">
@@ -603,10 +674,13 @@ export function WorldMap() {
                   return (
                     <div
                       key={disruption.id}
-                      className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-20"
+                      className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-40"
                       style={{
                         left: `${(coords.x / 1000) * 100}%`,
                         top: `${(coords.y / 500) * 100}%`,
+                        transform: `translate(-50%, -50%) scale(${zoomLevel}) translate(${panX}px, ${panY}px)`,
+                        transformOrigin: "center center",
+                        transition: "transform 0.2s ease-out",
                       }}
                     >
                       <div className="relative">
