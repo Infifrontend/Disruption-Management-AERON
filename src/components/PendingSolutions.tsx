@@ -76,17 +76,17 @@ export function PendingSolutions() {
       console.log('Fetching pending recovery solutions from database...')
       const data = await databaseService.getPendingRecoverySolutions()
       console.log('Fetched pending solutions:', data)
-      
+
       if (!data || !Array.isArray(data)) {
         console.warn('Invalid data received:', data)
         setPlans([])
         return
       }
-      
+
       // Remove duplicates based on disruption_id and option_id combination
       const uniqueData = data.reduce((acc, plan) => {
         if (!plan) return acc
-        
+
         const key = `${plan.disruption_id || 'unknown'}-${plan.option_id || 'unknown'}`
         if (!acc.has(key)) {
           acc.set(key, plan)
@@ -101,7 +101,7 @@ export function PendingSolutions() {
         }
         return acc
       }, new Map())
-      
+
       // Transform the database data to match the expected format
       const transformedPlans = Array.from(uniqueData.values()).map(plan => ({
         id: plan.id || `RP-${new Date().getFullYear()}-${String(plan.id || Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
@@ -111,15 +111,14 @@ export function PendingSolutions() {
         aircraft: plan.aircraft || 'N/A',
         submittedAt: plan.submitted_at || new Date().toISOString(),
         submittedBy: plan.submitted_by || 'system',
-        submitterName: plan.submitted_by || 'AERON System',
+        submitterName: plan.operations_user || plan.submitted_by || 'AERON System',
         priority: plan.severity || 'Medium',
         status: plan.status || 'Pending Approval',
         estimatedCost: typeof plan.cost === 'string' ? parseInt(plan.cost.replace(/[^0-9]/g, '')) || 0 : plan.cost || 0,
-        estimatedDelay: parseInt(plan.timeline?.replace(/[^0-9]/g, '') || '0') || 0,
+        estimatedDelay: plan.delay_minutes || parseInt(plan.timeline?.replace(/[^0-9]/g, '') || '0') || 0,
         affectedPassengers: plan.passengers || plan.affected_passengers || 0,
         confidence: plan.confidence || 80,
         disruptionReason: plan.disruption_reason || 'N/A',
-        steps: 4,
         timeline: plan.timeline || 'TBD',
         approvalRequired: plan.approval_required || 'Operations Manager',
         slaDeadline: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
@@ -132,19 +131,22 @@ export function PendingSolutions() {
           costEfficiency: 75
         },
         flightDetails: plan.full_details || {},
-        costBreakdown: plan.full_details?.costBreakdown || {},
-        recoverySteps: plan.full_details?.recoverySteps || [],
-        assignedCrew: plan.full_details?.assignedCrew || [],
+        costBreakdown: plan.cost_analysis?.breakdown || plan.full_details?.costBreakdown || {},
+        recoverySteps: plan.recovery_steps || plan.full_details?.recoverySteps || [],
+        assignedCrew: plan.crew_information || plan.full_details?.assignedCrew || [],
+        passengerInformation: plan.passenger_information || [],
+        operationsUser: plan.operations_user || 'Operations Manager',
+        costAnalysis: plan.cost_analysis || {},
         disruptionId: plan.disruption_id,
         optionId: plan.option_id
       }))
-      
+
       setPlans(transformedPlans)
     } catch (error) {
       console.error("Failed to fetch pending solutions:", error)
       // Try to show cached data or empty array
       setPlans([])
-      
+
       // You could add a retry mechanism here
       setTimeout(() => {
         if (plans.length === 0) {
@@ -165,7 +167,7 @@ export function PendingSolutions() {
 
     // Normalize status for consistent comparison
     const normalizedStatus = plan.status ? plan.status.trim().toLowerCase() : 'pending'
-    
+
     const matchesTab = activeTab === 'all' || 
                      (activeTab === 'pending' && ['pending approval', 'under review', 'pending'].includes(normalizedStatus)) ||
                      (activeTab === 'approved' && normalizedStatus === 'approved') ||
@@ -268,7 +270,7 @@ export function PendingSolutions() {
   const handleApprove = async (planId) => {
     try {
       console.log('Approving plan:', planId);
-      
+
       // Find the plan to get the disruption ID
       const plan = plans.find(p => p.id === planId);
       if (!plan) {
@@ -291,14 +293,14 @@ export function PendingSolutions() {
       if (plan.disruptionId) {
         await databaseService.updateFlightRecoveryStatus(plan.disruptionId, 'approved');
       }
-      
+
       // Update local state immediately for better UX
       setPlans(prevPlans => 
         prevPlans.map(p => 
           p.id === planId ? { ...p, status: 'Approved' } : p
         )
       );
-      
+
       console.log('Plan approved successfully');
     } catch (error) {
       console.error("Failed to approve plan:", error);
@@ -310,7 +312,7 @@ export function PendingSolutions() {
   const handleReject = async (planId) => {
     try {
       console.log('Rejecting plan:', planId);
-      
+
       // Find the plan to get the disruption ID
       const plan = plans.find(p => p.id === planId);
       if (!plan) {
@@ -333,14 +335,14 @@ export function PendingSolutions() {
       if (plan.disruptionId) {
         await databaseService.updateFlightRecoveryStatus(plan.disruptionId, 'rejected');
       }
-      
+
       // Update local state immediately for better UX
       setPlans(prevPlans => 
         prevPlans.map(p => 
           p.id === planId ? { ...p, status: 'Rejected' } : p
         )
       );
-      
+
       console.log('Plan rejected successfully');
     } catch (error) {
       console.error("Failed to reject plan:", error);
@@ -370,11 +372,11 @@ export function PendingSolutions() {
   const handleViewDetails = async (plan) => {
     try {
       console.log('Fetching detailed view for plan:', plan.id)
-      
+
       // Try to fetch the most up-to-date data from pending solutions
       const allSolutions = await databaseService.getPendingRecoverySolutions()
       const updatedPlan = allSolutions.find(s => s.id === plan.id)
-      
+
       if (updatedPlan) {
         console.log('Found updated plan data:', updatedPlan)
         // Transform the updated plan data
@@ -385,9 +387,12 @@ export function PendingSolutions() {
           flightDetails: updatedPlan.full_details || plan.flightDetails || {},
           rotationImpact: updatedPlan.rotation_impact || {},
           fullDetails: updatedPlan.full_details || {},
-          costBreakdown: updatedPlan.full_details?.costBreakdown || {},
-          recoverySteps: updatedPlan.full_details?.recoverySteps || [],
-          assignedCrew: updatedPlan.full_details?.assignedCrew || []
+          costBreakdown: updatedPlan.cost_analysis?.breakdown || updatedPlan.full_details?.costBreakdown || {},
+          recoverySteps: updatedPlan.recovery_steps || updatedPlan.full_details?.recoverySteps || [],
+          assignedCrew: updatedPlan.crew_information || updatedPlan.full_details?.assignedCrew || [],
+          passengerInformation: updatedPlan.passenger_information || [],
+          operationsUser: updatedPlan.operations_user || 'Operations Manager',
+          costAnalysis: updatedPlan.cost_analysis || {},
         }
         setSelectedPlan(transformedPlan)
       } else {
@@ -665,7 +670,7 @@ export function PendingSolutions() {
                         <div className="flex items-center gap-4 mb-4">
                           <div className="flex items-center gap-2">
                             <Target className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{plan.steps} steps</span>
+                            <span className="text-sm">{plan.recoverySteps.length} steps</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <UserCheck className="h-4 w-4 text-muted-foreground" />
@@ -1288,7 +1293,7 @@ export function PendingSolutions() {
                   </Button>
                 </>
               )}
-              
+
             </div>
           </DialogContent>
         </Dialog>
