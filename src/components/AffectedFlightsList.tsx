@@ -23,12 +23,31 @@ import {
   Mail,
   Plus,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Zap,
+  Eye
 } from 'lucide-react'
 import { Alert } from './ui/alert'
 import { databaseService, FlightDisruption, PassengerData } from '../services/databaseService'
 
 const FLIGHTS_PER_PAGE = 10;
+
+// Helper function to format time, assuming it's already defined or will be defined elsewhere.
+// For the sake of this example, let's define a placeholder.
+const formatTime = (dateString: string | undefined): string => {
+  if (!dateString) return '--:--';
+  try {
+    return new Date(dateString).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  } catch (e) {
+    console.error("Error formatting date:", dateString, e);
+    return '--:--';
+  }
+};
+
 
 export function AffectedFlightsList() {
   const [flights, setFlights] = useState<FlightDisruption[]>([])
@@ -526,47 +545,69 @@ export function AffectedFlightsList() {
                           onClick={() => handleFlightSelect(flight)}
                         >
                           <CardContent className="pt-6">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-4">
-                                <div className="flex flex-col">
-                                  <span className="font-mono font-bold text-lg">
-                                    {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') 
-                                      ? (flight.flightNumber || '-')
-                                      : flight.flightNumber}
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="font-medium text-flydubai-navy">
+                                    {flight.flightNumber}
+                                  </h3>
+                                  <Badge
+                                    className={
+                                      flight.severity === "High"
+                                        ? "bg-red-100 text-red-700 border-red-200"
+                                        : flight.severity === "Medium"
+                                          ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                          : "bg-green-100 text-green-700 border-green-200"
+                                    }
+                                  >
+                                    {flight.severity}
+                                  </Badge>
+                                  <Badge
+                                    variant="outline"
+                                    className="text-flydubai-blue border-flydubai-blue"
+                                  >
+                                    {flight.categorization || flight.type}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-1">
+                                  {flight.route} • {flight.aircraft} • {flight.passengers}{" "}
+                                  passengers
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {flight.disruptionReason}
+                                </p>
+                                <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    Scheduled: {formatTime(flight.scheduledDeparture)}
                                   </span>
-                                  <span className="text-sm text-muted-foreground">{flight.originCity} ({flight.origin}) → {flight.destinationCity} ({flight.destination})</span>
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="text-sm font-medium">{flight.aircraft}</span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {formatDateTime(flight.scheduledDeparture)}
+                                  <span className="flex items-center gap-1">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    Est: {formatTime(flight.estimatedDeparture)}
                                   </span>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                  <Users className="h-4 w-4" />
-                                  <span className="text-sm">{flight.passengers}</span>
-                                </div>
-                                {flight.delay > 0 && (
-                                  <div className="flex items-center space-x-2">
-                                    <Clock className="h-4 w-4 text-orange-500" />
-                                    <span className="text-sm text-orange-600">+{flight.delay}m</span>
-                                  </div>
-                                )}
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <Badge className={getSeverityColor(flight.severity)}>
-                                  {flight.severity}
-                                </Badge>
-                                <Badge className={getStatusColor(flight.status)}>
-                                  {flight.status}
-                                </Badge>
+
+                              <div className="flex flex-col gap-2 ml-4 justify-center">
+                                <Button
+                                  size="sm"
+                                  onClick={() => onSelectFlight(flight)}
+                                  className="bg-flydubai-blue hover:bg-flydubai-blue/90 text-white"
+                                >
+                                  <Zap className="h-4 w-4 mr-1" />
+                                  Generate Options
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleQuickView(flight)}
+                                  className="border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  Quick View
+                                </Button>
                               </div>
                             </div>
-                            {flight.disruptionReason && (
-                              <p className="text-sm text-muted-foreground mt-2">
-                                {flight.disruptionReason}
-                              </p>
-                            )}
                           </CardContent>
                         </Card>
                       ))}
@@ -627,47 +668,69 @@ export function AffectedFlightsList() {
                           onClick={() => handleFlightSelect(flight)}
                         >
                           <CardContent className="pt-6">
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-4">
-                                <div className="flex flex-col">
-                                  <span className="font-mono font-bold text-lg">
-                                    {flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-') 
-                                      ? (flight.flightNumber || '-')
-                                      : flight.flightNumber}
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="font-medium text-flydubai-navy">
+                                    {flight.flightNumber}
+                                  </h3>
+                                  <Badge
+                                    className={
+                                      flight.severity === "High"
+                                        ? "bg-red-100 text-red-700 border-red-200"
+                                        : flight.severity === "Medium"
+                                          ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                          : "bg-green-100 text-green-700 border-green-200"
+                                    }
+                                  >
+                                    {flight.severity}
+                                  </Badge>
+                                  <Badge
+                                    variant="outline"
+                                    className="text-flydubai-blue border-flydubai-blue"
+                                  >
+                                    {flight.categorization || flight.type}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-gray-600 mb-1">
+                                  {flight.route} • {flight.aircraft} • {flight.passengers}{" "}
+                                  passengers
+                                </p>
+                                <p className="text-xs text-gray-500">
+                                  {flight.disruptionReason}
+                                </p>
+                                <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    Scheduled: {formatTime(flight.scheduledDeparture)}
                                   </span>
-                                  <span className="text-sm text-muted-foreground">{flight.originCity} ({flight.origin}) → {flight.destinationCity} ({flight.destination})</span>
-                                </div>
-                                <div className="flex flex-col">
-                                  <span className="text-sm font-medium">{flight.aircraft}</span>
-                                  <span className="text-xs text-muted-foreground">
-                                    {formatDateTime(flight.scheduledDeparture)}
+                                  <span className="flex items-center gap-1">
+                                    <AlertTriangle className="h-3 w-3" />
+                                    Est: {formatTime(flight.estimatedDeparture)}
                                   </span>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                  <Users className="h-4 w-4" />
-                                  <span className="text-sm">{flight.passengers}</span>
-                                </div>
-                                {flight.delay > 0 && (
-                                  <div className="flex items-center space-x-2">
-                                    <Clock className="h-4 w-4 text-orange-500" />
-                                    <span className="text-sm text-orange-600">+{flight.delay}m</span>
-                                  </div>
-                                )}
                               </div>
-                              <div className="flex items-center space-x-2">
-                                <Badge className={getSeverityColor(flight.severity)}>
-                                  {flight.severity}
-                                </Badge>
-                                <Badge className={getStatusColor(flight.status)}>
-                                  {flight.status}
-                                </Badge>
+
+                              <div className="flex flex-col gap-2 ml-4 justify-center">
+                                <Button
+                                  size="sm"
+                                  onClick={() => onSelectFlight(flight)}
+                                  className="bg-flydubai-blue hover:bg-flydubai-blue/90 text-white"
+                                >
+                                  <Zap className="h-4 w-4 mr-1" />
+                                  Generate Options
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleQuickView(flight)}
+                                  className="border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  Quick View
+                                </Button>
                               </div>
                             </div>
-                            {flight.disruptionReason && (
-                              <p className="text-sm text-muted-foreground mt-2">
-                                {flight.disruptionReason}
-                              </p>
-                            )}
                           </CardContent>
                         </Card>
                       ))}
