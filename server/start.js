@@ -1493,7 +1493,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
       SELECT fd.*, dc.category_code, dc.category_name
       FROM flight_disruptions fd
       LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
-      WHERE fd.id = $1
+      WHERE fd.id = $1::integer
     `,
       [numericDisruptionId],
     );
@@ -1557,31 +1557,32 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
     // Save recovery steps
     for (const step of steps) {
       try {
-        await pool.query(
-          `
-          INSERT INTO recovery_steps (
-            disruption_id, step_number, title, status, timestamp,
-            system, details, step_data
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-          ON CONFLICT (disruption_id, step_number) DO UPDATE SET
-            title = EXCLUDED.title,
-            status = EXCLUDED.status,
-            timestamp = EXCLUDED.timestamp,
-            system = EXCLUDED.system,
-            details = EXCLUDED.details,
-            step_data = EXCLUDED.step_data
-        `,
-          [
-            numericDisruptionId,
-            step.step,
-            step.title,
-            step.status,
-            step.timestamp,
-            step.system,
-            step.details,
-            step.data ? JSON.stringify(step.data) : null,
-          ],
+        // First check if step already exists
+        const existingStep = await pool.query(
+          "SELECT id FROM recovery_steps WHERE disruption_id = $1 AND step_number = $2",
+          [numericDisruptionId, step.step]
         );
+
+        if (existingStep.rows.length === 0) {
+          await pool.query(
+            `
+            INSERT INTO recovery_steps (
+              disruption_id, step_number, title, status, timestamp,
+              system, details, step_data
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          `,
+          [
+              numericDisruptionId,
+              step.step,
+              step.title,
+              step.status,
+              step.timestamp,
+              step.system,
+              step.details,
+              step.data ? JSON.stringify(step.data) : null,
+            ]
+          );
+        }
         stepsCount++;
       } catch (error) {
         console.error("Error saving recovery step:", error);
@@ -1592,53 +1593,44 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
     for (let i = 0; i < options.length; i++) {
       const option = options[i];
       try {
-        await pool.query(
-          `
-          INSERT INTO recovery_options (
-            disruption_id, title, description, cost, timeline,
-            confidence, impact, status, priority, advantages, considerations,
-            resource_requirements, cost_breakdown, timeline_details,
-            risk_assessment, technical_specs, metrics, rotation_plan
-          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-          ON CONFLICT (disruption_id, title) DO UPDATE SET
-            description = EXCLUDED.description,
-            cost = EXCLUDED.cost,
-            timeline = EXCLUDED.timeline,
-            confidence = EXCLUDED.confidence,
-            impact = EXCLUDED.impact,
-            status = EXCLUDED.status,
-            priority = EXCLUDED.priority,
-            advantages = EXCLUDED.advantages,
-            considerations = EXCLUDED.considerations,
-            resource_requirements = EXCLUDED.resource_requirements,
-            cost_breakdown = EXCLUDED.cost_breakdown,
-            timeline_details = EXCLUDED.timeline_details,
-            risk_assessment = EXCLUDED.risk_assessment,
-            technical_specs = EXCLUDED.technical_specs,
-            metrics = EXCLUDED.metrics,
-            rotation_plan = EXCLUDED.rotation_plan
-        `,
-          [
-            numericDisruptionId,
-            option.title || `Recovery Option ${i + 1}`,
-            option.description || "Recovery option details",
-            option.cost || "TBD",
-            option.timeline || "TBD",
-            option.confidence || 80,
-            option.impact || "Medium",
-            option.status || "generated",
-            i + 1, // priority
-            Array.isArray(option.advantages) ? option.advantages : [],
-            Array.isArray(option.considerations) ? option.considerations : [],
-            option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : JSON.stringify([]),
-            option.costBreakdown ? JSON.stringify(option.costBreakdown) : JSON.stringify([]),
-            option.timelineDetails ? JSON.stringify(option.timelineDetails) : JSON.stringify([]),
-            option.riskAssessment ? JSON.stringify(option.riskAssessment) : JSON.stringify([]),
-            option.technicalSpecs ? JSON.stringify(option.technicalSpecs) : JSON.stringify({}),
-            option.metrics ? JSON.stringify(option.metrics) : JSON.stringify({}),
-            option.rotationPlan ? JSON.stringify(option.rotationPlan) : JSON.stringify({}),
-          ],
+        // Check if option already exists
+        const existingOption = await pool.query(
+          "SELECT id FROM recovery_options WHERE disruption_id = $1 AND title = $2",
+          [numericDisruptionId, option.title || `Recovery Option ${i + 1}`]
         );
+
+        if (existingOption.rows.length === 0) {
+          await pool.query(
+            `
+            INSERT INTO recovery_options (
+              disruption_id, title, description, cost, timeline,
+              confidence, impact, status, priority, advantages, considerations,
+              resource_requirements, cost_breakdown, timeline_details,
+              risk_assessment, technical_specs, metrics, rotation_plan
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+          `,
+          [
+              numericDisruptionId,
+              option.title || `Recovery Option ${i + 1}`,
+              option.description || "Recovery option details",
+              option.cost || "TBD",
+              option.timeline || "TBD",
+              option.confidence || 80,
+              option.impact || "Medium",
+              option.status || "generated",
+              i + 1, // priority
+              Array.isArray(option.advantages) ? option.advantages : [],
+              Array.isArray(option.considerations) ? option.considerations : [],
+              option.resourceRequirements ? JSON.stringify(option.resourceRequirements) : JSON.stringify([]),
+              option.costBreakdown ? JSON.stringify(option.costBreakdown) : JSON.stringify([]),
+              option.timelineDetails ? JSON.stringify(option.timelineDetails) : JSON.stringify([]),
+              option.riskAssessment ? JSON.stringify(option.riskAssessment) : JSON.stringify([]),
+              option.technicalSpecs ? JSON.stringify(option.technicalSpecs) : JSON.stringify({}),
+              option.metrics ? JSON.stringify(option.metrics) : JSON.stringify({}),
+              option.rotationPlan ? JSON.stringify(option.rotationPlan) : JSON.stringify({}),
+            ]
+          );
+        }
         optionsCount++;
       } catch (error) {
         console.error("Error saving recovery option:", error);
