@@ -52,6 +52,10 @@ export interface FlightDisruption {
   status: string;
   disruptionReason: string;
   recoveryStatus?: string;
+  categorization?: string;
+  categoryCode?: string;
+  categoryName?: string;
+  categoryDescription?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -599,11 +603,23 @@ class DatabaseService {
   }
 
   // Flight Disruptions
-  async getAllDisruptions(recoveryStatus: string = 'none'): Promise<FlightDisruption[]> {
+  async getAllDisruptions(recoveryStatus: string = '', categoryCode: string = ''): Promise<FlightDisruption[]> {
     try {
-      // Build URL with recovery_status filter - always default to 'none'
-      let url = `${this.baseUrl}/disruptions`
-      url += `?recovery_status=${encodeURIComponent(recoveryStatus)}`
+      // Build URL with query parameters
+      let url = `${this.baseUrl}/disruptions`;
+      const queryParams = new URLSearchParams();
+      
+      if (recoveryStatus) {
+        queryParams.append('recovery_status', recoveryStatus);
+      }
+      
+      if (categoryCode) {
+        queryParams.append('category_code', categoryCode);
+      }
+      
+      if (queryParams.toString()) {
+        url += `?${queryParams.toString()}`;
+      }
       
       console.log('Fetching disruptions from:', url)
 
@@ -652,7 +668,10 @@ class DatabaseService {
             status: isUnknownId && !flight.flight_number ? "Unknown" : flight.status,
             disruptionReason: flight.disruption_reason,
             recoveryStatus: flight.recovery_status || 'none',
-            categorization: flight.categorization || "Uncategorized",
+            categorization: flight.categorization || flight.category_name || "Uncategorized",
+            categoryCode: flight.category_code,
+            categoryName: flight.category_name,
+            categoryDescription: flight.category_description,
             createdAt: flight.created_at,
             updatedAt: flight.updated_at,
           };
