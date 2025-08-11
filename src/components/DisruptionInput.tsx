@@ -1747,21 +1747,21 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                     className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
                     <Plane className="h-3.5 w-3.5 transform rotate-180" />
-                    <span className="text-xs">Inbound ({sortedFlights.filter(f => f.destination === 'DXB').length})</span>
+                    <span className="text-xs">Inbound ({sortedFlights.filter(f => f.destination === 'DXB' || f.destination === 'DWC').length})</span>
                   </TabsTrigger>
                   <TabsTrigger
                     value="outbound"
                     className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
                     <Plane className="h-3.5 w-3.5" />
-                    <span className="text-xs">Outbound ({sortedFlights.filter(f => f.origin === 'DXB').length})</span>
+                    <span className="text-xs">Outbound ({sortedFlights.filter(f => f.origin === 'DXB' || f.origin === 'DWC').length})</span>
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="inbound" className="space-y-4">
                   {(() => {
                     const inboundFlights = sortedFlights.filter(
-                      (f) => f.destination === "DXB",
+                      (f) => f.destination === "DXB" || f.destination === "DWC",
                     );
                     const startIdx = (currentPage - 1) * itemsPerPage;
                     const endIdx = startIdx + itemsPerPage;
@@ -2041,7 +2041,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                             <p className="text-gray-500 mb-4">
                               {flights.length === 0
                                 ? "There are currently no flight disruptions in the system."
-                                : "No inbound flights to DXB match your current filter criteria."}
+                                : "No inbound flights to the selected hub(s) match your current filter criteria."}
                             </p>
                           </div>
                         )}
@@ -2053,7 +2053,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                 <TabsContent value="outbound" className="space-y-4">
                   {(() => {
                     const outboundFlights = sortedFlights.filter(
-                      (f) => f.origin === "DXB",
+                      (f) => f.origin === "DXB" || f.origin === "DWC",
                     );
                     const startIdx = (currentPage - 1) * itemsPerPage;
                     const endIdx = startIdx + itemsPerPage;
@@ -2333,7 +2333,7 @@ export function DisruptionInput({ disruption, onSelectFlight }) {
                             <p className="text-gray-500 mb-4">
                               {flights.length === 0
                                 ? "There are currently no flight disruptions in the system."
-                                : "No outbound flights from DXB match your current filter criteria."}
+                                : "No outbound flights from the selected hub(s) match your current filter criteria."}
                             </p>
                           </div>
                         )}
