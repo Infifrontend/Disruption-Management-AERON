@@ -3,83 +3,70 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Button } from './ui/button'
 import { Badge } from './ui/badge'
+import { Button } from './ui/button'
+import { Input } from './ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './ui/table'
-import {
-  Users,
-  Clock,
-  MapPin,
-  Plane,
-  UserCheck,
-  AlertTriangle,
-  CheckCircle,
-  ArrowLeft,
-  Users2,
-  Star,
-  Edit,
-  Eye,
-  Package,
-  Filter,
-  Search,
-  ArrowRight,
-  CalendarDays,
-  BellRing,
-  Hotel,
-  Utensils,
-  Car,
-  QrCode,
-  Timer,
-  Info,
-  Gauge,
-  TrendingUp,
-  TrendingDown,
-  Shield,
-  DollarSign,
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
+import { 
+  Users, 
+  Clock, 
+  Plane, 
+  MapPin, 
+  AlertTriangle, 
+  CheckCircle, 
+  Star, 
+  CalendarDays, 
+  Filter, 
+  Search, 
+  ArrowRight, 
+  Hotel, 
+  UtensilsCrossed, 
+  Car, 
+  Wheelchair, 
+  Luggage, 
+  Coffee,
+  Banknote,
   Copy,
   ExternalLink,
-  Route,
-  Zap,
+  TrendingDown,
+  FlightIcon as LucidePlane,
+  Download,
+  UserCheck,
+  PhoneCall,
+  Mail,
+  MessageSquare,
   ThumbsUp,
-  CheckSquare,
-  Globe,
+  CircleCheck,
+  Bell,
+  Smartphone,
+  AlertCircle,
   ChevronDown,
   ChevronRight,
   Group,
-  UserPlus,
-  Crown,
-  CircleCheck,
-  Bell,
-  MessageSquare,
-  Smartphone,
-  Download,
-  Upload,
+  Edit,
+  Eye,
+  Package,
+  Route,
+  Zap,
+  TrendingUp,
+  Gauge,
   RefreshCw,
   Target,
   X,
   Wifi,
   Waves,
   Dumbbell,
-  Coffee,
   Wind,
   Tv
 } from 'lucide-react'
 import { databaseService } from '../services/databaseService'
 import { Progress } from './ui/progress'
-import { Checkbox } from './ui/checkbox'
 import { toast } from 'sonner'
-import { Input } from './ui/input'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Alert, AlertDescription } from './ui/alert'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
+import { Checkbox } from './ui/checkbox'
 import { Textarea } from './ui/textarea'
 
 export function PassengerRebooking({ context, onClearContext }) {
@@ -1405,309 +1392,495 @@ export function PassengerRebooking({ context, onClearContext }) {
         </div>
       )}
 
-      {/* Filters and View Toggle */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5 text-flydubai-blue" />
-              {context ? `Filter Affected Passengers (${passengers.length})` : 'Passenger Filters'}
-            </CardTitle>
-            <div className="flex gap-2">
-              <Button
-                variant={groupView ? "default" : "outline"}
-                size="sm"
-                onClick={() => setGroupView(true)}
-                className={groupView ? "btn-flydubai-primary" : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"}
-              >
-                <Group className="h-4 w-4 mr-2" />
-                PNR Groups
-              </Button>
-              <Button
-                variant={!groupView ? "default" : "outline"}
-                size="sm"
-                onClick={() => setGroupView(false)}
-                className={!groupView ? "btn-flydubai-primary" : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"}
-              >
-                <Users className="h-4 w-4 mr-2" />
-                Individual
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Search</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Name or PNR"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Priority</label>
-              <Select value={selectedPriority} onValueChange={setSelectedPriority}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Priorities" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all-priorities">All Priorities</SelectItem>
-                  <SelectItem value="VIP">VIP</SelectItem>
-                  <SelectItem value="Premium">Premium</SelectItem>
-                  <SelectItem value="Standard">Standard</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Status</label>
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger>
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all-statuses">All Statuses</SelectItem>
-                  <SelectItem value="Confirmed">Confirmed</SelectItem>
-                  <SelectItem value="Rebooking Required">Rebooking Required</SelectItem>
-                  <SelectItem value="Accommodation Needed">Accommodation Needed</SelectItem>
-                  <SelectItem value="Alternative Flight">Alternative Flight</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-end">
-              <Button 
-                variant="outline" 
-                className="w-full border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                onClick={() => {
-                  setSearchTerm('')
-                  setSelectedPriority('all-priorities')
-                  setSelectedStatus('all-statuses')
-                }}
-              >
-                Clear Filters
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Tabs for Passenger Service and Crew Schedule */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="passenger-service">Passenger Service</TabsTrigger>
+          <TabsTrigger value="crew-schedule">Crew Schedule Information</TabsTrigger>
+        </TabsList>
 
-      {/* Passenger List */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-flydubai-navy">
-                {context 
-                  ? `Affected Passengers - ${context.flight?.flightNumber}` 
-                  : 'Passenger List'
-                }
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {groupView 
-                  ? `Showing ${Object.keys(filteredPnrGroups).length} PNR groups with ${Object.values(filteredPnrGroups).flat().length} passengers`
-                  : `Showing ${filteredPassengers.length} of ${passengers.length} passengers`
-                }
-              </p>
-            </div>
-            {groupView && selectedPnrs.size > 0 && (
-              <div className="flex gap-2">
-                <Button 
-                  size="sm"
-                  className="btn-flydubai-primary"
-                  onClick={() => {
-                    const selectedGroups = Object.entries(filteredPnrGroups)
-                      .filter(([pnr]) => selectedPnrs.has(pnr))
-                      .map(([pnr, passengers]) => ({ pnr, passengers }))
-                    console.log('Bulk rebooking for:', selectedGroups)
-                  }}
-                >
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  Rebook {selectedPnrs.size} PNR(s)
-                </Button>
-                <Button 
-                  size="sm"
-                  variant="outline"
-                  className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                  onClick={() => setSelectedPnrs(new Set())}
-                >
-                  Clear Selection
-                </Button>
+        <TabsContent value="passenger-service" className="space-y-6">
+          {/* Filters and View Toggle */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Filter className="h-5 w-5 text-flydubai-blue" />
+                  {context ? `Filter Affected Passengers (${passengers.length})` : 'Passenger Filters'}
+                </CardTitle>
+                <div className="flex gap-2">
+                  <Button
+                    variant={groupView ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setGroupView(true)}
+                    className={groupView ? "btn-flydubai-primary" : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"}
+                  >
+                    <Group className="h-4 w-4 mr-2" />
+                    PNR Groups
+                  </Button>
+                  <Button
+                    variant={!groupView ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setGroupView(false)}
+                    className={!groupView ? "btn-flydubai-primary" : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"}
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    Individual
+                  </Button>
+                </div>
               </div>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent>
-          {groupView ? (
-            // PNR Group View
-            <div className="space-y-4">
-              {Object.entries(filteredPnrGroups).map(([pnr, groupPassengers]) => (
-                <Card key={pnr} className="border-2 hover:shadow-md transition-shadow">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <Checkbox
-                          checked={selectedPnrs.has(pnr)}
-                          onCheckedChange={() => handlePnrSelection(pnr)}
-                        />
-                        <div className="flex items-center gap-2">
-                          <Package className="h-5 w-5 text-flydubai-blue" />
-                          <Badge className="badge-flydubai text-lg px-3 py-1">{pnr}</Badge>
-                          <Badge variant="outline" className="text-sm">
-                            {groupPassengers.length} passenger{groupPassengers.length > 1 ? 's' : ''}
-                          </Badge>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleExpandPnr(pnr)}
-                          className="p-1"
-                        >
-                          {expandedPnrs.has(pnr) ? (
-                            <ChevronDown className="h-4 w-4" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="text-sm text-muted-foreground">
-                          Status: {[...new Set(groupPassengers.map(p => p.status))].join(', ')}
-                        </div>
-                        <Button 
-                          size="sm"
-                          className="btn-flydubai-primary"
-                          onClick={() => handleRebookPnrGroup(pnr, groupPassengers)}
-                        >
-                          <RefreshCw className="h-3 w-3 mr-1" />
-                          Rebook Group
-                        </Button>
-                      </div>
-                    </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Search</label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="Name or PNR"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Priority</label>
+                  <Select value={selectedPriority} onValueChange={setSelectedPriority}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Priorities" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all-priorities">All Priorities</SelectItem>
+                      <SelectItem value="VIP">VIP</SelectItem>
+                      <SelectItem value="Premium">Premium</SelectItem>
+                      <SelectItem value="Standard">Standard</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Status</label>
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Statuses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all-statuses">All Statuses</SelectItem>
+                      <SelectItem value="Confirmed">Confirmed</SelectItem>
+                      <SelectItem value="Rebooking Required">Rebooking Required</SelectItem>
+                      <SelectItem value="Accommodation Needed">Accommodation Needed</SelectItem>
+                      <SelectItem value="Alternative Flight">Alternative Flight</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-end">
+                  <Button 
+                    variant="outline" 
+                    className="w-full border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                    onClick={() => {
+                      setSearchTerm('')
+                      setSelectedPriority('all-priorities')
+                      setSelectedStatus('all-statuses')
+                    }}
+                  >
+                    Clear Filters
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-                    {/* Expanded Group Details */}
-                    {expandedPnrs.has(pnr) && (
-                      <div className="border-t pt-3">
-                        <div className="grid gap-3">
-                          {groupPassengers.map((passenger) => (
-                            <div key={passenger.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                              <div className="flex items-center gap-4">
-                                <div>
-                                  <div className="font-medium">{passenger.name}</div>
-                                  <div className="text-sm text-gray-500">{passenger.contactInfo}</div>
+          {/* Passenger List */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-flydubai-navy">
+                    {context 
+                      ? `Affected Passengers - ${context.flight?.flightNumber}` 
+                      : 'Passenger List'
+                    }
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    {groupView 
+                      ? `Showing ${Object.keys(filteredPnrGroups).length} PNR groups with ${Object.values(filteredPnrGroups).flat().length} passengers`
+                      : `Showing ${filteredPassengers.length} of ${passengers.length} passengers`
+                    }
+                  </p>
+                </div>
+                {groupView && selectedPnrs.size > 0 && (
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm"
+                      className="btn-flydubai-primary"
+                      onClick={() => {
+                        const selectedGroups = Object.entries(filteredPnrGroups)
+                          .filter(([pnr]) => selectedPnrs.has(pnr))
+                          .map(([pnr, passengers]) => ({ pnr, passengers }))
+                        console.log('Bulk rebooking for:', selectedGroups)
+                      }}
+                    >
+                      <RefreshCw className="h-3 w-3 mr-1" />
+                      Rebook {selectedPnrs.size} PNR(s)
+                    </Button>
+                    <Button 
+                      size="sm"
+                      variant="outline"
+                      className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                      onClick={() => setSelectedPnrs(new Set())}
+                    >
+                      Clear Selection
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {groupView ? (
+                // PNR Group View
+                <div className="space-y-4">
+                  {Object.entries(filteredPnrGroups).map(([pnr, groupPassengers]) => (
+                    <Card key={pnr} className="border-2 hover:shadow-md transition-shadow">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex items-center gap-3">
+                            <Checkbox
+                              checked={selectedPnrs.has(pnr)}
+                              onCheckedChange={() => handlePnrSelection(pnr)}
+                            />
+                            <div className="flex items-center gap-2">
+                              <Package className="h-5 w-5 text-flydubai-blue" />
+                              <Badge className="badge-flydubai text-lg px-3 py-1">{pnr}</Badge>
+                              <Badge variant="outline" className="text-sm">
+                                {groupPassengers.length} passenger{groupPassengers.length > 1 ? 's' : ''}
+                              </Badge>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleExpandPnr(pnr)}
+                              className="p-1"
+                            >
+                              {expandedPnrs.has(pnr) ? (
+                                <ChevronDown className="h-4 w-4" />
+                              ) : (
+                                <ChevronRight className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm text-muted-foreground">
+                              Status: {[...new Set(groupPassengers.map(p => p.status))].join(', ')}
+                            </div>
+                            <Button 
+                              size="sm"
+                              className="btn-flydubai-primary"
+                              onClick={() => handleRebookPnrGroup(pnr, groupPassengers)}
+                            >
+                              <RefreshCw className="h-3 w-3 mr-1" />
+                              Rebook Group
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Expanded Group Details */}
+                        {expandedPnrs.has(pnr) && (
+                          <div className="border-t pt-3">
+                            <div className="grid gap-3">
+                              {groupPassengers.map((passenger) => (
+                                <div key={passenger.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                  <div className="flex items-center gap-4">
+                                    <div>
+                                      <div className="font-medium">{passenger.name}</div>
+                                      <div className="text-sm text-gray-500">{passenger.contactInfo}</div>
+                                    </div>
+                                    <Badge className={getPriorityColor(passenger.priority)}>
+                                      {passenger.priority}
+                                    </Badge>
+                                    <Badge className={getStatusColor(passenger.status)}>
+                                      {passenger.status}
+                                    </Badge>
+                                    <div className="text-sm text-gray-600">Seat: {passenger.seat}</div>
+                                    {passenger.specialRequirements && (
+                                      <Badge variant="outline" className="text-xs">
+                                        {passenger.specialRequirements}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <Button 
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleRebookPassenger(passenger)}
+                                    className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                  >
+                                    <Eye className="h-3 w-3 mr-1" />
+                                    View
+                                  </Button>
                                 </div>
-                                <Badge className={getPriorityColor(passenger.priority)}>
-                                  {passenger.priority}
-                                </Badge>
-                                <Badge className={getStatusColor(passenger.status)}>
-                                  {passenger.status}
-                                </Badge>
-                                <div className="text-sm text-gray-600">Seat: {passenger.seat}</div>
-                                {passenger.specialRequirements && (
-                                  <Badge variant="outline" className="text-xs">
-                                    {passenger.specialRequirements}
-                                  </Badge>
-                                )}
-                              </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                // Individual Passenger View
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Passenger</TableHead>
+                      <TableHead>PNR</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Seat</TableHead>
+                      <TableHead>Special Requirements</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredPassengers.map((passenger) => (
+                      <TableRow key={passenger.id} className="hover:bg-blue-50">
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{passenger.name}</div>
+                            <div className="text-sm text-gray-500">{passenger.contactInfo}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="badge-flydubai-outline">
+                            {passenger.pnr}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getPriorityColor(passenger.priority)}>
+                            {passenger.priority}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className={getStatusColor(passenger.status)}>
+                            {passenger.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{passenger.seat}</TableCell>
+                        <TableCell>
+                          {passenger.specialRequirements ? (
+                            <Badge variant="outline" className="text-xs">
+                              {passenger.specialRequirements}
+                            </Badge>
+                          ) : (
+                            <span className="text-gray-400">None</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleRebookPassenger(passenger)}
+                              className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              View
+                            </Button>
+                            {passenger.status === 'Rebooking Required' && (
                               <Button 
                                 size="sm"
-                                variant="outline"
+                                className="btn-flydubai-primary text-xs"
                                 onClick={() => handleRebookPassenger(passenger)}
-                                className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                               >
-                                <Eye className="h-3 w-3 mr-1" />
-                                View
+                                <Edit className="h-3 w-3 mr-1" />
+                                Rebook
                               </Button>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            // Individual Passenger View
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Passenger</TableHead>
-                  <TableHead>PNR</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Seat</TableHead>
-                  <TableHead>Special Requirements</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredPassengers.map((passenger) => (
-                  <TableRow key={passenger.id} className="hover:bg-blue-50">
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{passenger.name}</div>
-                        <div className="text-sm text-gray-500">{passenger.contactInfo}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className="badge-flydubai-outline">
-                        {passenger.pnr}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getPriorityColor(passenger.priority)}>
-                        {passenger.priority}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(passenger.status)}>
-                        {passenger.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{passenger.seat}</TableCell>
-                    <TableCell>
-                      {passenger.specialRequirements ? (
-                        <Badge variant="outline" className="text-xs">
-                          {passenger.specialRequirements}
-                        </Badge>
-                      ) : (
-                        <span className="text-gray-400">None</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline"
-                          onClick={() => handleRebookPassenger(passenger)}
-                          className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                        >
-                          <Eye className="h-3 w-3 mr-1" />
-                          View
-                        </Button>
-                        {passenger.status === 'Rebooking Required' && (
-                          <Button 
-                            size="sm"
-                            className="btn-flydubai-primary text-xs"
-                            onClick={() => handleRebookPassenger(passenger)}
-                          >
-                            <Edit className="h-3 w-3 mr-1" />
-                            Rebook
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Execute Button for Passenger Services Flow */}
+          {fromExecution && (
+            <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-green-800 mb-2">Ready to Execute Recovery Option</h3>
+                    <p className="text-sm text-green-700">
+                      Passenger services have been reviewed. Click execute to proceed with the recovery option.
+                    </p>
+                  </div>
+                  <Button
+                    className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
+                    onClick={handleExecuteWithPassengerServices}
+                  >
+                    Execute Recovery Option
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           )}
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        <TabsContent value="crew-schedule" className="space-y-6">
+          {/* Crew Schedule Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-flydubai-blue" />
+                Crew Schedule Information - {recoveryOption?.title || 'Recovery Option'}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue mr-4"></div>
+                  <span>Loading crew information...</span>
+                </div>
+              ) : crewData && crewData.crew.length > 0 ? (
+                <div className="space-y-6">
+                  {/* Crew Status Table */}
+                  <div>
+                    <h4 className="font-medium mb-4">Crew Assignment Status</h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Position</TableHead>
+                          <TableHead>Current Status</TableHead>
+                          <TableHead>Location</TableHead>
+                          <TableHead>Availability</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {crewData.crew.map((member, index) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium">{member.name}</TableCell>
+                            <TableCell>{member.position}</TableCell>
+                            <TableCell>
+                              <Badge
+                                className={
+                                  member.status === 'Available'
+                                    ? 'bg-green-100 text-green-700'
+                                    : member.status === 'On Duty'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'bg-yellow-100 text-yellow-700'
+                                }
+                              >
+                                {member.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{member.location}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  member.availability === 'Available'
+                                    ? 'border-green-300 text-green-700'
+                                    : 'border-red-300 text-red-700'
+                                }
+                              >
+                                {member.availability}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Duty Time Information */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Duty Time Constraints</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Current Duty Time:</span>
+                            <span className="font-medium">3h 45m / 8h 20m</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Rest Requirement:</span>
+                            <span className="font-medium">Min 12h after duty</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Next Availability:</span>
+                            <span className="font-medium">Tomorrow 08:00</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Operational Impact</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Crew Changes Required:</span>
+                            <span className="font-medium">
+                              {recoveryOption.id?.includes('CREW') || recoveryOption.title?.toLowerCase().includes('crew') ? '2' : '0'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Briefing Time:</span>
+                            <span className="font-medium">45 minutes</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Ready Time:</span>
+                            <span className="font-medium">
+                              {recoveryOption.timeline || '1 hour'}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>No specific crew changes required for this recovery option</p>
+                  <p className="text-xs mt-1">Standard crew assignment will be maintained</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+
+      {/* Common Execute Section - Always Visible */}
+      {fromExecution && (
+        <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium text-green-800 mb-2">Ready to Execute Recovery Option</h3>
+                <p className="text-sm text-green-700">
+                  {activeTab === 'passenger-service' 
+                    ? 'Passenger services have been reviewed. Click below to proceed with execution.'
+                    : 'Crew schedule impact has been assessed. Click below to proceed with execution.'
+                  }
+                </p>
+              </div>
+              <Button
+                className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
+                onClick={handleExecuteWithPassengerServices}
+              >
+                {activeTab === 'passenger-service' ? 'Send for Approval' : 'Execute'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Enhanced Rebooking Dialog with Additional Services Flow */}
       <Dialog open={showRebookingDialog} onOpenChange={setShowRebookingDialog}>
@@ -2610,276 +2783,6 @@ export function PassengerRebooking({ context, onClearContext }) {
           )}
         </DialogContent>
       </Dialog>
-
-      {/* Tabs for Passenger Service and Crew Schedule */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="passenger-service">Passenger Service</TabsTrigger>
-          <TabsTrigger value="crew-schedule">Crew Schedule Information</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="passenger-service" className="space-y-6">
-          {/* Existing Passenger Services Content */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Affected Passengers Summary */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-flydubai-blue" />
-                  Affected Passengers
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total Passengers:</span>
-                    <span className="font-semibold">{selectedFlight.passengers}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">VIP Passengers:</span>
-                    <span className="font-semibold">{Math.floor(selectedFlight.passengers * 0.08)}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Connecting Passengers:</span>
-                    <span className="font-semibold">{Math.floor(selectedFlight.passengers * 0.25)}</span>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Passenger Impact */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-orange-600" />
-                  Impact Assessment
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Accommodation Required:</span>
-                    <Badge variant="outline" className="text-orange-700 border-orange-200">
-                      {recoveryOption.timeline?.includes('hour') && parseInt(recoveryOption.timeline) >= 4 ? 'Yes' : 'No'}
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Meal Vouchers:</span>
-                    <Badge variant="outline" className="text-blue-700 border-blue-200">
-                      Required
-                    </Badge>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Compensation:</span>
-                    <Badge variant="outline" className="text-green-700 border-green-200">
-                      As per EU261
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Service Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                  Required Actions
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <Button variant="outline" size="sm" className="w-full justify-start">
-                    <UserCheck className="h-4 w-4 mr-2" />
-                    Send Notifications
-                  </Button>
-                  <Button variant="outline" size="sm" className="w-full justify-start">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Arrange Accommodation
-                  </Button>
-                  <Button variant="outline" size="sm" className="w-full justify-start">
-                    <Clock className="h-4 w-4 mr-2" />
-                    Process Compensation
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Execute Button for Passenger Services Flow */}
-          {fromExecution && (
-            <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-green-800 mb-2">Ready to Execute Recovery Option</h3>
-                    <p className="text-sm text-green-700">
-                      Passenger services have been reviewed. Click execute to proceed with the recovery option.
-                    </p>
-                  </div>
-                  <Button
-                    className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
-                    onClick={handleExecuteWithPassengerServices}
-                  >
-                    Execute Recovery Option
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-
-        <TabsContent value="crew-schedule" className="space-y-6">
-          {/* Crew Schedule Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-flydubai-blue" />
-                Crew Schedule Information - {recoveryOption.title}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue mr-4"></div>
-                  <span>Loading crew information...</span>
-                </div>
-              ) : crewData && crewData.crew.length > 0 ? (
-                <div className="space-y-6">
-                  {/* Crew Status Table */}
-                  <div>
-                    <h4 className="font-medium mb-4">Crew Assignment Status</h4>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Position</TableHead>
-                          <TableHead>Current Status</TableHead>
-                          <TableHead>Location</TableHead>
-                          <TableHead>Availability</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {crewData.crew.map((member, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-medium">{member.name}</TableCell>
-                            <TableCell>{member.type || member.role || member.position}</TableCell>
-                            <TableCell>
-                              <Badge
-                                className={
-                                  member.status === 'Available'
-                                    ? 'bg-green-100 text-green-700'
-                                    : member.status === 'On Duty'
-                                    ? 'bg-blue-100 text-blue-700'
-                                    : 'bg-yellow-100 text-yellow-700'
-                                }
-                              >
-                                {member.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{member.location}</TableCell>
-                            <TableCell>
-                              <Badge
-                                variant="outline"
-                                className={
-                                  member.availability === 'Available'
-                                    ? 'border-green-300 text-green-700'
-                                    : 'border-red-300 text-red-700'
-                                }
-                              >
-                                {member.availability}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  {/* Duty Time Information */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Duty Time Constraints</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">Current Duty Time:</span>
-                            <span className="font-medium">3h 45m / 8h 20m</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">Rest Requirement:</span>
-                            <span className="font-medium">Min 12h after duty</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">Next Availability:</span>
-                            <span className="font-medium">Tomorrow 08:00</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">Operational Impact</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">Crew Changes Required:</span>
-                            <span className="font-medium">
-                              {recoveryOption.id?.includes('CREW') || recoveryOption.title?.toLowerCase().includes('crew') ? '2' : '0'}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">Briefing Time:</span>
-                            <span className="font-medium">45 minutes</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">Ready Time:</span>
-                            <span className="font-medium">
-                              {recoveryOption.timeline || '1 hour'}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>No specific crew changes required for this recovery option</p>
-                  <p className="text-xs mt-1">Standard crew assignment will be maintained</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Execute Button for Crew Schedule Flow */}
-          {fromExecution && (
-            <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-green-800 mb-2">Crew Information Reviewed</h3>
-                    <p className="text-sm text-green-700">
-                      Crew schedule impact has been assessed. Click execute to proceed with the recovery option.
-                    </p>
-                  </div>
-                  <Button
-                    className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
-                    onClick={handleExecuteWithPassengerServices}
-                  >
-                    Execute Recovery Option
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-      </Tabs>
     </div>
   )
 }
