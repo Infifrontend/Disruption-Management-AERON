@@ -333,134 +333,171 @@ export const generateAffectedPassengers = (flight, option) => {
   let passengerCounter = 1
   let seatCounter = 1
   const seatRows = ['A', 'B', 'C', 'D', 'E', 'F']
-  let pnrCounter = 1
+  let pnrCounter = 100
 
-  // Calculate how many times we need to multiply the base groups
+  // Calculate how many cycles we need to generate enough passengers
   const basePassengerCount = allPNRGroups.reduce((sum, group) => sum + group.passengers.length, 0)
-  const multiplier = Math.ceil(totalPassengers / basePassengerCount)
+  const fullCycles = Math.floor(totalPassengers / basePassengerCount)
+  const remainingPassengers = totalPassengers % basePassengerCount
 
-  // Generate enough PNR groups to cover all passengers
-  const expandedPNRGroups = []
-  
-  // First, add original groups
-  for (let i = 0; i < multiplier && expandedPNRGroups.reduce((sum, group) => sum + group.passengers.length, 0) < totalPassengers; i++) {
-    for (const templateGroup of allPNRGroups) {
-      const currentPassengerCount = expandedPNRGroups.reduce((sum, group) => sum + group.passengers.length, 0)
-      if (currentPassengerCount >= totalPassengers) break
+  console.log(`Generating passengers: total=${totalPassengers}, base=${basePassengerCount}, cycles=${fullCycles}, remaining=${remainingPassengers}`)
 
-      const newPnr = i === 0 ? templateGroup.pnr : `FZ${Math.random().toString(36).substring(2, 5).toUpperCase()}${pnrCounter++}`
+  // Generate full cycles of all groups
+  for (let cycle = 0; cycle < fullCycles; cycle++) {
+    allPNRGroups.forEach((templateGroup) => {
+      const newPnr = cycle === 0 ? templateGroup.pnr : `FZ${Math.random().toString(36).substring(2, 3).toUpperCase()}${pnrCounter++}`
       
-      expandedPNRGroups.push({
-        ...templateGroup,
-        pnr: newPnr,
-        passengers: templateGroup.passengers.map(p => ({
-          ...p,
-          name: i === 0 ? p.name : generateRandomName(p.relationship)
-        }))
+      templateGroup.passengers.forEach((passengerTemplate) => {
+        if (passengerCounter > totalPassengers) return
+
+        // Determine seat assignment
+        let seat
+        if (passengerTemplate.seatPreference === 'Lap') {
+          seat = 'LAP'
+        } else {
+          const seatRow = Math.floor((seatCounter - 1) / 6) + 1
+          const seatLetter = seatRows[(seatCounter - 1) % 6]
+          seat = `${seatRow}${seatLetter}`
+          seatCounter++
+        }
+
+        // Determine contact info
+        const contactEmail = templateGroup.baseContactEmail || passengerTemplate.contactEmail || `${passengerTemplate.name.toLowerCase().replace(/\s+/g, '.')}@email.com`
+        const contactPhone = templateGroup.baseContactPhone || passengerTemplate.contactPhone || '+971 50 000 0000'
+
+        // Determine status based on recovery option
+        let status = 'Confirmed'
+        if (requiresPassengerReaccommodation(option)) {
+          if (templateGroup.priority === 'VIP') {
+            status = Math.random() > 0.7 ? 'Rebooking Required' : 'Accommodation Needed'
+          } else if (templateGroup.priority === 'Premium') {
+            status = Math.random() > 0.5 ? 'Rebooking Required' : 'Alternative Flight'
+          } else {
+            status = Math.random() > 0.3 ? 'Rebooking Required' : 'Accommodation Needed'
+          }
+        }
+
+        const passenger = {
+          id: `PAX-${String(passengerCounter).padStart(3, '0')}`,
+          name: cycle === 0 ? passengerTemplate.name : generateRandomName(passengerTemplate.relationship),
+          pnr: newPnr,
+          priority: templateGroup.priority || passengerTemplate.priority || 'Standard',
+          status: status,
+          seat: seat,
+          contactInfo: contactEmail,
+          contactPhone: contactPhone,
+          age: passengerTemplate.age,
+          relationship: passengerTemplate.relationship,
+          specialRequirements: passengerTemplate.specialRequirements,
+          preferences: {
+            seatPreference: passengerTemplate.seatPreference || 'Any',
+            mealPreference: passengerTemplate.mealPreference || 'Standard',
+            classPreference: templateGroup.priority === 'VIP' ? 'Business' : 
+                           templateGroup.priority === 'Premium' ? 'Premium Economy' : 'Economy',
+            loyaltyTier: passengerTemplate.loyaltyTier
+          },
+          connectedFlights: Math.random() > 0.7 ? ['FZ567', 'FZ892'] : [],
+          groupType: templateGroup.groupType || 'individual',
+          familySize: templateGroup.passengers.length
+        }
+
+        passengers.push(passenger)
+        passengerCounter++
       })
+    })
+  }
+
+  // Generate remaining passengers from a subset of groups
+  let groupIndex = 0
+  let passengerInGroupIndex = 0
+  
+  while (passengers.length < totalPassengers && groupIndex < allPNRGroups.length) {
+    const templateGroup = allPNRGroups[groupIndex]
+    const passengerTemplate = templateGroup.passengers[passengerInGroupIndex]
+    
+    if (!passengerTemplate) {
+      groupIndex++
+      passengerInGroupIndex = 0
+      continue
+    }
+
+    const newPnr = `FZ${Math.random().toString(36).substring(2, 3).toUpperCase()}${pnrCounter++}`
+
+    // Determine seat assignment
+    let seat
+    if (passengerTemplate.seatPreference === 'Lap') {
+      seat = 'LAP'
+    } else {
+      const seatRow = Math.floor((seatCounter - 1) / 6) + 1
+      const seatLetter = seatRows[(seatCounter - 1) % 6]
+      seat = `${seatRow}${seatLetter}`
+      seatCounter++
+    }
+
+    // Determine contact info
+    const contactEmail = templateGroup.baseContactEmail || passengerTemplate.contactEmail || `${generateRandomName(passengerTemplate.relationship).toLowerCase().replace(/\s+/g, '.')}@email.com`
+    const contactPhone = templateGroup.baseContactPhone || passengerTemplate.contactPhone || '+971 50 000 0000'
+
+    // Determine status based on recovery option
+    let status = 'Confirmed'
+    if (requiresPassengerReaccommodation(option)) {
+      if (templateGroup.priority === 'VIP') {
+        status = Math.random() > 0.7 ? 'Rebooking Required' : 'Accommodation Needed'
+      } else if (templateGroup.priority === 'Premium') {
+        status = Math.random() > 0.5 ? 'Rebooking Required' : 'Alternative Flight'
+      } else {
+        status = Math.random() > 0.3 ? 'Rebooking Required' : 'Accommodation Needed'
+      }
+    }
+
+    const passenger = {
+      id: `PAX-${String(passengerCounter).padStart(3, '0')}`,
+      name: generateRandomName(passengerTemplate.relationship),
+      pnr: newPnr,
+      priority: templateGroup.priority || passengerTemplate.priority || 'Standard',
+      status: status,
+      seat: seat,
+      contactInfo: contactEmail,
+      contactPhone: contactPhone,
+      age: passengerTemplate.age,
+      relationship: passengerTemplate.relationship,
+      specialRequirements: passengerTemplate.specialRequirements,
+      preferences: {
+        seatPreference: passengerTemplate.seatPreference || 'Any',
+        mealPreference: passengerTemplate.mealPreference || 'Standard',
+        classPreference: templateGroup.priority === 'VIP' ? 'Business' : 
+                       templateGroup.priority === 'Premium' ? 'Premium Economy' : 'Economy',
+        loyaltyTier: passengerTemplate.loyaltyTier
+      },
+      connectedFlights: Math.random() > 0.7 ? ['FZ567', 'FZ892'] : [],
+      groupType: templateGroup.groupType || 'individual',
+      familySize: 1
+    }
+
+    passengers.push(passenger)
+    passengerCounter++
+    
+    passengerInGroupIndex++
+    if (passengerInGroupIndex >= templateGroup.passengers.length) {
+      groupIndex++
+      passengerInGroupIndex = 0
     }
   }
 
-  // Generate individual passengers to exactly match total count
-  while (expandedPNRGroups.reduce((sum, group) => sum + group.passengers.length, 0) < totalPassengers) {
-    const singlePassengerPnr = `FZ${Math.random().toString(36).substring(2, 5).toUpperCase()}${pnrCounter++}`
-    expandedPNRGroups.push({
-      pnr: singlePassengerPnr,
-      baseContactEmail: null,
-      baseContactPhone: null,
-      priority: ['Standard', 'Premium', 'VIP'][Math.floor(Math.random() * 3)],
-      groupType: 'individual',
-      passengers: [{
-        name: generateRandomName('individual'),
-        relationship: 'individual',
-        age: 25 + Math.floor(Math.random() * 40),
-        specialRequirements: Math.random() > 0.8 ? ['Dietary', 'Wheelchair', 'Medical'][Math.floor(Math.random() * 3)] : null,
-        loyaltyTier: ['Bronze', 'Silver', 'Gold', 'Platinum', null][Math.floor(Math.random() * 5)],
-        seatPreference: ['Window', 'Aisle', 'Any'][Math.floor(Math.random() * 3)],
-        mealPreference: ['Standard', 'Vegetarian', 'Halal', 'Kosher'][Math.floor(Math.random() * 4)]
-      }]
-    })
-  }
-
-  // Generate passenger records from PNR groups
-  expandedPNRGroups.forEach((pnrGroup) => {
-    if (passengerCounter > totalPassengers) return
-
-    pnrGroup.passengers.forEach((passengerTemplate, index) => {
-      if (passengerCounter > totalPassengers) return
-
-      // Determine seat assignment
-      let seat
-      if (passengerTemplate.seatPreference === 'Lap') {
-        seat = 'LAP'
-      } else {
-        const seatRow = Math.floor((seatCounter - 1) / 6) + 1
-        const seatLetter = seatRows[(seatCounter - 1) % 6]
-        seat = `${seatRow}${seatLetter}`
-        seatCounter++
-      }
-
-      // Determine contact info
-      const contactEmail = pnrGroup.baseContactEmail || passengerTemplate.contactEmail || `${passengerTemplate.name.toLowerCase().replace(/\s+/g, '.')}@email.com`
-      const contactPhone = pnrGroup.baseContactPhone || passengerTemplate.contactPhone || '+971 50 000 0000'
-
-      // Determine status based on recovery option
-      let status = 'Confirmed'
-      if (requiresPassengerReaccommodation(option)) {
-        if (pnrGroup.priority === 'VIP') {
-          status = Math.random() > 0.7 ? 'Rebooking Required' : 'Accommodation Needed'
-        } else if (pnrGroup.priority === 'Premium') {
-          status = Math.random() > 0.5 ? 'Rebooking Required' : 'Alternative Flight'
-        } else {
-          status = Math.random() > 0.3 ? 'Rebooking Required' : 'Accommodation Needed'
-        }
-      }
-
-      const passenger = {
-        id: `PAX-${String(passengerCounter).padStart(3, '0')}`,
-        name: passengerTemplate.name,
-        pnr: pnrGroup.pnr,
-        priority: pnrGroup.priority || passengerTemplate.priority || 'Standard',
-        status: status,
-        seat: seat,
-        contactInfo: contactEmail,
-        contactPhone: contactPhone,
-        age: passengerTemplate.age,
-        relationship: passengerTemplate.relationship,
-        specialRequirements: passengerTemplate.specialRequirements,
-        preferences: {
-          seatPreference: passengerTemplate.seatPreference || 'Any',
-          mealPreference: passengerTemplate.mealPreference || 'Standard',
-          classPreference: pnrGroup.priority === 'VIP' ? 'Business' : 
-                         pnrGroup.priority === 'Premium' ? 'Premium Economy' : 'Economy',
-          loyaltyTier: passengerTemplate.loyaltyTier
-        },
-        connectedFlights: Math.random() > 0.7 ? ['FZ567', 'FZ892'] : [],
-        groupType: pnrGroup.groupType || 'individual',
-        familySize: pnrGroup.passengers.length
-      }
-
-      passengers.push(passenger)
-      passengerCounter++
-    })
-  })
-
-  // Ensure we have exactly the right number of passengers
-  const finalPassengers = passengers.slice(0, totalPassengers)
-  console.log(`Generated ${finalPassengers.length} passengers for flight ${flight?.flightNumber || 'Unknown'} with ${totalPassengers} expected passengers`)
+  console.log(`Generated ${passengers.length} passengers for flight ${flight?.flightNumber || 'Unknown'} with ${totalPassengers} expected passengers`)
   
   // Log PNR distribution
-  const pnrBreakdown = finalPassengers.reduce((acc, p) => {
+  const pnrBreakdown = passengers.reduce((acc, p) => {
     acc[p.pnr] = (acc[p.pnr] || 0) + 1
     return acc
   }, {})
   console.log('Final PNR breakdown:', pnrBreakdown)
-  console.log('Status breakdown:', finalPassengers.reduce((acc, p) => {
+  console.log('Status breakdown:', passengers.reduce((acc, p) => {
     acc[p.status] = (acc[p.status] || 0) + 1
     return acc
   }, {}))
   
-  return finalPassengers
+  return passengers
 }
 
 // Helper function to generate random names

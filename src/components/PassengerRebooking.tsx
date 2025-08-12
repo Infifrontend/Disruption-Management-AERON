@@ -154,10 +154,17 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // Generate passengers from context when available
   useEffect(() => {
-    if (context?.flight && context?.recoveryOption && contextPassengers.length === 0) {
+    if ((context?.flight || selectedFlight) && (context?.recoveryOption || recoveryOption) && contextPassengers.length === 0) {
       import('./passenger-data-helpers').then(module => {
-        const passengers = module.generateAffectedPassengers(context.flight, context.recoveryOption);
-        console.log(`Generated ${passengers.length} passengers for flight ${context.flight.flightNumber} (expected: ${context.flight.passengers})`);
+        const flightData = context?.flight || selectedFlight;
+        const optionData = context?.recoveryOption || recoveryOption;
+        
+        // Ensure we have the right passenger count
+        const expectedPassengers = flightData?.passengers || selectedFlight?.passengers || 167;
+        console.log(`Starting passenger generation for ${flightData?.flightNumber || flightData?.flight_number} with ${expectedPassengers} expected passengers`);
+        
+        const passengers = module.generateAffectedPassengers(flightData, optionData);
+        console.log(`Generated ${passengers.length} passengers for flight ${flightData?.flightNumber || flightData?.flight_number} (expected: ${expectedPassengers})`);
         console.log('PNR breakdown:', passengers.reduce((acc, p) => {
           acc[p.pnr] = (acc[p.pnr] || 0) + 1;
           return acc;
@@ -165,7 +172,7 @@ export function PassengerRebooking({ context, onClearContext }) {
         setGeneratedPassengers(passengers);
       });
     }
-  }, [context, contextPassengers]);
+  }, [context, contextPassengers, selectedFlight, recoveryOption]);
 
   // Enhanced default passenger data with PNR grouping
   const defaultPassengers = [
@@ -1237,7 +1244,10 @@ export function PassengerRebooking({ context, onClearContext }) {
     }, 2500);
   };
 
-  const totalPassengers = context?.totalPassengers || passengers.length;
+  const totalPassengers = context?.flight?.passengers || 
+                        selectedFlight?.passengers || 
+                        context?.totalPassengers || 
+                        passengers.length;
   const rebookingRequired = passengers.filter(
     (p) => p.status === "Rebooking Required",
   ).length;
@@ -1603,7 +1613,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       </div>
 
       {/* Flight Information Display */}
-      {context?.flight && (
+      {(context?.flight || selectedFlight) && (
         <Card className="border-blue-200 bg-blue-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-800">
@@ -1615,35 +1625,57 @@ export function PassengerRebooking({ context, onClearContext }) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="space-y-1">
                 <div className="text-sm text-blue-600 font-medium">Flight Number</div>
-                <div className="font-semibold text-blue-900">{context.flight.flightNumber}</div>
+                <div className="font-semibold text-blue-900">
+                  {context?.flight?.flightNumber || selectedFlight?.flight_number || 'N/A'}
+                </div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-blue-600 font-medium">Route</div>
-                <div className="font-semibold text-blue-900">{context.flight.origin} → {context.flight.destination}</div>
+                <div className="font-semibold text-blue-900">
+                  {context?.flight?.route || 
+                   (selectedFlight && `${selectedFlight.origin} → ${selectedFlight.destination}`) || 
+                   'N/A'}
+                </div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-blue-600 font-medium">Aircraft</div>
-                <div className="font-semibold text-blue-900">{context.flight.aircraft}</div>
+                <div className="font-semibold text-blue-900">
+                  {context?.flight?.aircraft || selectedFlight?.aircraft || 'N/A'}
+                </div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-blue-600 font-medium">Passengers</div>
-                <div className="font-semibold text-blue-900">{context.flight.passengers}</div>
+                <div className="font-semibold text-blue-900">
+                  {context?.flight?.passengers || selectedFlight?.passengers || totalPassengers}
+                </div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-blue-600 font-medium">Scheduled Departure</div>
-                <div className="font-semibold text-blue-900">{context.flight.scheduledDeparture || 'TBD'}</div>
+                <div className="font-semibold text-blue-900">
+                  {context?.flight?.scheduledDeparture || 
+                   selectedFlight?.scheduled_departure ||
+                   'TBD'}
+                </div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-blue-600 font-medium">Status</div>
-                <div className="font-semibold text-blue-900">{context.flight.status}</div>
+                <div className="font-semibold text-blue-900">
+                  {context?.flight?.status || selectedFlight?.status || 'Active'}
+                </div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-blue-600 font-medium">Recovery Option</div>
-                <div className="font-semibold text-blue-900">{context.recoveryOption?.title}</div>
+                <div className="font-semibold text-blue-900">
+                  {context?.recoveryOption?.title || recoveryOption?.title || 'Standard Recovery'}
+                </div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-blue-600 font-medium">Delay</div>
-                <div className="font-semibold text-blue-900">{context.flight.delayMinutes ? `${context.flight.delayMinutes} min` : 'On time'}</div>
+                <div className="font-semibold text-blue-900">
+                  {(context?.flight?.delayMinutes || selectedFlight?.delay_minutes) ? 
+                   `${context?.flight?.delayMinutes || selectedFlight?.delay_minutes} min` : 
+                   'On time'}
+                </div>
               </div>
             </div>
           </CardContent>
