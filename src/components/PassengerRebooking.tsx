@@ -1,73 +1,59 @@
 'use client'
 
-import React, { useState, useMemo } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
-import { Input } from './ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
-import { Alert, AlertDescription } from './ui/alert'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
-import { Textarea } from './ui/textarea'
-import { Progress } from './ui/progress'
-import { Checkbox } from './ui/checkbox'
-import { toast } from 'sonner'
-import { 
-  Users, 
-  Search, 
-  Filter, 
-  FileText, 
-  Clock, 
-  CheckCircle, 
-  AlertTriangle, 
-  Phone, 
-  Mail, 
-  Plane,
-  CalendarDays,
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './ui/table'
+import {
+  Users,
+  Clock,
   MapPin,
+  Plane,
   UserCheck,
-  X,
-  Download,
-  Upload,
-  RefreshCw,
-  Eye,
-  Edit,
-  Star,
-  AlertCircle,
+  AlertTriangle,
+  CheckCircle,
   ArrowLeft,
-  Target,
+  Users2,
+  Star,
+  Edit,
+  Eye,
+  Package,
+  Filter,
+  Search,
+  ArrowRight,
+  CalendarDays,
+  BellRing,
   Hotel,
   Utensils,
   Car,
   QrCode,
-  Send,
-  Wifi,
-  Coffee,
-  Dumbbell,
-  Waves,
-  Wind,
-  Tv,
+  Timer,
+  Info,
+  Gauge,
+  TrendingUp,
+  TrendingDown,
   Shield,
   DollarSign,
   Copy,
   ExternalLink,
-  TrendingUp,
   TrendingDown,
-  ArrowRight,
   Route,
   Zap,
   ThumbsUp,
-  Info,
   CheckSquare,
-  Timer,
   Globe,
-  Gauge,
   ChevronDown,
   ChevronRight,
-  Package,
-  Users2,
   Group,
   UserPlus,
   Crown,
@@ -77,8 +63,24 @@ import {
   Smartphone,
   BellRing
 } from 'lucide-react'
+import { databaseService } from '../services/databaseService'
+import { Progress } from './ui/progress'
+import { Checkbox } from './ui/checkbox'
+import { toast } from 'sonner'
+import { Input } from './ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
+import { Alert, AlertDescription } from './ui/alert'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
+import { Textarea } from './ui/textarea'
 
 export function PassengerRebooking({ context, onClearContext }) {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState('passenger-service')
+  const [crewData, setCrewData] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  // States for the original PassengerRebooking component
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedPriority, setSelectedPriority] = useState('all-priorities')
   const [selectedStatus, setSelectedStatus] = useState('all-statuses')
@@ -88,7 +90,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   const [selectedPnrs, setSelectedPnrs] = useState(new Set())
   const [expandedPnrs, setExpandedPnrs] = useState(new Set())
   const [groupView, setGroupView] = useState(true)
-  
+
   // Flight Selection and Additional Services Flow
   const [selectedFlightForServices, setSelectedFlightForServices] = useState(null)
   const [showAdditionalServices, setShowAdditionalServices] = useState(false)
@@ -100,10 +102,10 @@ export function PassengerRebooking({ context, onClearContext }) {
     priorityBaggageHandling: false,
     loungeAccess: false
   })
-  
+
   // Cabin Selection State - Track selected cabin for each flight
   const [selectedCabins, setSelectedCabins] = useState({})
-  
+
   // Additional Services States
   const [showHotelDialog, setShowHotelDialog] = useState(false)
   const [showVoucherDialog, setShowVoucherDialog] = useState(false)
@@ -119,7 +121,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // Use context passengers if available, otherwise use default passenger data
   const contextPassengers = context?.passengers || []
-  
+
   // Enhanced default passenger data with PNR grouping
   const defaultPassengers = [
     {
@@ -507,7 +509,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   const analyzeGroupCascadeImpact = (passengerOrGroup, flightId) => {
     const passengers = Array.isArray(passengerOrGroup) ? passengerOrGroup : [passengerOrGroup]
     const allConnectedFlights = [...new Set(passengers.flatMap(p => p.connectedFlights || []))]
-    
+
     if (allConnectedFlights.length === 0) {
       return {
         hasImpact: false,
@@ -662,7 +664,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                          passenger.pnr.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesPriority = selectedPriority === 'all-priorities' || passenger.priority === selectedPriority
     const matchesStatus = selectedStatus === 'all-statuses' || passenger.status === selectedStatus
-    
+
     return matchesSearch && matchesPriority && matchesStatus
   })
 
@@ -675,10 +677,10 @@ export function PassengerRebooking({ context, onClearContext }) {
                              passenger.pnr.toLowerCase().includes(searchTerm.toLowerCase())
         const matchesPriority = selectedPriority === 'all-priorities' || passenger.priority === selectedPriority
         const matchesStatus = selectedStatus === 'all-statuses' || passenger.status === selectedStatus
-        
+
         return matchesSearch && matchesPriority && matchesStatus
       })
-      
+
       if (filteredGroupPassengers.length > 0) {
         filtered[pnr] = filteredGroupPassengers
       }
@@ -765,7 +767,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   const getReaccommodationType = () => {
     if (!context?.reaccommodationType) return null
-    
+
     switch (context.reaccommodationType) {
       case 'cancellation':
         return {
@@ -858,7 +860,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   const handleFlightSelection = (flight) => {
     const selectedCabin = getSelectedCabin(flight.id)
-    
+
     if (!selectedCabin) {
       toast.error('Please select a cabin class before proceeding')
       return
@@ -873,7 +875,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
     setSelectedFlightForServices(flightWithCabin)
     setShowAdditionalServices(true)
-    
+
     toast.success(`Flight ${flight.flightNumber} selected for ${selectedCabin} class`)
   }
 
@@ -1058,8 +1060,171 @@ export function PassengerRebooking({ context, onClearContext }) {
     return total
   }
 
+  // Get data from navigation state or context
+  const stateData = location.state || context
+  const selectedFlight = stateData?.selectedFlight
+  const recoveryOption = stateData?.recoveryOption
+  const fromExecution = stateData?.fromExecution
+
+  // Load crew data when crew tab is accessed
+  useEffect(() => {
+    if (activeTab === 'crew-schedule' && recoveryOption && !crewData) {
+      loadCrewData()
+    }
+  }, [activeTab, recoveryOption])
+
+  const loadCrewData = async () => {
+    setLoading(true)
+    try {
+      // Try to get rotation plan data which includes crew information
+      const rotationResponse = await fetch(
+        `/api/recovery-option/${recoveryOption.id}/rotation-plan`
+      )
+
+      if (rotationResponse.ok) {
+        const result = await rotationResponse.json()
+        const rotationPlan = result.rotationPlan || result
+
+        // Extract crew data from rotation plan
+        const crew = rotationPlan?.crew || rotationPlan?.crewData || []
+        setCrewData({
+          crew: crew,
+          crewConstraints: rotationPlan?.crewConstraint || {},
+          operationalConstraints: rotationPlan?.operationalConstraints || {},
+        })
+      } else {
+        // Fallback crew data
+        setCrewData({
+          crew: [
+            {
+              name: 'Captain Al-Zaabi',
+              type: 'Captain',
+              status: 'Available',
+              location: 'Dubai Airport Hotel',
+              availability: 'Available',
+            },
+            {
+              name: 'F/O Rahman',
+              type: 'First Officer',
+              status: 'On Duty',
+              location: 'Crew Rest Area Terminal 2',
+              availability: 'Available',
+            },
+            {
+              name: 'FA Team Delta (4 members)',
+              type: 'Cabin Crew',
+              status: 'Available',
+              location: 'Crew Lounge Level 3',
+              availability: 'Available',
+            },
+          ],
+          crewConstraints: {},
+          operationalConstraints: {},
+        })
+      }
+    } catch (error) {
+      console.error('Error loading crew data:', error)
+      // Set fallback data
+      setCrewData({
+        crew: [],
+        crewConstraints: {},
+        operationalConstraints: {},
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleExecuteWithPassengerServices = async () => {
+    if (!fromExecution || !recoveryOption || !selectedFlight) return
+
+    try {
+      // Get full details and rotation impact
+      let fullDetails = null
+      let rotationImpact = null
+
+      try {
+        const detailsResponse = await fetch(
+          `/api/recovery-option-details/${recoveryOption.id}`
+        )
+        if (detailsResponse.ok) {
+          fullDetails = await detailsResponse.json()
+        }
+      } catch (error) {
+        console.warn('Could not fetch full details:', error)
+      }
+
+      try {
+        const rotationResponse = await fetch(
+          `/api/recovery-option/${recoveryOption.id}/rotation-plan`
+        )
+        if (rotationResponse.ok) {
+          const result = await rotationResponse.json()
+          rotationImpact = result.rotationPlan || result
+        }
+      } catch (error) {
+        console.warn('Could not fetch rotation impact:', error)
+      }
+
+      // Submit to pending solutions without updating flight status
+      const pendingSolution = {
+        disruptionId: selectedFlight.id,
+        optionId: recoveryOption.id,
+        optionTitle: recoveryOption.title,
+        optionDescription: recoveryOption.description,
+        cost: recoveryOption.cost,
+        timeline: recoveryOption.timeline,
+        confidence: recoveryOption.confidence,
+        impact: recoveryOption.impact,
+        status: 'Pending',
+        fullDetails: fullDetails,
+        rotationImpact: rotationImpact,
+        submittedBy: 'operations_user',
+        approvalRequired: 'Operations Manager',
+      }
+
+      const success = await databaseService.savePendingRecoverySolution(pendingSolution)
+
+      if (success) {
+        // Navigate to pending solutions without updating flight status
+        navigate('/pending')
+      } else {
+        alert('Failed to execute recovery option. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error executing recovery option:', error)
+      alert('An error occurred while executing the recovery option.')
+    }
+  }
+
+  if (!selectedFlight || !recoveryOption) {
+    return (
+      <div className="container mx-auto p-6">
+        <Card>
+          <CardContent className="p-8 text-center">
+            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">
+              No Recovery Option Selected
+            </h3>
+            <p className="text-gray-500">
+              Please select a recovery option from the comparison matrix to access passenger services.
+            </p>
+            <Button 
+              variant="outline" 
+              className="mt-4"
+              onClick={() => navigate('/comparison')}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Comparison
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-6 space-y-6">
       {/* Context Header - Show when coming from recovery plan */}
       {context && (
         <Card className="border-flydubai-orange bg-orange-50">
@@ -1548,12 +1713,12 @@ export function PassengerRebooking({ context, onClearContext }) {
             </DialogTitle>
             <DialogDescription>
               {selectedPnrGroup
-                ? `Manage group rebooking for PNR: ${selectedPnrGroup.pnr}`
+                ? `Manage rebooking and services for PNR: ${selectedPnrGroup.pnr}`
                 : `Manage rebooking and services for PNR: ${selectedPassenger?.pnr}`
               }
             </DialogDescription>
           </DialogHeader>
-          
+
           {(selectedPassenger || selectedPnrGroup) && (
             <div className="space-y-6">
               {/* Additional Services Step */}
@@ -1648,9 +1813,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   )}
                                 </div>
                               </div>
-                              
+
                               <p className="text-sm text-gray-600 mb-2">{service.description}</p>
-                              
+
                               <Badge variant="outline" className="text-xs">
                                 {service.category}
                               </Badge>
@@ -1688,7 +1853,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                       <ArrowLeft className="h-4 w-4 mr-2" />
                       Back to Flight Selection
                     </Button>
-                    
+
                     <div className="flex gap-3">
                       <Button 
                         variant="outline" 
@@ -1717,7 +1882,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                     <TabsTrigger value="rebooking">Smart Rebooking</TabsTrigger>
                     <TabsTrigger value="services">Quick Services</TabsTrigger>
                   </TabsList>
-                  
+
                   <TabsContent value="details" className="space-y-4">
                     {selectedPnrGroup ? (
                       // Group Details View
@@ -1862,7 +2027,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                       </div>
                     )}
                   </TabsContent>
-                  
+
                   <TabsContent value="rebooking" className="space-y-4">
                     <div className="space-y-4">
                       {getAvailableFlights(selectedPnrGroup?.passengers || selectedPassenger).map((flight) => (
@@ -1951,9 +2116,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                                             {cabin.price}
                                           </span>
                                         </div>
-                                        
+
                                         <p className="text-xs text-gray-600 mb-3">{cabinOption.description}</p>
-                                        
+
                                         <div className="flex items-center gap-2 mb-2">
                                           <Progress 
                                             value={(cabin.available / cabin.total) * 100} 
@@ -1963,13 +2128,13 @@ export function PassengerRebooking({ context, onClearContext }) {
                                             {cabin.available}/{cabin.total}
                                           </span>
                                         </div>
-                                        
+
                                         {!isAvailable && selectedPnrGroup && (
                                           <div className="text-xs text-red-600 mt-1">
                                             Insufficient seats for group of {groupSize}
                                           </div>
                                         )}
-                                        
+
                                         {isAvailable && (
                                           <div className="text-xs text-green-600 mt-1">
                                             ✓ Available for {groupSize > 1 ? `group of ${groupSize}` : 'passenger'}
@@ -1985,7 +2150,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                               {!getSelectedCabin(flight.id) && (
                                 <Alert className="border-orange-200 bg-orange-50">
                                   <AlertCircle className="h-4 w-4 text-orange-600" />
-                                  <AlertDescription className="text-orange-800">
+                                  <AlertDescription>
                                     Please select a cabin class before proceeding with flight selection.
                                   </AlertDescription>
                                 </Alert>
@@ -2074,7 +2239,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                       ))}
                     </div>
                   </TabsContent>
-                  
+
                   <TabsContent value="services" className="space-y-4">
                     <Card>
                       <CardHeader>
@@ -2226,7 +2391,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                               )}
                             </div>
                           </div>
-                          
+
                           <div className="flex items-center gap-2 mb-2">
                             <div className="flex">
                               {[...Array(5)].map((_, i) => (
@@ -2322,7 +2487,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="p-3 border rounded-lg hover:bg-blue-50 cursor-pointer"
                      onClick={() => issueVoucher(75, 'Premium')}>
                   <div className="flex items-center justify-between">
@@ -2401,7 +2566,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="p-3 border rounded-lg hover:bg-blue-50 cursor-pointer"
                      onClick={() => arrangeTransport('shuttle', 'Shared shuttle service')}>
                   <div className="flex items-center justify-between">
@@ -2436,6 +2601,276 @@ export function PassengerRebooking({ context, onClearContext }) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Tabs for Passenger Service and Crew Schedule */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="passenger-service">Passenger Service</TabsTrigger>
+          <TabsTrigger value="crew-schedule">Crew Schedule Information</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="passenger-service" className="space-y-6">
+          {/* Existing Passenger Services Content */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Affected Passengers Summary */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-flydubai-blue" />
+                  Affected Passengers
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Total Passengers:</span>
+                    <span className="font-semibold">{selectedFlight.passengers}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">VIP Passengers:</span>
+                    <span className="font-semibold">{Math.floor(selectedFlight.passengers * 0.08)}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Connecting Passengers:</span>
+                    <span className="font-semibold">{Math.floor(selectedFlight.passengers * 0.25)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Passenger Impact */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-orange-600" />
+                  Impact Assessment
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Accommodation Required:</span>
+                    <Badge variant="outline" className="text-orange-700 border-orange-200">
+                      {recoveryOption.timeline?.includes('hour') && parseInt(recoveryOption.timeline) >= 4 ? 'Yes' : 'No'}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Meal Vouchers:</span>
+                    <Badge variant="outline" className="text-blue-700 border-blue-200">
+                      Required
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Compensation:</span>
+                    <Badge variant="outline" className="text-green-700 border-green-200">
+                      As per EU261
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Service Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5 text-green-600" />
+                  Required Actions
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <UserCheck className="h-4 w-4 mr-2" />
+                    Send Notifications
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <MapPin className="h-4 w-4 mr-2" />
+                    Arrange Accommodation
+                  </Button>
+                  <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Clock className="h-4 w-4 mr-2" />
+                    Process Compensation
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Execute Button for Passenger Services Flow */}
+          {fromExecution && (
+            <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-green-800 mb-2">Ready to Execute Recovery Option</h3>
+                    <p className="text-sm text-green-700">
+                      Passenger services have been reviewed. Click execute to proceed with the recovery option.
+                    </p>
+                  </div>
+                  <Button
+                    className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
+                    onClick={handleExecuteWithPassengerServices}
+                  >
+                    Execute Recovery Option
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="crew-schedule" className="space-y-6">
+          {/* Crew Schedule Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-flydubai-blue" />
+                Crew Schedule Information - {recoveryOption.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue mr-4"></div>
+                  <span>Loading crew information...</span>
+                </div>
+              ) : crewData && crewData.crew.length > 0 ? (
+                <div className="space-y-6">
+                  {/* Crew Status Table */}
+                  <div>
+                    <h4 className="font-medium mb-4">Crew Assignment Status</h4>
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Position</TableHead>
+                          <TableHead>Current Status</TableHead>
+                          <TableHead>Location</TableHead>
+                          <TableHead>Availability</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {crewData.crew.map((member, index) => (
+                          <TableRow key={index}>
+                            <TableCell className="font-medium">{member.name}</TableCell>
+                            <TableCell>{member.type || member.role || member.position}</TableCell>
+                            <TableCell>
+                              <Badge
+                                className={
+                                  member.status === 'Available'
+                                    ? 'bg-green-100 text-green-700'
+                                    : member.status === 'On Duty'
+                                    ? 'bg-blue-100 text-blue-700'
+                                    : 'bg-yellow-100 text-yellow-700'
+                                }
+                              >
+                                {member.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{member.location}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  member.availability === 'Available'
+                                    ? 'border-green-300 text-green-700'
+                                    : 'border-red-300 text-red-700'
+                                }
+                              >
+                                {member.availability}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+
+                  {/* Duty Time Information */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Duty Time Constraints</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Current Duty Time:</span>
+                            <span className="font-medium">3h 45m / 8h 20m</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Rest Requirement:</span>
+                            <span className="font-medium">Min 12h after duty</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Next Availability:</span>
+                            <span className="font-medium">Tomorrow 08:00</span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg">Operational Impact</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Crew Changes Required:</span>
+                            <span className="font-medium">
+                              {recoveryOption.id?.includes('CREW') || recoveryOption.title?.toLowerCase().includes('crew') ? '2' : '0'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Briefing Time:</span>
+                            <span className="font-medium">45 minutes</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Ready Time:</span>
+                            <span className="font-medium">
+                              {recoveryOption.timeline || '1 hour'}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>No specific crew changes required for this recovery option</p>
+                  <p className="text-xs mt-1">Standard crew assignment will be maintained</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Execute Button for Crew Schedule Flow */}
+          {fromExecution && (
+            <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-medium text-green-800 mb-2">Crew Information Reviewed</h3>
+                    <p className="text-sm text-green-700">
+                      Crew schedule impact has been assessed. Click execute to proceed with the recovery option.
+                    </p>
+                  </div>
+                  <Button
+                    className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
+                    onClick={handleExecuteWithPassengerServices}
+                  >
+                    Execute Recovery Option
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
