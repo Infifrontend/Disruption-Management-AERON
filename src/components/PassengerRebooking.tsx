@@ -1332,7 +1332,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-flydubai-navy">
-            {context ? 'Recovery Passenger Services' : 'Passenger Services'}
+            Services
           </h2>
           <p className="text-muted-foreground">
             {context 
@@ -1353,8 +1353,6 @@ export function PassengerRebooking({ context, onClearContext }) {
         </div>
       </div>
 
-      
-
       {/* Tabs for Passenger Service and Crew Schedule */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
@@ -1363,7 +1361,7 @@ export function PassengerRebooking({ context, onClearContext }) {
         </TabsList>
 
         <TabsContent value="passenger-service" className="space-y-6">
-          {/* Stats Cards - moved from outside tabs */}
+          {/* Stats Cards - moved inside passenger service tab */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="border-green-200 bg-green-50">
               <CardContent className="p-4">
