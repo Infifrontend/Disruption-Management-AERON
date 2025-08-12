@@ -46,7 +46,6 @@ import {
   DollarSign,
   Copy,
   ExternalLink,
-  TrendingDown,
   Route,
   Zap,
   ThumbsUp,
