@@ -722,6 +722,7 @@ export function ComparisonMatrix({
       { metric: "Delay (Minutes)", type: "number", format: "number" },
       { metric: "Confidence Score", type: "percentage", format: "percentage" },
       { metric: "Network Impact", type: "risk", format: "text" },
+      { metric: "Passenger Re-accommodation Required", type: "passenger_service", format: "text" },
     ];
 
     return metrics.map((metric) => {
@@ -797,6 +798,14 @@ export function ComparisonMatrix({
             break;
           case "Network Impact":
             row[key] = option.metrics?.networkImpact || "Low";
+            break;
+          case "Passenger Re-accommodation Required":
+            if (requiresPassengerServices(option)) {
+              const passengerCount = flight?.passengers || 175;
+              row[key] = `${passengerCount} passengers need rebooking or accommodation services`;
+            } else {
+              row[key] = "No passenger re-accommodation required";
+            }
             break;
           default:
             row[key] = "-";
@@ -1322,6 +1331,18 @@ export function ComparisonMatrix({
                             <span className="font-medium">{value}</span>
                           ) : row.format === "percentage" ? (
                             <span className="font-medium">{value}</span>
+                          ) : row.type === "passenger_service" ? (
+                            <div className="text-xs">
+                              {value.includes("need rebooking") ? (
+                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                                  {value}
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-green-100 text-green-800 border-green-200">
+                                  {value}
+                                </Badge>
+                              )}
+                            </div>
                           ) : (
                             value
                           )}
@@ -1400,10 +1421,12 @@ export function ComparisonMatrix({
                     {executingOption === option.id ? (
                       <>
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                        Executing...
+                        Processing...
                       </>
-                    ) : (
+                    ) : requiresPassengerServices(option) ? (
                       "Execute"
+                    ) : (
+                      "Send for Approval"
                     )}
                   </Button>
                 </div>
