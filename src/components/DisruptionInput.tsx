@@ -2209,10 +2209,16 @@ export function DisruptionInput({
                                         e.stopPropagation();
                                         handleViewDetails(flight);
                                       }}
-                                      disabled={loadingRecovery[flight.id || flight.flightNumber]}
+                                      disabled={
+                                        loadingRecovery[
+                                          flight.id || flight.flightNumber
+                                        ]
+                                      }
                                       className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                                     >
-                                      {loadingRecovery[flight.id || flight.flightNumber] ? (
+                                      {loadingRecovery[
+                                        flight.id || flight.flightNumber
+                                      ] ? (
                                         <>
                                           <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-flydubai-blue mr-1"></div>
                                           Loading...
@@ -2220,7 +2226,7 @@ export function DisruptionInput({
                                       ) : (
                                         <>
                                           <Eye className="h-3 w-3 mr-1" />
-                                          Flight List Detail
+                                          Options
                                         </>
                                       )}
                                     </Button>
@@ -2515,10 +2521,16 @@ export function DisruptionInput({
                                         e.stopPropagation();
                                         handleViewDetails(flight);
                                       }}
-                                      disabled={loadingRecovery[flight.id || flight.flightNumber]}
+                                      disabled={
+                                        loadingRecovery[
+                                          flight.id || flight.flightNumber
+                                        ]
+                                      }
                                       className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                                     >
-                                      {loadingRecovery[flight.id || flight.flightNumber] ? (
+                                      {loadingRecovery[
+                                        flight.id || flight.flightNumber
+                                      ] ? (
                                         <>
                                           <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-flydubai-blue mr-1"></div>
                                           Loading...
@@ -2526,7 +2538,7 @@ export function DisruptionInput({
                                       ) : (
                                         <>
                                           <Eye className="h-3 w-3 mr-1" />
-                                          Flight List Detail
+                                          Options
                                         </>
                                       )}
                                     </Button>
