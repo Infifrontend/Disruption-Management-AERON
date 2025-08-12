@@ -722,7 +722,7 @@ export function ComparisonMatrix({
       { metric: "Delay (Minutes)", type: "number", format: "number" },
       { metric: "Confidence Score", type: "percentage", format: "percentage" },
       { metric: "Network Impact", type: "risk", format: "text" },
-      { metric: "Passenger Re-accommodation Required", type: "passenger_service", format: "text" },
+      { metric: "Passenger Re-accommodation", type: "passenger_service", format: "text" },
     ];
 
     return metrics.map((metric) => {
@@ -799,12 +799,12 @@ export function ComparisonMatrix({
           case "Network Impact":
             row[key] = option.metrics?.networkImpact || "Low";
             break;
-          case "Passenger Re-accommodation Required":
+          case "Passenger Re-accommodation":
             if (requiresPassengerServices(option)) {
               const passengerCount = flight?.passengers || 175;
-              row[key] = `${passengerCount} passengers need rebooking or accommodation services`;
+              row[key] = `${passengerCount} passengers need Reaccommodate`;
             } else {
-              row[key] = "No passenger re-accommodation required";
+              row[key] = "-";
             }
             break;
           default:
