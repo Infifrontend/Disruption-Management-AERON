@@ -1498,10 +1498,6 @@ class DatabaseService {
       const response = await fetch(url);
       if (!response.ok) {
         console.warn(`Past recovery logs API returned ${response.status}`);
-        if (response.status === 404) {
-          // Return mock data if API endpoint doesn't exist
-          return this.getMockRecoveryLogs();
-        }
         throw new Error(`Failed to fetch past recovery logs: ${response.status}`);
       }
 
@@ -1510,8 +1506,7 @@ class DatabaseService {
       return Array.isArray(data) ? data : [];
     } catch (error) {
       console.error('Failed to fetch past recovery logs:', error);
-      // Return mock data as fallback
-      return this.getMockRecoveryLogs();
+      return [];
     }
   }
 

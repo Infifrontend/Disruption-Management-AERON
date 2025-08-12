@@ -169,8 +169,9 @@ export function PastRecoveryLogs() {
       if (response.ok) {
         const data = await response.json();
         setKpiData(data);
+        console.log("Fetched KPI data from backend:", data);
       } else {
-        // Calculate KPIs from logs if API endpoint doesn't exist
+        console.warn("KPI API returned error, calculating from logs");
         calculateKPIFromLogs();
       }
     } catch (error) {
@@ -185,8 +186,9 @@ export function PastRecoveryLogs() {
       if (response.ok) {
         const data = await response.json();
         setTrendData(data);
+        console.log("Fetched trend data from backend:", data);
       } else {
-        // Calculate trends from logs if API endpoint doesn't exist
+        console.warn("Trends API returned error, calculating from logs");
         calculateTrendsFromLogs();
       }
     } catch (error) {
