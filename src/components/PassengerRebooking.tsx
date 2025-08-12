@@ -158,11 +158,11 @@ export function PassengerRebooking({ context, onClearContext }) {
       import('./passenger-data-helpers').then(module => {
         const flightData = context?.flight || selectedFlight;
         const optionData = context?.recoveryOption || recoveryOption;
-        
+
         // Ensure we have the right passenger count
         const expectedPassengers = flightData?.passengers || selectedFlight?.passengers || 167;
         console.log(`Starting passenger generation for ${flightData?.flightNumber || flightData?.flight_number} with ${expectedPassengers} expected passengers`);
-        
+
         const passengers = module.generateAffectedPassengers(flightData, optionData);
         console.log(`Generated ${passengers.length} passengers for flight ${flightData?.flightNumber || flightData?.flight_number} (expected: ${expectedPassengers})`);
         console.log('PNR breakdown:', passengers.reduce((acc, p) => {
@@ -809,8 +809,7 @@ export function PassengerRebooking({ context, onClearContext }) {
           selectedPriority === "all-priorities" ||
           passenger.priority === selectedPriority;
         const matchesStatus =
-          selectedStatus === "all-statuses" ||
-          passenger.status === selectedStatus;
+          selectedStatus === "all-statuses" || passenger.status === selectedStatus;
 
         return matchesSearch && matchesPriority && matchesStatus;
       });
@@ -1283,10 +1282,9 @@ export function PassengerRebooking({ context, onClearContext }) {
   };
 
   // Get data from navigation state or context
-  const stateData = location.state || context;
-  const selectedFlight = stateData?.selectedFlight;
-  const recoveryOption = stateData?.recoveryOption;
-  const fromExecution = stateData?.fromExecution;
+  const selectedFlight = context?.selectedFlight || context?.flight;
+  const recoveryOption = context?.recoveryOption;
+  const fromExecution = context?.fromExecution;
 
   // Load crew data when crew tab is accessed
   useEffect(() => {
