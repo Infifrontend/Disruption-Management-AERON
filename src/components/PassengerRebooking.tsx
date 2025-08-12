@@ -156,51 +156,51 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // State for generated passengers
   const [generatedPassengers, setGeneratedPassengers] = useState([]);
+  
+  // State for tracking passenger rebooking status
+  const [passengerRebookingStatus, setPassengerRebookingStatus] = useState({});
+  
+  // State for tracking confirmed rebookings
+  const [confirmedRebookings, setConfirmedRebookings] = useState({});
 
   // Generate passengers from context when available
   useEffect(() => {
-    console.log("PassengerRebooking context data:", {
-      selectedFlight,
-      recoveryOption,
-      context,
-      locationState: location.state
-    });
+    let isMounted = true;
 
     if (!selectedFlight || !recoveryOption) {
-      console.log("Missing flight or recovery option data", {
-        hasSelectedFlight: !!selectedFlight,
-        hasRecoveryOption: !!recoveryOption
-      });
       return;
     }
 
     const loadPassengerData = async () => {
       try {
-        if (contextPassengers.length === 0) {
+        if (contextPassengers.length === 0 && isMounted) {
           const module = await import('./passenger-data-helpers');
           const flightData = context?.flight || selectedFlight;
           const optionData = context?.recoveryOption || recoveryOption;
 
           // Ensure we have the right passenger count
           const expectedPassengers = flightData?.passengers || selectedFlight?.passengers || 167;
-          console.log(`Starting passenger generation for ${flightData?.flightNumber || flightData?.flight_number} with ${expectedPassengers} expected passengers`);
 
           const passengers = module.generateAffectedPassengers(flightData, optionData);
-          console.log(`Generated ${passengers.length} passengers for flight ${flightData?.flightNumber || flightData?.flight_number} (expected: ${expectedPassengers})`);
-          console.log('PNR breakdown:', passengers.reduce((acc, p) => {
-            acc[p.pnr] = (acc[p.pnr] || 0) + 1;
-            return acc;
-          }, {}));
-          setGeneratedPassengers(passengers);
+          
+          if (isMounted) {
+            setGeneratedPassengers(passengers);
+          }
         }
       } catch (error) {
-        console.error("Error generating passengers:", error);
-        toast.error("Failed to load passenger data.");
+        if (isMounted) {
+          console.error("Error generating passengers:", error);
+          toast.error("Failed to load passenger data.");
+        }
       }
     };
 
     loadPassengerData();
-  }, [context, contextPassengers, selectedFlight, recoveryOption, location.state]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedFlight?.id, recoveryOption?.id, contextPassengers.length]);
 
 
   // Enhanced default passenger data with PNR grouping
@@ -210,7 +210,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       name: "Ahmed Al-Mansoori",
       pnr: "FZ8K9L",
       priority: "VIP",
-      status: "Confirmed",
+      status: "Rebooking Required",
       seat: "1A",
       contactInfo: "ahmed.almansoori@email.com",
       specialRequirements: null,
@@ -227,7 +227,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       name: "Fatima Al-Mansoori",
       pnr: "FZ8K9L", // Same PNR as Ahmed - family booking
       priority: "VIP",
-      status: "Confirmed",
+      status: "Rebooking Required",
       seat: "1B",
       contactInfo: "fatima.almansoori@email.com",
       preferences: {
@@ -243,7 +243,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       name: "Omar Al-Mansoori",
       pnr: "FZ8K9L", // Same PNR - child
       priority: "VIP",
-      status: "Confirmed",
+      status: "Rebooking Required",
       seat: "1C",
       contactInfo: "ahmed.almansoori@email.com",
       specialRequirements: "Child",
@@ -359,10 +359,26 @@ export function PassengerRebooking({ context, onClearContext }) {
     },
   ];
 
-  const passengers =
+  // Get base passenger list and apply status updates
+  const basePassengers =
     contextPassengers.length > 0 ? contextPassengers : 
     generatedPassengers.length > 0 ? generatedPassengers : 
     defaultPassengers;
+
+  // Apply status updates and rebooking information
+  const passengers = basePassengers.map(passenger => {
+    const rebookingInfo = confirmedRebookings[passenger.id];
+    const statusOverride = passengerRebookingStatus[passenger.id];
+    
+    return {
+      ...passenger,
+      status: statusOverride || passenger.status,
+      rebookedFlight: rebookingInfo?.flightNumber,
+      rebookedCabin: rebookingInfo?.cabin,
+      rebookedSeat: rebookingInfo?.seat,
+      rebookingDate: rebookingInfo?.date
+    };
+  });
 
   // Group passengers by PNR
   const passengersByPnr = useMemo(() => {
@@ -1087,10 +1103,9 @@ export function PassengerRebooking({ context, onClearContext }) {
 
     const passengerContext = selectedPnrGroup || selectedPassenger;
     const isGroup = selectedPnrGroup !== null;
-    const passengerCount = isGroup ? selectedPnrGroup.passengers.length : 1;
-    const passengerNames = isGroup
-      ? selectedPnrGroup.passengers.map((p) => p.name).join(", ")
-      : selectedPassenger.name;
+    const passengersToUpdate = isGroup ? selectedPnrGroup.passengers : [selectedPassenger];
+    const passengerCount = passengersToUpdate.length;
+    const passengerNames = passengersToUpdate.map((p) => p.name).join(", ");
 
     // Collect selected services
     const selectedServices = Object.entries(selectedAdditionalServices)
@@ -1100,13 +1115,34 @@ export function PassengerRebooking({ context, onClearContext }) {
         return service?.name || key;
       });
 
+    // Update passenger rebooking status
+    const statusUpdates = {};
+    const rebookingUpdates = {};
+    const currentDate = new Date().toISOString();
+
+    passengersToUpdate.forEach((passenger, index) => {
+      statusUpdates[passenger.id] = "Confirmed";
+      rebookingUpdates[passenger.id] = {
+        flightNumber: selectedFlightForServices.flightNumber,
+        cabin: selectedFlightForServices.selectedCabin,
+        seat: `${Math.floor(Math.random() * 30) + 1}${String.fromCharCode(65 + (index % 6))}`, // Generate seat
+        date: currentDate,
+        originalFlight: passenger.originalFlight || context?.flight?.flightNumber || selectedFlight?.flight_number,
+        services: selectedServices
+      };
+    });
+
+    // Apply updates immediately
+    setPassengerRebookingStatus(prev => ({ ...prev, ...statusUpdates }));
+    setConfirmedRebookings(prev => ({ ...prev, ...rebookingUpdates }));
+
     // Generate notification messages
     const notifications = [];
 
     // Flight confirmation notification
     const flightNotification = {
       type: "flight_rebooking",
-      passengers: isGroup ? selectedPnrGroup.passengers : [selectedPassenger],
+      passengers: passengersToUpdate,
       flight: selectedFlightForServices,
       message: `Your flight has been rebooked to ${selectedFlightForServices.flightNumber} departing ${selectedFlightForServices.departure} in ${selectedFlightForServices.selectedCabin} class.`,
     };
@@ -1116,7 +1152,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     if (selectedServices.length > 0) {
       const servicesNotification = {
         type: "additional_services",
-        passengers: isGroup ? selectedPnrGroup.passengers : [selectedPassenger],
+        passengers: passengersToUpdate,
         services: selectedServices,
         message: `Additional services arranged: ${selectedServices.join(", ")}`,
       };
@@ -2004,12 +2040,24 @@ export function PassengerRebooking({ context, onClearContext }) {
                             <div className="text-sm text-gray-500">
                               {passenger.contactInfo}
                             </div>
+                            {passenger.rebookedFlight && (
+                              <div className="text-xs text-green-600 mt-1">
+                                Rebooked to: {passenger.rebookedFlight} ({passenger.rebookedCabin})
+                              </div>
+                            )}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge className="badge-flydubai-outline">
-                            {passenger.pnr}
-                          </Badge>
+                          <div>
+                            <Badge className="badge-flydubai-outline mb-1">
+                              {passenger.pnr}
+                            </Badge>
+                            {passenger.rebookedFlight && (
+                              <div className="text-xs text-gray-500">
+                                New Seat: {passenger.rebookedSeat}
+                              </div>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <Badge
