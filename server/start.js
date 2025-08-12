@@ -963,7 +963,6 @@ app.post("/api/disruptions/", async (req, res) => {
       disruptionReason,
       categorization,
       category_code,
-      categoryCode,
     } = req.body;
 
     // Handle both camelCase and snake_case field names with proper fallbacks
@@ -999,9 +998,8 @@ app.post("/api/disruptions/", async (req, res) => {
     const safeStatus = status || "Active";
     const safeDisruptionReason = disruption_reason_val || "No reason provided";
 
-    // Handle category_code - check both categoryCode and category_code fields
-    const receivedCategoryCode =
-      req.body.categoryCode || req.body.category_code;
+    // Handle category_code from request body
+    const receivedCategoryCode = category_code;
     console.log(`Received category_code: ${receivedCategoryCode}`);
 
     let category_id = null;
@@ -1010,7 +1008,8 @@ app.post("/api/disruptions/", async (req, res) => {
     if (receivedCategoryCode) {
       try {
         const categoryResult = await pool.query(
-          `SELECT id FROM disruption_categories WHERE category_code = $1 AND is_active = true`,
+          `SELECT id, category_name, description FROM disruption_categories 
+           WHERE category_code = $1 AND is_active = true`,
           [receivedCategoryCode],
         );
         if (categoryResult.rows.length > 0) {
