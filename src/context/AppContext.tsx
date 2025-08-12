@@ -137,10 +137,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     },
     {
       id: "passengers",
-      name: "Passenger Services",
+      name: "Services",
       icon: "UserCheck",
       category: "services",
-      enabled: true,
+      enabled: false,
       required: false,
     },
     {

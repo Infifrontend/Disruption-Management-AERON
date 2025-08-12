@@ -370,18 +370,20 @@ export function Layout({ children }: LayoutProps) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top Header */}
-        <div className="bg-card border-b border-border px-6 py-4 flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl font-semibold">
-                {currentScreen?.name || "Dashboard"}
-              </h1>
-              <p className="text-sm text-muted-foreground">
-                Flydubai AERON - AI-powered recovery and operational excellence
-              </p>
-            </div>
+        {currentScreen?.name && (
+          <div className="bg-card border-b border-border px-6 py-4 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-xl font-semibold">
+                  {currentScreen?.name || "Dashboard"}
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  Flydubai AERON - AI-powered recovery and operational
+                  excellence
+                </p>
+              </div>
 
-            {/* {quickStats && (
+              {/* {quickStats && (
               <div className={`flex items-center gap-3 px-4 py-2 bg-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-50 rounded-lg border border-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-200`}>
                 {React.createElement(quickStats.icon, { className: `h-4 w-4 text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-600` })}
                 <div className="text-xs">
@@ -390,8 +392,9 @@ export function Layout({ children }: LayoutProps) {
                 </div>
               </div>
             )} */}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Content Area */}
         <div className="flex-1 overflow-y-auto overflow-x-hidden p-6 scrollable-content">
