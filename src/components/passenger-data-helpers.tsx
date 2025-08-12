@@ -335,21 +335,50 @@ export const generateAffectedPassengers = (flight, option) => {
   const seatRows = ['A', 'B', 'C', 'D', 'E', 'F']
   let pnrCounter = 1
 
-  // Generate additional PNR groups if needed to reach total passenger count
-  const expandedPNRGroups = [...allPNRGroups]
+  // Calculate how many times we need to multiply the base groups
+  const basePassengerCount = allPNRGroups.reduce((sum, group) => sum + group.passengers.length, 0)
+  const multiplier = Math.ceil(totalPassengers / basePassengerCount)
+
+  // Generate enough PNR groups to cover all passengers
+  const expandedPNRGroups = []
+  
+  for (let i = 0; i < multiplier; i++) {
+    allPNRGroups.forEach((templateGroup) => {
+      if (expandedPNRGroups.reduce((sum, group) => sum + group.passengers.length, 0) >= totalPassengers) {
+        return
+      }
+
+      const newPnr = i === 0 ? templateGroup.pnr : `FZ${Math.random().toString(36).substring(2, 5).toUpperCase()}${pnrCounter++}`
+      
+      expandedPNRGroups.push({
+        ...templateGroup,
+        pnr: newPnr,
+        passengers: templateGroup.passengers.map(p => ({
+          ...p,
+          name: i === 0 ? p.name : generateRandomName(p.relationship)
+        }))
+      })
+    })
+  }
+
+  // Generate individual passengers if we still need more
   while (expandedPNRGroups.reduce((sum, group) => sum + group.passengers.length, 0) < totalPassengers) {
-    // Duplicate some groups with new PNR numbers
-    const templateGroup = allPNRGroups[Math.floor(Math.random() * allPNRGroups.length)]
-    const newPnr = `FZ${Math.random().toString(36).substring(2, 5).toUpperCase()}${pnrCounter}`
-    pnrCounter++
-    
+    const singlePassengerPnr = `FZ${Math.random().toString(36).substring(2, 5).toUpperCase()}${pnrCounter++}`
     expandedPNRGroups.push({
-      ...templateGroup,
-      pnr: newPnr,
-      passengers: templateGroup.passengers.map(p => ({
-        ...p,
-        name: generateRandomName(p.relationship)
-      }))
+      pnr: singlePassengerPnr,
+      baseContactEmail: null,
+      baseContactPhone: null,
+      priority: ['Standard', 'Premium', 'VIP'][Math.floor(Math.random() * 3)],
+      groupType: 'individual',
+      passengers: [{
+        name: generateRandomName('individual'),
+        relationship: 'individual',
+        age: 25 + Math.floor(Math.random() * 40),
+        specialRequirements: Math.random() > 0.8 ? ['Dietary', 'Wheelchair', 'Medical'][Math.floor(Math.random() * 3)] : null,
+        loyaltyTier: ['Bronze', 'Silver', 'Gold', 'Platinum', null][Math.floor(Math.random() * 5)],
+        seatPreference: ['Window', 'Aisle', 'Any'][Math.floor(Math.random() * 3)],
+        mealPreference: ['Standard', 'Vegetarian', 'Halal', 'Kosher'][Math.floor(Math.random() * 4)]
+      }]
     })
   }
 
@@ -416,6 +445,7 @@ export const generateAffectedPassengers = (flight, option) => {
     })
   })
 
+  console.log(`Generated ${passengers.length} passengers for flight with ${totalPassengers} expected passengers`)
   return passengers.slice(0, totalPassengers)
 }
 

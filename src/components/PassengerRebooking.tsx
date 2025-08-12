@@ -157,6 +157,11 @@ export function PassengerRebooking({ context, onClearContext }) {
     if (context?.flight && context?.recoveryOption && contextPassengers.length === 0) {
       import('./passenger-data-helpers').then(module => {
         const passengers = module.generateAffectedPassengers(context.flight, context.recoveryOption);
+        console.log(`Generated ${passengers.length} passengers for flight ${context.flight.flightNumber} (expected: ${context.flight.passengers})`);
+        console.log('PNR breakdown:', passengers.reduce((acc, p) => {
+          acc[p.pnr] = (acc[p.pnr] || 0) + 1;
+          return acc;
+        }, {}));
         setGeneratedPassengers(passengers);
       });
     }
