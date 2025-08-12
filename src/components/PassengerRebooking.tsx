@@ -149,6 +149,11 @@ export function PassengerRebooking({ context, onClearContext }) {
   // Use context passengers if available, otherwise use default passenger data
   const contextPassengers = context?.passengers || [];
 
+  // Get data from navigation state or context - moved up to be available everywhere
+  const selectedFlight = context?.selectedFlight || context?.flight;
+  const recoveryOption = context?.recoveryOption;
+  const fromExecution = context?.fromExecution;
+
   // State for generated passengers
   const [generatedPassengers, setGeneratedPassengers] = useState([]);
 
@@ -1280,11 +1285,6 @@ export function PassengerRebooking({ context, onClearContext }) {
     );
     return total;
   };
-
-  // Get data from navigation state or context
-  const selectedFlight = context?.selectedFlight || context?.flight;
-  const recoveryOption = context?.recoveryOption;
-  const fromExecution = context?.fromExecution;
 
   // Load crew data when crew tab is accessed
   useEffect(() => {
