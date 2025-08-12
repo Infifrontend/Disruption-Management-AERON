@@ -90,6 +90,7 @@ import {
   Upload,
   ArrowLeft,
   QrCode,
+  BellRing,
 } from "lucide-react";
 import { databaseService } from "../services/databaseService";
 import { Progress } from "./ui/progress";
@@ -704,8 +705,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       availability: "Available",
       image:
         "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=250&fit=crop",
-      description:
-        "Elegant hotel with excellent conference facilities and dining options",
+      description: "Elegant hotel with excellent conference facilities and dining options",
     },
     {
       id: "HTL-003",
