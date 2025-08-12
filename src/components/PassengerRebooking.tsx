@@ -60,7 +60,16 @@ import {
   Waves,
   Dumbbell,
   Wind,
-  Tv
+  Tv,
+  Crown,
+  Utensils,
+  Shield,
+  Timer,
+  Users2,
+  Info,
+  Upload,
+  ArrowLeft,
+  QrCode
 } from 'lucide-react'
 import { databaseService } from '../services/databaseService'
 import { Progress } from './ui/progress'
