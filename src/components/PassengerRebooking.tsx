@@ -1191,14 +1191,19 @@ export function PassengerRebooking({ context, onClearContext }) {
       const success = await databaseService.savePendingRecoverySolution(pendingSolution)
 
       if (success) {
+        // Show success message
+        toast.success('Recovery option submitted for approval', {
+          description: 'The recovery option has been sent to the pending solutions queue.'
+        })
+        
         // Navigate to pending solutions without updating flight status
         navigate('/pending')
       } else {
-        alert('Failed to execute recovery option. Please try again.')
+        toast.error('Failed to submit recovery option. Please try again.')
       }
     } catch (error) {
-      console.error('Error executing recovery option:', error)
-      alert('An error occurred while executing the recovery option.')
+      console.error('Error submitting recovery option:', error)
+      toast.error('An error occurred while submitting the recovery option.')
     }
   }
 
@@ -1348,58 +1353,7 @@ export function PassengerRebooking({ context, onClearContext }) {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      {!context && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="border-green-200 bg-green-50">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-green-600 text-sm font-medium">Confirmed</p>
-                  <p className="text-2xl font-bold text-green-700">3,247</p>
-                </div>
-                <CheckCircle className="h-8 w-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-red-200 bg-red-50">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-red-600 text-sm font-medium">Rebooking Required</p>
-                  <p className="text-2xl font-bold text-red-700">89</p>
-                </div>
-                <RefreshCw className="h-8 w-8 text-red-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-yellow-200 bg-yellow-50">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-yellow-600 text-sm font-medium">Accommodation</p>
-                  <p className="text-2xl font-bold text-yellow-700">45</p>
-                </div>
-                <Clock className="h-8 w-8 text-yellow-600" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-blue-200 bg-blue-50">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-blue-600 text-sm font-medium">VIP Passengers</p>
-                  <p className="text-2xl font-bold text-blue-700">12</p>
-                </div>
-                <Star className="h-8 w-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      
 
       {/* Tabs for Passenger Service and Crew Schedule */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -1409,6 +1363,57 @@ export function PassengerRebooking({ context, onClearContext }) {
         </TabsList>
 
         <TabsContent value="passenger-service" className="space-y-6">
+          {/* Stats Cards - moved from outside tabs */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <Card className="border-green-200 bg-green-50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-green-600 text-sm font-medium">Confirmed</p>
+                    <p className="text-2xl font-bold text-green-700">{context ? confirmed : '3,247'}</p>
+                  </div>
+                  <CheckCircle className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-red-200 bg-red-50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-red-600 text-sm font-medium">Rebooking Required</p>
+                    <p className="text-2xl font-bold text-red-700">{context ? rebookingRequired : '89'}</p>
+                  </div>
+                  <RefreshCw className="h-8 w-8 text-red-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-yellow-200 bg-yellow-50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-yellow-600 text-sm font-medium">Accommodation</p>
+                    <p className="text-2xl font-bold text-yellow-700">{context ? accommodationNeeded : '45'}</p>
+                  </div>
+                  <Clock className="h-8 w-8 text-yellow-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="border-blue-200 bg-blue-50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-600 text-sm font-medium">VIP Passengers</p>
+                    <p className="text-2xl font-bold text-blue-700">{context ? passengers.filter(p => p.priority === 'VIP').length : '12'}</p>
+                  </div>
+                  <Star className="h-8 w-8 text-blue-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* Filters and View Toggle */}
           <Card>
             <CardHeader>
@@ -1713,27 +1718,7 @@ export function PassengerRebooking({ context, onClearContext }) {
             </CardContent>
           </Card>
 
-          {/* Execute Button for Passenger Services Flow */}
-          {fromExecution && (
-            <Card className="bg-gradient-to-r from-green-50 to-blue-50 border-green-200">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="font-medium text-green-800 mb-2">Ready to Execute Recovery Option</h3>
-                    <p className="text-sm text-green-700">
-                      Passenger services have been reviewed. Click execute to proceed with the recovery option.
-                    </p>
-                  </div>
-                  <Button
-                    className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
-                    onClick={handleExecuteWithPassengerServices}
-                  >
-                    Execute Recovery Option
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          
         </TabsContent>
 
         <TabsContent value="crew-schedule" className="space-y-6">
@@ -1872,11 +1857,11 @@ export function PassengerRebooking({ context, onClearContext }) {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-medium text-green-800 mb-2">Ready to Execute Recovery Option</h3>
+                <h3 className="font-medium text-green-800 mb-2">Ready to Submit Recovery Option</h3>
                 <p className="text-sm text-green-700">
                   {activeTab === 'passenger-service' 
-                    ? 'Passenger services have been reviewed. Click below to proceed with execution.'
-                    : 'Crew schedule impact has been assessed. Click below to proceed with execution.'
+                    ? 'Passenger services have been reviewed. Submit for approval to proceed.'
+                    : 'Crew schedule impact has been assessed. Submit for approval to proceed.'
                   }
                 </p>
               </div>
@@ -1884,7 +1869,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                 className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
                 onClick={handleExecuteWithPassengerServices}
               >
-                {activeTab === 'passenger-service' ? 'Send for Approval' : 'Execute'}
+                Send for Approval
               </Button>
             </div>
           </CardContent>
