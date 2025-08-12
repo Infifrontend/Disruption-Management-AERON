@@ -59,7 +59,18 @@ import {
   CircleCheck,
   Bell,
   MessageSquare,
-  Smartphone
+  Smartphone,
+  Download,
+  Upload,
+  RefreshCw,
+  Target,
+  X,
+  Wifi,
+  Waves,
+  Dumbbell,
+  Coffee,
+  Wind,
+  Tv
 } from 'lucide-react'
 import { databaseService } from '../services/databaseService'
 import { Progress } from './ui/progress'
