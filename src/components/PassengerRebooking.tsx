@@ -159,25 +159,49 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // Generate passengers from context when available
   useEffect(() => {
-    if ((context?.flight || selectedFlight) && (context?.recoveryOption || recoveryOption) && contextPassengers.length === 0) {
-      import('./passenger-data-helpers').then(module => {
-        const flightData = context?.flight || selectedFlight;
-        const optionData = context?.recoveryOption || recoveryOption;
+    console.log("PassengerRebooking context data:", {
+      selectedFlight,
+      recoveryOption,
+      context,
+      locationState: location.state
+    });
 
-        // Ensure we have the right passenger count
-        const expectedPassengers = flightData?.passengers || selectedFlight?.passengers || 167;
-        console.log(`Starting passenger generation for ${flightData?.flightNumber || flightData?.flight_number} with ${expectedPassengers} expected passengers`);
-
-        const passengers = module.generateAffectedPassengers(flightData, optionData);
-        console.log(`Generated ${passengers.length} passengers for flight ${flightData?.flightNumber || flightData?.flight_number} (expected: ${expectedPassengers})`);
-        console.log('PNR breakdown:', passengers.reduce((acc, p) => {
-          acc[p.pnr] = (acc[p.pnr] || 0) + 1;
-          return acc;
-        }, {}));
-        setGeneratedPassengers(passengers);
+    if (!selectedFlight || !recoveryOption) {
+      console.log("Missing flight or recovery option data", {
+        hasSelectedFlight: !!selectedFlight,
+        hasRecoveryOption: !!recoveryOption
       });
+      return;
     }
-  }, [context, contextPassengers, selectedFlight, recoveryOption]);
+
+    const loadPassengerData = async () => {
+      try {
+        if (contextPassengers.length === 0) {
+          const module = await import('./passenger-data-helpers');
+          const flightData = context?.flight || selectedFlight;
+          const optionData = context?.recoveryOption || recoveryOption;
+
+          // Ensure we have the right passenger count
+          const expectedPassengers = flightData?.passengers || selectedFlight?.passengers || 167;
+          console.log(`Starting passenger generation for ${flightData?.flightNumber || flightData?.flight_number} with ${expectedPassengers} expected passengers`);
+
+          const passengers = module.generateAffectedPassengers(flightData, optionData);
+          console.log(`Generated ${passengers.length} passengers for flight ${flightData?.flightNumber || flightData?.flight_number} (expected: ${expectedPassengers})`);
+          console.log('PNR breakdown:', passengers.reduce((acc, p) => {
+            acc[p.pnr] = (acc[p.pnr] || 0) + 1;
+            return acc;
+          }, {}));
+          setGeneratedPassengers(passengers);
+        }
+      } catch (error) {
+        console.error("Error generating passengers:", error);
+        toast.error("Failed to load passenger data.");
+      }
+    };
+
+    loadPassengerData();
+  }, [context, contextPassengers, selectedFlight, recoveryOption, location.state]);
+
 
   // Enhanced default passenger data with PNR grouping
   const defaultPassengers = [
@@ -206,7 +230,6 @@ export function PassengerRebooking({ context, onClearContext }) {
       status: "Confirmed",
       seat: "1B",
       contactInfo: "fatima.almansoori@email.com",
-      specialRequirements: null,
       preferences: {
         seatPreference: "Window",
         mealPreference: "Halal",

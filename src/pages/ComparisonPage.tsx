@@ -6,7 +6,7 @@ import { databaseService } from '../services/databaseService'
 
 export function ComparisonPage() {
   const navigate = useNavigate()
-  const { selectedFlight, setSelectedFlight, selectedRecoveryPlan, setSelectedRecoveryPlan } = useAppContext()
+  const { selectedFlight, setSelectedFlight, selectedRecoveryPlan, setSelectedRecoveryPlan, setPassengerServicesContext } = useAppContext()
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -65,6 +65,11 @@ export function ComparisonPage() {
   }, [selectedFlight, setSelectedFlight])
 
   const handleSelectPlan = (plan: any) => {
+    console.log("Selected plan:", plan);
+    // Set the passenger services context when a plan is selected for execution
+    if (plan.fromExecution) {
+      setPassengerServicesContext(plan);
+    }
     setSelectedRecoveryPlan(plan)
     navigate('/comparison') // Changed to navigate to comparison page itself
   }
@@ -88,7 +93,7 @@ export function ComparisonPage() {
   }
 
   return (
-    <ComparisonMatrix 
+    <ComparisonMatrix
       selectedFlight={comparisonData.flight || selectedFlight}
       recoveryOptions={comparisonData.options}
       scenarioData={comparisonData.scenarioData}
