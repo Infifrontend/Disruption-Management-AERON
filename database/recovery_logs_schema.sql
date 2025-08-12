@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS recovery_logs (
     date_created TIMESTAMP WITH TIME ZONE NOT NULL,
     date_executed TIMESTAMP WITH TIME ZONE,
     date_completed TIMESTAMP WITH TIME ZONE,
-    duration VARCHAR(20),
+    duration INTERVAL,
     status VARCHAR(20) NOT NULL,
     affected_passengers INTEGER,
     actual_cost DECIMAL(12,2),

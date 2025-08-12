@@ -36,7 +36,7 @@ async function populateRecoveryLogs() {
         date_created TIMESTAMP WITH TIME ZONE NOT NULL,
         date_executed TIMESTAMP WITH TIME ZONE,
         date_completed TIMESTAMP WITH TIME ZONE,
-        duration VARCHAR(20),
+        duration INTERVAL,
         status VARCHAR(20) NOT NULL,
         affected_passengers INTEGER,
         actual_cost DECIMAL(12,2),
@@ -102,7 +102,7 @@ async function populateRecoveryLogs() {
           date_created: new Date('2025-01-10T14:30:15Z'),
           date_executed: new Date('2025-01-10T17:32:15Z'),
           date_completed: new Date('2025-01-10T17:32:15Z'),
-          duration: '3h 2m',
+          duration: '3 hours 2 minutes',
           status: 'Successful',
           affected_passengers: 197,
           actual_cost: 125000,
@@ -137,7 +137,7 @@ async function populateRecoveryLogs() {
           date_created: new Date('2025-01-10T14:25:10Z'),
           date_executed: new Date('2025-01-10T17:21:10Z'),
           date_completed: new Date('2025-01-10T17:21:10Z'),
-          duration: '2h 56m',
+          duration: '2 hours 56 minutes',
           status: 'Successful',
           affected_passengers: 189,
           actual_cost: 89000,
@@ -172,7 +172,7 @@ async function populateRecoveryLogs() {
           date_created: new Date('2025-01-10T13:15:30Z'),
           date_executed: new Date('2025-01-10T17:45:30Z'),
           date_completed: new Date('2025-01-10T17:45:30Z'),
-          duration: '4h 30m',
+          duration: '4 hours 30 minutes',
           status: 'Successful',
           affected_passengers: 165,
           actual_cost: 145000,
@@ -244,7 +244,7 @@ async function populateRecoveryLogs() {
           const endTime = disruption.updated_at ? new Date(disruption.updated_at) : new Date(Date.now());
           const durationHours = Math.floor((endTime - startTime) / (1000 * 60 * 60));
           const durationMinutes = Math.floor(((endTime - startTime) % (1000 * 60 * 60)) / (1000 * 60));
-          const duration = `${durationHours}h ${durationMinutes}m`;
+          const duration = `${durationHours} hours ${durationMinutes} minutes`;
 
           await client.query(`
             INSERT INTO recovery_logs (
