@@ -870,8 +870,7 @@ const getWeatherIssuesRecoveryData = () => {
           "2-hour window allows for comprehensive issue resolution and passenger care",
         weather_limitations:
           "Weather conditions monitored, improvement timeline assessed",
-        passenger_care:
-          "Terminal amenities and refreshment services provided",
+        passenger_care: "Terminal amenities and refreshment services provided",
         regulatory_compliance:
           "Meets all passenger care requirements for delay duration and circumstances",
       },
@@ -1133,16 +1132,14 @@ const getWeatherIssuesRecoveryData = () => {
           risk_impact: "High",
           mitigation_impact: "Medium",
           score: 6,
-          mitigation:
-            "Experienced team assigned, procedures well documented",
+          mitigation: "Experienced team assigned, procedures well documented",
         },
         {
           risk: "Resource Availability",
           risk_impact: "Medium",
           mitigation_impact: "Medium",
           score: 4,
-          mitigation:
-            "Backup resources identified, contingency plans prepared",
+          mitigation: "Backup resources identified, contingency plans prepared",
         },
         {
           risk: "Timeline Adherence",
@@ -1321,7 +1318,7 @@ const getWeatherIssuesRecoveryData = () => {
           },
         },
         recommendedOption: {
-          option: "Aircraft B737-800",
+          ojption: "Aircraft B737-800",
           summary:
             "Maintains current operational plan with minimal adjustments required.",
         },
@@ -1329,9 +1326,8 @@ const getWeatherIssuesRecoveryData = () => {
     },
     {
       title: "Cancel Due to Weather",
-      description:
-        "Cancel flight and rebook passengers. Passenger Re-accommodation Required: 189 passengers need rebooking or accommodation services.",
-      cost: "AED 180,000",
+      description: "Cancel flight and rebook passengers.",
+      cost: "AED 180,000",  
       timeline: "Immediate",
       confidence: 60,
       impact: "Complete sector cancellation",
@@ -1440,8 +1436,7 @@ const getWeatherIssuesRecoveryData = () => {
           risk_impact: "High",
           mitigation_impact: "High",
           score: 9,
-          mitigation:
-            "Partner airline agreements, multiple rebooking options",
+          mitigation: "Partner airline agreements, multiple rebooking options",
         },
         {
           risk: "Passenger Compensation Costs",
@@ -2877,7 +2872,8 @@ const generateWeatherIssueRecovery = (flight) => {
       status: "completed",
       timestamp: "12:35:00",
       system: "Operations Control",
-      details: "Weather impact on flight operations and passenger connections analyzed",
+      details:
+        "Weather impact on flight operations and passenger connections analyzed",
       data: {
         expectedDelay: "2-4 hours",
         passengerCount: flight.passengers || 189,
@@ -2891,7 +2887,8 @@ const generateWeatherIssueRecovery = (flight) => {
       status: "completed",
       timestamp: "12:40:00",
       system: "Recovery Engine",
-      details: "Weather-specific recovery options generated from embedded templates",
+      details:
+        "Weather-specific recovery options generated from embedded templates",
       data: {
         optionsGenerated: 3,
         source: "Embedded weather recovery templates",
