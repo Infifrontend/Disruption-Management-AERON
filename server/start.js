@@ -3368,6 +3368,78 @@ app.put("/api/disruptions/:disruptionId/status", async (req, res) => {
 app.get("/api/past-recovery-logs", async (req, res) => {
   try {
     const { status, category, priority, dateRange } = req.query;
+    
+    let query = `
+      SELECT 
+        rl.*,
+        EXTRACT(EPOCH FROM (rl.date_completed - rl.date_created))/3600 as duration_hours
+      FROM recovery_logs rl
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    let paramCount = 0;
+
+    // Add filters
+    if (status && status !== 'all') {
+      paramCount++;
+      query += ` AND rl.status = $${paramCount}`;
+      params.push(status);
+    }
+
+    if (category && category !== 'all') {
+      paramCount++;
+      query += ` AND rl.disruption_category = $${paramCount}`;
+      params.push(category);
+    }
+
+    if (priority && priority !== 'all') {
+      paramCount++;
+      query += ` AND rl.priority = $${paramCount}`;
+      params.push(priority);
+    }
+
+    if (dateRange && dateRange !== 'all') {
+      paramCount++;
+      switch (dateRange) {
+        case 'today':
+          query += ` AND rl.date_created >= CURRENT_DATE`;
+          break;
+        case 'week':
+          query += ` AND rl.date_created >= CURRENT_DATE - INTERVAL '7 days'`;
+          break;
+        case 'month':
+          query += ` AND rl.date_created >= CURRENT_DATE - INTERVAL '30 days'`;
+          break;
+        case 'quarter':
+          query += ` AND rl.date_created >= CURRENT_DATE - INTERVAL '90 days'`;
+          break;
+      }
+    }
+
+    query += ` ORDER BY rl.date_created DESC LIMIT 100`;
+
+    console.log('Executing past recovery logs query:', query);
+    console.log('With parameters:', params);
+
+    const result = await pool.query(query, params);
+
+    // Transform the data for the frontend
+    const transformedLogs = result.rows.map(log => ({
+      ...log,
+      date_created: log.date_created?.toISOString(),
+      date_executed: log.date_executed?.toISOString(),
+      date_completed: log.date_completed?.toISOString(),
+      created_at: log.created_at?.toISOString()
+    }));
+
+    res.json(transformedLogs);
+  } catch (error) {
+    console.error("Error fetching past recovery logs:", error);
+    res.status(500).json({ 
+      error: "Internal server error",
+      details: error.message 
+    });</old_str>ange } = req.query;
 
     let query = `
       SELECT 
