@@ -2872,10 +2872,10 @@ app.get("/api/past-recovery-logs", async (req, res) => {
         COALESCE(fd.delay_minutes * 1000, 125000) as actual_cost,
         COALESCE(fd.delay_minutes * 1100, 130000) as estimated_cost,
         CASE 
-          WHEN fd.delay_minutes > 0 THEN ROUND(((fd.delay_minutes * 1100 - fd.delay_minutes * 1000) / (fd.delay_minutes * 1100)::float * 100), 1)
+          WHEN fd.delay_minutes > 0 THEN ROUND(((fd.delay_minutes * 1100 - fd.delay_minutes * 1000) / (fd.delay_minutes * 1100)::numeric * 100), 1)
           ELSE -3.8
         END as cost_variance,
-        COALESCE(95.0 - (fd.delay_minutes::float / 10), 92.5) as otp_impact,
+        COALESCE(95.0 - (fd.delay_minutes::numeric / 10), 92.5) as otp_impact,
         'Option A' as solution_chosen,
         3 as total_options,
         'Operations Manager' as executed_by,
@@ -2888,7 +2888,7 @@ app.get("/api/past-recovery-logs", async (req, res) => {
         COALESCE(fd.delay_minutes, 155) as actual_delay_minutes,
         COALESCE(CASE WHEN fd.delay_minutes > 100 THEN fd.delay_minutes - 100 ELSE 0 END, 0) as delay_reduction_minutes,
         fd.disruption_type as disruption_category,
-        COALESCE(95.0 - (fd.delay_minutes::float / 20), 92.5) as recovery_efficiency,
+        COALESCE(95.0 - (fd.delay_minutes::numeric / 20), 92.5) as recovery_efficiency,
         CASE 
           WHEN fd.delay_minutes > 300 THEN 'High'
           WHEN fd.delay_minutes > 100 THEN 'Medium'
