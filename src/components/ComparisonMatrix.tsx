@@ -1026,7 +1026,21 @@ export function ComparisonMatrix({
 
   const handleExecuteOption = async (option, letter) => {
     setExecutingOption(option.id);
+    
     try {
+      // Check if option requires passenger services based on keywords
+      if (requiresPassengerServices(option)) {
+        // Navigate to passenger services with option data
+        navigate("/passengers", {
+          state: {
+            selectedFlight: flight,
+            recoveryOption: option,
+            fromExecution: true, // Flag to indicate this came from execution
+          },
+        });
+        return;
+      }
+
       // Check if this combination already exists to prevent duplicates
       const existingSolutions =
         await databaseService.getPendingRecoverySolutions();
@@ -1377,25 +1391,6 @@ export function ComparisonMatrix({
                       </>
                     )}
                   </Button>
-
-                  {requiresPassengerServices(option) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="w-full border-orange-500 text-orange-700 hover:bg-orange-50"
-                      onClick={() =>
-                        navigate("/passengers", {
-                          state: {
-                            selectedFlight: flight,
-                            recoveryOption: option,
-                          },
-                        })
-                      }
-                    >
-                      <UserCheck className="h-4 w-4 mr-2" />
-                      Passenger Services
-                    </Button>
-                  )}
 
                   <Button
                     className="w-full bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
