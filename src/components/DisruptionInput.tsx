@@ -2203,15 +2203,26 @@ export function DisruptionInput({
                                   </TableCell>
                                   <TableCell>
                                     <Button
-                                      variant="outline"
                                       size="sm"
+                                      variant="outline"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleViewDetails(flight);
                                       }}
+                                      disabled={loadingRecovery[flight.id || flight.flightNumber]}
+                                      className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                                     >
-                                      <Eye className="h-3 w-3 mr-1" />
-                                      Details
+                                      {loadingRecovery[flight.id || flight.flightNumber] ? (
+                                        <>
+                                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-flydubai-blue mr-1"></div>
+                                          Loading...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Eye className="h-3 w-3 mr-1" />
+                                          Flight List Detail
+                                        </>
+                                      )}
                                     </Button>
                                   </TableCell>
                                 </TableRow>
@@ -2498,15 +2509,26 @@ export function DisruptionInput({
                                   </TableCell>
                                   <TableCell>
                                     <Button
-                                      variant="outline"
                                       size="sm"
+                                      variant="outline"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handleViewDetails(flight);
                                       }}
+                                      disabled={loadingRecovery[flight.id || flight.flightNumber]}
+                                      className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                                     >
-                                      <Eye className="h-3 w-3 mr-1" />
-                                      Details
+                                      {loadingRecovery[flight.id || flight.flightNumber] ? (
+                                        <>
+                                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-flydubai-blue mr-1"></div>
+                                          Loading...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Eye className="h-3 w-3 mr-1" />
+                                          Flight List Detail
+                                        </>
+                                      )}
                                     </Button>
                                   </TableCell>
                                 </TableRow>

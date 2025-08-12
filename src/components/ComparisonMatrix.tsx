@@ -1333,8 +1333,8 @@ export function ComparisonMatrix({
                             <span className="font-medium">{value}</span>
                           ) : row.type === "passenger_service" ? (
                             <div className="text-xs">
-                              {value.includes("need rebooking") ? (
-                                <Badge className="bg-orange-100 text-orange-800 border-orange-200">
+                              {value.includes("need Reaccommodate") ? (
+                                <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
                                   {value}
                                 </Badge>
                               ) : (
