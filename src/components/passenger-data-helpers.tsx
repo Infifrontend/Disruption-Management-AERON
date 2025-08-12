@@ -15,9 +15,9 @@ export const requiresPassengerReaccommodation = (option) => {
   return reaccommodationOptions.some(id => optionId.includes(id))
 }
 
-// PNR group templates for realistic passenger data
+// PNR group templates for realistic passenger data with 5-10 passengers per PNR
 export const getPNRGroupTemplates = () => [
-  // VIP Family - Al-Rashid Family (4 passengers)
+  // Large Family - Al-Rashid Extended Family (8 passengers)
   {
     pnr: 'FZ8M5K',
     baseContactName: 'Al-Rashid',
@@ -61,10 +61,46 @@ export const getPNRGroupTemplates = () => [
         loyaltyTier: null,
         seatPreference: 'Any',
         mealPreference: 'Child Meal'
+      },
+      {
+        name: 'Ahmed Al-Rashid', 
+        relationship: 'uncle',
+        age: 50,
+        specialRequirements: null,
+        loyaltyTier: 'Gold',
+        seatPreference: 'Aisle',
+        mealPreference: 'Halal'
+      },
+      {
+        name: 'Maryam Al-Rashid', 
+        relationship: 'aunt',
+        age: 47,
+        specialRequirements: null,
+        loyaltyTier: 'Gold',
+        seatPreference: 'Window',
+        mealPreference: 'Halal'
+      },
+      {
+        name: 'Khalil Al-Rashid', 
+        relationship: 'cousin',
+        age: 20,
+        specialRequirements: null,
+        loyaltyTier: 'Silver',
+        seatPreference: 'Any',
+        mealPreference: 'Halal'
+      },
+      {
+        name: 'Fatima Al-Rashid', 
+        relationship: 'grandmother',
+        age: 75,
+        specialRequirements: 'Elderly Assistance',
+        loyaltyTier: 'Platinum',
+        seatPreference: 'Aisle',
+        mealPreference: 'Halal'
       }
     ]
   },
-  // Business Group - Dubai Construction Corp (3 passengers)
+  // Business Group - Dubai Construction Corp (7 passengers)
   {
     pnr: 'FZ9B7C',
     baseContactName: 'Dubai Construction Corp',
@@ -99,10 +135,46 @@ export const getPNRGroupTemplates = () => [
         loyaltyTier: 'Silver',
         seatPreference: 'Aisle',
         mealPreference: 'Halal'
+      },
+      {
+        name: 'Lisa Chen', 
+        relationship: 'consultant',
+        age: 35,
+        specialRequirements: null,
+        loyaltyTier: 'Gold',
+        seatPreference: 'Window',
+        mealPreference: 'Standard'
+      },
+      {
+        name: 'Mohammed Ali', 
+        relationship: 'supervisor',
+        age: 41,
+        specialRequirements: null,
+        loyaltyTier: 'Silver',
+        seatPreference: 'Aisle',
+        mealPreference: 'Halal'
+      },
+      {
+        name: 'Sarah Williams', 
+        relationship: 'analyst',
+        age: 28,
+        specialRequirements: null,
+        loyaltyTier: 'Bronze',
+        seatPreference: 'Any',
+        mealPreference: 'Standard'
+      },
+      {
+        name: 'David Park', 
+        relationship: 'coordinator',
+        age: 33,
+        specialRequirements: null,
+        loyaltyTier: 'Silver',
+        seatPreference: 'Window',
+        mealPreference: 'Standard'
       }
     ]
   },
-  // Couple with infant - Thompson Family (3 passengers)
+  // Extended Family - Thompson Group (6 passengers)
   {
     pnr: 'FZ4F9T',
     baseContactName: 'Thompson',
@@ -137,21 +209,48 @@ export const getPNRGroupTemplates = () => [
         loyaltyTier: null,
         seatPreference: 'Lap',
         mealPreference: 'Infant'
+      },
+      {
+        name: 'Michael Thompson', 
+        relationship: 'brother',
+        age: 36,
+        specialRequirements: null,
+        loyaltyTier: 'Silver',
+        seatPreference: 'Window',
+        mealPreference: 'Standard'
+      },
+      {
+        name: 'Jennifer Thompson', 
+        relationship: 'sister-in-law',
+        age: 34,
+        specialRequirements: null,
+        loyaltyTier: 'Silver',
+        seatPreference: 'Aisle',
+        mealPreference: 'Standard'
+      },
+      {
+        name: 'Lucy Thompson', 
+        relationship: 'niece',
+        age: 8,
+        specialRequirements: 'Minor',
+        loyaltyTier: null,
+        seatPreference: 'Window',
+        mealPreference: 'Child Meal'
       }
     ]
   },
-  // Elderly couple - Wilson (2 passengers)
+  // Travel Group - Wilson Extended (5 passengers)
   {
     pnr: 'FZ6W2L',
     baseContactName: 'Wilson',
     baseContactEmail: 'margaret.wilson@gmail.com',
     baseContactPhone: '+1 555 123 4567',
     priority: 'Standard',
-    groupType: 'couple',
+    groupType: 'friends',
     passengers: [
       {
         name: 'Margaret Wilson', 
-        relationship: 'spouse',
+        relationship: 'traveler',
         age: 68,
         specialRequirements: 'Wheelchair',
         loyaltyTier: 'Silver',
@@ -166,21 +265,48 @@ export const getPNRGroupTemplates = () => [
         loyaltyTier: 'Silver',
         seatPreference: 'Aisle',
         mealPreference: 'Low Sodium'
+      },
+      {
+        name: 'Mary Johnson', 
+        relationship: 'friend',
+        age: 66,
+        specialRequirements: null,
+        loyaltyTier: 'Bronze',
+        seatPreference: 'Window',
+        mealPreference: 'Standard'
+      },
+      {
+        name: 'Robert Brown', 
+        relationship: 'friend',
+        age: 69,
+        specialRequirements: null,
+        loyaltyTier: 'Bronze',
+        seatPreference: 'Aisle',
+        mealPreference: 'Standard'
+      },
+      {
+        name: 'Helen Davis', 
+        relationship: 'friend',
+        age: 65,
+        specialRequirements: null,
+        loyaltyTier: 'Silver',
+        seatPreference: 'Window',
+        mealPreference: 'Vegetarian'
       }
     ]
   },
-  // Young couple - Patel (2 passengers)
+  // Corporate Group - Patel Tech Team (9 passengers)
   {
     pnr: 'FZ7P8R',
-    baseContactName: 'Patel',
+    baseContactName: 'Patel Tech Solutions',
     baseContactEmail: 'raj.patel@techcorp.in',
     baseContactPhone: '+91 98765 43210',
     priority: 'Premium',
-    groupType: 'couple',
+    groupType: 'business',
     passengers: [
       {
         name: 'Raj Patel', 
-        relationship: 'spouse',
+        relationship: 'ceo',
         age: 28,
         specialRequirements: null,
         loyaltyTier: 'Gold',
@@ -189,16 +315,79 @@ export const getPNRGroupTemplates = () => [
       },
       {
         name: 'Sita Patel', 
-        relationship: 'spouse',
+        relationship: 'cto',
         age: 26,
         specialRequirements: null,
         loyaltyTier: 'Silver',
         seatPreference: 'Middle',
         mealPreference: 'Vegetarian'
+      },
+      {
+        name: 'Arjun Kumar', 
+        relationship: 'developer',
+        age: 30,
+        specialRequirements: null,
+        loyaltyTier: 'Silver',
+        seatPreference: 'Aisle',
+        mealPreference: 'Vegetarian'
+      },
+      {
+        name: 'Priya Singh', 
+        relationship: 'designer',
+        age: 27,
+        specialRequirements: null,
+        loyaltyTier: 'Bronze',
+        seatPreference: 'Window',
+        mealPreference: 'Standard'
+      },
+      {
+        name: 'Vikram Sharma', 
+        relationship: 'analyst',
+        age: 25,
+        specialRequirements: null,
+        loyaltyTier: 'Bronze',
+        seatPreference: 'Any',
+        mealPreference: 'Vegetarian'
+      },
+      {
+        name: 'Deepika Rao', 
+        relationship: 'manager',
+        age: 32,
+        specialRequirements: null,
+        loyaltyTier: 'Gold',
+        seatPreference: 'Aisle',
+        mealPreference: 'Vegetarian'
+      },
+      {
+        name: 'Suresh Gupta', 
+        relationship: 'consultant',
+        age: 35,
+        specialRequirements: null,
+        loyaltyTier: 'Silver',
+        seatPreference: 'Window',
+        mealPreference: 'Standard'
+      },
+      {
+        name: 'Anita Joshi', 
+        relationship: 'coordinator',
+        age: 29,
+        specialRequirements: null,
+        loyaltyTier: 'Bronze',
+        seatPreference: 'Any',
+        mealPreference: 'Vegetarian'
+      },
+      {
+        name: 'Kiran Reddy', 
+        relationship: 'intern',
+        age: 23,
+        specialRequirements: null,
+        loyaltyTier: null,
+        seatPreference: 'Any',
+        mealPreference: 'Standard'
       }
     ]
   },
-  // Extended family - Al-Mansoori (5 passengers)
+  // VIP Family - Al-Mansoori Extended (10 passengers)
   {
     pnr: 'FZ3M9A',
     baseContactName: 'Al-Mansoori',
@@ -250,6 +439,51 @@ export const getPNRGroupTemplates = () => [
         specialRequirements: 'Elderly Assistance',
         loyaltyTier: 'Gold',
         seatPreference: 'Aisle',
+        mealPreference: 'Halal'
+      },
+      {
+        name: 'Abdullah Al-Mansoori', 
+        relationship: 'grandfather',
+        age: 78,
+        specialRequirements: 'Medical',
+        loyaltyTier: 'Platinum',
+        seatPreference: 'Aisle',
+        mealPreference: 'Halal'
+      },
+      {
+        name: 'Omar Al-Mansoori', 
+        relationship: 'uncle',
+        age: 45,
+        specialRequirements: null,
+        loyaltyTier: 'Gold',
+        seatPreference: 'Window',
+        mealPreference: 'Halal'
+      },
+      {
+        name: 'Aisha Al-Mansoori', 
+        relationship: 'aunt',
+        age: 42,
+        specialRequirements: null,
+        loyaltyTier: 'Gold',
+        seatPreference: 'Aisle',
+        mealPreference: 'Halal'
+      },
+      {
+        name: 'Hassan Al-Mansoori', 
+        relationship: 'cousin',
+        age: 25,
+        specialRequirements: null,
+        loyaltyTier: 'Silver',
+        seatPreference: 'Any',
+        mealPreference: 'Halal'
+      },
+      {
+        name: 'Layla Al-Mansoori', 
+        relationship: 'cousin',
+        age: 18,
+        specialRequirements: 'Minor',
+        loyaltyTier: null,
+        seatPreference: 'Window',
         mealPreference: 'Halal'
       }
     ]
@@ -323,31 +557,39 @@ export const generateAffectedPassengers = (flight, option) => {
   const totalPassengers = flight?.passengers || 167
   const passengers = []
 
-  // Get PNR group templates
+  // Get PNR group templates  
   const pnrGroups = getPNRGroupTemplates()
-  const individualPNRs = getIndividualPNRTemplates()
-
-  // Combine group and individual passengers
-  const allPNRGroups = [...pnrGroups, ...individualPNRs]
 
   let passengerCounter = 1
   let seatCounter = 1
-  const seatRows = ['A', 'B', 'C', 'D', 'E', 'F']
   let pnrCounter = 100
+  const seatRows = ['A', 'B', 'C', 'D', 'E', 'F']
+  
+  // Fixed middle letters for PNR generation
+  const middleLetters = ['8M', '9B', '4F', '6W', '7P', '3M', '5X', '2K', '1Q', '0N']
 
-  // Calculate how many cycles we need to generate enough passengers
-  const basePassengerCount = allPNRGroups.reduce((sum, group) => sum + group.passengers.length, 0)
-  const fullCycles = Math.floor(totalPassengers / basePassengerCount)
-  const remainingPassengers = totalPassengers % basePassengerCount
+  // Calculate how many complete groups we can fit
+  const basePassengerCount = pnrGroups.reduce((sum, group) => sum + group.passengers.length, 0)
+  const cyclesNeeded = Math.ceil(totalPassengers / basePassengerCount)
+  
+  console.log(`Generating passengers: total=${totalPassengers}, base=${basePassengerCount}, cycles needed=${cyclesNeeded}`)
 
-  console.log(`Generating passengers: total=${totalPassengers}, base=${basePassengerCount}, cycles=${fullCycles}, remaining=${remainingPassengers}`)
+  // Generate passengers using template groups
+  for (let cycle = 0; cycle < cyclesNeeded && passengerCounter <= totalPassengers; cycle++) {
+    pnrGroups.forEach((templateGroup, groupIndex) => {
+      if (passengerCounter > totalPassengers) return
 
-  // Generate full cycles of all groups
-  for (let cycle = 0; cycle < fullCycles; cycle++) {
-    allPNRGroups.forEach((templateGroup) => {
-      const newPnr = cycle === 0 ? templateGroup.pnr : `FZ${Math.random().toString(36).substring(2, 3).toUpperCase()}${pnrCounter++}`
+      // Generate PNR with fixed middle letters
+      let newPnr
+      if (cycle === 0) {
+        newPnr = templateGroup.pnr
+      } else {
+        const middleIndex = groupIndex % middleLetters.length
+        const lastChar = String.fromCharCode(65 + ((cycle + groupIndex) % 26)) // A-Z
+        newPnr = `FZ${middleLetters[middleIndex]}${lastChar}`
+      }
       
-      templateGroup.passengers.forEach((passengerTemplate) => {
+      templateGroup.passengers.forEach((passengerTemplate, passengerIndex) => {
         if (passengerCounter > totalPassengers) return
 
         // Determine seat assignment
@@ -362,8 +604,8 @@ export const generateAffectedPassengers = (flight, option) => {
         }
 
         // Determine contact info
-        const contactEmail = templateGroup.baseContactEmail || passengerTemplate.contactEmail || `${passengerTemplate.name.toLowerCase().replace(/\s+/g, '.')}@email.com`
-        const contactPhone = templateGroup.baseContactPhone || passengerTemplate.contactPhone || '+971 50 000 0000'
+        const contactEmail = templateGroup.baseContactEmail || `${passengerTemplate.name.toLowerCase().replace(/\s+/g, '.')}@email.com`
+        const contactPhone = templateGroup.baseContactPhone || '+971 50 000 0000'
 
         // Determine status based on recovery option
         let status = 'Confirmed'
@@ -381,7 +623,7 @@ export const generateAffectedPassengers = (flight, option) => {
           id: `PAX-${String(passengerCounter).padStart(3, '0')}`,
           name: cycle === 0 ? passengerTemplate.name : generateRandomName(passengerTemplate.relationship),
           pnr: newPnr,
-          priority: templateGroup.priority || passengerTemplate.priority || 'Standard',
+          priority: templateGroup.priority || 'Standard',
           status: status,
           seat: seat,
           contactInfo: contactEmail,
@@ -407,83 +649,6 @@ export const generateAffectedPassengers = (flight, option) => {
     })
   }
 
-  // Generate remaining passengers from a subset of groups
-  let groupIndex = 0
-  let passengerInGroupIndex = 0
-  
-  while (passengers.length < totalPassengers && groupIndex < allPNRGroups.length) {
-    const templateGroup = allPNRGroups[groupIndex]
-    const passengerTemplate = templateGroup.passengers[passengerInGroupIndex]
-    
-    if (!passengerTemplate) {
-      groupIndex++
-      passengerInGroupIndex = 0
-      continue
-    }
-
-    const newPnr = `FZ${Math.random().toString(36).substring(2, 3).toUpperCase()}${pnrCounter++}`
-
-    // Determine seat assignment
-    let seat
-    if (passengerTemplate.seatPreference === 'Lap') {
-      seat = 'LAP'
-    } else {
-      const seatRow = Math.floor((seatCounter - 1) / 6) + 1
-      const seatLetter = seatRows[(seatCounter - 1) % 6]
-      seat = `${seatRow}${seatLetter}`
-      seatCounter++
-    }
-
-    // Determine contact info
-    const contactEmail = templateGroup.baseContactEmail || passengerTemplate.contactEmail || `${generateRandomName(passengerTemplate.relationship).toLowerCase().replace(/\s+/g, '.')}@email.com`
-    const contactPhone = templateGroup.baseContactPhone || passengerTemplate.contactPhone || '+971 50 000 0000'
-
-    // Determine status based on recovery option
-    let status = 'Confirmed'
-    if (requiresPassengerReaccommodation(option)) {
-      if (templateGroup.priority === 'VIP') {
-        status = Math.random() > 0.7 ? 'Rebooking Required' : 'Accommodation Needed'
-      } else if (templateGroup.priority === 'Premium') {
-        status = Math.random() > 0.5 ? 'Rebooking Required' : 'Alternative Flight'
-      } else {
-        status = Math.random() > 0.3 ? 'Rebooking Required' : 'Accommodation Needed'
-      }
-    }
-
-    const passenger = {
-      id: `PAX-${String(passengerCounter).padStart(3, '0')}`,
-      name: generateRandomName(passengerTemplate.relationship),
-      pnr: newPnr,
-      priority: templateGroup.priority || passengerTemplate.priority || 'Standard',
-      status: status,
-      seat: seat,
-      contactInfo: contactEmail,
-      contactPhone: contactPhone,
-      age: passengerTemplate.age,
-      relationship: passengerTemplate.relationship,
-      specialRequirements: passengerTemplate.specialRequirements,
-      preferences: {
-        seatPreference: passengerTemplate.seatPreference || 'Any',
-        mealPreference: passengerTemplate.mealPreference || 'Standard',
-        classPreference: templateGroup.priority === 'VIP' ? 'Business' : 
-                       templateGroup.priority === 'Premium' ? 'Premium Economy' : 'Economy',
-        loyaltyTier: passengerTemplate.loyaltyTier
-      },
-      connectedFlights: Math.random() > 0.7 ? ['FZ567', 'FZ892'] : [],
-      groupType: templateGroup.groupType || 'individual',
-      familySize: 1
-    }
-
-    passengers.push(passenger)
-    passengerCounter++
-    
-    passengerInGroupIndex++
-    if (passengerInGroupIndex >= templateGroup.passengers.length) {
-      groupIndex++
-      passengerInGroupIndex = 0
-    }
-  }
-
   console.log(`Generated ${passengers.length} passengers for flight ${flight?.flightNumber || 'Unknown'} with ${totalPassengers} expected passengers`)
   
   // Log PNR distribution
@@ -492,6 +657,7 @@ export const generateAffectedPassengers = (flight, option) => {
     return acc
   }, {})
   console.log('Final PNR breakdown:', pnrBreakdown)
+  console.log('PNR sizes:', Object.values(pnrBreakdown))
   console.log('Status breakdown:', passengers.reduce((acc, p) => {
     acc[p.status] = (acc[p.status] || 0) + 1
     return acc
