@@ -59,8 +59,7 @@ import {
   CircleCheck,
   Bell,
   MessageSquare,
-  Smartphone,
-  BellRing
+  Smartphone
 } from 'lucide-react'
 import { databaseService } from '../services/databaseService'
 import { Progress } from './ui/progress'
