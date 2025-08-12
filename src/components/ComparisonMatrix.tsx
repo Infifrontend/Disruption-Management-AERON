@@ -722,7 +722,7 @@ export function ComparisonMatrix({
       { metric: "Delay (Minutes)", type: "number", format: "number" },
       { metric: "Confidence Score", type: "percentage", format: "percentage" },
       { metric: "Network Impact", type: "risk", format: "text" },
-      { metric: "Passenger Re-accommodation", type: "passenger_service", format: "text" },
+      { metric: "Passenger Impact", type: "passenger_service", format: "text" },
     ];
 
     return metrics.map((metric) => {
@@ -799,7 +799,7 @@ export function ComparisonMatrix({
           case "Network Impact":
             row[key] = option.metrics?.networkImpact || "Low";
             break;
-          case "Passenger Re-accommodation":
+          case "Passenger Impact":
             if (requiresPassengerServices(option)) {
               const passengerCount = flight?.passengers || 175;
               row[key] = `${passengerCount} passengers need Reaccommodate`;
@@ -1035,7 +1035,7 @@ export function ComparisonMatrix({
 
   const handleExecuteOption = async (option, letter) => {
     setExecutingOption(option.id);
-    
+
     try {
       // Check if option requires passenger services based on keywords
       if (requiresPassengerServices(option)) {
