@@ -1,0 +1,51 @@
+databaseService.ts:1508 Failed to fetch past recovery logs: Error: Failed to fetch past recovery logs: 500
+    at DatabaseService.getPastRecoveryLogs (databaseService.ts:1501:15)
+    at async fetchRecoveryLogs (PastRecoveryLogs.tsx:158:20)
+    at async Promise.all (index 0)
+    at async fetchAllData (PastRecoveryLogs.tsx:144:7)
+getPastRecoveryLogs @ databaseService.ts:1508
+await in getPastRecoveryLogs
+fetchRecoveryLogs @ PastRecoveryLogs.tsx:158
+fetchAllData @ PastRecoveryLogs.tsx:145
+(anonymous) @ PastRecoveryLogs.tsx:124
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=c92b0014:16915
+commitPassiveMountOnFiber @ chunk-PJEEZAML.js?v=c92b0014:18156
+commitPassiveMountEffects_complete @ chunk-PJEEZAML.js?v=c92b0014:18129
+commitPassiveMountEffects_begin @ chunk-PJEEZAML.js?v=c92b0014:18119
+commitPassiveMountEffects @ chunk-PJEEZAML.js?v=c92b0014:18109
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=c92b0014:19490
+flushPassiveEffects @ chunk-PJEEZAML.js?v=c92b0014:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=c92b0014:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=c92b0014:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=c92b0014:19432
+commitRoot @ chunk-PJEEZAML.js?v=c92b0014:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=c92b0014:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=c92b0014:18718
+workLoop @ chunk-PJEEZAML.js?v=c92b0014:197
+flushWork @ chunk-PJEEZAML.js?v=c92b0014:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=c92b0014:384Understand this error
+databaseService.ts:1498  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/past-recovery-logs 500 (Internal Server Error)
+getPastRecoveryLogs @ databaseService.ts:1498
+fetchRecoveryLogs @ PastRecoveryLogs.tsx:158
+fetchAllData @ PastRecoveryLogs.tsx:145
+(anonymous) @ PastRecoveryLogs.tsx:124
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=c92b0014:16915
+invokePassiveEffectMountInDEV @ chunk-PJEEZAML.js?v=c92b0014:18324
+invokeEffectsInDev @ chunk-PJEEZAML.js?v=c92b0014:19701
+commitDoubleInvokeEffectsInDEV @ chunk-PJEEZAML.js?v=c92b0014:19686
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=c92b0014:19503
+flushPassiveEffects @ chunk-PJEEZAML.js?v=c92b0014:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=c92b0014:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=c92b0014:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=c92b0014:19432
+commitRoot @ chunk-PJEEZAML.js?v=c92b0014:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=c92b0014:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=c92b0014:18718
+workLoop @ chunk-PJEEZAML.js?v=c92b0014:197
+flushWork @ chunk-PJEEZAML.js?v=c92b0014:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=c92b0014:384Understand this error
+databaseService.ts:1508 Failed to fetch past recovery logs: Error: Failed to fetch past recovery logs: 500
+    at DatabaseService.getPastRecoveryLogs (databaseService.ts:1501:15)
+    at async fetchRecoveryLogs (PastRecoveryLogs.tsx:158:20)
+    at async Promise.all (index 0)
+    at async fetchAllData (PastRecoveryLogs.tsx:144:7)
