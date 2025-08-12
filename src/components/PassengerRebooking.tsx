@@ -1124,6 +1124,39 @@ export function PassengerRebooking({ context, onClearContext }) {
     setSelectedPnrs(newSelectedPnrs);
   };
 
+  const handleSelectAll = () => {
+    const allPnrs = Object.keys(filteredPnrGroups);
+    if (selectedPnrs.size === allPnrs.length) {
+      // If all are selected, deselect all
+      setSelectedPnrs(new Set());
+    } else {
+      // Select all
+      setSelectedPnrs(new Set(allPnrs));
+    }
+  };
+
+  const handleBulkRebookSelectedPnrs = () => {
+    if (selectedPnrs.size === 0) {
+      toast.error("Please select PNRs to rebook");
+      return;
+    }
+
+    const selectedGroups = Array.from(selectedPnrs).map(pnr => ({
+      pnr,
+      passengers: filteredPnrGroups[pnr]
+    }));
+
+    // For bulk rebooking, we'll use the first group as the selected one for the dialog
+    const firstGroup = selectedGroups[0];
+    setSelectedPnrGroup(firstGroup);
+    setSelectedPassenger(null);
+    setShowRebookingDialog(true);
+
+    toast.success(`Opening rebooking for ${selectedPnrs.size} PNR group${selectedPnrs.size > 1 ? 's' : ''}`, {
+      description: `Selected: ${Array.from(selectedPnrs).join(', ')}`
+    });
+  };
+
   const handleExpandPnr = (pnr) => {
     const newExpandedPnrs = new Set(expandedPnrs);
     if (newExpandedPnrs.has(pnr)) {
@@ -1760,29 +1793,28 @@ export function PassengerRebooking({ context, onClearContext }) {
                       : `Showing ${filteredPassengers.length} of ${passengers.length} passengers`}
                   </p>
                 </div>
-                {groupView && selectedPnrs.size > 0 && (
+                {groupView && (
                   <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      className="btn-flydubai-primary"
-                      onClick={() => {
-                        const selectedGroups = Object.entries(filteredPnrGroups)
-                          .filter(([pnr]) => selectedPnrs.has(pnr))
-                          .map(([pnr, passengers]) => ({ pnr, passengers }));
-                        console.log("Bulk rebooking for:", selectedGroups);
-                      }}
-                    >
-                      <RefreshCw className="h-3 w-3 mr-1" />
-                      Rebook {selectedPnrs.size} PNR(s)
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                      onClick={() => setSelectedPnrs(new Set())}
-                    >
-                      Clear Selection
-                    </Button>
+                    {selectedPnrs.size > 0 && (
+                      <>
+                        <Button
+                          size="sm"
+                          className="btn-flydubai-primary"
+                          onClick={handleBulkRebookSelectedPnrs}
+                        >
+                          <RefreshCw className="h-3 w-3 mr-1" />
+                          Rebook {selectedPnrs.size} PNR(s)
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                          onClick={() => setSelectedPnrs(new Set())}
+                        >
+                          Clear Selection
+                        </Button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -1791,6 +1823,24 @@ export function PassengerRebooking({ context, onClearContext }) {
               {groupView ? (
                 // PNR Group View
                 <div className="space-y-4">
+                  {/* Select All Header */}
+                  {Object.keys(filteredPnrGroups).length > 0 && (
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
+                      <Checkbox
+                        checked={selectedPnrs.size === Object.keys(filteredPnrGroups).length}
+                        onCheckedChange={handleSelectAll}
+                      />
+                      <span className="font-medium text-gray-700">
+                        Select All ({Object.keys(filteredPnrGroups).length} PNR groups)
+                      </span>
+                      {selectedPnrs.size > 0 && (
+                        <Badge variant="outline" className="ml-auto">
+                          {selectedPnrs.size} selected
+                        </Badge>
+                      )}
+                    </div>
+                  )}
+
                   {Object.entries(filteredPnrGroups).map(
                     ([pnr, groupPassengers]) => (
                       <Card
@@ -2191,12 +2241,16 @@ export function PassengerRebooking({ context, onClearContext }) {
             <DialogTitle className="flex items-center gap-2">
               <UserCheck className="h-5 w-5 text-flydubai-blue" />
               {selectedPnrGroup
-                ? `Group Rebooking - PNR ${selectedPnrGroup.pnr} (${selectedPnrGroup.passengers.length} passengers)`
+                ? selectedPnrs.size > 1
+                  ? `Bulk Rebooking - ${selectedPnrs.size} PNR Groups (${Object.values(filteredPnrGroups).filter(([pnr]) => selectedPnrs.has(pnr)).flat().length} passengers)`
+                  : `Group Rebooking - PNR ${selectedPnrGroup.pnr} (${selectedPnrGroup.passengers.length} passengers)`
                 : `Passenger Services - ${selectedPassenger?.name}`}
             </DialogTitle>
             <DialogDescription>
               {selectedPnrGroup
-                ? `Manage rebooking and services for PNR: ${selectedPnrGroup.pnr}`
+                ? selectedPnrs.size > 1
+                  ? `Manage rebooking and services for ${selectedPnrs.size} PNR groups: ${Array.from(selectedPnrs).join(', ')}`
+                  : `Manage rebooking and services for PNR: ${selectedPnrGroup.pnr}`
                 : `Manage rebooking and services for PNR: ${selectedPassenger?.pnr}`}
             </DialogDescription>
           </DialogHeader>
