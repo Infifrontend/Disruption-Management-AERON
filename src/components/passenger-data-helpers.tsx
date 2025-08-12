@@ -342,11 +342,11 @@ export const generateAffectedPassengers = (flight, option) => {
   // Generate enough PNR groups to cover all passengers
   const expandedPNRGroups = []
   
-  for (let i = 0; i < multiplier; i++) {
-    allPNRGroups.forEach((templateGroup) => {
-      if (expandedPNRGroups.reduce((sum, group) => sum + group.passengers.length, 0) >= totalPassengers) {
-        return
-      }
+  // First, add original groups
+  for (let i = 0; i < multiplier && expandedPNRGroups.reduce((sum, group) => sum + group.passengers.length, 0) < totalPassengers; i++) {
+    for (const templateGroup of allPNRGroups) {
+      const currentPassengerCount = expandedPNRGroups.reduce((sum, group) => sum + group.passengers.length, 0)
+      if (currentPassengerCount >= totalPassengers) break
 
       const newPnr = i === 0 ? templateGroup.pnr : `FZ${Math.random().toString(36).substring(2, 5).toUpperCase()}${pnrCounter++}`
       
@@ -358,10 +358,10 @@ export const generateAffectedPassengers = (flight, option) => {
           name: i === 0 ? p.name : generateRandomName(p.relationship)
         }))
       })
-    })
+    }
   }
 
-  // Generate individual passengers if we still need more
+  // Generate individual passengers to exactly match total count
   while (expandedPNRGroups.reduce((sum, group) => sum + group.passengers.length, 0) < totalPassengers) {
     const singlePassengerPnr = `FZ${Math.random().toString(36).substring(2, 5).toUpperCase()}${pnrCounter++}`
     expandedPNRGroups.push({
@@ -445,8 +445,22 @@ export const generateAffectedPassengers = (flight, option) => {
     })
   })
 
-  console.log(`Generated ${passengers.length} passengers for flight with ${totalPassengers} expected passengers`)
-  return passengers.slice(0, totalPassengers)
+  // Ensure we have exactly the right number of passengers
+  const finalPassengers = passengers.slice(0, totalPassengers)
+  console.log(`Generated ${finalPassengers.length} passengers for flight ${flight?.flightNumber || 'Unknown'} with ${totalPassengers} expected passengers`)
+  
+  // Log PNR distribution
+  const pnrBreakdown = finalPassengers.reduce((acc, p) => {
+    acc[p.pnr] = (acc[p.pnr] || 0) + 1
+    return acc
+  }, {})
+  console.log('Final PNR breakdown:', pnrBreakdown)
+  console.log('Status breakdown:', finalPassengers.reduce((acc, p) => {
+    acc[p.status] = (acc[p.status] || 0) + 1
+    return acc
+  }, {}))
+  
+  return finalPassengers
 }
 
 // Helper function to generate random names
