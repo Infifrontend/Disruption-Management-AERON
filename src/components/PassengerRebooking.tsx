@@ -417,6 +417,9 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // Enhanced Available Flights with detailed information
   const getAvailableFlights = (passengerOrGroup) => {
+    const passengersCount = Array.isArray(passengerOrGroup)
+      ? passengerOrGroup.length
+      : 1;
     const baseFlights = [
       {
         id: "FZ567",
@@ -518,8 +521,20 @@ export function PassengerRebooking({ context, onClearContext }) {
       },
     ];
 
+    // Filter flights based on passenger count
+    const filteredFlights = baseFlights.map(flight => {
+      const updatedAvailableSeats = {};
+      for (const cabin in flight.availableSeats) {
+        updatedAvailableSeats[cabin] = {
+          ...flight.availableSeats[cabin],
+          available: Math.max(0, flight.availableSeats[cabin].available - passengersCount + 1) // Adjust available seats if context.flight.passengers is used
+        };
+      }
+      return { ...flight, availableSeats: updatedAvailableSeats };
+    });
+
     // Sort by suitability score (highest first)
-    return baseFlights.sort((a, b) => b.suitabilityScore - a.suitabilityScore);
+    return filteredFlights.sort((a, b) => b.suitabilityScore - a.suitabilityScore);
   };
 
   // Calculate flight suitability score for groups
@@ -1587,6 +1602,54 @@ export function PassengerRebooking({ context, onClearContext }) {
         </div> */}
       </div>
 
+      {/* Flight Information Display */}
+      {context?.flight && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-800">
+              <Plane className="h-5 w-5" />
+              Selected Flight Information
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="space-y-1">
+                <div className="text-sm text-blue-600 font-medium">Flight Number</div>
+                <div className="font-semibold text-blue-900">{context.flight.flightNumber}</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm text-blue-600 font-medium">Route</div>
+                <div className="font-semibold text-blue-900">{context.flight.origin} → {context.flight.destination}</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm text-blue-600 font-medium">Aircraft</div>
+                <div className="font-semibold text-blue-900">{context.flight.aircraft}</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm text-blue-600 font-medium">Passengers</div>
+                <div className="font-semibold text-blue-900">{context.flight.passengers}</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm text-blue-600 font-medium">Scheduled Departure</div>
+                <div className="font-semibold text-blue-900">{context.flight.scheduledDeparture || 'TBD'}</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm text-blue-600 font-medium">Status</div>
+                <div className="font-semibold text-blue-900">{context.flight.status}</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm text-blue-600 font-medium">Recovery Option</div>
+                <div className="font-semibold text-blue-900">{context.recoveryOption?.title}</div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-sm text-blue-600 font-medium">Delay</div>
+                <div className="font-semibold text-blue-900">{context.flight.delayMinutes ? `${context.flight.delayMinutes} min` : 'On time'}</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Tabs for Passenger Service and Crew Schedule */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
@@ -2385,7 +2448,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                               }
                             >
                               <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
                                   <Checkbox
                                     checked={isSelected}
                                     onCheckedChange={(checked) =>
