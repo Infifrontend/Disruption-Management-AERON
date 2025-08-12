@@ -333,9 +333,28 @@ export const generateAffectedPassengers = (flight, option) => {
   let passengerCounter = 1
   let seatCounter = 1
   const seatRows = ['A', 'B', 'C', 'D', 'E', 'F']
+  let pnrCounter = 1
+
+  // Generate additional PNR groups if needed to reach total passenger count
+  const expandedPNRGroups = [...allPNRGroups]
+  while (expandedPNRGroups.reduce((sum, group) => sum + group.passengers.length, 0) < totalPassengers) {
+    // Duplicate some groups with new PNR numbers
+    const templateGroup = allPNRGroups[Math.floor(Math.random() * allPNRGroups.length)]
+    const newPnr = `FZ${Math.random().toString(36).substring(2, 5).toUpperCase()}${pnrCounter}`
+    pnrCounter++
+    
+    expandedPNRGroups.push({
+      ...templateGroup,
+      pnr: newPnr,
+      passengers: templateGroup.passengers.map(p => ({
+        ...p,
+        name: generateRandomName(p.relationship)
+      }))
+    })
+  }
 
   // Generate passenger records from PNR groups
-  allPNRGroups.forEach((pnrGroup) => {
+  expandedPNRGroups.forEach((pnrGroup) => {
     if (passengerCounter > totalPassengers) return
 
     pnrGroup.passengers.forEach((passengerTemplate, index) => {
@@ -398,4 +417,24 @@ export const generateAffectedPassengers = (flight, option) => {
   })
 
   return passengers.slice(0, totalPassengers)
+}
+
+// Helper function to generate random names
+const generateRandomName = (relationship) => {
+  const firstNames = {
+    father: ['Ahmed', 'Mohammed', 'Omar', 'Hassan', 'Ali', 'Khalid', 'Saeed', 'Rashid', 'Mahmoud', 'Yusuf'],
+    mother: ['Fatima', 'Aisha', 'Layla', 'Maryam', 'Noura', 'Sara', 'Huda', 'Zainab', 'Khadija', 'Amina'],
+    son: ['Zaid', 'Yousef', 'Abdullah', 'Hamza', 'Tariq', 'Salam', 'Nasser', 'Fahad', 'Majid', 'Waleed'],
+    daughter: ['Noor', 'Amna', 'Hala', 'Rana', 'Lara', 'Maya', 'Reem', 'Dana', 'Sama', 'Lina'],
+    individual: ['John', 'Sarah', 'Michael', 'Emma', 'David', 'Lisa', 'Robert', 'Maria', 'James', 'Anna'],
+    spouse: ['Elena', 'Carlos', 'Sophie', 'Marco', 'Nina', 'Paulo', 'Isabella', 'Antonio', 'Lucia', 'Fernando']
+  }
+  
+  const lastNames = ['Al-Rashid', 'Al-Mansoori', 'Thompson', 'Johnson', 'Wilson', 'Patel', 'Rodriguez', 'Chen', 'Mueller', 'Tanaka']
+  
+  const names = firstNames[relationship] || firstNames.individual
+  const firstName = names[Math.floor(Math.random() * names.length)]
+  const lastName = lastNames[Math.floor(Math.random() * lastNames.length)]
+  
+  return `${firstName} ${lastName}`
 }
