@@ -1695,6 +1695,43 @@ class DatabaseService {
     ];
   }
 
+  // Passenger Rebookings
+  async savePassengerRebookings(rebookings: any[]): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/passenger-rebookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rebookings })
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Failed to save passenger rebookings:', error);
+      return false;
+    }
+  }
+
+  async getPassengerRebookingsByDisruption(disruptionId: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/passenger-rebookings/disruption/${disruptionId}`);
+      if (!response.ok) return [];
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch passenger rebookings:', error);
+      return [];
+    }
+  }
+
+  async getPassengerRebookingsByPnr(pnr: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/passenger-rebookings/pnr/${pnr}`);
+      if (!response.ok) return [];
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch passenger rebookings by PNR:', error);
+      return [];
+    }
+  }
+
   // Pending Recovery Solutions
   async addPendingSolution(solution: any): Promise<boolean> {
     try {

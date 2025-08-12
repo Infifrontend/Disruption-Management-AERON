@@ -1204,6 +1204,101 @@ app.put("/api/passengers/:pnr/rebooking", async (req, res) => {
   }
 });
 
+// Passenger Rebookings endpoints
+app.post("/api/passenger-rebookings", async (req, res) => {
+  try {
+    const { rebookings } = req.body;
+    
+    if (!rebookings || !Array.isArray(rebookings)) {
+      return res.status(400).json({ error: "Invalid rebookings data" });
+    }
+
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const insertedRebookings = [];
+      
+      for (const rebooking of rebookings) {
+        const result = await client.query(`
+          INSERT INTO passenger_rebookings (
+            disruption_id, pnr, passenger_id, passenger_name, original_flight,
+            original_seat, rebooked_flight, rebooked_cabin, rebooked_seat,
+            additional_services, total_passengers_in_pnr, rebooking_cost, notes
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+          ON CONFLICT (disruption_id, passenger_id, pnr) 
+          DO UPDATE SET
+            rebooked_flight = EXCLUDED.rebooked_flight,
+            rebooked_cabin = EXCLUDED.rebooked_cabin,
+            rebooked_seat = EXCLUDED.rebooked_seat,
+            additional_services = EXCLUDED.additional_services,
+            rebooking_cost = EXCLUDED.rebooking_cost,
+            notes = EXCLUDED.notes,
+            updated_at = CURRENT_TIMESTAMP
+          RETURNING *
+        `, [
+          rebooking.disruptionId,
+          rebooking.pnr,
+          rebooking.passengerId,
+          rebooking.passengerName,
+          rebooking.originalFlight,
+          rebooking.originalSeat,
+          rebooking.rebookedFlight,
+          rebooking.rebookedCabin,
+          rebooking.rebookedSeat,
+          JSON.stringify(rebooking.additionalServices || []),
+          rebooking.totalPassengersInPnr || 1,
+          rebooking.rebookingCost || 0,
+          rebooking.notes || ''
+        ]);
+        
+        insertedRebookings.push(result.rows[0]);
+      }
+
+      await client.query('COMMIT');
+      res.json({ success: true, rebookings: insertedRebookings });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error("Error saving passenger rebookings:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/passenger-rebookings/disruption/:disruptionId", async (req, res) => {
+  try {
+    const { disruptionId } = req.params;
+    const result = await pool.query(`
+      SELECT * FROM passenger_rebookings 
+      WHERE disruption_id = $1 
+      ORDER BY created_at DESC
+    `, [disruptionId]);
+    res.json(result.rows || []);
+  } catch (error) {
+    console.error("Error fetching passenger rebookings:", error);
+    res.json([]);
+  }
+});
+
+app.get("/api/passenger-rebookings/pnr/:pnr", async (req, res) => {
+  try {
+    const { pnr } = req.params;
+    const result = await pool.query(`
+      SELECT * FROM passenger_rebookings 
+      WHERE pnr = $1 
+      ORDER BY created_at DESC
+    `, [pnr]);
+    res.json(result.rows || []);
+  } catch (error) {
+    console.error("Error fetching passenger rebookings by PNR:", error);
+    res.json([]);
+  }
+});
+
 // Crew endpoints
 app.get("/api/crew/available", async (req, res) => {
   try {
