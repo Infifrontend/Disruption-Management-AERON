@@ -149,6 +149,19 @@ export function PassengerRebooking({ context, onClearContext }) {
   // Use context passengers if available, otherwise use default passenger data
   const contextPassengers = context?.passengers || [];
 
+  // State for generated passengers
+  const [generatedPassengers, setGeneratedPassengers] = useState([]);
+
+  // Generate passengers from context when available
+  useEffect(() => {
+    if (context?.flight && context?.recoveryOption && contextPassengers.length === 0) {
+      import('./passenger-data-helpers').then(module => {
+        const passengers = module.generateAffectedPassengers(context.flight, context.recoveryOption);
+        setGeneratedPassengers(passengers);
+      });
+    }
+  }, [context, contextPassengers]);
+
   // Enhanced default passenger data with PNR grouping
   const defaultPassengers = [
     {
@@ -307,7 +320,9 @@ export function PassengerRebooking({ context, onClearContext }) {
   ];
 
   const passengers =
-    contextPassengers.length > 0 ? contextPassengers : defaultPassengers;
+    contextPassengers.length > 0 ? contextPassengers : 
+    generatedPassengers.length > 0 ? generatedPassengers : 
+    defaultPassengers;
 
   // Group passengers by PNR
   const passengersByPnr = useMemo(() => {
@@ -1146,14 +1161,23 @@ export function PassengerRebooking({ context, onClearContext }) {
       passengers: filteredPnrGroups[pnr]
     }));
 
-    // For bulk rebooking, we'll use the first group as the selected one for the dialog
-    const firstGroup = selectedGroups[0];
-    setSelectedPnrGroup(firstGroup);
+    // Get all passenger names from selected PNRs
+    const allPassengerNames = selectedGroups.flatMap(group => 
+      group.passengers.map(p => p.name)
+    );
+
+    // For bulk rebooking, create a combined group
+    const bulkGroup = {
+      pnr: Array.from(selectedPnrs).join(', '),
+      passengers: selectedGroups.flatMap(group => group.passengers)
+    };
+
+    setSelectedPnrGroup(bulkGroup);
     setSelectedPassenger(null);
     setShowRebookingDialog(true);
 
     toast.success(`Opening rebooking for ${selectedPnrs.size} PNR group${selectedPnrs.size > 1 ? 's' : ''}`, {
-      description: `Selected: ${Array.from(selectedPnrs).join(', ')}`
+      description: `Passengers: ${allPassengerNames.slice(0, 3).join(', ')}${allPassengerNames.length > 3 ? ` +${allPassengerNames.length - 3} more` : ''}`
     });
   };
 
