@@ -607,8 +607,8 @@ export const generateAffectedPassengers = (flight, option) => {
         const contactEmail = templateGroup.baseContactEmail || `${passengerTemplate.name.toLowerCase().replace(/\s+/g, '.')}@email.com`
         const contactPhone = templateGroup.baseContactPhone || '+971 50 000 0000'
 
-        // Determine status based on recovery option
-        let status = 'Confirmed'
+        // Determine status based on recovery option - Start with Rebooking Required for disruptions
+        let status = 'Rebooking Required'
         if (requiresPassengerReaccommodation(option)) {
           if (templateGroup.priority === 'VIP') {
             status = Math.random() > 0.7 ? 'Rebooking Required' : 'Accommodation Needed'
