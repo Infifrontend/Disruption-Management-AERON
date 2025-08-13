@@ -1080,16 +1080,16 @@ export function ComparisonMatrix({
       let rotationImpact = null;
 
       // Fetch full details
-      try {
-        const detailsResponse = await fetch(
-          `/api/recovery-option-details/${option.id}`,
-        );
-        if (detailsResponse.ok) {
-          fullDetails = await detailsResponse.json();
-        }
-      } catch (error) {
-        console.warn("Could not fetch full details:", error);
-      }
+      // try {
+      //   const detailsResponse = await fetch(
+      //     `/api/recovery-option-details/${option.id}`,
+      //   );
+      //   if (detailsResponse.ok) {
+      //     fullDetails = await detailsResponse.json();
+      //   }
+      // } catch (error) {
+      //   console.warn("Could not fetch full details:", error);
+      // }
 
       // Fetch rotation impact
       try {
@@ -1122,10 +1122,10 @@ export function ComparisonMatrix({
       };
 
       // Use fetch to call the API directly
-      const response = await fetch('/api/pending-recovery-solutions', {
-        method: 'POST',
+      const response = await fetch("/api/pending-recovery-solutions", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(pendingSolution),
       });
@@ -1140,17 +1140,19 @@ export function ComparisonMatrix({
         // Show success popup instead of navigating immediately
         const result = await new Promise((resolve) => {
           const confirmed = window.confirm(
-            `Recovery solution "${option.title}" has been sent for approval successfully!\n\nClick OK to return to Affected Flights.`
+            `Recovery solution "${option.title}" has been sent for approval successfully!\n\nClick OK to return to Affected Flights.`,
           );
           resolve(confirmed);
         });
 
         if (result) {
-          navigate("/affected-flights");
+          navigate("/disruption");
         }
       } else {
         const errorData = await response.json();
-        alert(`Failed to submit recovery solution: ${errorData.error || 'Unknown error'}`);
+        alert(
+          `Failed to submit recovery solution: ${errorData.error || "Unknown error"}`,
+        );
       }
     } catch (error) {
       console.error("Error executing recovery option:", error);
