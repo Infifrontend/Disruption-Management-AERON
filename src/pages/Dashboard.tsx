@@ -77,6 +77,169 @@ export function Dashboard() {
         </CardContent>
       </Card>
 
+      {/* Passenger Impact & Disruption Insights */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="border-orange-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-flydubai-orange" />
+              Passenger Impact Analysis
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <AlertTriangle className="h-4 w-4 text-red-600" />
+                  <span className="text-sm font-medium text-red-900">Affected Passengers</span>
+                </div>
+                <p className="text-2xl font-bold text-red-700">4,127</p>
+                <p className="text-xs text-red-600">Across all disruptions</p>
+              </div>
+              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Clock className="h-4 w-4 text-yellow-600" />
+                  <span className="text-sm font-medium text-yellow-900">High Priority</span>
+                </div>
+                <p className="text-2xl font-bold text-yellow-700">1,238</p>
+                <p className="text-xs text-yellow-600">Need immediate attention</p>
+              </div>
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <Plane className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm font-medium text-blue-900">Rebookings</span>
+                </div>
+                <p className="text-2xl font-bold text-blue-700">892</p>
+                <p className="text-xs text-blue-600">Successfully rebooked</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckSquare className="h-4 w-4 text-green-600" />
+                  <span className="text-sm font-medium text-green-900">Resolved</span>
+                </div>
+                <p className="text-2xl font-bold text-green-700">2,997</p>
+                <p className="text-xs text-green-600">Passengers accommodated</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-purple-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-purple-600" />
+              Highly Disrupted Stations
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div>
+                    <p className="font-semibold text-red-900">DXB - Dubai</p>
+                    <p className="text-xs text-red-600">12 disrupted flights</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-red-700">2,847</p>
+                  <p className="text-xs text-red-600">passengers affected</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                  <div>
+                    <p className="font-semibold text-orange-900">DEL - Delhi</p>
+                    <p className="text-xs text-orange-600">7 disrupted flights</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-orange-700">823</p>
+                  <p className="text-xs text-orange-600">passengers affected</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <div>
+                    <p className="font-semibold text-yellow-900">BOM - Mumbai</p>
+                    <p className="text-xs text-yellow-600">4 disrupted flights</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-yellow-700">457</p>
+                  <p className="text-xs text-yellow-600">passengers affected</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Key Operational Insights */}
+      <Card className="border-blue-200">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5 text-blue-600" />
+            Key Operational Insights
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingUp className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-blue-900">Recovery Rate</span>
+              </div>
+              <p className="text-2xl font-bold text-blue-800">89.2%</p>
+              <p className="text-xs text-blue-600">+4.3% from yesterday</p>
+            </div>
+            
+            <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+              <div className="flex items-center gap-2 mb-2">
+                <Clock className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium text-green-900">Avg Resolution</span>
+              </div>
+              <p className="text-2xl font-bold text-green-800">2.4h</p>
+              <p className="text-xs text-green-600">-18 min improvement</p>
+            </div>
+            
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+              <div className="flex items-center gap-2 mb-2">
+                <Globe className="h-4 w-4 text-purple-600" />
+                <span className="text-sm font-medium text-purple-900">Network Impact</span>
+              </div>
+              <p className="text-2xl font-bold text-purple-800">Medium</p>
+              <p className="text-xs text-purple-600">23 active disruptions</p>
+            </div>
+            
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
+              <div className="flex items-center gap-2 mb-2">
+                <AlertTriangle className="h-4 w-4 text-orange-600" />
+                <span className="text-sm font-medium text-orange-900">Critical Priority</span>
+              </div>
+              <p className="text-2xl font-bold text-orange-800">5</p>
+              <p className="text-xs text-orange-600">Require immediate action</p>
+            </div>
+          </div>
+          
+          <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900">Most Disrupted Route</p>
+                <p className="text-sm text-gray-600">DXB → DEL experiencing weather delays</p>
+              </div>
+              <Badge className="bg-red-100 text-red-700 border-red-200">
+                High Impact
+              </Badge>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Network Overview */}
       <Card className="border-flydubai-blue/30">
         <CardHeader>
@@ -110,7 +273,7 @@ export function Dashboard() {
                   <div>
                     <p className="text-sm text-muted-foreground">Disruptions</p>
                     <p className="text-xl font-semibold text-flydubai-orange">23</p>
-                    <p className="text-xs text-red-600">5 critical priority</p>
+                    <p className="text-xs text-red-600">5 critical • 4,127 pax affected</p>
                   </div>
                 </div>
               </CardContent>
@@ -121,9 +284,9 @@ export function Dashboard() {
                 <div className="flex items-center gap-3">
                   <Users className="h-5 w-5 text-purple-600" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Passengers</p>
+                    <p className="text-sm text-muted-foreground">Total Passengers</p>
                     <p className="text-xl font-semibold text-purple-600">42,158</p>
-                    <p className="text-xs text-blue-600">98.2% satisfaction</p>
+                    <p className="text-xs text-red-600">9.8% disrupted today</p>
                   </div>
                 </div>
               </CardContent>
