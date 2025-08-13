@@ -1104,37 +1104,53 @@ export function ComparisonMatrix({
         console.warn("Could not fetch rotation impact:", error);
       }
 
-      // Submit to pending solutions
+      // Submit to pending solutions - Fix disruption ID issue
       const pendingSolution = {
-        disruptionId: selectedFlight?.id,
-        optionId: option.id,
-        optionTitle: option.title,
-        optionDescription: option.description,
+        disruption_id: selectedFlight?.id || flight?.id, // Ensure disruption_id is included
+        option_id: option.id,
+        option_title: option.title,
+        option_description: option.description,
         cost: option.cost,
         timeline: option.timeline,
         confidence: option.confidence,
         impact: option.impact,
         status: "Pending",
-        fullDetails: fullDetails,
-        rotationImpact: rotationImpact,
-        submittedBy: "operations_user",
-        approvalRequired: "Operations Manager",
+        full_details: fullDetails,
+        rotation_impact: rotationImpact,
+        submitted_by: "operations_user",
+        approval_required: true,
       };
 
-      const success =
-        await databaseService.savePendingRecoverySolution(pendingSolution);
+      // Use fetch to call the API directly
+      const response = await fetch('/api/pending-recovery-solutions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pendingSolution),
+      });
 
-      if (success) {
+      if (response.ok) {
         // Update flight status to pending
         await databaseService.updateFlightRecoveryStatus(
-          selectedFlight?.id,
+          selectedFlight?.id || flight?.id,
           "pending",
         );
 
-        // Navigate to pending solutions
-        navigate("/pending");
+        // Show success popup instead of navigating immediately
+        const result = await new Promise((resolve) => {
+          const confirmed = window.confirm(
+            `Recovery solution "${option.title}" has been sent for approval successfully!\n\nClick OK to return to Affected Flights.`
+          );
+          resolve(confirmed);
+        });
+
+        if (result) {
+          navigate("/affected-flights");
+        }
       } else {
-        alert("Failed to execute recovery option. Please try again.");
+        const errorData = await response.json();
+        alert(`Failed to submit recovery solution: ${errorData.error || 'Unknown error'}`);
       }
     } catch (error) {
       console.error("Error executing recovery option:", error);

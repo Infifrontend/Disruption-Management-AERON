@@ -1806,7 +1806,27 @@ class DatabaseService {
   }
 
   async savePendingRecoverySolution(solution: any): Promise<boolean> {
-    return this.addPendingSolution(solution);
+    try {
+      const response = await fetch(`${this.apiUrl}/pending-recovery-solutions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(solution),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Failed to save pending recovery solution:', errorData);
+        return false;
+      }
+
+      const result = await response.json();
+      return result.success;
+    } catch (error) {
+      console.error('Error saving pending recovery solution:', error);
+      return false;
+    }
   }
 
   async getPendingRecoverySolutions(): Promise<any[]> {

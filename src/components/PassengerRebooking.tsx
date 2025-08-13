@@ -1203,8 +1203,15 @@ export function PassengerRebooking({ context, onClearContext }) {
             // Clear selection after successful submission
             setSelectedPnrs(new Set());
 
-            // Navigate to pending solutions immediately after success
-            navigate('/pending');
+            // Show success popup and redirect to affected flights
+            setTimeout(() => {
+              const result = window.confirm(
+                `Passenger rebooking for ${passengersToApprove.length} passengers has been sent for approval successfully!\n\nClick OK to return to Affected Flights.`
+              );
+              if (result) {
+                navigate('/affected-flights');
+              }
+            }, 1000);
           } else {
             toast.error("Failed to submit passenger rebooking for approval.");
           }
