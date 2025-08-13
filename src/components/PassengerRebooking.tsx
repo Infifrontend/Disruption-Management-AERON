@@ -2520,13 +2520,12 @@ export function PassengerRebooking({ context, onClearContext }) {
         </TabsContent>
 
         <TabsContent value="crew-schedule" className="space-y-6">
-          {/* Crew Schedule Information */}
+          {/* Crew Assignment Status */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-flydubai-blue" />
-                Crew Schedule Information -{" "}
-                {recoveryOption?.title || "Recovery Option"}
+                Crew Assignment Status
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -2535,147 +2534,147 @@ export function PassengerRebooking({ context, onClearContext }) {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue mr-4"></div>
                   <span>Loading crew information...</span>
                 </div>
-              ) : crewData && crewData.crew.length > 0 ? (
-                <div className="space-y-6">
-                  {/* Crew Status Table */}
-                  <div>
-                    <h4 className="font-medium mb-4">Crew Assignment Status</h4>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Name</TableHead>
-                          <TableHead>Position</TableHead>
-                          <TableHead>Current Status</TableHead>
-                          <TableHead>Location</TableHead>
-                          <TableHead>Availability</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {crewData.crew.map((member, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-medium">
-                              {member.name}
-                            </TableCell>
-                            <TableCell>{member.position}</TableCell>
-                            <TableCell>
-                              <Badge
-                                className={
-                                  member.status === "Available"
-                                    ? "bg-green-100 text-green-700"
-                                    : member.status === "On Duty"
-                                      ? "bg-blue-100 text-blue-700"
-                                      : "bg-yellow-100 text-yellow-700"
-                                }
-                              >
-                                {member.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{member.location}</TableCell>
-                            <TableCell>
-                              <Badge
-                                variant="outline"
-                                className={
-                                  member.availability === "Available"
-                                    ? "border-green-300 text-green-700"
-                                    : "border-red-300 text-red-700"
-                                }
-                              >
-                                {member.availability}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  {/* Duty Time Information */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">
-                          Duty Time Constraints
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">
-                              Current Duty Time:
-                            </span>
-                            <span className="font-medium">3h 45m / 8h 20m</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">
-                              Rest Requirement:
-                            </span>
-                            <span className="font-medium">
-                              Min 12h after duty
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">
-                              Next Availability:
-                            </span>
-                            <span className="font-medium">Tomorrow 08:00</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg">
-                          Operational Impact
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">
-                              Crew Changes Required:
-                            </span>
-                            <span className="font-medium">
-                              {(recoveryOption?.id &&
-                                typeof recoveryOption.id === "string" &&
-                                recoveryOption.id.includes("CREW")) ||
-                              recoveryOption?.title
-                                ?.toLowerCase()
-                                .includes("crew")
-                                ? "2"
-                                : "0"}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">
-                              Briefing Time:
-                            </span>
-                            <span className="font-medium">45 minutes</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-muted-foreground">
-                              Ready Time:
-                            </span>
-                            <span className="font-medium">
-                              {recoveryOption.timeline || "1 hour"}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                  <p>
-                    No specific crew changes required for this recovery option
-                  </p>
-                  <p className="text-xs mt-1">
-                    Standard crew assignment will be maintained
-                  </p>
+                <div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Rank</TableHead>
+                        <TableHead>Violation</TableHead>
+                        <TableHead>Reaccommodate Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow>
+                        <TableCell className="font-medium">
+                          Capt. Ahmed Al-Mansouri
+                        </TableCell>
+                        <TableCell>Captain</TableCell>
+                        <TableCell>
+                          <Badge className="bg-red-100 text-red-700 border-red-200">
+                            Duty violation
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-100 text-green-700 border-green-200">
+                            Available
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">
+                          FO Sarah Johnson
+                        </TableCell>
+                        <TableCell>First Officer</TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-100 text-green-700 border-green-200">
+                            No violations
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-100 text-green-700 border-green-200">
+                            Available
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">
+                          SSCC Lisa Martinez
+                        </TableCell>
+                        <TableCell>Senior Safety & Security</TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-100 text-green-700 border-green-200">
+                            No violations
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-100 text-green-700 border-green-200">
+                            Available
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                      <TableRow>
+                        <TableCell className="font-medium">
+                          CC Maria Santos
+                        </TableCell>
+                        <TableCell>Cabin Crew</TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-100 text-green-700 border-green-200">
+                            No violations
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge className="bg-green-100 text-green-700 border-green-200">
+                            Available
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Hotel Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Hotel className="h-5 w-5 text-flydubai-blue" />
+                Hotel Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Hotel Information */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-lg">Mumbai Airport Hotel</h4>
+                  <div className="flex items-center gap-2">
+                    <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                      4-Star
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <MapPin className="h-4 w-4" />
+                    <span>BOM Terminal 2</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Hotel className="h-4 w-4" />
+                    <span>3 rooms</span>
+                  </div>
+                </div>
+
+                {/* Accommodation Period */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-lg">Accommodation Period</h4>
+                  <div className="space-y-2">
+                    <div>
+                      <span className="text-sm font-medium">Check-in:</span>
+                      <div className="text-sm text-gray-600">2025-01-11 12:00</div>
+                    </div>
+                    <div>
+                      <span className="text-sm font-medium">Check-out:</span>
+                      <div className="text-sm text-gray-600">2025-01-12 10:00</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Transport Details */}
+                <div className="space-y-4">
+                  <h4 className="font-medium text-lg">Transport Details</h4>
+                  <div className="space-y-2">
+                    <div className="font-medium">Mumbai Airport Taxi Services</div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Car className="h-4 w-4" />
+                      <span>MH-01-AB-1234</span>
+                    </div>
+                    <Badge className="bg-green-100 text-green-700 border-green-200">
+                      Confirmed
+                    </Badge>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
