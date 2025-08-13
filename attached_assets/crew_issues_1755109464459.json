@@ -1,0 +1,1037 @@
+[
+    {
+        "title": "Assign Standby Crew",
+        "description": "Capt. Mohammed Al-Zaabi from standby roster",
+        "cost": "AED 8,500",
+        "timeline": "30 minutes",
+        "confidence": 92,
+        "impact": "Minimal operational disruption",
+        "status": "recommended",
+        "priority": 1,
+        "advantages": [],
+        "considerations": [],
+        "impact_area": [
+            "crew"
+        ],
+        "impact_summary": "Crew Replacement Protocol for FZ181: Deploy standby crew currently available at DXB. Fresh crew well within regulatory duty time limitations. Extended briefing required for B737-800 type rating and current route conditions. Estimated crew preparation time: 45-60 minutes. Current crew situation: Crew duty time breach. Passenger delay minimized through efficient crew transition process.",
+        "resource_requirements": [
+            {
+                "title": "Replacement Captain",
+                "subtitle": "Standby Captain",
+                "availability": "Confirmed",
+                "status": "En Route",
+                "location": "Crew Hotel/Rest Area",
+                "eta": "25 minutes",
+                "details": "Type-rated captain with required flight hours"
+            },
+            {
+                "title": "Replacement First Officer",
+                "subtitle": "Standby First Officer",
+                "availability": "Confirmed",
+                "status": "Ready",
+                "location": "Crew Rest Area",
+                "eta": "5 minutes",
+                "details": "Qualified first officer within duty limits"
+            },
+            {
+                "title": "Cabin Crew",
+                "subtitle": "Original/Replacement Cabin Crew",
+                "availability": "Available",
+                "status": "Ready",
+                "location": "Gate Area",
+                "eta": "On Location",
+                "details": "Cabin crew assessment and replacement if needed"
+            },
+            {
+                "title": "Training Coordinator",
+                "subtitle": "Training Captain (TRI)",
+                "availability": "On Call",
+                "status": "Responding",
+                "location": "Training Center",
+                "eta": "15 minutes",
+                "details": "Extended crew briefing and documentation support"
+            }
+        ],
+        "cost_breakdown": {
+            "breakdown": [
+                {
+                    "amount": "AED 5,525",
+                    "category": "Standby Crew Activation",
+                    "percentage": 65,
+                    "description": "Call-out pay for replacement crew"
+                },
+                {
+                    "amount": "AED 1,360",
+                    "category": "Extended Briefing Costs",
+                    "percentage": 16,
+                    "description": "Training coordinator and materials"
+                },
+                {
+                    "amount": "AED 850",
+                    "category": "Crew Transportation",
+                    "percentage": 10,
+                    "description": "Transport to airport"
+                },
+                {
+                    "amount": "AED 765",
+                    "category": "Administrative Processing",
+                    "percentage": 9,
+                    "description": "Duty time documentation, roster changes"
+                }
+            ],
+            "total": {
+                "amount": "AED 8,500",
+                "title": "Total Estimated Cost",
+                "description": "Ground handling and coordination"
+            }
+        },
+        "timeline_details": [
+            {
+                "step": "Standby Crew Activation",
+                "status": "completed",
+                "details": "Contact and confirm availability of standby crew",
+                "startTime": "15:58",
+                "endTime": "16:06",
+                "duration": "8 min"
+            },
+            {
+                "step": "Crew Transportation",
+                "status": "in-progress",
+                "details": "Transport crew to airport",
+                "startTime": "16:06",
+                "endTime": "23:36",
+                "duration": "450 min"
+            },
+            {
+                "step": "Extended Safety Briefing",
+                "status": "pending",
+                "details": "Route-specific briefing and documentation",
+                "startTime": "23:28",
+                "endTime": "09:58",
+                "duration": "630 min"
+            },
+            {
+                "step": "Pre-flight Preparation",
+                "status": "pending",
+                "details": "Aircraft checks and passenger boarding prep",
+                "startTime": "09:58",
+                "endTime": "17:28",
+                "duration": "450 min"
+            },
+            {
+                "step": "Departure Clearance",
+                "status": "pending",
+                "details": "Final clearances and departure",
+                "startTime": "21:48",
+                "endTime": "21:58",
+                "duration": "10 min"
+            }
+        ],
+        "risk_assessment": [
+            {
+                "risk": "Standby Crew Unavailable",
+                "risk_impact": "Low",
+                "mitigation_impact": "High",
+                "score": 3,
+                "mitigation": "Multiple qualified crew members confirmed available"
+            },
+            {
+                "risk": "Extended Briefing Time",
+                "risk_impact": "Medium",
+                "mitigation_impact": "Low",
+                "score": 2,
+                "mitigation": "Pre-briefing materials prepared, time buffers included"
+            },
+            {
+                "risk": "Regulatory Compliance Issues",
+                "risk_impact": "Low",
+                "mitigation_impact": "High",
+                "score": 3,
+                "mitigation": "All crew qualifications verified, documentation current"
+            },
+            {
+                "risk": "Crew Coordination Challenges",
+                "risk_impact": "Low",
+                "mitigation_impact": "Medium",
+                "score": 2,
+                "mitigation": "Training coordinator available, standardized procedures"
+            }
+        ],
+        "technical_specs": {
+            "implementation": {
+                "title": "Implementation",
+                "details": "Emergency crew replacement with extended briefing and qualification verification"
+            },
+            "systems_required": {
+                "title": "Systems required",
+                "details": [
+                    "Crew Management System",
+                    "Training Records Database",
+                    "Duty Time Tracking",
+                    "Qualification Verification System"
+                ]
+            },
+            "certifications": {
+                "title": "Certifications",
+                "details": [
+                    "GCAA Crew Licensing",
+                    "Flydubai Type Ratings",
+                    "Current Medical Certificates",
+                    "Route Qualifications"
+                ]
+            },
+            "crew_qualifications": {
+                "title": "Crew qualifications",
+                "details": "All replacement crew verified current on aircraft type, route qualified"
+            },
+            "duty_time_compliance": {
+                "title": "Duty time compliance",
+                "details": "Fresh crew well within all regulatory duty time limitations and rest requirements"
+            },
+            "briefing_requirements": {
+                "title": "Briefing requirements",
+                "details": "Extended briefing for crew pairing, weather, NOTAMs, special procedures, and current conditions"
+            },
+            "backup_resources": {
+                "title": "Backup resources",
+                "details": "Additional standby crew available if primary replacement unavailable"
+            },
+            "training_status": {
+                "title": "Training status",
+                "details": "All crew current on recurrent training, emergency procedures, and company standards"
+            }
+        },
+        "metrics": {},
+        "rotation_plan": {
+            "aircraftOptions": [
+                {
+                    "reg": "A6-FED",
+                    "type": "B737-800 (189Y)",
+                    "etops": {
+                        "status": "available",
+                        "value": "180min"
+                    },
+                    "cabinMatch": {
+                        "status": "exact",
+                        "value": "Exact"
+                    },
+                    "availability": "Original Aircraft",
+                    "assigned": {
+                        "status": "none",
+                        "value": "None"
+                    },
+                    "turnaround": "45 min",
+                    "maintenance": {
+                        "status": "current",
+                        "value": "Current"
+                    },
+                    "option_score": {
+                        "cost_score": "92%",
+                        "delay_score": "88%",
+                        "crew_impact": "95%",
+                        "fuel_score": "91%",
+                        "overall": "92%"
+                    }
+                }
+            ],
+            "crew": [
+                {
+                    "name": "Capt. Ahmed Al-Mansouri",
+                    "role": "Captain",
+                    "type": "B737 Type Rating",
+                    "status": "Available",
+                    "issue": "Replacement for fatigued crew"
+                },
+                {
+                    "name": "FO Sarah Johnson",
+                    "role": "First Officer",
+                    "type": "B737/MAX Type Rating",
+                    "status": "Available",
+                    "issue": null
+                },
+                {
+                    "name": "SSCC Lisa Martinez",
+                    "role": "Senior Cabin Crew",
+                    "type": "Senior Cabin Crew",
+                    "status": "Available",
+                    "issue": "Approaching duty limit (6h)"
+                },
+                {
+                    "name": "CC Maria Santos",
+                    "role": "Cabin Crew",
+                    "type": "Cabin Crew",
+                    "status": "Standby",
+                    "issue": "Standby replacement"
+                }
+            ],
+            "crew_constraint": {
+                "duty_time": {
+                    "disruption": "",
+                    "details": "6h 15m of 8h 20m limit"
+                },
+                "rest_requirement": {
+                    "disruption": "Min 12h rest required after duty",
+                    "details": "Next availability: Tomorrow 08:00"
+                },
+                "deadhead": {
+                    "disruption": "2 crew members need positioning to DXB",
+                    "details": "Commercial flights available"
+                },
+                "fatigue_report": {
+                    "disruption": "1 crew member reported fatigue",
+                    "details": "Replacement required"
+                }
+            },
+            "nextSectors": [
+                {
+                    "flight": "FZ456 DXB-BOM",
+                    "departure": "Cancelled",
+                    "impact": "High Impact",
+                    "reason": "Flight cancellation"
+                },
+                {
+                    "flight": "FZ457 BOM-DXB",
+                    "departure": "Cancelled",
+                    "impact": "High Impact",
+                    "reason": "Route cancellation"
+                },
+                {
+                    "flight": "FZ890 DXB-DEL",
+                    "departure": "Dep: 08:30 (Next Day)",
+                    "impact": "No Impact",
+                    "reason": "Different aircraft"
+                }
+            ],
+            "operationalConstraints": {
+                "gateCompatibility": {
+                    "status": "Same gate assignment maintained",
+                    "details": ""
+                },
+                "slotCapacity": {
+                    "status": "Coordination Required",
+                    "details": "DXB slot coordination required"
+                },
+                "curfewViolation": {
+                    "status": "No Risk",
+                    "details": "Within curfew limits"
+                },
+                "passengerConnections": {
+                    "status": "No Significant Impact",
+                    "details": "No significant connection issues"
+                }
+            },
+            "costBreakdown": {
+                "delayCost": {
+                    "metric_value": "AED 5,200",
+                    "detail": "Including compensation"
+                },
+                "fuelEfficiency": {
+                    "metric_value": "+0.3%",
+                    "detail": "vs original aircraft"
+                },
+                "hotelTransport": {
+                    "metric_value": "N/A",
+                    "detail": "Crew accommodation"
+                },
+                "eu261Risk": {
+                    "metric_value": "Low",
+                    "detail": "€600 per passenger"
+                }
+            },
+            "recommended_option": {
+                "option": "Aircraft B737-800",
+                "summary": "Maintains current operational plan with minimal adjustments required."
+            }
+        },
+        "details": null,
+        "created_at": "2025-08-11T10:30:00.000Z",
+        "updated_at": "2025-08-11T10:30:00.000Z"
+    },
+    {
+        "title": "Deadhead Crew",
+        "description": "Position qualified Captain from Abu Dhabi",
+        "cost": "AED 25,000",
+        "timeline": "120 minutes",
+        "confidence": 85,
+        "impact": "Moderate schedule delay",
+        "status": "caution",
+        "priority": 1,
+        "advantages": [],
+        "considerations": [],
+        "impact_area": [
+            "crew"
+        ],
+        "impact_summary": "Crew Replacement Protocol for FZ181: Deploy standby crew currently available at DXB. Fresh crew well within regulatory duty time limitations. Extended briefing required for B737-800 type rating and current route conditions. Estimated crew preparation time: 45-60 minutes. Current crew situation: Crew duty time breach. Passenger delay minimized through efficient crew transition process.",
+        "resource_requirements": [
+            {
+                "title": "Replacement Captain",
+                "subtitle": "Standby Captain",
+                "availability": "Confirmed",
+                "status": "En Route",
+                "location": "Crew Hotel/Rest Area",
+                "eta": "25 minutes",
+                "details": "Type-rated captain with required flight hours"
+            },
+            {
+                "title": "Replacement First Officer",
+                "subtitle": "Standby First Officer",
+                "availability": "Confirmed",
+                "status": "Ready",
+                "location": "Crew Rest Area",
+                "eta": "5 minutes",
+                "details": "Qualified first officer within duty limits"
+            },
+            {
+                "title": "Cabin Crew",
+                "subtitle": "Original/Replacement Cabin Crew",
+                "availability": "Available",
+                "status": "Ready",
+                "location": "Gate Area",
+                "eta": "On Location",
+                "details": "Cabin crew assessment and replacement if needed"
+            },
+            {
+                "title": "Training Coordinator",
+                "subtitle": "Training Captain (TRI)",
+                "availability": "On Call",
+                "status": "Responding",
+                "location": "Training Center",
+                "eta": "15 minutes",
+                "details": "Extended crew briefing and documentation support"
+            }
+        ],
+        "cost_breakdown": {
+            "breakdown": [
+                {
+                    "amount": "AED 16,250",
+                    "category": "Standby Crew Activation",
+                    "percentage": 65,
+                    "description": "Call-out pay for replacement crew"
+                },
+                {
+                    "amount": "AED 4,000",
+                    "category": "Extended Briefing Costs",
+                    "percentage": 16,
+                    "description": "Training coordinator and materials"
+                },
+                {
+                    "amount": "AED 2,500",
+                    "category": "Crew Transportation",
+                    "percentage": 10,
+                    "description": "Transport to airport"
+                },
+                {
+                    "amount": "AED 2,250",
+                    "category": "Administrative Processing",
+                    "percentage": 9,
+                    "description": "Duty time documentation, roster changes"
+                }
+            ],
+            "total": {
+                "amount": "AED 25,000",
+                "title": "Total Estimated Cost",
+                "description": "Ground handling and coordination"
+            }
+        },
+        "timeline_details": [
+            {
+                "step": "Standby Crew Activation",
+                "status": "completed",
+                "details": "Contact and confirm availability of standby crew",
+                "startTime": "16:48",
+                "endTime": "16:56",
+                "duration": "8 min"
+            },
+            {
+                "step": "Crew Transportation",
+                "status": "in-progress",
+                "details": "Transport crew to airport",
+                "startTime": "16:56",
+                "endTime": "22:56",
+                "duration": "1800 min"
+            },
+            {
+                "step": "Extended Safety Briefing",
+                "status": "pending",
+                "details": "Route-specific briefing and documentation",
+                "startTime": "22:48",
+                "endTime": "16:48",
+                "duration": "2520 min"
+            },
+            {
+                "step": "Pre-flight Preparation",
+                "status": "pending",
+                "details": "Aircraft checks and passenger boarding prep",
+                "startTime": "16:48",
+                "endTime": "22:48",
+                "duration": "1800 min"
+            },
+            {
+                "step": "Departure Clearance",
+                "status": "pending",
+                "details": "Final clearances and departure",
+                "startTime": "16:38",
+                "endTime": "16:48",
+                "duration": "10 min"
+            }
+        ],
+        "risk_assessment": [
+            {
+                "risk": "Standby Crew Unavailable",
+                "risk_impact": "Low",
+                "mitigation_impact": "High",
+                "score": 3,
+                "mitigation": "Multiple qualified crew members confirmed available"
+            },
+            {
+                "risk": "Extended Briefing Time",
+                "risk_impact": "Medium",
+                "mitigation_impact": "Low",
+                "score": 2,
+                "mitigation": "Pre-briefing materials prepared, time buffers included"
+            },
+            {
+                "risk": "Regulatory Compliance Issues",
+                "risk_impact": "Low",
+                "mitigation_impact": "High",
+                "score": 3,
+                "mitigation": "All crew qualifications verified, documentation current"
+            },
+            {
+                "risk": "Crew Coordination Challenges",
+                "risk_impact": "Low",
+                "mitigation_impact": "Medium",
+                "score": 2,
+                "mitigation": "Training coordinator available, standardized procedures"
+            }
+        ],
+        "technical_specs": {
+            "implementation": {
+                "title": "Implementation",
+                "details": "Emergency crew replacement with extended briefing and qualification verification"
+            },
+            "systems_required": {
+                "title": "Systems required",
+                "details": [
+                    "Crew Management System",
+                    "Training Records Database",
+                    "Duty Time Tracking",
+                    "Qualification Verification System"
+                ]
+            },
+            "certifications": {
+                "title": "Certifications",
+                "details": [
+                    "GCAA Crew Licensing",
+                    "Flydubai Type Ratings",
+                    "Current Medical Certificates",
+                    "Route Qualifications"
+                ]
+            },
+            "crew_qualifications": {
+                "title": "Crew qualifications",
+                "details": "All replacement crew verified current on aircraft type, route qualified"
+            },
+            "duty_time_compliance": {
+                "title": "Duty time compliance",
+                "details": "Fresh crew well within all regulatory duty time limitations and rest requirements"
+            },
+            "briefing_requirements": {
+                "title": "Briefing requirements",
+                "details": "Extended briefing for crew pairing, weather, NOTAMs, special procedures, and current conditions"
+            },
+            "backup_resources": {
+                "title": "Backup resources",
+                "details": "Additional standby crew available if primary replacement unavailable"
+            },
+            "training_status": {
+                "title": "Training status",
+                "details": "All crew current on recurrent training, emergency procedures, and company standards"
+            }
+        },
+        "metrics": {},
+        "rotation_plan": {
+            "aircraftOptions": [
+                {
+                    "reg": "A6-FED",
+                    "type": "B737-800 (189Y)",
+                    "etops": {
+                        "status": "available",
+                        "value": "180min"
+                    },
+                    "cabinMatch": {
+                        "status": "exact",
+                        "value": "Exact"
+                    },
+                    "availability": "Original Aircraft",
+                    "assigned": {
+                        "status": "none",
+                        "value": "None"
+                    },
+                    "turnaround": "45 min",
+                    "maintenance": {
+                        "status": "current",
+                        "value": "Current"
+                    },
+                    "option_score": {
+                        "cost_score": "92%",
+                        "delay_score": "88%",
+                        "crew_impact": "95%",
+                        "fuel_score": "91%",
+                        "overall": "92%"
+                    }
+                }
+            ],
+            "crew": [
+                {
+                    "name": "Capt. Ahmed Al-Mansouri",
+                    "role": "Captain",
+                    "type": "B737 Type Rating",
+                    "status": "Available",
+                    "issue": "Replacement for fatigued crew"
+                },
+                {
+                    "name": "FO Sarah Johnson",
+                    "role": "First Officer",
+                    "type": "B737/MAX Type Rating",
+                    "status": "Available",
+                    "issue": null
+                },
+                {
+                    "name": "SSCC Lisa Martinez",
+                    "role": "Senior Cabin Crew",
+                    "type": "Senior Cabin Crew",
+                    "status": "Available",
+                    "issue": "Approaching duty limit (6h)"
+                },
+                {
+                    "name": "CC Maria Santos",
+                    "role": "Cabin Crew",
+                    "type": "Cabin Crew",
+                    "status": "Standby",
+                    "issue": "Standby replacement"
+                }
+            ],
+            "crew_constraint": {
+                "duty_time": {
+                    "disruption": "",
+                    "details": "6h 15m of 8h 20m limit"
+                },
+                "rest_requirement": {
+                    "disruption": "Min 12h rest required after duty",
+                    "details": "Next availability: Tomorrow 08:00"
+                },
+                "deadhead": {
+                    "disruption": "2 crew members need positioning to DXB",
+                    "details": "Commercial flights available"
+                },
+                "fatigue_report": {
+                    "disruption": "1 crew member reported fatigue",
+                    "details": "Replacement required"
+                }
+            },
+            "nextSectors": [
+                {
+                    "flight": "FZ456 DXB-BOM",
+                    "departure": "Cancelled",
+                    "impact": "High Impact",
+                    "reason": "Flight cancellation"
+                },
+                {
+                    "flight": "FZ457 BOM-DXB",
+                    "departure": "Cancelled",
+                    "impact": "High Impact",
+                    "reason": "Route cancellation"
+                },
+                {
+                    "flight": "FZ890 DXB-DEL",
+                    "departure": "Dep: 08:30 (Next Day)",
+                    "impact": "No Impact",
+                    "reason": "Different aircraft"
+                }
+            ],
+            "operationalConstraints": {
+                "gateCompatibility": {
+                    "status": "Same gate assignment maintained",
+                    "details": ""
+                },
+                "slotCapacity": {
+                    "status": "No Change",
+                    "details": "Original slots maintained"
+                },
+                "curfewViolation": {
+                    "status": "No Risk",
+                    "details": "Within curfew limits"
+                },
+                "passengerConnections": {
+                    "status": "No Significant Impact",
+                    "details": "No significant connection issues"
+                }
+            },
+            "costBreakdown": {
+                "delayCost": {
+                    "metric_value": "AED 5,200",
+                    "detail": "Including compensation"
+                },
+                "fuelEfficiency": {
+                    "metric_value": "+0.3%",
+                    "detail": "vs original aircraft"
+                },
+                "hotelTransport": {
+                    "metric_value": "N/A",
+                    "detail": "Crew accommodation"
+                },
+                "eu261Risk": {
+                    "metric_value": "Low",
+                    "detail": "€600 per passenger"
+                }
+            },
+            "recommended_option": {
+                "option": "Aircraft B737-800",
+                "summary": "Maintains current operational plan with minimal adjustments required."
+            }
+        },
+        "details": null,
+        "created_at": "2025-08-11T11:00:00.000Z",
+        "updated_at": "2025-08-11T11:00:00.000Z"
+    },
+    {
+        "title": "Delay for Crew Rest Completion",
+        "description": "Wait for original crew mandatory rest period",
+        "cost": "AED 45,000",
+        "timeline": "3 hours",
+        "confidence": 65,
+        "impact": "Significant passenger disruption",
+        "status": "warning",
+        "priority": 1,
+        "advantages": [],
+        "considerations": [],
+        "impact_area": [
+            "crew",
+            "passenger"
+        ],
+        "impact_summary": "Controlled Delay Strategy for FZ181: Implement 3 hours delay to allow comprehensive resolution of Crew duty time breach. Includes passenger accommodation services, meal vouchers for all 175 passengers, and ground transportation as needed. This approach ensures complete issue resolution while providing appropriate passenger care. Alternative options available if technical resolution takes longer than expected.",
+        "resource_requirements": [
+            {
+                "title": "Terminal Services",
+                "subtitle": "Passenger Amenities",
+                "availability": "Available",
+                "status": "Ready",
+                "location": "Terminal Lounges",
+                "eta": "Immediate",
+                "details": "Lounge access and refreshment services"
+            },
+            {
+                "title": "Technical Support",
+                "subtitle": "Maintenance Team",
+                "availability": "Available",
+                "status": "Responding",
+                "location": "Aircraft Stand",
+                "eta": "15 minutes",
+                "details": "Quick resolution team and equipment"
+            },
+            {
+                "title": "Customer Service",
+                "subtitle": "Ground Staff",
+                "availability": "Available",
+                "status": "Deployed",
+                "location": "Gate Area",
+                "eta": "On Location",
+                "details": "Customer service team for passenger updates"
+            },
+            {
+                "title": "Communication",
+                "subtitle": "Passenger Information System",
+                "availability": "Active",
+                "status": "Broadcasting",
+                "location": "Terminal Wide",
+                "eta": "Immediate",
+                "details": "Real-time updates via displays and announcements"
+            }
+        ],
+        "cost_breakdown": {
+            "breakdown": [
+                {
+                    "amount": "AED 18,000",
+                    "category": "Delay Coordination",
+                    "percentage": 40,
+                    "description": "Operational delay management"
+                },
+                {
+                    "amount": "AED 15,750",
+                    "category": "Passenger Services",
+                    "percentage": 35,
+                    "description": "Terminal amenities and refreshments"
+                },
+                {
+                    "amount": "AED 6,750",
+                    "category": "Crew Overtime",
+                    "percentage": 15,
+                    "description": "Extended crew duty time"
+                },
+                {
+                    "amount": "AED 4,500",
+                    "category": "Administrative Costs",
+                    "percentage": 10,
+                    "description": "Documentation and notifications"
+                }
+            ],
+            "total": {
+                "amount": "AED 45,000",
+                "title": "Total Estimated Cost",
+                "description": "Ground handling and coordination"
+            }
+        },
+        "timeline_details": [
+            {
+                "step": "Passenger Notification",
+                "status": "completed",
+                "details": "Immediate passenger notification",
+                "startTime": "17:05",
+                "endTime": "17:10",
+                "duration": "5 min"
+            },
+            {
+                "step": "Terminal Services Setup",
+                "status": "completed",
+                "details": "Arrange terminal amenities and refreshments",
+                "startTime": "17:10",
+                "endTime": "17:25",
+                "duration": "15 min"
+            },
+            {
+                "step": "Issue Resolution",
+                "status": "in-progress",
+                "details": "Resolve technical or operational issues",
+                "startTime": "17:25",
+                "endTime": "19:55",
+                "duration": "150 min"
+            },
+            {
+                "step": "Boarding & Departure",
+                "status": "pending",
+                "details": "Complete boarding and departure",
+                "startTime": "19:55",
+                "endTime": "20:05",
+                "duration": "10 min"
+            }
+        ],
+        "risk_assessment": [
+            {
+                "risk": "Extended Resolution Time",
+                "risk_impact": "Medium",
+                "mitigation_impact": "Medium",
+                "score": 4,
+                "mitigation": "Technical teams responding, time buffers included"
+            },
+            {
+                "risk": "Passenger Dissatisfaction",
+                "risk_impact": "Medium",
+                "mitigation_impact": "Low",
+                "score": 2,
+                "mitigation": "Terminal amenities and regular updates provided"
+            },
+            {
+                "risk": "Connecting Flight Impacts",
+                "risk_impact": "High",
+                "mitigation_impact": "Medium",
+                "score": 6,
+                "mitigation": "Rebooking team active, partner airline coordination"
+            },
+            {
+                "risk": "Weather Window Closure",
+                "risk_impact": "Low",
+                "mitigation_impact": "High",
+                "score": 3,
+                "mitigation": "Weather monitoring, alternative plans prepared"
+            }
+        ],
+        "technical_specs": {
+            "implementation": {
+                "title": "Implementation",
+                "details": "Comprehensive delay management with passenger care and issue resolution"
+            },
+            "systems_required": {
+                "title": "Systems required",
+                "details": [
+                    "Terminal Services System",
+                    "Passenger Notification Platform",
+                    "Maintenance Support Systems"
+                ]
+            },
+            "certifications": {
+                "title": "Certifications",
+                "details": [
+                    "EU261 Compliance",
+                    "UAE Passenger Rights Compliance",
+                    "IATA Resolution 824"
+                ]
+            },
+            "maintenance_status": {
+                "title": "Maintenance status",
+                "details": "Technical teams assigned for issue resolution during delay period"
+            },
+            "time_framework": {
+                "title": "Time framework",
+                "details": "3-hour window allows for comprehensive issue resolution and passenger care"
+            },
+            "weather_limitations": {
+                "title": "Weather limitations",
+                "details": "Weather conditions monitored, improvement timeline assessed"
+            },
+            "passenger_care": {
+                "title": "Passenger care",
+                "details": "Terminal amenities and refreshment services provided"
+            },
+            "regulatory_compliance": {
+                "title": "Regulatory compliance",
+                "details": "Meets all passenger care requirements for delay duration and circumstances"
+            }
+        },
+        "metrics": {},
+        "rotation_plan": {
+            "aircraftOptions": [
+                {
+                    "reg": "A6-FED",
+                    "type": "B737-800 (189Y)",
+                    "etops": {
+                        "status": "available",
+                        "value": "180min"
+                    },
+                    "cabinMatch": {
+                        "status": "exact",
+                        "value": "Exact"
+                    },
+                    "availability": "Delayed 3 hours",
+                    "assigned": {
+                        "status": "none",
+                        "value": "None"
+                    },
+                    "turnaround": "30 min",
+                    "maintenance": {
+                        "status": "current",
+                        "value": "Current"
+                    },
+                    "option_score": {
+                        "cost_score": "92%",
+                        "delay_score": "88%",
+                        "crew_impact": "95%",
+                        "fuel_score": "91%",
+                        "overall": "92%"
+                    }
+                }
+            ],
+            "crew": [
+                {
+                    "name": "Capt. Ahmed Al-Mansouri",
+                    "role": "Captain",
+                    "type": "B737 Type Rating",
+                    "status": "Available",
+                    "issue": "Replacement for fatigued crew"
+                },
+                {
+                    "name": "FO Sarah Johnson",
+                    "role": "First Officer",
+                    "type": "B737/MAX Type Rating",
+                    "status": "Available",
+                    "issue": null
+                },
+                {
+                    "name": "SSCC Lisa Martinez",
+                    "role": "Senior Cabin Crew",
+                    "type": "Senior Cabin Crew",
+                    "status": "Available",
+                    "issue": "Approaching duty limit (6h)"
+                },
+                {
+                    "name": "CC Maria Santos",
+                    "role": "Cabin Crew",
+                    "type": "Cabin Crew",
+                    "status": "Standby",
+                    "issue": "Standby replacement"
+                }
+            ],
+            "crew_constraint": {
+                "duty_time": {
+                    "disruption": "",
+                    "details": "6h 15m of 8h 20m limit"
+                },
+                "rest_requirement": {
+                    "disruption": "Min 12h rest required after duty",
+                    "details": "Next availability: Tomorrow 08:00"
+                },
+                "deadhead": {
+                    "disruption": "2 crew members need positioning to DXB",
+                    "details": "Commercial flights available"
+                },
+                "fatigue_report": {
+                    "disruption": "1 crew member reported fatigue",
+                    "details": "Replacement required"
+                }
+            },
+            "nextSectors": [
+                {
+                    "flight": "FZ456 DXB-BOM",
+                    "departure": "Dep: 18:30 → 17:11 (+3 hours)",
+                    "impact": "Medium Impact",
+                    "reason": "Direct delay impact"
+                },
+                {
+                    "flight": "FZ457 BOM-DXB",
+                    "departure": "Dep: 22:15 (On Time)",
+                    "impact": "Low Impact",
+                    "reason": "Sufficient turnaround"
+                },
+                {
+                    "flight": "FZ890 DXB-DEL",
+                    "departure": "Dep: 08:30 (Next Day)",
+                    "impact": "No Impact",
+                    "reason": "Overnight recovery"
+                }
+            ],
+            "operationalConstraints": {
+                "gateCompatibility": {
+                    "status": "Same gate assignment maintained",
+                    "details": ""
+                },
+                "slotCapacity": {
+                    "status": "Coordination Required",
+                    "details": "COK slot coordination required"
+                },
+                "curfewViolation": {
+                    "status": "No Risk",
+                    "details": "Within curfew limits"
+                },
+                "passengerConnections": {
+                    "status": "High Impact",
+                    "details": "49 passengers miss onward connections"
+                }
+            },
+            "costBreakdown": {
+                "delayCost": {
+                    "metric_value": "$840",
+                    "detail": "Including compensation"
+                },
+                "fuelEfficiency": {
+                    "metric_value": "+0.8%",
+                    "detail": "vs original aircraft"
+                },
+                "hotelTransport": {
+                    "metric_value": "N/A",
+                    "detail": "Crew accommodation"
+                },
+                "eu261Risk": {
+                    "metric_value": "Low",
+                    "detail": "€600 per passenger"
+                }
+            },
+            "recommended_option": {
+                "option": "Aircraft B737-800",
+                "summary": "Manageable delay impact with 65% confidence. Maintains operational continuity with minimal crew changes."
+            }
+        },
+        "details": null,
+        "created_at": "2025-08-11T11:30:00.000Z",
+        "updated_at": "2025-08-11T11:30:00.000Z"
+    }
+]
