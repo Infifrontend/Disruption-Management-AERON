@@ -1204,6 +1204,35 @@ app.put("/api/passengers/:pnr/rebooking", async (req, res) => {
   }
 });
 
+// Recovery status update endpoint
+app.put("/api/disruptions/:id/recovery-status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { recovery_status } = req.body;
+
+    if (!recovery_status) {
+      return res.status(400).json({ error: "Recovery status is required" });
+    }
+
+    console.log(`Updating recovery status for disruption ${id} to ${recovery_status}`);
+
+    const result = await pool.query(
+      'UPDATE flight_disruptions SET recovery_status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *',
+      [recovery_status, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Disruption not found" });
+    }
+
+    console.log(`Successfully updated recovery status for disruption ${id}`);
+    res.json({ success: true, disruption: result.rows[0] });
+  } catch (error) {
+    console.error("Error updating recovery status:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Passenger Rebookings endpoints
 app.post("/api/passenger-rebookings", async (req, res) => {
   try {
