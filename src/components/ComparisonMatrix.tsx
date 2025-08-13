@@ -47,6 +47,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { databaseService } from "../services/databaseService";
 import { useNavigate } from "react-router-dom";
+import { alertService } from "../services/alertService";
 
 interface ComparisonMatrixProps {
   selectedFlight: any;
@@ -1070,8 +1071,11 @@ export function ComparisonMatrix({
       );
 
       if (isDuplicate) {
-        alert("This recovery solution is already pending for this flight.");
-        setExecutingOption(null);
+        alertService.warning(
+          "Duplicate Solution",
+          "This recovery solution is already pending for this flight.",
+          () => setExecutingOption(null)
+        );
         return;
       }
 
@@ -1138,25 +1142,24 @@ export function ComparisonMatrix({
         );
 
         // Show success popup instead of navigating immediately
-        const result = await new Promise((resolve) => {
-          const confirmed = window.confirm(
-            `Recovery solution "${option.title}" has been sent for approval successfully!\n\nClick OK to return to Affected Flights.`,
-          );
-          resolve(confirmed);
-        });
-
-        if (result) {
-          navigate("/disruption");
-        }
+        alertService.success(
+          "Recovery Solution Submitted",
+          `Recovery solution "${option.title}" has been sent for approval successfully!\n\nClick OK to return to Affected Flights.`,
+          () => navigate("/disruption")
+        );
       } else {
         const errorData = await response.json();
-        alert(
-          `Failed to submit recovery solution: ${errorData.error || "Unknown error"}`,
+        alertService.error(
+          "Submission Failed", 
+          `Failed to submit recovery solution: ${errorData.error || "Unknown error"}`
         );
       }
     } catch (error) {
       console.error("Error executing recovery option:", error);
-      alert("An error occurred while executing the recovery option.");
+      alertService.error(
+        "Execution Error",
+        "An error occurred while executing the recovery option."
+      );
     } finally {
       setExecutingOption(null);
     }
