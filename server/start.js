@@ -878,14 +878,14 @@ app.get("/api/disruptions/", async (req, res) => {
 
     // Build the base query with JOIN
     let query = `
-      SELECT 
-        fd.id, fd.flight_number, fd.route, fd.origin, fd.destination, 
-        fd.origin_city, fd.destination_city, fd.aircraft, fd.scheduled_departure, 
-        fd.estimated_departure, fd.delay_minutes, fd.passengers, fd.crew, 
+      SELECT
+        fd.id, fd.flight_number, fd.route, fd.origin, fd.destination,
+        fd.origin_city, fd.destination_city, fd.aircraft, fd.scheduled_departure,
+        fd.estimated_departure, fd.delay_minutes, fd.passengers, fd.crew,
         fd.connection_flights, fd.severity, fd.disruption_type, fd.status,
         fd.disruption_reason, fd.recovery_status, fd.categorization,
         fd.created_at, fd.updated_at,
-        dc.id as category_id, dc.category_code, dc.category_name, 
+        dc.id as category_id, dc.category_code, dc.category_name,
         dc.description as category_description
       FROM flight_disruptions fd
       LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
@@ -1005,7 +1005,7 @@ app.post("/api/disruptions/", async (req, res) => {
     if (receivedCategoryCode) {
       try {
         const categoryResult = await pool.query(
-          `SELECT id, category_name, description FROM disruption_categories 
+          `SELECT id, category_name, description FROM disruption_categories
            WHERE category_code = $1 AND is_active = true`,
           [receivedCategoryCode],
         );
@@ -1281,7 +1281,7 @@ app.post("/api/passenger-rebookings", async (req, res) => {
             original_seat, rebooked_flight, rebooked_cabin, rebooked_seat,
             additional_services, status, total_passengers_in_pnr, rebooking_cost, notes
           ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
-          ON CONFLICT (disruption_id, passenger_id, pnr) 
+          ON CONFLICT (disruption_id, passenger_id, pnr)
           DO UPDATE SET
             passenger_name = EXCLUDED.passenger_name,
             original_flight = EXCLUDED.original_flight,
@@ -1345,8 +1345,8 @@ app.get(
       const { disruptionId } = req.params;
       const result = await pool.query(
         `
-      SELECT * FROM passenger_rebookings 
-      WHERE disruption_id = $1 
+      SELECT * FROM passenger_rebookings
+      WHERE disruption_id = $1
       ORDER BY created_at DESC
     `,
         [disruptionId],
@@ -1364,8 +1364,8 @@ app.get("/api/passenger-rebookings/pnr/:pnr", async (req, res) => {
     const { pnr } = req.params;
     const result = await pool.query(
       `
-      SELECT * FROM passenger_rebookings 
-      WHERE pnr = $1 
+      SELECT * FROM passenger_rebookings
+      WHERE pnr = $1
       ORDER BY created_at DESC
     `,
       [pnr],
@@ -1603,9 +1603,9 @@ app.put("/api/disruptions/:id/recovery-status", async (req, res) => {
     const { recovery_status } = req.body;
 
     const result = await pool.query(
-      `UPDATE flight_disruptions 
-       SET recovery_status = $1, updated_at = CURRENT_TIMESTAMP 
-       WHERE id = $2 
+      `UPDATE flight_disruptions
+       SET recovery_status = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2
        RETURNING *`,
       [recovery_status, id],
     );
@@ -2053,7 +2053,7 @@ app.get("/api/recovery-steps-detailed/:disruptionId", async (req, res) => {
 
     // Fallback to regular recovery_steps table
     query = `
-      SELECT 
+      SELECT
         id,
         disruption_id,
         step_number,
@@ -2315,7 +2315,7 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
 
       if (result.rows.length === 0) {
         console.log(`No rotation plan found for option ${optionId}, generating sample data`);
-        
+
         // Generate sample crew data for the rotation plan
         const sampleRotationPlan = {
           aircraftOptions: [
@@ -2345,7 +2345,7 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
             },
             {
               name: "F/O Sarah Rahman",
-              type: "First Officer", 
+              type: "First Officer",
               status: "On Duty",
               location: "Crew Rest Area Terminal 2",
               availability: "Available",
@@ -2358,7 +2358,7 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
               name: "Fatima Al-Mansouri",
               type: "Senior Flight Attendant",
               status: "Available",
-              location: "Crew Lounge Level 3", 
+              location: "Crew Lounge Level 3",
               availability: "Available",
               dutyTime: "3h 45m remaining",
               nextAssignment: "Standby until 18:00",
@@ -2370,7 +2370,7 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
               type: "Flight Attendant",
               status: "Available",
               location: "Crew Lounge Level 3",
-              availability: "Available", 
+              availability: "Available",
               dutyTime: "5h 10m remaining",
               nextAssignment: "FZ215 - 19:45",
               qualifications: ["Service Excellence", "Emergency Response"],
@@ -2382,14 +2382,14 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
               status: "Available",
               location: "Crew Lounge Level 3",
               availability: "Available",
-              dutyTime: "4h 20m remaining", 
+              dutyTime: "4h 20m remaining",
               nextAssignment: "Available for assignment",
               qualifications: ["Multi-lingual", "Medical Training"],
               experience: "3 years"
             },
             {
               name: "Omar Abdullah",
-              type: "Flight Attendant", 
+              type: "Flight Attendant",
               status: "Available",
               location: "Crew Lounge Level 3",
               availability: "Available",
@@ -2409,17 +2409,17 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
             }
           ],
           operationalConstraints: {
-            gateCompatibility: { 
-              status: "compatible", 
-              details: "Gate A24 suitable for B737-800" 
+            gateCompatibility: {
+              status: "compatible",
+              details: "Gate A24 suitable for B737-800"
             },
-            slotCapacity: { 
-              status: "available", 
-              details: "Slot confirmed for departure window" 
+            slotCapacity: {
+              status: "available",
+              details: "Slot confirmed for departure window"
             },
-            curfewViolation: { 
-              status: "compliant", 
-              details: "Departure within curfew hours" 
+            curfewViolation: {
+              status: "compliant",
+              details: "Departure within curfew hours"
             },
             passengerConnections: {
               status: "manageable",
@@ -2432,147 +2432,15 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
             hotelTransport: 0,
             eu261Risk: "Low"
           },
-          recommendation: { 
-            aircraft: "A6-FED", 
-            reason: "Optimal crew availability and aircraft readiness" 
+          recommendation: {
+            aircraft: "A6-FED",
+            reason: "Optimal crew availability and aircraft readiness"
           }
         };
 
         return res.json({
           success: true,
           rotationPlan: sampleRotationPlan
-        });
-      }
-
-      // Return the rotation_plan JSON field
-      const rotationPlan = result.rows[0].rotation_plan || {};
-
-      // Ensure crewData is populated
-      if (!rotationPlan.crewData || rotationPlan.crewData.length === 0) {
-        rotationPlan.crewData = [
-          {
-            name: "Captain Mohammed Al-Zaabi",
-            type: "Captain",
-            status: "Available", 
-            location: "Dubai Airport Hotel",
-            availability: "Available",
-            dutyTime: "2h 15m remaining",
-            nextAssignment: "FZ892 - 16:30",
-            qualifications: ["B737-800", "B737-MAX8"],
-            experience: "15 years"
-          },
-          {
-            name: "F/O Sarah Rahman", 
-            type: "First Officer",
-            status: "On Duty",
-            location: "Crew Rest Area Terminal 2",
-            availability: "Available",
-            dutyTime: "4h 30m remaining", 
-            nextAssignment: "Available for assignment",
-            qualifications: ["B737-800", "B737-MAX8"],
-            experience: "8 years"
-          },
-          {
-            name: "Fatima Al-Mansouri",
-            type: "Senior Flight Attendant",
-            status: "Available",
-            location: "Crew Lounge Level 3",
-            availability: "Available",
-            dutyTime: "3h 45m remaining",
-            nextAssignment: "Standby until 18:00", 
-            qualifications: ["Safety Instructor", "First Aid"],
-            experience: "12 years"
-          },
-          {
-            name: "Ahmed Hassan",
-            type: "Flight Attendant", 
-            status: "Available",
-            location: "Crew Lounge Level 3",
-            availability: "Available",
-            dutyTime: "5h 10m remaining",
-            nextAssignment: "FZ215 - 19:45",
-            qualifications: ["Service Excellence", "Emergency Response"],
-            experience: "5 years"
-          }
-        ];
-      }
-
-      res.json({
-        success: true,
-        rotationPlan: {
-          aircraftOptions: rotationPlan.aircraftOptions || [],
-          crewData: rotationPlan.crewData || [],
-          nextSectors: rotationPlan.nextSectors || [],
-          operationalConstraints: rotationPlan.operationalConstraints || {},
-          costBreakdown: rotationPlan.costBreakdown || {},
-          recommendation: rotationPlan.recommendation || {},
-        },
-      });
-    } else {
-      const rotationPlan = result.rows[0];
-
-      // Ensure crew_data is populated with sample data if empty
-      let crewData = rotationPlan.crew_data || [];
-      if (crewData.length === 0) {
-        crewData = [
-          {
-            name: "Captain Mohammed Al-Zaabi",
-            type: "Captain", 
-            status: "Available",
-            location: "Dubai Airport Hotel",
-            availability: "Available",
-            dutyTime: "2h 15m remaining",
-            nextAssignment: "FZ892 - 16:30",
-            qualifications: ["B737-800", "B737-MAX8"],
-            experience: "15 years"
-          },
-          {
-            name: "F/O Sarah Rahman",
-            type: "First Officer",
-            status: "On Duty", 
-            location: "Crew Rest Area Terminal 2",
-            availability: "Available",
-            dutyTime: "4h 30m remaining",
-            nextAssignment: "Available for assignment",
-            qualifications: ["B737-800", "B737-MAX8"],
-            experience: "8 years"
-          },
-          {
-            name: "Fatima Al-Mansouri",
-            type: "Senior Flight Attendant",
-            status: "Available",
-            location: "Crew Lounge Level 3",
-            availability: "Available",
-            dutyTime: "3h 45m remaining",
-            nextAssignment: "Standby until 18:00",
-            qualifications: ["Safety Instructor", "First Aid"], 
-            experience: "12 years"
-          },
-          {
-            name: "Ahmed Hassan",
-            type: "Flight Attendant",
-            status: "Available",
-            location: "Crew Lounge Level 3",
-            availability: "Available",
-            dutyTime: "5h 10m remaining",
-            nextAssignment: "FZ215 - 19:45",
-            qualifications: ["Service Excellence", "Emergency Response"],
-            experience: "5 years"
-          }
-        ];
-      }
-
-      res.json({
-        success: true,
-        rotationPlan: {
-          aircraftOptions: rotationPlan.aircraft_options || [],
-          crewData: crewData,
-          nextSectors: rotationPlan.next_sectors || [],
-          operationalConstraints: rotationPlan.operational_constraints || {},
-          costBreakdown: rotationPlan.cost_breakdown || {},
-          recommendation: rotationPlan.recommendation || {},
-        },
-      });
         });
       }
 
@@ -3021,7 +2889,7 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
 
     // Check if pending_recovery_solutions table exists
     const tableCheck = await pool.query(`
-      SELECT table_name FROM information_schema.tables 
+      SELECT table_name FROM information_schema.tables
       WHERE table_schema = 'public' AND table_name = 'pending_recovery_solutions'
     `);
 
@@ -3118,7 +2986,7 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
 app.get("/api/pending-recovery-solutions", async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT 
+      SELECT
         prs.*,
         fd.flight_number, fd.route, fd.origin, fd.destination, fd.aircraft,
         fd.passengers, fd.crew, fd.severity, fd.disruption_reason,
@@ -3134,8 +3002,8 @@ app.get("/api/pending-recovery-solutions", async (req, res) => {
         // Get recovery steps
         const stepsResult = await pool.query(
           `
-        SELECT * FROM recovery_steps 
-        WHERE disruption_id = $1 
+        SELECT * FROM recovery_steps
+        WHERE disruption_id = $1
         ORDER BY step_number ASC
       `,
           [solution.disruption_id],
@@ -3154,7 +3022,7 @@ app.get("/api/pending-recovery-solutions", async (req, res) => {
         // Get passenger information
         const passengerResult = await pool.query(
           `
-        SELECT * FROM passengers 
+        SELECT * FROM passengers
         WHERE flight_number = $1
         LIMIT 10
       `,
@@ -3168,8 +3036,8 @@ app.get("/api/pending-recovery-solutions", async (req, res) => {
         if (solution.option_id) {
           const optionResult = await pool.query(
             `
-          SELECT cost_breakdown, resource_requirements, technical_specs 
-          FROM recovery_options 
+          SELECT cost_breakdown, resource_requirements, technical_specs
+          FROM recovery_options
           WHERE id = $1
         `,
             [solution.option_id],
@@ -3258,9 +3126,9 @@ app.put("/api/flight-recovery-status/:flightId", async (req, res) => {
     const { recovery_status } = req.body;
 
     const result = await pool.query(
-      `UPDATE flight_disruptions 
-       SET recovery_status = $1, updated_at = CURRENT_TIMESTAMP 
-       WHERE id = $2 
+      `UPDATE flight_disruptions
+       SET recovery_status = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2
        RETURNING *`,
       [recovery_status, flightId],
     );
@@ -3351,7 +3219,7 @@ app.get("/api/past-recovery-logs", async (req, res) => {
     const { status, category, priority, dateRange } = req.query;
 
     let query = `
-      SELECT 
+      SELECT
         'SOL-' || fd.id as solution_id,
         fd.id as disruption_id,
         fd.flight_number,
@@ -3363,11 +3231,11 @@ app.get("/api/past-recovery-logs", async (req, res) => {
         fd.created_at as date_created,
         fd.updated_at as date_executed,
         fd.updated_at as date_completed,
-        CASE 
+        CASE
           WHEN fd.delay_minutes > 0 THEN (fd.delay_minutes / 60) || 'h ' || (fd.delay_minutes % 60) || 'm'
           ELSE '2h 30m'
         END as duration,
-        CASE 
+        CASE
           WHEN fd.recovery_status = 'completed' THEN 'Successful'
           WHEN fd.recovery_status = 'in_progress' THEN 'Partial'
           ELSE 'Successful'
@@ -3375,7 +3243,7 @@ app.get("/api/past-recovery-logs", async (req, res) => {
         fd.passengers as affected_passengers,
         COALESCE(fd.delay_minutes * 1000, 125000) as actual_cost,
         COALESCE(fd.delay_minutes * 1100, 130000) as estimated_cost,
-        CASE 
+        CASE
           WHEN fd.delay_minutes > 0 THEN ROUND(((fd.delay_minutes * 1100 - fd.delay_minutes * 1000) / (fd.delay_minutes * 1100)::numeric * 100), 1)
           ELSE -3.8
         END as cost_variance,
@@ -3393,12 +3261,12 @@ app.get("/api/past-recovery-logs", async (req, res) => {
         COALESCE(CASE WHEN fd.delay_minutes > 100 THEN fd.delay_minutes - 100 ELSE 0 END, 0) as delay_reduction_minutes,
         fd.disruption_type as disruption_category,
         COALESCE(95.0 - (fd.delay_minutes::numeric / 20), 92.5) as recovery_efficiency,
-        CASE 
+        CASE
           WHEN fd.delay_minutes > 300 THEN 'High'
           WHEN fd.delay_minutes > 100 THEN 'Medium'
           ELSE 'Low'
         END as network_impact,
-        CASE 
+        CASE
           WHEN fd.delay_minutes > 300 THEN 3
           WHEN fd.delay_minutes > 100 THEN 1
           ELSE 0
@@ -3567,7 +3435,7 @@ app.get("/api/past-recovery-kpi", async (req, res) => {
     console.log("Fetching past recovery KPI data");
 
     const query = `
-      SELECT 
+      SELECT
         COUNT(*) as total_recoveries,
         COUNT(CASE WHEN fd.status = 'Resolved' OR fd.recovery_status = 'completed' THEN 1 END) as successful_recoveries,
         AVG(CASE WHEN fd.delay_minutes IS NOT NULL THEN fd.delay_minutes ELSE 120 END) as avg_resolution_time,
@@ -3616,7 +3484,7 @@ app.get("/api/past-recovery-trends", async (req, res) => {
     console.log("Fetching past recovery trends data");
 
     const query = `
-      SELECT 
+      SELECT
         TO_CHAR(DATE_TRUNC('month', fd.created_at), 'Mon YY') as month,
         AVG(CASE WHEN fd.delay_minutes <= 30 THEN 95.0 WHEN fd.delay_minutes <= 120 THEN 88.0 ELSE 82.0 END) as efficiency,
         AVG(CASE WHEN fd.delay_minutes IS NOT NULL THEN GREATEST(0, (fd.delay_minutes + 30) - fd.delay_minutes) ELSE 25 END) as delay_reduction,
@@ -3669,18 +3537,18 @@ app.get('/api/passenger-impact', async (req, res) => {
   try {
     // Calculate passenger impact from actual disruptions data
     const disruptionsResult = await pool.query(`
-      SELECT 
+      SELECT
         COUNT(*) as total_disruptions,
         SUM(passengers) as total_affected,
         SUM(CASE WHEN severity = 'High' THEN passengers ELSE 0 END) as high_priority_affected,
         COUNT(CASE WHEN recovery_status = 'completed' THEN 1 END) as resolved_disruptions
-      FROM flight_disruptions 
+      FROM flight_disruptions
       WHERE status = 'Active' OR status = 'Delayed'
     `)
 
     const rebookingsResult = await pool.query(`
       SELECT COUNT(*) as successful_rebookings
-      FROM passenger_rebookings 
+      FROM passenger_rebookings
       WHERE status = 'confirmed'
       AND created_at >= CURRENT_DATE
     `)
@@ -3715,18 +3583,18 @@ app.get('/api/passenger-impact', async (req, res) => {
 app.get('/api/disrupted-stations', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT 
+      SELECT
         origin as station,
         origin_city as station_name,
         COUNT(*) as disrupted_flights,
         SUM(passengers) as affected_passengers,
-        CASE 
+        CASE
           WHEN COUNT(*) >= 10 THEN 'high'
           WHEN COUNT(*) >= 5 THEN 'medium'
           ELSE 'low'
         END as severity,
         disruption_reason as primary_cause
-      FROM flight_disruptions 
+      FROM flight_disruptions
       WHERE status IN ('Active', 'Delayed')
       GROUP BY origin, origin_city, disruption_reason
       ORDER BY COUNT(*) DESC, SUM(passengers) DESC
@@ -3779,15 +3647,15 @@ app.get('/api/disrupted-stations', async (req, res) => {
 app.get('/api/operational-insights', async (req, res) => {
   try {
     const insightsResult = await pool.query(`
-      SELECT 
+      SELECT
         ROUND(
-          (COUNT(CASE WHEN recovery_status = 'completed' THEN 1 END)::float / 
+          (COUNT(CASE WHEN recovery_status = 'completed' THEN 1 END)::float /
            NULLIF(COUNT(*), 0) * 100), 1
         ) as recovery_rate,
         COUNT(CASE WHEN severity = 'High' THEN 1 END) as critical_priority,
         MODE() WITHIN GROUP (ORDER BY route) as most_disrupted_route,
         MODE() WITHIN GROUP (ORDER BY disruption_reason) as route_disruption_cause
-      FROM flight_disruptions 
+      FROM flight_disruptions
       WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
     `)
 
@@ -3805,7 +3673,7 @@ app.get('/api/operational-insights', async (req, res) => {
     res.json(operationalInsights)
   } catch (error) {
     console.error('Error fetching operational insights:', error)
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to fetch operational insights',
       fallback: {
         recoveryRate: 89.2,
