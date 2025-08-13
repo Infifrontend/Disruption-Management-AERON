@@ -1106,42 +1106,76 @@ export function PassengerRebooking({ context, onClearContext }) {
       return;
     }
 
-    const passengersToApprove = Array.from(selectedPnrs).flatMap(pnr => filteredPnrGroups[pnr]);
-
-    // Group passengers by PNR for database storage
-    const passengersByPnrForDB = passengersToApprove.reduce((acc, passenger) => {
-      if (!acc[passenger.pnr]) {
-        acc[passenger.pnr] = [];
-      }
-      acc[passenger.pnr].push(passenger);
-      return acc;
-    }, {});
-
-    const disruptionFlightId = context?.flight?.id || selectedFlight?.id;
-
-    try {
-      // Simulate storing passenger information and rebooked flight details
-      // In a real application, this would involve API calls to your backend
-      const dbResult = await databaseService.storeRebookedPassengers(
-        passengersByPnrForDB,
-        disruptionFlightId
-      );
-
-      if (dbResult.success) {
-        toast.success("Passenger information stored successfully.");
-        // Optionally clear selected PNRs or reset UI state
-        // setSelectedPnrs(new Set());
-      } else {
-        toast.error("Failed to store passenger information.");
-      }
-    } catch (error) {
-      console.error("Error storing passenger data:", error);
-      toast.error("An error occurred while storing data.");
+    if (!canSendForApproval) {
+      toast.error("All passengers must have confirmed status before sending for approval.");
+      return;
     }
 
-    toast.success("Request for approval sent!");
-    // Clear selection after approval is sent
-    setSelectedPnrs(new Set());
+    const passengersToApprove = Array.from(selectedPnrs).flatMap(pnr => filteredPnrGroups[pnr]);
+    const disruptionFlightId = context?.flight?.id || selectedFlight?.id;
+
+    if (!disruptionFlightId) {
+      toast.error("Flight disruption information is missing.");
+      return;
+    }
+
+    try {
+      // Prepare rebooking data for database storage
+      const rebookingData = passengersToApprove.map(passenger => {
+        const rebookingInfo = confirmedRebookings[passenger.id];
+        return {
+          disruption_id: disruptionFlightId,
+          pnr: passenger.pnr,
+          passenger_id: passenger.id,
+          passenger_name: passenger.name,
+          original_flight: context?.flight?.flightNumber || selectedFlight?.flight_number || 'N/A',
+          original_seat: passenger.seat,
+          rebooked_flight: rebookingInfo?.flightNumber || 'TBD',
+          rebooked_cabin: rebookingInfo?.cabin || 'Economy',
+          rebooked_seat: rebookingInfo?.seat || 'TBD',
+          additional_services: rebookingInfo?.services || [],
+          status: 'Confirmed',
+          total_passengers_in_pnr: filteredPnrGroups[passenger.pnr]?.length || 1,
+          rebooking_cost: 0,
+          notes: `Approved rebooking for disruption ${disruptionFlightId}`
+        };
+      });
+
+      // Store passenger rebookings in database
+      const dbResult = await databaseService.savePassengerRebookings(rebookingData);
+
+      if (dbResult) {
+        // Update flight recovery status to 'approved' using the same logic as comparison menu
+        const statusUpdateResult = await databaseService.updateFlightRecoveryStatus(
+          disruptionFlightId.toString(), 
+          'approved'
+        );
+
+        if (statusUpdateResult) {
+          toast.success(`Passenger rebooking approved successfully for ${passengersToApprove.length} passengers!`, {
+            description: "Flight recovery status updated and passenger information stored.",
+            duration: 5000,
+          });
+
+          // Clear selection after successful approval
+          setSelectedPnrs(new Set());
+
+          // If we have an onClearContext function, call it to refresh the data
+          if (onClearContext) {
+            setTimeout(() => {
+              onClearContext();
+            }, 2000);
+          }
+        } else {
+          toast.warning("Passenger information stored but failed to update flight status.");
+        }
+      } else {
+        toast.error("Failed to store passenger rebooking information.");
+      }
+    } catch (error) {
+      console.error("Error in send for approval process:", error);
+      toast.error("An error occurred while processing the approval request.");
+    }
   };
 
 
@@ -1564,9 +1598,39 @@ export function PassengerRebooking({ context, onClearContext }) {
   // Determine if all PNR groups are confirmed
   const allPnrsConfirmed = Object.values(filteredPnrGroups).every(group => isPnrGroupConfirmed(group));
 
+  // Check if Send for Approval should be enabled
+  const canSendForApproval = selectedPnrs.size > 0 && Array.from(selectedPnrs).every(pnr => isPnrGroupConfirmed(filteredPnrGroups[pnr]));
+
   return (
     <div className="container mx-auto space-y-6">
 
+      {/* Send for Approval Section */}
+      {selectedPnrs.size > 0 && (
+        <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-medium text-blue-800 mb-2">
+                  Passenger Rebooking Approval
+                </h3>
+                <p className="text-sm text-blue-700">
+                  {canSendForApproval 
+                    ? `${selectedPnrs.size} PNR group(s) with confirmed rebookings ready for approval.`
+                    : `${selectedPnrs.size} PNR group(s) selected. All passengers must have confirmed status before sending for approval.`
+                  }
+                </p>
+              </div>
+              <Button
+                className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={handleSendForApproval}
+                disabled={!canSendForApproval}
+              >
+                Send for Approval
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Header */}
       <div className="flex items-center justify-between">
