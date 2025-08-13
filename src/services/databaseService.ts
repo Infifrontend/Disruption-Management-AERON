@@ -1807,11 +1807,6 @@ class DatabaseService {
 
   async savePendingRecoverySolution(solution: any): Promise<boolean> {
     return this.addPendingSolution(solution);
-    }
-  }
-
-  async savePendingRecoverySolution(solution: any): Promise<boolean> {
-    return this.addPendingSolution(solution);
   }
 
   async getPendingRecoverySolutions(): Promise<any[]> {
