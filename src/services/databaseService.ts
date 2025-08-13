@@ -1783,31 +1783,30 @@ class DatabaseService {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          disruption_id: solution.disruptionId,
-          option_id: solution.optionId || solution.id,
-          option_title: solution.optionTitle || solution.title,
-          option_description: solution.optionDescription || solution.description,
+          disruption_id: solution.disruption_id,
+          option_id: solution.option_id,
+          option_title: solution.option_title,
+          option_description: solution.option_description,
           cost: solution.cost,
           timeline: solution.timeline,
           confidence: solution.confidence,
           impact: solution.impact,
           status: solution.status || 'Pending',
-          full_details: solution.fullDetails || solution,
-          rotation_impact: solution.rotationImpact,
-          submitted_by: solution.submittedBy || 'system',
-          approval_required: solution.approvalRequired || 'Operations Manager',
-          flight_number: solution.flightNumber,
-          route: solution.route,
-          aircraft: solution.aircraft,
-          passengers: solution.affectedPassengers,
-          severity: solution.severity,
-          disruption_reason: solution.disruptionReason
+          full_details: solution.full_details,
+          rotation_impact: solution.rotation_impact,
+          submitted_by: solution.submitted_by || 'system',
+          approval_required: solution.approval_required || true
         })
       });
       return response.ok;
     } catch (error) {
       console.error('Failed to add pending solution:', error);
       return false;
+    }
+  }
+
+  async savePendingRecoverySolution(solution: any): Promise<boolean> {
+    return this.addPendingSolution(solution);
     }
   }
 
