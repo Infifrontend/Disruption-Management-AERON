@@ -1097,7 +1097,11 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // Function to check if all passengers in a PNR group are confirmed
   const isPnrGroupConfirmed = (groupPassengers) => {
-    return groupPassengers.every(p => p.status === "Confirmed");
+    return groupPassengers.every(p => {
+      // Check both the updated status and the original status
+      const currentStatus = passengerRebookingStatus[p.id] || p.status;
+      return currentStatus === "Confirmed";
+    });
   };
 
   const handleSendForApproval = async () => {
@@ -1151,7 +1155,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       });
 
       if (response.ok) {
-        // Update flight recovery status to 'approved'
+        // Update flight recovery status to 'approved' - using the same endpoint as comparison page
         const statusResponse = await fetch(`/api/disruptions/${disruptionFlightId}/recovery-status`, {
           method: 'PUT',
           headers: {
@@ -1161,6 +1165,32 @@ export function PassengerRebooking({ context, onClearContext }) {
         });
 
         if (statusResponse.ok) {
+          // Save pending recovery solution with passenger services data
+          const solutionData = {
+            disruption_id: disruptionFlightId,
+            option_id: recoveryOption?.id || `PASSENGER_SERVICES_${Date.now()}`,
+            option_title: recoveryOption?.title || 'Passenger Services Recovery',
+            option_type: 'passenger_services',
+            estimated_cost: recoveryOption?.cost || 0,
+            estimated_delay: recoveryOption?.delay || 0,
+            passenger_impact: 'high',
+            operational_complexity: 'medium',
+            resource_requirements: JSON.stringify({
+              passenger_services: true,
+              rebookings: passengersToApprove.length,
+              pnr_groups: selectedPnrs.size
+            }),
+            timeline_details: JSON.stringify({
+              passenger_processing: `${passengersToApprove.length} passengers processed`,
+              rebooking_completed: new Date().toISOString()
+            }),
+            approval_status: 'approved',
+            created_by: 'passenger_services',
+            notes: `Passenger services completed for ${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups`
+          };
+
+          await databaseService.savePendingRecoverySolution(solutionData);
+
           toast.success(`Passenger rebooking approved successfully for ${passengersToApprove.length} passengers!`, {
             description: "Flight recovery status updated and passenger information stored.",
             duration: 5000,
@@ -1179,6 +1209,8 @@ export function PassengerRebooking({ context, onClearContext }) {
           toast.warning("Passenger information stored but failed to update flight status.");
         }
       } else {
+        const errorText = await response.text();
+        console.error("Failed to store passenger rebookings:", response.status, errorText);
         toast.error("Failed to store passenger rebooking information.");
       }
     } catch (error) {
@@ -1228,6 +1260,25 @@ export function PassengerRebooking({ context, onClearContext }) {
     // Apply updates immediately
     setPassengerRebookingStatus(prev => ({ ...prev, ...statusUpdates }));
     setConfirmedRebookings(prev => ({ ...prev, ...rebookingUpdates }));
+
+    // Uncheck PNR groups that are now confirmed
+    if (isGroup) {
+      const pnrsToUncheck = new Set();
+      Object.entries(passengersByPnr).forEach(([pnr, pnrPassengers]) => {
+        const allConfirmed = pnrPassengers.every(p => 
+          statusUpdates[p.id] === "Confirmed" || p.status === "Confirmed"
+        );
+        if (allConfirmed) {
+          pnrsToUncheck.add(pnr);
+        }
+      });
+      
+      setSelectedPnrs(prev => {
+        const newSelection = new Set(prev);
+        pnrsToUncheck.forEach(pnr => newSelection.delete(pnr));
+        return newSelection;
+      });
+    }
 
     // Generate notification messages
     const notifications = [];
@@ -1313,6 +1364,12 @@ export function PassengerRebooking({ context, onClearContext }) {
   };
 
   const handlePnrSelection = (pnr) => {
+    // Don't allow selection of confirmed PNR groups
+    const groupPassengers = filteredPnrGroups[pnr];
+    if (groupPassengers && isPnrGroupConfirmed(groupPassengers)) {
+      return;
+    }
+
     const newSelectedPnrs = new Set(selectedPnrs);
     if (newSelectedPnrs.has(pnr)) {
       newSelectedPnrs.delete(pnr);
@@ -1489,6 +1546,30 @@ export function PassengerRebooking({ context, onClearContext }) {
     }
   }, [activeTab, recoveryOption]);
 
+  // Automatically uncheck PNR groups that become confirmed
+  useEffect(() => {
+    const confirmedPnrs = new Set();
+    Object.entries(filteredPnrGroups).forEach(([pnr, groupPassengers]) => {
+      if (isPnrGroupConfirmed(groupPassengers)) {
+        confirmedPnrs.add(pnr);
+      }
+    });
+
+    if (confirmedPnrs.size > 0) {
+      setSelectedPnrs(prev => {
+        const newSelection = new Set(prev);
+        let hasChanges = false;
+        confirmedPnrs.forEach(pnr => {
+          if (newSelection.has(pnr)) {
+            newSelection.delete(pnr);
+            hasChanges = true;
+          }
+        });
+        return hasChanges ? newSelection : prev;
+      });
+    }
+  }, [passengerRebookingStatus, filteredPnrGroups]);
+
   const loadCrewData = async () => {
     setLoading(true);
     try {
@@ -1586,7 +1667,11 @@ export function PassengerRebooking({ context, onClearContext }) {
   // Check if Send for Approval should be enabled - must have selections and all must be confirmed
   const canSendForApproval = selectedPnrs.size > 0 && Array.from(selectedPnrs).every(pnr => {
     const groupPassengers = filteredPnrGroups[pnr];
-    return groupPassengers && groupPassengers.every(p => p.status === "Confirmed");
+    return groupPassengers && groupPassengers.every(p => {
+      // Check both the updated status and the original status
+      const currentStatus = passengerRebookingStatus[p.id] || p.status;
+      return currentStatus === "Confirmed";
+    });
   });
 
   return (
