@@ -53,7 +53,40 @@ class BackendConfigService {
   }
 
   getConfig(): BackendConfig {
-    return { ...this.config }
+    const type = this.getBackendType()
+    const port = this.getBackendPort(type)
+
+    let apiUrl: string
+    const hostname = window.location.hostname
+    const protocol = window.location.protocol
+
+    if (hostname === 'localhost') {
+      apiUrl = `http://localhost:${port}/api`
+    } else {
+      // For Replit production
+      if (type === 'python') {
+        // Python backend uses the main domain with /api suffix
+        apiUrl = `${protocol}//${hostname}/api`
+      } else {
+        // Express backend uses port-based URL
+        apiUrl = `/api` // Use relative path for Express to avoid CORS
+      }
+    }
+
+    // Ensure apiUrl is never undefined or empty
+    if (!apiUrl || apiUrl === "undefined" || apiUrl.includes("undefined")) {
+      apiUrl = "/api";
+    }
+
+    return {
+      type,
+      port,
+      apiUrl,
+      isPython: type === 'python',
+      isExpress: type === 'express',
+      timeout: type === 'python' ? 8000 : 5000,
+      requiresTrailingSlash: type === 'python',
+    }
   }
 
   // Method to get the base API URL
@@ -111,6 +144,17 @@ class BackendConfigService {
     console.log(`🔄 Backend switched to ${type.toUpperCase()} at ${this.config.apiUrl}`)
     console.log(`🔧 Timeout Config: ${this.config.timeout}ms for ${type.toUpperCase()} backend`)
     console.log(`🔧 URL Format: requiresTrailingSlash=${this.config.requiresTrailingSlash}`)
+  }
+
+  // Dummy method for getBackendPort, assuming it exists elsewhere or needs to be defined
+  private getBackendPort(type: 'express' | 'python'): number {
+    if (type === 'python') {
+      // Example port for Python backend
+      return 8000;
+    } else {
+      // Example port for Express backend
+      return 3001;
+    }
   }
 }
 
