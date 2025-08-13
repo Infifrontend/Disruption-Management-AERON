@@ -164,6 +164,9 @@ export function PassengerRebooking({ context, onClearContext }) {
   // State for tracking confirmed rebookings
   const [confirmedRebookings, setConfirmedRebookings] = useState({});
 
+  // State for loading indicator during submission
+  const [isLoading, setIsLoading] = useState(false);
+
   // Generate passengers from context when available
   useEffect(() => {
     let isMounted = true;
@@ -361,25 +364,27 @@ export function PassengerRebooking({ context, onClearContext }) {
   ];
 
   // Get base passenger list and apply status updates
-  const basePassengers =
-    contextPassengers.length > 0 ? contextPassengers :
-    generatedPassengers.length > 0 ? generatedPassengers :
-    defaultPassengers;
+  const passengers = useMemo(() => {
+    const base =
+      contextPassengers.length > 0 ? contextPassengers :
+      generatedPassengers.length > 0 ? generatedPassengers :
+      defaultPassengers;
 
-  // Apply status updates and rebooking information
-  const passengers = basePassengers.map(passenger => {
-    const rebookingInfo = confirmedRebookings[passenger.id];
-    const statusOverride = passengerRebookingStatus[passenger.id];
+    return base.map(passenger => {
+      const rebookingInfo = confirmedRebookings[passenger.id];
+      const statusOverride = passengerRebookingStatus[passenger.id];
 
-    return {
-      ...passenger,
-      status: statusOverride || passenger.status,
-      rebookedFlight: rebookingInfo?.flightNumber,
-      rebookedCabin: rebookingInfo?.cabin,
-      rebookedSeat: rebookingInfo?.seat,
-      rebookingDate: rebookingInfo?.date
-    };
-  });
+      return {
+        ...passenger,
+        status: statusOverride || passenger.status,
+        rebookedFlight: rebookingInfo?.flightNumber,
+        rebookedCabin: rebookingInfo?.cabin,
+        rebookedSeat: rebookingInfo?.seat,
+        rebookingDate: rebookingInfo?.date
+      };
+    });
+  }, [contextPassengers, generatedPassengers, defaultPassengers, passengerRebookingStatus, confirmedRebookings]);
+
 
   // Group passengers by PNR
   const passengersByPnr = useMemo(() => {
@@ -845,8 +850,8 @@ export function PassengerRebooking({ context, onClearContext }) {
   // Filter PNR groups based on search criteria
   const filteredPnrGroups = useMemo(() => {
     const filtered = {};
-    Object.entries(passengersByPnr).forEach(([pnr, passengers]) => {
-      const filteredGroupPassengers = passengers.filter((passenger) => {
+    Object.entries(passengersByPnr).forEach(([pnr, passengersInGroup]) => {
+      const filteredGroupPassengers = passengersInGroup.filter((passenger) => {
         const matchesSearch =
           passenger.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           passenger.pnr.toLowerCase().includes(searchTerm.toLowerCase());
@@ -1033,8 +1038,8 @@ export function PassengerRebooking({ context, onClearContext }) {
     setShowRebookingDialog(true);
   };
 
-  const handleRebookPnrGroup = (pnr, passengers) => {
-    setSelectedPnrGroup({ pnr, passengers });
+  const handleRebookPnrGroup = (pnr, passengersInGroup) => {
+    setSelectedPnrGroup({ pnr, passengers: passengersInGroup });
     setSelectedPassenger(null);
     setShowRebookingDialog(true);
   };
@@ -1106,35 +1111,43 @@ export function PassengerRebooking({ context, onClearContext }) {
   };
 
   const handleSendForApproval = async () => {
-    if (!selectedPnrs || selectedPnrs.size === 0) {
-      alertService.warn( // Use custom alert
-        "Selection Required",
-        "Please select PNR groups to send for approval."
-      );
+    if (selectedPnrs.size === 0) {
+      alertService.error("Selection Required", "Please select at least one PNR group to send for approval.");
       return;
     }
 
-    if (!canSendForApproval) {
-      alertService.warn( // Use custom alert
-        "Approval Not Ready",
-        "All passengers must have confirmed status before sending for approval."
-      );
+    const passengersToApprove = Array.from(selectedPnrs).flatMap(pnr => {
+      const group = filteredPnrGroups[pnr]; // Use filteredPnrGroups here
+      return group ? group : [];
+    });
+
+    if (passengersToApprove.length === 0) {
+      alertService.error("No Passengers", "No passengers found in selected PNR groups.");
       return;
     }
 
-    const passengersToApprove = Array.from(selectedPnrs).flatMap(pnr => filteredPnrGroups[pnr]);
+    // Check if all selected passengers are confirmed
+    const allSelectedConfirmed = passengersToApprove.every(p => {
+      const currentStatus = passengerRebookingStatus[p.id] || p.status;
+      return currentStatus === "Confirmed";
+    });
+
+    if (!allSelectedConfirmed) {
+      alertService.warn("Approval Not Ready", "All selected passengers must have a 'Confirmed' status before sending for approval.");
+      return;
+    }
+
     const disruptionFlightId = context?.flight?.id || selectedFlight?.id;
 
     if (!disruptionFlightId) {
-      alertService.error( // Use custom alert
-        "Missing Information",
-        "Flight disruption information is missing."
-      );
+      alertService.error("Missing Information", "Flight disruption information is missing.");
       return;
     }
 
     try {
-      // Prepare rebooking data for database storage
+      setIsLoading(true);
+
+      // Store passenger rebookings in the database
       const rebookingData = passengersToApprove.map(passenger => {
         const rebookingInfo = confirmedRebookings[passenger.id];
         return {
@@ -1142,39 +1155,29 @@ export function PassengerRebooking({ context, onClearContext }) {
           pnr: passenger.pnr,
           passenger_id: passenger.id,
           passenger_name: passenger.name,
-          original_flight: context?.flight?.flightNumber || selectedFlight?.flight_number || 'N/A',
+          original_flight: passenger.originalFlight || context?.flight?.flightNumber || selectedFlight?.flight_number || 'N/A',
           original_seat: passenger.seat,
           rebooked_flight: rebookingInfo?.flightNumber || 'TBD',
           rebooked_cabin: rebookingInfo?.cabin || 'Economy',
           rebooked_seat: rebookingInfo?.seat || 'TBD',
           additional_services: rebookingInfo?.services || [],
-          status: 'Confirmed',
+          status: 'Pending Approval', // Changed status to reflect the submission
           total_passengers_in_pnr: filteredPnrGroups[passenger.pnr]?.length || 1,
           rebooking_cost: 0,
           notes: `Approved rebooking for disruption ${disruptionFlightId}`
         };
       });
 
-      // Store passenger rebookings in database
-      const response = await fetch('/api/passenger-rebookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ rebookings: rebookingData }),
-      });
+      console.log('Saving passenger rebookings:', rebookingData);
 
-      if (response.ok) {
-        // Update flight recovery status to 'pending' - to show it needs final approval
-        const statusResponse = await fetch(`/api/disruptions/${disruptionFlightId}/recovery-status`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ recovery_status: 'pending' }),
-        });
+      // Use the databaseService method to save rebookings
+      const rebookingSuccess = await databaseService.savePassengerRebookings(rebookingData);
 
-        if (statusResponse.ok) {
+      if (rebookingSuccess) {
+        // Update flight recovery status
+        const statusSuccess = await databaseService.updateFlightRecoveryStatus(disruptionFlightId, 'passenger_services_pending');
+
+        if (statusSuccess) {
           // Save pending recovery solution with passenger services data
           const solutionData = {
             disruption_id: disruptionFlightId,
@@ -1202,50 +1205,46 @@ export function PassengerRebooking({ context, onClearContext }) {
             approval_required: true
           };
 
-          const success = await databaseService.addPendingSolution(solutionData);
+          const pendingSolutionSuccess = await databaseService.addPendingSolution(solutionData);
 
-          if (success) {
-            alertService.success( // Use custom alert
+          if (pendingSolutionSuccess) {
+            alertService.success(
               "Submission Successful",
               `Passenger rebooking sent for approval successfully!\n${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups processed.`,
               () => {
                 // Clear selection after successful submission
                 setSelectedPnrs(new Set());
-
-                // Show success popup and redirect to affected flights
-                alertService.success( // Use custom alert
-                  "Approval Sent",
-                  `Passenger rebooking for ${passengersToApprove.length} passengers has been sent for approval successfully!\n\nClick OK to return to Affected Flights.`,
-                  () => navigate('/affected-flights') // Changed from '/disruption' to '/affected-flights' as per common routing patterns
-                );
+                setSelectedPassenger(null);
+                setSelectedPnrGroup(null);
+                // Optionally, navigate or update UI
               }
             );
           } else {
-            alertService.error( // Use custom alert
+            alertService.error(
               "Submission Failed",
               "Failed to submit passenger rebooking for approval."
             );
           }
         } else {
-          alertService.warn( // Use custom alert
+          alertService.warn(
             "Status Update Warning",
             "Passenger information stored but failed to update flight status."
           );
         }
       } else {
-        const errorText = await response.text();
-        console.error("Failed to store passenger rebookings:", response.status, errorText);
-        alertService.error( // Use custom alert
+        alertService.error(
           "Storage Error",
           "Failed to store passenger rebooking information."
         );
       }
     } catch (error) {
       console.error('Error submitting passenger recovery solution:', error);
-      alertService.error( // Use custom alert
+      alertService.error(
         "Submission Error",
         "An error occurred while submitting the passenger recovery solution. Please try again."
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -2057,6 +2056,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                           size="sm"
                           className="btn-flydubai-primary"
                           onClick={handleBulkRebookSelectedPnrs}
+                          disabled={!canSendForApproval}
                         >
                           <RefreshCw className="h-3 w-3 mr-1" />
                           Rebook {selectedPnrs.size} PNR(s)
