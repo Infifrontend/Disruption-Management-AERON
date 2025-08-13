@@ -1580,6 +1580,31 @@ app.get("/api/recovery-logs", async (req, res) => {
   }
 });
 
+// Update flight recovery status endpoint
+app.put("/api/disruptions/:id/recovery-status", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { recovery_status } = req.body;
+
+    const result = await pool.query(
+      `UPDATE flight_disruptions 
+       SET recovery_status = $1, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $2 
+       RETURNING *`,
+      [recovery_status, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Flight disruption not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error updating flight recovery status:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Recovery Options endpoints
 app.get("/api/recovery-options/:disruptionId", async (req, res) => {
   try {
