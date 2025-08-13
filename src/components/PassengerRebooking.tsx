@@ -154,7 +154,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   const selectedFlight = context?.selectedFlight || context?.flight;
   const recoveryOption = context?.recoveryOption;
   const fromExecution = context?.fromExecution;
-
+  console.log(selectedFlight);
   // State for generated passengers
   const [generatedPassengers, setGeneratedPassengers] = useState([]);
 
@@ -1671,18 +1671,20 @@ export function PassengerRebooking({ context, onClearContext }) {
     try {
       // Get recovery option details which includes crew information
       const recoveryResponse = await fetch(
-        `/api/recovery-options/${recoveryOption.id}`,
+        `/api/recovery-options/${selectedFlight.id}`,
       );
 
       if (recoveryResponse.ok) {
         const recoveryOptions = await recoveryResponse.json();
-        
+
         // Get the specific recovery option (assuming it returns an array)
-        const option = Array.isArray(recoveryOptions) ? recoveryOptions[0] : recoveryOptions;
-        
+        const option = Array.isArray(recoveryOptions)
+          ? recoveryOptions[0]
+          : recoveryOptions;
+
         // Extract crew data from recovery option
         let crew = [];
-        
+
         // Try different paths where crew data might be stored
         if (option?.rotation_plan?.crew) {
           crew = option.rotation_plan.crew;
@@ -1692,86 +1694,97 @@ export function PassengerRebooking({ context, onClearContext }) {
           crew = option.crew;
         } else {
           // Generate crew data based on recovery option type
-          const isCrewIssue = (option?.title?.toLowerCase().includes('crew')) || 
-                             (option?.description?.toLowerCase().includes('crew')) ||
-                             (option?.id && typeof option.id === 'string' && option.id.toLowerCase().includes('crew'));
-          
-          crew = isCrewIssue ? [
-            {
-              name: "Captain Mohammed Al-Zaabi",
-              type: "Captain",
-              status: "Available",
-              location: "Dubai Airport Hotel",
-              availability: "Available",
-              dutyTime: "2h 15m remaining",
-              nextAssignment: "FZ892 - 16:30",
-              qualifications: ["B737-800", "B737-MAX8"],
-              experience: "15 years"
-            },
-            {
-              name: "F/O Sarah Rahman",
-              type: "First Officer", 
-              status: "On Duty",
-              location: "Crew Rest Area Terminal 2",
-              availability: "Available",
-              dutyTime: "4h 30m remaining",
-              nextAssignment: "Available for assignment",
-              qualifications: ["B737-800", "B737-MAX8"],
-              experience: "8 years"
-            },
-            {
-              name: "Fatima Al-Mansouri",
-              type: "Senior Flight Attendant",
-              status: "Available",
-              location: "Crew Lounge Level 3", 
-              availability: "Available",
-              dutyTime: "3h 45m remaining",
-              nextAssignment: "Standby until 18:00",
-              qualifications: ["Safety Instructor", "First Aid"],
-              experience: "12 years"
-            },
-            {
-              name: "Ahmed Hassan",
-              type: "Flight Attendant",
-              status: "Available",
-              location: "Crew Lounge Level 3",
-              availability: "Available",
-              dutyTime: "5h 10m remaining", 
-              nextAssignment: "FZ215 - 19:45",
-              qualifications: ["Service Excellence", "Emergency Response"],
-              experience: "5 years"
-            }
-          ] : [
-            {
-              name: "Captain Al-Zaabi",
-              type: "Captain",
-              status: "Available",
-              location: "Dubai Airport Hotel",
-              availability: "Available",
-            },
-            {
-              name: "F/O Rahman", 
-              type: "First Officer",
-              status: "On Duty",
-              location: "Crew Rest Area Terminal 2",
-              availability: "Available",
-            },
-            {
-              name: "FA Team Delta (4 members)",
-              type: "Cabin Crew",
-              status: "Available",
-              location: "Crew Lounge Level 3",
-              availability: "Available",
-            },
-          ];
+          const isCrewIssue =
+            option?.title?.toLowerCase().includes("crew") ||
+            option?.description?.toLowerCase().includes("crew") ||
+            (option?.id &&
+              typeof option.id === "string" &&
+              option.id.toLowerCase().includes("crew"));
+
+          crew = isCrewIssue
+            ? [
+                {
+                  name: "Captain Mohammed Al-Zaabi",
+                  type: "Captain",
+                  status: "Available",
+                  location: "Dubai Airport Hotel",
+                  availability: "Available",
+                  dutyTime: "2h 15m remaining",
+                  nextAssignment: "FZ892 - 16:30",
+                  qualifications: ["B737-800", "B737-MAX8"],
+                  experience: "15 years",
+                },
+                {
+                  name: "F/O Sarah Rahman",
+                  type: "First Officer",
+                  status: "On Duty",
+                  location: "Crew Rest Area Terminal 2",
+                  availability: "Available",
+                  dutyTime: "4h 30m remaining",
+                  nextAssignment: "Available for assignment",
+                  qualifications: ["B737-800", "B737-MAX8"],
+                  experience: "8 years",
+                },
+                {
+                  name: "Fatima Al-Mansouri",
+                  type: "Senior Flight Attendant",
+                  status: "Available",
+                  location: "Crew Lounge Level 3",
+                  availability: "Available",
+                  dutyTime: "3h 45m remaining",
+                  nextAssignment: "Standby until 18:00",
+                  qualifications: ["Safety Instructor", "First Aid"],
+                  experience: "12 years",
+                },
+                {
+                  name: "Ahmed Hassan",
+                  type: "Flight Attendant",
+                  status: "Available",
+                  location: "Crew Lounge Level 3",
+                  availability: "Available",
+                  dutyTime: "5h 10m remaining",
+                  nextAssignment: "FZ215 - 19:45",
+                  qualifications: ["Service Excellence", "Emergency Response"],
+                  experience: "5 years",
+                },
+              ]
+            : [
+                {
+                  name: "Captain Al-Zaabi",
+                  type: "Captain",
+                  status: "Available",
+                  location: "Dubai Airport Hotel",
+                  availability: "Available",
+                },
+                {
+                  name: "F/O Rahman",
+                  type: "First Officer",
+                  status: "On Duty",
+                  location: "Crew Rest Area Terminal 2",
+                  availability: "Available",
+                },
+                {
+                  name: "FA Team Delta (4 members)",
+                  type: "Cabin Crew",
+                  status: "Available",
+                  location: "Crew Lounge Level 3",
+                  availability: "Available",
+                },
+              ];
         }
-        
-        console.log('Loaded crew data from recovery option:', crew);
-        
+
+        console.log("Loaded crew data from recovery option:", crew);
+
         setCrewData({
           crew: crew,
-          crewConstraints: option?.rotation_plan?.crewConstraints || option?.crewConstraints || {},
-          operationalConstraints: option?.rotation_plan?.operationalConstraints || option?.operationalConstraints || {},
+          crewConstraints:
+            option?.rotation_plan?.crewConstraints ||
+            option?.crewConstraints ||
+            {},
+          operationalConstraints:
+            option?.rotation_plan?.operationalConstraints ||
+            option?.operationalConstraints ||
+            {},
         });
       } else {
         // Fallback crew data
@@ -1779,7 +1792,7 @@ export function PassengerRebooking({ context, onClearContext }) {
           crew: [
             {
               name: "Captain Al-Zaabi",
-              type: "Captain", 
+              type: "Captain",
               status: "Available",
               location: "Dubai Airport Hotel",
               availability: "Available",
@@ -2623,8 +2636,12 @@ export function PassengerRebooking({ context, onClearContext }) {
                               Crew Changes Required:
                             </span>
                             <span className="font-medium">
-                              {(recoveryOption?.id && typeof recoveryOption.id === 'string' && recoveryOption.id.includes("CREW")) ||
-                              (recoveryOption?.title?.toLowerCase().includes("crew"))
+                              {(recoveryOption?.id &&
+                                typeof recoveryOption.id === "string" &&
+                                recoveryOption.id.includes("CREW")) ||
+                              recoveryOption?.title
+                                ?.toLowerCase()
+                                .includes("crew")
                                 ? "2"
                                 : "0"}
                             </span>
