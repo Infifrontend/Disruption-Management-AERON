@@ -1,25 +1,45 @@
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Button } from './ui/button'
-import { Badge } from './ui/badge'
-import { Input } from './ui/input'
-import { Label } from './ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import { Alert, AlertDescription } from './ui/alert'
-import { Progress } from './ui/progress'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
-import { Separator } from './ui/separator'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
-import { 
-  CheckCircle, 
-  Clock, 
-  Users, 
-  Plane, 
-  DollarSign, 
-  AlertTriangle, 
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Alert, AlertDescription } from "./ui/alert";
+import { Progress } from "./ui/progress";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+import { Separator } from "./ui/separator";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import {
+  CheckCircle,
+  Clock,
+  Users,
+  Plane,
+  DollarSign,
+  AlertTriangle,
   XCircle,
   Eye,
   ThumbsUp,
@@ -47,338 +67,411 @@ import {
   Shield,
   Phone,
   Mail,
-  Clock3
-} from 'lucide-react'
-import { databaseService } from '../services/databaseService'
+  Clock3,
+} from "lucide-react";
+import { databaseService } from "../services/databaseService";
 
 export function PendingSolutions() {
-  const [activeTab, setActiveTab] = useState('all')
-  const [selectedPlan, setSelectedPlan] = useState(null)
+  const [activeTab, setActiveTab] = useState("all");
+  const [selectedPlan, setSelectedPlan] = useState(null);
   const [filters, setFilters] = useState({
-    priority: 'all',
-    submitter: 'all',
-    dateRange: 'all',
-    flightNumber: '',
-    planId: ''
-  })
-  const [sortBy, setSortBy] = useState('submitted')
-  const [sortOrder, setSortOrder] = useState('desc')
-  const [plans, setPlans] = useState([])
-  const [loading, setLoading] = useState(true)
+    priority: "all",
+    submitter: "all",
+    dateRange: "all",
+    flightNumber: "",
+    planId: "",
+  });
+  const [sortBy, setSortBy] = useState("submitted");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchPlans()
-  }, [])
+    fetchPlans();
+  }, []);
 
   const fetchPlans = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      console.log('Fetching pending recovery solutions from database...')
-      const data = await databaseService.getPendingRecoverySolutions()
-      console.log('Fetched pending solutions:', data)
+      console.log("Fetching pending recovery solutions from database...");
+      const data = await databaseService.getPendingRecoverySolutions();
+      console.log("Fetched pending solutions:", data);
 
       if (!data || !Array.isArray(data)) {
-        console.warn('Invalid data received:', data)
-        setPlans([])
-        return
+        console.warn("Invalid data received:", data);
+        setPlans([]);
+        return;
       }
 
       // Remove duplicates based on disruption_id and option_id combination
       const uniqueData = data.reduce((acc, plan) => {
-        if (!plan) return acc
+        if (!plan) return acc;
 
-        const key = `${plan.disruption_id || 'unknown'}-${plan.option_id || 'unknown'}`
+        const key = `${plan.disruption_id || "unknown"}-${plan.option_id || "unknown"}`;
         if (!acc.has(key)) {
-          acc.set(key, plan)
+          acc.set(key, plan);
         } else {
           // Keep the most recent one if duplicates exist
-          const existing = acc.get(key)
-          const planDate = new Date(plan.submitted_at || plan.created_at || 0)
-          const existingDate = new Date(existing.submitted_at || existing.created_at || 0)
+          const existing = acc.get(key);
+          const planDate = new Date(plan.submitted_at || plan.created_at || 0);
+          const existingDate = new Date(
+            existing.submitted_at || existing.created_at || 0,
+          );
           if (planDate > existingDate) {
-            acc.set(key, plan)
+            acc.set(key, plan);
           }
         }
-        return acc
-      }, new Map())
+        return acc;
+      }, new Map());
 
       // Transform the database data to match the expected format
-      const transformedPlans = Array.from(uniqueData.values()).map(plan => ({
-        id: plan.id || `RP-${new Date().getFullYear()}-${String(plan.id || Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
-        title: plan.option_title || plan.title || 'Recovery Plan',
-        flightNumber: plan.flight_number || 'N/A',
-        route: plan.route || 'N/A',
-        aircraft: plan.aircraft || 'N/A',
+      const transformedPlans = Array.from(uniqueData.values()).map((plan) => ({
+        id:
+          plan.id ||
+          `RP-${new Date().getFullYear()}-${String(plan.id || Math.floor(Math.random() * 1000)).padStart(3, "0")}`,
+        title: plan.option_title || plan.title || "Recovery Plan",
+        flightNumber: plan.flight_number || "N/A",
+        route: plan.route || "N/A",
+        aircraft: plan.aircraft || "N/A",
         submittedAt: plan.submitted_at || new Date().toISOString(),
-        submittedBy: plan.submitted_by || 'system',
-        submitterName: plan.operations_user || plan.submitted_by || 'AERON System',
-        priority: plan.severity || 'Medium',
-        status: plan.status || 'Pending Approval',
-        estimatedCost: typeof plan.cost === 'string' ? parseInt(plan.cost.replace(/[^0-9]/g, '')) || 0 : plan.cost || 0,
-        estimatedDelay: plan.delay_minutes || parseInt(plan.timeline?.replace(/[^0-9]/g, '') || '0') || 0,
+        submittedBy: plan.submitted_by || "system",
+        submitterName:
+          plan.operations_user || plan.submitted_by || "AERON System",
+        priority: plan.severity || "Medium",
+        status: plan.status || "Pending Approval",
+        estimatedCost:
+          typeof plan.cost === "string"
+            ? parseInt(plan.cost.replace(/[^0-9]/g, "")) || 0
+            : plan.cost || 0,
+        estimatedDelay:
+          plan.delay_minutes ||
+          parseInt(plan.timeline?.replace(/[^0-9]/g, "") || "0") ||
+          0,
         affectedPassengers: plan.passengers || plan.affected_passengers || 0,
         confidence: plan.confidence || 80,
-        disruptionReason: plan.disruption_reason || 'N/A',
-        timeline: plan.timeline || 'TBD',
-        approvalRequired: plan.approval_required || 'Operations Manager',
+        disruptionReason: plan.disruption_reason || "N/A",
+        timeline: plan.timeline || "TBD",
+        approvalRequired: plan.approval_required || "Operations Manager",
         slaDeadline: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-        timeRemaining: '2h 0m',
-        tags: ['AERON Generated'],
+        timeRemaining: "2h 0m",
+        tags: ["AERON Generated"],
         metrics: {
           successProbability: plan.confidence || 80,
           customerSatisfaction: 85,
           onTimePerformance: 90,
-          costEfficiency: 75
+          costEfficiency: 75,
         },
         flightDetails: plan.full_details || {},
-        costBreakdown: plan.cost_analysis?.breakdown || plan.full_details?.costBreakdown || {},
-        recoverySteps: plan.recovery_steps || plan.full_details?.recoverySteps || [],
-        assignedCrew: plan.crew_information || plan.full_details?.assignedCrew || [],
+        costBreakdown:
+          plan.cost_analysis?.breakdown ||
+          plan.full_details?.costBreakdown ||
+          {},
+        recoverySteps:
+          plan.recovery_steps || plan.full_details?.recoverySteps || [],
+        assignedCrew:
+          plan.crew_information || plan.full_details?.assignedCrew || [],
         passengerInformation: plan.passenger_information || [],
-        operationsUser: plan.operations_user || 'Operations Manager',
+        operationsUser: plan.operations_user || "Operations Manager",
         costAnalysis: plan.cost_analysis || {},
         disruptionId: plan.disruption_id,
-        optionId: plan.option_id
-      }))
+        optionId: plan.option_id,
+      }));
 
-      setPlans(transformedPlans)
+      setPlans(transformedPlans);
     } catch (error) {
-      console.error("Failed to fetch pending solutions:", error)
+      console.error("Failed to fetch pending solutions:", error);
       // Try to show cached data or empty array
-      setPlans([])
+      setPlans([]);
 
       // You could add a retry mechanism here
       setTimeout(() => {
         if (plans.length === 0) {
-          console.log('Retrying to fetch pending solutions...')
+          console.log("Retrying to fetch pending solutions...");
           // Could implement a retry mechanism
         }
-      }, 5000)
+      }, 5000);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const filteredPlans = plans.filter(plan => {
-    const matchesPriority = filters.priority === 'all' || plan.priority.toLowerCase() === filters.priority
-    const matchesSubmitter = filters.submitter === 'all' || plan.submittedBy.toLowerCase().includes(filters.submitter.toLowerCase())
-    const matchesFlightNumber = !filters.flightNumber || plan.flightNumber.toLowerCase().includes(filters.flightNumber.toLowerCase())
-    const matchesPlanId = !filters.planId || plan.id.toLowerCase().includes(filters.planId.toLowerCase())
+  const filteredPlans = plans.filter((plan) => {
+    const matchesPriority =
+      filters.priority === "all" ||
+      plan.priority.toLowerCase() === filters.priority;
+    const matchesSubmitter =
+      filters.submitter === "all" ||
+      plan.submittedBy.toLowerCase().includes(filters.submitter.toLowerCase());
+    const matchesFlightNumber =
+      !filters.flightNumber ||
+      plan.flightNumber
+        .toLowerCase()
+        .includes(filters.flightNumber.toLowerCase());
+    const matchesPlanId =
+      !filters.planId ||
+      plan.id.toLowerCase().includes(filters.planId.toLowerCase());
 
     // Normalize status for consistent comparison
-    const normalizedStatus = plan.status ? plan.status.trim().toLowerCase() : 'pending'
+    const normalizedStatus = plan.status
+      ? plan.status.trim().toLowerCase()
+      : "pending";
 
-    const matchesTab = activeTab === 'all' || 
-                     (activeTab === 'pending' && ['pending approval', 'under review', 'pending'].includes(normalizedStatus)) ||
-                     (activeTab === 'approved' && normalizedStatus === 'approved') ||
-                     (activeTab === 'rejected' && normalizedStatus === 'rejected') ||
-                     (activeTab === 'critical' && (plan.priority === 'Critical' || plan.priority === 'High'))
+    const matchesTab =
+      activeTab === "all" ||
+      (activeTab === "pending" &&
+        ["pending approval", "under review", "pending"].includes(
+          normalizedStatus,
+        )) ||
+      (activeTab === "approved" && normalizedStatus === "approved") ||
+      (activeTab === "rejected" && normalizedStatus === "rejected") ||
+      (activeTab === "critical" &&
+        (plan.priority === "Critical" || plan.priority === "High"));
 
-    return matchesPriority && matchesSubmitter && matchesFlightNumber && matchesPlanId && matchesTab
-  })
+    return (
+      matchesPriority &&
+      matchesSubmitter &&
+      matchesFlightNumber &&
+      matchesPlanId &&
+      matchesTab
+    );
+  });
 
   const sortedPlans = filteredPlans.sort((a, b) => {
-    let aValue, bValue
+    let aValue, bValue;
 
     switch (sortBy) {
-      case 'submitted':
-        aValue = new Date(a.submittedAt)
-        bValue = new Date(b.submittedAt)
-        break
-      case 'priority':
-        const priorityOrder = { 'Critical': 4, 'High': 3, 'Medium': 2, 'Low': 1 }
-        aValue = priorityOrder[a.priority] || 0
-        bValue = priorityOrder[b.priority] || 0
-        break
-      case 'cost':
-        aValue = a.estimatedCost
-        bValue = b.estimatedCost
-        break
-      case 'confidence':
-        aValue = a.confidence
-        bValue = b.confidence
-        break
+      case "submitted":
+        aValue = new Date(a.submittedAt);
+        bValue = new Date(b.submittedAt);
+        break;
+      case "priority":
+        const priorityOrder = { Critical: 4, High: 3, Medium: 2, Low: 1 };
+        aValue = priorityOrder[a.priority] || 0;
+        bValue = priorityOrder[b.priority] || 0;
+        break;
+      case "cost":
+        aValue = a.estimatedCost;
+        bValue = b.estimatedCost;
+        break;
+      case "confidence":
+        aValue = a.confidence;
+        bValue = b.confidence;
+        break;
       default:
-        aValue = a.submittedAt
-        bValue = b.submittedAt
+        aValue = a.submittedAt;
+        bValue = b.submittedAt;
     }
 
-    if (sortOrder === 'asc') {
-      return aValue > bValue ? 1 : -1
+    if (sortOrder === "asc") {
+      return aValue > bValue ? 1 : -1;
     } else {
-      return aValue < bValue ? 1 : -1
+      return aValue < bValue ? 1 : -1;
     }
-  })
+  });
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Pending Approval': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
-      case 'Under Review': return 'bg-blue-100 text-blue-700 border-blue-200'
-      case 'Approved': return 'bg-green-100 text-green-700 border-green-200'
-      case 'Rejected': return 'bg-red-100 text-red-700 border-red-200'
-      case 'Pending': return 'bg-orange-100 text-orange-700 border-orange-200' // Added for Pending status
-      default: return 'bg-gray-100 text-gray-700 border-gray-200'
+      case "Pending Approval":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      case "Under Review":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "Approved":
+        return "bg-green-100 text-green-700 border-green-200";
+      case "Rejected":
+        return "bg-red-100 text-red-700 border-red-200";
+      case "Pending":
+        return "bg-orange-100 text-orange-700 border-orange-200"; // Added for Pending status
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
     }
-  }
+  };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'Critical': return 'bg-red-100 text-red-700 border-red-200'
-      case 'High': return 'bg-orange-100 text-orange-700 border-orange-200'
-      case 'Medium': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
-      case 'Low': return 'bg-green-100 text-green-700 border-green-200'
-      default: return 'bg-gray-100 text-gray-700 border-gray-200'
+      case "Critical":
+        return "bg-red-100 text-red-700 border-red-200";
+      case "High":
+        return "bg-orange-100 text-orange-700 border-orange-200";
+      case "Medium":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      case "Low":
+        return "bg-green-100 text-green-700 border-green-200";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
     }
-  }
+  };
 
   const getTimeRemainingColor = (timeRemaining) => {
-    if (timeRemaining === 'OVERDUE') return 'text-red-600 font-semibold'
-    if (timeRemaining === 'Completed') return 'text-green-600'
-    return 'text-orange-600'
-  }
+    if (timeRemaining === "OVERDUE") return "text-red-600 font-semibold";
+    if (timeRemaining === "Completed") return "text-green-600";
+    return "text-orange-600";
+  };
 
   const getCrewStatusColor = (status) => {
     switch (status) {
-      case 'Available': return 'bg-green-100 text-green-700'
-      case 'Near Limit': return 'bg-yellow-100 text-yellow-700'
-      case 'Unavailable': return 'bg-red-100 text-red-700'
-      default: return 'bg-gray-100 text-gray-700'
+      case "Available":
+        return "bg-green-100 text-green-700";
+      case "Near Limit":
+        return "bg-yellow-100 text-yellow-700";
+      case "Unavailable":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
-  }
+  };
 
   const getTabCounts = () => {
     return {
       all: plans.length,
-      pending: plans.filter(p => {
-        const status = p.status ? p.status.trim().toLowerCase() : 'pending'
-        return ['pending approval', 'under review', 'pending'].includes(status)
+      pending: plans.filter((p) => {
+        const status = p.status ? p.status.trim().toLowerCase() : "pending";
+        return ["pending approval", "under review", "pending"].includes(status);
       }).length,
-      approved: plans.filter(p => {
-        const status = p.status ? p.status.trim().toLowerCase() : ''
-        return status === 'approved'
+      approved: plans.filter((p) => {
+        const status = p.status ? p.status.trim().toLowerCase() : "";
+        return status === "approved";
       }).length,
-      rejected: plans.filter(p => {
-        const status = p.status ? p.status.trim().toLowerCase() : ''
-        return status === 'rejected'
+      rejected: plans.filter((p) => {
+        const status = p.status ? p.status.trim().toLowerCase() : "";
+        return status === "rejected";
       }).length,
-      critical: plans.filter(p => ['Critical', 'High'].includes(p.priority)).length
-    }
-  }
+      critical: plans.filter((p) => ["Critical", "High"].includes(p.priority))
+        .length,
+    };
+  };
 
-  const tabCounts = getTabCounts()
+  const tabCounts = getTabCounts();
 
   const handleApprove = async (planId) => {
     try {
-      console.log('Approving plan:', planId);
+      console.log("Approving plan:", planId);
 
       // Find the plan to get the disruption ID
-      const plan = plans.find(p => p.id === planId);
+      const plan = plans.find((p) => p.id === planId);
       if (!plan) {
-        console.error('Plan not found:', planId);
+        console.error("Plan not found:", planId);
         return;
       }
 
       // Update the pending solution in the database using the correct endpoint
-      const response = await fetch(`/api/pending-recovery-solutions/${planId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Approved' })
-      });
+      const response = await fetch(
+        `/api/pending-recovery-solutions/${planId}/status`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "Approved" }),
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to update pending solution: ${response.status}`);
+        throw new Error(
+          `Failed to update pending solution: ${response.status}`,
+        );
       }
 
       // If there's a disruption ID, also update the flight recovery status
       if (plan.disruptionId) {
-        await databaseService.updateFlightRecoveryStatus(plan.disruptionId, 'approved');
+        await databaseService.updateFlightRecoveryStatus(
+          plan.disruptionId,
+          "approved",
+        );
       }
 
       // Update local state immediately for better UX
-      setPlans(prevPlans => 
-        prevPlans.map(p => 
-          p.id === planId ? { ...p, status: 'Approved' } : p
-        )
+      setPlans((prevPlans) =>
+        prevPlans.map((p) =>
+          p.id === planId ? { ...p, status: "Approved" } : p,
+        ),
       );
 
-      console.log('Plan approved successfully');
+      console.log("Plan approved successfully");
     } catch (error) {
       console.error("Failed to approve plan:", error);
       // Refresh data to ensure consistency even on error
       fetchPlans();
     }
-  }
+  };
 
   const handleReject = async (planId) => {
     try {
-      console.log('Rejecting plan:', planId);
+      console.log("Rejecting plan:", planId);
 
       // Find the plan to get the disruption ID
-      const plan = plans.find(p => p.id === planId);
+      const plan = plans.find((p) => p.id === planId);
       if (!plan) {
-        console.error('Plan not found:', planId);
+        console.error("Plan not found:", planId);
         return;
       }
 
       // Update the pending solution in the database using the correct endpoint
-      const response = await fetch(`/api/pending-recovery-solutions/${planId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'Rejected' })
-      });
+      const response = await fetch(
+        `/api/pending-recovery-solutions/${planId}/status`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "Rejected" }),
+        },
+      );
 
       if (!response.ok) {
-        throw new Error(`Failed to update pending solution: ${response.status}`);
+        throw new Error(
+          `Failed to update pending solution: ${response.status}`,
+        );
       }
 
       // If there's a disruption ID, also update the flight recovery status
       if (plan.disruptionId) {
-        await databaseService.updateFlightRecoveryStatus(plan.disruptionId, 'rejected');
+        await databaseService.updateFlightRecoveryStatus(
+          plan.disruptionId,
+          "rejected",
+        );
       }
 
       // Update local state immediately for better UX
-      setPlans(prevPlans => 
-        prevPlans.map(p => 
-          p.id === planId ? { ...p, status: 'Rejected' } : p
-        )
+      setPlans((prevPlans) =>
+        prevPlans.map((p) =>
+          p.id === planId ? { ...p, status: "Rejected" } : p,
+        ),
       );
 
-      console.log('Plan rejected successfully');
+      console.log("Plan rejected successfully");
     } catch (error) {
       console.error("Failed to reject plan:", error);
       // Refresh data to ensure consistency even on error
       fetchPlans();
     }
-  }
+  };
 
   const handleExecute = async (plan) => {
     try {
-      await databaseService.updateFlightDisruptionStatus(plan.id, 'Pending');
+      await databaseService.updateFlightDisruptionStatus(plan.id, "Pending");
       await databaseService.addPendingSolution({
         ...plan,
-        status: 'Pending',
+        status: "Pending",
         flightDetails: plan.flightDetails,
         costBreakdown: plan.costBreakdown,
         recoverySteps: plan.recoverySteps,
         assignedCrew: plan.assignedCrew,
       });
-      setPlans(plans.map(p => p.id === plan.id ? { ...p, status: 'Pending' } : p));
-      setSelectedPlan({ ...plan, status: 'Pending' });
+      setPlans(
+        plans.map((p) => (p.id === plan.id ? { ...p, status: "Pending" } : p)),
+      );
+      setSelectedPlan({ ...plan, status: "Pending" });
     } catch (error) {
       console.error("Failed to execute plan:", error);
     }
-  }
+  };
 
   const handleViewDetails = async (plan) => {
     try {
-      console.log('Fetching detailed view for plan:', plan.id)
+      console.log("Fetching detailed view for plan:", plan.id);
 
       // Try to fetch the most up-to-date data from pending solutions
-      const allSolutions = await databaseService.getPendingRecoverySolutions()
-      const updatedPlan = allSolutions.find(s => s.id === plan.id)
+      const allSolutions = await databaseService.getPendingRecoverySolutions();
+      const updatedPlan = allSolutions.find((s) => s.id === plan.id);
 
       if (updatedPlan) {
-        console.log('Found updated plan data:', updatedPlan)
+        console.log("Found updated plan data:", updatedPlan);
         // Transform the updated plan data
         const transformedPlan = {
           ...plan,
@@ -387,36 +480,48 @@ export function PendingSolutions() {
           flightDetails: updatedPlan.full_details || plan.flightDetails || {},
           rotationImpact: updatedPlan.rotation_impact || {},
           fullDetails: updatedPlan.full_details || {},
-          costBreakdown: updatedPlan.cost_analysis?.breakdown || updatedPlan.full_details?.costBreakdown || {},
-          recoverySteps: updatedPlan.recovery_steps || updatedPlan.full_details?.recoverySteps || [],
-          assignedCrew: updatedPlan.crew_information || updatedPlan.full_details?.assignedCrew || [],
+          costBreakdown:
+            updatedPlan.cost_analysis?.breakdown ||
+            updatedPlan.full_details?.costBreakdown ||
+            {},
+          recoverySteps:
+            updatedPlan.recovery_steps ||
+            updatedPlan.full_details?.recoverySteps ||
+            [],
+          assignedCrew:
+            updatedPlan.crew_information ||
+            updatedPlan.full_details?.assignedCrew ||
+            [],
           passengerInformation: updatedPlan.passenger_information || [],
-          operationsUser: updatedPlan.operations_user || 'Operations Manager',
+          operationsUser: updatedPlan.operations_user || "Operations Manager",
           costAnalysis: updatedPlan.cost_analysis || {},
-        }
-        setSelectedPlan(transformedPlan)
+        };
+        setSelectedPlan(transformedPlan);
       } else {
-        console.log('No updated data found, using current plan data')
-        setSelectedPlan(plan)
+        console.log("No updated data found, using current plan data");
+        setSelectedPlan(plan);
       }
     } catch (error) {
       console.error("Failed to fetch plan details:", error);
       // Fallback to showing the plan with available data if details fetch fails
       setSelectedPlan(plan);
     }
-  }
+  };
 
   const refreshPlans = async () => {
     await fetchPlans();
   };
 
   const formatIST = (dateString) => {
-    if (!dateString) return 'N/A';
+    if (!dateString) return "N/A";
     try {
       const date = new Date(dateString);
-      return date.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true });
+      return date.toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        hour12: true,
+      });
     } catch (e) {
-      return 'Invalid Date';
+      return "Invalid Date";
     }
   };
 
@@ -430,8 +535,13 @@ export function PendingSolutions() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={refreshPlans} className="flex items-center gap-2" disabled={loading}>
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          <Button
+            variant="outline"
+            onClick={refreshPlans}
+            className="flex items-center gap-2"
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
           <Button variant="outline" className="flex items-center gap-2">
@@ -448,7 +558,9 @@ export function PendingSolutions() {
               <Clock className="h-5 w-5 text-yellow-600" />
               <div>
                 <p className="text-sm text-yellow-600">Pending Approval</p>
-                <p className="text-2xl font-semibold text-yellow-900">{tabCounts.pending}</p>
+                <p className="text-2xl font-semibold text-yellow-900">
+                  {tabCounts.pending}
+                </p>
                 <p className="text-xs text-yellow-600">Awaiting decision</p>
               </div>
             </div>
@@ -461,7 +573,9 @@ export function PendingSolutions() {
               <AlertTriangle className="h-5 w-5 text-red-600" />
               <div>
                 <p className="text-sm text-red-600">Critical Priority</p>
-                <p className="text-2xl font-semibold text-red-900">{tabCounts.critical}</p>
+                <p className="text-2xl font-semibold text-red-900">
+                  {tabCounts.critical}
+                </p>
                 <p className="text-xs text-red-600">Immediate attention</p>
               </div>
             </div>
@@ -474,7 +588,9 @@ export function PendingSolutions() {
               <CheckCircle className="h-5 w-5 text-green-600" />
               <div>
                 <p className="text-sm text-green-600">Approved Today</p>
-                <p className="text-2xl font-semibold text-green-900">{tabCounts.approved}</p>
+                <p className="text-2xl font-semibold text-green-900">
+                  {tabCounts.approved}
+                </p>
                 <p className="text-xs text-green-600">Ready for execution</p>
               </div>
             </div>
@@ -511,7 +627,9 @@ export function PendingSolutions() {
                 <Input
                   placeholder="EK123"
                   value={filters.flightNumber}
-                  onChange={(e) => setFilters({...filters, flightNumber: e.target.value})}
+                  onChange={(e) =>
+                    setFilters({ ...filters, flightNumber: e.target.value })
+                  }
                   className="pl-10"
                 />
               </div>
@@ -521,12 +639,19 @@ export function PendingSolutions() {
               <Input
                 placeholder="RP-2025-001"
                 value={filters.planId}
-                onChange={(e) => setFilters({...filters, planId: e.target.value})}
+                onChange={(e) =>
+                  setFilters({ ...filters, planId: e.target.value })
+                }
               />
             </div>
             <div>
               <Label>Priority</Label>
-              <Select value={filters.priority} onValueChange={(value) => setFilters({...filters, priority: value})}>
+              <Select
+                value={filters.priority}
+                onValueChange={(value) =>
+                  setFilters({ ...filters, priority: value })
+                }
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -541,7 +666,12 @@ export function PendingSolutions() {
             </div>
             <div>
               <Label>Submitter</Label>
-              <Select value={filters.submitter} onValueChange={(value) => setFilters({...filters, submitter: value})}>
+              <Select
+                value={filters.submitter}
+                onValueChange={(value) =>
+                  setFilters({ ...filters, submitter: value })
+                }
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -586,25 +716,50 @@ export function PendingSolutions() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="all" className="flex items-center gap-1 whitespace-nowrap">
+          <TabsTrigger
+            value="all"
+            className="flex items-center gap-1 whitespace-nowrap"
+          >
             <span>All Plans</span>
-            <Badge variant="secondary" className="ml-1 flex-shrink-0">{tabCounts.all}</Badge>
+            <Badge variant="secondary" className="ml-1 flex-shrink-0">
+              {tabCounts.all}
+            </Badge>
           </TabsTrigger>
-          <TabsTrigger value="pending" className="flex items-center gap-1 whitespace-nowrap">
+          <TabsTrigger
+            value="pending"
+            className="flex items-center gap-1 whitespace-nowrap"
+          >
             <span>Pending</span>
-            <Badge variant="secondary" className="ml-1 flex-shrink-0">{tabCounts.pending}</Badge>
+            <Badge variant="secondary" className="ml-1 flex-shrink-0">
+              {tabCounts.pending}
+            </Badge>
           </TabsTrigger>
-          <TabsTrigger value="critical" className="flex items-center gap-1 whitespace-nowrap">
+          <TabsTrigger
+            value="critical"
+            className="flex items-center gap-1 whitespace-nowrap"
+          >
             <span>Critical</span>
-            <Badge variant="destructive" className="ml-1 flex-shrink-0">{tabCounts.critical}</Badge>
+            <Badge variant="destructive" className="ml-1 flex-shrink-0">
+              {tabCounts.critical}
+            </Badge>
           </TabsTrigger>
-          <TabsTrigger value="approved" className="flex items-center gap-1 whitespace-nowrap">
+          <TabsTrigger
+            value="approved"
+            className="flex items-center gap-1 whitespace-nowrap"
+          >
             <span>Approved</span>
-            <Badge variant="secondary" className="ml-1 flex-shrink-0">{tabCounts.approved}</Badge>
+            <Badge variant="secondary" className="ml-1 flex-shrink-0">
+              {tabCounts.approved}
+            </Badge>
           </TabsTrigger>
-          <TabsTrigger value="rejected" className="flex items-center gap-1 whitespace-nowrap">
+          <TabsTrigger
+            value="rejected"
+            className="flex items-center gap-1 whitespace-nowrap"
+          >
             <span>Rejected</span>
-            <Badge variant="secondary" className="ml-1 flex-shrink-0">{tabCounts.rejected}</Badge>
+            <Badge variant="secondary" className="ml-1 flex-shrink-0">
+              {tabCounts.rejected}
+            </Badge>
           </TabsTrigger>
         </TabsList>
 
@@ -614,7 +769,9 @@ export function PendingSolutions() {
               <Card>
                 <CardContent className="p-12 text-center">
                   <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-spin" />
-                  <h3 className="text-lg font-semibold mb-2">Loading Plans...</h3>
+                  <h3 className="text-lg font-semibold mb-2">
+                    Loading Plans...
+                  </h3>
                   <p className="text-muted-foreground">
                     Fetching the latest recovery plans from the database.
                   </p>
@@ -622,19 +779,24 @@ export function PendingSolutions() {
               </Card>
             ) : sortedPlans.length > 0 ? (
               sortedPlans.map((plan) => (
-                <Card key={plan.id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={plan.id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-4 mb-3">
-                          <h3 className="text-lg font-semibold">{plan.title}</h3>
+                          <h3 className="text-lg font-semibold">
+                            {plan.title}
+                          </h3>
                           <Badge className={getStatusColor(plan.status)}>
                             {plan.status}
                           </Badge>
                           <Badge className={getPriorityColor(plan.priority)}>
                             {plan.priority} Priority
                           </Badge>
-                          {plan.timeRemaining === 'OVERDUE' && (
+                          {plan.timeRemaining === "OVERDUE" && (
                             <Badge className="bg-red-100 text-red-700 border-red-200">
                               <AlertTriangle className="h-3 w-3 mr-1" />
                               OVERDUE
@@ -644,47 +806,80 @@ export function PendingSolutions() {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                           <div>
-                            <Label className="text-xs text-muted-foreground">Flight & Route</Label>
-                            <p className="font-medium">{plan.flightNumber} • {plan.route}</p>
-                            <p className="text-sm text-muted-foreground">{plan.aircraft}</p>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Submitted</Label>
-                            <p className="font-medium">{formatIST(plan.submittedAt)}</p>
-                            <p className="text-sm text-muted-foreground">by {plan.submitterName}</p>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Impact</Label>
-                            <p className="font-medium">${(plan.estimatedCost / 1000).toFixed(0)}K • {plan.estimatedDelay}m delay</p>
-                            <p className="text-sm text-muted-foreground">{plan.affectedPassengers} passengers</p>
-                          </div>
-                          <div>
-                            <Label className="text-xs text-muted-foreground">Confidence & Timeline</Label>
-                            <p className="font-medium">{plan.confidence}% • {plan.timeline}</p>
-                            <p className={`text-sm ${getTimeRemainingColor(plan.timeRemaining)}`}>
-                              {plan.timeRemaining}
+                            <Label className="text-xs text-muted-foreground">
+                              Flight & Route
+                            </Label>
+                            <p className="font-medium">
+                              {plan.flightNumber} • {plan.route}
                             </p>
+                            <p className="text-sm text-muted-foreground">
+                              {plan.aircraft}
+                            </p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              Submitted
+                            </Label>
+                            <p className="font-medium">
+                              {formatIST(plan.submittedAt)}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              by {plan.submitterName}
+                            </p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              Impact
+                            </Label>
+                            <p className="font-medium">
+                              AED {(plan.estimatedCost / 1000).toFixed(0)}K •{" "}
+                              {plan.estimatedDelay}m delay
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {plan.affectedPassengers} passengers
+                            </p>
+                          </div>
+                          <div>
+                            <Label className="text-xs text-muted-foreground">
+                              Confidence & Timeline
+                            </Label>
+                            <p className="font-medium">
+                              {plan.confidence}% • {plan.timeline}
+                            </p>
+                            <p
+                              className={`text-sm ${getTimeRemainingColor(plan.timeRemaining)}`}
+                            ></p>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-4 mb-4">
                           <div className="flex items-center gap-2">
                             <Target className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{plan.recoverySteps.length} steps</span>
+                            <span className="text-sm">
+                              {plan.recoverySteps.length} steps
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <UserCheck className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">Requires {plan.approvalRequired}</span>
+                            <span className="text-sm">
+                              Requires {plan.approvalRequired}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2">
                             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">{plan.disruptionReason}</span>
+                            <span className="text-sm">
+                              {plan.disruptionReason}
+                            </span>
                           </div>
                         </div>
 
                         <div className="flex flex-wrap gap-2 mb-4">
                           {plan.tags.map((tag, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
+                            <Badge
+                              key={index}
+                              variant="outline"
+                              className="text-xs"
+                            >
                               {tag}
                             </Badge>
                           ))}
@@ -694,7 +889,8 @@ export function PendingSolutions() {
                           <Alert className="border-red-200 bg-red-50 mb-4">
                             <XCircle className="h-4 w-4 text-red-600" />
                             <AlertDescription className="text-red-800">
-                              <strong>Rejection Reason:</strong> {plan.rejectionReason}
+                              <strong>Rejection Reason:</strong>{" "}
+                              {plan.rejectionReason}
                             </AlertDescription>
                           </Alert>
                         )}
@@ -711,7 +907,11 @@ export function PendingSolutions() {
                           View Details
                         </Button>
 
-                        {['Pending Approval', 'Under Review', 'Pending'].includes(plan.status) && (
+                        {[
+                          "Pending Approval",
+                          "Under Review",
+                          "Pending",
+                        ].includes(plan.status) && (
                           <>
                             <Button
                               size="sm"
@@ -753,7 +953,10 @@ export function PendingSolutions() {
       </Tabs>
 
       {selectedPlan && (
-        <Dialog open={!!selectedPlan} onOpenChange={() => setSelectedPlan(null)}>
+        <Dialog
+          open={!!selectedPlan}
+          onOpenChange={() => setSelectedPlan(null)}
+        >
           <DialogContent className="max-w-[95vw] w-[95vw] max-h-[95vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -761,7 +964,8 @@ export function PendingSolutions() {
                 Recovery Plan Details - {selectedPlan.id}
               </DialogTitle>
               <DialogDescription>
-                Comprehensive view of recovery plan for Flight {selectedPlan.flightNumber}
+                Comprehensive view of recovery plan for Flight{" "}
+                {selectedPlan.flightNumber}
               </DialogDescription>
             </DialogHeader>
 
@@ -781,10 +985,14 @@ export function PendingSolutions() {
                       <CardTitle className="flex items-center justify-between">
                         <span>Plan Summary</span>
                         <div className="flex gap-2">
-                          <Badge className={getStatusColor(selectedPlan.status)}>
+                          <Badge
+                            className={getStatusColor(selectedPlan.status)}
+                          >
                             {selectedPlan.status}
                           </Badge>
-                          <Badge className={getPriorityColor(selectedPlan.priority)}>
+                          <Badge
+                            className={getPriorityColor(selectedPlan.priority)}
+                          >
                             {selectedPlan.priority} Priority
                           </Badge>
                         </div>
@@ -794,23 +1002,33 @@ export function PendingSolutions() {
                       <div className="space-y-3 text-sm">
                         <div className="flex justify-between">
                           <span>Plan ID:</span>
-                          <span className="font-medium font-mono">{selectedPlan.id}</span>
+                          <span className="font-medium font-mono">
+                            {selectedPlan.id}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Title:</span>
-                          <span className="font-medium">{selectedPlan.title}</span>
+                          <span className="font-medium">
+                            {selectedPlan.title}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Submitted:</span>
-                          <span className="font-medium">{formatIST(selectedPlan.submittedAt)}</span>
+                          <span className="font-medium">
+                            {formatIST(selectedPlan.submittedAt)}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>By:</span>
-                          <span className="font-medium">{selectedPlan.submitterName}</span>
+                          <span className="font-medium">
+                            {selectedPlan.submitterName}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Approval Required:</span>
-                          <span className="font-medium">{selectedPlan.approvalRequired}</span>
+                          <span className="font-medium">
+                            {selectedPlan.approvalRequired}
+                          </span>
                         </div>
                       </div>
                     </CardContent>
@@ -824,23 +1042,33 @@ export function PendingSolutions() {
                       <div className="space-y-3 text-sm">
                         <div className="flex justify-between">
                           <span>Estimated Cost:</span>
-                          <span className="font-medium">${selectedPlan.estimatedCost.toLocaleString()}</span>
+                          <span className="font-medium">
+                            ${selectedPlan.estimatedCost.toLocaleString()}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Estimated Delay:</span>
-                          <span className="font-medium">{selectedPlan.estimatedDelay} minutes</span>
+                          <span className="font-medium">
+                            {selectedPlan.estimatedDelay} minutes
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Affected Passengers:</span>
-                          <span className="font-medium">{selectedPlan.affectedPassengers}</span>
+                          <span className="font-medium">
+                            {selectedPlan.affectedPassengers}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Timeline:</span>
-                          <span className="font-medium">{selectedPlan.timeline}</span>
+                          <span className="font-medium">
+                            {selectedPlan.timeline}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Confidence:</span>
-                          <span className="font-medium">{selectedPlan.confidence}%</span>
+                          <span className="font-medium">
+                            {selectedPlan.confidence}%
+                          </span>
                         </div>
                       </div>
                     </CardContent>
@@ -855,29 +1083,49 @@ export function PendingSolutions() {
                         <div className="flex items-center justify-between">
                           <span className="text-sm">Success Rate</span>
                           <div className="flex items-center gap-2">
-                            <Progress value={selectedPlan.metrics.successProbability} className="w-20" />
-                            <span className="text-sm font-medium">{selectedPlan.metrics.successProbability}%</span>
+                            <Progress
+                              value={selectedPlan.metrics.successProbability}
+                              className="w-20"
+                            />
+                            <span className="text-sm font-medium">
+                              {selectedPlan.metrics.successProbability}%
+                            </span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm">Customer Satisfaction</span>
                           <div className="flex items-center gap-2">
-                            <Progress value={selectedPlan.metrics.customerSatisfaction} className="w-20" />
-                            <span className="text-sm font-medium">{selectedPlan.metrics.customerSatisfaction}%</span>
+                            <Progress
+                              value={selectedPlan.metrics.customerSatisfaction}
+                              className="w-20"
+                            />
+                            <span className="text-sm font-medium">
+                              {selectedPlan.metrics.customerSatisfaction}%
+                            </span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm">On-Time Performance</span>
                           <div className="flex items-center gap-2">
-                            <Progress value={selectedPlan.metrics.onTimePerformance} className="w-20" />
-                            <span className="text-sm font-medium">{selectedPlan.metrics.onTimePerformance}%</span>
+                            <Progress
+                              value={selectedPlan.metrics.onTimePerformance}
+                              className="w-20"
+                            />
+                            <span className="text-sm font-medium">
+                              {selectedPlan.metrics.onTimePerformance}%
+                            </span>
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm">Cost Efficiency</span>
                           <div className="flex items-center gap-2">
-                            <Progress value={selectedPlan.metrics.costEfficiency} className="w-20" />
-                            <span className="text-sm font-medium">{selectedPlan.metrics.costEfficiency}%</span>
+                            <Progress
+                              value={selectedPlan.metrics.costEfficiency}
+                              className="w-20"
+                            />
+                            <span className="text-sm font-medium">
+                              {selectedPlan.metrics.costEfficiency}%
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -892,7 +1140,9 @@ export function PendingSolutions() {
                   <CardContent>
                     <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg mb-4">
                       <AlertTriangle className="h-4 w-4 text-orange-500" />
-                      <span className="font-medium">{selectedPlan.disruptionReason}</span>
+                      <span className="font-medium">
+                        {selectedPlan.disruptionReason}
+                      </span>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {selectedPlan.tags.map((tag, index) => (
@@ -921,62 +1171,95 @@ export function PendingSolutions() {
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span>Flight Number:</span>
-                              <span className="font-medium font-mono">{selectedPlan.flightNumber}</span>
+                              <span className="font-medium font-mono">
+                                {selectedPlan.flightNumber}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Route:</span>
-                              <span className="font-medium">{selectedPlan.route}</span>
+                              <span className="font-medium">
+                                {selectedPlan.route}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Aircraft:</span>
-                              <span className="font-medium">{selectedPlan.aircraft}</span>
+                              <span className="font-medium">
+                                {selectedPlan.aircraft}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Aircraft Type:</span>
-                              <span className="font-medium">{selectedPlan.flightDetails?.aircraftType || 'N/A'}</span>
+                              <span className="font-medium">
+                                {selectedPlan.flightDetails?.aircraftType ||
+                                  "N/A"}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Gate:</span>
-                              <span className="font-medium">Terminal {selectedPlan.flightDetails?.terminal || 'N/A'}, Gate {selectedPlan.flightDetails?.gate || 'N/A'}</span>
+                              <span className="font-medium">
+                                Terminal{" "}
+                                {selectedPlan.flightDetails?.terminal || "N/A"},
+                                Gate {selectedPlan.flightDetails?.gate || "N/A"}
+                              </span>
                             </div>
                           </div>
                         </div>
                         <div>
-                          <h4 className="font-medium mb-3">Schedule & Capacity</h4>
+                          <h4 className="font-medium mb-3">
+                            Schedule & Capacity
+                          </h4>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span>Scheduled Departure:</span>
                               <span className="font-medium">
-                                {selectedPlan.flightDetails?.scheduled_departure || 
-                                 selectedPlan.flightDetails?.scheduledDeparture || 
-                                 formatIST(new Date().toISOString())}
+                                {selectedPlan.flightDetails
+                                  ?.scheduled_departure ||
+                                  selectedPlan.flightDetails
+                                    ?.scheduledDeparture ||
+                                  formatIST(new Date().toISOString())}
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Scheduled Arrival:</span>
                               <span className="font-medium">
-                                {selectedPlan.flightDetails?.scheduled_arrival || 
-                                 selectedPlan.flightDetails?.scheduledArrival || 
-                                 formatIST(new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString())}
+                                {selectedPlan.flightDetails
+                                  ?.scheduled_arrival ||
+                                  selectedPlan.flightDetails
+                                    ?.scheduledArrival ||
+                                  formatIST(
+                                    new Date(
+                                      Date.now() + 4 * 60 * 60 * 1000,
+                                    ).toISOString(),
+                                  )}
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Passengers:</span>
-                              <span className="font-medium">{selectedPlan.affectedPassengers}</span>
+                              <span className="font-medium">
+                                {selectedPlan.affectedPassengers}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Cargo:</span>
-                              <span className="font-medium">{selectedPlan.flightDetails?.cargo || '2.5 tons'}</span>
+                              <span className="font-medium">
+                                {selectedPlan.flightDetails?.cargo ||
+                                  "2.5 tons"}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Disruption Severity:</span>
-                              <Badge className={
-                                selectedPlan.priority === 'Critical' ? 'bg-red-100 text-red-700' :
-                                selectedPlan.priority === 'High' ? 'bg-orange-100 text-orange-700' :
-                                selectedPlan.priority === 'Medium' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-green-100 text-green-700'
-                              }>
-                                {selectedPlan.priority || 'Medium'}
+                              <Badge
+                                className={
+                                  selectedPlan.priority === "Critical"
+                                    ? "bg-red-100 text-red-700"
+                                    : selectedPlan.priority === "High"
+                                      ? "bg-orange-100 text-orange-700"
+                                      : selectedPlan.priority === "Medium"
+                                        ? "bg-yellow-100 text-yellow-700"
+                                        : "bg-green-100 text-green-700"
+                                }
+                              >
+                                {selectedPlan.priority || "Medium"}
                               </Badge>
                             </div>
                           </div>
@@ -992,32 +1275,46 @@ export function PendingSolutions() {
                     <CardContent>
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-medium mb-2">Disruption Analysis</h4>
+                          <h4 className="font-medium mb-2">
+                            Disruption Analysis
+                          </h4>
                           <div className="p-3 bg-red-50 rounded-lg border border-red-200">
                             <div className="flex items-center gap-2 mb-2">
                               <AlertTriangle className="h-4 w-4 text-red-600" />
-                              <span className="font-medium text-red-800">Primary Issue</span>
+                              <span className="font-medium text-red-800">
+                                Primary Issue
+                              </span>
                             </div>
-                            <p className="text-sm text-red-700">{selectedPlan.disruptionReason}</p>
+                            <p className="text-sm text-red-700">
+                              {selectedPlan.disruptionReason}
+                            </p>
                           </div>
                         </div>
 
                         <div>
-                          <h4 className="font-medium mb-2">Timeline Constraints</h4>
+                          <h4 className="font-medium mb-2">
+                            Timeline Constraints
+                          </h4>
                           <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                               <span>SLA Deadline:</span>
-                              <span className="font-medium">{formatIST(selectedPlan.slaDeadline)}</span>
+                              <span className="font-medium">
+                                {formatIST(selectedPlan.slaDeadline)}
+                              </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Time Remaining:</span>
-                              <span className={`font-medium ${getTimeRemainingColor(selectedPlan.timeRemaining)}`}>
+                              <span
+                                className={`font-medium ${getTimeRemainingColor(selectedPlan.timeRemaining)}`}
+                              >
                                 {selectedPlan.timeRemaining}
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Recovery Duration:</span>
-                              <span className="font-medium">{selectedPlan.timeline}</span>
+                              <span className="font-medium">
+                                {selectedPlan.timeline}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -1036,22 +1333,40 @@ export function PendingSolutions() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {selectedPlan.assignedCrew && selectedPlan.assignedCrew.length > 0 ? (
+                    {selectedPlan.assignedCrew &&
+                    selectedPlan.assignedCrew.length > 0 ? (
                       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {selectedPlan.assignedCrew.map((member, index) => {
                           // Handle both object and string formats
-                          const crewMember = typeof member === 'string' ? 
-                            { id: index, name: member, role: 'Crew Member', status: 'Available', dutyTime: '8.5 hours', restTime: '15.5 hours', location: 'DXB', experience: 'Standard' } : 
-                            member;
+                          const crewMember =
+                            typeof member === "string"
+                              ? {
+                                  id: index,
+                                  name: member,
+                                  role: "Crew Member",
+                                  status: "Available",
+                                  dutyTime: "8.5 hours",
+                                  restTime: "15.5 hours",
+                                  location: "DXB",
+                                  experience: "Standard",
+                                }
+                              : member;
 
                           return (
-                            <div key={crewMember.id || index} className="flex items-center gap-4 p-4 border rounded-lg">
+                            <div
+                              key={crewMember.id || index}
+                              className="flex items-center gap-4 p-4 border rounded-lg"
+                            >
                               <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                                 <Users className="h-5 w-5 text-blue-600" />
                               </div>
                               <div className="flex-1">
-                                <h4 className="font-medium">{crewMember.name}</h4>
-                                <p className="text-sm text-muted-foreground">{crewMember.role}</p>
+                                <h4 className="font-medium">
+                                  {crewMember.name}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {crewMember.role}
+                                </p>
                                 <div className="grid grid-cols-1 gap-1 mt-2 text-xs text-muted-foreground">
                                   <span className="flex items-center gap-1">
                                     <Clock3 className="h-3 w-3" />
@@ -1065,11 +1380,17 @@ export function PendingSolutions() {
                                     <MapPin className="h-3 w-3" />
                                     {crewMember.location}
                                   </span>
-                                  <span>Experience: {crewMember.experience}</span>
+                                  <span>
+                                    Experience: {crewMember.experience}
+                                  </span>
                                 </div>
                               </div>
                               <div className="flex flex-col items-center gap-2">
-                                <Badge className={getCrewStatusColor(crewMember.status)}>
+                                <Badge
+                                  className={getCrewStatusColor(
+                                    crewMember.status,
+                                  )}
+                                >
                                   {crewMember.status}
                                 </Badge>
                                 <div className="flex gap-1">
@@ -1089,18 +1410,59 @@ export function PendingSolutions() {
                       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
                         {/* Default crew members when no data available */}
                         {[
-                          { id: 1, name: 'Capt. Ahmed Al-Rashid', role: 'Captain', status: 'Available', dutyTime: '8.5 hours', restTime: '15.5 hours', location: 'DXB Terminal 2', experience: 'B737, A320 Type Rated' },
-                          { id: 2, name: 'F/O Sarah Thompson', role: 'First Officer', status: 'Available', dutyTime: '8.0 hours', restTime: '16.0 hours', location: 'DXB Terminal 2', experience: 'B737 Type Rated' },
-                          { id: 3, name: 'FA Fatima Al-Zahra', role: 'Senior Flight Attendant', status: 'Available', dutyTime: '9.0 hours', restTime: '15.0 hours', location: 'DXB Terminal 2', experience: '5+ years international' },
-                          { id: 4, name: 'FA Mohammed Hassan', role: 'Flight Attendant', status: 'Near Limit', dutyTime: '11.5 hours', restTime: '12.5 hours', location: 'DXB Terminal 2', experience: '3+ years regional' }
+                          {
+                            id: 1,
+                            name: "Capt. Ahmed Al-Rashid",
+                            role: "Captain",
+                            status: "Available",
+                            dutyTime: "8.5 hours",
+                            restTime: "15.5 hours",
+                            location: "DXB Terminal 2",
+                            experience: "B737, A320 Type Rated",
+                          },
+                          {
+                            id: 2,
+                            name: "F/O Sarah Thompson",
+                            role: "First Officer",
+                            status: "Available",
+                            dutyTime: "8.0 hours",
+                            restTime: "16.0 hours",
+                            location: "DXB Terminal 2",
+                            experience: "B737 Type Rated",
+                          },
+                          {
+                            id: 3,
+                            name: "FA Fatima Al-Zahra",
+                            role: "Senior Flight Attendant",
+                            status: "Available",
+                            dutyTime: "9.0 hours",
+                            restTime: "15.0 hours",
+                            location: "DXB Terminal 2",
+                            experience: "5+ years international",
+                          },
+                          {
+                            id: 4,
+                            name: "FA Mohammed Hassan",
+                            role: "Flight Attendant",
+                            status: "Near Limit",
+                            dutyTime: "11.5 hours",
+                            restTime: "12.5 hours",
+                            location: "DXB Terminal 2",
+                            experience: "3+ years regional",
+                          },
                         ].map((member) => (
-                          <div key={member.id} className="flex items-center gap-4 p-4 border rounded-lg">
+                          <div
+                            key={member.id}
+                            className="flex items-center gap-4 p-4 border rounded-lg"
+                          >
                             <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                               <Users className="h-5 w-5 text-blue-600" />
                             </div>
                             <div className="flex-1">
                               <h4 className="font-medium">{member.name}</h4>
-                              <p className="text-sm text-muted-foreground">{member.role}</p>
+                              <p className="text-sm text-muted-foreground">
+                                {member.role}
+                              </p>
                               <div className="grid grid-cols-1 gap-1 mt-2 text-xs text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                   <Clock3 className="h-3 w-3" />
@@ -1118,7 +1480,9 @@ export function PendingSolutions() {
                               </div>
                             </div>
                             <div className="flex flex-col items-center gap-2">
-                              <Badge className={getCrewStatusColor(member.status)}>
+                              <Badge
+                                className={getCrewStatusColor(member.status)}
+                              >
                                 {member.status}
                               </Badge>
                               <div className="flex gap-1">
@@ -1147,30 +1511,52 @@ export function PendingSolutions() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {selectedPlan.recoverySteps && selectedPlan.recoverySteps.length > 0 ? (
+                    {selectedPlan.recoverySteps &&
+                    selectedPlan.recoverySteps.length > 0 ? (
                       <div className="space-y-4">
                         {selectedPlan.recoverySteps.map((step, index) => {
                           // Handle both object and string formats
-                          const stepData = typeof step === 'string' ? 
-                            { id: index, action: step, description: 'Recovery step', duration: '15-30 minutes', responsible: 'Operations Team', location: 'Operations Center', estimatedCost: 1000, criticalPath: index < 2, status: 'pending' } : 
-                            step;
+                          const stepData =
+                            typeof step === "string"
+                              ? {
+                                  id: index,
+                                  action: step,
+                                  description: "Recovery step",
+                                  duration: "15-30 minutes",
+                                  responsible: "Operations Team",
+                                  location: "Operations Center",
+                                  estimatedCost: 1000,
+                                  criticalPath: index < 2,
+                                  status: "pending",
+                                }
+                              : step;
 
                           return (
-                            <div key={stepData.id || index} className="flex items-start gap-4 p-4 border rounded-lg">
+                            <div
+                              key={stepData.id || index}
+                              className="flex items-start gap-4 p-4 border rounded-lg"
+                            >
                               <div className="flex-shrink-0">
-                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
-                                  stepData.criticalPath 
-                                    ? 'bg-red-100 text-red-700 border-2 border-red-200' 
-                                    : 'bg-blue-100 text-blue-700'
-                                }`}>
+                                <div
+                                  className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
+                                    stepData.criticalPath
+                                      ? "bg-red-100 text-red-700 border-2 border-red-200"
+                                      : "bg-blue-100 text-blue-700"
+                                  }`}
+                                >
                                   {index + 1}
                                 </div>
                               </div>
                               <div className="flex-1">
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                   <div className="lg:col-span-2">
-                                    <h4 className="font-medium">{stepData.action}</h4>
-                                    <p className="text-sm text-muted-foreground mt-1">{stepData.description || 'Recovery action step'}</p>
+                                    <h4 className="font-medium">
+                                      {stepData.action}
+                                    </h4>
+                                    <p className="text-sm text-muted-foreground mt-1">
+                                      {stepData.description ||
+                                        "Recovery action step"}
+                                    </p>
                                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-3 text-sm text-muted-foreground">
                                       <span className="flex items-center gap-1">
                                         <Clock className="h-3 w-3" />
@@ -1185,24 +1571,36 @@ export function PendingSolutions() {
                                         {stepData.location}
                                       </span>
                                       <span className="flex items-center gap-1">
-                                        <DollarSign className="h-3 w-3" />
-                                        ${(stepData.estimatedCost || 0).toLocaleString()}
+                                        <DollarSign className="h-3 w-3" />$
+                                        {(
+                                          stepData.estimatedCost || 0
+                                        ).toLocaleString()}
                                       </span>
                                     </div>
                                   </div>
                                   <div className="flex flex-col items-end gap-2">
                                     {stepData.criticalPath && (
-                                      <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                                      <Badge
+                                        variant="outline"
+                                        className="bg-red-50 text-red-700 border-red-200"
+                                      >
                                         Critical Path
                                       </Badge>
                                     )}
-                                    <Badge className={
-                                      stepData.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                      stepData.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
-                                      stepData.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                                      'bg-gray-100 text-gray-700'
-                                    }>
-                                      {stepData.status === 'pending' ? 'Pending' : stepData.status || 'Pending'}
+                                    <Badge
+                                      className={
+                                        stepData.status === "completed"
+                                          ? "bg-green-100 text-green-700"
+                                          : stepData.status === "in-progress"
+                                            ? "bg-blue-100 text-blue-700"
+                                            : stepData.status === "rejected"
+                                              ? "bg-red-100 text-red-700"
+                                              : "bg-gray-100 text-gray-700"
+                                      }
+                                    >
+                                      {stepData.status === "pending"
+                                        ? "Pending"
+                                        : stepData.status || "Pending"}
                                     </Badge>
                                   </div>
                                 </div>
@@ -1215,18 +1613,67 @@ export function PendingSolutions() {
                       <div className="space-y-4">
                         {/* Default recovery steps when no data available */}
                         {[
-                          { id: 1, action: 'Crew Notification', description: 'Notify assigned crew of schedule change via CrewApp', duration: '5 minutes', responsible: 'Crew Controller', location: 'Operations Center', estimatedCost: 0, criticalPath: true, status: 'completed' },
-                          { id: 2, action: 'Aircraft Preparation', description: 'Prepare alternative aircraft and perform pre-flight checks', duration: '45 minutes', responsible: 'Ground Crew', location: 'Gate A12', estimatedCost: 2500, criticalPath: true, status: 'in-progress' },
-                          { id: 3, action: 'Passenger Communication', description: 'Inform passengers of delay and provide updates', duration: '15 minutes', responsible: 'Customer Service', location: 'Terminal 2', estimatedCost: 500, criticalPath: false, status: 'pending' },
-                          { id: 4, action: 'Baggage Transfer', description: 'Transfer baggage to alternative aircraft', duration: '30 minutes', responsible: 'Baggage Team', location: 'Ramp', estimatedCost: 800, criticalPath: false, status: 'pending' }
+                          {
+                            id: 1,
+                            action: "Crew Notification",
+                            description:
+                              "Notify assigned crew of schedule change via CrewApp",
+                            duration: "5 minutes",
+                            responsible: "Crew Controller",
+                            location: "Operations Center",
+                            estimatedCost: 0,
+                            criticalPath: true,
+                            status: "completed",
+                          },
+                          {
+                            id: 2,
+                            action: "Aircraft Preparation",
+                            description:
+                              "Prepare alternative aircraft and perform pre-flight checks",
+                            duration: "45 minutes",
+                            responsible: "Ground Crew",
+                            location: "Gate A12",
+                            estimatedCost: 2500,
+                            criticalPath: true,
+                            status: "in-progress",
+                          },
+                          {
+                            id: 3,
+                            action: "Passenger Communication",
+                            description:
+                              "Inform passengers of delay and provide updates",
+                            duration: "15 minutes",
+                            responsible: "Customer Service",
+                            location: "Terminal 2",
+                            estimatedCost: 500,
+                            criticalPath: false,
+                            status: "pending",
+                          },
+                          {
+                            id: 4,
+                            action: "Baggage Transfer",
+                            description:
+                              "Transfer baggage to alternative aircraft",
+                            duration: "30 minutes",
+                            responsible: "Baggage Team",
+                            location: "Ramp",
+                            estimatedCost: 800,
+                            criticalPath: false,
+                            status: "pending",
+                          },
                         ].map((step, index) => (
-                          <div key={step.id} className="flex items-start gap-4 p-4 border rounded-lg">
+                          <div
+                            key={step.id}
+                            className="flex items-start gap-4 p-4 border rounded-lg"
+                          >
                             <div className="flex-shrink-0">
-                              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
-                                step.criticalPath 
-                                  ? 'bg-red-100 text-red-700 border-2 border-red-200' 
-                                  : 'bg-blue-100 text-blue-700'
-                              }`}>
+                              <div
+                                className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
+                                  step.criticalPath
+                                    ? "bg-red-100 text-red-700 border-2 border-red-200"
+                                    : "bg-blue-100 text-blue-700"
+                                }`}
+                              >
                                 {index + 1}
                               </div>
                             </div>
@@ -1234,7 +1681,9 @@ export function PendingSolutions() {
                               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                                 <div className="lg:col-span-2">
                                   <h4 className="font-medium">{step.action}</h4>
-                                  <p className="text-sm text-muted-foreground mt-1">{step.description}</p>
+                                  <p className="text-sm text-muted-foreground mt-1">
+                                    {step.description}
+                                  </p>
                                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-3 text-sm text-muted-foreground">
                                     <span className="flex items-center gap-1">
                                       <Clock className="h-3 w-3" />
@@ -1249,24 +1698,33 @@ export function PendingSolutions() {
                                       {step.location}
                                     </span>
                                     <span className="flex items-center gap-1">
-                                      <DollarSign className="h-3 w-3" />
-                                      ${step.estimatedCost.toLocaleString()}
+                                      <DollarSign className="h-3 w-3" />AED                                      {step.estimatedCost.toLocaleString()}
                                     </span>
                                   </div>
                                 </div>
                                 <div className="flex flex-col items-end gap-2">
                                   {step.criticalPath && (
-                                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
+                                    <Badge
+                                      variant="outline"
+                                      className="bg-red-50 text-red-700 border-red-200"
+                                    >
                                       Critical Path
                                     </Badge>
                                   )}
-                                  <Badge className={
-                                    step.status === 'completed' ? 'bg-green-100 text-green-700' :
-                                    step.status === 'in-progress' ? 'bg-blue-100 text-blue-700' :
-                                    step.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                                    'bg-gray-100 text-gray-700'
-                                  }>
-                                    {step.status === 'pending' ? 'Pending' : step.status}
+                                  <Badge
+                                    className={
+                                      step.status === "completed"
+                                        ? "bg-green-100 text-green-700"
+                                        : step.status === "in-progress"
+                                          ? "bg-blue-100 text-blue-700"
+                                          : step.status === "rejected"
+                                            ? "bg-red-100 text-red-700"
+                                            : "bg-gray-100 text-gray-700"
+                                    }
+                                  >
+                                    {step.status === "pending"
+                                      ? "Pending"
+                                      : step.status}
                                   </Badge>
                                 </div>
                               </div>
@@ -1289,50 +1747,76 @@ export function PendingSolutions() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {selectedPlan.costBreakdown && Object.keys(selectedPlan.costBreakdown).length > 0 ? (
+                      {selectedPlan.costBreakdown &&
+                      Object.keys(selectedPlan.costBreakdown).length > 0 ? (
                         <div>
                           <div className="space-y-4">
                             <h4 className="font-medium">Cost Breakdown</h4>
-                            {selectedPlan.costAnalysis?.cost_breakdown && Array.isArray(selectedPlan.costAnalysis.cost_breakdown) ? 
-                              selectedPlan.costAnalysis.cost_breakdown.map((item: any, idx: number) => (
-                                <div key={idx} className="flex justify-between items-center p-3 bg-gray-50 rounded">
-                                  <div>
-                                    <div className="font-medium">
-                                      {typeof item === 'object' && item !== null ? 
-                                        (item.category || item.name || `Category ${idx + 1}`) : 
-                                        `Category ${idx + 1}`
-                                      }
+                            {selectedPlan.costAnalysis?.cost_breakdown &&
+                            Array.isArray(
+                              selectedPlan.costAnalysis.cost_breakdown,
+                            ) ? (
+                              selectedPlan.costAnalysis.cost_breakdown.map(
+                                (item: any, idx: number) => (
+                                  <div
+                                    key={idx}
+                                    className="flex justify-between items-center p-3 bg-gray-50 rounded"
+                                  >
+                                    <div>
+                                      <div className="font-medium">
+                                        {typeof item === "object" &&
+                                        item !== null
+                                          ? item.category ||
+                                            item.name ||
+                                            `Category ${idx + 1}`
+                                          : `Category ${idx + 1}`}
+                                      </div>
+                                      <div className="text-sm text-gray-600">
+                                        {typeof item === "object" &&
+                                        item !== null
+                                          ? item.description ||
+                                            item.details ||
+                                            "N/A"
+                                          : "N/A"}
+                                      </div>
                                     </div>
-                                    <div className="text-sm text-gray-600">
-                                      {typeof item === 'object' && item !== null ? 
-                                        (item.description || item.details || 'N/A') : 
-                                        'N/A'
-                                      }
+                                    <div className="text-right">
+                                      <div className="font-semibold">
+                                        {typeof item === "object" &&
+                                        item !== null
+                                          ? item.amount ||
+                                            item.cost ||
+                                            item.value ||
+                                            "N/A"
+                                          : typeof item === "string"
+                                            ? item
+                                            : "N/A"}
+                                      </div>
+                                      <div className="text-sm text-gray-500">
+                                        {typeof item === "object" &&
+                                        item !== null &&
+                                        item.percentage
+                                          ? `${item.percentage}%`
+                                          : "N/A"}
+                                      </div>
                                     </div>
                                   </div>
-                                  <div className="text-right">
-                                    <div className="font-semibold">
-                                      {typeof item === 'object' && item !== null ? 
-                                        (item.amount || item.cost || item.value || 'N/A') : 
-                                        (typeof item === 'string' ? item : 'N/A')
-                                      }
-                                    </div>
-                                    <div className="text-sm text-gray-500">
-                                      {typeof item === 'object' && item !== null && item.percentage ? 
-                                        `${item.percentage}%` : 
-                                        'N/A'
-                                      }
-                                    </div>
-                                  </div>
-                                </div>
-                              )) : 
-                              <div className="text-gray-500">No cost breakdown available</div>
-                            }
+                                ),
+                              )
+                            ) : (
+                              <div className="text-gray-500">
+                                No cost breakdown available
+                              </div>
+                            )}
                           </div>
                           <Separator className="my-4" />
                           <div className="flex justify-between items-center">
-                            <span className="font-medium">Total Estimated Cost:</span>
-                            <span className="text-lg font-semibold">${selectedPlan.estimatedCost.toLocaleString()}</span>
+                            <span className="font-medium">
+                              Total Estimated Cost:
+                            </span>
+                            <span className="text-lg font-semibold">
+                              AED{selectedPlan.estimatedCost.toLocaleString()}
+                            </span>
                           </div>
                         </div>
                       ) : (
@@ -1351,41 +1835,52 @@ export function PendingSolutions() {
                     <CardContent>
                       <div className="space-y-4">
                         <div>
-                          <h5 className="font-medium mb-3">Cost per Passenger</h5>
+                          <h5 className="font-medium mb-3">
+                            Cost per Passenger
+                          </h5>
                           <div className="p-3 bg-blue-50 rounded-lg">
                             <div className="flex justify-between items-center">
                               <span>Per Affected Passenger:</span>
                               <span className="font-semibold">
-                                {selectedPlan.costAnalysis?.cost_per_passenger || 
-                                 (selectedPlan.affectedPassengers && selectedPlan.estimatedCost ? 
-                                   `AED ${Math.round(selectedPlan.estimatedCost / selectedPlan.affectedPassengers)}` : 
-                                   'N/A'
-                                 )
-                                }
+                                {selectedPlan.costAnalysis
+                                  ?.cost_per_passenger ||
+                                  (selectedPlan.affectedPassengers &&
+                                  selectedPlan.estimatedCost
+                                    ? `AED ${Math.round(selectedPlan.estimatedCost / selectedPlan.affectedPassengers)}`
+                                    : "N/A")}
                               </span>
                             </div>
                           </div>
                         </div>
 
                         <div>
-                          <h5 className="font-medium mb-3">Cost vs Industry Benchmarks</h5>
+                          <h5 className="font-medium mb-3">
+                            Cost vs Industry Benchmarks
+                          </h5>
                           <div className="space-y-2">
                             <div className="flex justify-between text-sm">
                               <span>Industry Average:</span>
                               <span>
-                                {typeof selectedPlan.costAnalysis?.industry_benchmark === 'object' ? 
-                                  JSON.stringify(selectedPlan.costAnalysis.industry_benchmark) : 
-                                  (selectedPlan.costAnalysis?.industry_benchmark || 'AED 267/passenger')
-                                }
+                                {typeof selectedPlan.costAnalysis
+                                  ?.industry_benchmark === "object"
+                                  ? JSON.stringify(
+                                      selectedPlan.costAnalysis
+                                        .industry_benchmark,
+                                    )
+                                  : selectedPlan.costAnalysis
+                                      ?.industry_benchmark ||
+                                    "AED 267/passenger"}
                               </span>
                             </div>
                             <div className="flex justify-between text-sm">
                               <span>This Plan:</span>
                               <span className="font-semibold">
-                                {typeof selectedPlan.costAnalysis?.this_plan_cost === 'object' ? 
-                                  selectedPlan.cost || 'N/A' : 
-                                  (selectedPlan.costAnalysis?.this_plan_cost || selectedPlan.cost || 'N/A')
-                                }
+                                {typeof selectedPlan.costAnalysis
+                                  ?.this_plan_cost === "object"
+                                  ? selectedPlan.cost || "N/A"
+                                  : selectedPlan.costAnalysis?.this_plan_cost ||
+                                    selectedPlan.cost ||
+                                    "N/A"}
                               </span>
                             </div>
                           </div>
@@ -1397,19 +1892,21 @@ export function PendingSolutions() {
                             <div className="flex justify-between">
                               <span>Avoided Cancellation Cost:</span>
                               <span>
-                                {typeof selectedPlan.costAnalysis?.avoided_cost === 'object' ? 
-                                  'AED 31,920' : 
-                                  (selectedPlan.costAnalysis?.avoided_cost || 'AED 31,920')
-                                }
+                                {typeof selectedPlan.costAnalysis
+                                  ?.avoided_cost === "object"
+                                  ? "AED 31,920"
+                                  : selectedPlan.costAnalysis?.avoided_cost ||
+                                    "AED 31,920"}
                               </span>
                             </div>
                             <div className="flex justify-between">
                               <span>Net Savings:</span>
                               <span className="font-semibold text-green-600">
-                                {typeof selectedPlan.costAnalysis?.net_savings === 'object' ? 
-                                  'AED 9,120' : 
-                                  (selectedPlan.costAnalysis?.net_savings || 'AED 9,120')
-                                }
+                                {typeof selectedPlan.costAnalysis
+                                  ?.net_savings === "object"
+                                  ? "AED 9,120"
+                                  : selectedPlan.costAnalysis?.net_savings ||
+                                    "AED 9,120"}
                               </span>
                             </div>
                           </div>
@@ -1425,12 +1922,14 @@ export function PendingSolutions() {
               <Button variant="outline" onClick={() => setSelectedPlan(null)}>
                 Close
               </Button>
-              {['Pending Approval', 'Under Review', 'Pending'].includes(selectedPlan.status) && (
+              {["Pending Approval", "Under Review", "Pending"].includes(
+                selectedPlan.status,
+              ) && (
                 <>
                   <Button
                     onClick={async () => {
-                      await handleApprove(selectedPlan.id)
-                      setSelectedPlan(null)
+                      await handleApprove(selectedPlan.id);
+                      setSelectedPlan(null);
                     }}
                     className="bg-green-600 hover:bg-green-700"
                   >
@@ -1440,8 +1939,8 @@ export function PendingSolutions() {
                   <Button
                     variant="outline"
                     onClick={async () => {
-                      await handleReject(selectedPlan.id)
-                      setSelectedPlan(null)
+                      await handleReject(selectedPlan.id);
+                      setSelectedPlan(null);
                     }}
                     className="text-red-600 border-red-200 hover:bg-red-50"
                   >
@@ -1450,11 +1949,10 @@ export function PendingSolutions() {
                   </Button>
                 </>
               )}
-
             </div>
           </DialogContent>
         </Dialog>
       )}
     </div>
-  )
+  );
 }
