@@ -141,16 +141,21 @@ class DatabaseService {
 
     if (config.isPython) {
       // For Python backend, use the full URL
-      this.baseUrl = config.apiUrl;
+      this.baseUrl = config.apiUrl || "/api";
     } else {
       // For Express backend, use relative path for Replit or localhost
       const hostname = window.location.hostname;
       if (hostname === "localhost") {
-        this.baseUrl = config.apiUrl;
+        this.baseUrl = config.apiUrl || "http://localhost:3001/api";
       } else {
         // For Replit production, use relative path to avoid CORS issues
         this.baseUrl = "/api";
       }
+    }
+
+    // Ensure baseUrl is never undefined
+    if (!this.baseUrl || this.baseUrl === "undefined") {
+      this.baseUrl = "/api";
     }
 
     console.log(`Database service initialized with ${config.type.toUpperCase()} backend:`, this.baseUrl);
@@ -1831,7 +1836,13 @@ class DatabaseService {
 
   async getPendingRecoverySolutions(): Promise<any[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/pending-recovery-solutions`, {
+      // Ensure baseUrl is properly set before constructing URL
+      const baseUrl = this.baseUrl || "/api";
+      const url = `${baseUrl}/pending-recovery-solutions`;
+      
+      console.log('Fetching pending solutions from URL:', url);
+      
+      const response = await fetch(url, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
