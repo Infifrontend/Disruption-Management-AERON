@@ -1046,13 +1046,13 @@ export function ComparisonMatrix({
           recoveryOption: option,
           fromExecution: true, // Flag to indicate this came from execution
         };
-        
+
         // Use the app context to set the passenger services context
         // This ensures the data is available when the page loads
-        if (typeof onSelectPlan === 'function') {
+        if (typeof onSelectPlan === "function") {
           onSelectPlan(passengerContext);
         }
-        
+
         // Navigate to passenger services with option data
         navigate("/passengers", {
           state: passengerContext,
