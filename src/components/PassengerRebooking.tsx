@@ -1678,11 +1678,13 @@ export function PassengerRebooking({ context, onClearContext }) {
         const result = await rotationResponse.json();
         const rotationPlan = result.rotationPlan || result;
 
-        // Extract crew data from rotation plan
-        const crew = rotationPlan?.crew || rotationPlan?.crewData || [];
+        // Extract crew data from rotation plan with better fallback handling
+        const crew = rotationPlan?.crewData || rotationPlan?.crew || [];
+        console.log('Loaded crew data from rotation plan:', crew);
+        
         setCrewData({
           crew: crew,
-          crewConstraints: rotationPlan?.crewConstraint || {},
+          crewConstraints: rotationPlan?.crewConstraints || rotationPlan?.crewConstraint || {},
           operationalConstraints: rotationPlan?.operationalConstraints || {},
         });
       } else {
