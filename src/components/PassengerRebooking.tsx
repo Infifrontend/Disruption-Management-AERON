@@ -1277,11 +1277,17 @@ export function PassengerRebooking({ context, onClearContext }) {
           pnrsToUncheck.add(pnr);
         }
       });
-      
+
       setSelectedPnrs(prev => {
         const newSelection = new Set(prev);
-        pnrsToUncheck.forEach(pnr => newSelection.delete(pnr));
-        return newSelection;
+        let hasChanges = false;
+        pnrsToUncheck.forEach(pnr => {
+          if (newSelection.has(pnr)) {
+            newSelection.delete(pnr);
+            hasChanges = true;
+          }
+        });
+        return hasChanges ? newSelection : prev;
       });
     }
 
@@ -1488,7 +1494,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       };
 
       await databaseService.savePendingRecoverySolution(solutionData);
-      
+
       toast.success("Recovery solution submitted for approval!", {
         description: "Solution has been sent to operations team for final approval.",
         duration: 5000,
@@ -1637,7 +1643,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     }
   };
 
-  
+
 
   if (!selectedFlight || !recoveryOption) {
     return (
@@ -1682,7 +1688,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   return (
     <div className="container mx-auto space-y-6">
 
-      
+
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -2490,7 +2496,7 @@ export function PassengerRebooking({ context, onClearContext }) {
             <DialogDescription>
               {selectedPnrGroup
                 ? selectedPnrs.size > 1
-                  ? `Manage rebooking and services for ${selectedPnrs.size} PNR groups: ${Array.from(selectedPnrs).join(', ')}`
+                  ? `Manage rebooking and services for ${selectedPnrs.size} PNR groups: ${selectedPnrs.size > 3 ? Array.from(selectedPnrs).slice(0,3).join(', ') + '...' : Array.from(selectedPnrs).join(', ')}`
                   : `Manage rebooking and services for PNR: ${selectedPnrGroup.pnr}`
                 : `Manage rebooking and services for PNR: ${selectedPassenger?.pnr}`}
             </DialogDescription>
