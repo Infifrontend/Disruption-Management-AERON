@@ -2820,8 +2820,7 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
 
     const updatedFlightDisruption = await pool.query(
       `
-      UPDATE flight_disruptions SET recovery_status = 'pen
-      ding', updated_at = CURRENT_TIMESTAMP
+      UPDATE flight_disruptions SET recovery_status = 'pending', updated_at = CURRENT_TIMESTAMP
       WHERE id = $1
     `,
       [disruption_id],
@@ -3068,7 +3067,7 @@ app.put("/api/disruptions/:disruptionId/status", async (req, res) => {
   }
 });
 
-// Past Recovery Logs endpoint
+// Past recovery Logs endpoint
 app.get("/api/past-recovery-logs", async (req, res) => {
   try {
     const { status, category, priority, dateRange } = req.query;
