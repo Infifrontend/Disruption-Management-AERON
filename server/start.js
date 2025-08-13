@@ -1213,9 +1213,71 @@ app.post("/api/passenger-rebookings", async (req, res) => {
       return res.status(400).json({ error: "Invalid rebookings data" });
     }
 
+    console.log('Received passenger rebookings:', rebookings.length, 'records');
+
     const client = await pool.connect();
     try {
-      await client.query('BEGIN');
+      await client.query("BEGIN");
+
+      const insertPromises = rebookings.map(async (rebooking) => {
+        const query = `
+          INSERT INTO passenger_rebookings (
+            disruption_id, pnr, passenger_id, passenger_name, 
+            original_flight, original_seat, rebooked_flight, rebooked_cabin, 
+            rebooked_seat, additional_services, status, total_passengers_in_pnr, 
+            rebooking_cost, notes
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+          ON CONFLICT (disruption_id, passenger_id, pnr) 
+          DO UPDATE SET 
+            rebooked_flight = EXCLUDED.rebooked_flight,
+            rebooked_cabin = EXCLUDED.rebooked_cabin,
+            rebooked_seat = EXCLUDED.rebooked_seat,
+            additional_services = EXCLUDED.additional_services,
+            status = EXCLUDED.status,
+            updated_at = CURRENT_TIMESTAMP
+          RETURNING id
+        `;
+        
+        const values = [
+          rebooking.disruption_id,
+          rebooking.pnr,
+          rebooking.passenger_id,
+          rebooking.passenger_name,
+          rebooking.original_flight,
+          rebooking.original_seat,
+          rebooking.rebooked_flight,
+          rebooking.rebooked_cabin,
+          rebooking.rebooked_seat,
+          JSON.stringify(rebooking.additional_services || []),
+          rebooking.status || 'Confirmed',
+          rebooking.total_passengers_in_pnr || 1,
+          rebooking.rebooking_cost || 0,
+          rebooking.notes || ''
+        ];
+
+        return await client.query(query, values);
+      });
+
+      const results = await Promise.all(insertPromises);
+      await client.query("COMMIT");
+
+      console.log(`Successfully saved ${results.length} passenger rebookings`);
+      res.json({ 
+        success: true, 
+        message: `Saved ${results.length} passenger rebookings`,
+        count: results.length 
+      });
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error("Error saving passenger rebookings:", error);
+    res.status(500).json({ error: error.message });
+  }
+});ent.query('BEGIN');
 
       const insertedRebookings = [];
       

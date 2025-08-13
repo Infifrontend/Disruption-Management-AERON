@@ -1698,15 +1698,59 @@ class DatabaseService {
   // Passenger Rebookings
   async savePassengerRebookings(rebookings: any[]): Promise<boolean> {
     try {
+      console.log('Saving passenger rebookings:', rebookings);
       const response = await fetch(`${this.baseUrl}/passenger-rebookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ rebookings })
       });
-      return response.ok;
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to save passenger rebookings:', response.status, errorText);
+        return false;
+      }
+      
+      const result = await response.json();
+      console.log('Successfully saved passenger rebookings:', result);
+      return true;
     } catch (error) {
       console.error('Failed to save passenger rebookings:', error);
       return false;
+    }
+  }
+
+  // Legacy method for backward compatibility
+  async storeRebookedPassengers(passengersByPnr: any, disruptionFlightId: string): Promise<{ success: boolean }> {
+    try {
+      const rebookingData = [];
+      
+      for (const [pnr, passengers] of Object.entries(passengersByPnr)) {
+        for (const passenger of passengers as any[]) {
+          rebookingData.push({
+            disruption_id: disruptionFlightId,
+            pnr: pnr,
+            passenger_id: passenger.id,
+            passenger_name: passenger.name,
+            original_flight: passenger.originalFlight || 'N/A',
+            original_seat: passenger.seat,
+            rebooked_flight: passenger.rebookedFlight || 'TBD',
+            rebooked_cabin: passenger.rebookedCabin || 'Economy',
+            rebooked_seat: passenger.rebookedSeat || 'TBD',
+            additional_services: passenger.services || [],
+            status: 'Confirmed',
+            total_passengers_in_pnr: passengers.length,
+            rebooking_cost: 0,
+            notes: `Stored rebooking for disruption ${disruptionFlightId}`
+          });
+        }
+      }
+
+      const success = await this.savePassengerRebookings(rebookingData);
+      return { success };
+    } catch (error) {
+      console.error('Error in storeRebookedPassengers:', error);
+      return { success: false };
     }
   }
 
