@@ -2717,41 +2717,52 @@ app.get("/api/recovery-option/:optionId/technical", async (req, res) => {
 app.get("/api/recovery-option-details/:optionId", async (req, res) => {
   try {
     const { optionId } = req.params;
+    console.log(`Fetching recovery option details for ID: ${optionId}`);
 
+    // First try to get from recovery_options table
     const result = await pool.query(
-      `
-      SELECT ro.*, rs.*
-      FROM recovery_options ro
-      LEFT JOIN recovery_steps rs ON ro.disruption_id = rs.disruption_id
-      WHERE ro.id = $1 OR ro.option_id = $1
-      ORDER BY rs.step_order
-    `,
+      `SELECT * FROM recovery_options WHERE id = $1`,
       [optionId],
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Recovery option not found" });
+      console.log(`No recovery option found for ID: ${optionId}`);
+      return res.status(404).json({ 
+        error: "Recovery option details not found",
+        optionId: optionId 
+      });
     }
 
-    // Group the data
     const option = result.rows[0];
-    const steps = result.rows
-      .filter((row) => row.step_order)
-      .map((row) => ({
-        id: row.step_id,
-        action: row.action,
-        duration: row.duration,
-        responsible: row.responsible_team,
-        location: row.location,
-        estimatedCost: row.estimated_cost,
-        criticalPath: row.critical_path,
-        status: row.step_status,
-      }));
+    console.log(`Found recovery option: ${option.title}`);
 
-    res.json({
+    // Parse JSON fields safely
+    const parseJsonField = (field) => {
+      if (!field) return {};
+      if (typeof field === 'string') {
+        try {
+          return JSON.parse(field);
+        } catch (e) {
+          return {};
+        }
+      }
+      return field;
+    };
+
+    // Transform the data to match the expected format
+    const detailedOption = {
       ...option,
-      steps: steps,
-    });
+      costBreakdown: parseJsonField(option.cost_breakdown),
+      timelineDetails: parseJsonField(option.timeline_details),
+      resourceRequirements: parseJsonField(option.resource_requirements),
+      riskAssessment: parseJsonField(option.risk_assessment),
+      technicalSpecs: parseJsonField(option.technical_specs),
+      metrics: parseJsonField(option.metrics),
+      rotationPlan: parseJsonField(option.rotation_plan),
+    };
+
+    console.log(`Returning detailed option data for ID: ${optionId}`);
+    res.json(detailedOption);
   } catch (error) {
     console.error("Error fetching recovery option details:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -2761,6 +2772,8 @@ app.get("/api/recovery-option-details/:optionId", async (req, res) => {
 // Pending Recovery Solutions endpoints
 app.post("/api/pending-recovery-solutions", async (req, res) => {
   try {
+    console.log("Received pending recovery solution request:", req.body);
+    
     const {
       disruption_id,
       option_id,
@@ -2776,6 +2789,48 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
       submitted_by,
       approval_required,
     } = req.body;
+
+    // Validate required fields
+    if (!disruption_id || !option_id) {
+      return res.status(400).json({
+        error: "Missing required fields",
+        message: "disruption_id and option_id are required"
+      });
+    }
+
+    // Check if pending_recovery_solutions table exists
+    const tableCheck = await pool.query(`
+      SELECT table_name FROM information_schema.tables 
+      WHERE table_schema = 'public' AND table_name = 'pending_recovery_solutions'
+    `);
+
+    if (tableCheck.rows.length === 0) {
+      console.log("Creating pending_recovery_solutions table...");
+      
+      // Create the table if it doesn't exist
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS pending_recovery_solutions (
+          id SERIAL PRIMARY KEY,
+          disruption_id INTEGER REFERENCES flight_disruptions(id),
+          option_id VARCHAR(255),
+          option_title TEXT,
+          option_description TEXT,
+          cost VARCHAR(255),
+          timeline VARCHAR(255),
+          confidence INTEGER,
+          impact TEXT,
+          status VARCHAR(50) DEFAULT 'Pending',
+          full_details JSONB,
+          rotation_impact JSONB,
+          submitted_by VARCHAR(255),
+          approval_required BOOLEAN DEFAULT true,
+          submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      
+      console.log("Created pending_recovery_solutions table");
+    }
 
     // Check if this combination already exists
     const existingCheck = await pool.query(
@@ -2810,30 +2865,32 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
         timeline,
         confidence,
         impact,
-        status,
-        JSON.stringify(full_details),
-        JSON.stringify(rotation_impact),
-        submitted_by,
-        approval_required,
+        status || 'Pending',
+        JSON.stringify(full_details || {}),
+        JSON.stringify(rotation_impact || {}),
+        submitted_by || 'system',
+        approval_required !== false, // Default to true
       ],
     );
 
+    // Update flight disruption status
     const updatedFlightDisruption = await pool.query(
       `
       UPDATE flight_disruptions SET recovery_status = 'pending', updated_at = CURRENT_TIMESTAMP
       WHERE id = $1
+      RETURNING *
     `,
       [disruption_id],
     );
 
-    if (updatedFlightDisruption.rows.length === 0) {
-      return res.status(404).json({ error: "Flight disruption not found" });
-    }
-
-    res.json(result.rows[0]);
+    console.log("Successfully saved pending recovery solution:", result.rows[0]);
+    res.json({ success: true, ...result.rows[0] });
   } catch (error) {
     console.error("Error saving pending recovery solution:", error);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ 
+      error: "Internal server error",
+      details: error.message 
+    });
   }
 });
 
