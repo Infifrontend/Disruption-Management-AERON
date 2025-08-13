@@ -178,14 +178,18 @@ export function PassengerRebooking({ context, onClearContext }) {
     const loadPassengerData = async () => {
       try {
         if (contextPassengers.length === 0 && isMounted) {
-          const module = await import('./passenger-data-helpers');
+          const module = await import("./passenger-data-helpers");
           const flightData = context?.flight || selectedFlight;
           const optionData = context?.recoveryOption || recoveryOption;
 
           // Ensure we have the right passenger count
-          const expectedPassengers = flightData?.passengers || selectedFlight?.passengers || 167;
+          const expectedPassengers =
+            flightData?.passengers || selectedFlight?.passengers || 167;
 
-          const passengers = module.generateAffectedPassengers(flightData, optionData);
+          const passengers = module.generateAffectedPassengers(
+            flightData,
+            optionData,
+          );
 
           if (isMounted) {
             setGeneratedPassengers(passengers);
@@ -205,7 +209,6 @@ export function PassengerRebooking({ context, onClearContext }) {
       isMounted = false;
     };
   }, [selectedFlight?.id, recoveryOption?.id, contextPassengers.length]);
-
 
   // Enhanced default passenger data with PNR grouping
   const defaultPassengers = [
@@ -366,11 +369,13 @@ export function PassengerRebooking({ context, onClearContext }) {
   // Get base passenger list and apply status updates
   const passengers = useMemo(() => {
     const base =
-      contextPassengers.length > 0 ? contextPassengers :
-      generatedPassengers.length > 0 ? generatedPassengers :
-      defaultPassengers;
+      contextPassengers.length > 0
+        ? contextPassengers
+        : generatedPassengers.length > 0
+          ? generatedPassengers
+          : defaultPassengers;
 
-    return base.map(passenger => {
+    return base.map((passenger) => {
       const rebookingInfo = confirmedRebookings[passenger.id];
       const statusOverride = passengerRebookingStatus[passenger.id];
 
@@ -380,11 +385,16 @@ export function PassengerRebooking({ context, onClearContext }) {
         rebookedFlight: rebookingInfo?.flightNumber,
         rebookedCabin: rebookingInfo?.cabin,
         rebookedSeat: rebookingInfo?.seat,
-        rebookingDate: rebookingInfo?.date
+        rebookingDate: rebookingInfo?.date,
       };
     });
-  }, [contextPassengers, generatedPassengers, defaultPassengers, passengerRebookingStatus, confirmedRebookings]);
-
+  }, [
+    contextPassengers,
+    generatedPassengers,
+    defaultPassengers,
+    passengerRebookingStatus,
+    confirmedRebookings,
+  ]);
 
   // Group passengers by PNR
   const passengersByPnr = useMemo(() => {
@@ -579,19 +589,24 @@ export function PassengerRebooking({ context, onClearContext }) {
     ];
 
     // Filter flights based on passenger count
-    const filteredFlights = baseFlights.map(flight => {
+    const filteredFlights = baseFlights.map((flight) => {
       const updatedAvailableSeats = {};
       for (const cabin in flight.availableSeats) {
         updatedAvailableSeats[cabin] = {
           ...flight.availableSeats[cabin],
-          available: Math.max(0, flight.availableSeats[cabin].available - passengersCount + 1) // Adjust available seats if context.flight.passengers is used
+          available: Math.max(
+            0,
+            flight.availableSeats[cabin].available - passengersCount + 1,
+          ), // Adjust available seats if context.flight.passengers is used
         };
       }
       return { ...flight, availableSeats: updatedAvailableSeats };
     });
 
     // Sort by suitability score (highest first)
-    return filteredFlights.sort((a, b) => b.suitabilityScore - a.suitabilityScore);
+    return filteredFlights.sort(
+      (a, b) => b.suitabilityScore - a.suitabilityScore,
+    );
   };
 
   // Calculate flight suitability score for groups
@@ -797,7 +812,8 @@ export function PassengerRebooking({ context, onClearContext }) {
       availability: "Available",
       image:
         "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=250&fit=crop",
-      description: "Elegant hotel with excellent conference facilities and dining options",
+      description:
+        "Elegant hotel with excellent conference facilities and dining options",
     },
     {
       id: "HTL-003",
@@ -859,7 +875,8 @@ export function PassengerRebooking({ context, onClearContext }) {
           selectedPriority === "all-priorities" ||
           passenger.priority === selectedPriority;
         const matchesStatus =
-          selectedStatus === "all-statuses" || passenger.status === selectedStatus;
+          selectedStatus === "all-statuses" ||
+          passenger.status === selectedStatus;
 
         return matchesSearch && matchesPriority && matchesStatus;
       });
@@ -1103,7 +1120,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // Function to check if all passengers in a PNR group are confirmed
   const isPnrGroupConfirmed = (groupPassengers) => {
-    return groupPassengers.every(p => {
+    return groupPassengers.every((p) => {
       // Check both the updated status and the original status
       const currentStatus = passengerRebookingStatus[p.id] || p.status;
       return currentStatus === "Confirmed";
@@ -1112,35 +1129,47 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   const handleSendForApproval = async () => {
     if (selectedPnrs.size === 0) {
-      alertService.error("Selection Required", "Please select at least one PNR group to send for approval.");
+      alertService.error(
+        "Selection Required",
+        "Please select at least one PNR group to send for approval.",
+      );
       return;
     }
 
-    const passengersToApprove = Array.from(selectedPnrs).flatMap(pnr => {
+    const passengersToApprove = Array.from(selectedPnrs).flatMap((pnr) => {
       const group = filteredPnrGroups[pnr]; // Use filteredPnrGroups here
       return group ? group : [];
     });
 
     if (passengersToApprove.length === 0) {
-      alertService.error("No Passengers", "No passengers found in selected PNR groups.");
+      alertService.error(
+        "No Passengers",
+        "No passengers found in selected PNR groups.",
+      );
       return;
     }
 
     // Check if all selected passengers are confirmed
-    const allSelectedConfirmed = passengersToApprove.every(p => {
+    const allSelectedConfirmed = passengersToApprove.every((p) => {
       const currentStatus = passengerRebookingStatus[p.id] || p.status;
       return currentStatus === "Confirmed";
     });
 
     if (!allSelectedConfirmed) {
-      alertService.warn("Approval Not Ready", "All selected passengers must have a 'Confirmed' status before sending for approval.");
+      alertService.warn(
+        "Approval Not Ready",
+        "All selected passengers must have a 'Confirmed' status before sending for approval.",
+      );
       return;
     }
 
     const disruptionFlightId = context?.flight?.id || selectedFlight?.id;
 
     if (!disruptionFlightId) {
-      alertService.error("Missing Information", "Flight disruption information is missing.");
+      alertService.error(
+        "Missing Information",
+        "Flight disruption information is missing.",
+      );
       return;
     }
 
@@ -1148,64 +1177,75 @@ export function PassengerRebooking({ context, onClearContext }) {
       setIsLoading(true);
 
       // Store passenger rebookings in the database
-      const rebookingData = passengersToApprove.map(passenger => {
+      const rebookingData = passengersToApprove.map((passenger) => {
         const rebookingInfo = confirmedRebookings[passenger.id];
         return {
           disruption_id: disruptionFlightId,
           pnr: passenger.pnr,
           passenger_id: passenger.id,
           passenger_name: passenger.name,
-          original_flight: passenger.originalFlight || context?.flight?.flightNumber || selectedFlight?.flight_number || 'N/A',
+          original_flight:
+            passenger.originalFlight ||
+            context?.flight?.flightNumber ||
+            selectedFlight?.flight_number ||
+            "N/A",
           original_seat: passenger.seat,
-          rebooked_flight: rebookingInfo?.flightNumber || 'TBD',
-          rebooked_cabin: rebookingInfo?.cabin || 'Economy',
-          rebooked_seat: rebookingInfo?.seat || 'TBD',
+          rebooked_flight: rebookingInfo?.flightNumber || "TBD",
+          rebooked_cabin: rebookingInfo?.cabin || "Economy",
+          rebooked_seat: rebookingInfo?.seat || "TBD",
           additional_services: rebookingInfo?.services || [],
-          status: 'Pending Approval', // Changed status to reflect the submission
-          total_passengers_in_pnr: filteredPnrGroups[passenger.pnr]?.length || 1,
+          status: "Pending Approval", // Changed status to reflect the submission
+          total_passengers_in_pnr:
+            filteredPnrGroups[passenger.pnr]?.length || 1,
           rebooking_cost: 0,
-          notes: `Approved rebooking for disruption ${disruptionFlightId}`
+          notes: `Approved rebooking for disruption ${disruptionFlightId}`,
         };
       });
 
-      console.log('Saving passenger rebookings:', rebookingData);
+      console.log("Saving passenger rebookings:", rebookingData);
 
       // Use the databaseService method to save rebookings
-      const rebookingSuccess = await databaseService.savePassengerRebookings(rebookingData);
+      const rebookingSuccess =
+        await databaseService.savePassengerRebookings(rebookingData);
 
       if (rebookingSuccess) {
         // Update flight recovery status
-        const statusSuccess = await databaseService.updateFlightRecoveryStatus(disruptionFlightId, 'passenger_services_pending');
+        const statusSuccess = await databaseService.updateFlightRecoveryStatus(
+          disruptionFlightId,
+          "passenger_services_pending",
+        );
 
         if (statusSuccess) {
           // Save pending recovery solution with passenger services data
           const solutionData = {
             disruption_id: disruptionFlightId,
             option_id: recoveryOption?.id || `PASSENGER_SERVICES_${Date.now()}`,
-            option_title: recoveryOption?.title || 'Passenger Services Recovery',
+            option_title:
+              recoveryOption?.title || "Passenger Services Recovery",
             option_description: `Passenger services processing completed for ${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups`,
-            cost: recoveryOption?.cost || '$50,000',
-            timeline: recoveryOption?.timeline || '2 hours',
+            cost: recoveryOption?.cost || "$50,000",
+            timeline: recoveryOption?.timeline || "2 hours",
             confidence: 95,
-            impact: 'High',
-            status: 'Pending',
+            impact: "High",
+            status: "Pending",
             full_details: {
               passenger_services: true,
               rebookings: passengersToApprove.length,
               pnr_groups: selectedPnrs.size,
               passengers_processed: passengersToApprove,
-              recovery_option: recoveryOption
+              recovery_option: recoveryOption,
             },
             rotation_impact: {
               passenger_processing: `${passengersToApprove.length} passengers processed`,
               rebooking_completed: new Date().toISOString(),
-              status: 'completed'
+              status: "completed",
             },
-            submitted_by: 'passenger_services',
-            approval_required: true
+            submitted_by: "passenger_services",
+            approval_required: true,
           };
 
-          const pendingSolutionSuccess = await databaseService.addPendingSolution(solutionData);
+          const pendingSolutionSuccess =
+            await databaseService.addPendingSolution(solutionData);
 
           if (pendingSolutionSuccess) {
             alertService.success(
@@ -1217,37 +1257,36 @@ export function PassengerRebooking({ context, onClearContext }) {
                 setSelectedPassenger(null);
                 setSelectedPnrGroup(null);
                 // Optionally, navigate or update UI
-              }
+              },
             );
           } else {
             alertService.error(
               "Submission Failed",
-              "Failed to submit passenger rebooking for approval."
+              "Failed to submit passenger rebooking for approval.",
             );
           }
         } else {
           alertService.warn(
             "Status Update Warning",
-            "Passenger information stored but failed to update flight status."
+            "Passenger information stored but failed to update flight status.",
           );
         }
       } else {
         alertService.error(
           "Storage Error",
-          "Failed to store passenger rebooking information."
+          "Failed to store passenger rebooking information.",
         );
       }
     } catch (error) {
-      console.error('Error submitting passenger recovery solution:', error);
+      console.error("Error submitting passenger recovery solution:", error);
       alertService.error(
         "Submission Error",
-        "An error occurred while submitting the passenger recovery solution. Please try again."
+        "An error occurred while submitting the passenger recovery solution. Please try again.",
       );
     } finally {
       setIsLoading(false);
     }
   };
-
 
   const handleSaveChanges = () => {
     if (!selectedFlightForServices) {
@@ -1257,7 +1296,9 @@ export function PassengerRebooking({ context, onClearContext }) {
 
     const passengerContext = selectedPnrGroup || selectedPassenger;
     const isGroup = selectedPnrGroup !== null;
-    const passengersToUpdate = isGroup ? selectedPnrGroup.passengers : [selectedPassenger];
+    const passengersToUpdate = isGroup
+      ? selectedPnrGroup.passengers
+      : [selectedPassenger];
     const passengerCount = passengersToUpdate.length;
     const passengerNames = passengersToUpdate.map((p) => p.name).join(", ");
 
@@ -1281,31 +1322,35 @@ export function PassengerRebooking({ context, onClearContext }) {
         cabin: selectedFlightForServices.selectedCabin,
         seat: `${Math.floor(Math.random() * 30) + 1}${String.fromCharCode(65 + (index % 6))}`, // Generate seat
         date: currentDate,
-        originalFlight: passenger.originalFlight || context?.flight?.flightNumber || selectedFlight?.flight_number,
-        services: selectedServices
+        originalFlight:
+          passenger.originalFlight ||
+          context?.flight?.flightNumber ||
+          selectedFlight?.flight_number,
+        services: selectedServices,
       };
     });
 
     // Apply updates immediately
-    setPassengerRebookingStatus(prev => ({ ...prev, ...statusUpdates }));
-    setConfirmedRebookings(prev => ({ ...prev, ...rebookingUpdates }));
+    setPassengerRebookingStatus((prev) => ({ ...prev, ...statusUpdates }));
+    setConfirmedRebookings((prev) => ({ ...prev, ...rebookingUpdates }));
 
     // Uncheck PNR groups that are now confirmed
     if (isGroup) {
       const pnrsToUncheck = new Set();
       Object.entries(passengersByPnr).forEach(([pnr, pnrPassengers]) => {
-        const allConfirmed = pnrPassengers.every(p =>
-          statusUpdates[p.id] === "Confirmed" || p.status === "Confirmed"
+        const allConfirmed = pnrPassengers.every(
+          (p) =>
+            statusUpdates[p.id] === "Confirmed" || p.status === "Confirmed",
         );
         if (allConfirmed) {
           pnrsToUncheck.add(pnr);
         }
       });
 
-      setSelectedPnrs(prev => {
+      setSelectedPnrs((prev) => {
         const newSelection = new Set(prev);
         let hasChanges = false;
-        pnrsToUncheck.forEach(pnr => {
+        pnrsToUncheck.forEach((pnr) => {
           if (newSelection.has(pnr)) {
             newSelection.delete(pnr);
             hasChanges = true;
@@ -1421,7 +1466,9 @@ export function PassengerRebooking({ context, onClearContext }) {
       setSelectedPnrs(new Set());
     } else {
       // Select all, but only those not confirmed
-      const nonConfirmedPnrs = allPnrs.filter(pnr => !isPnrGroupConfirmed(filteredPnrGroups[pnr]));
+      const nonConfirmedPnrs = allPnrs.filter(
+        (pnr) => !isPnrGroupConfirmed(filteredPnrGroups[pnr]),
+      );
       setSelectedPnrs(new Set(nonConfirmedPnrs));
     }
   };
@@ -1432,29 +1479,32 @@ export function PassengerRebooking({ context, onClearContext }) {
       return;
     }
 
-    const selectedGroups = Array.from(selectedPnrs).map(pnr => ({
+    const selectedGroups = Array.from(selectedPnrs).map((pnr) => ({
       pnr,
-      passengers: filteredPnrGroups[pnr]
+      passengers: filteredPnrGroups[pnr],
     }));
 
     // Get all passenger names from selected PNRs
-    const allPassengerNames = selectedGroups.flatMap(group =>
-      group.passengers.map(p => p.name)
+    const allPassengerNames = selectedGroups.flatMap((group) =>
+      group.passengers.map((p) => p.name),
     );
 
     // For bulk rebooking, create a combined group
     const bulkGroup = {
-      pnr: Array.from(selectedPnrs).join(', '),
-      passengers: selectedGroups.flatMap(group => group.passengers)
+      pnr: Array.from(selectedPnrs).join(", "),
+      passengers: selectedGroups.flatMap((group) => group.passengers),
     };
 
     setSelectedPnrGroup(bulkGroup);
     setSelectedPassenger(null);
     setShowRebookingDialog(true);
 
-    toast.success(`Opening rebooking for ${selectedPnrs.size} PNR group${selectedPnrs.size > 1 ? 's' : ''}`, {
-      description: `Passengers: ${allPassengerNames.slice(0, 3).join(', ')}${allPassengerNames.length > 3 ? ` +${allPassengerNames.length - 3} more` : ''}`
-    });
+    toast.success(
+      `Opening rebooking for ${selectedPnrs.size} PNR group${selectedPnrs.size > 1 ? "s" : ""}`,
+      {
+        description: `Passengers: ${allPassengerNames.slice(0, 3).join(", ")}${allPassengerNames.length > 3 ? ` +${allPassengerNames.length - 3} more` : ""}`,
+      },
+    );
   };
 
   const handleExpandPnr = (pnr) => {
@@ -1495,7 +1545,10 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   const handleExecuteWithPassengerServices = async () => {
     if (!recoveryOption || !selectedFlight) {
-      alertService.error("Missing Information", "Missing recovery option or flight information."); // Use custom alert
+      alertService.error(
+        "Missing Information",
+        "Missing recovery option or flight information.",
+      ); // Use custom alert
       return;
     }
 
@@ -1508,40 +1561,46 @@ export function PassengerRebooking({ context, onClearContext }) {
         option_type: recoveryOption.type,
         estimated_cost: recoveryOption.cost || 0,
         estimated_delay: recoveryOption.delay || 0,
-        passenger_impact: recoveryOption.passengerImpact || 'medium',
-        operational_complexity: recoveryOption.complexity || 'medium',
-        resource_requirements: JSON.stringify(recoveryOption.requirements || {}),
+        passenger_impact: recoveryOption.passengerImpact || "medium",
+        operational_complexity: recoveryOption.complexity || "medium",
+        resource_requirements: JSON.stringify(
+          recoveryOption.requirements || {},
+        ),
         timeline_details: JSON.stringify(recoveryOption.timeline || {}),
-        approval_status: 'pending',
-        created_by: 'passenger_services',
-        notes: `Submitted from passenger services with ${passengers.length} passengers processed`
+        approval_status: "pending",
+        created_by: "passenger_services",
+        notes: `Submitted from passenger services with ${passengers.length} passengers processed`,
       };
 
       await databaseService.savePendingRecoverySolution(solutionData);
 
-      alertService.success( // Use custom alert
-        "Submission Successful",
-        "Recovery solution submitted for approval!\nSolution has been sent to operations team for final approval.",
+      alertService.success(
+        // Use custom alert
+        "Recovery Solution Submitted",
+        `Recovery solution "${recoveryOption.title}" has been sent for approval successfully!\n\nClick OK to return to Affected Flights.`,
         () => {
           // Clear context and navigate
           if (onClearContext) {
             onClearContext();
           }
-        }
+          navigate("/disruption");
+        },
       );
     } catch (error) {
       console.error("Error submitting recovery solution:", error);
-      alertService.error( // Use custom alert
+      alertService.error(
+        // Use custom alert
         "Submission Error",
-        "Failed to submit recovery solution for approval."
+        "Failed to submit recovery solution for approval.",
       );
     }
   };
 
-  const totalPassengers = context?.flight?.passengers ||
-                        selectedFlight?.passengers ||
-                        context?.totalPassengers ||
-                        passengers.length;
+  const totalPassengers =
+    context?.flight?.passengers ||
+    selectedFlight?.passengers ||
+    context?.totalPassengers ||
+    passengers.length;
   const rebookingRequired = passengers.filter(
     (p) => p.status === "Rebooking Required",
   ).length;
@@ -1593,10 +1652,10 @@ export function PassengerRebooking({ context, onClearContext }) {
     });
 
     if (confirmedPnrs.size > 0) {
-      setSelectedPnrs(prev => {
+      setSelectedPnrs((prev) => {
         const newSelection = new Set(prev);
         let hasChanges = false;
-        confirmedPnrs.forEach(pnr => {
+        confirmedPnrs.forEach((pnr) => {
           if (newSelection.has(pnr)) {
             newSelection.delete(pnr);
             hasChanges = true;
@@ -1669,8 +1728,6 @@ export function PassengerRebooking({ context, onClearContext }) {
     }
   };
 
-
-
   if (!selectedFlight || !recoveryOption) {
     return (
       <div className="container mx-auto p-6">
@@ -1699,23 +1756,27 @@ export function PassengerRebooking({ context, onClearContext }) {
   }
 
   // Determine if all PNR groups are confirmed
-  const allPnrsConfirmed = Object.values(filteredPnrGroups).every(group => isPnrGroupConfirmed(group));
+  const allPnrsConfirmed = Object.values(filteredPnrGroups).every((group) =>
+    isPnrGroupConfirmed(group),
+  );
 
   // Check if Send for Approval should be enabled - must have selections and all must be confirmed
-  const canSendForApproval = selectedPnrs.size > 0 && Array.from(selectedPnrs).every(pnr => {
-    const groupPassengers = filteredPnrGroups[pnr];
-    return groupPassengers && groupPassengers.every(p => {
-      // Check both the updated status and the original status
-      const currentStatus = passengerRebookingStatus[p.id] || p.status;
-      return currentStatus === "Confirmed";
+  const canSendForApproval =
+    selectedPnrs.size > 0 &&
+    Array.from(selectedPnrs).every((pnr) => {
+      const groupPassengers = filteredPnrGroups[pnr];
+      return (
+        groupPassengers &&
+        groupPassengers.every((p) => {
+          // Check both the updated status and the original status
+          const currentStatus = passengerRebookingStatus[p.id] || p.status;
+          return currentStatus === "Confirmed";
+        })
+      );
     });
-  });
 
   return (
     <div className="container mx-auto space-y-6">
-
-
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -1755,57 +1816,79 @@ export function PassengerRebooking({ context, onClearContext }) {
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="space-y-1">
-                <div className="text-sm text-blue-600 font-medium">Flight Number</div>
+                <div className="text-sm text-blue-600 font-medium">
+                  Flight Number
+                </div>
                 <div className="font-semibold text-blue-900">
-                  {context?.flight?.flightNumber || selectedFlight?.flight_number || 'N/A'}
+                  {context?.flight?.flightNumber ||
+                    selectedFlight?.flight_number ||
+                    "N/A"}
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-blue-600 font-medium">Route</div>
                 <div className="font-semibold text-blue-900">
                   {context?.flight?.route ||
-                   (selectedFlight && `${selectedFlight.origin} → ${selectedFlight.destination}`) ||
-                   'N/A'}
+                    (selectedFlight &&
+                      `${selectedFlight.origin} → ${selectedFlight.destination}`) ||
+                    "N/A"}
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="text-sm text-blue-600 font-medium">Aircraft</div>
+                <div className="text-sm text-blue-600 font-medium">
+                  Aircraft
+                </div>
                 <div className="font-semibold text-blue-900">
-                  {context?.flight?.aircraft || selectedFlight?.aircraft || 'N/A'}
+                  {context?.flight?.aircraft ||
+                    selectedFlight?.aircraft ||
+                    "N/A"}
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="text-sm text-blue-600 font-medium">Passengers</div>
+                <div className="text-sm text-blue-600 font-medium">
+                  Passengers
+                </div>
                 <div className="font-semibold text-blue-900">
-                  {context?.flight?.passengers || selectedFlight?.passengers || totalPassengers}
+                  {context?.flight?.passengers ||
+                    selectedFlight?.passengers ||
+                    totalPassengers}
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="text-sm text-blue-600 font-medium">Scheduled Departure</div>
+                <div className="text-sm text-blue-600 font-medium">
+                  Scheduled Departure
+                </div>
                 <div className="font-semibold text-blue-900">
                   {context?.flight?.scheduledDeparture ||
-                   selectedFlight?.scheduled_departure ||
-                   'TBD'}
+                    selectedFlight?.scheduled_departure ||
+                    "TBD"}
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-blue-600 font-medium">Status</div>
                 <div className="font-semibold text-blue-900">
-                  {context?.flight?.status || selectedFlight?.status || 'Active'}
+                  {context?.flight?.status ||
+                    selectedFlight?.status ||
+                    "Active"}
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="text-sm text-blue-600 font-medium">Recovery Option</div>
+                <div className="text-sm text-blue-600 font-medium">
+                  Recovery Option
+                </div>
                 <div className="font-semibold text-blue-900">
-                  {context?.recoveryOption?.title || recoveryOption?.title || 'Standard Recovery'}
+                  {context?.recoveryOption?.title ||
+                    recoveryOption?.title ||
+                    "Standard Recovery"}
                 </div>
               </div>
               <div className="space-y-1">
                 <div className="text-sm text-blue-600 font-medium">Delay</div>
                 <div className="font-semibold text-blue-900">
-                  {(context?.flight?.delayMinutes || selectedFlight?.delay_minutes) ?
-                   `${context?.flight?.delayMinutes || selectedFlight?.delay_minutes} min` :
-                   'On time'}
+                  {context?.flight?.delayMinutes ||
+                  selectedFlight?.delay_minutes
+                    ? `${context?.flight?.delayMinutes || selectedFlight?.delay_minutes} min`
+                    : "On time"}
                 </div>
               </div>
             </div>
@@ -2083,12 +2166,21 @@ export function PassengerRebooking({ context, onClearContext }) {
                   {Object.keys(filteredPnrGroups).length > 0 && (
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
                       <Checkbox
-                        checked={selectedPnrs.size === Object.keys(filteredPnrGroups).filter(pnr => !isPnrGroupConfirmed(filteredPnrGroups[pnr])).length && selectedPnrs.size > 0}
+                        checked={
+                          selectedPnrs.size ===
+                            Object.keys(filteredPnrGroups).filter(
+                              (pnr) =>
+                                !isPnrGroupConfirmed(filteredPnrGroups[pnr]),
+                            ).length && selectedPnrs.size > 0
+                        }
                         onCheckedChange={handleSelectAll}
-                        disabled={Object.keys(filteredPnrGroups).every(pnr => isPnrGroupConfirmed(filteredPnrGroups[pnr]))}
+                        disabled={Object.keys(filteredPnrGroups).every((pnr) =>
+                          isPnrGroupConfirmed(filteredPnrGroups[pnr]),
+                        )}
                       />
                       <span className="font-medium text-gray-700">
-                        Select All ({Object.keys(filteredPnrGroups).length} PNR groups)
+                        Select All ({Object.keys(filteredPnrGroups).length} PNR
+                        groups)
                       </span>
                       {selectedPnrs.size > 0 && (
                         <Badge variant="outline" className="ml-auto">
@@ -2113,7 +2205,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                               <div>
                                 <div className="flex items-center gap-2">
                                   <Users className="h-4 w-4 text-flydubai-blue" />
-                                  <span className="font-semibold">PNR: {pnr}</span>
+                                  <span className="font-semibold">
+                                    PNR: {pnr}
+                                  </span>
                                   <Badge
                                     variant="secondary"
                                     className="bg-blue-100 text-blue-800"
@@ -2129,7 +2223,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   )}
                                 </div>
                                 <div className="text-sm text-gray-600 mt-1">
-                                  Group Priority: {groupPassengers[0]?.priority || "Standard"}
+                                  Group Priority:{" "}
+                                  {groupPassengers[0]?.priority || "Standard"}
                                 </div>
                               </div>
                             </div>
@@ -2149,12 +2244,16 @@ export function PassengerRebooking({ context, onClearContext }) {
                               </Button>
                               <Button
                                 size="sm"
-                                onClick={() => handleRebookPnrGroup(pnr, groupPassengers)}
+                                onClick={() =>
+                                  handleRebookPnrGroup(pnr, groupPassengers)
+                                }
                                 disabled={isPnrGroupConfirmed(groupPassengers)}
                                 className="btn-flydubai-primary disabled:opacity-50 disabled:cursor-not-allowed"
                               >
                                 <RefreshCw className="h-4 w-4 mr-2" />
-                                {isPnrGroupConfirmed(groupPassengers) ? "Rebooking Complete" : "Rebook Group"}
+                                {isPnrGroupConfirmed(groupPassengers)
+                                  ? "Rebooking Complete"
+                                  : "Rebook Group"}
                               </Button>
                             </div>
                           </div>
@@ -2247,7 +2346,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                             </div>
                             {passenger.rebookedFlight && (
                               <div className="text-xs text-green-600 mt-1">
-                                Rebooked to: {passenger.rebookedFlight} ({passenger.rebookedCabin})
+                                Rebooked to: {passenger.rebookedFlight} (
+                                {passenger.rebookedCabin})
                               </div>
                             )}
                           </div>
@@ -2266,17 +2366,13 @@ export function PassengerRebooking({ context, onClearContext }) {
                         </TableCell>
                         <TableCell>
                           <Badge
-                            className={getPriorityColor(
-                              passenger.priority,
-                            )}
+                            className={getPriorityColor(passenger.priority)}
                           >
                             {passenger.priority}
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <Badge className={getStatusColor(
-                            passenger.status,
-                          )}>
+                          <Badge className={getStatusColor(passenger.status)}>
                             {passenger.status}
                           </Badge>
                         </TableCell>
@@ -2516,14 +2612,18 @@ export function PassengerRebooking({ context, onClearContext }) {
               <UserCheck className="h-5 w-5 text-flydubai-blue" />
               {selectedPnrGroup
                 ? selectedPnrs.size > 1
-                  ? `Bulk Rebooking - ${selectedPnrs.size} PNR Groups (${Object.values(filteredPnrGroups).filter(([pnr]) => selectedPnrs.has(pnr)).flat().length} passengers)`
+                  ? `Bulk Rebooking - ${selectedPnrs.size} PNR Groups (${
+                      Object.values(filteredPnrGroups)
+                        .filter(([pnr]) => selectedPnrs.has(pnr))
+                        .flat().length
+                    } passengers)`
                   : `Group Rebooking - PNR ${selectedPnrGroup.pnr} (${selectedPnrGroup.passengers.length} passengers)`
                 : `Passenger Services - ${selectedPassenger?.name}`}
             </DialogTitle>
             <DialogDescription>
               {selectedPnrGroup
                 ? selectedPnrs.size > 1
-                  ? `Manage rebooking and services for ${selectedPnrs.size} PNR groups: ${selectedPnrs.size > 3 ? Array.from(selectedPnrs).slice(0,3).join(', ') + '...' : Array.from(selectedPnrs).join(', ')}`
+                  ? `Manage rebooking and services for ${selectedPnrs.size} PNR groups: ${selectedPnrs.size > 3 ? Array.from(selectedPnrs).slice(0, 3).join(", ") + "..." : Array.from(selectedPnrs).join(", ")}`
                   : `Manage rebooking and services for PNR: ${selectedPnrGroup.pnr}`
                 : `Manage rebooking and services for PNR: ${selectedPassenger?.pnr}`}
             </DialogDescription>
