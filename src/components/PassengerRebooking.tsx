@@ -1197,16 +1197,14 @@ export function PassengerRebooking({ context, onClearContext }) {
           if (success) {
             toast.success(`Passenger rebooking sent for approval successfully!`, {
               description: `${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups processed.`,
-              duration: 5000,
+              duration: 3000,
             });
 
             // Clear selection after successful submission
             setSelectedPnrs(new Set());
 
-            // Navigate to pending solutions
-            setTimeout(() => {
-              navigate('/pending');
-            }, 2000);
+            // Navigate to pending solutions immediately after success
+            navigate('/pending');
           } else {
             toast.error("Failed to submit passenger rebooking for approval.");
           }
