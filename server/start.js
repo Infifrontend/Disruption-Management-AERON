@@ -2290,6 +2290,64 @@ app.get("/api/recovery-option/:optionId", async (req, res) => {
   }
 });
 
+// Get recovery options by ID (alternative endpoint for crew information)
+app.get("/api/recovery-options/:optionId", async (req, res) => {
+  try {
+    const { optionId } = req.params;
+
+    const result = await pool.query(
+      "SELECT * FROM recovery_options WHERE id = $1",
+      [optionId],
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: "Recovery option not found",
+        optionId: optionId,
+      });
+    }
+
+    const option = result.rows[0];
+
+    // Parse rotation_plan to extract crew data
+    let rotationPlan = {};
+    if (option.rotation_plan) {
+      try {
+        rotationPlan = typeof option.rotation_plan === 'string' 
+          ? JSON.parse(option.rotation_plan) 
+          : option.rotation_plan;
+      } catch (e) {
+        console.log('Failed to parse rotation_plan JSON');
+        rotationPlan = {};
+      }
+    }
+
+    // Enhanced response with crew information
+    const enhancedOption = {
+      ...option,
+      advantages: option.advantages || [],
+      considerations: option.considerations || [],
+      resourceRequirements: option.resource_requirements || {},
+      costBreakdown: option.cost_breakdown || {},
+      timelineDetails: option.timeline_details || {},
+      riskAssessment: option.risk_assessment || {},
+      metrics: option.metrics || {},
+      rotation_plan: rotationPlan,
+      crew: rotationPlan.crew || rotationPlan.crewData || [],
+      crewConstraints: rotationPlan.crewConstraints || {},
+      operationalConstraints: rotationPlan.operationalConstraints || {},
+    };
+
+    res.json(enhancedOption);
+  } catch (error) {
+    console.error("Recovery Service: Error fetching recovery option:", error);
+    res.status(500).json({
+      error: "Failed to fetch recovery option",
+      details: error.message,
+    });
+  }
+});
+
 // Get detailed rotation plan data for a recovery option
 app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
   try {
