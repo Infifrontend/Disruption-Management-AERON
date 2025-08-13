@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import {
@@ -98,6 +98,7 @@ import { toast } from "sonner";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Checkbox } from "./ui/checkbox";
 import { Textarea } from "./ui/textarea";
+import { alertService } from "../services/alertService";
 
 export function PassengerRebooking({ context, onClearContext }) {
   const location = useLocation();
@@ -1106,12 +1107,18 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   const handleSendForApproval = async () => {
     if (!selectedPnrs || selectedPnrs.size === 0) {
-      toast.error("Please select PNR groups to send for approval.");
+      alertService.warn( // Use custom alert
+        "Selection Required",
+        "Please select PNR groups to send for approval."
+      );
       return;
     }
 
     if (!canSendForApproval) {
-      toast.error("All passengers must have confirmed status before sending for approval.");
+      alertService.warn( // Use custom alert
+        "Approval Not Ready",
+        "All passengers must have confirmed status before sending for approval."
+      );
       return;
     }
 
@@ -1119,7 +1126,10 @@ export function PassengerRebooking({ context, onClearContext }) {
     const disruptionFlightId = context?.flight?.id || selectedFlight?.id;
 
     if (!disruptionFlightId) {
-      toast.error("Flight disruption information is missing.");
+      alertService.error( // Use custom alert
+        "Missing Information",
+        "Flight disruption information is missing."
+      );
       return;
     }
 
@@ -1195,44 +1205,54 @@ export function PassengerRebooking({ context, onClearContext }) {
           const success = await databaseService.addPendingSolution(solutionData);
 
           if (success) {
-            toast.success(`Passenger rebooking sent for approval successfully!`, {
-              description: `${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups processed.`,
-              duration: 3000,
-            });
+            alertService.success( // Use custom alert
+              "Submission Successful",
+              `Passenger rebooking sent for approval successfully!\n${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups processed.`,
+              () => {
+                // Clear selection after successful submission
+                setSelectedPnrs(new Set());
 
-            // Clear selection after successful submission
-            setSelectedPnrs(new Set());
-
-            // Show success popup and redirect to affected flights
-            setTimeout(() => {
-              const result = window.confirm(
-                `Passenger rebooking for ${passengersToApprove.length} passengers has been sent for approval successfully!\n\nClick OK to return to Affected Flights.`
-              );
-              if (result) {
-                navigate('/affected-flights');
+                // Show success popup and redirect to affected flights
+                alertService.success( // Use custom alert
+                  "Approval Sent",
+                  `Passenger rebooking for ${passengersToApprove.length} passengers has been sent for approval successfully!\n\nClick OK to return to Affected Flights.`,
+                  () => navigate('/affected-flights') // Changed from '/disruption' to '/affected-flights' as per common routing patterns
+                );
               }
-            }, 1000);
+            );
           } else {
-            toast.error("Failed to submit passenger rebooking for approval.");
+            alertService.error( // Use custom alert
+              "Submission Failed",
+              "Failed to submit passenger rebooking for approval."
+            );
           }
         } else {
-          toast.warning("Passenger information stored but failed to update flight status.");
+          alertService.warn( // Use custom alert
+            "Status Update Warning",
+            "Passenger information stored but failed to update flight status."
+          );
         }
       } else {
         const errorText = await response.text();
         console.error("Failed to store passenger rebookings:", response.status, errorText);
-        toast.error("Failed to store passenger rebooking information.");
+        alertService.error( // Use custom alert
+          "Storage Error",
+          "Failed to store passenger rebooking information."
+        );
       }
     } catch (error) {
-      console.error("Error in send for approval process:", error);
-      toast.error("An error occurred while processing the approval request.");
+      console.error('Error submitting passenger recovery solution:', error);
+      alertService.error( // Use custom alert
+        "Submission Error",
+        "An error occurred while submitting the passenger recovery solution. Please try again."
+      );
     }
   };
 
 
   const handleSaveChanges = () => {
     if (!selectedFlightForServices) {
-      toast.error("No flight selected");
+      alertService.error("Error", "No flight selected"); // Use custom alert
       return;
     }
 
@@ -1275,7 +1295,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     if (isGroup) {
       const pnrsToUncheck = new Set();
       Object.entries(passengersByPnr).forEach(([pnr, pnrPassengers]) => {
-        const allConfirmed = pnrPassengers.every(p => 
+        const allConfirmed = pnrPassengers.every(p =>
           statusUpdates[p.id] === "Confirmed" || p.status === "Confirmed"
         );
         if (allConfirmed) {
@@ -1409,7 +1429,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   const handleBulkRebookSelectedPnrs = () => {
     if (selectedPnrs.size === 0) {
-      toast.error("Please select PNRs to rebook");
+      alertService.warn("Selection Required", "Please select PNRs to rebook"); // Use custom alert
       return;
     }
 
@@ -1476,7 +1496,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   const handleExecuteWithPassengerServices = async () => {
     if (!recoveryOption || !selectedFlight) {
-      toast.error("Missing recovery option or flight information.");
+      alertService.error("Missing Information", "Missing recovery option or flight information."); // Use custom alert
       return;
     }
 
@@ -1500,20 +1520,22 @@ export function PassengerRebooking({ context, onClearContext }) {
 
       await databaseService.savePendingRecoverySolution(solutionData);
 
-      toast.success("Recovery solution submitted for approval!", {
-        description: "Solution has been sent to operations team for final approval.",
-        duration: 5000,
-      });
-
-      // Clear context and navigate
-      if (onClearContext) {
-        setTimeout(() => {
-          onClearContext();
-        }, 2000);
-      }
+      alertService.success( // Use custom alert
+        "Submission Successful",
+        "Recovery solution submitted for approval!\nSolution has been sent to operations team for final approval.",
+        () => {
+          // Clear context and navigate
+          if (onClearContext) {
+            onClearContext();
+          }
+        }
+      );
     } catch (error) {
       console.error("Error submitting recovery solution:", error);
-      toast.error("Failed to submit recovery solution for approval.");
+      alertService.error( // Use custom alert
+        "Submission Error",
+        "Failed to submit recovery solution for approval."
+      );
     }
   };
 
