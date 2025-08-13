@@ -1401,6 +1401,49 @@ export function PassengerRebooking({ context, onClearContext }) {
     }, 2500);
   };
 
+  const handleExecuteWithPassengerServices = async () => {
+    if (!recoveryOption || !selectedFlight) {
+      toast.error("Missing recovery option or flight information.");
+      return;
+    }
+
+    try {
+      // Save pending recovery solution
+      const solutionData = {
+        disruption_id: selectedFlight.id,
+        option_id: recoveryOption.id,
+        option_title: recoveryOption.title,
+        option_type: recoveryOption.type,
+        estimated_cost: recoveryOption.cost || 0,
+        estimated_delay: recoveryOption.delay || 0,
+        passenger_impact: recoveryOption.passengerImpact || 'medium',
+        operational_complexity: recoveryOption.complexity || 'medium',
+        resource_requirements: JSON.stringify(recoveryOption.requirements || {}),
+        timeline_details: JSON.stringify(recoveryOption.timeline || {}),
+        approval_status: 'pending',
+        created_by: 'passenger_services',
+        notes: `Submitted from passenger services with ${passengers.length} passengers processed`
+      };
+
+      await databaseService.savePendingRecoverySolution(solutionData);
+      
+      toast.success("Recovery solution submitted for approval!", {
+        description: "Solution has been sent to operations team for final approval.",
+        duration: 5000,
+      });
+
+      // Clear context and navigate
+      if (onClearContext) {
+        setTimeout(() => {
+          onClearContext();
+        }, 2000);
+      }
+    } catch (error) {
+      console.error("Error submitting recovery solution:", error);
+      toast.error("Failed to submit recovery solution for approval.");
+    }
+  };
+
   const totalPassengers = context?.flight?.passengers ||
                         selectedFlight?.passengers ||
                         context?.totalPassengers ||
