@@ -99,6 +99,7 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { Checkbox } from "./ui/checkbox";
 import { Textarea } from "./ui/textarea";
 import { alertService } from "../services/alertService";
+import { recoveryApiService } from "../services/recoveryApiService"; // Assuming this service exists
 
 export function PassengerRebooking({ context, onClearContext }) {
   const location = useLocation();
@@ -812,8 +813,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       availability: "Available",
       image:
         "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=250&fit=crop",
-      description:
-        "Elegant hotel with excellent conference facilities and dining options",
+      description: "Elegant hotel with excellent conference facilities and dining options",
     },
     {
       id: "HTL-003",
@@ -875,8 +875,7 @@ export function PassengerRebooking({ context, onClearContext }) {
           selectedPriority === "all-priorities" ||
           passenger.priority === selectedPriority;
         const matchesStatus =
-          selectedStatus === "all-statuses" ||
-          passenger.status === selectedStatus;
+          selectedStatus === "all-statuses" || passenger.status === selectedStatus;
 
         return matchesSearch && matchesPriority && matchesStatus;
       });
@@ -1637,8 +1636,10 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // Load crew data when crew tab is accessed
   useEffect(() => {
+    // Check if the active tab is 'crew-schedule' and if recoveryOption and crewData are available
     if (activeTab === "crew-schedule" && recoveryOption && !crewData) {
-      loadCrewData();
+      // Call the loadCrewData function with the recoveryOption id
+      loadCrewData(recoveryOption.id);
     }
   }, [activeTab, recoveryOption]);
 
@@ -1666,22 +1667,24 @@ export function PassengerRebooking({ context, onClearContext }) {
     }
   }, [passengerRebookingStatus, filteredPnrGroups]);
 
-  const loadCrewData = async () => {
-    setLoading(true);
-    try {
-      // Try to get rotation plan data which includes crew information
-      const rotationResponse = await fetch(
-        `/api/recovery-option/${recoveryOption.id}/rotation-plan`,
-      );
+  const loadCrewData = async (optionId) => {
+    if (!optionId) return;
 
-      if (rotationResponse.ok) {
-        const result = await rotationResponse.json();
-        const rotationPlan = result.rotationPlan || result;
+    try {
+      setLoading(true);
+      console.log(`Loading crew data for option ${optionId}`);
+
+      // Use the recovery API service to get detailed recovery option
+      const result = await recoveryApiService.getRecoveryOptionDetails(optionId);
+
+      if (result) {
+        console.log('Loaded recovery option details:', result);
 
         // Extract crew data from rotation plan with better fallback handling
+        const rotationPlan = result.rotationPlan || result.rotation_plan || {};
         const crew = rotationPlan?.crewData || rotationPlan?.crew || [];
         console.log('Loaded crew data from rotation plan:', crew);
-        
+
         setCrewData({
           crew: crew,
           crewConstraints: rotationPlan?.crewConstraints || rotationPlan?.crewConstraint || {},
@@ -2615,8 +2618,7 @@ export function PassengerRebooking({ context, onClearContext }) {
               {selectedPnrGroup
                 ? selectedPnrs.size > 1
                   ? `Bulk Rebooking - ${selectedPnrs.size} PNR Groups (${
-                      Object.values(filteredPnrGroups)
-                        .filter(([pnr]) => selectedPnrs.has(pnr))
+                      Object.values(filteredPnrGroups).filter(([pnr]) => selectedPnrs.has(pnr))
                         .flat().length
                     } passengers)`
                   : `Group Rebooking - PNR ${selectedPnrGroup.pnr} (${selectedPnrGroup.passengers.length} passengers)`
