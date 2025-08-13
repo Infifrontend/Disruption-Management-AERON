@@ -2820,10 +2820,11 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
 
     const updatedFlightDisruption = await pool.query(
       `
-      UPDATE flight_disruptions SET recovery_status = 'pending', updated_at = CURRENT_TIMESTAMP
-      WHERE id = $1 AND option_id = $2
+      UPDATE flight_disruptions SET recovery_status = 'pen
+      ding', updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
     `,
-      [disruption_id, option_id],
+      [disruption_id],
     );
 
     if (updatedFlightDisruption.rows.length === 0) {
