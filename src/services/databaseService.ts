@@ -1879,7 +1879,7 @@ class DatabaseService {
 
   async savePendingRecoverySolution(solution: any): Promise<boolean> {
     try {
-      const response = await fetch(`${this.apiUrl}/pending-recovery-solutions`, {
+      const response = await fetch(`${this.baseUrl}/pending-recovery-solutions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
