@@ -15,7 +15,7 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5000,
     allowedHosts: [
-      "7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev",
+      "b75debbc-e13a-4222-91f0-9e719d73b403-00-3sp3wh6v7hulo.sisko.replit.dev",
       "localhost",
     ],
     proxy: {

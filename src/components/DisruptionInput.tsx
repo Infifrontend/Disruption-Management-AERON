@@ -1605,36 +1605,6 @@ export function DisruptionInput({
         </Alert>
       )}
 
-      {/* Error Alert */}
-      {error && (
-        <Alert className="border-orange-200 bg-orange-50">
-          <AlertTriangle className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-orange-800 flex items-center justify-between">
-            <span>{error}</span>
-            <div className="flex gap-2 ml-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={fetchFlights}
-                disabled={loading}
-              >
-                <RefreshCw
-                  className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
-                />
-                Retry
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsAddDialogOpen(true)}
-                className="border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
-              >
-                Add New
-              </Button>
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card
