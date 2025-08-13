@@ -1692,8 +1692,9 @@ export function PassengerRebooking({ context, onClearContext }) {
           crew = option.crew;
         } else {
           // Generate crew data based on recovery option type
-          const isCrewIssue = option?.title?.toLowerCase().includes('crew') || 
-                             option?.description?.toLowerCase().includes('crew');
+          const isCrewIssue = (option?.title?.toLowerCase().includes('crew')) || 
+                             (option?.description?.toLowerCase().includes('crew')) ||
+                             (option?.id && typeof option.id === 'string' && option.id.toLowerCase().includes('crew'));
           
           crew = isCrewIssue ? [
             {
@@ -2622,10 +2623,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                               Crew Changes Required:
                             </span>
                             <span className="font-medium">
-                              {recoveryOption.id?.includes("CREW") ||
-                              recoveryOption.title
-                                ?.toLowerCase()
-                                .includes("crew")
+                              {(recoveryOption?.id && typeof recoveryOption.id === 'string' && recoveryOption.id.includes("CREW")) ||
+                              (recoveryOption?.title?.toLowerCase().includes("crew"))
                                 ? "2"
                                 : "0"}
                             </span>
