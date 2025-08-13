@@ -403,6 +403,66 @@ app.get('/recovery-option/:optionId', async (req, res) => {
   }
 })
 
+// Get rotation plan for a specific recovery option
+app.get('/recovery-option/:optionId/rotation-plan', async (req, res) => {
+  try {
+    const { optionId } = req.params
+
+    const result = await pool.query(
+      'SELECT rotation_plan FROM recovery_options WHERE id = $1',
+      [optionId]
+    )
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: 'Recovery option not found',
+        optionId: optionId
+      })
+    }
+
+    const rotationPlan = result.rows[0].rotation_plan || {}
+
+    // Generate default crew data if none exists
+    if (!rotationPlan.crewData && !rotationPlan.crew) {
+      rotationPlan.crewData = [
+        {
+          name: "Captain Al-Zaabi",
+          type: "Captain",
+          status: "Available",
+          location: "Dubai Airport Hotel",
+          availability: "Available",
+        },
+        {
+          name: "F/O Rahman",
+          type: "First Officer", 
+          status: "On Duty",
+          location: "Crew Rest Area Terminal 2",
+          availability: "Available",
+        },
+        {
+          name: "FA Team Delta (4 members)",
+          type: "Cabin Crew",
+          status: "Available", 
+          location: "Crew Lounge Level 3",
+          availability: "Available",
+        },
+      ]
+    }
+
+    res.json({
+      success: true,
+      rotationPlan: rotationPlan
+    })
+
+  } catch (error) {
+    console.error('Recovery Service: Error fetching rotation plan:', error)
+    res.status(500).json({
+      error: 'Failed to fetch rotation plan',
+      details: error.message
+    })
+  }
+})
+
 // Update recovery option status
 app.put('/recovery-option/:optionId/status', async (req, res) => {
   try {
