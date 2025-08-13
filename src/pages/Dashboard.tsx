@@ -98,7 +98,7 @@ export function Dashboard() {
               </div>
               <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
                 <div className="flex items-center gap-2 mb-2">
-                  <Clock className="h-4 w-4 text-yellow-600" />
+                  <ClockIcon className="h-4 w-4 text-yellow-600" />
                   <span className="text-sm font-medium text-yellow-900">High Priority</span>
                 </div>
                 <p className="text-2xl font-bold text-yellow-700">1,238</p>
@@ -146,7 +146,7 @@ export function Dashboard() {
                   <p className="text-xs text-red-600">passengers affected</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
@@ -160,7 +160,7 @@ export function Dashboard() {
                   <p className="text-xs text-orange-600">passengers affected</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
@@ -197,16 +197,16 @@ export function Dashboard() {
               <p className="text-2xl font-bold text-blue-800">89.2%</p>
               <p className="text-xs text-blue-600">+4.3% from yesterday</p>
             </div>
-            
+
             <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
               <div className="flex items-center gap-2 mb-2">
-                <Clock className="h-4 w-4 text-green-600" />
+                <ClockIcon className="h-4 w-4 text-green-600" />
                 <span className="text-sm font-medium text-green-900">Avg Resolution</span>
               </div>
               <p className="text-2xl font-bold text-green-800">2.4h</p>
               <p className="text-xs text-green-600">-18 min improvement</p>
             </div>
-            
+
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
               <div className="flex items-center gap-2 mb-2">
                 <Globe className="h-4 w-4 text-purple-600" />
@@ -215,7 +215,7 @@ export function Dashboard() {
               <p className="text-2xl font-bold text-purple-800">Medium</p>
               <p className="text-xs text-purple-600">23 active disruptions</p>
             </div>
-            
+
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="h-4 w-4 text-orange-600" />
@@ -225,7 +225,7 @@ export function Dashboard() {
               <p className="text-xs text-orange-600">Require immediate action</p>
             </div>
           </div>
-          
+
           <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
             <div className="flex items-center justify-between">
               <div>
