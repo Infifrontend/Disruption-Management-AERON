@@ -1155,13 +1155,13 @@ export function PassengerRebooking({ context, onClearContext }) {
       });
 
       if (response.ok) {
-        // Update flight recovery status to 'approved' - using the same endpoint as comparison page
+        // Update flight recovery status to 'pending' - to show it needs final approval
         const statusResponse = await fetch(`/api/disruptions/${disruptionFlightId}/recovery-status`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ recovery_status: 'approved' }),
+          body: JSON.stringify({ recovery_status: 'pending' }),
         });
 
         if (statusResponse.ok) {
@@ -1170,40 +1170,45 @@ export function PassengerRebooking({ context, onClearContext }) {
             disruption_id: disruptionFlightId,
             option_id: recoveryOption?.id || `PASSENGER_SERVICES_${Date.now()}`,
             option_title: recoveryOption?.title || 'Passenger Services Recovery',
-            option_type: 'passenger_services',
-            estimated_cost: recoveryOption?.cost || 0,
-            estimated_delay: recoveryOption?.delay || 0,
-            passenger_impact: 'high',
-            operational_complexity: 'medium',
-            resource_requirements: JSON.stringify({
+            option_description: `Passenger services processing completed for ${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups`,
+            cost: recoveryOption?.cost || '$50,000',
+            timeline: recoveryOption?.timeline || '2 hours',
+            confidence: 95,
+            impact: 'High',
+            status: 'Pending',
+            full_details: {
               passenger_services: true,
               rebookings: passengersToApprove.length,
-              pnr_groups: selectedPnrs.size
-            }),
-            timeline_details: JSON.stringify({
+              pnr_groups: selectedPnrs.size,
+              passengers_processed: passengersToApprove,
+              recovery_option: recoveryOption
+            },
+            rotation_impact: {
               passenger_processing: `${passengersToApprove.length} passengers processed`,
-              rebooking_completed: new Date().toISOString()
-            }),
-            approval_status: 'approved',
-            created_by: 'passenger_services',
-            notes: `Passenger services completed for ${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups`
+              rebooking_completed: new Date().toISOString(),
+              status: 'completed'
+            },
+            submitted_by: 'passenger_services',
+            approval_required: true
           };
 
-          await databaseService.savePendingRecoverySolution(solutionData);
+          const success = await databaseService.addPendingSolution(solutionData);
 
-          toast.success(`Passenger rebooking approved successfully for ${passengersToApprove.length} passengers!`, {
-            description: "Flight recovery status updated and passenger information stored.",
-            duration: 5000,
-          });
+          if (success) {
+            toast.success(`Passenger rebooking sent for approval successfully!`, {
+              description: `${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups processed.`,
+              duration: 5000,
+            });
 
-          // Clear selection after successful approval
-          setSelectedPnrs(new Set());
+            // Clear selection after successful submission
+            setSelectedPnrs(new Set());
 
-          // If we have an onClearContext function, call it to refresh the data
-          if (onClearContext) {
+            // Navigate to pending solutions
             setTimeout(() => {
-              onClearContext();
+              navigate('/pending');
             }, 2000);
+          } else {
+            toast.error("Failed to submit passenger rebooking for approval.");
           }
         } else {
           toast.warning("Passenger information stored but failed to update flight status.");
@@ -1677,33 +1682,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   return (
     <div className="container mx-auto space-y-6">
 
-      {/* Send for Approval Section */}
-      {selectedPnrs.size > 0 && (
-        <Card className="bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="font-medium text-blue-800 mb-2">
-                  Passenger Rebooking Approval
-                </h3>
-                <p className="text-sm text-blue-700">
-                  {canSendForApproval 
-                    ? `${selectedPnrs.size} PNR group(s) with confirmed rebookings ready for approval.`
-                    : `${selectedPnrs.size} PNR group(s) selected. All passengers must have confirmed status before sending for approval.`
-                  }
-                </p>
-              </div>
-              <Button
-                className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white disabled:opacity-50 disabled:cursor-not-allowed"
-                onClick={handleSendForApproval}
-                disabled={!canSendForApproval}
-              >
-                Send for Approval
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      
 
       {/* Header */}
       <div className="flex items-center justify-between">
