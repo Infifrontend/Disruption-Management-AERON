@@ -1142,16 +1142,25 @@ export function PassengerRebooking({ context, onClearContext }) {
       });
 
       // Store passenger rebookings in database
-      const dbResult = await databaseService.savePassengerRebookings(rebookingData);
+      const response = await fetch('/api/passenger-rebookings', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ rebookings: rebookingData }),
+      });
 
-      if (dbResult) {
-        // Update flight recovery status to 'approved' using the same logic as comparison menu
-        const statusUpdateResult = await databaseService.updateFlightRecoveryStatus(
-          disruptionFlightId.toString(), 
-          'approved'
-        );
+      if (response.ok) {
+        // Update flight recovery status to 'approved'
+        const statusResponse = await fetch(`/api/disruptions/${disruptionFlightId}/recovery-status`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ recovery_status: 'approved' }),
+        });
 
-        if (statusUpdateResult) {
+        if (statusResponse.ok) {
           toast.success(`Passenger rebooking approved successfully for ${passengersToApprove.length} passengers!`, {
             description: "Flight recovery status updated and passenger information stored.",
             duration: 5000,
@@ -1499,74 +1508,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     }
   };
 
-  const handleExecuteWithPassengerServices = async () => {
-    if (!fromExecution || !recoveryOption || !selectedFlight) return;
-
-    try {
-      // Get full details and rotation impact
-      let fullDetails = null;
-      let rotationImpact = null;
-
-      try {
-        const detailsResponse = await fetch(
-          `/api/recovery-option-details/${recoveryOption.id}`,
-        );
-        if (detailsResponse.ok) {
-          fullDetails = await detailsResponse.json();
-        }
-      } catch (error) {
-        console.warn("Could not fetch full details:", error);
-      }
-
-      try {
-        const rotationResponse = await fetch(
-          `/api/recovery-option/${recoveryOption.id}/rotation-plan`,
-        );
-        if (rotationResponse.ok) {
-          const result = await rotationResponse.json();
-          rotationImpact = result.rotationPlan || result;
-        }
-      } catch (error) {
-        console.warn("Could not fetch rotation impact:", error);
-      }
-
-      // Submit to pending solutions without updating flight status
-      const pendingSolution = {
-        disruptionId: selectedFlight.id,
-        optionId: recoveryOption.id,
-        optionTitle: recoveryOption.title,
-        optionDescription: recoveryOption.description,
-        cost: recoveryOption.cost,
-        timeline: recoveryOption.timeline,
-        confidence: recoveryOption.confidence,
-        impact: recoveryOption.impact,
-        status: "Pending",
-        fullDetails: fullDetails,
-        rotationImpact: rotationImpact,
-        submittedBy: "operations_user",
-        approvalRequired: "Operations Manager",
-      };
-
-      const success =
-        await databaseService.savePendingRecoverySolution(pendingSolution);
-
-      if (success) {
-        // Show success message
-        toast.success("Recovery option submitted for approval", {
-          description:
-            "The recovery option has been sent to the pending solutions queue.",
-        });
-
-        // Navigate to pending solutions without updating flight status
-        navigate("/pending");
-      } else {
-        toast.error("Failed to submit recovery option. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error submitting recovery option:", error);
-      toast.error("An error occurred while submitting the recovery option.");
-    }
-  };
+  
 
   if (!selectedFlight || !recoveryOption) {
     return (
@@ -1598,8 +1540,11 @@ export function PassengerRebooking({ context, onClearContext }) {
   // Determine if all PNR groups are confirmed
   const allPnrsConfirmed = Object.values(filteredPnrGroups).every(group => isPnrGroupConfirmed(group));
 
-  // Check if Send for Approval should be enabled
-  const canSendForApproval = selectedPnrs.size > 0 && Array.from(selectedPnrs).every(pnr => isPnrGroupConfirmed(filteredPnrGroups[pnr]));
+  // Check if Send for Approval should be enabled - must have selections and all must be confirmed
+  const canSendForApproval = selectedPnrs.size > 0 && Array.from(selectedPnrs).every(pnr => {
+    const groupPassengers = filteredPnrGroups[pnr];
+    return groupPassengers && groupPassengers.every(p => p.status === "Confirmed");
+  });
 
   return (
     <div className="container mx-auto space-y-6">
