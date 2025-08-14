@@ -1767,50 +1767,6 @@ class DatabaseService {
     ];
   }
 
-  // Enhanced Passenger Rebookings with Approval Workflow
-  async submitForApproval(submissionData: {
-    pending_recovery_solution_id?: number;
-    disruption_id: string;
-    passenger_rebookings: any[];
-    crew_assignments: any[];
-  }): Promise<{ success: boolean; saved_passengers: number; saved_crew: number; error?: string }> {
-    try {
-      console.log('Submitting for approval:', submissionData);
-      const response = await fetch(`${this.baseUrl}/passenger-rebookings/submit-for-approval`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(submissionData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Failed to submit for approval:', response.status, errorData);
-        return {
-          success: false,
-          saved_passengers: 0,
-          saved_crew: 0,
-          error: errorData.message || `HTTP ${response.status}: ${response.statusText}`
-        };
-      }
-
-      const result = await response.json();
-      console.log('Successfully submitted for approval:', result);
-      return {
-        success: result.success,
-        saved_passengers: result.saved_passengers || 0,
-        saved_crew: result.saved_crew || 0
-      };
-    } catch (error) {
-      console.error('Failed to submit for approval:', error);
-      return {
-        success: false,
-        saved_passengers: 0,
-        saved_crew: 0,
-        error: error.message || 'Network error occurred'
-      };
-    }
-  }
-
   // Passenger Rebookings
   async savePassengerRebookings(rebookings: any[]): Promise<boolean> {
     try {
@@ -1833,30 +1789,6 @@ class DatabaseService {
     } catch (error) {
       console.error('Failed to save passenger rebookings:', error);
       return false;
-    }
-  }
-
-  // Get passenger rebookings by pending solution
-  async getPassengerRebookingsByPendingSolution(pendingId: number): Promise<any[]> {
-    try {
-      const response = await fetch(`${this.baseUrl}/passenger-rebookings/pending/${pendingId}`);
-      if (!response.ok) return [];
-      return await response.json();
-    } catch (error) {
-      console.error('Failed to fetch passenger rebookings by pending solution:', error);
-      return [];
-    }
-  }
-
-  // Get crew schedule by pending solution
-  async getCrewScheduleByPendingSolution(pendingId: number): Promise<any[]> {
-    try {
-      const response = await fetch(`${this.baseUrl}/crew-schedule/pending/${pendingId}`);
-      if (!response.ok) return [];
-      return await response.json();
-    } catch (error) {
-      console.error('Failed to fetch crew schedule by pending solution:', error);
-      return [];
     }
   }
 
