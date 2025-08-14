@@ -1912,7 +1912,18 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
             option.impact_summary || ''
           ];
 
-          await pool.query(insertQuery, values);
+          try {
+            await pool.query(insertQuery, values);
+            console.log(`Successfully saved recovery option: ${option.title}`);
+          } catch (insertError) {
+            console.error(`Failed to save recovery option "${option.title}":`, insertError.message);
+            console.error('Values causing error:', values.map((val, idx) => ({
+              index: idx,
+              type: typeof val,
+              value: typeof val === 'string' && val.length > 100 ? val.substring(0, 100) + '...' : val
+            })));
+            throw insertError;
+          }
         }
         optionsCount++;
       } catch (error) {
