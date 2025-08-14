@@ -1146,20 +1146,10 @@ const getCrewIssuesRecoveryData = () => {
       impact: "Minimal operational disruption",
       status: "recommended",
       priority: 1,
-      advantages: [
-        "Quick resolution with minimal delay",
-        "Maintains schedule integrity",
-        "Low passenger impact",
-        "Cost-effective solution",
-      ],
-      considerations: [
-        "Requires standby crew availability",
-        "Extended briefing time needed",
-        "Crew coordination required",
-        "Documentation and compliance checks",
-      ],
+      advantages: [],
+      considerations: [],
       impact_area: ["crew"],
-      impact_summary: "Crew Replacement Protocol: Deploy standby crew currently available. Fresh crew well within regulatory duty time limitations. Extended briefing required for aircraft type rating and current route conditions. Estimated crew preparation time: 45-60 minutes. Passenger delay minimized through efficient crew transition process.",
+      impact_summary: "Crew Replacement Protocol for FZ181: Deploy standby crew currently available at DXB. Fresh crew well within regulatory duty time limitations. Extended briefing required for B737-800 type rating and current route conditions. Estimated crew preparation time: 45-60 minutes. Current crew situation: Crew duty time breach. Passenger delay minimized through efficient crew transition process.",
       resource_requirements: [
         {
           title: "Replacement Captain",
@@ -1228,7 +1218,7 @@ const getCrewIssuesRecoveryData = () => {
         total: {
           amount: "AED 8,500",
           title: "Total Estimated Cost",
-          description: "Crew replacement expenses",
+          description: "Ground handling and coordination",
         },
       },
       timeline_details: [
@@ -1410,7 +1400,88 @@ const getCrewIssuesRecoveryData = () => {
             issue: "Standby replacement",
           },
         ],
+        crew_constraint: {
+          duty_time: {
+            disruption: "",
+            details: "6h 15m of 8h 20m limit",
+          },
+          rest_requirement: {
+            disruption: "Min 12h rest required after duty",
+            details: "Next availability: Tomorrow 08:00",
+          },
+          deadhead: {
+            disruption: "2 crew members need positioning to DXB",
+            details: "Commercial flights available",
+          },
+          fatigue_report: {
+            disruption: "1 crew member reported fatigue",
+            details: "Replacement required",
+          },
+        },
+        nextSectors: [
+          {
+            flight: "FZ456 DXB-BOM",
+            departure: "Cancelled",
+            impact: "High Impact",
+            reason: "Flight cancellation",
+          },
+          {
+            flight: "FZ457 BOM-DXB",
+            departure: "Cancelled",
+            impact: "High Impact",
+            reason: "Route cancellation",
+          },
+          {
+            flight: "FZ890 DXB-DEL",
+            departure: "Dep: 08:30 (Next Day)",
+            impact: "No Impact",
+            reason: "Different aircraft",
+          },
+        ],
+        operationalConstraints: {
+          gateCompatibility: {
+            status: "Same gate assignment maintained",
+            details: "",
+          },
+          slotCapacity: {
+            status: "Coordination Required",
+            details: "DXB slot coordination required",
+          },
+          curfewViolation: {
+            status: "No Risk",
+            details: "Within curfew limits",
+          },
+          passengerConnections: {
+            status: "No Significant Impact",
+            details: "No significant connection issues",
+          },
+        },
+        costBreakdown: {
+          delayCost: {
+            metric_value: "AED 5,200",
+            detail: "Including compensation",
+          },
+          fuelEfficiency: {
+            metric_value: "+0.3%",
+            detail: "vs original aircraft",
+          },
+          hotelTransport: {
+            metric_value: "N/A",
+            detail: "Crew accommodation",
+          },
+          eu261Risk: {
+            metric_value: "Low",
+            detail: "€600 per passenger",
+          },
+        },
+        recommended_option: {
+          option: "Aircraft B737-800",
+          summary: "Maintains current operational plan with minimal adjustments required.",
+        },
       },
+      details: null,
+      created_at: "2025-08-11T10:30:00.000Z",
+      updated_at: "2025-08-11T10:30:00.000Z",
     },
     {
       title: "Deadhead Crew",
@@ -1421,18 +1492,10 @@ const getCrewIssuesRecoveryData = () => {
       impact: "Moderate schedule delay",
       status: "caution",
       priority: 1,
-      advantages: [
-        "Utilizes available crew resources",
-        "Maintains flight continuity",
-        "Regulatory compliance assured",
-      ],
-      considerations: [
-        "Additional positioning cost",
-        "Potential for deadhead crew fatigue",
-        "Coordination with ground transport",
-      ],
+      advantages: [],
+      considerations: [],
       impact_area: ["crew"],
-      impact_summary: "Crew Positioning Protocol: Arrange for deadhead crew to reposition to operational base. Ensure compliance with duty time and rest requirements. Coordinate with travel and ground support services for efficient transfer. Estimated positioning time: 120 minutes.",
+      impact_summary: "Crew Replacement Protocol for FZ181: Deploy standby crew currently available at DXB. Fresh crew well within regulatory duty time limitations. Extended briefing required for B737-800 type rating and current route conditions. Estimated crew preparation time: 45-60 minutes. Current crew situation: Crew duty time breach. Passenger delay minimized through efficient crew transition process.",
       resource_requirements: [
         {
           title: "Replacement Captain",
@@ -1501,7 +1564,7 @@ const getCrewIssuesRecoveryData = () => {
         total: {
           amount: "AED 25,000",
           title: "Total Estimated Cost",
-          description: "Crew positioning expenses",
+          description: "Ground handling and coordination",
         },
       },
       timeline_details: [
@@ -1683,7 +1746,88 @@ const getCrewIssuesRecoveryData = () => {
             issue: "Standby replacement",
           },
         ],
+        crew_constraint: {
+          duty_time: {
+            disruption: "",
+            details: "6h 15m of 8h 20m limit",
+          },
+          rest_requirement: {
+            disruption: "Min 12h rest required after duty",
+            details: "Next availability: Tomorrow 08:00",
+          },
+          deadhead: {
+            disruption: "2 crew members need positioning to DXB",
+            details: "Commercial flights available",
+          },
+          fatigue_report: {
+            disruption: "1 crew member reported fatigue",
+            details: "Replacement required",
+          },
+        },
+        nextSectors: [
+          {
+            flight: "FZ456 DXB-BOM",
+            departure: "Cancelled",
+            impact: "High Impact",
+            reason: "Flight cancellation",
+          },
+          {
+            flight: "FZ457 BOM-DXB",
+            departure: "Cancelled",
+            impact: "High Impact",
+            reason: "Route cancellation",
+          },
+          {
+            flight: "FZ890 DXB-DEL",
+            departure: "Dep: 08:30 (Next Day)",
+            impact: "No Impact",
+            reason: "Different aircraft",
+          },
+        ],
+        operationalConstraints: {
+          gateCompatibility: {
+            status: "Same gate assignment maintained",
+            details: "",
+          },
+          slotCapacity: {
+            status: "No Change",
+            details: "Original slots maintained",
+          },
+          curfewViolation: {
+            status: "No Risk",
+            details: "Within curfew limits",
+          },
+          passengerConnections: {
+            status: "No Significant Impact",
+            details: "No significant connection issues",
+          },
+        },
+        costBreakdown: {
+          delayCost: {
+            metric_value: "AED 5,200",
+            detail: "Including compensation",
+          },
+          fuelEfficiency: {
+            metric_value: "+0.3%",
+            detail: "vs original aircraft",
+          },
+          hotelTransport: {
+            metric_value: "N/A",
+            detail: "Crew accommodation",
+          },
+          eu261Risk: {
+            metric_value: "Low",
+            detail: "€600 per passenger",
+          },
+        },
+        recommended_option: {
+          option: "Aircraft B737-800",
+          summary: "Maintains current operational plan with minimal adjustments required.",
+        },
       },
+      details: null,
+      created_at: "2025-08-11T11:00:00.000Z",
+      updated_at: "2025-08-11T11:00:00.000Z",
     },
     {
       title: "Delay for Crew Rest Completion",
@@ -1694,18 +1838,10 @@ const getCrewIssuesRecoveryData = () => {
       impact: "Significant passenger disruption",
       status: "warning",
       priority: 1,
-      advantages: [
-        "Maintains original crew integrity",
-        "Ensures regulatory compliance",
-        "Avoids crew repositioning costs",
-      ],
-      considerations: [
-        "Significant delay for passengers",
-        "Potential for passenger dissatisfaction",
-        "Crew duty time limits to be monitored",
-      ],
+      advantages: [],
+      considerations: [],
       impact_area: ["crew", "passenger"],
-      impact_summary: "Crew Rest Compliance: Allow original crew to complete mandatory rest period. Ensure all duty time and rest requirements are met. Implement passenger care measures during the delay. Estimated delay: 3 hours.",
+      impact_summary: "Controlled Delay Strategy for FZ181: Implement 3 hours delay to allow comprehensive resolution of Crew duty time breach. Includes passenger accommodation services, meal vouchers for all 175 passengers, and ground transportation as needed. This approach ensures complete issue resolution while providing appropriate passenger care. Alternative options available if technical resolution takes longer than expected.",
       resource_requirements: [
         {
           title: "Terminal Services",
@@ -1774,7 +1910,7 @@ const getCrewIssuesRecoveryData = () => {
         total: {
           amount: "AED 45,000",
           title: "Total Estimated Cost",
-          description: "Delay management costs",
+          description: "Ground handling and coordination",
         },
       },
       timeline_details: [
@@ -1946,7 +2082,88 @@ const getCrewIssuesRecoveryData = () => {
             issue: "Standby replacement",
           },
         ],
+        crew_constraint: {
+          duty_time: {
+            disruption: "",
+            details: "6h 15m of 8h 20m limit",
+          },
+          rest_requirement: {
+            disruption: "Min 12h rest required after duty",
+            details: "Next availability: Tomorrow 08:00",
+          },
+          deadhead: {
+            disruption: "2 crew members need positioning to DXB",
+            details: "Commercial flights available",
+          },
+          fatigue_report: {
+            disruption: "1 crew member reported fatigue",
+            details: "Replacement required",
+          },
+        },
+        nextSectors: [
+          {
+            flight: "FZ456 DXB-BOM",
+            departure: "Dep: 18:30 → 17:11 (+3 hours)",
+            impact: "Medium Impact",
+            reason: "Direct delay impact",
+          },
+          {
+            flight: "FZ457 BOM-DXB",
+            departure: "Dep: 22:15 (On Time)",
+            impact: "Low Impact",
+            reason: "Sufficient turnaround",
+          },
+          {
+            flight: "FZ890 DXB-DEL",
+            departure: "Dep: 08:30 (Next Day)",
+            impact: "No Impact",
+            reason: "Overnight recovery",
+          },
+        ],
+        operationalConstraints: {
+          gateCompatibility: {
+            status: "Same gate assignment maintained",
+            details: "",
+          },
+          slotCapacity: {
+            status: "Coordination Required",
+            details: "COK slot coordination required",
+          },
+          curfewViolation: {
+            status: "No Risk",
+            details: "Within curfew limits",
+          },
+          passengerConnections: {
+            status: "High Impact",
+            details: "49 passengers miss onward connections",
+          },
+        },
+        costBreakdown: {
+          delayCost: {
+            metric_value: "$840",
+            detail: "Including compensation",
+          },
+          fuelEfficiency: {
+            metric_value: "+0.8%",
+            detail: "vs original aircraft",
+          },
+          hotelTransport: {
+            metric_value: "N/A",
+            detail: "Crew accommodation",
+          },
+          eu261Risk: {
+            metric_value: "Low",
+            detail: "€600 per passenger",
+          },
+        },
+        recommended_option: {
+          option: "Aircraft B737-800",
+          summary: "Manageable delay impact with 65% confidence. Maintains operational continuity with minimal crew changes.",
+        },
       },
+      details: null,
+      created_at: "2025-08-11T11:30:00.000Z",
+      updated_at: "2025-08-11T11:30:00.000Z",
     },
   ];
 };
