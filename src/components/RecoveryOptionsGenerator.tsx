@@ -1036,6 +1036,8 @@ export function RecoveryOptionsGenerator({
             technicalSpecs: detailedData.technicalSpecs,
             rotationPlan: parseJsonObject(option.rotation_plan, {}),
             templateData: parseJsonObject(option.template_data, {}),
+            impactArea: parseJsonObject(option.impact_area, []),
+            impactSummary: option.impact_summary || `Recovery analysis for ${option.title}: Comprehensive solution addressing operational disruption for ${flight?.flightNumber || "the affected flight"}.`,
             detailedDescription:
               option.description ||
               `This recovery option provides a comprehensive solution for ${flight?.flightNumber || "the affected flight"} disruption. The plan takes into account operational constraints, passenger impact, and cost considerations to deliver an optimal recovery strategy.`,

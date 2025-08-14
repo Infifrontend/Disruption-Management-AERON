@@ -46,6 +46,8 @@ export interface RecoveryOption {
   technical_specs: any
   metrics: any
   rotation_plan: any
+  impact_area: string[]
+  impact_summary: string
   created_at: string
   updated_at: string
 }

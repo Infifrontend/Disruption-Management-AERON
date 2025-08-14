@@ -147,6 +147,8 @@ CREATE TABLE IF NOT EXISTS recovery_options (
     resource_details JSONB DEFAULT '{}',
     risk_details JSONB DEFAULT '{}',
     technical_details JSONB DEFAULT '{}',
+    impact_area JSONB DEFAULT '[]',
+    impact_summary TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(disruption_id, title)
