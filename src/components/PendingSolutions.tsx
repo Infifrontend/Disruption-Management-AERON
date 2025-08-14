@@ -92,7 +92,6 @@ export function PendingSolutions() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showDetailedOptionView, setShowDetailedOptionView] = useState(null); // State to control the new detailed view dialog
 
   useEffect(() => {
     fetchPlans();
@@ -1384,7 +1383,7 @@ export function PendingSolutions() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => setShowDetailedOptionView(plan)} // Use the new state for detailed view
+                          onClick={() => handleViewDetails(plan)}
                           className="flex items-center gap-2"
                         >
                           <Eye className="h-4 w-4" />
@@ -1436,26 +1435,6 @@ export function PendingSolutions() {
         </TabsContent>
       </Tabs>
 
-      {/* Detailed Recovery Option View Dialog */}
-      <Dialog open={!!showDetailedOptionView} onOpenChange={() => setShowDetailedOptionView(null)}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Eye className="h-5 w-5 text-flydubai-blue" />
-              Recovery Option Details - {showDetailedOptionView?.title}
-            </DialogTitle>
-            <div className="text-sm text-muted-foreground">
-              Comprehensive analysis including crew HOTAC changes and passenger reaccommodation details
-            </div>
-          </DialogHeader>
-
-          {showDetailedOptionView && (
-            <DetailedRecoveryOptionView plan={showDetailedOptionView} />
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Existing Dialog for selectedPlan */}
       {selectedPlan && (
         <Dialog
           open={!!selectedPlan}
