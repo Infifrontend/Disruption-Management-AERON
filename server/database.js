@@ -406,7 +406,7 @@ app.post("/api/disruptions", async (req, res) => {
           END
           LIMIT 1
         `, [categorization]);
-        
+
         if (categoryResult.rows.length > 0) {
           category_id = categoryResult.rows[0].id;
         }
@@ -1234,14 +1234,126 @@ app.get("/api/recovery-logs", async (req, res) => {
   }
 });
 
-// Error handling middleware
-app.use((error, req, res, next) => {
-  console.error("Unhandled error:", error);
-  res.status(500).json({ error: "Internal server error" });
+// Crew Hotel Assignments
+app.post("/api/crew-hotel-assignments", async (req, res) => {
+  try {
+    const { assignments } = req.body;
+
+    if (!assignments || !Array.isArray(assignments)) {
+      return res.status(400).json({ error: "Invalid assignments data" });
+    }
+
+    const client = await pool.connect();
+
+    try {
+      // Create crew_hotel_assignments table if it doesn't exist
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS crew_hotel_assignments (
+          id SERIAL PRIMARY KEY,
+          disruption_id VARCHAR(50),
+          crew_member_id VARCHAR(50) NOT NULL,
+          hotel_name VARCHAR(255) NOT NULL,
+          hotel_location VARCHAR(255),
+          check_in_date TIMESTAMP,
+          check_out_date TIMESTAMP,
+          room_number VARCHAR(50),
+          special_requests TEXT,
+          assignment_status VARCHAR(50) DEFAULT 'assigned',
+          total_cost DECIMAL(10,2) DEFAULT 0,
+          booking_reference VARCHAR(100),
+          transport_details JSONB,
+          created_by VARCHAR(100) DEFAULT 'system',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          CONSTRAINT crew_hotel_assignments_unique UNIQUE (disruption_id, crew_member_id)
+        )
+      `);
+
+      // Insert assignments
+      const insertPromises = assignments.map(assignment => {
+        return client.query(`
+          INSERT INTO crew_hotel_assignments (
+            disruption_id, crew_member_id, hotel_name, hotel_location,
+            check_in_date, check_out_date, room_number, special_requests,
+            assignment_status, total_cost, booking_reference, transport_details, created_by
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+          ON CONFLICT ON CONSTRAINT crew_hotel_assignments_unique
+          DO UPDATE SET 
+            hotel_name = EXCLUDED.hotel_name,
+            hotel_location = EXCLUDED.hotel_location,
+            check_in_date = EXCLUDED.check_in_date,
+            check_out_date = EXCLUDED.check_out_date,
+            room_number = EXCLUDED.room_number,
+            special_requests = EXCLUDED.special_requests,
+            assignment_status = EXCLUDED.assignment_status,
+            total_cost = EXCLUDED.total_cost,
+            booking_reference = EXCLUDED.booking_reference,
+            transport_details = EXCLUDED.transport_details,
+            updated_at = CURRENT_TIMESTAMP
+        `, [
+          assignment.disruption_id,
+          assignment.crew_member_id,
+          assignment.hotel_name,
+          assignment.hotel_location,
+          assignment.check_in_date,
+          assignment.check_out_date,
+          assignment.room_number,
+          assignment.special_requests,
+          assignment.assignment_status,
+          assignment.total_cost,
+          assignment.booking_reference,
+          assignment.transport_details,
+          assignment.created_by
+        ]);
+      });
+
+      await Promise.all(insertPromises);
+
+      res.json({ 
+        success: true, 
+        message: `${assignments.length} crew hotel assignments saved successfully` 
+      });
+
+    } finally {
+      client.release();
+    }
+
+  } catch (error) {
+    console.error("Error saving crew hotel assignments:", error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
-app.listen(port, "0.0.0.0", () => {
-  console.log(`AERON Settings Database API server running on port ${port}`);
+app.get("/api/crew-hotel-assignments/:disruptionId", async (req, res) => {
+  try {
+    const { disruptionId } = req.params;
+    const client = await pool.connect();
+
+    const result = await client.query(`
+      SELECT * FROM crew_hotel_assignments 
+      WHERE disruption_id = $1 
+      ORDER BY created_at DESC
+    `, [disruptionId]);
+
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching crew hotel assignments:", error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
-module.exports = app;
+// Pending Recovery Solutions
+app.get("/api/pending-recovery-solutions", async (req, res) => {
+  // Error handling middleware
+  app.use((error, req, res, next) => {
+    console.error("Unhandled error:", error);
+    res.status(500).json({ error: "Internal server error" });
+  });
+
+  app.listen(port, "0.0.0.0", () => {
+    console.log(`AERON Settings Database API server running on port ${port}`);
+  });
+
+  module.exports = app;
+});
