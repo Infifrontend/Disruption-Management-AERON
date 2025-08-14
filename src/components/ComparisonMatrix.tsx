@@ -65,8 +65,14 @@ export function ComparisonMatrix({
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  // Function to check if option requires passenger services based on keywords
-  const requiresPassengerServices = (option) => {
+  // Function to check if option requires execution based on impact_area
+  const requiresExecution = (option) => {
+    // Check if impact_area contains 'passenger' or 'crew'
+    if (option.impact_area && Array.isArray(option.impact_area)) {
+      return option.impact_area.includes("passenger") || option.impact_area.includes("crew");
+    }
+    
+    // Fallback to keyword-based logic if impact_area is not available
     const title = option.title?.toLowerCase() || "";
     const description = option.description?.toLowerCase() || "";
 
@@ -807,7 +813,7 @@ export function ComparisonMatrix({
                 option.impact_area.includes("passenger")) {
               const passengerCount = flight?.passengers || 175;
               row[key] = `${passengerCount} passengers affected`;
-            } else if (requiresPassengerServices(option)) {
+            } else if (requiresExecution(option)) {
               const passengerCount = flight?.passengers || 175;
               row[key] = `${passengerCount} passengers need Reaccommodate`;
             } else {
@@ -1052,8 +1058,8 @@ export function ComparisonMatrix({
     setExecutingOption(option.id);
 
     try {
-      // Check if option requires passenger services based on keywords
-      if (requiresPassengerServices(option)) {
+      // Check if option requires execution based on impact_area
+      if (requiresExecution(option)) {
         // Set the passenger services context with the correct data structure
         const passengerContext = {
           selectedFlight: flight,
@@ -1480,7 +1486,7 @@ export function ComparisonMatrix({
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                         Processing...
                       </>
-                    ) : requiresPassengerServices(option) ? (
+                    ) : requiresExecution(option) ? (
                       "Execute"
                     ) : (
                       "Send for Approval"
@@ -1671,6 +1677,67 @@ export function ComparisonMatrix({
                           </div>
                         )}
 
+                        {/* Impact Areas */}
+                        {selectedOptionDetails.impact_area && Array.isArray(selectedOptionDetails.impact_area) && 
+                         selectedOptionDetails.impact_area.length > 0 && (
+                          <div className="p-3 bg-orange-50 rounded-lg mb-4 border border-orange-200">
+                            <h4 className="text-sm font-medium text-orange-800 mb-2">
+                              Impact Areas
+                            </h4>
+                            <div className="flex flex-wrap gap-1">
+                              {selectedOptionDetails.impact_area.map((area, index) => (
+                                <Badge 
+                                  key={index}
+                                  className={
+                                    area === 'passenger' ? 'bg-blue-100 text-blue-800' :
+                                    area === 'crew' ? 'bg-purple-100 text-purple-800' :
+                                    area === 'aircraft' ? 'bg-green-100 text-green-800' :
+                                    'bg-gray-100 text-gray-800'
+                                  }
+                                >
+                                  {area.charAt(0).toUpperCase() + area.slice(1)}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Advantages */}
+                        {selectedOptionDetails.advantages && Array.isArray(selectedOptionDetails.advantages) && 
+                         selectedOptionDetails.advantages.length > 0 && (
+                          <div className="p-3 bg-green-50 rounded-lg mb-4 border border-green-200">
+                            <h4 className="text-sm font-medium text-green-800 mb-2">
+                              Key Advantages
+                            </h4>
+                            <ul className="text-sm text-green-700 space-y-1">
+                              {selectedOptionDetails.advantages.map((advantage, index) => (
+                                <li key={index} className="flex items-start gap-2">
+                                  <CheckCircle className="h-3 w-3 text-green-600 mt-0.5 flex-shrink-0" />
+                                  {advantage}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Considerations */}
+                        {selectedOptionDetails.considerations && Array.isArray(selectedOptionDetails.considerations) && 
+                         selectedOptionDetails.considerations.length > 0 && (
+                          <div className="p-3 bg-yellow-50 rounded-lg mb-4 border border-yellow-200">
+                            <h4 className="text-sm font-medium text-yellow-800 mb-2">
+                              Key Considerations
+                            </h4>
+                            <ul className="text-sm text-yellow-700 space-y-1">
+                              {selectedOptionDetails.considerations.map((consideration, index) => (
+                                <li key={index} className="flex items-start gap-2">
+                                  <AlertTriangle className="h-3 w-3 text-yellow-600 mt-0.5 flex-shrink-0" />
+                                  {consideration}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
                         <div className="p-3 bg-blue-50 rounded-lg">
                           <h4 className="text-sm font-medium text-blue-800 mb-2">
                             Flight Context
@@ -1754,6 +1821,42 @@ export function ComparisonMatrix({
                             {selectedOptionDetails.impact}
                           </Badge>
                         </div>
+                        
+                        {/* Additional Metrics from API data */}
+                        {selectedOptionDetails.metrics && (
+                          <>
+                            {selectedOptionDetails.metrics.otpScore && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600">
+                                  OTP Score:
+                                </span>
+                                <span className="font-medium">
+                                  {selectedOptionDetails.metrics.otpScore}%
+                                </span>
+                              </div>
+                            )}
+                            {selectedOptionDetails.metrics.networkImpact && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600">
+                                  Network Impact:
+                                </span>
+                                <Badge className={getRiskBadgeStyle(selectedOptionDetails.metrics.networkImpact)}>
+                                  {selectedOptionDetails.metrics.networkImpact}
+                                </Badge>
+                              </div>
+                            )}
+                            {selectedOptionDetails.metrics.delayMinutes !== undefined && (
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600">
+                                  Expected Delay:
+                                </span>
+                                <span className="font-medium">
+                                  {selectedOptionDetails.metrics.delayMinutes} min
+                                </span>
+                              </div>
+                            )}
+                          </>
+                        )}
                       </CardContent>
                     </Card>
                   </div>
@@ -2108,13 +2211,52 @@ export function ComparisonMatrix({
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {selectedOptionDetails.technicalSpecs &&
-                      Object.keys(selectedOptionDetails.technicalSpecs).length >
-                        0 ? (
+                      {selectedOptionDetails.technical_specs &&
+                      Object.keys(selectedOptionDetails.technical_specs).length > 0 ? (
                         <div className="space-y-4">
-                          {Object.entries(
-                            selectedOptionDetails.technicalSpecs,
-                          ).map(([key, value]) => (
+                          {Object.entries(selectedOptionDetails.technical_specs).map(([key, value]) => (
+                            <div key={key} className="p-3 border rounded-lg">
+                              <h4 className="font-medium text-sm capitalize mb-2">
+                                {key
+                                  .replace(/([A-Z])/g, " $1")
+                                  .replace(/_/g, " ")
+                                  .replace(/^./, (str) => str.toUpperCase())}
+                              </h4>
+                              {Array.isArray(value) ? (
+                                <ul className="text-sm text-gray-700 space-y-1">
+                                  {value.map((item, index) => (
+                                    <li
+                                      key={index}
+                                      className="flex items-start gap-2"
+                                    >
+                                      <div className="w-2 h-2 bg-flydubai-blue rounded-full mt-1.5 flex-shrink-0"></div>
+                                      {typeof item === 'object' ? JSON.stringify(item) : item}
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : typeof value === 'object' ? (
+                                <div className="space-y-2">
+                                  {Object.entries(value).map(([subKey, subValue]) => (
+                                    <div key={subKey} className="text-sm">
+                                      <span className="font-medium capitalize">
+                                        {subKey.replace(/_/g, " ")}:
+                                      </span>{" "}
+                                      <span className="text-gray-700">
+                                        {typeof subValue === 'object' ? JSON.stringify(subValue) : subValue}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-700">{value}</p>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      ) : selectedOptionDetails.technicalSpecs &&
+                        Object.keys(selectedOptionDetails.technicalSpecs).length > 0 ? (
+                        <div className="space-y-4">
+                          {Object.entries(selectedOptionDetails.technicalSpecs).map(([key, value]) => (
                             <div key={key} className="p-3 border rounded-lg">
                               <h4 className="font-medium text-sm capitalize mb-2">
                                 {key
@@ -2145,6 +2287,9 @@ export function ComparisonMatrix({
                           <p>
                             Standard operational procedures and aircraft
                             specifications apply.
+                          </p>
+                          <p className="text-xs mt-2 text-gray-400">
+                            Technical specifications will be populated when detailed analysis is available.
                           </p>
                         </div>
                       )}
