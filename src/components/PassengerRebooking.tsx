@@ -845,7 +845,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   const passengersByPnr = useMemo(() => {
     const grouped = passengers.reduce((acc, passenger) => {
       if (!acc[passenger.pnr]) {
-        acc[acc.pnr] = [];
+        acc[passenger.pnr] = [];
       }
       acc[passenger.pnr].push(passenger);
       return acc;
