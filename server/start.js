@@ -1908,7 +1908,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
             safeStringify(option.technicalSpecs || option.technical_specs || {}),
             safeStringify(option.metrics || {}),
             safeStringify(option.rotationPlan || option.rotation_plan || {}),
-            formatArrayForPostgres(option.impact_area || []), // Pass as array, not JSON string
+            safeStringify(option.impact_area || []), // Convert to JSON string
             option.impact_summary || ''
           ];
 
