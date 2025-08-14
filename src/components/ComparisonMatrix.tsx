@@ -69,9 +69,12 @@ export function ComparisonMatrix({
   const requiresExecution = (option) => {
     // Check if impact_area contains 'passenger' or 'crew'
     if (option.impact_area && Array.isArray(option.impact_area)) {
-      return option.impact_area.includes("passenger") || option.impact_area.includes("crew");
+      return (
+        option.impact_area.includes("passenger") ||
+        option.impact_area.includes("crew")
+      );
     }
-    
+
     // Fallback to keyword-based logic if impact_area is not available
     const title = option.title?.toLowerCase() || "";
     const description = option.description?.toLowerCase() || "";
@@ -809,11 +812,11 @@ export function ComparisonMatrix({
             break;
           case "Passenger Impact":
             // Check impact_area first, then fall back to keyword detection
-            if (option.impact_area && Array.isArray(option.impact_area) && 
-                option.impact_area.includes("passenger")) {
-              const passengerCount = flight?.passengers || 175;
-              row[key] = `${passengerCount} passengers affected`;
-            } else if (requiresExecution(option)) {
+            if (
+              option.impact_area &&
+              Array.isArray(option.impact_area) &&
+              option.impact_area.includes("passenger")
+            ) {
               const passengerCount = flight?.passengers || 175;
               row[key] = `${passengerCount} passengers need Reaccommodate`;
             } else {
@@ -821,8 +824,11 @@ export function ComparisonMatrix({
             }
             break;
           case "Crew Impact":
-            if (option.impact_area && Array.isArray(option.impact_area) && 
-                option.impact_area.includes("crew")) {
+            if (
+              option.impact_area &&
+              Array.isArray(option.impact_area) &&
+              option.impact_area.includes("crew")
+            ) {
               row[key] = "Yes";
             } else {
               row[key] = "No";
@@ -1094,7 +1100,7 @@ export function ComparisonMatrix({
         alertService.warning(
           "Duplicate Solution",
           "This recovery solution is already pending for this flight.",
-          () => setExecutingOption(null)
+          () => setExecutingOption(null),
         );
         return;
       }
@@ -1165,20 +1171,20 @@ export function ComparisonMatrix({
         alertService.success(
           "Recovery Solution Submitted",
           `Recovery solution "${option.title}" has been sent for approval successfully!\n\nClick OK to return to Affected Flights.`,
-          () => navigate("/disruption")
+          () => navigate("/disruption"),
         );
       } else {
         const errorData = await response.json();
         alertService.error(
-          "Submission Failed", 
-          `Failed to submit recovery solution: ${errorData.error || "Unknown error"}`
+          "Submission Failed",
+          `Failed to submit recovery solution: ${errorData.error || "Unknown error"}`,
         );
       }
     } catch (error) {
       console.error("Error executing recovery option:", error);
       alertService.error(
         "Execution Error",
-        "An error occurred while executing the recovery option."
+        "An error occurred while executing the recovery option.",
       );
     } finally {
       setExecutingOption(null);
@@ -1384,7 +1390,8 @@ export function ComparisonMatrix({
                             <span className="font-medium">{value}</span>
                           ) : row.type === "passenger_service" ? (
                             <div className="text-xs">
-                              {value.includes("need Reaccommodate") || value.includes("passengers affected") ? (
+                              {value.includes("need Reaccommodate") ||
+                              value.includes("passengers affected") ? (
                                 <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
                                   {value}
                                 </Badge>
@@ -1662,81 +1669,31 @@ export function ComparisonMatrix({
                       </CardHeader>
                       <CardContent>
                         <p className="text-sm text-gray-700 leading-relaxed mb-4">
-                          {selectedOptionDetails.description}
+                          {selectedOptionDetails.impact_summary}
                         </p>
-
-                        {/* Recovery Analysis using impact_summary */}
-                        {selectedOptionDetails.impact_summary && (
-                          <div className="p-3 bg-green-50 rounded-lg mb-4 border border-green-200">
-                            <h4 className="text-sm font-medium text-green-800 mb-2">
-                              Recovery Analysis
-                            </h4>
-                            <p className="text-sm text-green-700">
-                              {selectedOptionDetails.impact_summary}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Impact Areas */}
-                        {selectedOptionDetails.impact_area && Array.isArray(selectedOptionDetails.impact_area) && 
-                         selectedOptionDetails.impact_area.length > 0 && (
-                          <div className="p-3 bg-orange-50 rounded-lg mb-4 border border-orange-200">
-                            <h4 className="text-sm font-medium text-orange-800 mb-2">
-                              Impact Areas
-                            </h4>
-                            <div className="flex flex-wrap gap-1">
-                              {selectedOptionDetails.impact_area.map((area, index) => (
-                                <Badge 
-                                  key={index}
-                                  className={
-                                    area === 'passenger' ? 'bg-blue-100 text-blue-800' :
-                                    area === 'crew' ? 'bg-purple-100 text-purple-800' :
-                                    area === 'aircraft' ? 'bg-green-100 text-green-800' :
-                                    'bg-gray-100 text-gray-800'
-                                  }
-                                >
-                                  {area.charAt(0).toUpperCase() + area.slice(1)}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Advantages */}
-                        {selectedOptionDetails.advantages && Array.isArray(selectedOptionDetails.advantages) && 
-                         selectedOptionDetails.advantages.length > 0 && (
-                          <div className="p-3 bg-green-50 rounded-lg mb-4 border border-green-200">
-                            <h4 className="text-sm font-medium text-green-800 mb-2">
-                              Key Advantages
-                            </h4>
-                            <ul className="text-sm text-green-700 space-y-1">
-                              {selectedOptionDetails.advantages.map((advantage, index) => (
-                                <li key={index} className="flex items-start gap-2">
-                                  <CheckCircle className="h-3 w-3 text-green-600 mt-0.5 flex-shrink-0" />
-                                  {advantage}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-
                         {/* Considerations */}
-                        {selectedOptionDetails.considerations && Array.isArray(selectedOptionDetails.considerations) && 
-                         selectedOptionDetails.considerations.length > 0 && (
-                          <div className="p-3 bg-yellow-50 rounded-lg mb-4 border border-yellow-200">
-                            <h4 className="text-sm font-medium text-yellow-800 mb-2">
-                              Key Considerations
-                            </h4>
-                            <ul className="text-sm text-yellow-700 space-y-1">
-                              {selectedOptionDetails.considerations.map((consideration, index) => (
-                                <li key={index} className="flex items-start gap-2">
-                                  <AlertTriangle className="h-3 w-3 text-yellow-600 mt-0.5 flex-shrink-0" />
-                                  {consideration}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
+                        {selectedOptionDetails.considerations &&
+                          Array.isArray(selectedOptionDetails.considerations) &&
+                          selectedOptionDetails.considerations.length > 0 && (
+                            <div className="p-3 bg-yellow-50 rounded-lg mb-4 border border-yellow-200">
+                              <h4 className="text-sm font-medium text-yellow-800 mb-2">
+                                Key Considerations
+                              </h4>
+                              <ul className="text-sm text-yellow-700 space-y-1">
+                                {selectedOptionDetails.considerations.map(
+                                  (consideration, index) => (
+                                    <li
+                                      key={index}
+                                      className="flex items-start gap-2"
+                                    >
+                                      <AlertTriangle className="h-3 w-3 text-yellow-600 mt-0.5 flex-shrink-0" />
+                                      {consideration}
+                                    </li>
+                                  ),
+                                )}
+                              </ul>
+                            </div>
+                          )}
 
                         <div className="p-3 bg-blue-50 rounded-lg">
                           <h4 className="text-sm font-medium text-blue-800 mb-2">
@@ -1821,7 +1778,7 @@ export function ComparisonMatrix({
                             {selectedOptionDetails.impact}
                           </Badge>
                         </div>
-                        
+
                         {/* Additional Metrics from API data */}
                         {selectedOptionDetails.metrics && (
                           <>
@@ -1840,18 +1797,24 @@ export function ComparisonMatrix({
                                 <span className="text-sm text-gray-600">
                                   Network Impact:
                                 </span>
-                                <Badge className={getRiskBadgeStyle(selectedOptionDetails.metrics.networkImpact)}>
+                                <Badge
+                                  className={getRiskBadgeStyle(
+                                    selectedOptionDetails.metrics.networkImpact,
+                                  )}
+                                >
                                   {selectedOptionDetails.metrics.networkImpact}
                                 </Badge>
                               </div>
                             )}
-                            {selectedOptionDetails.metrics.delayMinutes !== undefined && (
+                            {selectedOptionDetails.metrics.delayMinutes !==
+                              undefined && (
                               <div className="flex justify-between items-center">
                                 <span className="text-sm text-gray-600">
                                   Expected Delay:
                                 </span>
                                 <span className="font-medium">
-                                  {selectedOptionDetails.metrics.delayMinutes} min
+                                  {selectedOptionDetails.metrics.delayMinutes}{" "}
+                                  min
                                 </span>
                               </div>
                             )}
@@ -1876,14 +1839,23 @@ export function ComparisonMatrix({
                         <div className="space-y-4">
                           {/* Total Cost Summary */}
                           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                            <h4 className="font-semibold text-blue-800 mb-2">Total Cost Summary</h4>
+                            <h4 className="font-semibold text-blue-800 mb-2">
+                              Total Cost Summary
+                            </h4>
                             <div className="text-2xl font-bold text-blue-900">
-                              {selectedOptionDetails.cost || 
-                               `AED ${selectedOptionDetails.cost_breakdown.reduce((total, item) => 
-                                 total + (typeof item.amount === 'string' ? 
-                                   parseInt(item.amount.replace(/[^0-9]/g, '')) : 
-                                   item.amount), 0).toLocaleString()}`
-                              }
+                              {selectedOptionDetails.cost ||
+                                `AED ${selectedOptionDetails.cost_breakdown
+                                  .reduce(
+                                    (total, item) =>
+                                      total +
+                                      (typeof item.amount === "string"
+                                        ? parseInt(
+                                            item.amount.replace(/[^0-9]/g, ""),
+                                          )
+                                        : item.amount),
+                                    0,
+                                  )
+                                  .toLocaleString()}`}
                             </div>
                           </div>
 
@@ -1896,10 +1868,14 @@ export function ComparisonMatrix({
                               >
                                 <div className="flex justify-between items-center">
                                   <span className="text-sm font-medium">
-                                    {item.category || item.type || `Cost Item ${index + 1}`}
+                                    {item.category ||
+                                      item.type ||
+                                      `Cost Item ${index + 1}`}
                                   </span>
                                   <span className="font-semibold text-flydubai-orange">
-                                    {typeof item.amount === 'string' ? item.amount : `AED ${item.amount?.toLocaleString()}`}
+                                    {typeof item.amount === "string"
+                                      ? item.amount
+                                      : `AED ${item.amount?.toLocaleString()}`}
                                   </span>
                                 </div>
                                 {item.percentage && (
@@ -1915,7 +1891,9 @@ export function ComparisonMatrix({
                                         {item.percentage}% of total cost
                                       </span>
                                       <span className="text-blue-600">
-                                        {item.description || item.details || "Cost component"}
+                                        {item.description ||
+                                          item.details ||
+                                          "Cost component"}
                                       </span>
                                     </div>
                                   </>
@@ -2212,9 +2190,12 @@ export function ComparisonMatrix({
                     </CardHeader>
                     <CardContent>
                       {selectedOptionDetails.technical_specs &&
-                      Object.keys(selectedOptionDetails.technical_specs).length > 0 ? (
+                      Object.keys(selectedOptionDetails.technical_specs)
+                        .length > 0 ? (
                         <div className="space-y-4">
-                          {Object.entries(selectedOptionDetails.technical_specs).map(([key, value]) => (
+                          {Object.entries(
+                            selectedOptionDetails.technical_specs,
+                          ).map(([key, value]) => (
                             <div key={key} className="p-3 border rounded-lg">
                               <h4 className="font-medium text-sm capitalize mb-2">
                                 {key
@@ -2230,22 +2211,28 @@ export function ComparisonMatrix({
                                       className="flex items-start gap-2"
                                     >
                                       <div className="w-2 h-2 bg-flydubai-blue rounded-full mt-1.5 flex-shrink-0"></div>
-                                      {typeof item === 'object' ? JSON.stringify(item) : item}
+                                      {typeof item === "object"
+                                        ? JSON.stringify(item)
+                                        : item}
                                     </li>
                                   ))}
                                 </ul>
-                              ) : typeof value === 'object' ? (
+                              ) : typeof value === "object" ? (
                                 <div className="space-y-2">
-                                  {Object.entries(value).map(([subKey, subValue]) => (
-                                    <div key={subKey} className="text-sm">
-                                      <span className="font-medium capitalize">
-                                        {subKey.replace(/_/g, " ")}:
-                                      </span>{" "}
-                                      <span className="text-gray-700">
-                                        {typeof subValue === 'object' ? JSON.stringify(subValue) : subValue}
-                                      </span>
-                                    </div>
-                                  ))}
+                                  {Object.entries(value).map(
+                                    ([subKey, subValue]) => (
+                                      <div key={subKey} className="text-sm">
+                                        <span className="font-medium capitalize">
+                                          {subKey.replace(/_/g, " ")}:
+                                        </span>{" "}
+                                        <span className="text-gray-700">
+                                          {typeof subValue === "object"
+                                            ? JSON.stringify(subValue)
+                                            : subValue}
+                                        </span>
+                                      </div>
+                                    ),
+                                  )}
                                 </div>
                               ) : (
                                 <p className="text-sm text-gray-700">{value}</p>
@@ -2254,9 +2241,12 @@ export function ComparisonMatrix({
                           ))}
                         </div>
                       ) : selectedOptionDetails.technicalSpecs &&
-                        Object.keys(selectedOptionDetails.technicalSpecs).length > 0 ? (
+                        Object.keys(selectedOptionDetails.technicalSpecs)
+                          .length > 0 ? (
                         <div className="space-y-4">
-                          {Object.entries(selectedOptionDetails.technicalSpecs).map(([key, value]) => (
+                          {Object.entries(
+                            selectedOptionDetails.technicalSpecs,
+                          ).map(([key, value]) => (
                             <div key={key} className="p-3 border rounded-lg">
                               <h4 className="font-medium text-sm capitalize mb-2">
                                 {key
@@ -2289,7 +2279,8 @@ export function ComparisonMatrix({
                             specifications apply.
                           </p>
                           <p className="text-xs mt-2 text-gray-400">
-                            Technical specifications will be populated when detailed analysis is available.
+                            Technical specifications will be populated when
+                            detailed analysis is available.
                           </p>
                         </div>
                       )}
