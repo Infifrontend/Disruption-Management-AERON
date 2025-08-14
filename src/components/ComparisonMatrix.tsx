@@ -724,6 +724,7 @@ export function ComparisonMatrix({
       { metric: "Confidence Score", type: "percentage", format: "percentage" },
       { metric: "Network Impact", type: "risk", format: "text" },
       { metric: "Passenger Impact", type: "passenger_service", format: "text" },
+      { metric: "Crew Impact", type: "crew_impact", format: "text" },
     ];
 
     return metrics.map((metric) => {
@@ -801,11 +802,24 @@ export function ComparisonMatrix({
             row[key] = option.metrics?.networkImpact || "Low";
             break;
           case "Passenger Impact":
-            if (requiresPassengerServices(option)) {
+            // Check impact_area first, then fall back to keyword detection
+            if (option.impact_area && Array.isArray(option.impact_area) && 
+                option.impact_area.includes("passenger")) {
+              const passengerCount = flight?.passengers || 175;
+              row[key] = `${passengerCount} passengers affected`;
+            } else if (requiresPassengerServices(option)) {
               const passengerCount = flight?.passengers || 175;
               row[key] = `${passengerCount} passengers need Reaccommodate`;
             } else {
-              row[key] = "-";
+              row[key] = "No passenger impact";
+            }
+            break;
+          case "Crew Impact":
+            if (option.impact_area && Array.isArray(option.impact_area) && 
+                option.impact_area.includes("crew")) {
+              row[key] = "Yes";
+            } else {
+              row[key] = "No";
             }
             break;
           default:
@@ -1364,13 +1378,25 @@ export function ComparisonMatrix({
                             <span className="font-medium">{value}</span>
                           ) : row.type === "passenger_service" ? (
                             <div className="text-xs">
-                              {value.includes("need Reaccommodate") ? (
+                              {value.includes("need Reaccommodate") || value.includes("passengers affected") ? (
                                 <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
                                   {value}
                                 </Badge>
                               ) : (
                                 <Badge className="bg-green-100 text-green-800 border-green-200">
                                   {value}
+                                </Badge>
+                              )}
+                            </div>
+                          ) : row.type === "crew_impact" ? (
+                            <div className="text-xs">
+                              {value === "Yes" ? (
+                                <Badge className="bg-red-100 text-red-800 border-red-300">
+                                  Yes
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-green-100 text-green-800 border-green-200">
+                                  No
                                 </Badge>
                               )}
                             </div>
@@ -1633,6 +1659,18 @@ export function ComparisonMatrix({
                           {selectedOptionDetails.description}
                         </p>
 
+                        {/* Recovery Analysis using impact_summary */}
+                        {selectedOptionDetails.impact_summary && (
+                          <div className="p-3 bg-green-50 rounded-lg mb-4 border border-green-200">
+                            <h4 className="text-sm font-medium text-green-800 mb-2">
+                              Recovery Analysis
+                            </h4>
+                            <p className="text-sm text-green-700">
+                              {selectedOptionDetails.impact_summary}
+                            </p>
+                          </div>
+                        )}
+
                         <div className="p-3 bg-blue-50 rounded-lg">
                           <h4 className="text-sm font-medium text-blue-800 mb-2">
                             Flight Context
@@ -1730,9 +1768,68 @@ export function ComparisonMatrix({
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {selectedOptionDetails.costBreakdown &&
-                      selectedOptionDetails.costBreakdown.length > 0 ? (
+                      {selectedOptionDetails.cost_breakdown &&
+                      selectedOptionDetails.cost_breakdown.length > 0 ? (
                         <div className="space-y-4">
+                          {/* Total Cost Summary */}
+                          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <h4 className="font-semibold text-blue-800 mb-2">Total Cost Summary</h4>
+                            <div className="text-2xl font-bold text-blue-900">
+                              {selectedOptionDetails.cost || 
+                               `AED ${selectedOptionDetails.cost_breakdown.reduce((total, item) => 
+                                 total + (typeof item.amount === 'string' ? 
+                                   parseInt(item.amount.replace(/[^0-9]/g, '')) : 
+                                   item.amount), 0).toLocaleString()}`
+                              }
+                            </div>
+                          </div>
+
+                          {/* Cost Breakdown Items */}
+                          {selectedOptionDetails.cost_breakdown.map(
+                            (item, index) => (
+                              <div
+                                key={index}
+                                className="space-y-3 p-4 border rounded-lg"
+                              >
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm font-medium">
+                                    {item.category || item.type || `Cost Item ${index + 1}`}
+                                  </span>
+                                  <span className="font-semibold text-flydubai-orange">
+                                    {typeof item.amount === 'string' ? item.amount : `AED ${item.amount?.toLocaleString()}`}
+                                  </span>
+                                </div>
+                                {item.percentage && (
+                                  <>
+                                    <div className="w-full bg-gray-200 rounded-full h-2">
+                                      <div
+                                        className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
+                                        style={{ width: `${item.percentage}%` }}
+                                      ></div>
+                                    </div>
+                                    <div className="flex justify-between items-center text-xs">
+                                      <span className="text-gray-600">
+                                        {item.percentage}% of total cost
+                                      </span>
+                                      <span className="text-blue-600">
+                                        {item.description || item.details || "Cost component"}
+                                      </span>
+                                    </div>
+                                  </>
+                                )}
+                                {item.description && !item.percentage && (
+                                  <p className="text-xs text-gray-600">
+                                    {item.description}
+                                  </p>
+                                )}
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      ) : selectedOptionDetails.costBreakdown &&
+                        selectedOptionDetails.costBreakdown.length > 0 ? (
+                        <div className="space-y-4">
+                          {/* Fallback to costBreakdown */}
                           {selectedOptionDetails.costBreakdown.map(
                             (item, index) => (
                               <div
