@@ -812,8 +812,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       availability: "Available",
       image:
         "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=250&fit=crop",
-      description:
-        "Elegant hotel with excellent conference facilities and dining options",
+      description: "Elegant hotel with excellent conference facilities and dining options",
     },
     {
       id: "HTL-003",
@@ -1998,687 +1997,1844 @@ export function PassengerRebooking({ context, onClearContext }) {
       )}
 
       {/* Tabs for Passenger Service and Crew Schedule */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="passenger-service">Passenger Service</TabsTrigger>
-          <TabsTrigger value="crew-schedule">
-            Crew Schedule Information
-          </TabsTrigger>
-        </TabsList>
+      {(() => {
+        const impactArea = recoveryOption?.impact_area || [];
+        const hasPassenger = impactArea.includes('passenger');
+        const hasCrew = impactArea.includes('crew');
+        const showBothTabs = hasPassenger && hasCrew;
+        const showOnlyPassenger = hasPassenger && !hasCrew;
+        const showOnlyCrew = hasCrew && !hasPassenger;
 
-        <TabsContent value="passenger-service" className="space-y-6">
-          {/* Stats Cards - moved inside passenger service tab */}
-          <div className="flex items-center justify-between pt-5">
-            <div>
-              <h2 className="text-2xl font-semibold text-flydubai-navy">
-                {/* Passenger Services */}
-              </h2>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export Report
-              </Button>
-              <Button className="btn-flydubai-primary">
-                <Upload className="h-4 w-4 mr-2" />
-                Bulk Upload
-              </Button>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="border-green-200 bg-green-50">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
+        // If neither impact area is specified, show both tabs (default behavior)
+        const shouldShowBoth = showBothTabs || (!hasPassenger && !hasCrew);
+
+        if (showOnlyPassenger) {
+          return (
+            <Tabs value="passenger-service" onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-1">
+                <TabsTrigger value="passenger-service">Passenger Service</TabsTrigger>
+              </TabsList>
+              <TabsContent value="passenger-service" className="space-y-6">
+                {/* Stats Cards - moved inside passenger service tab */}
+                <div className="flex items-center justify-between pt-5">
                   <div>
-                    <p className="text-green-600 text-sm font-medium">
-                      Confirmed
-                    </p>
-                    <p className="text-2xl font-bold text-green-700">
-                      {context ? confirmed : "3,247"}
-                    </p>
+                    <h2 className="text-2xl font-semibold text-flydubai-navy">
+                      {/* Passenger Services */}
+                    </h2>
                   </div>
-                  <CheckCircle className="h-8 w-8 text-green-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-red-200 bg-red-50">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-red-600 text-sm font-medium">
-                      Rebooking Required
-                    </p>
-                    <p className="text-2xl font-bold text-red-700">
-                      {context ? rebookingRequired : "89"}
-                    </p>
-                  </div>
-                  <RefreshCw className="h-8 w-8 text-red-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-yellow-200 bg-yellow-50">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-yellow-600 text-sm font-medium">
-                      Accommodation
-                    </p>
-                    <p className="text-2xl font-bold text-yellow-700">
-                      {context ? accommodationNeeded : "45"}
-                    </p>
-                  </div>
-                  <Clock className="h-8 w-8 text-yellow-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="border-blue-200 bg-blue-50">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-blue-600 text-sm font-medium">
-                      VIP Passengers
-                    </p>
-                    <p className="text-2xl font-bold text-blue-700">
-                      {context
-                        ? passengers.filter((p) => p.priority === "VIP").length
-                        : "12"}
-                    </p>
-                  </div>
-                  <Star className="h-8 w-8 text-blue-600" />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Filters and View Toggle */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Filter className="h-5 w-5 text-flydubai-blue" />
-                  {context
-                    ? `Filter Affected Passengers (${passengers.length})`
-                    : "Passenger Filters"}
-                </CardTitle>
-                <div className="flex gap-2">
-                  <Button
-                    variant={groupView ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setGroupView(true)}
-                    className={
-                      groupView
-                        ? "btn-flydubai-primary"
-                        : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                    }
-                  >
-                    <Group className="h-4 w-4 mr-2" />
-                    PNR Groups
-                  </Button>
-                  <Button
-                    variant={!groupView ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setGroupView(false)}
-                    className={
-                      !groupView
-                        ? "btn-flydubai-primary"
-                        : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                    }
-                  >
-                    <Users className="h-4 w-4 mr-2" />
-                    Individual
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Search
-                  </label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      placeholder="Name or PNR"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Priority
-                  </label>
-                  <Select
-                    value={selectedPriority}
-                    onValueChange={setSelectedPriority}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Priorities" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all-priorities">
-                        All Priorities
-                      </SelectItem>
-                      <SelectItem value="VIP">VIP</SelectItem>
-                      <SelectItem value="Premium">Premium</SelectItem>
-                      <SelectItem value="Standard">Standard</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">
-                    Status
-                  </label>
-                  <Select
-                    value={selectedStatus}
-                    onValueChange={setSelectedStatus}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Statuses" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all-statuses">All Statuses</SelectItem>
-                      <SelectItem value="Confirmed">Confirmed</SelectItem>
-                      <SelectItem value="Rebooking Required">
-                        Rebooking Required
-                      </SelectItem>
-                      <SelectItem value="Accommodation Needed">
-                        Accommodation Needed
-                      </SelectItem>
-                      <SelectItem value="Alternative Flight">
-                        Alternative Flight
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-end">
-                  <Button
-                    variant="outline"
-                    className="w-full border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                    onClick={() => {
-                      setSearchTerm("");
-                      setSelectedPriority("all-priorities");
-                      setSelectedStatus("all-statuses");
-                    }}
-                  >
-                    Clear Filters
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Passenger List */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-flydubai-navy">
-                    {context
-                      ? `Affected Passengers - ${context.flight?.flightNumber}`
-                      : "Passenger List"}
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    {groupView
-                      ? `Showing ${Object.keys(filteredPnrGroups).length} PNR groups with ${Object.values(filteredPnrGroups).flat().length} passengers`
-                      : `Showing ${filteredPassengers.length} of ${passengers.length} passengers`}
-                  </p>
-                </div>
-                {groupView && (
                   <div className="flex gap-2">
-                    {selectedPnrs.size > 0 && (
-                      <>
-                        <Button
-                          size="sm"
-                          className="btn-flydubai-primary"
-                          onClick={handleBulkRebookSelectedPnrs}
-                          disabled={!canSendForApproval}
-                        >
-                          <RefreshCw className="h-3 w-3 mr-1" />
-                          Rebook {selectedPnrs.size} PNR(s)
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                          onClick={() => setSelectedPnrs(new Set())}
-                        >
-                          Clear Selection
-                        </Button>
-                      </>
-                    )}
+                    <Button
+                      variant="outline"
+                      className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Report
+                    </Button>
+                    <Button className="btn-flydubai-primary">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Bulk Upload
+                    </Button>
                   </div>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {groupView ? (
-                // PNR Group View
-                <div className="space-y-4">
-                  {/* Select All Header */}
-                  {Object.keys(filteredPnrGroups).length > 0 && (
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
-                      <Checkbox
-                        checked={
-                          selectedPnrs.size ===
-                            Object.keys(filteredPnrGroups).filter(
-                              (pnr) =>
-                                !isPnrGroupConfirmed(filteredPnrGroups[pnr]),
-                            ).length && selectedPnrs.size > 0
-                        }
-                        onCheckedChange={handleSelectAll}
-                        disabled={Object.keys(filteredPnrGroups).every((pnr) =>
-                          isPnrGroupConfirmed(filteredPnrGroups[pnr]),
-                        )}
-                      />
-                      <span className="font-medium text-gray-700">
-                        Select All ({Object.keys(filteredPnrGroups).length} PNR
-                        groups)
-                      </span>
-                      {selectedPnrs.size > 0 && (
-                        <Badge variant="outline" className="ml-auto">
-                          {selectedPnrs.size} selected
-                        </Badge>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card className="border-green-200 bg-green-50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-green-600 text-sm font-medium">
+                            Confirmed
+                          </p>
+                          <p className="text-2xl font-bold text-green-700">
+                            {context ? confirmed : "3,247"}
+                          </p>
+                        </div>
+                        <CheckCircle className="h-8 w-8 text-green-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-red-200 bg-red-50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-red-600 text-sm font-medium">
+                            Rebooking Required
+                          </p>
+                          <p className="text-2xl font-bold text-red-700">
+                            {context ? rebookingRequired : "89"}
+                          </p>
+                        </div>
+                        <RefreshCw className="h-8 w-8 text-red-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-yellow-200 bg-yellow-50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-yellow-600 text-sm font-medium">
+                            Accommodation
+                          </p>
+                          <p className="text-2xl font-bold text-yellow-700">
+                            {context ? accommodationNeeded : "45"}
+                          </p>
+                        </div>
+                        <Clock className="h-8 w-8 text-yellow-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-blue-200 bg-blue-50">
+                    <CardContent className="p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-blue-600 text-sm font-medium">
+                            VIP Passengers
+                          </p>
+                          <p className="text-2xl font-bold text-blue-700">
+                            {context
+                              ? passengers.filter((p) => p.priority === "VIP").length
+                              : "12"}
+                          </p>
+                        </div>
+                        <Star className="h-8 w-8 text-blue-600" />
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Filters and View Toggle */}
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="flex items-center gap-2">
+                        <Filter className="h-5 w-5 text-flydubai-blue" />
+                        {context
+                          ? `Filter Affected Passengers (${passengers.length})`
+                          : "Passenger Filters"}
+                      </CardTitle>
+                      <div className="flex gap-2">
+                        <Button
+                          variant={groupView ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setGroupView(true)}
+                          className={
+                            groupView
+                              ? "btn-flydubai-primary"
+                              : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                          }
+                        >
+                          <Group className="h-4 w-4 mr-2" />
+                          PNR Groups
+                        </Button>
+                        <Button
+                          variant={!groupView ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setGroupView(false)}
+                          className={
+                            !groupView
+                              ? "btn-flydubai-primary"
+                              : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                          }
+                        >
+                          <Users className="h-4 w-4 mr-2" />
+                          Individual
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">
+                          Search
+                        </label>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                          <Input
+                            placeholder="Name or PNR"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">
+                          Priority
+                        </label>
+                        <Select
+                          value={selectedPriority}
+                          onValueChange={setSelectedPriority}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="All Priorities" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all-priorities">
+                              All Priorities
+                            </SelectItem>
+                            <SelectItem value="VIP">VIP</SelectItem>
+                            <SelectItem value="Premium">Premium</SelectItem>
+                            <SelectItem value="Standard">Standard</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">
+                          Status
+                        </label>
+                        <Select
+                          value={selectedStatus}
+                          onValueChange={setSelectedStatus}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="All Statuses" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all-statuses">All Statuses</SelectItem>
+                            <SelectItem value="Confirmed">Confirmed</SelectItem>
+                            <SelectItem value="Rebooking Required">
+                              Rebooking Required
+                            </SelectItem>
+                            <SelectItem value="Accommodation Needed">
+                              Accommodation Needed
+                            </SelectItem>
+                            <SelectItem value="Alternative Flight">
+                              Alternative Flight
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-end">
+                        <Button
+                          variant="outline"
+                          className="w-full border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                          onClick={() => {
+                            setSearchTerm("");
+                            setSelectedPriority("all-priorities");
+                            setSelectedStatus("all-statuses");
+                          }}
+                        >
+                          Clear Filters
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Passenger List */}
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-flydubai-navy">
+                          {context
+                            ? `Affected Passengers - ${context.flight?.flightNumber}`
+                            : "Passenger List"}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                          {groupView
+                            ? `Showing ${Object.keys(filteredPnrGroups).length} PNR groups with ${Object.values(filteredPnrGroups).flat().length} passengers`
+                            : `Showing ${filteredPassengers.length} of ${passengers.length} passengers`}
+                        </p>
+                      </div>
+                      {groupView && (
+                        <div className="flex gap-2">
+                          {selectedPnrs.size > 0 && (
+                            <>
+                              <Button
+                                size="sm"
+                                className="btn-flydubai-primary"
+                                onClick={handleBulkRebookSelectedPnrs}
+                                disabled={!canSendForApproval}
+                              >
+                                <RefreshCw className="h-3 w-3 mr-1" />
+                                Rebook {selectedPnrs.size} PNR(s)
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                onClick={() => setSelectedPnrs(new Set())}
+                              >
+                                Clear Selection
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       )}
                     </div>
-                  )}
+                  </CardHeader>
+                  <CardContent>
+                    {groupView ? (
+                      // PNR Group View
+                      <div className="space-y-4">
+                        {/* Select All Header */}
+                        {Object.keys(filteredPnrGroups).length > 0 && (
+                          <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
+                            <Checkbox
+                              checked={
+                                selectedPnrs.size ===
+                                  Object.keys(filteredPnrGroups).filter(
+                                    (pnr) =>
+                                      !isPnrGroupConfirmed(filteredPnrGroups[pnr]),
+                                  ).length && selectedPnrs.size > 0
+                              }
+                              onCheckedChange={handleSelectAll}
+                              disabled={Object.keys(filteredPnrGroups).every((pnr) =>
+                                isPnrGroupConfirmed(filteredPnrGroups[pnr]),
+                              )}
+                            />
+                            <span className="font-medium text-gray-700">
+                              Select All ({Object.keys(filteredPnrGroups).length} PNR
+                              groups)
+                            </span>
+                            {selectedPnrs.size > 0 && (
+                              <Badge variant="outline" className="ml-auto">
+                                {selectedPnrs.size} selected
+                              </Badge>
+                            )}
+                          </div>
+                        )}
 
-                  {Object.entries(filteredPnrGroups).map(
-                    ([pnr, groupPassengers]) => (
-                      <div key={pnr} className="border rounded-lg bg-white">
-                        <div className="p-4 border-b bg-gray-50">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                              <Checkbox
-                                checked={selectedPnrs.has(pnr)}
-                                onCheckedChange={() => handlePnrSelection(pnr)}
-                                disabled={isPnrGroupConfirmed(groupPassengers)}
-                                className="border-flydubai-blue data-[state=checked]:bg-flydubai-blue disabled:opacity-50 disabled:cursor-not-allowed"
-                              />
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <Users className="h-4 w-4 text-flydubai-blue" />
-                                  <span className="font-semibold">
-                                    PNR: {pnr}
-                                  </span>
-                                  <Badge
-                                    variant="secondary"
-                                    className="bg-blue-100 text-blue-800"
-                                  >
-                                    {groupPassengers.length} passenger
-                                    {groupPassengers.length > 1 ? "s" : ""}
-                                  </Badge>
-                                  {isPnrGroupConfirmed(groupPassengers) && (
-                                    <Badge className="bg-green-100 text-green-800 border-green-200">
-                                      <CheckCircle className="h-3 w-3 mr-1" />
-                                      Confirmed
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="text-sm text-gray-600 mt-1">
-                                  Group Priority:{" "}
-                                  {groupPassengers[0]?.priority || "Standard"}
+                        {Object.entries(filteredPnrGroups).map(
+                          ([pnr, groupPassengers]) => (
+                            <div key={pnr} className="border rounded-lg bg-white">
+                              <div className="p-4 border-b bg-gray-50">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <Checkbox
+                                      checked={selectedPnrs.has(pnr)}
+                                      onCheckedChange={() => handlePnrSelection(pnr)}
+                                      disabled={isPnrGroupConfirmed(groupPassengers)}
+                                      className="border-flydubai-blue data-[state=checked]:bg-flydubai-blue disabled:opacity-50 disabled:cursor-not-allowed"
+                                    />
+                                    <div>
+                                      <div className="flex items-center gap-2">
+                                        <Users className="h-4 w-4 text-flydubai-blue" />
+                                        <span className="font-semibold">
+                                          PNR: {pnr}
+                                        </span>
+                                        <Badge
+                                          variant="secondary"
+                                          className="bg-blue-100 text-blue-800"
+                                        >
+                                          {groupPassengers.length} passenger
+                                          {groupPassengers.length > 1 ? "s" : ""}
+                                        </Badge>
+                                        {isPnrGroupConfirmed(groupPassengers) && (
+                                          <Badge className="bg-green-100 text-green-800 border-green-200">
+                                            <CheckCircle className="h-3 w-3 mr-1" />
+                                            Confirmed
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <div className="text-sm text-gray-600 mt-1">
+                                        Group Priority:{" "}
+                                        {groupPassengers[0]?.priority || "Standard"}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => handleExpandPnr(pnr)}
+                                      className="text-flydubai-blue hover:bg-blue-50"
+                                    >
+                                      {expandedPnrs.has(pnr) ? (
+                                        <ChevronDown className="h-4 w-4" />
+                                      ) : (
+                                        <ChevronRight className="h-4 w-4" />
+                                      )}
+                                      {expandedPnrs.has(pnr) ? "Collapse" : "Expand"}
+                                    </Button>
+                                    <Button
+                                      size="sm"
+                                      onClick={() =>
+                                        handleRebookPnrGroup(pnr, groupPassengers)
+                                      }
+                                      disabled={isPnrGroupConfirmed(groupPassengers)}
+                                      className="btn-flydubai-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                      <RefreshCw className="h-4 w-4 mr-2" />
+                                      {isPnrGroupConfirmed(groupPassengers)
+                                        ? "Rebooking Complete"
+                                        : "Rebook Group"}
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleExpandPnr(pnr)}
-                                className="text-flydubai-blue hover:bg-blue-50"
-                              >
-                                {expandedPnrs.has(pnr) ? (
-                                  <ChevronDown className="h-4 w-4" />
-                                ) : (
-                                  <ChevronRight className="h-4 w-4" />
-                                )}
-                                {expandedPnrs.has(pnr) ? "Collapse" : "Expand"}
-                              </Button>
-                              <Button
-                                size="sm"
-                                onClick={() =>
-                                  handleRebookPnrGroup(pnr, groupPassengers)
-                                }
-                                disabled={isPnrGroupConfirmed(groupPassengers)}
-                                className="btn-flydubai-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                              >
-                                <RefreshCw className="h-4 w-4 mr-2" />
-                                {isPnrGroupConfirmed(groupPassengers)
-                                  ? "Rebooking Complete"
-                                  : "Rebook Group"}
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                        {expandedPnrs.has(pnr) && (
-                          <div className="p-4 border-t">
-                            <div className="grid gap-3">
-                              {groupPassengers.map((passenger) => (
-                                <div
-                                  key={passenger.id}
-                                  className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                                >
-                                  <div className="flex items-center gap-4">
-                                    <div>
-                                      <div className="font-medium">
-                                        {passenger.name}
-                                      </div>
-                                      <div className="text-sm text-gray-500">
-                                        {passenger.contactInfo}
-                                      </div>
-                                    </div>
-                                    <Badge
-                                      className={getPriorityColor(
-                                        passenger.priority,
-                                      )}
-                                    >
-                                      {passenger.priority}
-                                    </Badge>
-                                    <Badge
-                                      className={getStatusColor(
-                                        passenger.status,
-                                      )}
-                                    >
-                                      {passenger.status}
-                                    </Badge>
-                                    <div className="text-sm text-gray-600">
-                                      Seat: {passenger.seat}
-                                    </div>
-                                    {passenger.specialRequirements && (
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs"
+                              {expandedPnrs.has(pnr) && (
+                                <div className="p-4 border-t">
+                                  <div className="grid gap-3">
+                                    {groupPassengers.map((passenger) => (
+                                      <div
+                                        key={passenger.id}
+                                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                                       >
-                                        {passenger.specialRequirements}
-                                      </Badge>
-                                    )}
+                                        <div className="flex items-center gap-4">
+                                          <div>
+                                            <div className="font-medium">
+                                              {passenger.name}
+                                            </div>
+                                            <div className="text-sm text-gray-500">
+                                              {passenger.contactInfo}
+                                            </div>
+                                          </div>
+                                          <Badge
+                                            className={getPriorityColor(
+                                              passenger.priority,
+                                            )}
+                                          >
+                                            {passenger.priority}
+                                          </Badge>
+                                          <Badge
+                                            className={getStatusColor(
+                                              passenger.status,
+                                            )}
+                                          >
+                                            {passenger.status}
+                                          </Badge>
+                                          <div className="text-sm text-gray-600">
+                                            Seat: {passenger.seat}
+                                          </div>
+                                          {passenger.specialRequirements && (
+                                            <Badge
+                                              variant="outline"
+                                              className="text-xs"
+                                            >
+                                              {passenger.specialRequirements}
+                                            </Badge>
+                                          )}
+                                        </div>
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() =>
+                                            handleRebookPassenger(passenger)
+                                          }
+                                          className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                        >
+                                          <Eye className="h-3 w-3 mr-1" />
+                                          View
+                                        </Button>
+                                      </div>
+                                    ))}
                                   </div>
+                                </div>
+                              )}
+                            </div>
+                          ),
+                        )}
+                      </div>
+                    ) : (
+                      // Individual Passenger View
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Passenger</TableHead>
+                            <TableHead>PNR</TableHead>
+                            <TableHead>Priority</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Seat</TableHead>
+                            <TableHead>Special Requirements</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredPassengers.map((passenger) => (
+                            <TableRow key={passenger.id} className="hover:bg-blue-50">
+                              <TableCell>
+                                <div>
+                                  <div className="font-medium">{passenger.name}</div>
+                                  <div className="text-sm text-gray-500">
+                                    {passenger.contactInfo}
+                                  </div>
+                                  {passenger.rebookedFlight && (
+                                    <div className="text-xs text-green-600 mt-1">
+                                      Rebooked to: {passenger.rebookedFlight} (
+                                      {passenger.rebookedCabin})
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div>
+                                  <Badge className="badge-flydubai-outline mb-1">
+                                    {passenger.pnr}
+                                  </Badge>
+                                  {passenger.rebookedFlight && (
+                                    <div className="text-xs text-gray-500">
+                                      New Seat: {passenger.rebookedSeat}
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  className={getPriorityColor(
+                                    passenger.priority,
+                                  )}
+                                >
+                                  {passenger.priority}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className={getStatusColor(passenger.status)}>
+                                  {passenger.status}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>{passenger.seat}</TableCell>
+                              <TableCell>
+                                {passenger.specialRequirements ? (
+                                  <Badge variant="outline" className="text-xs">
+                                    {passenger.specialRequirements}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-gray-400">None</span>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() =>
-                                      handleRebookPassenger(passenger)
-                                    }
+                                    onClick={() => handleRebookPassenger(passenger)}
                                     className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                                   >
                                     <Eye className="h-3 w-3 mr-1" />
                                     View
                                   </Button>
+                                  {passenger.status === "Rebooking Required" && (
+                                    <Button
+                                      size="sm"
+                                      className="btn-flydubai-primary text-xs"
+                                      onClick={() => handleRebookPassenger(passenger)}
+                                    >
+                                      <Edit className="h-3 w-3 mr-1" />
+                                      Rebook
+                                    </Button>
+                                  )}
                                 </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          );
+        }
+
+        if (showOnlyCrew) {
+          return (
+            <Tabs value="crew-schedule" onValueChange={setActiveTab}>
+              <TabsList className="grid w-full grid-cols-1">
+                <TabsTrigger value="crew-schedule">Crew Schedule Information</TabsTrigger>
+              </TabsList>
+              <TabsContent value="crew-schedule" className="space-y-6">
+                {/* Crew Assignment Status */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-flydubai-blue" />
+                      Crew Assignment Status
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {loading ? (
+                      <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue mr-4"></div>
+                        <span>Loading crew information...</span>
                       </div>
-                    ),
-                  )}
+                    ) : (
+                      <div>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Rank</TableHead>
+                              <TableHead>Violation</TableHead>
+                              <TableHead>Reaccommodate Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            <TableRow>
+                              <TableCell className="font-medium">
+                                Capt. Ahmed Al-Mansouri
+                              </TableCell>
+                              <TableCell>Captain</TableCell>
+                              <TableCell>
+                                <Badge className="bg-red-100 text-red-700 border-red-200">
+                                  Duty violation
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className="bg-green-100 text-green-700 border-green-200">
+                                  Available
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell className="font-medium">
+                                FO Sarah Johnson
+                              </TableCell>
+                              <TableCell>First Officer</TableCell>
+                              <TableCell>
+                                <Badge className="bg-green-100 text-green-700 border-green-200">
+                                  No violations
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className="bg-green-100 text-green-700 border-green-200">
+                                  Available
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell className="font-medium">
+                                SSCC Lisa Martinez
+                              </TableCell>
+                              <TableCell>Senior Safety & Security</TableCell>
+                              <TableCell>
+                                <Badge className="bg-green-100 text-green-700 border-green-200">
+                                  No violations
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className="bg-green-100 text-green-700 border-green-200">
+                                  Available
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                            <TableRow>
+                              <TableCell className="font-medium">
+                                CC Maria Santos
+                              </TableCell>
+                              <TableCell>Cabin Crew</TableCell>
+                              <TableCell>
+                                <Badge className="bg-green-100 text-green-700 border-green-200">
+                                  No violations
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <Badge className="bg-green-100 text-green-700 border-green-200">
+                                  Available
+                                </Badge>
+                              </TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Hotel Information */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Hotel className="h-5 w-5 text-flydubai-blue" />
+                      Hotel Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {/* Hotel Information */}
+                      <div className="space-y-4">
+                        <h4 className="font-medium text-lg">Mumbai Airport Hotel</h4>
+                        <div className="flex items-center gap-2">
+                          <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                            4-Star
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <MapPin className="h-4 w-4" />
+                          <span>BOM Terminal 2</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Hotel className="h-4 w-4" />
+                          <span>3 rooms</span>
+                        </div>
+                      </div>
+
+                      {/* Accommodation Period */}
+                      <div className="space-y-4">
+                        <h4 className="font-medium text-lg">Accommodation Period</h4>
+                        <div className="space-y-2">
+                          <div>
+                            <span className="text-sm font-medium">Check-in:</span>
+                            <div className="text-sm text-gray-600">2025-01-11 12:00</div>
+                          </div>
+                          <div>
+                            <span className="text-sm font-medium">Check-out:</span>
+                            <div className="text-sm text-gray-600">2025-01-12 10:00</div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Transport Details */}
+                      <div className="space-y-4">
+                        <h4 className="font-medium text-lg">Transport Details</h4>
+                        <div className="space-y-2">
+                          <div className="font-medium">Mumbai Airport Taxi Services</div>
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <Car className="h-4 w-4" />
+                            <span>MH-01-AB-1234</span>
+                          </div>
+                          <Badge className="bg-green-100 text-green-700 border-green-200">
+                            Confirmed
+                          </Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Additional Hotel Options */}
+                {selectedFlight?.origin && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Hotel className="h-5 w-5 text-flydubai-blue" />
+                        Additional Hotel Options for {selectedFlight.origin}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {availableHotels
+                          .filter(
+                            (hotel) =>
+                              !["HTL-001", "HTL-002", "HTL-003", "HTL-004"].includes(
+                                hotel.id,
+                              ), // Exclude the initial fixed hotels
+                          )
+                          .slice(0, 4) // Display up to 4 additional hotels
+                          .map((hotel) => (
+                            <Card
+                              key={hotel.id}
+                              className="hover:shadow-md transition-shadow"
+                            >
+                              <CardContent className="p-4">
+                                <div className="flex items-start gap-4">
+                                  <img
+                                    src={hotel.image}
+                                    alt={hotel.name}
+                                    className="w-24 h-16 object-cover rounded"
+                                  />
+                                  <div className="flex-1">
+                                    <div className="flex items-start justify-between mb-2">
+                                      <div>
+                                        <h3 className="font-semibold text-flydubai-navy">
+                                          {hotel.name}
+                                        </h3>
+                                        <p className="text-sm text-gray-600">
+                                          {hotel.category} • {hotel.distance}
+                                        </p>
+                                      </div>
+                                      <div className="text-right">
+                                        <div className="font-bold text-flydubai-orange">
+                                          {hotel.pricePerNight}
+                                        </div>
+                                        <div className="text-xs text-gray-500">
+                                          per night
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <div className="flex">
+                                        {[...Array(5)].map((_, i) => (
+                                          <Star
+                                            key={i}
+                                            className={`h-3 w-3 ${i < Math.floor(hotel.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                                          />
+                                        ))}
+                                      </div>
+                                      <span className="text-xs text-gray-600">
+                                        {hotel.rating}
+                                      </span>
+                                      <Badge
+                                        className={
+                                          hotel.availability === "Available"
+                                            ? "status-success"
+                                            : "status-warning"
+                                        }
+                                      >
+                                        {hotel.availability}
+                                      </Badge>
+                                    </div>
+
+                                    <p className="text-xs text-gray-600 mb-3">
+                                      {hotel.description}
+                                    </p>
+
+                                    <Button
+                                      size="sm"
+                                      className="w-full btn-flydubai-primary"
+                                      onClick={() => confirmHotelBooking(hotel)}
+                                      disabled={hotel.availability !== "Available"}
+                                    >
+                                      Book Now
+                                    </Button>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </TabsContent>
+            </Tabs>
+          );
+        }
+
+        // Show both tabs (default or when both impact areas are present)
+        return (
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="passenger-service">Passenger Service</TabsTrigger>
+              <TabsTrigger value="crew-schedule">
+                Crew Schedule Information
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="passenger-service" className="space-y-6">
+              {/* Stats Cards - moved inside passenger service tab */}
+              <div className="flex items-center justify-between pt-5">
+                <div>
+                  <h2 className="text-2xl font-semibold text-flydubai-navy">
+                    {/* Passenger Services */}
+                  </h2>
                 </div>
-              ) : (
-                // Individual Passenger View
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Passenger</TableHead>
-                      <TableHead>PNR</TableHead>
-                      <TableHead>Priority</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Seat</TableHead>
-                      <TableHead>Special Requirements</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredPassengers.map((passenger) => (
-                      <TableRow key={passenger.id} className="hover:bg-blue-50">
-                        <TableCell>
-                          <div>
-                            <div className="font-medium">{passenger.name}</div>
-                            <div className="text-sm text-gray-500">
-                              {passenger.contactInfo}
-                            </div>
-                            {passenger.rebookedFlight && (
-                              <div className="text-xs text-green-600 mt-1">
-                                Rebooked to: {passenger.rebookedFlight} (
-                                {passenger.rebookedCabin})
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <Badge className="badge-flydubai-outline mb-1">
-                              {passenger.pnr}
-                            </Badge>
-                            {passenger.rebookedFlight && (
-                              <div className="text-xs text-gray-500">
-                                New Seat: {passenger.rebookedSeat}
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={getPriorityColor(passenger.priority)}
-                          >
-                            {passenger.priority}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={getStatusColor(passenger.status)}>
-                            {passenger.status}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{passenger.seat}</TableCell>
-                        <TableCell>
-                          {passenger.specialRequirements ? (
-                            <Badge variant="outline" className="text-xs">
-                              {passenger.specialRequirements}
-                            </Badge>
-                          ) : (
-                            <span className="text-gray-400">None</span>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Report
+                  </Button>
+                  <Button className="btn-flydubai-primary">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Bulk Upload
+                  </Button>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card className="border-green-200 bg-green-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-green-600 text-sm font-medium">
+                          Confirmed
+                        </p>
+                        <p className="text-2xl font-bold text-green-700">
+                          {context ? confirmed : "3,247"}
+                        </p>
+                      </div>
+                      <CheckCircle className="h-8 w-8 text-green-600" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-red-200 bg-red-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-red-600 text-sm font-medium">
+                          Rebooking Required
+                        </p>
+                        <p className="text-2xl font-bold text-red-700">
+                          {context ? rebookingRequired : "89"}
+                        </p>
+                      </div>
+                      <RefreshCw className="h-8 w-8 text-red-600" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-yellow-200 bg-yellow-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-yellow-600 text-sm font-medium">
+                          Accommodation
+                        </p>
+                        <p className="text-2xl font-bold text-yellow-700">
+                          {context ? accommodationNeeded : "45"}
+                        </p>
+                      </div>
+                      <Clock className="h-8 w-8 text-yellow-600" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-blue-200 bg-blue-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-blue-600 text-sm font-medium">
+                          VIP Passengers
+                        </p>
+                        <p className="text-2xl font-bold text-blue-700">
+                          {context
+                            ? passengers.filter((p) => p.priority === "VIP").length
+                            : "12"}
+                        </p>
+                      </div>
+                      <Star className="h-8 w-8 text-blue-600" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Filters and View Toggle */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Filter className="h-5 w-5 text-flydubai-blue" />
+                      {context
+                        ? `Filter Affected Passengers (${passengers.length})`
+                        : "Passenger Filters"}
+                    </CardTitle>
+                    <div className="flex gap-2">
+                      <Button
+                        variant={groupView ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setGroupView(true)}
+                        className={
+                          groupView
+                            ? "btn-flydubai-primary"
+                            : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                        }
+                      >
+                        <Group className="h-4 w-4 mr-2" />
+                        PNR Groups
+                      </Button>
+                      <Button
+                        variant={!groupView ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setGroupView(false)}
+                        className={
+                          !groupView
+                            ? "btn-flydubai-primary"
+                            : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                        }
+                      >
+                        <Users className="h-4 w-4 mr-2" />
+                        Individual
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Search
+                      </label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <Input
+                          placeholder="Name or PNR"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                          className="pl-10"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Priority
+                      </label>
+                      <Select
+                        value={selectedPriority}
+                        onValueChange={setSelectedPriority}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Priorities" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all-priorities">
+                            All Priorities
+                          </SelectItem>
+                          <SelectItem value="VIP">VIP</SelectItem>
+                          <SelectItem value="Premium">Premium</SelectItem>
+                          <SelectItem value="Standard">Standard</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">
+                        Status
+                      </label>
+                      <Select
+                        value={selectedStatus}
+                        onValueChange={setSelectedStatus}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="All Statuses" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all-statuses">All Statuses</SelectItem>
+                          <SelectItem value="Confirmed">Confirmed</SelectItem>
+                          <SelectItem value="Rebooking Required">
+                            Rebooking Required
+                          </SelectItem>
+                          <SelectItem value="Accommodation Needed">
+                            Accommodation Needed
+                          </SelectItem>
+                          <SelectItem value="Alternative Flight">
+                            Alternative Flight
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-end">
+                      <Button
+                        variant="outline"
+                        className="w-full border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                        onClick={() => {
+                          setSearchTerm("");
+                          setSelectedPriority("all-priorities");
+                          setSelectedStatus("all-statuses");
+                        }}
+                      >
+                        Clear Filters
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Passenger List */}
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="text-flydubai-navy">
+                        {context
+                          ? `Affected Passengers - ${context.flight?.flightNumber}`
+                          : "Passenger List"}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        {groupView
+                          ? `Showing ${Object.keys(filteredPnrGroups).length} PNR groups with ${Object.values(filteredPnrGroups).flat().length} passengers`
+                          : `Showing ${filteredPassengers.length} of ${passengers.length} passengers`}
+                      </p>
+                    </div>
+                    {groupView && (
+                      <div className="flex gap-2">
+                        {selectedPnrs.size > 0 && (
+                          <>
+                            <Button
+                              size="sm"
+                              className="btn-flydubai-primary"
+                              onClick={handleBulkRebookSelectedPnrs}
+                              disabled={!canSendForApproval}
+                            >
+                              <RefreshCw className="h-3 w-3 mr-1" />
+                              Rebook {selectedPnrs.size} PNR(s)
+                            </Button>
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleRebookPassenger(passenger)}
                               className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                              onClick={() => setSelectedPnrs(new Set())}
                             >
-                              <Eye className="h-3 w-3 mr-1" />
-                              View
+                              Clear Selection
                             </Button>
-                            {passenger.status === "Rebooking Required" && (
-                              <Button
-                                size="sm"
-                                className="btn-flydubai-primary text-xs"
-                                onClick={() => handleRebookPassenger(passenger)}
-                              >
-                                <Edit className="h-3 w-3 mr-1" />
-                                Rebook
-                              </Button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {groupView ? (
+                    // PNR Group View
+                    <div className="space-y-4">
+                      {/* Select All Header */}
+                      {Object.keys(filteredPnrGroups).length > 0 && (
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
+                          <Checkbox
+                            checked={
+                              selectedPnrs.size ===
+                                Object.keys(filteredPnrGroups).filter(
+                                  (pnr) =>
+                                    !isPnrGroupConfirmed(filteredPnrGroups[pnr]),
+                                ).length && selectedPnrs.size > 0
+                            }
+                            onCheckedChange={handleSelectAll}
+                            disabled={Object.keys(filteredPnrGroups).every((pnr) =>
+                              isPnrGroupConfirmed(filteredPnrGroups[pnr]),
+                            )}
+                          />
+                          <span className="font-medium text-gray-700">
+                            Select All ({Object.keys(filteredPnrGroups).length} PNR
+                            groups)
+                          </span>
+                          {selectedPnrs.size > 0 && (
+                            <Badge variant="outline" className="ml-auto">
+                              {selectedPnrs.size} selected
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+
+                      {Object.entries(filteredPnrGroups).map(
+                        ([pnr, groupPassengers]) => (
+                          <div key={pnr} className="border rounded-lg bg-white">
+                            <div className="p-4 border-b bg-gray-50">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <Checkbox
+                                    checked={selectedPnrs.has(pnr)}
+                                    onCheckedChange={() => handlePnrSelection(pnr)}
+                                    disabled={isPnrGroupConfirmed(groupPassengers)}
+                                    className="border-flydubai-blue data-[state=checked]:bg-flydubai-blue disabled:opacity-50 disabled:cursor-not-allowed"
+                                  />
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <Users className="h-4 w-4 text-flydubai-blue" />
+                                      <span className="font-semibold">
+                                        PNR: {pnr}
+                                      </span>
+                                      <Badge
+                                        variant="secondary"
+                                        className="bg-blue-100 text-blue-800"
+                                      >
+                                        {groupPassengers.length} passenger
+                                        {groupPassengers.length > 1 ? "s" : ""}
+                                      </Badge>
+                                      {isPnrGroupConfirmed(groupPassengers) && (
+                                        <Badge className="bg-green-100 text-green-800 border-green-200">
+                                          <CheckCircle className="h-3 w-3 mr-1" />
+                                          Confirmed
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <div className="text-sm text-gray-600 mt-1">
+                                      Group Priority:{" "}
+                                      {groupPassengers[0]?.priority || "Standard"}
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleExpandPnr(pnr)}
+                                    className="text-flydubai-blue hover:bg-blue-50"
+                                  >
+                                    {expandedPnrs.has(pnr) ? (
+                                      <ChevronDown className="h-4 w-4" />
+                                    ) : (
+                                      <ChevronRight className="h-4 w-4" />
+                                    )}
+                                    {expandedPnrs.has(pnr) ? "Collapse" : "Expand"}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    onClick={() =>
+                                      handleRebookPnrGroup(pnr, groupPassengers)
+                                    }
+                                    disabled={isPnrGroupConfirmed(groupPassengers)}
+                                    className="btn-flydubai-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    <RefreshCw className="h-4 w-4 mr-2" />
+                                    {isPnrGroupConfirmed(groupPassengers)
+                                      ? "Rebooking Complete"
+                                      : "Rebook Group"}
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                            {expandedPnrs.has(pnr) && (
+                              <div className="p-4 border-t">
+                                <div className="grid gap-3">
+                                  {groupPassengers.map((passenger) => (
+                                    <div
+                                      key={passenger.id}
+                                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                                    >
+                                      <div className="flex items-center gap-4">
+                                        <div>
+                                          <div className="font-medium">
+                                            {passenger.name}
+                                          </div>
+                                          <div className="text-sm text-gray-500">
+                                            {passenger.contactInfo}
+                                          </div>
+                                        </div>
+                                        <Badge
+                                          className={getPriorityColor(
+                                            passenger.priority,
+                                          )}
+                                        >
+                                          {passenger.priority}
+                                        </Badge>
+                                        <Badge
+                                          className={getStatusColor(
+                                            passenger.status,
+                                          )}
+                                        >
+                                          {passenger.status}
+                                        </Badge>
+                                        <div className="text-sm text-gray-600">
+                                          Seat: {passenger.seat}
+                                        </div>
+                                        {passenger.specialRequirements && (
+                                          <Badge
+                                            variant="outline"
+                                            className="text-xs"
+                                          >
+                                            {passenger.specialRequirements}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                      <Button
+                                        size="sm"
+                                        variant="outline"
+                                        onClick={() =>
+                                          handleRebookPassenger(passenger)
+                                        }
+                                        className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                      >
+                                        <Eye className="h-3 w-3 mr-1" />
+                                        View
+                                      </Button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
                             )}
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                        ),
+                      )}
+                    </div>
+                  ) : (
+                    // Individual Passenger View
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Passenger</TableHead>
+                          <TableHead>PNR</TableHead>
+                          <TableHead>Priority</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Seat</TableHead>
+                          <TableHead>Special Requirements</TableHead>
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredPassengers.map((passenger) => (
+                          <TableRow key={passenger.id} className="hover:bg-blue-50">
+                            <TableCell>
+                              <div>
+                                <div className="font-medium">{passenger.name}</div>
+                                <div className="text-sm text-gray-500">
+                                  {passenger.contactInfo}
+                                </div>
+                                {passenger.rebookedFlight && (
+                                  <div className="text-xs text-green-600 mt-1">
+                                    Rebooked to: {passenger.rebookedFlight} (
+                                    {passenger.rebookedCabin})
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div>
+                                <Badge className="badge-flydubai-outline mb-1">
+                                  {passenger.pnr}
+                                </Badge>
+                                {passenger.rebookedFlight && (
+                                  <div className="text-xs text-gray-500">
+                                    New Seat: {passenger.rebookedSeat}
+                                  </div>
+                                )}
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge
+                                className={getPriorityColor(
+                                  passenger.priority,
+                                )}
+                              >
+                                {passenger.priority}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={getStatusColor(passenger.status)}>
+                                {passenger.status}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{passenger.seat}</TableCell>
+                            <TableCell>
+                              {passenger.specialRequirements ? (
+                                <Badge variant="outline" className="text-xs">
+                                  {passenger.specialRequirements}
+                                </Badge>
+                              ) : (
+                                <span className="text-gray-400">None</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleRebookPassenger(passenger)}
+                                  className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                >
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  View
+                                </Button>
+                                {passenger.status === "Rebooking Required" && (
+                                  <Button
+                                    size="sm"
+                                    className="btn-flydubai-primary text-xs"
+                                    onClick={() => handleRebookPassenger(passenger)}
+                                  >
+                                    <Edit className="h-3 w-3 mr-1" />
+                                    Rebook
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-        <TabsContent value="crew-schedule" className="space-y-6">
-          {/* Crew Assignment Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-flydubai-blue" />
-                Crew Assignment Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue mr-4"></div>
-                  <span>Loading crew information...</span>
-                </div>
-              ) : (
-                <div>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Rank</TableHead>
-                        <TableHead>Violation</TableHead>
-                        <TableHead>Reaccommodate Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell className="font-medium">
-                          Capt. Ahmed Al-Mansouri
-                        </TableCell>
-                        <TableCell>Captain</TableCell>
-                        <TableCell>
-                          <Badge className="bg-red-100 text-red-700 border-red-200">
-                            Duty violation
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className="bg-green-100 text-green-700 border-green-200">
-                            Available
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium">
-                          FO Sarah Johnson
-                        </TableCell>
-                        <TableCell>First Officer</TableCell>
-                        <TableCell>
-                          <Badge className="bg-green-100 text-green-700 border-green-200">
-                            No violations
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className="bg-green-100 text-green-700 border-green-200">
-                            Available
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium">
-                          SSCC Lisa Martinez
-                        </TableCell>
-                        <TableCell>Senior Safety & Security</TableCell>
-                        <TableCell>
-                          <Badge className="bg-green-100 text-green-700 border-green-200">
-                            No violations
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className="bg-green-100 text-green-700 border-green-200">
-                            Available
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell className="font-medium">
-                          CC Maria Santos
-                        </TableCell>
-                        <TableCell>Cabin Crew</TableCell>
-                        <TableCell>
-                          <Badge className="bg-green-100 text-green-700 border-green-200">
-                            No violations
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className="bg-green-100 text-green-700 border-green-200">
-                            Available
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Hotel Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Hotel className="h-5 w-5 text-flydubai-blue" />
-                Hotel Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Hotel Information */}
-                <div className="space-y-4">
-                  <h4 className="font-medium text-lg">Mumbai Airport Hotel</h4>
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                      4-Star
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPin className="h-4 w-4" />
-                    <span>BOM Terminal 2</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <Hotel className="h-4 w-4" />
-                    <span>3 rooms</span>
-                  </div>
-                </div>
-
-                {/* Accommodation Period */}
-                <div className="space-y-4">
-                  <h4 className="font-medium text-lg">Accommodation Period</h4>
-                  <div className="space-y-2">
+            <TabsContent value="crew-schedule" className="space-y-6">
+              {/* Crew Assignment Status */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-flydubai-blue" />
+                    Crew Assignment Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue mr-4"></div>
+                      <span>Loading crew information...</span>
+                    </div>
+                  ) : (
                     <div>
-                      <span className="text-sm font-medium">Check-in:</span>
-                      <div className="text-sm text-gray-600">2025-01-11 12:00</div>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Rank</TableHead>
+                            <TableHead>Violation</TableHead>
+                            <TableHead>Reaccommodate Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell className="font-medium">
+                              Capt. Ahmed Al-Mansouri
+                            </TableCell>
+                            <TableCell>Captain</TableCell>
+                            <TableCell>
+                              <Badge className="bg-red-100 text-red-700 border-red-200">
+                                Duty violation
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                Available
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">
+                              FO Sarah Johnson
+                            </TableCell>
+                            <TableCell>First Officer</TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                No violations
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                Available
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">
+                              SSCC Lisa Martinez
+                            </TableCell>
+                            <TableCell>Senior Safety & Security</TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                No violations
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                Available
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">
+                              CC Maria Santos
+                            </TableCell>
+                            <TableCell>Cabin Crew</TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                No violations
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                Available
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
                     </div>
-                    <div>
-                      <span className="text-sm font-medium">Check-out:</span>
-                      <div className="text-sm text-gray-600">2025-01-12 10:00</div>
-                    </div>
-                  </div>
-                </div>
+                  )}
+                </CardContent>
+              </Card>
 
-                {/* Transport Details */}
-                <div className="space-y-4">
-                  <h4 className="font-medium text-lg">Transport Details</h4>
-                  <div className="space-y-2">
-                    <div className="font-medium">Mumbai Airport Taxi Services</div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Car className="h-4 w-4" />
-                      <span>MH-01-AB-1234</span>
+              {/* Hotel Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Hotel className="h-5 w-5 text-flydubai-blue" />
+                    Hotel Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Hotel Information */}
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-lg">Mumbai Airport Hotel</h4>
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                          4-Star
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <MapPin className="h-4 w-4" />
+                        <span>BOM Terminal 2</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Hotel className="h-4 w-4" />
+                        <span>3 rooms</span>
+                      </div>
                     </div>
-                    <Badge className="bg-green-100 text-green-700 border-green-200">
-                      Confirmed
-                    </Badge>
+
+                    {/* Accommodation Period */}
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-lg">Accommodation Period</h4>
+                      <div className="space-y-2">
+                        <div>
+                          <span className="text-sm font-medium">Check-in:</span>
+                          <div className="text-sm text-gray-600">2025-01-11 12:00</div>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium">Check-out:</span>
+                          <div className="text-sm text-gray-600">2025-01-12 10:00</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Transport Details */}
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-lg">Transport Details</h4>
+                      <div className="space-y-2">
+                        <div className="font-medium">Mumbai Airport Taxi Services</div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Car className="h-4 w-4" />
+                          <span>MH-01-AB-1234</span>
+                        </div>
+                        <Badge className="bg-green-100 text-green-700 border-green-200">
+                          Confirmed
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+                </CardContent>
+              </Card>
+
+              {/* Additional Hotel Options */}
+              {selectedFlight?.origin && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Hotel className="h-5 w-5 text-flydubai-blue" />
+                      Additional Hotel Options for {selectedFlight.origin}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {availableHotels
+                        .filter(
+                          (hotel) =>
+                            !["HTL-001", "HTL-002", "HTL-003", "HTL-004"].includes(
+                              hotel.id,
+                            ), // Exclude the initial fixed hotels
+                        )
+                        .slice(0, 4) // Display up to 4 additional hotels
+                        .map((hotel) => (
+                          <Card
+                            key={hotel.id}
+                            className="hover:shadow-md transition-shadow"
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start gap-4">
+                                <img
+                                  src={hotel.image}
+                                  alt={hotel.name}
+                                  className="w-24 h-16 object-cover rounded"
+                                />
+                                <div className="flex-1">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div>
+                                      <h3 className="font-semibold text-flydubai-navy">
+                                        {hotel.name}
+                                      </h3>
+                                      <p className="text-sm text-gray-600">
+                                        {hotel.category} • {hotel.distance}
+                                      </p>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="font-bold text-flydubai-orange">
+                                        {hotel.pricePerNight}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        per night
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="flex">
+                                      {[...Array(5)].map((_, i) => (
+                                        <Star
+                                          key={i}
+                                          className={`h-3 w-3 ${i < Math.floor(hotel.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                                        />
+                                      ))}
+                                    </div>
+                                    <span className="text-xs text-gray-600">
+                                      {hotel.rating}
+                                    </span>
+                                    <Badge
+                                      className={
+                                        hotel.availability === "Available"
+                                          ? "status-success"
+                                          : "status-warning"
+                                      }
+                                    >
+                                      {hotel.availability}
+                                    </Badge>
+                                  </div>
+
+                                  <p className="text-xs text-gray-600 mb-3">
+                                    {hotel.description}
+                                  </p>
+
+                                  <Button
+                                    size="sm"
+                                    className="w-full btn-flydubai-primary"
+                                    onClick={() => confirmHotelBooking(hotel)}
+                                    disabled={hotel.availability !== "Available"}
+                                  >
+                                    Book Now
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="crew-schedule" className="space-y-6">
+              {/* Crew Assignment Status */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-flydubai-blue" />
+                    Crew Assignment Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue mr-4"></div>
+                      <span>Loading crew information...</span>
+                    </div>
+                  ) : (
+                    <div>
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Rank</TableHead>
+                            <TableHead>Violation</TableHead>
+                            <TableHead>Reaccommodate Status</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          <TableRow>
+                            <TableCell className="font-medium">
+                              Capt. Ahmed Al-Mansouri
+                            </TableCell>
+                            <TableCell>Captain</TableCell>
+                            <TableCell>
+                              <Badge className="bg-red-100 text-red-700 border-red-200">
+                                Duty violation
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                Available
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">
+                              FO Sarah Johnson
+                            </TableCell>
+                            <TableCell>First Officer</TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                No violations
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                Available
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">
+                              SSCC Lisa Martinez
+                            </TableCell>
+                            <TableCell>Senior Safety & Security</TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                No violations
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                Available
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                          <TableRow>
+                            <TableCell className="font-medium">
+                              CC Maria Santos
+                            </TableCell>
+                            <TableCell>Cabin Crew</TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                No violations
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className="bg-green-100 text-green-700 border-green-200">
+                                Available
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Hotel Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Hotel className="h-5 w-5 text-flydubai-blue" />
+                    Hotel Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Hotel Information */}
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-lg">Mumbai Airport Hotel</h4>
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                          4-Star
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <MapPin className="h-4 w-4" />
+                        <span>BOM Terminal 2</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Hotel className="h-4 w-4" />
+                        <span>3 rooms</span>
+                      </div>
+                    </div>
+
+                    {/* Accommodation Period */}
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-lg">Accommodation Period</h4>
+                      <div className="space-y-2">
+                        <div>
+                          <span className="text-sm font-medium">Check-in:</span>
+                          <div className="text-sm text-gray-600">2025-01-11 12:00</div>
+                        </div>
+                        <div>
+                          <span className="text-sm font-medium">Check-out:</span>
+                          <div className="text-sm text-gray-600">2025-01-12 10:00</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Transport Details */}
+                    <div className="space-y-4">
+                      <h4 className="font-medium text-lg">Transport Details</h4>
+                      <div className="space-y-2">
+                        <div className="font-medium">Mumbai Airport Taxi Services</div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Car className="h-4 w-4" />
+                          <span>MH-01-AB-1234</span>
+                        </div>
+                        <Badge className="bg-green-100 text-green-700 border-green-200">
+                          Confirmed
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Additional Hotel Options */}
+              {selectedFlight?.origin && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Hotel className="h-5 w-5 text-flydubai-blue" />
+                      Additional Hotel Options for {selectedFlight.origin}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {availableHotels
+                        .filter(
+                          (hotel) =>
+                            !["HTL-001", "HTL-002", "HTL-003", "HTL-004"].includes(
+                              hotel.id,
+                            ), // Exclude the initial fixed hotels
+                        )
+                        .slice(0, 4) // Display up to 4 additional hotels
+                        .map((hotel) => (
+                          <Card
+                            key={hotel.id}
+                            className="hover:shadow-md transition-shadow"
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-start gap-4">
+                                <img
+                                  src={hotel.image}
+                                  alt={hotel.name}
+                                  className="w-24 h-16 object-cover rounded"
+                                />
+                                <div className="flex-1">
+                                  <div className="flex items-start justify-between mb-2">
+                                    <div>
+                                      <h3 className="font-semibold text-flydubai-navy">
+                                        {hotel.name}
+                                      </h3>
+                                      <p className="text-sm text-gray-600">
+                                        {hotel.category} • {hotel.distance}
+                                      </p>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="font-bold text-flydubai-orange">
+                                        {hotel.pricePerNight}
+                                      </div>
+                                      <div className="text-xs text-gray-500">
+                                        per night
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <div className="flex">
+                                      {[...Array(5)].map((_, i) => (
+                                        <Star
+                                          key={i}
+                                          className={`h-3 w-3 ${i < Math.floor(hotel.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                                        />
+                                      ))}
+                                    </div>
+                                    <span className="text-xs text-gray-600">
+                                      {hotel.rating}
+                                    </span>
+                                    <Badge
+                                      className={
+                                        hotel.availability === "Available"
+                                          ? "status-success"
+                                          : "status-warning"
+                                      }
+                                    >
+                                      {hotel.availability}
+                                    </Badge>
+                                  </div>
+
+                                  <p className="text-xs text-gray-600 mb-3">
+                                    {hotel.description}
+                                  </p>
+
+                                  <Button
+                                    size="sm"
+                                    className="w-full btn-flydubai-primary"
+                                    onClick={() => confirmHotelBooking(hotel)}
+                                    disabled={hotel.availability !== "Available"}
+                                  >
+                                    Book Now
+                                  </Button>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        );
+      })()}
 
       {/* Common Execute Section - Always Visible */}
       {fromExecution && (
@@ -3690,18 +4846,6 @@ export function PassengerRebooking({ context, onClearContext }) {
                           <p className="text-xs text-gray-600 mb-3">
                             {hotel.description}
                           </p>
-
-                          <div className="flex flex-wrap gap-1 mb-3">
-                            {hotel.amenities.map((amenity, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-center gap-1 text-xs bg-gray-100 rounded px-2 py-1"
-                              >
-                                {getAmenityIcon(amenity)}
-                                <span>{amenity}</span>
-                              </div>
-                            ))}
-                          </div>
 
                           <Button
                             size="sm"
