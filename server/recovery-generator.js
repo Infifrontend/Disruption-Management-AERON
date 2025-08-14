@@ -3783,7 +3783,7 @@ const generateAircraftIssueRecovery = (flight) => {
     },
   ];
 
-  return {};
+  return { options, steps };
 };
 
 const generateCrewIssueRecovery = (flight) => {
