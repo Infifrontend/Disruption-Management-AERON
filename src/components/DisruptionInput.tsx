@@ -1012,7 +1012,7 @@ export function DisruptionInput({
         // Refresh the flights list after a short delay
         setTimeout(() => {
           fetchFlights();
-        }, 1000);
+        }, 3000);
       } else {
         setError(
           "Failed to save disruption. Please check your data and try again.",
