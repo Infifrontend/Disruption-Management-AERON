@@ -1966,6 +1966,56 @@ class DatabaseService {
       return false;
     }
   }
+
+  // Crew Hotel Assignments
+  async saveCrewHotelAssignments(assignments: any[]): Promise<boolean> {
+    try {
+      console.log('Saving crew hotel assignments:', assignments);
+      const response = await fetch(`${this.baseUrl}/crew-hotel-assignments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignments })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Failed to save crew hotel assignments:', response.status, errorText);
+        return false;
+      }
+
+      const result = await response.json();
+      console.log('Successfully saved crew hotel assignments:', result);
+      return true;
+    } catch (error) {
+      console.error('Failed to save crew hotel assignments:', error);
+      return false;
+    }
+  }
+
+  async getCrewHotelAssignmentsByDisruption(disruptionId: string): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/crew-hotel-assignments/disruption/${disruptionId}`);
+      if (!response.ok) return [];
+      return await response.json();
+    } catch (error) {
+      console.error('Failed to fetch crew hotel assignments:', error);
+      return [];
+    }
+  }
+
+  async updateCrewHotelAssignmentStatus(assignmentId: string, status: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/crew-hotel-assignments/${assignmentId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignment_status: status })
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Failed to update crew hotel assignment status:', error);
+      return false;
+    }
+  }
 }
 
 // Singleton instance
