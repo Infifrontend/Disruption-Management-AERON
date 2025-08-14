@@ -1835,9 +1835,73 @@ export function ComparisonMatrix({
                     </CardHeader>
                     <CardContent>
                       {selectedOptionDetails.cost_breakdown &&
-                      selectedOptionDetails.cost_breakdown.length > 0 ? (
+                      typeof selectedOptionDetails.cost_breakdown === "object" &&
+                      selectedOptionDetails.cost_breakdown.total ? (
                         <div className="space-y-4">
                           {/* Total Cost Summary */}
+                          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <h4 className="font-semibold text-blue-800 mb-2">
+                              {selectedOptionDetails.cost_breakdown.total.title || "Total Cost Summary"}
+                            </h4>
+                            <div className="text-2xl font-bold text-blue-900">
+                              {selectedOptionDetails.cost_breakdown.total.amount || selectedOptionDetails.cost}
+                            </div>
+                            {selectedOptionDetails.cost_breakdown.total.description && (
+                              <p className="text-sm text-blue-700 mt-2">
+                                {selectedOptionDetails.cost_breakdown.total.description}
+                              </p>
+                            )}
+                          </div>
+
+                          {/* Cost Breakdown Items */}
+                          {selectedOptionDetails.cost_breakdown.breakdown &&
+                            Array.isArray(selectedOptionDetails.cost_breakdown.breakdown) &&
+                            selectedOptionDetails.cost_breakdown.breakdown.map(
+                              (item, index) => (
+                                <div
+                                  key={index}
+                                  className="space-y-3 p-4 border rounded-lg"
+                                >
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium">
+                                      {item.category || `Cost Item ${index + 1}`}
+                                    </span>
+                                    <span className="font-semibold text-flydubai-orange">
+                                      {item.amount}
+                                    </span>
+                                  </div>
+                                  {item.percentage && (
+                                    <>
+                                      <div className="w-full bg-gray-200 rounded-full h-2">
+                                        <div
+                                          className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
+                                          style={{ width: `${item.percentage}%` }}
+                                        ></div>
+                                      </div>
+                                      <div className="flex justify-between items-center text-xs">
+                                        <span className="text-gray-600">
+                                          {item.percentage}% of total cost
+                                        </span>
+                                        <span className="text-blue-600">
+                                          {item.description || "Cost component"}
+                                        </span>
+                                      </div>
+                                    </>
+                                  )}
+                                  {item.description && !item.percentage && (
+                                    <p className="text-xs text-gray-600">
+                                      {item.description}
+                                    </p>
+                                  )}
+                                </div>
+                              ),
+                            )}
+                        </div>
+                      ) : selectedOptionDetails.cost_breakdown &&
+                        Array.isArray(selectedOptionDetails.cost_breakdown) &&
+                        selectedOptionDetails.cost_breakdown.length > 0 ? (
+                        <div className="space-y-4">
+                          {/* Fallback for old array format */}
                           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                             <h4 className="font-semibold text-blue-800 mb-2">
                               Total Cost Summary
@@ -1859,7 +1923,6 @@ export function ComparisonMatrix({
                             </div>
                           </div>
 
-                          {/* Cost Breakdown Items */}
                           {selectedOptionDetails.cost_breakdown.map(
                             (item, index) => (
                               <div
@@ -2226,13 +2289,53 @@ export function ComparisonMatrix({
                                           {subKey.replace(/_/g, " ")}:
                                         </span>{" "}
                                         <span className="text-gray-700">
-                                          {typeof subValue === "object"
-                                            ? JSON.stringify(subValue)
-                                            : subValue}
+                                          {Array.isArray(subValue) ? (
+                                            <ul className="mt-1 ml-4 space-y-1">
+                                              {subValue.map((listItem, listIndex) => (
+                                                <li key={listIndex} className="flex items-start gap-2">
+                                                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                                                  {typeof listItem === "object"
+                                                    ? JSON.stringify(listItem)
+                                                    : listItem}
+                                                </li>
+                                              ))}
+                                            </ul>
+                                          ) : typeof subValue === "object" ? (
+                                            JSON.stringify(subValue)
+                                          ) : (
+                                            subValue
+                                          )}
                                         </span>
                                       </div>
                                     ),
                                   )}
+                                </div>
+                              ) : typeof value === "string" && value.startsWith("[") && value.endsWith("]") ? (
+                                // Handle string arrays that look like ["item1","item2","item3"]
+                                <div>
+                                  {(() => {
+                                    try {
+                                      const parsed = JSON.parse(value);
+                                      if (Array.isArray(parsed)) {
+                                        return (
+                                          <ul className="text-sm text-gray-700 space-y-1">
+                                            {parsed.map((item, index) => (
+                                              <li
+                                                key={index}
+                                                className="flex items-start gap-2"
+                                              >
+                                                <div className="w-2 h-2 bg-flydubai-blue rounded-full mt-1.5 flex-shrink-0"></div>
+                                                {item}
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        );
+                                      }
+                                    } catch (e) {
+                                      // If parsing fails, treat as regular string
+                                    }
+                                    return <p className="text-sm text-gray-700">{value}</p>;
+                                  })()}
                                 </div>
                               ) : (
                                 <p className="text-sm text-gray-700">{value}</p>
