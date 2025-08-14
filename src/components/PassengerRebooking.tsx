@@ -324,18 +324,6 @@ export function PassengerRebooking({ context, onClearContext }) {
     },
   ];
 
-  // Group passengers by PNR
-  const passengersByPnr = useMemo(() => {
-    const grouped = passengers.reduce((acc, passenger) => {
-      if (!acc[passenger.pnr]) {
-        acc[passenger.pnr] = [];
-      }
-      acc[passenger.pnr].push(passenger);
-      return acc;
-    }, {});
-    return grouped;
-  }, [passengers]);
-
   // Cabin options with icons and descriptions
   const cabinOptions = [
     {
@@ -848,6 +836,18 @@ export function PassengerRebooking({ context, onClearContext }) {
     passengerRebookingStatus,
     confirmedRebookings,
   ]);
+
+  // Group passengers by PNR
+  const passengersByPnr = useMemo(() => {
+    const grouped = passengers.reduce((acc, passenger) => {
+      if (!acc[passenger.pnr]) {
+        acc[passenger.pnr] = [];
+      }
+      acc[passenger.pnr].push(passenger);
+      return acc;
+    }, {});
+    return grouped;
+  }, [passengers]);
 
   const filteredPassengers = passengers.filter((passenger) => {
     const matchesSearch =
