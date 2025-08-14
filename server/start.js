@@ -1839,50 +1839,61 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
         );
 
         if (existingOption.rows.length === 0) {
-          await pool.query(
-            `
+          const insertQuery = `
             INSERT INTO recovery_options (
-              disruption_id, title, description, cost, timeline,
-              confidence, impact, status, priority, advantages, considerations,
-              resource_requirements, cost_breakdown, timeline_details,
-              risk_assessment, technical_specs, metrics, rotation_plan
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
-          `,
-            [
-              numericDisruptionId,
-              option.title || `Recovery Option ${i + 1}`,
-              option.description || "Recovery option details",
-              option.cost || "TBD",
-              option.timeline || "TBD",
-              option.confidence || 80,
-              option.impact || "Medium",
-              option.status || "generated",
-              i + 1, // priority
-              Array.isArray(option.advantages) ? option.advantages : [],
-              Array.isArray(option.considerations) ? option.considerations : [],
-              option.resourceRequirements
-                ? JSON.stringify(option.resourceRequirements)
-                : JSON.stringify([]),
-              option.costBreakdown
-                ? JSON.stringify(option.costBreakdown)
-                : JSON.stringify([]),
-              option.timelineDetails
-                ? JSON.stringify(option.timelineDetails)
-                : JSON.stringify([]),
-              option.riskAssessment
-                ? JSON.stringify(option.riskAssessment)
-                : JSON.stringify([]),
-              option.technicalSpecs
-                ? JSON.stringify(option.technicalSpecs)
-                : JSON.stringify({}),
-              option.metrics
-                ? JSON.stringify(option.metrics)
-                : JSON.stringify({}),
-              option.rotationPlan
-                ? JSON.stringify(option.rotationPlan)
-                : JSON.stringify({}),
-            ],
-          );
+              disruption_id, title, description, cost, timeline, confidence, 
+              impact, status, priority, advantages, considerations, 
+              resource_requirements, cost_breakdown, timeline_details, 
+              risk_assessment, technical_specs, metrics, rotation_plan,
+              impact_area, impact_summary
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
+            )
+            ON CONFLICT (disruption_id, title) DO UPDATE SET
+              description = EXCLUDED.description,
+              cost = EXCLUDED.cost,
+              timeline = EXCLUDED.timeline,
+              confidence = EXCLUDED.confidence,
+              impact = EXCLUDED.impact,
+              status = EXCLUDED.status,
+              priority = EXCLUDED.priority,
+              advantages = EXCLUDED.advantages,
+              considerations = EXCLUDED.considerations,
+              resource_requirements = EXCLUDED.resource_requirements,
+              cost_breakdown = EXCLUDED.cost_breakdown,
+              timeline_details = EXCLUDED.timeline_details,
+              risk_assessment = EXCLUDED.risk_assessment,
+              technical_specs = EXCLUDED.technical_specs,
+              metrics = EXCLUDED.metrics,
+              rotation_plan = EXCLUDED.rotation_plan,
+              impact_area = EXCLUDED.impact_area,
+              impact_summary = EXCLUDED.impact_summary,
+              updated_at = CURRENT_TIMESTAMP
+            RETURNING id`;
+          const values = [
+            numericDisruptionId,
+            option.title || `Recovery Option ${i + 1}`,
+            option.description || "Recovery option details",
+            option.cost || "TBD",
+            option.timeline || "TBD",
+            option.confidence || 80,
+            option.impact || "Medium",
+            option.status || "generated",
+            i + 1, // priority
+            JSON.stringify(option.advantages),
+            JSON.stringify(option.considerations),
+            JSON.stringify(option.resourceRequirements || option.resource_requirements),
+            JSON.stringify(option.costBreakdown || option.cost_breakdown),
+            JSON.stringify(option.timelineDetails || option.timeline_details),
+            JSON.stringify(option.riskAssessment || option.risk_assessment),
+            JSON.stringify(option.technicalSpecs || option.technical_specs),
+            JSON.stringify(option.metrics),
+            JSON.stringify(option.rotationPlan || option.rotation_plan),
+            JSON.stringify(option.impact_area || []),
+            option.impact_summary || ''
+          ];
+
+          await pool.query(insertQuery, values);
         }
         optionsCount++;
       } catch (error) {
@@ -2313,8 +2324,8 @@ app.get("/api/recovery-options/:optionId", async (req, res) => {
     let rotationPlan = {};
     if (option.rotation_plan) {
       try {
-        rotationPlan = typeof option.rotation_plan === 'string' 
-          ? JSON.parse(option.rotation_plan) 
+        rotationPlan = typeof option.rotation_plan === 'string'
+          ? JSON.parse(option.rotation_plan)
           : option.rotation_plan;
       } catch (e) {
         console.log('Failed to parse rotation_plan JSON');
