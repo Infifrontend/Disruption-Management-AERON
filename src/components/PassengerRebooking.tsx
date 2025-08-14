@@ -366,36 +366,6 @@ export function PassengerRebooking({ context, onClearContext }) {
     },
   ];
 
-  // Get base passenger list and apply status updates
-  const passengers = useMemo(() => {
-    const base =
-      contextPassengers.length > 0
-        ? contextPassengers
-        : generatedPassengers.length > 0
-          ? generatedPassengers
-          : defaultPassengers;
-
-    return base.map((passenger) => {
-      const rebookingInfo = confirmedRebookings[passenger.id];
-      const statusOverride = passengerRebookingStatus[passenger.id];
-
-      return {
-        ...passenger,
-        status: statusOverride || passenger.status,
-        rebookedFlight: rebookingInfo?.flightNumber,
-        rebookedCabin: rebookingInfo?.cabin,
-        rebookedSeat: rebookingInfo?.seat,
-        rebookingDate: rebookingInfo?.date,
-      };
-    });
-  }, [
-    contextPassengers,
-    generatedPassengers,
-    defaultPassengers,
-    passengerRebookingStatus,
-    confirmedRebookings,
-  ]);
-
   // Group passengers by PNR
   const passengersByPnr = useMemo(() => {
     const grouped = passengers.reduce((acc, passenger) => {
@@ -848,6 +818,35 @@ export function PassengerRebooking({ context, onClearContext }) {
         "Budget-friendly option with essential amenities and good service",
     },
   ];
+
+  const passengers = useMemo(() => {
+    const base =
+      contextPassengers.length > 0
+        ? contextPassengers
+        : generatedPassengers.length > 0
+          ? generatedPassengers
+          : defaultPassengers;
+
+    return base.map((passenger) => {
+      const rebookingInfo = confirmedRebookings[passenger.id];
+      const statusOverride = passengerRebookingStatus[passenger.id];
+
+      return {
+        ...passenger,
+        status: statusOverride || passenger.status,
+        rebookedFlight: rebookingInfo?.flightNumber,
+        rebookedCabin: rebookingInfo?.cabin,
+        rebookedSeat: rebookingInfo?.seat,
+        rebookingDate: rebookingInfo?.date,
+      };
+    });
+  }, [
+    contextPassengers,
+    generatedPassengers,
+    defaultPassengers,
+    passengerRebookingStatus,
+    confirmedRebookings,
+  ]);
 
   const filteredPassengers = passengers.filter((passenger) => {
     const matchesSearch =
@@ -2558,76 +2557,78 @@ export function PassengerRebooking({ context, onClearContext }) {
                         <Table>
                           <TableHeader>
                             <TableRow>
+                              <TableHead>Select</TableHead>
                               <TableHead>Name</TableHead>
                               <TableHead>Rank</TableHead>
-                              <TableHead>Violation</TableHead>
-                              <TableHead>Reaccommodate Status</TableHead>
+                              <TableHead>Status</TableHead>
+                              <TableHead>Location</TableHead>
+                              <TableHead>Duty Time Remaining</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             <TableRow>
+                              <TableCell>
+                                <Checkbox />
+                              </TableCell>
                               <TableCell className="font-medium">
                                 Capt. Ahmed Al-Mansouri
                               </TableCell>
                               <TableCell>Captain</TableCell>
                               <TableCell>
-                                <Badge className="bg-red-100 text-red-700 border-red-200">
-                                  Duty violation
-                                </Badge>
-                              </TableCell>
-                              <TableCell>
                                 <Badge className="bg-green-100 text-green-700 border-green-200">
                                   Available
                                 </Badge>
                               </TableCell>
+                              <TableCell>Dubai Airport Hotel</TableCell>
+                              <TableCell>2h 15m</TableCell>
                             </TableRow>
                             <TableRow>
+                              <TableCell>
+                                <Checkbox />
+                              </TableCell>
                               <TableCell className="font-medium">
                                 FO Sarah Johnson
                               </TableCell>
                               <TableCell>First Officer</TableCell>
                               <TableCell>
-                                <Badge className="bg-green-100 text-green-700 border-green-200">
-                                  No violations
+                                <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">
+                                  On Duty
                                 </Badge>
                               </TableCell>
-                              <TableCell>
-                                <Badge className="bg-green-100 text-green-700 border-green-200">
-                                  Available
-                                </Badge>
-                              </TableCell>
+                              <TableCell>Crew Rest Area Terminal 2</TableCell>
+                              <TableCell>4h 30m</TableCell>
                             </TableRow>
                             <TableRow>
-                              <TableCell className="font-medium">
-                                SSCC Lisa Martinez
-                              </TableCell>
-                              <TableCell>Senior Safety & Security</TableCell>
                               <TableCell>
-                                <Badge className="bg-green-100 text-green-700 border-green-200">
-                                  No violations
-                                </Badge>
+                                <Checkbox />
                               </TableCell>
+                              <TableCell className="font-medium">
+                                Fatima Al-Mansouri
+                              </TableCell>
+                              <TableCell>Senior Flight Attendant</TableCell>
                               <TableCell>
                                 <Badge className="bg-green-100 text-green-700 border-green-200">
                                   Available
                                 </Badge>
                               </TableCell>
+                              <TableCell>Crew Lounge Level 3</TableCell>
+                              <TableCell>3h 45m</TableCell>
                             </TableRow>
                             <TableRow>
-                              <TableCell className="font-medium">
-                                CC Maria Santos
-                              </TableCell>
-                              <TableCell>Cabin Crew</TableCell>
                               <TableCell>
-                                <Badge className="bg-green-100 text-green-700 border-green-200">
-                                  No violations
-                                </Badge>
+                                <Checkbox />
                               </TableCell>
+                              <TableCell className="font-medium">
+                                Ahmed Hassan
+                              </TableCell>
+                              <TableCell>Flight Attendant</TableCell>
                               <TableCell>
                                 <Badge className="bg-green-100 text-green-700 border-green-200">
                                   Available
                                 </Badge>
                               </TableCell>
+                              <TableCell>Crew Lounge Level 3</TableCell>
+                              <TableCell>5h 10m</TableCell>
                             </TableRow>
                           </TableBody>
                         </Table>
@@ -2636,162 +2637,126 @@ export function PassengerRebooking({ context, onClearContext }) {
                   </CardContent>
                 </Card>
 
-                {/* Hotel Information */}
+                {/* Hotel Selection for Crew */}
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Hotel className="h-5 w-5 text-flydubai-blue" />
-                      Hotel Information
+                      Hotel Selection for Crew Accommodation
                     </CardTitle>
+                    <p className="text-sm text-muted-foreground">
+                      Select hotels for crew members based on the disrupted flight's location
+                    </p>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {/* Hotel Information */}
-                      <div className="space-y-4">
-                        <h4 className="font-medium text-lg">Mumbai Airport Hotel</h4>
-                        <div className="flex items-center gap-2">
-                          <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                            4-Star
-                          </Badge>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {availableHotels.slice(0, 4).map((hotel) => (
+                        <Card
+                          key={hotel.id}
+                          className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-flydubai-blue"
+                        >
+                          <CardContent className="p-4">
+                            <div className="flex items-start gap-4">
+                              <img
+                                src={hotel.image}
+                                alt={hotel.name}
+                                className="w-20 h-14 object-cover rounded"
+                              />
+                              <div className="flex-1">
+                                <div className="flex items-start justify-between mb-2">
+                                  <div>
+                                    <h3 className="font-semibold text-flydubai-navy text-sm">
+                                      {hotel.name}
+                                    </h3>
+                                    <p className="text-xs text-gray-600">
+                                      {hotel.category} • {hotel.distance}
+                                    </p>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="font-bold text-flydubai-orange text-sm">
+                                      {hotel.pricePerNight}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      per night
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 mb-2">
+                                  <div className="flex">
+                                    {[...Array(5)].map((_, i) => (
+                                      <Star
+                                        key={i}
+                                        className={`h-3 w-3 ${i < Math.floor(hotel.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                                      />
+                                    ))}
+                                  </div>
+                                  <span className="text-xs text-gray-600">
+                                    {hotel.rating}
+                                  </span>
+                                  <Badge
+                                    className={
+                                      hotel.availability === "Available"
+                                        ? "bg-green-100 text-green-700 border-green-200"
+                                        : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                    }
+                                  >
+                                    {hotel.availability}
+                                  </Badge>
+                                </div>
+
+                                <p className="text-xs text-gray-600 mb-3">
+                                  {hotel.description}
+                                </p>
+
+                                <div className="flex items-center gap-2">
+                                  <Checkbox />
+                                  <span className="text-xs font-medium">Select for crew</span>
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+
+                    {/* Crew to Hotel Mapping */}
+                    <div className="mt-6 pt-6 border-t">
+                      <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
+                        <Users2 className="h-4 w-4 text-flydubai-blue" />
+                        Crew Assignment to Selected Hotels
+                      </h4>
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="text-sm text-gray-600 mb-2">
+                          Selected crew members will be assigned to chosen hotels automatically based on:
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <MapPin className="h-4 w-4" />
-                          <span>BOM Terminal 2</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Hotel className="h-4 w-4" />
-                          <span>3 rooms</span>
-                        </div>
+                        <ul className="text-xs text-gray-500 space-y-1 ml-4">
+                          <li>• Crew rank and seniority</li>
+                          <li>• Hotel proximity to airport</li>
+                          <li>• Room availability</li>
+                          <li>• Company policies</li>
+                        </ul>
                       </div>
 
-                      {/* Accommodation Period */}
-                      <div className="space-y-4">
-                        <h4 className="font-medium text-lg">Accommodation Period</h4>
-                        <div className="space-y-2">
-                          <div>
-                            <span className="text-sm font-medium">Check-in:</span>
-                            <div className="text-sm text-gray-600">2025-01-11 12:00</div>
-                          </div>
-                          <div>
-                            <span className="text-sm font-medium">Check-out:</span>
-                            <div className="text-sm text-gray-600">2025-01-12 10:00</div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Transport Details */}
-                      <div className="space-y-4">
-                        <h4 className="font-medium text-lg">Transport Details</h4>
-                        <div className="space-y-2">
-                          <div className="font-medium">Mumbai Airport Taxi Services</div>
-                          <div className="flex items-center gap-2 text-sm text-gray-600">
-                            <Car className="h-4 w-4" />
-                            <span>MH-01-AB-1234</span>
-                          </div>
-                          <Badge className="bg-green-100 text-green-700 border-green-200">
-                            Confirmed
-                          </Badge>
-                        </div>
+                      <div className="mt-4 flex gap-2">
+                        <Button
+                          size="sm"
+                          className="btn-flydubai-primary"
+                          onClick={() => {
+                            toast.success("Crew hotel assignments confirmed", {
+                              description: "Selected crew members have been assigned to available hotels"
+                            });
+                          }}
+                        >
+                          Confirm Assignments
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          View Assignment Details
+                        </Button>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Additional Hotel Options */}
-                {selectedFlight?.origin && (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Hotel className="h-5 w-5 text-flydubai-blue" />
-                        Additional Hotel Options for {selectedFlight.origin}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {availableHotels
-                          .filter(
-                            (hotel) =>
-                              !["HTL-001", "HTL-002", "HTL-003", "HTL-004"].includes(
-                                hotel.id,
-                              ), // Exclude the initial fixed hotels
-                          )
-                          .slice(0, 4) // Display up to 4 additional hotels
-                          .map((hotel) => (
-                            <Card
-                              key={hotel.id}
-                              className="hover:shadow-md transition-shadow"
-                            >
-                              <CardContent className="p-4">
-                                <div className="flex items-start gap-4">
-                                  <img
-                                    src={hotel.image}
-                                    alt={hotel.name}
-                                    className="w-24 h-16 object-cover rounded"
-                                  />
-                                  <div className="flex-1">
-                                    <div className="flex items-start justify-between mb-2">
-                                      <div>
-                                        <h3 className="font-semibold text-flydubai-navy">
-                                          {hotel.name}
-                                        </h3>
-                                        <p className="text-sm text-gray-600">
-                                          {hotel.category} • {hotel.distance}
-                                        </p>
-                                      </div>
-                                      <div className="text-right">
-                                        <div className="font-bold text-flydubai-orange">
-                                          {hotel.pricePerNight}
-                                        </div>
-                                        <div className="text-xs text-gray-500">
-                                          per night
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 mb-2">
-                                      <div className="flex">
-                                        {[...Array(5)].map((_, i) => (
-                                          <Star
-                                            key={i}
-                                            className={`h-3 w-3 ${i < Math.floor(hotel.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
-                                          />
-                                        ))}
-                                      </div>
-                                      <span className="text-xs text-gray-600">
-                                        {hotel.rating}
-                                      </span>
-                                      <Badge
-                                        className={
-                                          hotel.availability === "Available"
-                                            ? "status-success"
-                                            : "status-warning"
-                                        }
-                                      >
-                                        {hotel.availability}
-                                      </Badge>
-                                    </div>
-
-                                    <p className="text-xs text-gray-600 mb-3">
-                                      {hotel.description}
-                                    </p>
-
-                                    <Button
-                                      size="sm"
-                                      className="w-full btn-flydubai-primary"
-                                      onClick={() => confirmHotelBooking(hotel)}
-                                      disabled={hotel.availability !== "Available"}
-                                    >
-                                      Book Now
-                                    </Button>
-                                  </div>
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
               </TabsContent>
             </Tabs>
           );
@@ -3341,76 +3306,78 @@ export function PassengerRebooking({ context, onClearContext }) {
                       <Table>
                         <TableHeader>
                           <TableRow>
+                            <TableHead>Select</TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Rank</TableHead>
-                            <TableHead>Violation</TableHead>
-                            <TableHead>Reaccommodate Status</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Location</TableHead>
+                            <TableHead>Duty Time Remaining</TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
                           <TableRow>
+                            <TableCell>
+                              <Checkbox />
+                            </TableCell>
                             <TableCell className="font-medium">
                               Capt. Ahmed Al-Mansouri
                             </TableCell>
                             <TableCell>Captain</TableCell>
                             <TableCell>
-                              <Badge className="bg-red-100 text-red-700 border-red-200">
-                                Duty violation
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
                               <Badge className="bg-green-100 text-green-700 border-green-200">
                                 Available
                               </Badge>
                             </TableCell>
+                            <TableCell>Dubai Airport Hotel</TableCell>
+                            <TableCell>2h 15m</TableCell>
                           </TableRow>
                           <TableRow>
+                            <TableCell>
+                              <Checkbox />
+                            </TableCell>
                             <TableCell className="font-medium">
                               FO Sarah Johnson
                             </TableCell>
                             <TableCell>First Officer</TableCell>
                             <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                No violations
+                              <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">
+                                On Duty
                               </Badge>
                             </TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                Available
-                              </Badge>
-                            </TableCell>
+                            <TableCell>Crew Rest Area Terminal 2</TableCell>
+                            <TableCell>4h 30m</TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell className="font-medium">
-                              SSCC Lisa Martinez
-                            </TableCell>
-                            <TableCell>Senior Safety & Security</TableCell>
                             <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                No violations
-                              </Badge>
+                              <Checkbox />
                             </TableCell>
+                            <TableCell className="font-medium">
+                              Fatima Al-Mansouri
+                            </TableCell>
+                            <TableCell>Senior Flight Attendant</TableCell>
                             <TableCell>
                               <Badge className="bg-green-100 text-green-700 border-green-200">
                                 Available
                               </Badge>
                             </TableCell>
+                            <TableCell>Crew Lounge Level 3</TableCell>
+                            <TableCell>3h 45m</TableCell>
                           </TableRow>
                           <TableRow>
-                            <TableCell className="font-medium">
-                              CC Maria Santos
-                            </TableCell>
-                            <TableCell>Cabin Crew</TableCell>
                             <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                No violations
-                              </Badge>
+                              <Checkbox />
                             </TableCell>
+                            <TableCell className="font-medium">
+                              Ahmed Hassan
+                            </TableCell>
+                            <TableCell>Flight Attendant</TableCell>
                             <TableCell>
                               <Badge className="bg-green-100 text-green-700 border-green-200">
                                 Available
                               </Badge>
                             </TableCell>
+                            <TableCell>Crew Lounge Level 3</TableCell>
+                            <TableCell>5h 10m</TableCell>
                           </TableRow>
                         </TableBody>
                       </Table>
@@ -3419,418 +3386,126 @@ export function PassengerRebooking({ context, onClearContext }) {
                 </CardContent>
               </Card>
 
-              {/* Hotel Information */}
+              {/* Hotel Selection for Crew */}
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Hotel className="h-5 w-5 text-flydubai-blue" />
-                    Hotel Information
+                    Hotel Selection for Crew Accommodation
                   </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Select hotels for crew members based on the disrupted flight's location
+                  </p>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Hotel Information */}
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-lg">Mumbai Airport Hotel</h4>
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                          4-Star
-                        </Badge>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {availableHotels.slice(0, 4).map((hotel) => (
+                      <Card
+                        key={hotel.id}
+                        className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-flydubai-blue"
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-4">
+                            <img
+                              src={hotel.image}
+                              alt={hotel.name}
+                              className="w-20 h-14 object-cover rounded"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-start justify-between mb-2">
+                                <div>
+                                  <h3 className="font-semibold text-flydubai-navy text-sm">
+                                    {hotel.name}
+                                  </h3>
+                                  <p className="text-xs text-gray-600">
+                                    {hotel.category} • {hotel.distance}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <div className="font-bold text-flydubai-orange text-sm">
+                                    {hotel.pricePerNight}
+                                  </div>
+                                  <div className="text-xs text-gray-500">
+                                    per night
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="flex">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      className={`h-3 w-3 ${i < Math.floor(hotel.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="text-xs text-gray-600">
+                                  {hotel.rating}
+                                </span>
+                                <Badge
+                                  className={
+                                    hotel.availability === "Available"
+                                      ? "bg-green-100 text-green-700 border-green-200"
+                                      : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                  }
+                                >
+                                  {hotel.availability}
+                                </Badge>
+                              </div>
+
+                              <p className="text-xs text-gray-600 mb-3">
+                                {hotel.description}
+                              </p>
+
+                              <div className="flex items-center gap-2">
+                                <Checkbox />
+                                <span className="text-xs font-medium">Select for crew</span>
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {/* Crew to Hotel Mapping */}
+                  <div className="mt-6 pt-6 border-t">
+                    <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
+                      <Users2 className="h-4 w-4 text-flydubai-blue" />
+                      Crew Assignment to Selected Hotels
+                    </h4>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="text-sm text-gray-600 mb-2">
+                        Selected crew members will be assigned to chosen hotels automatically based on:
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <MapPin className="h-4 w-4" />
-                        <span>BOM Terminal 2</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Hotel className="h-4 w-4" />
-                        <span>3 rooms</span>
-                      </div>
+                      <ul className="text-xs text-gray-500 space-y-1 ml-4">
+                        <li>• Crew rank and seniority</li>
+                        <li>• Hotel proximity to airport</li>
+                        <li>• Room availability</li>
+                        <li>• Company policies</li>
+                      </ul>
                     </div>
 
-                    {/* Accommodation Period */}
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-lg">Accommodation Period</h4>
-                      <div className="space-y-2">
-                        <div>
-                          <span className="text-sm font-medium">Check-in:</span>
-                          <div className="text-sm text-gray-600">2025-01-11 12:00</div>
-                        </div>
-                        <div>
-                          <span className="text-sm font-medium">Check-out:</span>
-                          <div className="text-sm text-gray-600">2025-01-12 10:00</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Transport Details */}
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-lg">Transport Details</h4>
-                      <div className="space-y-2">
-                        <div className="font-medium">Mumbai Airport Taxi Services</div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Car className="h-4 w-4" />
-                          <span>MH-01-AB-1234</span>
-                        </div>
-                        <Badge className="bg-green-100 text-green-700 border-green-200">
-                          Confirmed
-                        </Badge>
-                      </div>
+                    <div className="mt-4 flex gap-2">
+                      <Button
+                        size="sm"
+                        className="btn-flydubai-primary"
+                        onClick={() => {
+                          toast.success("Crew hotel assignments confirmed", {
+                            description: "Selected crew members have been assigned to available hotels"
+                          });
+                        }}
+                      >
+                        Confirm Assignments
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        View Assignment Details
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Additional Hotel Options */}
-              {selectedFlight?.origin && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Hotel className="h-5 w-5 text-flydubai-blue" />
-                      Additional Hotel Options for {selectedFlight.origin}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {availableHotels
-                        .filter(
-                          (hotel) =>
-                            !["HTL-001", "HTL-002", "HTL-003", "HTL-004"].includes(
-                              hotel.id,
-                            ), // Exclude the initial fixed hotels
-                        )
-                        .slice(0, 4) // Display up to 4 additional hotels
-                        .map((hotel) => (
-                          <Card
-                            key={hotel.id}
-                            className="hover:shadow-md transition-shadow"
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-start gap-4">
-                                <img
-                                  src={hotel.image}
-                                  alt={hotel.name}
-                                  className="w-24 h-16 object-cover rounded"
-                                />
-                                <div className="flex-1">
-                                  <div className="flex items-start justify-between mb-2">
-                                    <div>
-                                      <h3 className="font-semibold text-flydubai-navy">
-                                        {hotel.name}
-                                      </h3>
-                                      <p className="text-sm text-gray-600">
-                                        {hotel.category} • {hotel.distance}
-                                      </p>
-                                    </div>
-                                    <div className="text-right">
-                                      <div className="font-bold text-flydubai-orange">
-                                        {hotel.pricePerNight}
-                                      </div>
-                                      <div className="text-xs text-gray-500">
-                                        per night
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <div className="flex">
-                                      {[...Array(5)].map((_, i) => (
-                                        <Star
-                                          key={i}
-                                          className={`h-3 w-3 ${i < Math.floor(hotel.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
-                                        />
-                                      ))}
-                                    </div>
-                                    <span className="text-xs text-gray-600">
-                                      {hotel.rating}
-                                    </span>
-                                    <Badge
-                                      className={
-                                        hotel.availability === "Available"
-                                          ? "status-success"
-                                          : "status-warning"
-                                      }
-                                    >
-                                      {hotel.availability}
-                                    </Badge>
-                                  </div>
-
-                                  <p className="text-xs text-gray-600 mb-3">
-                                    {hotel.description}
-                                  </p>
-
-                                  <Button
-                                    size="sm"
-                                    className="w-full btn-flydubai-primary"
-                                    onClick={() => confirmHotelBooking(hotel)}
-                                    disabled={hotel.availability !== "Available"}
-                                  >
-                                    Book Now
-                                  </Button>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </TabsContent>
-
-            <TabsContent value="crew-schedule" className="space-y-6">
-              {/* Crew Assignment Status */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-flydubai-blue" />
-                    Crew Assignment Status
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {loading ? (
-                    <div className="flex items-center justify-center py-8">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue mr-4"></div>
-                      <span>Loading crew information...</span>
-                    </div>
-                  ) : (
-                    <div>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Rank</TableHead>
-                            <TableHead>Violation</TableHead>
-                            <TableHead>Reaccommodate Status</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          <TableRow>
-                            <TableCell className="font-medium">
-                              Capt. Ahmed Al-Mansouri
-                            </TableCell>
-                            <TableCell>Captain</TableCell>
-                            <TableCell>
-                              <Badge className="bg-red-100 text-red-700 border-red-200">
-                                Duty violation
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                Available
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="font-medium">
-                              FO Sarah Johnson
-                            </TableCell>
-                            <TableCell>First Officer</TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                No violations
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                Available
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="font-medium">
-                              SSCC Lisa Martinez
-                            </TableCell>
-                            <TableCell>Senior Safety & Security</TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                No violations
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                Available
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell className="font-medium">
-                              CC Maria Santos
-                            </TableCell>
-                            <TableCell>Cabin Crew</TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                No violations
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                Available
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Hotel Information */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Hotel className="h-5 w-5 text-flydubai-blue" />
-                    Hotel Information
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Hotel Information */}
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-lg">Mumbai Airport Hotel</h4>
-                      <div className="flex items-center gap-2">
-                        <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                          4-Star
-                        </Badge>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <MapPin className="h-4 w-4" />
-                        <span>BOM Terminal 2</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Hotel className="h-4 w-4" />
-                        <span>3 rooms</span>
-                      </div>
-                    </div>
-
-                    {/* Accommodation Period */}
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-lg">Accommodation Period</h4>
-                      <div className="space-y-2">
-                        <div>
-                          <span className="text-sm font-medium">Check-in:</span>
-                          <div className="text-sm text-gray-600">2025-01-11 12:00</div>
-                        </div>
-                        <div>
-                          <span className="text-sm font-medium">Check-out:</span>
-                          <div className="text-sm text-gray-600">2025-01-12 10:00</div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Transport Details */}
-                    <div className="space-y-4">
-                      <h4 className="font-medium text-lg">Transport Details</h4>
-                      <div className="space-y-2">
-                        <div className="font-medium">Mumbai Airport Taxi Services</div>
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Car className="h-4 w-4" />
-                          <span>MH-01-AB-1234</span>
-                        </div>
-                        <Badge className="bg-green-100 text-green-700 border-green-200">
-                          Confirmed
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Additional Hotel Options */}
-              {selectedFlight?.origin && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Hotel className="h-5 w-5 text-flydubai-blue" />
-                      Additional Hotel Options for {selectedFlight.origin}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {availableHotels
-                        .filter(
-                          (hotel) =>
-                            !["HTL-001", "HTL-002", "HTL-003", "HTL-004"].includes(
-                              hotel.id,
-                            ), // Exclude the initial fixed hotels
-                        )
-                        .slice(0, 4) // Display up to 4 additional hotels
-                        .map((hotel) => (
-                          <Card
-                            key={hotel.id}
-                            className="hover:shadow-md transition-shadow"
-                          >
-                            <CardContent className="p-4">
-                              <div className="flex items-start gap-4">
-                                <img
-                                  src={hotel.image}
-                                  alt={hotel.name}
-                                  className="w-24 h-16 object-cover rounded"
-                                />
-                                <div className="flex-1">
-                                  <div className="flex items-start justify-between mb-2">
-                                    <div>
-                                      <h3 className="font-semibold text-flydubai-navy">
-                                        {hotel.name}
-                                      </h3>
-                                      <p className="text-sm text-gray-600">
-                                        {hotel.category} • {hotel.distance}
-                                      </p>
-                                    </div>
-                                    <div className="text-right">
-                                      <div className="font-bold text-flydubai-orange">
-                                        {hotel.pricePerNight}
-                                      </div>
-                                      <div className="text-xs text-gray-500">
-                                        per night
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <div className="flex">
-                                      {[...Array(5)].map((_, i) => (
-                                        <Star
-                                          key={i}
-                                          className={`h-3 w-3 ${i < Math.floor(hotel.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
-                                        />
-                                      ))}
-                                    </div>
-                                    <span className="text-xs text-gray-600">
-                                      {hotel.rating}
-                                    </span>
-                                    <Badge
-                                      className={
-                                        hotel.availability === "Available"
-                                          ? "status-success"
-                                          : "status-warning"
-                                      }
-                                    >
-                                      {hotel.availability}
-                                    </Badge>
-                                  </div>
-
-                                  <p className="text-xs text-gray-600 mb-3">
-                                    {hotel.description}
-                                  </p>
-
-                                  <Button
-                                    size="sm"
-                                    className="w-full btn-flydubai-primary"
-                                    onClick={() => confirmHotelBooking(hotel)}
-                                    disabled={hotel.availability !== "Available"}
-                                  >
-                                    Book Now
-                                  </Button>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
             </TabsContent>
           </Tabs>
         );
