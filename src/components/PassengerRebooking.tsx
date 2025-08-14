@@ -155,7 +155,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   const recoveryOption = context?.recoveryOption;
   const fromExecution = context?.fromExecution;
   console.log(selectedFlight);
-  
+
   // State for generated passengers
   const [generatedPassengers, setGeneratedPassengers] = useState([]);
 
@@ -733,7 +733,8 @@ export function PassengerRebooking({ context, onClearContext }) {
       availability: "Available",
       image:
         "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=250&fit=crop",
-      description: "Elegant hotel with excellent conference facilities and dining options",
+      description:
+        "Elegant hotel with excellent conference facilities and dining options",
     },
     {
       id: "HTL-003",
@@ -1135,7 +1136,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     if (selectedCrewMembers.size === 0 || !selectedHotelForCrew) {
       alertService.error(
         "Selection Required",
-        "Please select crew members and a hotel for assignment."
+        "Please select crew members and a hotel for assignment.",
       );
       return;
     }
@@ -1148,18 +1149,18 @@ export function PassengerRebooking({ context, onClearContext }) {
     checkOutDate.setHours(10, 0, 0, 0); // 10:00 AM check-out
 
     const crewList = Array.from(selectedCrewMembers).map((crewId, index) => {
-      const crewMember = crewData?.crew?.find(c => c.name === crewId) || {
+      const crewMember = crewData?.crew?.find((c) => c.name === crewId) || {
         name: crewId,
         type: "Flight Crew",
-        status: "Available"
+        status: "Available",
       };
-      
+
       return {
         employee_id: `C${10000 + index + Math.floor(Math.random() * 1000)}`,
         name: crewMember.name,
         rank: crewMember.type || "Flight Crew",
         base: "DXB",
-        contact_number: `+971${500000000 + Math.floor(Math.random() * 10000000)}`
+        contact_number: `+971${500000000 + Math.floor(Math.random() * 10000000)}`,
       };
     });
 
@@ -1173,23 +1174,29 @@ export function PassengerRebooking({ context, onClearContext }) {
       room_number: `${Math.floor(Math.random() * 3000) + 1000}`,
       special_requests: "Standard crew accommodation",
       assignment_status: "assigned",
-      total_cost: parseFloat(selectedHotelForCrew.pricePerNight.replace(/[^\d.]/g, "")) * crewList.length,
+      total_cost:
+        parseFloat(selectedHotelForCrew.pricePerNight.replace(/[^\d.]/g, "")) *
+        crewList.length,
       booking_reference: assignmentId,
       transport_details: {
         pickup_location: "DXB Terminal 3 Crew Gate",
-        pickup_time: new Date(checkInDate.getTime() - 30 * 60 * 1000).toISOString(), // 30 min before check-in
+        pickup_time: new Date(
+          checkInDate.getTime() - 30 * 60 * 1000,
+        ).toISOString(), // 30 min before check-in
         dropoff_location: "Hotel Lobby",
-        dropoff_time: new Date(checkOutDate.getTime() + 30 * 60 * 1000).toISOString(), // 30 min after check-out
+        dropoff_time: new Date(
+          checkOutDate.getTime() + 30 * 60 * 1000,
+        ).toISOString(), // 30 min after check-out
         vehicle_type: "Mini Van",
-        vendor: "City Crew Transport"
+        vendor: "City Crew Transport",
       },
-      created_by: "ops_user_01"
+      created_by: "ops_user_01",
     };
 
     // Store assignment in state
-    setCrewHotelAssignments(prev => ({
+    setCrewHotelAssignments((prev) => ({
       ...prev,
-      [assignmentId]: assignment
+      [assignmentId]: assignment,
     }));
 
     // Clear selections
@@ -1197,12 +1204,12 @@ export function PassengerRebooking({ context, onClearContext }) {
     setSelectedHotelForCrew(null);
 
     toast.success("Crew Assignment Confirmed", {
-      description: `${crewList.length} crew member(s) assigned to ${selectedHotelForCrew.name}`
+      description: `${crewList.length} crew member(s) assigned to ${selectedHotelForCrew.name}`,
     });
   };
 
   const handleCrewSelection = (crewName) => {
-    setSelectedCrewMembers(prev => {
+    setSelectedCrewMembers((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(crewName)) {
         newSet.delete(crewName);
@@ -1267,8 +1274,8 @@ export function PassengerRebooking({ context, onClearContext }) {
       setIsLoading(true);
 
       const impactArea = recoveryOption?.impact_area || [];
-      const hasPassenger = impactArea.includes('passenger');
-      const hasCrew = impactArea.includes('crew');
+      const hasPassenger = impactArea.includes("passenger");
+      const hasCrew = impactArea.includes("crew");
       let passengerSuccess = true;
       let crewSuccess = true;
 
@@ -1300,14 +1307,16 @@ export function PassengerRebooking({ context, onClearContext }) {
         });
 
         console.log("Saving passenger rebookings:", rebookingData);
-        passengerSuccess = await databaseService.savePassengerRebookings(rebookingData);
+        passengerSuccess =
+          await databaseService.savePassengerRebookings(rebookingData);
       }
 
       // Store crew-hotel assignments if impact area includes crew
       if (hasCrew && Object.keys(crewHotelAssignments).length > 0) {
         console.log("Saving crew hotel assignments:", crewHotelAssignments);
         const crewAssignments = Object.values(crewHotelAssignments);
-        crewSuccess = await databaseService.saveCrewHotelAssignments(crewAssignments);
+        crewSuccess =
+          await databaseService.saveCrewHotelAssignments(crewAssignments);
       }
 
       if (passengerSuccess && crewSuccess) {
@@ -1322,8 +1331,9 @@ export function PassengerRebooking({ context, onClearContext }) {
           const solutionData = {
             disruption_id: disruptionFlightId,
             option_id: recoveryOption?.id || `SERVICES_${Date.now()}`,
-            option_title: recoveryOption?.title || "Comprehensive Services Recovery",
-            option_description: `Services processing completed: ${hasPassenger ? `${passengersToApprove.length} passengers` : ''}${hasPassenger && hasCrew ? ' and ' : ''}${hasCrew ? `${Object.keys(crewHotelAssignments).length} crew assignments` : ''}`,
+            option_title:
+              recoveryOption?.title || "Comprehensive Services Recovery",
+            option_description: `Services processing completed: ${hasPassenger ? `${passengersToApprove.length} passengers` : ""}${hasPassenger && hasCrew ? " and " : ""}${hasCrew ? `${Object.keys(crewHotelAssignments).length} crew assignments` : ""}`,
             cost: recoveryOption?.cost || "$75,000",
             timeline: recoveryOption?.timeline || "3 hours",
             confidence: 95,
@@ -1334,14 +1344,20 @@ export function PassengerRebooking({ context, onClearContext }) {
               crew_services: hasCrew,
               rebookings: hasPassenger ? passengersToApprove.length : 0,
               pnr_groups: hasPassenger ? selectedPnrs.size : 0,
-              crew_assignments: hasCrew ? Object.keys(crewHotelAssignments).length : 0,
+              crew_assignments: hasCrew
+                ? Object.keys(crewHotelAssignments).length
+                : 0,
               passengers_processed: hasPassenger ? passengersToApprove : [],
               crew_assignments_processed: hasCrew ? crewHotelAssignments : {},
               recovery_option: recoveryOption,
             },
             rotation_impact: {
-              passenger_processing: hasPassenger ? `${passengersToApprove.length} passengers processed` : "No passenger processing required",
-              crew_processing: hasCrew ? `${Object.keys(crewHotelAssignments).length} crew assignments completed` : "No crew processing required",
+              passenger_processing: hasPassenger
+                ? `${passengersToApprove.length} passengers processed`
+                : "No passenger processing required",
+              crew_processing: hasCrew
+                ? `${Object.keys(crewHotelAssignments).length} crew assignments completed`
+                : "No crew processing required",
               completion_time: new Date().toISOString(),
               status: "completed",
             },
@@ -1349,12 +1365,15 @@ export function PassengerRebooking({ context, onClearContext }) {
             approval_required: true,
           };
 
-          const pendingSolutionSuccess = await databaseService.addPendingSolution(solutionData);
+          const pendingSolutionSuccess =
+            await databaseService.addPendingSolution(solutionData);
 
           if (pendingSolutionSuccess) {
             let successMessage = "Services sent for approval successfully!\n";
-            if (hasPassenger) successMessage += `${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups processed.\n`;
-            if (hasCrew) successMessage += `${Object.keys(crewHotelAssignments).length} crew hotel assignments completed.`;
+            if (hasPassenger)
+              successMessage += `${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups processed.\n`;
+            if (hasCrew)
+              successMessage += `${Object.keys(crewHotelAssignments).length} crew hotel assignments completed.`;
 
             alertService.success(
               "Submission Successful",
@@ -1381,10 +1400,11 @@ export function PassengerRebooking({ context, onClearContext }) {
         }
       } else {
         let errorMessage = "Failed to store ";
-        if (!passengerSuccess) errorMessage += "passenger rebooking information";
+        if (!passengerSuccess)
+          errorMessage += "passenger rebooking information";
         if (!passengerSuccess && !crewSuccess) errorMessage += " and ";
         if (!crewSuccess) errorMessage += "crew assignment information";
-        
+
         alertService.error("Storage Error", errorMessage);
       }
     } catch (error) {
@@ -2110,8 +2130,8 @@ export function PassengerRebooking({ context, onClearContext }) {
       {/* Tabs for Passenger Service and Crew Schedule */}
       {(() => {
         const impactArea = recoveryOption?.impact_area || [];
-        const hasPassenger = impactArea.includes('passenger');
-        const hasCrew = impactArea.includes('crew');
+        const hasPassenger = impactArea.includes("passenger");
+        const hasCrew = impactArea.includes("crew");
         const showBothTabs = hasPassenger && hasCrew;
         const showOnlyPassenger = hasPassenger && !hasCrew;
         const showOnlyCrew = hasCrew && !hasPassenger;
@@ -2123,7 +2143,9 @@ export function PassengerRebooking({ context, onClearContext }) {
           return (
             <Tabs value="passenger-service" onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-1">
-                <TabsTrigger value="passenger-service">Passenger Service</TabsTrigger>
+                <TabsTrigger value="passenger-service">
+                  Passenger Service
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="passenger-service" className="space-y-6">
                 {/* Stats Cards - moved inside passenger service tab */}
@@ -2205,7 +2227,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                           </p>
                           <p className="text-2xl font-bold text-blue-700">
                             {context
-                              ? passengers.filter((p) => p.priority === "VIP").length
+                              ? passengers.filter((p) => p.priority === "VIP")
+                                  .length
                               : "12"}
                           </p>
                         </div>
@@ -2304,7 +2327,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                             <SelectValue placeholder="All Statuses" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="all-statuses">All Statuses</SelectItem>
+                            <SelectItem value="all-statuses">
+                              All Statuses
+                            </SelectItem>
                             <SelectItem value="Confirmed">Confirmed</SelectItem>
                             <SelectItem value="Rebooking Required">
                               Rebooking Required
@@ -2390,16 +2415,20 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 selectedPnrs.size ===
                                   Object.keys(filteredPnrGroups).filter(
                                     (pnr) =>
-                                      !isPnrGroupConfirmed(filteredPnrGroups[pnr]),
+                                      !isPnrGroupConfirmed(
+                                        filteredPnrGroups[pnr],
+                                      ),
                                   ).length && selectedPnrs.size > 0
                               }
                               onCheckedChange={handleSelectAll}
-                              disabled={Object.keys(filteredPnrGroups).every((pnr) =>
-                                isPnrGroupConfirmed(filteredPnrGroups[pnr]),
+                              disabled={Object.keys(filteredPnrGroups).every(
+                                (pnr) =>
+                                  isPnrGroupConfirmed(filteredPnrGroups[pnr]),
                               )}
                             />
                             <span className="font-medium text-gray-700">
-                              Select All ({Object.keys(filteredPnrGroups).length} PNR
+                              Select All (
+                              {Object.keys(filteredPnrGroups).length} PNR
                               groups)
                             </span>
                             {selectedPnrs.size > 0 && (
@@ -2412,14 +2441,21 @@ export function PassengerRebooking({ context, onClearContext }) {
 
                         {Object.entries(filteredPnrGroups).map(
                           ([pnr, groupPassengers]) => (
-                            <div key={pnr} className="border rounded-lg bg-white">
+                            <div
+                              key={pnr}
+                              className="border rounded-lg bg-white"
+                            >
                               <div className="p-4 border-b bg-gray-50">
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center gap-3">
                                     <Checkbox
                                       checked={selectedPnrs.has(pnr)}
-                                      onCheckedChange={() => handlePnrSelection(pnr)}
-                                      disabled={isPnrGroupConfirmed(groupPassengers)}
+                                      onCheckedChange={() =>
+                                        handlePnrSelection(pnr)
+                                      }
+                                      disabled={isPnrGroupConfirmed(
+                                        groupPassengers,
+                                      )}
                                       className="border-flydubai-blue data-[state=checked]:bg-flydubai-blue disabled:opacity-50 disabled:cursor-not-allowed"
                                     />
                                     <div>
@@ -2433,9 +2469,13 @@ export function PassengerRebooking({ context, onClearContext }) {
                                           className="bg-blue-100 text-blue-800"
                                         >
                                           {groupPassengers.length} passenger
-                                          {groupPassengers.length > 1 ? "s" : ""}
+                                          {groupPassengers.length > 1
+                                            ? "s"
+                                            : ""}
                                         </Badge>
-                                        {isPnrGroupConfirmed(groupPassengers) && (
+                                        {isPnrGroupConfirmed(
+                                          groupPassengers,
+                                        ) && (
                                           <Badge className="bg-green-100 text-green-800 border-green-200">
                                             <CheckCircle className="h-3 w-3 mr-1" />
                                             Confirmed
@@ -2444,7 +2484,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                       </div>
                                       <div className="text-sm text-gray-600 mt-1">
                                         Group Priority:{" "}
-                                        {groupPassengers[0]?.priority || "Standard"}
+                                        {groupPassengers[0]?.priority ||
+                                          "Standard"}
                                       </div>
                                     </div>
                                   </div>
@@ -2460,14 +2501,21 @@ export function PassengerRebooking({ context, onClearContext }) {
                                       ) : (
                                         <ChevronRight className="h-4 w-4" />
                                       )}
-                                      {expandedPnrs.has(pnr) ? "Collapse" : "Expand"}
+                                      {expandedPnrs.has(pnr)
+                                        ? "Collapse"
+                                        : "Expand"}
                                     </Button>
                                     <Button
                                       size="sm"
                                       onClick={() =>
-                                        handleRebookPnrGroup(pnr, groupPassengers)
+                                        handleRebookPnrGroup(
+                                          pnr,
+                                          groupPassengers,
+                                        )
                                       }
-                                      disabled={isPnrGroupConfirmed(groupPassengers)}
+                                      disabled={isPnrGroupConfirmed(
+                                        groupPassengers,
+                                      )}
                                       className="btn-flydubai-primary disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                       <RefreshCw className="h-4 w-4 mr-2" />
@@ -2557,10 +2605,15 @@ export function PassengerRebooking({ context, onClearContext }) {
                         </TableHeader>
                         <TableBody>
                           {filteredPassengers.map((passenger) => (
-                            <TableRow key={passenger.id} className="hover:bg-blue-50">
+                            <TableRow
+                              key={passenger.id}
+                              className="hover:bg-blue-50"
+                            >
                               <TableCell>
                                 <div>
-                                  <div className="font-medium">{passenger.name}</div>
+                                  <div className="font-medium">
+                                    {passenger.name}
+                                  </div>
                                   <div className="text-sm text-gray-500">
                                     {passenger.contactInfo}
                                   </div>
@@ -2594,7 +2647,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 </Badge>
                               </TableCell>
                               <TableCell>
-                                <Badge className={getStatusColor(passenger.status)}>
+                                <Badge
+                                  className={getStatusColor(passenger.status)}
+                                >
                                   {passenger.status}
                                 </Badge>
                               </TableCell>
@@ -2613,17 +2668,22 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => handleRebookPassenger(passenger)}
+                                    onClick={() =>
+                                      handleRebookPassenger(passenger)
+                                    }
                                     className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                                   >
                                     <Eye className="h-3 w-3 mr-1" />
                                     View
                                   </Button>
-                                  {passenger.status === "Rebooking Required" && (
+                                  {passenger.status ===
+                                    "Rebooking Required" && (
                                     <Button
                                       size="sm"
                                       className="btn-flydubai-primary text-xs"
-                                      onClick={() => handleRebookPassenger(passenger)}
+                                      onClick={() =>
+                                        handleRebookPassenger(passenger)
+                                      }
                                     >
                                       <Edit className="h-3 w-3 mr-1" />
                                       Rebook
@@ -2647,7 +2707,9 @@ export function PassengerRebooking({ context, onClearContext }) {
           return (
             <Tabs value="crew-schedule" onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-1">
-                <TabsTrigger value="crew-schedule">Crew Schedule Information</TabsTrigger>
+                <TabsTrigger value="crew-schedule">
+                  Crew Schedule Information
+                </TabsTrigger>
               </TabsList>
               <TabsContent value="crew-schedule" className="space-y-6">
                 {/* Crew Assignment Status */}
@@ -2757,7 +2819,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                       Hotel Selection for Crew Accommodation
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      Select hotels for crew members based on the disrupted flight's location
+                      Select hotels for crew members based on the disrupted
+                      flight's location
                     </p>
                   </CardHeader>
                   <CardContent>
@@ -2823,7 +2886,9 @@ export function PassengerRebooking({ context, onClearContext }) {
 
                                 <div className="flex items-center gap-2">
                                   <Checkbox />
-                                  <span className="text-xs font-medium">Select for crew</span>
+                                  <span className="text-xs font-medium">
+                                    Select for crew
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -2840,7 +2905,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                       </h4>
                       <div className="bg-gray-50 rounded-lg p-4">
                         <div className="text-sm text-gray-600 mb-2">
-                          Selected crew members will be assigned to chosen hotels automatically based on:
+                          Selected crew members will be assigned to chosen
+                          hotels automatically based on:
                         </div>
                         <ul className="text-xs text-gray-500 space-y-1 ml-4">
                           <li>• Crew rank and seniority</li>
@@ -2856,7 +2922,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                           className="btn-flydubai-primary"
                           onClick={() => {
                             toast.success("Crew hotel assignments confirmed", {
-                              description: "Selected crew members have been assigned to available hotels"
+                              description:
+                                "Selected crew members have been assigned to available hotels",
                             });
                           }}
                         >
@@ -2878,7 +2945,9 @@ export function PassengerRebooking({ context, onClearContext }) {
         return (
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="passenger-service">Passenger Service</TabsTrigger>
+              <TabsTrigger value="passenger-service">
+                Passenger Service
+              </TabsTrigger>
               <TabsTrigger value="crew-schedule">
                 Crew Schedule Information
               </TabsTrigger>
@@ -2963,7 +3032,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                         </p>
                         <p className="text-2xl font-bold text-blue-700">
                           {context
-                            ? passengers.filter((p) => p.priority === "VIP").length
+                            ? passengers.filter((p) => p.priority === "VIP")
+                                .length
                             : "12"}
                         </p>
                       </div>
@@ -3062,7 +3132,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                           <SelectValue placeholder="All Statuses" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="all-statuses">All Statuses</SelectItem>
+                          <SelectItem value="all-statuses">
+                            All Statuses
+                          </SelectItem>
                           <SelectItem value="Confirmed">Confirmed</SelectItem>
                           <SelectItem value="Rebooking Required">
                             Rebooking Required
@@ -3148,17 +3220,20 @@ export function PassengerRebooking({ context, onClearContext }) {
                               selectedPnrs.size ===
                                 Object.keys(filteredPnrGroups).filter(
                                   (pnr) =>
-                                    !isPnrGroupConfirmed(filteredPnrGroups[pnr]),
+                                    !isPnrGroupConfirmed(
+                                      filteredPnrGroups[pnr],
+                                    ),
                                 ).length && selectedPnrs.size > 0
                             }
                             onCheckedChange={handleSelectAll}
-                            disabled={Object.keys(filteredPnrGroups).every((pnr) =>
-                              isPnrGroupConfirmed(filteredPnrGroups[pnr]),
+                            disabled={Object.keys(filteredPnrGroups).every(
+                              (pnr) =>
+                                isPnrGroupConfirmed(filteredPnrGroups[pnr]),
                             )}
                           />
                           <span className="font-medium text-gray-700">
-                            Select All ({Object.keys(filteredPnrGroups).length} PNR
-                            groups)
+                            Select All ({Object.keys(filteredPnrGroups).length}{" "}
+                            PNR groups)
                           </span>
                           {selectedPnrs.size > 0 && (
                             <Badge variant="outline" className="ml-auto">
@@ -3176,8 +3251,12 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 <div className="flex items-center gap-3">
                                   <Checkbox
                                     checked={selectedPnrs.has(pnr)}
-                                    onCheckedChange={() => handlePnrSelection(pnr)}
-                                    disabled={isPnrGroupConfirmed(groupPassengers)}
+                                    onCheckedChange={() =>
+                                      handlePnrSelection(pnr)
+                                    }
+                                    disabled={isPnrGroupConfirmed(
+                                      groupPassengers,
+                                    )}
                                     className="border-flydubai-blue data-[state=checked]:bg-flydubai-blue disabled:opacity-50 disabled:cursor-not-allowed"
                                   />
                                   <div>
@@ -3202,7 +3281,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                     </div>
                                     <div className="text-sm text-gray-600 mt-1">
                                       Group Priority:{" "}
-                                      {groupPassengers[0]?.priority || "Standard"}
+                                      {groupPassengers[0]?.priority ||
+                                        "Standard"}
                                     </div>
                                   </div>
                                 </div>
@@ -3218,14 +3298,18 @@ export function PassengerRebooking({ context, onClearContext }) {
                                     ) : (
                                       <ChevronRight className="h-4 w-4" />
                                     )}
-                                    {expandedPnrs.has(pnr) ? "Collapse" : "Expand"}
+                                    {expandedPnrs.has(pnr)
+                                      ? "Collapse"
+                                      : "Expand"}
                                   </Button>
                                   <Button
                                     size="sm"
                                     onClick={() =>
                                       handleRebookPnrGroup(pnr, groupPassengers)
                                     }
-                                    disabled={isPnrGroupConfirmed(groupPassengers)}
+                                    disabled={isPnrGroupConfirmed(
+                                      groupPassengers,
+                                    )}
                                     className="btn-flydubai-primary disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
                                     <RefreshCw className="h-4 w-4 mr-2" />
@@ -3315,10 +3399,15 @@ export function PassengerRebooking({ context, onClearContext }) {
                       </TableHeader>
                       <TableBody>
                         {filteredPassengers.map((passenger) => (
-                          <TableRow key={passenger.id} className="hover:bg-blue-50">
+                          <TableRow
+                            key={passenger.id}
+                            className="hover:bg-blue-50"
+                          >
                             <TableCell>
                               <div>
-                                <div className="font-medium">{passenger.name}</div>
+                                <div className="font-medium">
+                                  {passenger.name}
+                                </div>
                                 <div className="text-sm text-gray-500">
                                   {passenger.contactInfo}
                                 </div>
@@ -3344,15 +3433,15 @@ export function PassengerRebooking({ context, onClearContext }) {
                             </TableCell>
                             <TableCell>
                               <Badge
-                                className={getPriorityColor(
-                                  passenger.priority,
-                                )}
+                                className={getPriorityColor(passenger.priority)}
                               >
                                 {passenger.priority}
                               </Badge>
                             </TableCell>
                             <TableCell>
-                              <Badge className={getStatusColor(passenger.status)}>
+                              <Badge
+                                className={getStatusColor(passenger.status)}
+                              >
                                 {passenger.status}
                               </Badge>
                             </TableCell>
@@ -3371,7 +3460,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleRebookPassenger(passenger)}
+                                  onClick={() =>
+                                    handleRebookPassenger(passenger)
+                                  }
                                   className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                                 >
                                   <Eye className="h-3 w-3 mr-1" />
@@ -3381,7 +3472,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Button
                                     size="sm"
                                     className="btn-flydubai-primary text-xs"
-                                    onClick={() => handleRebookPassenger(passenger)}
+                                    onClick={() =>
+                                      handleRebookPassenger(passenger)
+                                    }
                                   >
                                     <Edit className="h-3 w-3 mr-1" />
                                     Rebook
@@ -3422,27 +3515,65 @@ export function PassengerRebooking({ context, onClearContext }) {
                             <TableHead>Name</TableHead>
                             <TableHead>Rank</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead>Location</TableHead>
-                            <TableHead>Duty Time Remaining</TableHead>
+                            {/* <TableHead>Location</TableHead> */}
+                            {/* <TableHead>Duty Time Remaining</TableHead> */}
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {(crewData?.crew && crewData.crew.length > 0 ? crewData.crew : [
-                            { name: "Capt. Ahmed Al-Mansouri", type: "Captain", status: "Available", location: "Dubai Airport Hotel", dutyTime: "2h 15m" },
-                            { name: "F/O Sarah Johnson", type: "First Officer", status: "On Duty", location: "Crew Rest Area Terminal 2", dutyTime: "4h 30m" },
-                            { name: "Fatima Al-Mansouri", type: "Senior Flight Attendant", status: "Available", location: "Crew Lounge Level 3", dutyTime: "3h 45m" },
-                            { name: "Ahmed Hassan", type: "Flight Attendant", status: "Available", location: "Crew Lounge Level 3", dutyTime: "5h 10m" }
-                          ]).map((crewMember, index) => {
-                            const isAssigned = Object.values(crewHotelAssignments).some(assignment => 
-                              assignment.crew_member.some(cm => cm.name === crewMember.name)
+                          {(crewData?.crew && crewData.crew.length > 0
+                            ? crewData.crew
+                            : [
+                                {
+                                  name: "Capt. Ahmed Al-Mansouri",
+                                  type: "Captain",
+                                  status: "Available",
+                                  location: "Dubai Airport Hotel",
+                                  dutyTime: "2h 15m",
+                                },
+                                {
+                                  name: "F/O Sarah Johnson",
+                                  type: "First Officer",
+                                  status: "On Duty",
+                                  location: "Crew Rest Area Terminal 2",
+                                  dutyTime: "4h 30m",
+                                },
+                                {
+                                  name: "Fatima Al-Mansouri",
+                                  type: "Senior Flight Attendant",
+                                  status: "Available",
+                                  location: "Crew Lounge Level 3",
+                                  dutyTime: "3h 45m",
+                                },
+                                {
+                                  name: "Ahmed Hassan",
+                                  type: "Flight Attendant",
+                                  status: "Available",
+                                  location: "Crew Lounge Level 3",
+                                  dutyTime: "5h 10m",
+                                },
+                              ]
+                          ).map((crewMember, index) => {
+                            const isAssigned = Object.values(
+                              crewHotelAssignments,
+                            ).some((assignment) =>
+                              assignment.crew_member.some(
+                                (cm) => cm.name === crewMember.name,
+                              ),
                             );
-                            
+
                             return (
-                              <TableRow key={index} className={isAssigned ? "bg-green-50" : ""}>
+                              <TableRow
+                                key={index}
+                                className={isAssigned ? "bg-green-50" : ""}
+                              >
                                 <TableCell>
-                                  <Checkbox 
-                                    checked={selectedCrewMembers.has(crewMember.name)}
-                                    onCheckedChange={() => handleCrewSelection(crewMember.name)}
+                                  <Checkbox
+                                    checked={selectedCrewMembers.has(
+                                      crewMember.name,
+                                    )}
+                                    onCheckedChange={() =>
+                                      handleCrewSelection(crewMember.name)
+                                    }
                                     disabled={isAssigned}
                                   />
                                 </TableCell>
@@ -3456,18 +3587,21 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 </TableCell>
                                 <TableCell>{crewMember.type}</TableCell>
                                 <TableCell>
-                                  <Badge className={
-                                    crewMember.status === "Available"
-                                      ? "bg-green-100 text-green-700 border-green-200"
-                                      : crewMember.status === "On Duty"
-                                        ? "bg-yellow-100 text-yellow-700 border-yellow-200"
-                                        : "bg-red-100 text-red-700 border-red-200"
-                                  }>
-                                    {crewMember.status}
+                                  <Badge
+                                    className={
+                                      crewMember.status === "Available"
+                                        ? "bg-green-100 text-green-700 border-green-200"
+                                        : crewMember.status === "On Duty"
+                                          ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                          : "bg-red-100 text-red-700 border-red-200"
+                                    }
+                                  >
+                                    {/* {crewMember.status} */}
+                                    Duty Voilation
                                   </Badge>
                                 </TableCell>
-                                <TableCell>{crewMember.location}</TableCell>
-                                <TableCell>{crewMember.dutyTime}</TableCell>
+                                {/* <TableCell>{crewMember.location}</TableCell> */}
+                                {/* <TableCell>{crewMember.dutyTime}</TableCell> */}
                               </TableRow>
                             );
                           })}
@@ -3486,7 +3620,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                     Hotel Selection for Crew Accommodation
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Select hotels for crew members based on the disrupted flight's location
+                    Select hotels for crew members based on the disrupted
+                    flight's location
                   </p>
                 </CardHeader>
                 <CardContent>
@@ -3551,11 +3686,17 @@ export function PassengerRebooking({ context, onClearContext }) {
                               </p>
 
                               <div className="flex items-center gap-2">
-                                <Checkbox 
-                                  checked={selectedHotelForCrew?.id === hotel.id}
-                                  onCheckedChange={() => handleHotelSelectionForCrew(hotel)}
+                                <Checkbox
+                                  checked={
+                                    selectedHotelForCrew?.id === hotel.id
+                                  }
+                                  onCheckedChange={() =>
+                                    handleHotelSelectionForCrew(hotel)
+                                  }
                                 />
-                                <span className="text-xs font-medium">Select for crew</span>
+                                <span className="text-xs font-medium">
+                                  Select for crew
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -3572,7 +3713,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                     </h4>
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="text-sm text-gray-600 mb-2">
-                        Selected crew members will be assigned to chosen hotels automatically based on:
+                        Selected crew members will be assigned to chosen hotels
+                        automatically based on:
                       </div>
                       <ul className="text-xs text-gray-500 space-y-1 ml-4">
                         <li>• Crew rank and seniority</li>
@@ -3587,12 +3729,16 @@ export function PassengerRebooking({ context, onClearContext }) {
                         size="sm"
                         className="btn-flydubai-primary"
                         onClick={handleConfirmCrewAssignment}
-                        disabled={selectedCrewMembers.size === 0 || !selectedHotelForCrew}
+                        disabled={
+                          selectedCrewMembers.size === 0 ||
+                          !selectedHotelForCrew
+                        }
                       >
                         Confirm Assignment
                       </Button>
                       <Button size="sm" variant="outline">
-                        View Assignment Details ({Object.keys(crewHotelAssignments).length})
+                        View Assignment Details (
+                        {Object.keys(crewHotelAssignments).length})
                       </Button>
                     </div>
 
@@ -3601,33 +3747,45 @@ export function PassengerRebooking({ context, onClearContext }) {
                       <div className="mt-6 pt-6 border-t">
                         <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
                           <CheckCircle className="h-4 w-4 text-green-600" />
-                          Current Crew-Hotel Assignments ({Object.keys(crewHotelAssignments).length})
+                          Current Crew-Hotel Assignments (
+                          {Object.keys(crewHotelAssignments).length})
                         </h4>
                         <div className="space-y-3">
-                          {Object.values(crewHotelAssignments).map((assignment, index) => (
-                            <div key={index} className="bg-green-50 border border-green-200 rounded-lg p-3">
-                              <div className="flex items-start justify-between mb-2">
-                                <div>
-                                  <div className="font-medium text-green-800">
-                                    {assignment.hotel_name}
+                          {Object.values(crewHotelAssignments).map(
+                            (assignment, index) => (
+                              <div
+                                key={index}
+                                className="bg-green-50 border border-green-200 rounded-lg p-3"
+                              >
+                                <div className="flex items-start justify-between mb-2">
+                                  <div>
+                                    <div className="font-medium text-green-800">
+                                      {assignment.hotel_name}
+                                    </div>
+                                    <div className="text-sm text-green-700">
+                                      Booking: {assignment.booking_reference}
+                                    </div>
                                   </div>
-                                  <div className="text-sm text-green-700">
-                                    Booking: {assignment.booking_reference}
-                                  </div>
+                                  <Badge className="bg-green-100 text-green-700 border-green-200">
+                                    {assignment.assignment_status}
+                                  </Badge>
                                 </div>
-                                <Badge className="bg-green-100 text-green-700 border-green-200">
-                                  {assignment.assignment_status}
-                                </Badge>
+                                <div className="text-sm text-green-700">
+                                  Crew:{" "}
+                                  {assignment.crew_member
+                                    .map((c) => c.name)
+                                    .join(", ")}
+                                </div>
+                                <div className="text-sm text-green-600 mt-1">
+                                  Check-in:{" "}
+                                  {new Date(
+                                    assignment.check_in_date,
+                                  ).toLocaleDateString()}{" "}
+                                  | Cost: AED {assignment.total_cost}
+                                </div>
                               </div>
-                              <div className="text-sm text-green-700">
-                                Crew: {assignment.crew_member.map(c => c.name).join(", ")}
-                              </div>
-                              <div className="text-sm text-green-600 mt-1">
-                                Check-in: {new Date(assignment.check_in_date).toLocaleDateString()} | 
-                                Cost: AED {assignment.total_cost}
-                              </div>
-                            </div>
-                          ))}
+                            ),
+                          )}
                         </div>
                       </div>
                     )}
