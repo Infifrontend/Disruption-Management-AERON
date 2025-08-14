@@ -733,8 +733,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       availability: "Available",
       image:
         "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=250&fit=crop",
-      description:
-        "Elegant hotel with excellent conference facilities and dining options",
+      description: "Elegant hotel with excellent conference facilities and dining options",
     },
     {
       id: "HTL-003",
@@ -1339,6 +1338,55 @@ export function PassengerRebooking({ context, onClearContext }) {
         );
 
         if (statusSuccess) {
+          // Prepare passenger rebooking data if applicable
+          let passengerRebookingData = null;
+          if (hasPassenger && passengersToApprove.length > 0) {
+            passengerRebookingData = passengersToApprove.map((passenger) => {
+              const rebookingInfo = confirmedRebookings[passenger.id];
+              return {
+                disruption_id: disruptionFlightId,
+                pnr: passenger.pnr,
+                passenger_id: passenger.id,
+                passenger_name: passenger.name,
+                original_flight:
+                  passenger.originalFlight ||
+                  context?.flight?.flightNumber ||
+                  selectedFlight?.flight_number ||
+                  "N/A",
+                original_seat: passenger.seat,
+                rebooked_flight: rebookingInfo?.flightNumber || "TBD",
+                rebooked_cabin: rebookingInfo?.cabin || "Economy",
+                rebooked_seat: rebookingInfo?.seat || "TBD",
+                rebooking_date: rebookingInfo?.date || new Date().toISOString(),
+                additional_services: rebookingInfo?.services || [],
+                total_passengers_in_pnr:
+                  filteredPnrGroups[passenger.pnr]?.length || 1,
+                rebooking_cost: 0,
+                notes: `Approved rebooking for disruption ${disruptionFlightId}`,
+              };
+            });
+          }
+
+          // Prepare crew hotel assignments data if applicable
+          let crewHotelAssignmentsData = null;
+          if (hasCrew && Object.keys(crewHotelAssignments).length > 0) {
+            crewHotelAssignmentsData = Object.values(crewHotelAssignments).map((assignment) => ({
+              disruption_id: disruptionFlightId,
+              crew_member: assignment.crew_member,
+              hotel_name: assignment.hotel_name,
+              hotel_location: assignment.hotel_location,
+              check_in_date: assignment.check_in_date,
+              check_out_date: assignment.check_out_date,
+              room_number: assignment.room_number,
+              special_requests: assignment.special_requests,
+              assignment_status: assignment.assignment_status,
+              total_cost: assignment.total_cost,
+              booking_reference: assignment.booking_reference,
+              transport_details: assignment.transport_details,
+              created_by: assignment.created_by,
+            }));
+          }
+
           // Save pending recovery solution with comprehensive services data
           const solutionData = {
             disruption_id: disruptionFlightId,
@@ -1346,11 +1394,29 @@ export function PassengerRebooking({ context, onClearContext }) {
             option_title:
               recoveryOption?.title || "Comprehensive Services Recovery",
             option_description: `Services processing completed: ${hasPassenger ? `${passengersToApprove.length} passengers` : ""}${hasPassenger && hasCrew ? " and " : ""}${hasCrew ? `${Object.keys(crewHotelAssignments).length} crew assignments` : ""}`,
-            cost: recoveryOption?.cost || "$75,000",
-            timeline: recoveryOption?.timeline || "3 hours",
-            confidence: 95,
-            impact: "High",
-            status: "Pending",
+            estimated_cost: recoveryOption?.cost || "AED 75,000",
+            estimated_delay: recoveryOption?.delay || 0,
+            passenger_impact: {
+              affected: hasPassenger ? passengersToApprove.length : 0,
+              reaccommodated: hasPassenger ? passengersToApprove.filter(p => {
+                const status = passengerRebookingStatus[p.id] || p.status;
+                return status === "Confirmed";
+              }).length : 0,
+              compensated: 0,
+              missingConnections: hasPassenger ? passengersToApprove.filter(p => 
+                p.connectedFlights && p.connectedFlights.length > 0
+              ).length : 0,
+            },
+            operational_complexity: recoveryOption?.complexity || "medium",
+            resource_requirements: JSON.stringify(recoveryOption?.requirements || {}),
+            timeline_details: JSON.stringify(recoveryOption?.timeline || "3 hours total"),
+            approval_status: "pending",
+            created_by: "passenger_services",
+            notes: `Submitted from passenger services with ${hasPassenger ? passengersToApprove.length : 0} passengers processed`,
+            // Include passenger rebooking data if available
+            ...(passengerRebookingData && { passenger_rebooking: passengerRebookingData }),
+            // Include crew hotel assignments data if available
+            ...(crewHotelAssignmentsData && { crew_hotel_assignments: crewHotelAssignmentsData }),
             full_details: {
               passenger_services: hasPassenger,
               crew_services: hasCrew,
@@ -2481,9 +2547,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                           className="bg-blue-100 text-blue-800"
                                         >
                                           {groupPassengers.length} passenger
-                                          {groupPassengers.length > 1
-                                            ? "s"
-                                            : ""}
+                                          {groupPassengers.length > 1 ? "s" : ""}
                                         </Badge>
                                         {isPnrGroupConfirmed(
                                           groupPassengers,
@@ -2747,8 +2811,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                               <TableHead>Name</TableHead>
                               <TableHead>Rank</TableHead>
                               <TableHead>Status</TableHead>
-                              {/* <TableHead>Location</TableHead>
-                              <TableHead>Duty Time Remaining</TableHead> */}
+                              {/* <TableHead>Location</TableHead> */}
+                              {/* <TableHead>Duty Time Remaining</TableHead> */}
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -2813,8 +2877,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   Duty Voilation
                                 </Badge>
                               </TableCell>
-                              {/* <TableCell>Crew Lounge Level 3</TableCell>
-                              <TableCell>5h 10m</TableCell> */}
+                              {/* <TableCell>Crew Lounge Level 3</TableCell> */}
+                              {/* <TableCell>5h 10m</TableCell> */}
                             </TableRow>
                           </TableBody>
                         </Table>
@@ -3445,7 +3509,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                             </TableCell>
                             <TableCell>
                               <Badge
-                                className={getPriorityColor(passenger.priority)}
+                                className={getPriorityColor(
+                                  passenger.priority,
+                                )}
                               >
                                 {passenger.priority}
                               </Badge>
@@ -3480,7 +3546,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Eye className="h-3 w-3 mr-1" />
                                   View
                                 </Button>
-                                {passenger.status === "Rebooking Required" && (
+                                {passenger.status ===
+                                  "Rebooking Required" && (
                                   <Button
                                     size="sm"
                                     className="btn-flydubai-primary text-xs"
@@ -3826,8 +3893,14 @@ export function PassengerRebooking({ context, onClearContext }) {
               </div>
               <Button
                 className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
-                onClick={handleExecuteWithPassengerServices}
+                onClick={handleSendForApproval}
+                disabled={isLoading}
               >
+                {isLoading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                ) : (
+                  <BellRing className="h-4 w-4 mr-2" />
+                )}
                 Send for Approval
               </Button>
             </div>
