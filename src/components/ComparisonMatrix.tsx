@@ -1084,17 +1084,20 @@ export function ComparisonMatrix({
               riskAssessment: option.risk_assessment || [],
               technicalSpecs: option.technical_specs || {},
               rotationPlan: option.rotation_plan || {},
-            }
+            },
           },
           fromExecution: true, // Flag to indicate this came from execution
           executionContext: {
             comparisonData: comparisonOptions,
             flightContext: flight,
             timestamp: new Date().toISOString(),
-          }
+          },
         };
 
-        console.log("Executing option with passenger context:", passengerContext);
+        console.log(
+          "Executing option with passenger context:",
+          passengerContext,
+        );
 
         // Use the app context to set the passenger services context
         // This ensures the data is available when the page loads
@@ -1857,27 +1860,36 @@ export function ComparisonMatrix({
                     </CardHeader>
                     <CardContent>
                       {selectedOptionDetails.cost_breakdown &&
-                      typeof selectedOptionDetails.cost_breakdown === "object" &&
+                      typeof selectedOptionDetails.cost_breakdown ===
+                        "object" &&
                       selectedOptionDetails.cost_breakdown.total ? (
                         <div className="space-y-4">
                           {/* Total Cost Summary */}
                           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                             <h4 className="font-semibold text-blue-800 mb-2">
-                              {selectedOptionDetails.cost_breakdown.total.title || "Total Cost Summary"}
+                              {selectedOptionDetails.cost_breakdown.total
+                                .title || "Total Cost Summary"}
                             </h4>
                             <div className="text-2xl font-bold text-blue-900">
-                              {selectedOptionDetails.cost_breakdown.total.amount || selectedOptionDetails.cost}
+                              {selectedOptionDetails.cost_breakdown.total
+                                .amount || selectedOptionDetails.cost}
                             </div>
-                            {selectedOptionDetails.cost_breakdown.total.description && (
+                            {selectedOptionDetails.cost_breakdown.total
+                              .description && (
                               <p className="text-sm text-blue-700 mt-2">
-                                {selectedOptionDetails.cost_breakdown.total.description}
+                                {
+                                  selectedOptionDetails.cost_breakdown.total
+                                    .description
+                                }
                               </p>
                             )}
                           </div>
 
                           {/* Cost Breakdown Items */}
                           {selectedOptionDetails.cost_breakdown.breakdown &&
-                            Array.isArray(selectedOptionDetails.cost_breakdown.breakdown) &&
+                            Array.isArray(
+                              selectedOptionDetails.cost_breakdown.breakdown,
+                            ) &&
                             selectedOptionDetails.cost_breakdown.breakdown.map(
                               (item, index) => (
                                 <div
@@ -1886,7 +1898,8 @@ export function ComparisonMatrix({
                                 >
                                   <div className="flex justify-between items-center">
                                     <span className="text-sm font-medium">
-                                      {item.category || `Cost Item ${index + 1}`}
+                                      {item.category ||
+                                        `Cost Item ${index + 1}`}
                                     </span>
                                     <span className="font-semibold text-flydubai-orange">
                                       {item.amount}
@@ -1897,7 +1910,9 @@ export function ComparisonMatrix({
                                       <div className="w-full bg-gray-200 rounded-full h-2">
                                         <div
                                           className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
-                                          style={{ width: `${item.percentage}%` }}
+                                          style={{
+                                            width: `${item.percentage}%`,
+                                          }}
                                         ></div>
                                       </div>
                                       <div className="flex justify-between items-center text-xs">
@@ -2275,7 +2290,8 @@ export function ComparisonMatrix({
                     </CardHeader>
                     <CardContent>
                       {selectedOptionDetails.technical_specs &&
-                      typeof selectedOptionDetails.technical_specs === 'object' &&
+                      typeof selectedOptionDetails.technical_specs ===
+                        "object" &&
                       selectedOptionDetails.technical_specs !== null &&
                       Object.keys(selectedOptionDetails.technical_specs)
                         .length > 0 ? (
@@ -2304,7 +2320,8 @@ export function ComparisonMatrix({
                                     </li>
                                   ))}
                                 </ul>
-                              ) : typeof value === "object" && value !== null ? (
+                              ) : typeof value === "object" &&
+                                value !== null ? (
                                 <div className="space-y-2">
                                   {Object.entries(value || {}).map(
                                     ([subKey, subValue]) => (
@@ -2315,16 +2332,23 @@ export function ComparisonMatrix({
                                         <span className="text-gray-700">
                                           {Array.isArray(subValue) ? (
                                             <ul className="mt-1 ml-4 space-y-1">
-                                              {subValue.map((listItem, listIndex) => (
-                                                <li key={listIndex} className="flex items-start gap-2">
-                                                  <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
-                                                  {typeof listItem === "object"
-                                                    ? JSON.stringify(listItem)
-                                                    : listItem}
-                                                </li>
-                                              ))}
+                                              {subValue.map(
+                                                (listItem, listIndex) => (
+                                                  <li
+                                                    key={listIndex}
+                                                    className="flex items-start gap-2"
+                                                  >
+                                                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
+                                                    {typeof listItem ===
+                                                    "object"
+                                                      ? JSON.stringify(listItem)
+                                                      : listItem}
+                                                  </li>
+                                                ),
+                                              )}
                                             </ul>
-                                          ) : typeof subValue === "object" && subValue !== null ? (
+                                          ) : typeof subValue === "object" &&
+                                            subValue !== null ? (
                                             JSON.stringify(subValue)
                                           ) : (
                                             subValue || "N/A"
@@ -2334,7 +2358,9 @@ export function ComparisonMatrix({
                                     ),
                                   )}
                                 </div>
-                              ) : typeof value === "string" && value.startsWith("[") && value.endsWith("]") ? (
+                              ) : typeof value === "string" &&
+                                value.startsWith("[") &&
+                                value.endsWith("]") ? (
                                 // Handle string arrays that look like ["item1","item2","item3"]
                                 <div>
                                   {(() => {
@@ -2358,7 +2384,11 @@ export function ComparisonMatrix({
                                     } catch (e) {
                                       // If parsing fails, treat as regular string
                                     }
-                                    return <p className="text-sm text-gray-700">{value}</p>;
+                                    return (
+                                      <p className="text-sm text-gray-700">
+                                        {value}
+                                      </p>
+                                    );
                                   })()}
                                 </div>
                               ) : (
@@ -2368,7 +2398,8 @@ export function ComparisonMatrix({
                           ))}
                         </div>
                       ) : selectedOptionDetails.technicalSpecs &&
-                        typeof selectedOptionDetails.technicalSpecs === 'object' &&
+                        typeof selectedOptionDetails.technicalSpecs ===
+                          "object" &&
                         selectedOptionDetails.technicalSpecs !== null &&
                         Object.keys(selectedOptionDetails.technicalSpecs)
                           .length > 0 ? (
