@@ -1877,6 +1877,18 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
             return arr;
           };
 
+          // Safely stringify JSON fields, handling null/undefined
+          const safeStringify = (obj) => {
+            if (obj === null || obj === undefined) return null;
+            if (typeof obj === 'string') return obj;
+            try {
+              return JSON.stringify(obj);
+            } catch (e) {
+              console.warn('Failed to stringify object:', obj);
+              return '{}';
+            }
+          };
+
           const values = [
             numericDisruptionId,
             option.title || `Recovery Option ${i + 1}`,
@@ -1889,13 +1901,13 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
             i + 1, // priority
             formatArrayForPostgres(option.advantages), // Pass as array, not JSON string
             formatArrayForPostgres(option.considerations), // Pass as array, not JSON string
-            JSON.stringify(option.resourceRequirements || option.resource_requirements),
-            JSON.stringify(option.costBreakdown || option.cost_breakdown),
-            JSON.stringify(option.timelineDetails || option.timeline_details),
-            JSON.stringify(option.riskAssessment || option.risk_assessment),
-            JSON.stringify(option.technicalSpecs || option.technical_specs),
-            JSON.stringify(option.metrics),
-            JSON.stringify(option.rotationPlan || option.rotation_plan),
+            safeStringify(option.resourceRequirements || option.resource_requirements || {}),
+            safeStringify(option.costBreakdown || option.cost_breakdown || {}),
+            safeStringify(option.timelineDetails || option.timeline_details || {}),
+            safeStringify(option.riskAssessment || option.risk_assessment || {}),
+            safeStringify(option.technicalSpecs || option.technical_specs || {}),
+            safeStringify(option.metrics || {}),
+            safeStringify(option.rotationPlan || option.rotation_plan || {}),
             formatArrayForPostgres(option.impact_area || []), // Pass as array, not JSON string
             option.impact_summary || ''
           ];
