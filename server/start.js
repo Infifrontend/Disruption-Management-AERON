@@ -2976,6 +2976,8 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
       rotation_impact,
       submitted_by,
       approval_required,
+      passenger_rebooking,
+      crew_hotel_assignments,
     } = req.body;
 
     // Validate required fields
@@ -3036,6 +3038,121 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
       });
     }
 
+    // Handle optional passenger rebooking data
+    let passengerRebookingSuccess = true;
+    let passengerRebookingCount = 0;
+    if (passenger_rebooking && Array.isArray(passenger_rebooking) && passenger_rebooking.length > 0) {
+      console.log(`Processing ${passenger_rebooking.length} passenger rebooking records`);
+      
+      for (const rebooking of passenger_rebooking) {
+        try {
+          // Minimal validation - check for required fields
+          if (!rebooking.pnr || !rebooking.passenger_id || !rebooking.passenger_name) {
+            console.warn("Skipping passenger rebooking record due to missing required fields:", rebooking);
+            continue;
+          }
+
+          await pool.query(
+            `
+            INSERT INTO passenger_rebookings (
+              disruption_id, pnr, passenger_id, passenger_name, original_flight,
+              original_seat, rebooked_flight, rebooked_cabin, rebooked_seat,
+              rebooking_date, additional_services, status, total_passengers_in_pnr,
+              rebooking_cost, notes
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            ON CONFLICT (disruption_id, passenger_id, pnr)
+            DO UPDATE SET
+              passenger_name = EXCLUDED.passenger_name,
+              original_flight = EXCLUDED.original_flight,
+              original_seat = EXCLUDED.original_seat,
+              rebooked_flight = EXCLUDED.rebooked_flight,
+              rebooked_cabin = EXCLUDED.rebooked_cabin,
+              rebooked_seat = EXCLUDED.rebooked_seat,
+              rebooking_date = EXCLUDED.rebooking_date,
+              additional_services = EXCLUDED.additional_services,
+              status = EXCLUDED.status,
+              total_passengers_in_pnr = EXCLUDED.total_passengers_in_pnr,
+              rebooking_cost = EXCLUDED.rebooking_cost,
+              notes = EXCLUDED.notes,
+              updated_at = CURRENT_TIMESTAMP
+          `,
+            [
+              disruption_id,
+              rebooking.pnr,
+              rebooking.passenger_id,
+              rebooking.passenger_name,
+              rebooking.original_flight,
+              rebooking.original_seat,
+              rebooking.rebooked_flight,
+              rebooking.rebooked_cabin,
+              rebooking.rebooked_seat,
+              rebooking.rebooking_date || new Date().toISOString(),
+              JSON.stringify(rebooking.additional_services || []),
+              'confirmed', // Always set status to 'confirmed'
+              rebooking.total_passengers_in_pnr || 1,
+              rebooking.rebooking_cost || 0,
+              rebooking.notes || null,
+            ],
+          );
+          passengerRebookingCount++;
+        } catch (rebookingError) {
+          console.error("Error inserting passenger rebooking record:", rebookingError);
+          passengerRebookingSuccess = false;
+          // Continue processing other records
+        }
+      }
+      console.log(`Successfully processed ${passengerRebookingCount} passenger rebooking records`);
+    }
+
+    // Handle optional crew hotel assignments data
+    let crewHotelSuccess = true;
+    let crewHotelCount = 0;
+    if (crew_hotel_assignments && Array.isArray(crew_hotel_assignments) && crew_hotel_assignments.length > 0) {
+      console.log(`Processing ${crew_hotel_assignments.length} crew hotel assignment records`);
+      
+      for (const assignment of crew_hotel_assignments) {
+        try {
+          // Minimal validation - check for required fields
+          if (!assignment.crew_member || !assignment.hotel_name || !assignment.check_in_date || !assignment.check_out_date) {
+            console.warn("Skipping crew hotel assignment record due to missing required fields:", assignment);
+            continue;
+          }
+
+          await pool.query(
+            `
+            INSERT INTO crew_hotel_assignments (
+              disruption_id, crew_member, hotel_name, hotel_location, check_in_date,
+              check_out_date, room_number, special_requests, assignment_status,
+              total_cost, booking_reference, transport_details, created_by
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+          `,
+            [
+              disruption_id,
+              JSON.stringify(assignment.crew_member),
+              assignment.hotel_name,
+              assignment.hotel_location,
+              assignment.check_in_date,
+              assignment.check_out_date,
+              assignment.room_number,
+              assignment.special_requests,
+              assignment.assignment_status || 'assigned',
+              assignment.total_cost || 0,
+              assignment.booking_reference,
+              JSON.stringify(assignment.transport_details || {}),
+              assignment.created_by || submitted_by || 'system',
+            ],
+          );
+          crewHotelCount++;
+        } catch (crewError) {
+          console.error("Error inserting crew hotel assignment record:", crewError);
+          crewHotelSuccess = false;
+          // Continue processing other records
+        }
+      }
+      console.log(`Successfully processed ${crewHotelCount} crew hotel assignment records`);
+    }
+
+    // Insert main pending recovery solution
     const result = await pool.query(
       `
       INSERT INTO pending_recovery_solutions
@@ -3072,7 +3189,24 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
     );
 
     console.log("Successfully saved pending recovery solution:", result.rows[0]);
-    res.json({ success: true, ...result.rows[0] });
+    
+    // Include processing results in response
+    const response = {
+      success: true,
+      ...result.rows[0],
+      processing_results: {
+        passenger_rebooking: {
+          processed: passengerRebookingCount,
+          success: passengerRebookingSuccess
+        },
+        crew_hotel_assignments: {
+          processed: crewHotelCount,
+          success: crewHotelSuccess
+        }
+      }
+    };
+
+    res.json(response);
   } catch (error) {
     console.error("Error saving pending recovery solution:", error);
     res.status(500).json({
