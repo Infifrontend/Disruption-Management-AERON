@@ -1066,13 +1066,35 @@ export function ComparisonMatrix({
     try {
       // Check if option requires execution based on impact_area
       if (requiresExecution(option)) {
-        // Set the passenger services context with the correct data structure
+        // Create comprehensive passenger services context with all necessary data
         const passengerContext = {
           selectedFlight: flight,
           flight: flight, // Add both for compatibility
-          recoveryOption: option,
+          recoveryOption: {
+            ...option,
+            // Ensure all required fields are included
+            optionLetter: letter,
+            executionTimestamp: new Date().toISOString(),
+            selectedBy: "operations_user",
+            // Include all technical and operational details
+            fullDetails: {
+              costBreakdown: option.cost_breakdown || [],
+              timelineDetails: option.timeline_details || [],
+              resourceRequirements: option.resource_requirements || [],
+              riskAssessment: option.risk_assessment || [],
+              technicalSpecs: option.technical_specs || {},
+              rotationPlan: option.rotation_plan || {},
+            }
+          },
           fromExecution: true, // Flag to indicate this came from execution
+          executionContext: {
+            comparisonData: comparisonOptions,
+            flightContext: flight,
+            timestamp: new Date().toISOString(),
+          }
         };
+
+        console.log("Executing option with passenger context:", passengerContext);
 
         // Use the app context to set the passenger services context
         // This ensures the data is available when the page loads
@@ -2259,7 +2281,7 @@ export function ComparisonMatrix({
                         .length > 0 ? (
                         <div className="space-y-4">
                           {Object.entries(
-                            selectedOptionDetails.technical_specs,
+                            selectedOptionDetails.technical_specs || {},
                           ).map(([key, value]) => (
                             <div key={key} className="p-3 border rounded-lg">
                               <h4 className="font-medium text-sm capitalize mb-2">
@@ -2282,9 +2304,9 @@ export function ComparisonMatrix({
                                     </li>
                                   ))}
                                 </ul>
-                              ) : typeof value === "object" ? (
+                              ) : typeof value === "object" && value !== null ? (
                                 <div className="space-y-2">
-                                  {Object.entries(value).map(
+                                  {Object.entries(value || {}).map(
                                     ([subKey, subValue]) => (
                                       <div key={subKey} className="text-sm">
                                         <span className="font-medium capitalize">
@@ -2302,10 +2324,10 @@ export function ComparisonMatrix({
                                                 </li>
                                               ))}
                                             </ul>
-                                          ) : typeof subValue === "object" ? (
+                                          ) : typeof subValue === "object" && subValue !== null ? (
                                             JSON.stringify(subValue)
                                           ) : (
-                                            subValue
+                                            subValue || "N/A"
                                           )}
                                         </span>
                                       </div>
@@ -2352,7 +2374,7 @@ export function ComparisonMatrix({
                           .length > 0 ? (
                         <div className="space-y-4">
                           {Object.entries(
-                            selectedOptionDetails.technicalSpecs,
+                            selectedOptionDetails.technicalSpecs || {},
                           ).map(([key, value]) => (
                             <div key={key} className="p-3 border rounded-lg">
                               <h4 className="font-medium text-sm capitalize mb-2">
