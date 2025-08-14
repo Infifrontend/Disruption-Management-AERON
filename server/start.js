@@ -1870,6 +1870,13 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
               impact_summary = EXCLUDED.impact_summary,
               updated_at = CURRENT_TIMESTAMP
             RETURNING id`;
+
+          // Ensure arrays are properly formatted for PostgreSQL
+          const formatArrayForPostgres = (arr) => {
+            if (!arr || !Array.isArray(arr)) return [];
+            return arr;
+          };
+
           const values = [
             numericDisruptionId,
             option.title || `Recovery Option ${i + 1}`,
@@ -1880,8 +1887,8 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
             option.impact || "Medium",
             option.status || "generated",
             i + 1, // priority
-            JSON.stringify(option.advantages),
-            JSON.stringify(option.considerations),
+            formatArrayForPostgres(option.advantages), // Pass as array, not JSON string
+            formatArrayForPostgres(option.considerations), // Pass as array, not JSON string
             JSON.stringify(option.resourceRequirements || option.resource_requirements),
             JSON.stringify(option.costBreakdown || option.cost_breakdown),
             JSON.stringify(option.timelineDetails || option.timeline_details),
@@ -1889,7 +1896,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
             JSON.stringify(option.technicalSpecs || option.technical_specs),
             JSON.stringify(option.metrics),
             JSON.stringify(option.rotationPlan || option.rotation_plan),
-            JSON.stringify(option.impact_area || []),
+            formatArrayForPostgres(option.impact_area || []), // Pass as array, not JSON string
             option.impact_summary || ''
           ];
 
