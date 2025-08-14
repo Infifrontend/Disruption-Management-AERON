@@ -25,7 +25,7 @@ const getAircraftIssuesRecoveryData = () => {
         "Gate coordination and positioning",
         "Passenger transfer logistics",
       ],
-      impact_area: ["aircraft", "schedule", "operations"],
+      impact_area: ["crew"],
       impact_summary: `Aircraft issue recovery for FZ147: Technical disruption requiring aircraft substitution with minimal passenger impact through efficient swap procedures.`,
       resource_requirements: [
         {
@@ -438,7 +438,7 @@ const getAircraftIssuesRecoveryData = () => {
         "Crew duty time approaching limits",
         "Potential downstream flight disruptions",
       ],
-      impact_area: ["aircraft", "schedule", "operations"],
+      impact_area: ["passenger"],
       impact_summary: `Aircraft issue recovery for FZ181: Technical disruption requiring aircraft substitution with minimal passenger impact through efficient swap procedures.`,
       resource_requirements: [
         {
@@ -835,7 +835,7 @@ const getAircraftIssuesRecoveryData = () => {
         "Partner airline capacity dependency",
         "Complex rebooking coordination required",
       ],
-      impact_area: ["aircraft", "schedule", "operations"],
+      impact_area: ["passenger", "crew"],
       impact_summary: `Aircraft issue recovery for FZ147: Technical disruption requiring aircraft substitution with minimal passenger impact through efficient swap procedures.`,
       resource_requirements: [
         {
@@ -1373,7 +1373,7 @@ const getCrewIssuesRecoveryData = () => {
       metrics: {
         costEfficiency: 85,
         timeEfficiency: 80,
-        passengerSatisfaction: 75
+        passengerSatisfaction: 75,
       },
       rotation_plan: {
         aircraftOptions: [
@@ -2604,7 +2604,7 @@ const getWeatherIssuesRecoveryData = () => {
         "Potential for further delays",
         "Passenger accommodation required",
       ],
-      impact_area: ["weather", "passenger", "operations"],
+      impact_area: ["passenger"],
       impact_summary: `Weather issue recovery for PNQ: Weather-related operational adjustments with passenger care provisions.`,
       resource_requirements: [
         {
@@ -2949,7 +2949,7 @@ const getWeatherIssuesRecoveryData = () => {
         "Potential for further delays",
         "Passenger accommodation required",
       ],
-      impact_area: ["weather", "passenger", "schedule"],
+      impact_area: ["passenger", "crew"],
       impact_summary: `Weather issue recovery for cancellation: Weather-related operational adjustments with passenger care provisions.`,
       resource_requirements: [
         {
@@ -3378,423 +3378,7 @@ const generateAircraftIssueRecovery = (flight) => {
       },
     },
   ];
-
-  const options = [
-    {
-      id: `AIRCRAFT_SWAP_${flight.aircraft?.slice(-3) || "001"}`,
-      title: "Aircraft Swap - Immediate",
-      description: "Replace with available standby aircraft",
-      cost: "AED 22,800",
-      timeline: "1.5-2 hours",
-      confidence: 88,
-      impact: "Minimal passenger disruption",
-      status: "recommended",
-      category: "Aircraft Issue",
-      priority: 1,
-      advantages: [
-        "Fastest resolution with minimal delay",
-        "Maintains schedule integrity",
-        "Low passenger compensation cost",
-        "Preserves network connectivity",
-      ],
-      considerations: [
-        "Requires available spare aircraft",
-        "Crew briefing and familiarization needed",
-        "Gate coordination and positioning",
-        "Passenger transfer logistics",
-      ],
-      impact_area: ["aircraft", "schedule", "operations"],
-      impact_summary: `Aircraft issue recovery for ${flight.flightNumber || flight.flight_number}: Technical disruption requiring aircraft substitution with minimal passenger impact through efficient swap procedures.`,
-      resource_requirements: [
-        {
-          title: "Replacement Aircraft",
-          subtitle: "Available Aircraft (TBD)",
-          availability: "Ready",
-          status: "Available",
-          location: "Terminal Area",
-          eta: "On Stand",
-          details:
-            "Aircraft selection based on route requirements and availability",
-        },
-        {
-          title: "Flight Crew",
-          subtitle: "Qualified Crew Team",
-          availability: "Briefed",
-          status: "On Duty",
-          location: "Crew Room Terminal 2",
-          eta: "15 minutes",
-          details: "Type-rated crew with current qualifications",
-        },
-        {
-          title: "Cabin Crew",
-          subtitle: "Flight Attendants",
-          availability: "Ready",
-          status: "On Standby",
-          location: "Crew Lounge",
-          eta: "10 minutes",
-          details: "Multi-type qualified cabin crew",
-        },
-        {
-          title: "Ground Equipment",
-          subtitle: "Aircraft Support Equipment",
-          availability: "Dispatched",
-          status: "Confirmed",
-          location: "Equipment Bay",
-          eta: "5 minutes",
-          details: "Tug, GPU, and ground support equipment",
-        },
-        {
-          title: "Ground Handling",
-          subtitle: "Premium Ground Service Team",
-          availability: "Assigned",
-          status: "Available",
-          location: "Gate Operations",
-          eta: "On Location",
-          details: "Specialized team for aircraft swap operations",
-        },
-      ],
-      cost_breakdown: {
-        breakdown: [
-          {
-            amount: "AED 15,000",
-            category: "Delay Costs",
-            percentage: 66,
-            description: "Passenger compensation and handling",
-          },
-          {
-            amount: "AED 5,000",
-            category: "Aircraft Swap",
-            percentage: 22,
-            description: "Cost of mobilizing standby aircraft",
-          },
-          {
-            amount: "AED 2,800",
-            category: "Logistics",
-            percentage: 12,
-            description: "Ground handling and coordination",
-          },
-        ],
-        total: {
-          amount: "AED 22,800",
-          title: "Total Estimated Cost",
-          description: "Ground handling and coordination",
-        },
-      },
-      timeline_details: [
-        {
-          step: "Decision Confirmation",
-          status: "completed",
-          details: "Management approval and resource confirmation",
-          startTime: "23:34",
-          endTime: "23:39",
-          duration: "5 min",
-        },
-        {
-          step: "Aircraft Positioning",
-          status: "in-progress",
-          details: "Move replacement aircraft to departure gate",
-          startTime: "23:39",
-          endTime: "05:39",
-          duration: "360 min",
-        },
-        {
-          step: "Crew Briefing & Preparation",
-          status: "pending",
-          details: "Flight crew briefing for aircraft configuration",
-          startTime: "05:39",
-          endTime: "18:29",
-          duration: "770 min",
-        },
-        {
-          step: "Passenger & Baggage Transfer",
-          status: "pending",
-          details: "Transfer passengers and priority baggage handling",
-          startTime: "18:29",
-          endTime: "20:34",
-          duration: "125 min",
-        },
-        {
-          step: "Final Checks & Departure",
-          status: "pending",
-          details: "Pre-flight checks and departure clearance",
-          startTime: "20:34",
-          endTime: "20:49",
-          duration: "15 min",
-        },
-      ],
-      risk_assessment: [
-        {
-          risk: "Aircraft Availability Conflict",
-          risk_impact: "Low",
-          mitigation_impact: "Medium",
-          score: 3,
-          mitigation: "Secondary aircraft options confirmed in standby",
-        },
-        {
-          risk: "Passenger Baggage Transfer Delays",
-          risk_impact: "Medium",
-          mitigation_impact: "Low",
-          score: 2,
-          mitigation:
-            "Priority baggage team deployed with extended transfer window",
-        },
-        {
-          risk: "Aircraft Type Configuration Differences",
-          risk_impact: "Low",
-          mitigation_impact: "Low",
-          score: 1,
-          mitigation:
-            "Similar aircraft configurations, passenger seat maps provided",
-        },
-        {
-          risk: "Weather Impact During Transfer",
-          risk_impact: "Low",
-          mitigation_impact: "High",
-          score: 3,
-          mitigation: "Weather monitoring active, contingency plans prepared",
-        },
-      ],
-      technical_specs: {
-        implementation: {
-          title: "Implementation",
-          details:
-            "Aircraft swap protocol with coordinated ground operations and priority positioning",
-        },
-        systems_required: {
-          title: "Systems required",
-          details: [
-            "ACARS Real-time Updates",
-            "Ground Power Unit",
-            "Baggage Transfer System",
-            "Passenger Information Display",
-            "Aircraft Positioning Coordination",
-          ],
-        },
-        certifications: {
-          title: "Certifications",
-          details: [
-            "EASA Type Certificate",
-            "GCAA Operational Approval",
-            "Route-specific Weather Capability",
-          ],
-        },
-        weather_capability: {
-          title: "Weather capability",
-          details: "Route-specific Weather Capability",
-        },
-        maintenance_status: {
-          title: "Maintenance status",
-          details:
-            "Replacement aircraft maintenance status verified, airworthiness certificate current",
-        },
-        fuel_requirement: {
-          title: "Fuel requirement",
-          details:
-            "Route-specific fuel planning with regulatory reserves and contingency allowances",
-        },
-        weather_limitations: {
-          title: "Weather limitations",
-          details:
-            "Standard weather operational limits, current conditions monitored",
-        },
-        aircraft_specs: {
-          title: "Aircraft specs",
-          details:
-            "Replacement aircraft specifications compatible with route requirements",
-        },
-        route_approval: {
-          title: "Route approval",
-          details:
-            "Aircraft certified for destination, operational approvals verified",
-        },
-      },
-      metrics: {
-        costEfficiency: 85,
-        timeEfficiency: 90,
-        passengerSatisfaction: 85,
-        recovery_analysis:
-          "Aircraft Swap Recovery for FZ147 (IST→DXB): Replace B737 MAX 8 A6-FDU with available replacement aircraft at IST. The replacement aircraft has been selected based on availability and route certification for IST-DXB. Estimated passenger transfer time: 35-45 minutes. All cargo and baggage will be transferred with priority handling. This solution maintains schedule integrity with minimal passenger disruption. Current disruption: Engine maintenance check.",
-      },
-      rotation_plan: {
-        aircraftOptions: [
-          {
-            reg: "A6-FED",
-            type: "B737-800 (189Y)",
-            etops: { status: "available", value: "180min" },
-            cabinMatch: { status: "exact", value: "Exact" },
-            availability: "Available Now",
-            assigned: { status: "none", value: "None" },
-            turnaround: "45 min",
-            maintenance: { status: "current", value: "Current" },
-            option_score: {
-              cost_score: "92%",
-              delay_score: "88%",
-              crew_impact: "95%",
-              fuel_score: "91%",
-              overall: "92%",
-            },
-          },
-          {
-            reg: "A6-FEL",
-            type: "B737-MAX8 (189Y)",
-            etops: { status: "available", value: "180min" },
-            cabinMatch: { status: "similar", value: "Similar" },
-            availability: "Available 14:30",
-            assigned: { status: "assigned", value: "FZ892" },
-            turnaround: "60 min",
-            maintenance: { status: "current", value: "Current" },
-            option_score: {
-              cost_score: "65%",
-              delay_score: "55%",
-              crew_impact: "60%",
-              fuel_score: "75%",
-              overall: "64%",
-            },
-          },
-          {
-            reg: "A6-FGH",
-            type: "B737-800 (164Y)",
-            etops: { status: "available", value: "180min" },
-            cabinMatch: { status: "reduced", value: "Reduced" },
-            availability: "Available 16:00",
-            assigned: { status: "none", value: "None" },
-            turnaround: "50 min",
-            maintenance: { status: "due", value: "Due A-Check" },
-            option_score: {
-              cost_score: "52%",
-              delay_score: "38%",
-              crew_impact: "55%",
-              fuel_score: "61%",
-              overall: "52%",
-            },
-          },
-          {
-            reg: "A6-FIJ",
-            type: "B737-MAX8 (189Y)",
-            etops: { status: "none", value: "None" },
-            cabinMatch: { status: "exact", value: "Exact" },
-            availability: "Available 18:00",
-            assigned: { status: "assigned", value: "FZ445" },
-            turnaround: "75 min",
-            maintenance: { status: "aog", value: "AOG Issue" },
-          },
-        ],
-        crew: [
-          {
-            name: "Capt. Ahmed Al-Mansouri",
-            role: "Captain",
-            type: "B737 Type Rating",
-            status: "Available",
-            issue: null,
-          },
-          {
-            name: "FO Sarah Johnson",
-            role: "First Officer",
-            type: "B737/MAX Type Rating",
-            status: "Available",
-            issue: null,
-          },
-          {
-            name: "SSCC Lisa Martinez",
-            role: "Senior Cabin Crew",
-            type: "Senior Cabin Crew",
-            status: "Available",
-            issue: null,
-          },
-          {
-            name: "CC Maria Santos",
-            role: "Cabin Crew",
-            type: "Cabin Crew",
-            status: "Available",
-            issue: null,
-          },
-        ],
-        crew_constraint: {
-          duty_time: {
-            disruption: "",
-            details: "6h 15m of 8h 20m limit",
-          },
-          rest_requirement: {
-            disruption: "Min 12h rest required after duty",
-            details: "Next availability: Tomorrow 08:00",
-          },
-          deadhead: {
-            disruption: "2 crew members need positioning to DXB",
-            details: "Commercial flights available",
-          },
-          fatigue_report: {
-            disruption: "1 crew member reported fatigue",
-            details: "Replacement required",
-          },
-        },
-        nextSectors: [
-          {
-            flight: "FZ456 DXB-BOM",
-            departure: "Dep: 18:30 → 19:45 (+75min)",
-            impact: "High Impact",
-            reason: "Aircraft swap delay",
-          },
-          {
-            flight: "FZ457 BOM-DXB",
-            departure: "Dep: 22:15 → 23:00 (+45min)",
-            impact: "Medium Impact",
-            reason: "Knock-on delay",
-          },
-          {
-            flight: "FZ890 DXB-DEL",
-            departure: "Dep: 08:30 (Next Day)",
-            impact: "Low Impact",
-            reason: "Overnight recovery",
-          },
-        ],
-        operationalConstraints: {
-          gateCompatibility: {
-            status: "Compatible",
-            details: "All gates compatible with B737-800",
-          },
-          slotCapacity: {
-            status: "Coordination Required",
-            details: "New departure slot needed",
-          },
-          curfewViolation: {
-            status: "No Risk",
-            details: "Within curfew limits",
-          },
-          passengerConnections: {
-            status: "Minimal Impact",
-            details: "No significant connection issues",
-          },
-        },
-        costBreakdown: {
-          delayCost: {
-            metric_value: "AED 34,200",
-            detail: "Including compensation",
-          },
-          fuelEfficiency: {
-            metric_value: "+2.1%",
-            detail: "vs original aircraft",
-          },
-          hotelTransport: {
-            metric_value: "AED 8,450",
-            detail: "Crew accommodation",
-          },
-          eu261Risk: {
-            metric_value: "Medium",
-            detail: "€600 per passenger",
-          },
-        },
-        recommended_option: {
-          option: "Aircraft A6-FED",
-          summary:
-            "Optimal balance across cost (92%), delay minimization (88%), crew impact (95%), and fuel efficiency (91%). Immediate availability with exact cabin configuration match.",
-        },
-      },
-      details: null,
-      created_at: "2025-08-09T08:02:00.000Z",
-      updated_at: "2025-08-09T08:02:00.000Z",
-    },
-  ];
-
+  const options = getAircraftIssuesRecoveryData();
   return { options, steps };
 };
 
@@ -4555,8 +4139,9 @@ export function generateRecoveryOptionsForDisruption(
       break;
 
     case "ROTATION_MAINTENANCE":
-      const rotationResult =
-        generateRotationMisalignmentRecovery(safeDisstaticDisruption);
+      const rotationResult = generateRotationMisalignmentRecovery(
+        safeDisstaticDisruption,
+      );
       options = rotationResult.options;
       steps = rotationResult.steps;
       break;
