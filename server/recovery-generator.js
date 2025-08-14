@@ -4733,7 +4733,7 @@ export function generateRecoveryOptionsForDisruption(
   return { options, steps };
 }
 
-module.exports = {
+export {
   mapDisruptionTypeToCategory,
   getCrewIssuesRecoveryData,
   getWeatherIssuesRecoveryData,
