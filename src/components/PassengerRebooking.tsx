@@ -155,6 +155,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   const recoveryOption = context?.recoveryOption;
   const fromExecution = context?.fromExecution;
   console.log(selectedFlight);
+  
   // State for generated passengers
   const [generatedPassengers, setGeneratedPassengers] = useState([]);
 
@@ -166,49 +167,6 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // State for loading indicator during submission
   const [isLoading, setIsLoading] = useState(false);
-
-  // Generate passengers from context when available
-  useEffect(() => {
-    let isMounted = true;
-
-    if (!selectedFlight || !recoveryOption) {
-      return;
-    }
-
-    const loadPassengerData = async () => {
-      try {
-        if (contextPassengers.length === 0 && isMounted) {
-          const module = await import("./passenger-data-helpers");
-          const flightData = context?.flight || selectedFlight;
-          const optionData = context?.recoveryOption || recoveryOption;
-
-          // Ensure we have the right passenger count
-          const expectedPassengers =
-            flightData?.passengers || selectedFlight?.passengers || 167;
-
-          const passengers = module.generateAffectedPassengers(
-            flightData,
-            optionData,
-          );
-
-          if (isMounted) {
-            setGeneratedPassengers(passengers);
-          }
-        }
-      } catch (error) {
-        if (isMounted) {
-          console.error("Error generating passengers:", error);
-          toast.error("Failed to load passenger data.");
-        }
-      }
-    };
-
-    loadPassengerData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [selectedFlight?.id, recoveryOption?.id, contextPassengers.length]);
 
   // Enhanced default passenger data with PNR grouping
   const defaultPassengers = [
@@ -818,6 +776,49 @@ export function PassengerRebooking({ context, onClearContext }) {
         "Budget-friendly option with essential amenities and good service",
     },
   ];
+
+  // Generate passengers from context when available
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!selectedFlight || !recoveryOption) {
+      return;
+    }
+
+    const loadPassengerData = async () => {
+      try {
+        if (contextPassengers.length === 0 && isMounted) {
+          const module = await import("./passenger-data-helpers");
+          const flightData = context?.flight || selectedFlight;
+          const optionData = context?.recoveryOption || recoveryOption;
+
+          // Ensure we have the right passenger count
+          const expectedPassengers =
+            flightData?.passengers || selectedFlight?.passengers || 167;
+
+          const passengers = module.generateAffectedPassengers(
+            flightData,
+            optionData,
+          );
+
+          if (isMounted) {
+            setGeneratedPassengers(passengers);
+          }
+        }
+      } catch (error) {
+        if (isMounted) {
+          console.error("Error generating passengers:", error);
+          toast.error("Failed to load passenger data.");
+        }
+      }
+    };
+
+    loadPassengerData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedFlight?.id, recoveryOption?.id, contextPassengers.length]);
 
   const passengers = useMemo(() => {
     const base =
