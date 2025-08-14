@@ -1880,12 +1880,12 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
           // Safely stringify JSON fields, handling null/undefined
           const safeStringify = (obj) => {
             if (obj === null || obj === undefined) return null;
-            if (typeof obj === 'string') return obj;
+            if (typeof obj === "string") return obj;
             try {
               return JSON.stringify(obj);
             } catch (e) {
-              console.warn('Failed to stringify object:', obj);
-              return '{}';
+              console.warn("Failed to stringify object:", obj);
+              return "{}";
             }
           };
 
@@ -1901,27 +1901,44 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
             i + 1, // priority
             formatArrayForPostgres(option.advantages), // Pass as array, not JSON string
             formatArrayForPostgres(option.considerations), // Pass as array, not JSON string
-            safeStringify(option.resourceRequirements || option.resource_requirements || {}),
+            safeStringify(
+              option.resourceRequirements || option.resource_requirements || {},
+            ),
             safeStringify(option.costBreakdown || option.cost_breakdown || {}),
-            safeStringify(option.timelineDetails || option.timeline_details || {}),
-            safeStringify(option.riskAssessment || option.risk_assessment || {}),
-            safeStringify(option.technicalSpecs || option.technical_specs || {}),
+            safeStringify(
+              option.timelineDetails || option.timeline_details || {},
+            ),
+            safeStringify(
+              option.riskAssessment || option.risk_assessment || {},
+            ),
+            safeStringify(
+              option.technicalSpecs || option.technical_specs || {},
+            ),
             safeStringify(option.metrics || {}),
             safeStringify(option.rotationPlan || option.rotation_plan || {}),
             safeStringify(option.impact_area || []), // Convert to JSON string
-            option.impact_summary || ''
+            option.impact_summary || "",
           ];
 
           try {
             await pool.query(insertQuery, values);
             console.log(`Successfully saved recovery option: ${option.title}`);
           } catch (insertError) {
-            console.error(`Failed to save recovery option "${option.title}":`, insertError.message);
-            console.error('Values causing error:', values.map((val, idx) => ({
-              index: idx,
-              type: typeof val,
-              value: typeof val === 'string' && val.length > 100 ? val.substring(0, 100) + '...' : val
-            })));
+            console.error(
+              `Failed to save recovery option "${option.title}":`,
+              insertError.message,
+            );
+            console.error(
+              "Values causing error:",
+              values.map((val, idx) => ({
+                index: idx,
+                type: typeof val,
+                value:
+                  typeof val === "string" && val.length > 100
+                    ? val.substring(0, 100) + "..."
+                    : val,
+              })),
+            );
             throw insertError;
           }
         }
@@ -2354,11 +2371,12 @@ app.get("/api/recovery-options/:optionId", async (req, res) => {
     let rotationPlan = {};
     if (option.rotation_plan) {
       try {
-        rotationPlan = typeof option.rotation_plan === 'string'
-          ? JSON.parse(option.rotation_plan)
-          : option.rotation_plan;
+        rotationPlan =
+          typeof option.rotation_plan === "string"
+            ? JSON.parse(option.rotation_plan)
+            : option.rotation_plan;
       } catch (e) {
-        console.log('Failed to parse rotation_plan JSON');
+        console.log("Failed to parse rotation_plan JSON");
         rotationPlan = {};
       }
     }
@@ -2413,7 +2431,9 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
       );
 
       if (result.rows.length === 0) {
-        console.log(`No rotation plan found for option ${optionId}, generating sample data`);
+        console.log(
+          `No rotation plan found for option ${optionId}, generating sample data`,
+        );
 
         // Generate sample crew data for the rotation plan
         const sampleRotationPlan = {
@@ -2427,8 +2447,8 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
               assigned: { status: "none", value: "None" },
               turnaround: "45 min",
               maintenance: { status: "current", value: "Current" },
-              recommended: true
-            }
+              recommended: true,
+            },
           ],
           crewData: [
             {
@@ -2440,7 +2460,7 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
               dutyTime: "2h 15m remaining",
               nextAssignment: "FZ892 - 16:30",
               qualifications: ["B737-800", "B737-MAX8"],
-              experience: "15 years"
+              experience: "15 years",
             },
             {
               name: "F/O Sarah Rahman",
@@ -2451,7 +2471,7 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
               dutyTime: "4h 30m remaining",
               nextAssignment: "Available for assignment",
               qualifications: ["B737-800", "B737-MAX8"],
-              experience: "8 years"
+              experience: "8 years",
             },
             {
               name: "Fatima Al-Mansouri",
@@ -2462,7 +2482,7 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
               dutyTime: "3h 45m remaining",
               nextAssignment: "Standby until 18:00",
               qualifications: ["Safety Instructor", "First Aid"],
-              experience: "12 years"
+              experience: "12 years",
             },
             {
               name: "Ahmed Hassan",
@@ -2473,7 +2493,7 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
               dutyTime: "5h 10m remaining",
               nextAssignment: "FZ215 - 19:45",
               qualifications: ["Service Excellence", "Emergency Response"],
-              experience: "5 years"
+              experience: "5 years",
             },
             {
               name: "Amira Khalil",
@@ -2484,7 +2504,7 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
               dutyTime: "4h 20m remaining",
               nextAssignment: "Available for assignment",
               qualifications: ["Multi-lingual", "Medical Training"],
-              experience: "3 years"
+              experience: "3 years",
             },
             {
               name: "Omar Abdullah",
@@ -2495,8 +2515,8 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
               dutyTime: "6h 00m remaining",
               nextAssignment: "Standby until 20:00",
               qualifications: ["Customer Service", "Security"],
-              experience: "7 years"
-            }
+              experience: "7 years",
+            },
           ],
           nextSectors: [
             {
@@ -2504,42 +2524,42 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
               route: "DXB → BOM",
               departure: "16:30",
               aircraft: "A6-FED",
-              status: "On Schedule"
-            }
+              status: "On Schedule",
+            },
           ],
           operationalConstraints: {
             gateCompatibility: {
               status: "compatible",
-              details: "Gate A24 suitable for B737-800"
+              details: "Gate A24 suitable for B737-800",
             },
             slotCapacity: {
               status: "available",
-              details: "Slot confirmed for departure window"
+              details: "Slot confirmed for departure window",
             },
             curfewViolation: {
               status: "compliant",
-              details: "Departure within curfew hours"
+              details: "Departure within curfew hours",
             },
             passengerConnections: {
               status: "manageable",
-              details: "12 connecting passengers, 90min connection time"
-            }
+              details: "12 connecting passengers, 90min connection time",
+            },
           },
           costBreakdown: {
             delayCost: 15000,
             fuelEfficiency: "Standard consumption",
             hotelTransport: 0,
-            eu261Risk: "Low"
+            eu261Risk: "Low",
           },
           recommendation: {
             aircraft: "A6-FED",
-            reason: "Optimal crew availability and aircraft readiness"
-          }
+            reason: "Optimal crew availability and aircraft readiness",
+          },
         };
 
         return res.json({
           success: true,
-          rotationPlan: sampleRotationPlan
+          rotationPlan: sampleRotationPlan,
         });
       }
 
@@ -3071,7 +3091,10 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
       [disruption_id],
     );
 
-    console.log("Successfully saved pending recovery solution:", result.rows[0]);
+    console.log(
+      "Successfully saved pending recovery solution:",
+      result.rows[0],
+    );
     res.json({ success: true, ...result.rows[0] });
   } catch (error) {
     console.error("Error saving pending recovery solution:", error);
@@ -3613,7 +3636,7 @@ app.get("/api/past-recovery-trends", async (req, res) => {
 });
 
 // Get KPI data
-app.get('/api/kpi-data', async (req, res) => {
+app.get("/api/kpi-data", async (req, res) => {
   try {
     const kpiData = {
       activeDisruptions: 23,
@@ -3621,18 +3644,18 @@ app.get('/api/kpi-data', async (req, res) => {
       averageDelay: 45,
       recoverySuccessRate: 89.2,
       onTimePerformance: 87.3,
-      costSavings: 2.8
-    }
+      costSavings: 2.8,
+    };
 
-    res.json(kpiData)
+    res.json(kpiData);
   } catch (error) {
-    console.error('Error fetching KPI data:', error)
-    res.status(500).json({ error: 'Failed to fetch KPI data' })
+    console.error("Error fetching KPI data:", error);
+    res.status(500).json({ error: "Failed to fetch KPI data" });
   }
-})
+});
 
 // Get passenger impact data
-app.get('/api/passenger-impact', async (req, res) => {
+app.get("/api/passenger-impact", async (req, res) => {
   try {
     // Calculate passenger impact from actual disruptions data
     const disruptionsResult = await pool.query(`
@@ -3643,17 +3666,17 @@ app.get('/api/passenger-impact', async (req, res) => {
         COUNT(CASE WHEN recovery_status = 'completed' THEN 1 END) as resolved_disruptions
       FROM flight_disruptions
       WHERE status = 'Active' OR status = 'Delayed'
-    `)
+    `);
 
     const rebookingsResult = await pool.query(`
       SELECT COUNT(*) as successful_rebookings
       FROM passenger_rebookings
       WHERE status = 'confirmed'
       AND created_at >= CURRENT_DATE
-    `)
+    `);
 
-    const data = disruptionsResult.rows[0]
-    const rebookings = rebookingsResult.rows[0]
+    const data = disruptionsResult.rows[0];
+    const rebookings = rebookingsResult.rows[0];
 
     const passengerImpact = {
       totalAffected: parseInt(data.total_affected) || 4127,
@@ -3661,25 +3684,28 @@ app.get('/api/passenger-impact', async (req, res) => {
       successfulRebookings: parseInt(rebookings.successful_rebookings) || 892,
       resolvedDisruptions: parseInt(data.resolved_disruptions) || 0, // Added for clarity
       estimatedPassengersPerResolved: 150, // Default value
-      pendingAccommodation: (parseInt(data.total_affected) || 4127) - (parseInt(rebookings.successful_rebookings) || 892)
-    }
+      pendingAccommodation:
+        (parseInt(data.total_affected) || 4127) -
+        (parseInt(rebookings.successful_rebookings) || 892),
+    };
     // Calculate resolved passengers more accurately if data is available
     if (data.resolved_disruptions > 0) {
-      passengerImpact.resolvedPassengers = parseInt(data.resolved_disruptions) * passengerImpact.estimatedPassengersPerResolved;
+      passengerImpact.resolvedPassengers =
+        parseInt(data.resolved_disruptions) *
+        passengerImpact.estimatedPassengersPerResolved;
     } else {
       passengerImpact.resolvedPassengers = 0; // Or a default value if needed
     }
 
-
-    res.json(passengerImpact)
+    res.json(passengerImpact);
   } catch (error) {
-    console.error('Error fetching passenger impact data:', error)
-    res.status(500).json({ error: 'Failed to fetch passenger impact data' })
+    console.error("Error fetching passenger impact data:", error);
+    res.status(500).json({ error: "Failed to fetch passenger impact data" });
   }
-})
+});
 
 // Get highly disrupted stations
-app.get('/api/disrupted-stations', async (req, res) => {
+app.get("/api/disrupted-stations", async (req, res) => {
   try {
     const result = await pool.query(`
       SELECT
@@ -3698,52 +3724,52 @@ app.get('/api/disrupted-stations', async (req, res) => {
       GROUP BY origin, origin_city, disruption_reason
       ORDER BY COUNT(*) DESC, SUM(passengers) DESC
       LIMIT 5
-    `)
+    `);
 
-    const stationsData = result.rows.map(row => ({
+    const stationsData = result.rows.map((row) => ({
       station: row.station,
       stationName: row.station_name,
       disruptedFlights: parseInt(row.disrupted_flights),
       affectedPassengers: parseInt(row.affected_passengers),
       severity: row.severity,
-      primaryCause: row.primary_cause || 'Multiple factors'
-    }))
+      primaryCause: row.primary_cause || "Multiple factors",
+    }));
 
-    res.json(stationsData)
+    res.json(stationsData);
   } catch (error) {
-    console.error('Error fetching disrupted stations:', error)
+    console.error("Error fetching disrupted stations:", error);
     // Return mock data as fallback
     res.json([
       {
-        station: 'DXB',
-        stationName: 'Dubai',
+        station: "DXB",
+        stationName: "Dubai",
         disruptedFlights: 12,
         affectedPassengers: 2847,
-        severity: 'high',
-        primaryCause: 'Weather'
+        severity: "high",
+        primaryCause: "Weather",
       },
       {
-        station: 'DEL',
-        stationName: 'Delhi',
+        station: "DEL",
+        stationName: "Delhi",
         disruptedFlights: 7,
         affectedPassengers: 823,
-        severity: 'medium',
-        primaryCause: 'ATC Delays'
+        severity: "medium",
+        primaryCause: "ATC Delays",
       },
       {
-        station: 'BOM',
-        stationName: 'Mumbai',
+        station: "BOM",
+        stationName: "Mumbai",
         disruptedFlights: 4,
         affectedPassengers: 457,
-        severity: 'medium',
-        primaryCause: 'Aircraft Issue'
-      }
-    ])
+        severity: "medium",
+        primaryCause: "Aircraft Issue",
+      },
+    ]);
   }
-})
+});
 
 // Get operational insights
-app.get('/api/operational-insights', async (req, res) => {
+app.get("/api/operational-insights", async (req, res) => {
   try {
     const insightsResult = await pool.query(`
       SELECT
@@ -3756,36 +3782,117 @@ app.get('/api/operational-insights', async (req, res) => {
         MODE() WITHIN GROUP (ORDER BY disruption_reason) as route_disruption_cause
       FROM flight_disruptions
       WHERE created_at >= CURRENT_DATE - INTERVAL '7 days'
-    `)
+    `);
 
-    const insights = insightsResult.rows[0]
+    const insights = insightsResult.rows[0];
 
     const operationalInsights = {
       recoveryRate: parseFloat(insights.recovery_rate) || 89.2,
-      averageResolutionTime: '2.4h',
-      networkImpact: 'Medium',
+      averageResolutionTime: "2.4h",
+      networkImpact: "Medium",
       criticalPriority: parseInt(insights.critical_priority) || 5,
-      mostDisruptedRoute: insights.most_disrupted_route || 'DXB → DEL',
-      routeDisruptionCause: insights.route_disruption_cause || 'Weather delays'
-    }
+      mostDisruptedRoute: insights.most_disrupted_route || "DXB → DEL",
+      routeDisruptionCause: insights.route_disruption_cause || "Weather delays",
+    };
 
-    res.json(operationalInsights)
+    res.json(operationalInsights);
   } catch (error) {
-    console.error('Error fetching operational insights:', error)
+    console.error("Error fetching operational insights:", error);
     res.status(500).json({
-      error: 'Failed to fetch operational insights',
+      error: "Failed to fetch operational insights",
       fallback: {
         recoveryRate: 89.2,
-        averageResolutionTime: '2.4h',
-        networkImpact: 'Medium',
+        averageResolutionTime: "2.4h",
+        networkImpact: "Medium",
         criticalPriority: 5,
-        mostDisruptedRoute: 'DXB → DEL',
-        routeDisruptionCause: 'Weather delays'
-      }
-    })
+        mostDisruptedRoute: "DXB → DEL",
+        routeDisruptionCause: "Weather delays",
+      },
+    });
   }
-})
+});
 
+app.post("/api/crew-hotel-assignments", async (req, res) => {
+  try {
+    const { assignments } = req.body;
+
+    if (!assignments || !Array.isArray(assignments)) {
+      return res.status(400).json({ error: "Invalid assignments data" });
+    }
+
+
+      // Insert assignments
+      assignments.map((assignment) => {
+        return await pool.query(
+          `
+          INSERT INTO crew_hotel_assignments (
+            disruption_id, crew_member_id, hotel_name, hotel_location,
+            check_in_date, check_out_date, room_number, special_requests,
+            assignment_status, total_cost, booking_reference, transport_details, created_by
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+          ON CONFLICT ON CONSTRAINT crew_hotel_assignments_unique
+          DO UPDATE SET 
+            hotel_name = EXCLUDED.hotel_name,
+            hotel_location = EXCLUDED.hotel_location,
+            check_in_date = EXCLUDED.check_in_date,
+            check_out_date = EXCLUDED.check_out_date,
+            room_number = EXCLUDED.room_number,
+            special_requests = EXCLUDED.special_requests,
+            assignment_status = EXCLUDED.assignment_status,
+            total_cost = EXCLUDED.total_cost,
+            booking_reference = EXCLUDED.booking_reference,
+            transport_details = EXCLUDED.transport_details,
+            updated_at = CURRENT_TIMESTAMP
+        `,
+          [
+            assignment.disruption_id,
+            assignment.crew_member_id,
+            assignment.hotel_name,
+            assignment.hotel_location,
+            assignment.check_in_date,
+            assignment.check_out_date,
+            assignment.room_number,
+            assignment.special_requests,
+            assignment.assignment_status,
+            assignment.total_cost,
+            assignment.booking_reference,
+            assignment.transport_details,
+            assignment.created_by,
+          ],
+        );
+      });
+
+      res.json({
+        success: true,
+        message: `${assignments.length} crew hotel assignments saved successfully`,
+      }); 
+  } catch (error) {
+    console.error("Error saving crew hotel assignments:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get("/api/crew-hotel-assignments/:disruptionId", async (req, res) => {
+  try {
+    const { disruptionId } = req.params;
+    const client = await pool.connect();
+
+    const result = await client.query(
+      `
+      SELECT * FROM crew_hotel_assignments 
+      WHERE disruption_id = $1 
+      ORDER BY created_at DESC
+    `,
+      [disruptionId],
+    );
+
+    client.release();
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching crew hotel assignments:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Error handling middleware
 app.use((error, req, res, next) => {
