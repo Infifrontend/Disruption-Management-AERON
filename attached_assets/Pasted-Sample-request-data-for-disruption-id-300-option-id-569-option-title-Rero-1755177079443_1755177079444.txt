@@ -1,0 +1,114 @@
+Sample request data for
+
+{
+    "disruption_id": 300,
+    "option_id": 569,
+    "option_title": "Rerouting the aircraft",
+    "estimated_cost": "AED 45,000",
+    "estimated_delay": 0,
+    "passenger_impact": {
+        "affected": 12,
+        "reaccommodated": 0,
+        "compensated": 0,
+        "missingConnections": 1
+    },
+    "operational_complexity": "medium",
+    "resource_requirements": "{}",
+    "timeline_details": "\"4 hours total\"",
+    "approval_status": "pending",
+    "created_by": "passenger_services",
+    "notes": "Submitted from passenger services with 12 passengers processed",
+    "passenger_rebooking": [
+        {
+            "disruption_id": 101,
+            "pnr": "DXB123",
+            "passenger_id": "PAX987654",
+            "passenger_name": "John Doe",
+            "original_flight": "FZ215",
+            "original_seat": "14A",
+            "rebooked_flight": "FZ319",
+            "rebooked_cabin": "Economy",
+            "rebooked_seat": "18C",
+            "rebooking_date": "2025-08-14T10:30:00+04:00",
+            "additional_services": [
+                {
+                    "service_type": "Meal",
+                    "description": "Vegetarian Special Meal"
+                },
+                {
+                    "service_type": "Extra Baggage",
+                    "description": "Additional 10kg baggage allowance"
+                }
+            ],
+            "total_passengers_in_pnr": 2,
+            "rebooking_cost": 150.75,
+            "notes": "Rebooked due to weather-related flight cancellation"
+        }
+    ],
+    "crew_hotel_assignments": [
+        {
+            "disruption_id": "1",
+            "crew_member": [
+                {
+                    "employee_id": "C10245",
+                    "name": "Sarah Johnson",
+                    "rank": "Captain",
+                    "base": "DXB",
+                    "contact_number": "+971501234567"
+                }
+            ],
+            "hotel_name": "Hilton Garden Inn Dubai",
+            "hotel_location": "Dubai International Airport (DXB) - Terminal 3",
+            "check_in_date": "2025-08-14T14:00:00+04:00",
+            "check_out_date": "2025-08-15T10:00:00+04:00",
+            "room_number": "1208",
+            "special_requests": "Late check-out if possible",
+            "assignment_status": "assigned",
+            "total_cost": 420.50,
+            "booking_reference": "HOTAC-2025-0814-001",
+            "transport_details": {
+                "pickup_location": "DXB Terminal 3 Crew Gate",
+                "pickup_time": "2025-08-14T13:30:00+04:00",
+                "dropoff_location": "Hotel Lobby",
+                "dropoff_time": "2025-08-15T10:30:00+04:00",
+                "vehicle_type": "Mini Van",
+                "vendor": "City Crew Transport"
+            },
+            "created_by": "ops_user_01",
+            "created_at": "2025-08-14T12:15:00+04:00",
+            "updated_at": "2025-08-14T12:15:00+04:00"
+        },
+        {
+            "disruption_id": "1",
+            "crew_member": [
+                {
+                    "employee_id": "C10245",
+                    "name": "kara Johnson",
+                    "rank": "pilot",
+                    "base": "DXB",
+                    "contact_number": "+971501234567"
+                }
+            ],
+            "hotel_name": "Hilton Garden Inn Dubai",
+            "hotel_location": "Dubai International Airport (DXB) - Terminal 3",
+            "check_in_date": "2025-08-14T14:00:00+04:00",
+            "check_out_date": "2025-08-15T10:00:00+04:00",
+            "room_number": "1208",
+            "special_requests": "Late check-out if possible",
+            "assignment_status": "assigned",
+            "total_cost": 420.50,
+            "booking_reference": "HOTAC-2025-0814-001",
+            "transport_details": {
+                "pickup_location": "DXB Terminal 3 Crew Gate",
+                "pickup_time": "2025-08-14T13:30:00+04:00",
+                "dropoff_location": "Hotel Lobby",
+                "dropoff_time": "2025-08-15T10:30:00+04:00",
+                "vehicle_type": "Mini Van",
+                "vendor": "City Crew Transport"
+            },
+            "created_by": "ops_user_01",
+            "created_at": "2025-08-14T12:15:00+04:00",
+            "updated_at": "2025-08-14T12:15:00+04:00"
+        }
+    ]
+}

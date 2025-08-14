@@ -2747,8 +2747,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                               <TableHead>Name</TableHead>
                               <TableHead>Rank</TableHead>
                               <TableHead>Status</TableHead>
-                              <TableHead>Location</TableHead>
-                              <TableHead>Duty Time Remaining</TableHead>
+                              {/* <TableHead>Location</TableHead>
+                              <TableHead>Duty Time Remaining</TableHead> */}
                             </TableRow>
                           </TableHeader>
                           <TableBody>
@@ -2810,11 +2810,11 @@ export function PassengerRebooking({ context, onClearContext }) {
                               <TableCell>Flight Attendant</TableCell>
                               <TableCell>
                                 <Badge className="bg-green-100 text-green-700 border-green-200">
-                                  Available
+                                  Duty Voilation
                                 </Badge>
                               </TableCell>
-                              <TableCell>Crew Lounge Level 3</TableCell>
-                              <TableCell>5h 10m</TableCell>
+                              {/* <TableCell>Crew Lounge Level 3</TableCell>
+                              <TableCell>5h 10m</TableCell> */}
                             </TableRow>
                           </TableBody>
                         </Table>
