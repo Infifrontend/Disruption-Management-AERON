@@ -3787,6 +3787,8 @@ const generateAircraftIssueRecovery = (flight) => {
 };
 
 const generateCrewIssueRecovery = (flight) => {
+  const flightNumber = flight.flightNumber || flight.flight_number || "Unknown";
+  
   const steps = [
     {
       step: 1,
@@ -3794,9 +3796,9 @@ const generateCrewIssueRecovery = (flight) => {
       status: "completed",
       timestamp: "13:45:00",
       system: "AIMS Crew System",
-      details: `Crew duty time breach detected for ${flight.flightNumber || flight.flight_number}`,
+      details: `Crew duty time breach detected for ${flightNumber}`,
       data: {
-        flightNumber: flight.flightNumber || flight.flight_number,
+        flightNumber: flightNumber,
         crewMember: "Capt. Ahmed Al-Rashid",
         reason: "Duty Time Breach - FDP Limit Exceeded",
         currentFDP: "13.5 hours",
@@ -3861,18 +3863,21 @@ const generateCrewIssueRecovery = (flight) => {
     impact_area: option.impact_area || ["crew"],
     impact_summary:
       option.impact_summary ||
-      `Crew issue recovery for ${flight.flightNumber || flight.flight_number}: Standard crew replacement procedure with qualified personnel.`,
-    resourceRequirements: option.resource_requirements || [],
-    costBreakdown: option.cost_breakdown || {},
-    timelineDetails: option.timeline_details || [],
-    riskAssessment: option.risk_assessment || [],
-    technicalSpecs: option.technical_specs || {},
+      `Crew issue recovery for ${flightNumber}: Standard crew replacement procedure with qualified personnel.`,
+    resource_requirements: option.resource_requirements || [],
+    cost_breakdown: option.cost_breakdown || {},
+    timeline_details: option.timeline_details || [],
+    risk_assessment: option.risk_assessment || [],
+    technical_specs: option.technical_specs || {},
     metrics: option.metrics || {
       costEfficiency: 85,
       timeEfficiency: 80,
       passengerSatisfaction: 75,
     },
-    rotationPlan: option.rotation_plan || {},
+    rotation_plan: option.rotation_plan || {},
+    details: option.details || null,
+    created_at: option.created_at || new Date().toISOString(),
+    updated_at: option.updated_at || new Date().toISOString(),
   }));
 
   return { options, steps };
