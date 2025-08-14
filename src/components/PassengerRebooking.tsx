@@ -168,6 +168,11 @@ export function PassengerRebooking({ context, onClearContext }) {
   // State for loading indicator during submission
   const [isLoading, setIsLoading] = useState(false);
 
+  // State for crew-hotel assignments
+  const [crewHotelAssignments, setCrewHotelAssignments] = useState({});
+  const [selectedCrewMembers, setSelectedCrewMembers] = useState(new Set());
+  const [selectedHotelForCrew, setSelectedHotelForCrew] = useState(null);
+
   // Enhanced default passenger data with PNR grouping
   const defaultPassengers = [
     {
@@ -1126,6 +1131,92 @@ export function PassengerRebooking({ context, onClearContext }) {
     });
   };
 
+  const handleConfirmCrewAssignment = () => {
+    if (selectedCrewMembers.size === 0 || !selectedHotelForCrew) {
+      alertService.error(
+        "Selection Required",
+        "Please select crew members and a hotel for assignment."
+      );
+      return;
+    }
+
+    const assignmentId = `HOTAC-${Date.now()}`;
+    const checkInDate = new Date();
+    checkInDate.setHours(14, 0, 0, 0); // 2:00 PM check-in
+    const checkOutDate = new Date(checkInDate);
+    checkOutDate.setDate(checkOutDate.getDate() + 1);
+    checkOutDate.setHours(10, 0, 0, 0); // 10:00 AM check-out
+
+    const crewList = Array.from(selectedCrewMembers).map((crewId, index) => {
+      const crewMember = crewData?.crew?.find(c => c.name === crewId) || {
+        name: crewId,
+        type: "Flight Crew",
+        status: "Available"
+      };
+      
+      return {
+        employee_id: `C${10000 + index + Math.floor(Math.random() * 1000)}`,
+        name: crewMember.name,
+        rank: crewMember.type || "Flight Crew",
+        base: "DXB",
+        contact_number: `+971${500000000 + Math.floor(Math.random() * 10000000)}`
+      };
+    });
+
+    const assignment = {
+      disruption_id: selectedFlight?.id || context?.flight?.id,
+      crew_member: crewList,
+      hotel_name: selectedHotelForCrew.name,
+      hotel_location: `${selectedHotelForCrew.distance} from Airport`,
+      check_in_date: checkInDate.toISOString(),
+      check_out_date: checkOutDate.toISOString(),
+      room_number: `${Math.floor(Math.random() * 3000) + 1000}`,
+      special_requests: "Standard crew accommodation",
+      assignment_status: "assigned",
+      total_cost: parseFloat(selectedHotelForCrew.pricePerNight.replace(/[^\d.]/g, "")) * crewList.length,
+      booking_reference: assignmentId,
+      transport_details: {
+        pickup_location: "DXB Terminal 3 Crew Gate",
+        pickup_time: new Date(checkInDate.getTime() - 30 * 60 * 1000).toISOString(), // 30 min before check-in
+        dropoff_location: "Hotel Lobby",
+        dropoff_time: new Date(checkOutDate.getTime() + 30 * 60 * 1000).toISOString(), // 30 min after check-out
+        vehicle_type: "Mini Van",
+        vendor: "City Crew Transport"
+      },
+      created_by: "ops_user_01"
+    };
+
+    // Store assignment in state
+    setCrewHotelAssignments(prev => ({
+      ...prev,
+      [assignmentId]: assignment
+    }));
+
+    // Clear selections
+    setSelectedCrewMembers(new Set());
+    setSelectedHotelForCrew(null);
+
+    toast.success("Crew Assignment Confirmed", {
+      description: `${crewList.length} crew member(s) assigned to ${selectedHotelForCrew.name}`
+    });
+  };
+
+  const handleCrewSelection = (crewName) => {
+    setSelectedCrewMembers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(crewName)) {
+        newSet.delete(crewName);
+      } else {
+        newSet.add(crewName);
+      }
+      return newSet;
+    });
+  };
+
+  const handleHotelSelectionForCrew = (hotel) => {
+    setSelectedHotelForCrew(hotel);
+  };
+
   const handleSendForApproval = async () => {
     if (selectedPnrs.size === 0) {
       alertService.error(
@@ -1175,106 +1266,126 @@ export function PassengerRebooking({ context, onClearContext }) {
     try {
       setIsLoading(true);
 
-      // Store passenger rebookings in the database
-      const rebookingData = passengersToApprove.map((passenger) => {
-        const rebookingInfo = confirmedRebookings[passenger.id];
-        return {
-          disruption_id: disruptionFlightId,
-          pnr: passenger.pnr,
-          passenger_id: passenger.id,
-          passenger_name: passenger.name,
-          original_flight:
-            passenger.originalFlight ||
-            context?.flight?.flightNumber ||
-            selectedFlight?.flight_number ||
-            "N/A",
-          original_seat: passenger.seat,
-          rebooked_flight: rebookingInfo?.flightNumber || "TBD",
-          rebooked_cabin: rebookingInfo?.cabin || "Economy",
-          rebooked_seat: rebookingInfo?.seat || "TBD",
-          additional_services: rebookingInfo?.services || [],
-          status: "Pending Approval", // Changed status to reflect the submission
-          total_passengers_in_pnr:
-            filteredPnrGroups[passenger.pnr]?.length || 1,
-          rebooking_cost: 0,
-          notes: `Approved rebooking for disruption ${disruptionFlightId}`,
-        };
-      });
+      const impactArea = recoveryOption?.impact_area || [];
+      const hasPassenger = impactArea.includes('passenger');
+      const hasCrew = impactArea.includes('crew');
+      let passengerSuccess = true;
+      let crewSuccess = true;
 
-      console.log("Saving passenger rebookings:", rebookingData);
+      // Store passenger rebookings if impact area includes passenger
+      if (hasPassenger && passengersToApprove.length > 0) {
+        const rebookingData = passengersToApprove.map((passenger) => {
+          const rebookingInfo = confirmedRebookings[passenger.id];
+          return {
+            disruption_id: disruptionFlightId,
+            pnr: passenger.pnr,
+            passenger_id: passenger.id,
+            passenger_name: passenger.name,
+            original_flight:
+              passenger.originalFlight ||
+              context?.flight?.flightNumber ||
+              selectedFlight?.flight_number ||
+              "N/A",
+            original_seat: passenger.seat,
+            rebooked_flight: rebookingInfo?.flightNumber || "TBD",
+            rebooked_cabin: rebookingInfo?.cabin || "Economy",
+            rebooked_seat: rebookingInfo?.seat || "TBD",
+            additional_services: rebookingInfo?.services || [],
+            status: "Pending Approval",
+            total_passengers_in_pnr:
+              filteredPnrGroups[passenger.pnr]?.length || 1,
+            rebooking_cost: 0,
+            notes: `Approved rebooking for disruption ${disruptionFlightId}`,
+          };
+        });
 
-      // Use the databaseService method to save rebookings
-      const rebookingSuccess =
-        await databaseService.savePassengerRebookings(rebookingData);
+        console.log("Saving passenger rebookings:", rebookingData);
+        passengerSuccess = await databaseService.savePassengerRebookings(rebookingData);
+      }
 
-      if (rebookingSuccess) {
+      // Store crew-hotel assignments if impact area includes crew
+      if (hasCrew && Object.keys(crewHotelAssignments).length > 0) {
+        console.log("Saving crew hotel assignments:", crewHotelAssignments);
+        const crewAssignments = Object.values(crewHotelAssignments);
+        crewSuccess = await databaseService.saveCrewHotelAssignments(crewAssignments);
+      }
+
+      if (passengerSuccess && crewSuccess) {
         // Update flight recovery status
         const statusSuccess = await databaseService.updateFlightRecoveryStatus(
           disruptionFlightId,
-          "passenger_services_pending",
+          "services_pending",
         );
 
         if (statusSuccess) {
-          // Save pending recovery solution with passenger services data
+          // Save pending recovery solution with comprehensive services data
           const solutionData = {
             disruption_id: disruptionFlightId,
-            option_id: recoveryOption?.id || `PASSENGER_SERVICES_${Date.now()}`,
-            option_title:
-              recoveryOption?.title || "Passenger Services Recovery",
-            option_description: `Passenger services processing completed for ${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups`,
-            cost: recoveryOption?.cost || "$50,000",
-            timeline: recoveryOption?.timeline || "2 hours",
+            option_id: recoveryOption?.id || `SERVICES_${Date.now()}`,
+            option_title: recoveryOption?.title || "Comprehensive Services Recovery",
+            option_description: `Services processing completed: ${hasPassenger ? `${passengersToApprove.length} passengers` : ''}${hasPassenger && hasCrew ? ' and ' : ''}${hasCrew ? `${Object.keys(crewHotelAssignments).length} crew assignments` : ''}`,
+            cost: recoveryOption?.cost || "$75,000",
+            timeline: recoveryOption?.timeline || "3 hours",
             confidence: 95,
             impact: "High",
             status: "Pending",
             full_details: {
-              passenger_services: true,
-              rebookings: passengersToApprove.length,
-              pnr_groups: selectedPnrs.size,
-              passengers_processed: passengersToApprove,
+              passenger_services: hasPassenger,
+              crew_services: hasCrew,
+              rebookings: hasPassenger ? passengersToApprove.length : 0,
+              pnr_groups: hasPassenger ? selectedPnrs.size : 0,
+              crew_assignments: hasCrew ? Object.keys(crewHotelAssignments).length : 0,
+              passengers_processed: hasPassenger ? passengersToApprove : [],
+              crew_assignments_processed: hasCrew ? crewHotelAssignments : {},
               recovery_option: recoveryOption,
             },
             rotation_impact: {
-              passenger_processing: `${passengersToApprove.length} passengers processed`,
-              rebooking_completed: new Date().toISOString(),
+              passenger_processing: hasPassenger ? `${passengersToApprove.length} passengers processed` : "No passenger processing required",
+              crew_processing: hasCrew ? `${Object.keys(crewHotelAssignments).length} crew assignments completed` : "No crew processing required",
+              completion_time: new Date().toISOString(),
               status: "completed",
             },
-            submitted_by: "passenger_services",
+            submitted_by: "services_team",
             approval_required: true,
           };
 
-          const pendingSolutionSuccess =
-            await databaseService.addPendingSolution(solutionData);
+          const pendingSolutionSuccess = await databaseService.addPendingSolution(solutionData);
 
           if (pendingSolutionSuccess) {
+            let successMessage = "Services sent for approval successfully!\n";
+            if (hasPassenger) successMessage += `${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups processed.\n`;
+            if (hasCrew) successMessage += `${Object.keys(crewHotelAssignments).length} crew hotel assignments completed.`;
+
             alertService.success(
               "Submission Successful",
-              `Passenger rebooking sent for approval successfully!\n${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups processed.`,
+              successMessage,
               () => {
-                // Clear selection after successful submission
+                // Clear selections after successful submission
                 setSelectedPnrs(new Set());
                 setSelectedPassenger(null);
                 setSelectedPnrGroup(null);
-                // Optionally, navigate or update UI
+                setCrewHotelAssignments({});
               },
             );
           } else {
             alertService.error(
               "Submission Failed",
-              "Failed to submit passenger rebooking for approval.",
+              "Failed to submit services for approval.",
             );
           }
         } else {
           alertService.warn(
             "Status Update Warning",
-            "Passenger information stored but failed to update flight status.",
+            "Services information stored but failed to update flight status.",
           );
         }
       } else {
-        alertService.error(
-          "Storage Error",
-          "Failed to store passenger rebooking information.",
-        );
+        let errorMessage = "Failed to store ";
+        if (!passengerSuccess) errorMessage += "passenger rebooking information";
+        if (!passengerSuccess && !crewSuccess) errorMessage += " and ";
+        if (!crewSuccess) errorMessage += "crew assignment information";
+        
+        alertService.error("Storage Error", errorMessage);
       }
     } catch (error) {
       console.error("Error submitting passenger recovery solution:", error);
@@ -3316,70 +3427,50 @@ export function PassengerRebooking({ context, onClearContext }) {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          <TableRow>
-                            <TableCell>
-                              <Checkbox />
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              Capt. Ahmed Al-Mansouri
-                            </TableCell>
-                            <TableCell>Captain</TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                Available
-                              </Badge>
-                            </TableCell>
-                            <TableCell>Dubai Airport Hotel</TableCell>
-                            <TableCell>2h 15m</TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell>
-                              <Checkbox />
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              FO Sarah Johnson
-                            </TableCell>
-                            <TableCell>First Officer</TableCell>
-                            <TableCell>
-                              <Badge className="bg-yellow-100 text-yellow-700 border-yellow-200">
-                                On Duty
-                              </Badge>
-                            </TableCell>
-                            <TableCell>Crew Rest Area Terminal 2</TableCell>
-                            <TableCell>4h 30m</TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell>
-                              <Checkbox />
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              Fatima Al-Mansouri
-                            </TableCell>
-                            <TableCell>Senior Flight Attendant</TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                Available
-                              </Badge>
-                            </TableCell>
-                            <TableCell>Crew Lounge Level 3</TableCell>
-                            <TableCell>3h 45m</TableCell>
-                          </TableRow>
-                          <TableRow>
-                            <TableCell>
-                              <Checkbox />
-                            </TableCell>
-                            <TableCell className="font-medium">
-                              Ahmed Hassan
-                            </TableCell>
-                            <TableCell>Flight Attendant</TableCell>
-                            <TableCell>
-                              <Badge className="bg-green-100 text-green-700 border-green-200">
-                                Available
-                              </Badge>
-                            </TableCell>
-                            <TableCell>Crew Lounge Level 3</TableCell>
-                            <TableCell>5h 10m</TableCell>
-                          </TableRow>
+                          {(crewData?.crew && crewData.crew.length > 0 ? crewData.crew : [
+                            { name: "Capt. Ahmed Al-Mansouri", type: "Captain", status: "Available", location: "Dubai Airport Hotel", dutyTime: "2h 15m" },
+                            { name: "F/O Sarah Johnson", type: "First Officer", status: "On Duty", location: "Crew Rest Area Terminal 2", dutyTime: "4h 30m" },
+                            { name: "Fatima Al-Mansouri", type: "Senior Flight Attendant", status: "Available", location: "Crew Lounge Level 3", dutyTime: "3h 45m" },
+                            { name: "Ahmed Hassan", type: "Flight Attendant", status: "Available", location: "Crew Lounge Level 3", dutyTime: "5h 10m" }
+                          ]).map((crewMember, index) => {
+                            const isAssigned = Object.values(crewHotelAssignments).some(assignment => 
+                              assignment.crew_member.some(cm => cm.name === crewMember.name)
+                            );
+                            
+                            return (
+                              <TableRow key={index} className={isAssigned ? "bg-green-50" : ""}>
+                                <TableCell>
+                                  <Checkbox 
+                                    checked={selectedCrewMembers.has(crewMember.name)}
+                                    onCheckedChange={() => handleCrewSelection(crewMember.name)}
+                                    disabled={isAssigned}
+                                  />
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                  {crewMember.name}
+                                  {isAssigned && (
+                                    <Badge className="ml-2 bg-green-100 text-green-700 border-green-200 text-xs">
+                                      Assigned
+                                    </Badge>
+                                  )}
+                                </TableCell>
+                                <TableCell>{crewMember.type}</TableCell>
+                                <TableCell>
+                                  <Badge className={
+                                    crewMember.status === "Available"
+                                      ? "bg-green-100 text-green-700 border-green-200"
+                                      : crewMember.status === "On Duty"
+                                        ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                        : "bg-red-100 text-red-700 border-red-200"
+                                  }>
+                                    {crewMember.status}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>{crewMember.location}</TableCell>
+                                <TableCell>{crewMember.dutyTime}</TableCell>
+                              </TableRow>
+                            );
+                          })}
                         </TableBody>
                       </Table>
                     </div>
@@ -3460,7 +3551,10 @@ export function PassengerRebooking({ context, onClearContext }) {
                               </p>
 
                               <div className="flex items-center gap-2">
-                                <Checkbox />
+                                <Checkbox 
+                                  checked={selectedHotelForCrew?.id === hotel.id}
+                                  onCheckedChange={() => handleHotelSelectionForCrew(hotel)}
+                                />
                                 <span className="text-xs font-medium">Select for crew</span>
                               </div>
                             </div>
@@ -3492,18 +3586,51 @@ export function PassengerRebooking({ context, onClearContext }) {
                       <Button
                         size="sm"
                         className="btn-flydubai-primary"
-                        onClick={() => {
-                          toast.success("Crew hotel assignments confirmed", {
-                            description: "Selected crew members have been assigned to available hotels"
-                          });
-                        }}
+                        onClick={handleConfirmCrewAssignment}
+                        disabled={selectedCrewMembers.size === 0 || !selectedHotelForCrew}
                       >
-                        Confirm Assignments
+                        Confirm Assignment
                       </Button>
                       <Button size="sm" variant="outline">
-                        View Assignment Details
+                        View Assignment Details ({Object.keys(crewHotelAssignments).length})
                       </Button>
                     </div>
+
+                    {/* Current Assignments Display */}
+                    {Object.keys(crewHotelAssignments).length > 0 && (
+                      <div className="mt-6 pt-6 border-t">
+                        <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          Current Crew-Hotel Assignments ({Object.keys(crewHotelAssignments).length})
+                        </h4>
+                        <div className="space-y-3">
+                          {Object.values(crewHotelAssignments).map((assignment, index) => (
+                            <div key={index} className="bg-green-50 border border-green-200 rounded-lg p-3">
+                              <div className="flex items-start justify-between mb-2">
+                                <div>
+                                  <div className="font-medium text-green-800">
+                                    {assignment.hotel_name}
+                                  </div>
+                                  <div className="text-sm text-green-700">
+                                    Booking: {assignment.booking_reference}
+                                  </div>
+                                </div>
+                                <Badge className="bg-green-100 text-green-700 border-green-200">
+                                  {assignment.assignment_status}
+                                </Badge>
+                              </div>
+                              <div className="text-sm text-green-700">
+                                Crew: {assignment.crew_member.map(c => c.name).join(", ")}
+                              </div>
+                              <div className="text-sm text-green-600 mt-1">
+                                Check-in: {new Date(assignment.check_in_date).toLocaleDateString()} | 
+                                Cost: AED {assignment.total_cost}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
