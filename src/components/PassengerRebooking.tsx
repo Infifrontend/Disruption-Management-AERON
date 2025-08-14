@@ -1238,28 +1238,6 @@ export function PassengerRebooking({ context, onClearContext }) {
       return group ? group : [];
     });
 
-    if (passengersToApprove.length === 0) {
-      alertService.error(
-        "No Passengers",
-        "No passengers found in selected PNR groups.",
-      );
-      return;
-    }
-
-    // Check if all selected passengers are confirmed
-    const allSelectedConfirmed = passengersToApprove.every((p) => {
-      const currentStatus = passengerRebookingStatus[p.id] || p.status;
-      return currentStatus === "Confirmed";
-    });
-
-    if (!allSelectedConfirmed) {
-      alertService.warn(
-        "Approval Not Ready",
-        "All selected passengers must have a 'Confirmed' status before sending for approval.",
-      );
-      return;
-    }
-
     const disruptionFlightId = context?.flight?.id || selectedFlight?.id;
 
     if (!disruptionFlightId) {
@@ -1270,12 +1248,46 @@ export function PassengerRebooking({ context, onClearContext }) {
       return;
     }
 
+    const impactArea = recoveryOption?.impact_area || [];
+    const hasPassenger = impactArea.includes("passenger");
+    const hasCrew = impactArea.includes("crew");
+
+    // Validate based on impact area
+    if (hasPassenger) {
+      if (passengersToApprove.length === 0) {
+        alertService.error(
+          "No Passengers",
+          "No passengers found in selected PNR groups.",
+        );
+        return;
+      }
+
+      // Check if all selected passengers are confirmed
+      const allSelectedConfirmed = passengersToApprove.every((p) => {
+        const currentStatus = passengerRebookingStatus[p.id] || p.status;
+        return currentStatus === "Confirmed";
+      });
+
+      if (!allSelectedConfirmed) {
+        alertService.warn(
+          "Approval Not Ready",
+          "All selected passengers must have a 'Confirmed' status before sending for approval.",
+        );
+        return;
+      }
+    }
+
+    if (hasCrew && Object.keys(crewHotelAssignments).length === 0) {
+      alertService.warn(
+        "Crew Assignment Required",
+        "Crew hotel assignments are required before sending for approval.",
+      );
+      return;
+    }
+
     try {
       setIsLoading(true);
 
-      const impactArea = recoveryOption?.impact_area || [];
-      const hasPassenger = impactArea.includes("passenger");
-      const hasCrew = impactArea.includes("crew");
       let passengerSuccess = true;
       let crewSuccess = true;
 
