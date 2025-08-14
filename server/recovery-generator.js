@@ -671,12 +671,24 @@ const getAircraftIssuesRecoveryData = () => {
           {
             reg: "B737 MAX 8",
             type: "B737-800 (189Y)",
-            etops: { status: "available", value: "180min" },
-            cabinMatch: { status: "exact", value: "Exact" },
+            etops: {
+              status: "available",
+              value: "180min",
+            },
+            cabinMatch: {
+              status: "exact",
+              value: "Exact",
+            },
             availability: "Delayed 4-6 hours",
-            assigned: { status: "none", value: "None" },
+            assigned: {
+              status: "none",
+              value: "None",
+            },
             turnaround: "30 min",
-            maintenance: { status: "current", value: "Current" },
+            maintenance: {
+              status: "current",
+              value: "Current",
+            },
             option_score: {
               cost_score: "92%",
               delay_score: "88%",
@@ -991,11 +1003,7 @@ const getAircraftIssuesRecoveryData = () => {
           details: "Integration with existing operational systems verified",
         },
       },
-      metrics: {
-        costEfficiency: 60,
-        timeEfficiency: 95,
-        passengerSatisfaction: 40,
-      },
+      metrics: {},
       rotation_plan: {
         aircraftOptions: [
           {
@@ -1362,7 +1370,11 @@ const getCrewIssuesRecoveryData = () => {
             "All crew current on recurrent training, emergency procedures, and company standards",
         },
       },
-      metrics: {},
+      metrics: {
+        costEfficiency: 85,
+        timeEfficiency: 80,
+        passengerSatisfaction: 75
+      },
       rotation_plan: {
         aircraftOptions: [
           {
@@ -1470,7 +1482,7 @@ const getCrewIssuesRecoveryData = () => {
           },
           slotCapacity: {
             status: "Coordination Required",
-            details: "DXB slot coordination required",
+            details: "Coordination required",
           },
           curfewViolation: {
             status: "No Risk",
@@ -1831,7 +1843,7 @@ const getCrewIssuesRecoveryData = () => {
           },
           slotCapacity: {
             status: "Coordination Required",
-            details: "DXB slot coordination required",
+            details: "Coordination required",
           },
           curfewViolation: {
             status: "No Risk",
@@ -4544,7 +4556,7 @@ export function generateRecoveryOptionsForDisruption(
 
     case "ROTATION_MAINTENANCE":
       const rotationResult =
-        generateRotationMisalignmentRecovery(safeDisruption);
+        generateRotationMisalignmentRecovery(safeDisstaticDisruption);
       options = rotationResult.options;
       steps = rotationResult.steps;
       break;
