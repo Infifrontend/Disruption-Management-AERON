@@ -2253,6 +2253,8 @@ export function ComparisonMatrix({
                     </CardHeader>
                     <CardContent>
                       {selectedOptionDetails.technical_specs &&
+                      typeof selectedOptionDetails.technical_specs === 'object' &&
+                      selectedOptionDetails.technical_specs !== null &&
                       Object.keys(selectedOptionDetails.technical_specs)
                         .length > 0 ? (
                         <div className="space-y-4">
@@ -2344,6 +2346,8 @@ export function ComparisonMatrix({
                           ))}
                         </div>
                       ) : selectedOptionDetails.technicalSpecs &&
+                        typeof selectedOptionDetails.technicalSpecs === 'object' &&
+                        selectedOptionDetails.technicalSpecs !== null &&
                         Object.keys(selectedOptionDetails.technicalSpecs)
                           .length > 0 ? (
                         <div className="space-y-4">
