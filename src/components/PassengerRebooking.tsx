@@ -1224,16 +1224,8 @@ export function PassengerRebooking({ context, onClearContext }) {
   };
 
   const handleSendForApproval = async () => {
-    // if (selectedPnrs.size === 0) {
-    //   alertService.error(
-    //     "Selection Required",
-    //     "Please select at least one PNR group to send for approval.",
-    //   );
-    //   return;
-    // }
-
     const passengersToApprove = Array.from(selectedPnrs).flatMap((pnr) => {
-      const group = filteredPnrGroups[pnr]; // Use filteredPnrGroups here
+      const group = filteredPnrGroups[pnr];
       return group ? group : [];
     });
 
@@ -1253,14 +1245,6 @@ export function PassengerRebooking({ context, onClearContext }) {
 
     // Validate based on impact area
     if (hasPassenger) {
-      // if (passengersToApprove.length === 0) {
-      //   alertService.error(
-      //     "No Passengers",
-      //     "No passengers found in selected PNR groups.",
-      //   );
-      //   return;
-      // }
-
       // Check if all selected passengers are confirmed
       const allSelectedConfirmed = passengersToApprove.every((p) => {
         const currentStatus = passengerRebookingStatus[p.id] || p.status;
@@ -1287,218 +1271,147 @@ export function PassengerRebooking({ context, onClearContext }) {
     try {
       setIsLoading(true);
 
-      let passengerSuccess = true;
-      let crewSuccess = true;
+      // Update flight recovery status
+      const statusSuccess = await databaseService.updateFlightRecoveryStatus(
+        disruptionFlightId,
+        "services_pending",
+      );
 
-      // Store passenger rebookings if impact area includes passenger
-      if (hasPassenger && passengersToApprove.length > 0) {
-        const rebookingData = passengersToApprove.map((passenger) => {
-          const rebookingInfo = confirmedRebookings[passenger.id];
-          return {
-            disruption_id: disruptionFlightId,
-            pnr: passenger.pnr,
-            passenger_id: passenger.id,
-            passenger_name: passenger.name,
-            original_flight:
-              passenger.originalFlight ||
-              context?.flight?.flightNumber ||
-              selectedFlight?.flight_number ||
-              "N/A",
-            original_seat: passenger.seat,
-            rebooked_flight: rebookingInfo?.flightNumber || "TBD",
-            rebooked_cabin: rebookingInfo?.cabin || "Economy",
-            rebooked_seat: rebookingInfo?.seat || "TBD",
-            additional_services: rebookingInfo?.services || [],
-            status: "Pending Approval",
-            total_passengers_in_pnr:
-              filteredPnrGroups[passenger.pnr]?.length || 1,
-            rebooking_cost: 0,
-            notes: `Approved rebooking for disruption ${disruptionFlightId}`,
-          };
-        });
+      if (statusSuccess) {
+        // Prepare passenger rebooking data if applicable
+        let passengerRebookingData = [];
+        if (hasPassenger && passengersToApprove.length > 0) {
+          passengerRebookingData = passengersToApprove.map((passenger) => {
+            const rebookingInfo = confirmedRebookings[passenger.id];
+            return {
+              disruption_id: disruptionFlightId,
+              pnr: passenger.pnr,
+              passenger_id: passenger.id,
+              passenger_name: passenger.name,
+              original_flight:
+                passenger.originalFlight ||
+                context?.flight?.flightNumber ||
+                selectedFlight?.flight_number ||
+                "N/A",
+              original_seat: passenger.seat,
+              rebooked_flight: rebookingInfo?.flightNumber || "TBD",
+              rebooked_cabin: rebookingInfo?.cabin || "Economy",
+              rebooked_seat: rebookingInfo?.seat || "TBD",
+              rebooking_date: rebookingInfo?.date || new Date().toISOString(),
+              additional_services: (rebookingInfo?.services || []).map(service => ({
+                service_type: service,
+                description: service
+              })),
+              total_passengers_in_pnr:
+                filteredPnrGroups[passenger.pnr]?.length || 1,
+              rebooking_cost: 0,
+              notes: `Approved rebooking for disruption ${disruptionFlightId}`,
+            };
+          });
+        }
 
-        console.log("Saving passenger rebookings:", rebookingData);
-        passengerSuccess =
-          await databaseService.savePassengerRebookings(rebookingData);
-      }
+        // Prepare crew hotel assignments data if applicable
+        let crewHotelAssignmentsData = [];
+        if (hasCrew && Object.keys(crewHotelAssignments).length > 0) {
+          crewHotelAssignmentsData = Object.values(crewHotelAssignments).map(
+            (assignment) => ({
+              disruption_id: disruptionFlightId,
+              crew_member: assignment.crew_member,
+              hotel_name: assignment.hotel_name,
+              hotel_location: assignment.hotel_location,
+              check_in_date: assignment.check_in_date,
+              check_out_date: assignment.check_out_date,
+              room_number: assignment.room_number,
+              special_requests: assignment.special_requests,
+              assignment_status: assignment.assignment_status,
+              total_cost: assignment.total_cost,
+              booking_reference: assignment.booking_reference,
+              transport_details: assignment.transport_details,
+              created_by: assignment.created_by,
+            }),
+          );
+        }
 
-      // Store crew-hotel assignments if impact area includes crew
-      if (hasCrew && Object.keys(crewHotelAssignments).length > 0) {
-        console.log("Saving crew hotel assignments:", crewHotelAssignments);
-        const crewAssignments = Object.values(crewHotelAssignments);
-        // crewSuccess =
-        //   await databaseService.saveCrewHotelAssignments(crewAssignments);
-      }
+        // Build unified payload for addPendingSolution
+        const solutionData = {
+          disruption_id: disruptionFlightId,
+          option_id: recoveryOption?.id || `SERVICES_${Date.now()}`,
+          option_title:
+            recoveryOption?.title || "Comprehensive Services Recovery",
+          estimated_cost: typeof recoveryOption?.cost === 'string' 
+            ? recoveryOption.cost 
+            : recoveryOption?.cost 
+              ? `AED ${recoveryOption.cost.toLocaleString()}`
+              : "AED 75,000",
+          estimated_delay: recoveryOption?.delay || 0,
+          passenger_impact: {
+            affected: hasPassenger ? passengersToApprove.length : 0,
+            reaccommodated: hasPassenger
+              ? passengersToApprove.filter((p) => {
+                  const status = passengerRebookingStatus[p.id] || p.status;
+                  return status === "Confirmed";
+                }).length
+              : 0,
+            compensated: 0,
+            missingConnections: hasPassenger
+              ? passengersToApprove.filter(
+                  (p) => p.connectedFlights && p.connectedFlights.length > 0,
+                ).length
+              : 0,
+          },
+          operational_complexity: recoveryOption?.complexity || "medium",
+          resource_requirements: JSON.stringify(
+            recoveryOption?.requirements || {},
+          ),
+          timeline_details: JSON.stringify(
+            recoveryOption?.timeline || "3 hours total",
+          ),
+          approval_status: "pending",
+          created_by: "passenger_services",
+          notes: `Submitted from passenger services with ${hasPassenger ? passengersToApprove.length : 0} passengers processed`,
+        };
 
-      if (passengerSuccess && crewSuccess) {
-        // Update flight recovery status
-        const statusSuccess = await databaseService.updateFlightRecoveryStatus(
-          disruptionFlightId,
-          "services_pending",
-        );
+        // Add optional data only if present
+        if (passengerRebookingData.length > 0) {
+          solutionData.passenger_rebooking = passengerRebookingData;
+        }
 
-        if (statusSuccess) {
-          // Prepare passenger rebooking data if applicable
-          let passengerRebookingData = null;
-          if (hasPassenger && passengersToApprove.length > 0) {
-            console.log(passengersToApprove);
-            passengerRebookingData = passengersToApprove.map((passenger) => {
-              const rebookingInfo = confirmedRebookings[passenger.id];
-              return {
-                disruption_id: disruptionFlightId,
-                pnr: passenger.pnr,
-                passenger_id: passenger.id,
-                passenger_name: passenger.name,
-                original_flight:
-                  passenger.originalFlight ||
-                  context?.flight?.flightNumber ||
-                  selectedFlight?.flight_number ||
-                  "N/A",
-                original_seat: passenger.seat,
-                rebooked_flight: rebookingInfo?.flightNumber || "TBD",
-                rebooked_cabin: rebookingInfo?.cabin || "Economy",
-                rebooked_seat: rebookingInfo?.seat || "TBD",
-                rebooking_date: rebookingInfo?.date || new Date().toISOString(),
-                additional_services: rebookingInfo?.services || [],
-                total_passengers_in_pnr:
-                  filteredPnrGroups[passenger.pnr]?.length || 1,
-                rebooking_cost: 0,
-                notes: `Approved rebooking for disruption ${disruptionFlightId}`,
-              };
-            });
-          }
+        if (crewHotelAssignmentsData.length > 0) {
+          solutionData.crew_hotel_assignments = crewHotelAssignmentsData;
+        }
 
-          // Prepare crew hotel assignments data if applicable
-          let crewHotelAssignmentsData = null;
-          if (hasCrew && Object.keys(crewHotelAssignments).length > 0) {
-            crewHotelAssignmentsData = Object.values(crewHotelAssignments).map(
-              (assignment) => ({
-                disruption_id: disruptionFlightId,
-                crew_member: assignment.crew_member,
-                hotel_name: assignment.hotel_name,
-                hotel_location: assignment.hotel_location,
-                check_in_date: assignment.check_in_date,
-                check_out_date: assignment.check_out_date,
-                room_number: assignment.room_number,
-                special_requests: assignment.special_requests,
-                assignment_status: assignment.assignment_status,
-                total_cost: assignment.total_cost,
-                booking_reference: assignment.booking_reference,
-                transport_details: assignment.transport_details,
-                created_by: assignment.created_by,
-              }),
-            );
-          }
+        const pendingSolutionSuccess =
+          await databaseService.addPendingSolution(solutionData);
 
-          // Save pending recovery solution with comprehensive services data
-          const solutionData = {
-            disruption_id: disruptionFlightId,
-            option_id: recoveryOption?.id || `SERVICES_${Date.now()}`,
-            option_title:
-              recoveryOption?.title || "Comprehensive Services Recovery",
-            option_description: `Services processing completed: ${hasPassenger ? `${passengersToApprove.length} passengers` : ""}${hasPassenger && hasCrew ? " and " : ""}${hasCrew ? `${Object.keys(crewHotelAssignments).length} crew assignments` : ""}`,
-            estimated_cost: typeof recoveryOption?.cost === 'string' 
-              ? recoveryOption.cost 
-              : recoveryOption?.cost 
-                ? `AED ${recoveryOption.cost.toLocaleString()}`
-                : "AED 75,000",
-            estimated_delay: recoveryOption?.delay || 0,
-            passenger_impact: {
-              affected: hasPassenger ? passengersToApprove.length : 0,
-              reaccommodated: hasPassenger
-                ? passengersToApprove.filter((p) => {
-                    const status = passengerRebookingStatus[p.id] || p.status;
-                    return status === "Confirmed";
-                  }).length
-                : 0,
-              compensated: 0,
-              missingConnections: hasPassenger
-                ? passengersToApprove.filter(
-                    (p) => p.connectedFlights && p.connectedFlights.length > 0,
-                  ).length
-                : 0,
+        if (pendingSolutionSuccess) {
+          let successMessage = "Services sent for approval successfully!\n";
+          if (hasPassenger)
+            successMessage += `${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups processed.\n`;
+          if (hasCrew)
+            successMessage += `${Object.keys(crewHotelAssignments).length} crew hotel assignments completed.`;
+
+          alertService.success(
+            "Submission Successful",
+            successMessage,
+            () => {
+              // Clear selections after successful submission
+              setSelectedPnrs(new Set());
+              setSelectedPassenger(null);
+              setSelectedPnrGroup(null);
+              setCrewHotelAssignments({});
             },
-            operational_complexity: recoveryOption?.complexity || "medium",
-            resource_requirements: JSON.stringify(
-              recoveryOption?.requirements || {},
-            ),
-            timeline_details: JSON.stringify(
-              recoveryOption?.timeline || "3 hours total",
-            ),
-            approval_status: "pending",
-            created_by: "passenger_services",
-            notes: `Submitted from passenger services with ${hasPassenger ? passengersToApprove.length : 0} passengers processed`,
-            // Include passenger rebooking data - always include, even if empty
-            passenger_rebooking: passengerRebookingData || [],
-            // Include crew hotel assignments data - always include, even if empty
-            crew_hotel_assignments: crewHotelAssignmentsData || [],
-            full_details: {
-              passenger_services: hasPassenger,
-              crew_services: hasCrew,
-              rebookings: hasPassenger ? passengersToApprove.length : 0,
-              pnr_groups: hasPassenger ? selectedPnrs.size : 0,
-              crew_assignments: hasCrew
-                ? Object.keys(crewHotelAssignments).length
-                : 0,
-              passenger_rebooking: hasPassenger ? passengersToApprove : [],
-              crew_hotel_assignments: hasCrew ? Object.values(crewHotelAssignments) : [],
-              recovery_option: recoveryOption,
-            },
-            rotation_impact: {
-              passenger_processing: hasPassenger
-                ? `${passengersToApprove.length} passengers processed`
-                : "No passenger processing required",
-              crew_processing: hasCrew
-                ? `${Object.keys(crewHotelAssignments).length} crew assignments completed`
-                : "No crew processing required",
-              completion_time: new Date().toISOString(),
-              status: "completed",
-            },
-            submitted_by: "services_team",
-            approval_required: true,
-          };
-
-          const pendingSolutionSuccess =
-            await databaseService.addPendingSolution(solutionData);
-
-          if (pendingSolutionSuccess) {
-            let successMessage = "Services sent for approval successfully!\n";
-            if (hasPassenger)
-              successMessage += `${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups processed.\n`;
-            if (hasCrew)
-              successMessage += `${Object.keys(crewHotelAssignments).length} crew hotel assignments completed.`;
-
-            alertService.success(
-              "Submission Successful",
-              successMessage,
-              () => {
-                // Clear selections after successful submission
-                setSelectedPnrs(new Set());
-                setSelectedPassenger(null);
-                setSelectedPnrGroup(null);
-                setCrewHotelAssignments({});
-              },
-            );
-          } else {
-            alertService.error(
-              "Submission Failed",
-              "Failed to submit services for approval.",
-            );
-          }
+          );
         } else {
-          alertService.warning(
-            "Status Update Warning",
-            "Services information stored but failed to update flight status.",
+          alertService.error(
+            "Submission Failed",
+            "Failed to submit services for approval.",
           );
         }
       } else {
-        let errorMessage = "Failed to store ";
-        if (!passengerSuccess)
-          errorMessage += "passenger rebooking information";
-        if (!passengerSuccess && !crewSuccess) errorMessage += " and ";
-        if (!crewSuccess) errorMessage += "crew assignment information";
-
-        alertService.error("Storage Error", errorMessage);
+        alertService.warning(
+          "Status Update Warning",
+          "Failed to update flight status.",
+        );
       }
     } catch (error) {
       console.error("Error submitting passenger recovery solution:", error);
