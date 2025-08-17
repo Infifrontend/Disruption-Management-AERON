@@ -733,7 +733,8 @@ export function PassengerRebooking({ context, onClearContext }) {
       availability: "Available",
       image:
         "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=250&fit=crop",
-      description: "Elegant hotel with excellent conference facilities and dining options",
+      description:
+        "Elegant hotel with excellent conference facilities and dining options",
     },
     {
       id: "HTL-003",
@@ -1224,13 +1225,13 @@ export function PassengerRebooking({ context, onClearContext }) {
   };
 
   const handleSendForApproval = async () => {
-    if (selectedPnrs.size === 0) {
-      alertService.error(
-        "Selection Required",
-        "Please select at least one PNR group to send for approval.",
-      );
-      return;
-    }
+    // if (selectedPnrs.size === 0) {
+    //   alertService.error(
+    //     "Selection Required",
+    //     "Please select at least one PNR group to send for approval.",
+    //   );
+    //   return;
+    // }
 
     const passengersToApprove = Array.from(selectedPnrs).flatMap((pnr) => {
       const group = filteredPnrGroups[pnr]; // Use filteredPnrGroups here
@@ -1253,13 +1254,13 @@ export function PassengerRebooking({ context, onClearContext }) {
 
     // Validate based on impact area
     if (hasPassenger) {
-      if (passengersToApprove.length === 0) {
-        alertService.error(
-          "No Passengers",
-          "No passengers found in selected PNR groups.",
-        );
-        return;
-      }
+      // if (passengersToApprove.length === 0) {
+      //   alertService.error(
+      //     "No Passengers",
+      //     "No passengers found in selected PNR groups.",
+      //   );
+      //   return;
+      // }
 
       // Check if all selected passengers are confirmed
       const allSelectedConfirmed = passengersToApprove.every((p) => {
@@ -1326,8 +1327,8 @@ export function PassengerRebooking({ context, onClearContext }) {
       if (hasCrew && Object.keys(crewHotelAssignments).length > 0) {
         console.log("Saving crew hotel assignments:", crewHotelAssignments);
         const crewAssignments = Object.values(crewHotelAssignments);
-        crewSuccess =
-          await databaseService.saveCrewHotelAssignments(crewAssignments);
+        // crewSuccess =
+        //   await databaseService.saveCrewHotelAssignments(crewAssignments);
       }
 
       if (passengerSuccess && crewSuccess) {
@@ -1370,21 +1371,23 @@ export function PassengerRebooking({ context, onClearContext }) {
           // Prepare crew hotel assignments data if applicable
           let crewHotelAssignmentsData = null;
           if (hasCrew && Object.keys(crewHotelAssignments).length > 0) {
-            crewHotelAssignmentsData = Object.values(crewHotelAssignments).map((assignment) => ({
-              disruption_id: disruptionFlightId,
-              crew_member: assignment.crew_member,
-              hotel_name: assignment.hotel_name,
-              hotel_location: assignment.hotel_location,
-              check_in_date: assignment.check_in_date,
-              check_out_date: assignment.check_out_date,
-              room_number: assignment.room_number,
-              special_requests: assignment.special_requests,
-              assignment_status: assignment.assignment_status,
-              total_cost: assignment.total_cost,
-              booking_reference: assignment.booking_reference,
-              transport_details: assignment.transport_details,
-              created_by: assignment.created_by,
-            }));
+            crewHotelAssignmentsData = Object.values(crewHotelAssignments).map(
+              (assignment) => ({
+                disruption_id: disruptionFlightId,
+                crew_member: assignment.crew_member,
+                hotel_name: assignment.hotel_name,
+                hotel_location: assignment.hotel_location,
+                check_in_date: assignment.check_in_date,
+                check_out_date: assignment.check_out_date,
+                room_number: assignment.room_number,
+                special_requests: assignment.special_requests,
+                assignment_status: assignment.assignment_status,
+                total_cost: assignment.total_cost,
+                booking_reference: assignment.booking_reference,
+                transport_details: assignment.transport_details,
+                created_by: assignment.created_by,
+              }),
+            );
           }
 
           // Save pending recovery solution with comprehensive services data
@@ -1398,25 +1401,37 @@ export function PassengerRebooking({ context, onClearContext }) {
             estimated_delay: recoveryOption?.delay || 0,
             passenger_impact: {
               affected: hasPassenger ? passengersToApprove.length : 0,
-              reaccommodated: hasPassenger ? passengersToApprove.filter(p => {
-                const status = passengerRebookingStatus[p.id] || p.status;
-                return status === "Confirmed";
-              }).length : 0,
+              reaccommodated: hasPassenger
+                ? passengersToApprove.filter((p) => {
+                    const status = passengerRebookingStatus[p.id] || p.status;
+                    return status === "Confirmed";
+                  }).length
+                : 0,
               compensated: 0,
-              missingConnections: hasPassenger ? passengersToApprove.filter(p => 
-                p.connectedFlights && p.connectedFlights.length > 0
-              ).length : 0,
+              missingConnections: hasPassenger
+                ? passengersToApprove.filter(
+                    (p) => p.connectedFlights && p.connectedFlights.length > 0,
+                  ).length
+                : 0,
             },
             operational_complexity: recoveryOption?.complexity || "medium",
-            resource_requirements: JSON.stringify(recoveryOption?.requirements || {}),
-            timeline_details: JSON.stringify(recoveryOption?.timeline || "3 hours total"),
+            resource_requirements: JSON.stringify(
+              recoveryOption?.requirements || {},
+            ),
+            timeline_details: JSON.stringify(
+              recoveryOption?.timeline || "3 hours total",
+            ),
             approval_status: "pending",
             created_by: "passenger_services",
             notes: `Submitted from passenger services with ${hasPassenger ? passengersToApprove.length : 0} passengers processed`,
             // Include passenger rebooking data if available
-            ...(passengerRebookingData && { passenger_rebooking: passengerRebookingData }),
+            ...(passengerRebookingData && {
+              passenger_rebooking: passengerRebookingData,
+            }),
             // Include crew hotel assignments data if available
-            ...(crewHotelAssignmentsData && { crew_hotel_assignments: crewHotelAssignmentsData }),
+            ...(crewHotelAssignmentsData && {
+              crew_hotel_assignments: crewHotelAssignmentsData,
+            }),
             full_details: {
               passenger_services: hasPassenger,
               crew_services: hasCrew,
@@ -1425,8 +1440,8 @@ export function PassengerRebooking({ context, onClearContext }) {
               crew_assignments: hasCrew
                 ? Object.keys(crewHotelAssignments).length
                 : 0,
-              passengers_processed: hasPassenger ? passengersToApprove : [],
-              crew_assignments_processed: hasCrew ? crewHotelAssignments : {},
+                passenger_rebooking: hasPassenger ? passengersToApprove : [],
+                crew_hotel_assignments: hasCrew ? crewHotelAssignments : {},
               recovery_option: recoveryOption,
             },
             rotation_impact: {
@@ -2547,7 +2562,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                                           className="bg-blue-100 text-blue-800"
                                         >
                                           {groupPassengers.length} passenger
-                                          {groupPassengers.length > 1 ? "s" : ""}
+                                          {groupPassengers.length > 1
+                                            ? "s"
+                                            : ""}
                                         </Badge>
                                         {isPnrGroupConfirmed(
                                           groupPassengers,
@@ -3509,9 +3526,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                             </TableCell>
                             <TableCell>
                               <Badge
-                                className={getPriorityColor(
-                                  passenger.priority,
-                                )}
+                                className={getPriorityColor(passenger.priority)}
                               >
                                 {passenger.priority}
                               </Badge>
@@ -3546,8 +3561,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Eye className="h-3 w-3 mr-1" />
                                   View
                                 </Button>
-                                {passenger.status ===
-                                  "Rebooking Required" && (
+                                {passenger.status === "Rebooking Required" && (
                                   <Button
                                     size="sm"
                                     className="btn-flydubai-primary text-xs"
