@@ -880,7 +880,8 @@ export function PassengerRebooking({ context, onClearContext }) {
           selectedPriority === "all-priorities" ||
           passenger.priority === selectedPriority;
         const matchesStatus =
-          selectedStatus === "all-statuses" || passenger.status === selectedStatus;
+          selectedStatus === "all-statuses" ||
+          passenger.status === selectedStatus;
 
         return matchesSearch && matchesPriority && matchesStatus;
       });
@@ -1298,10 +1299,12 @@ export function PassengerRebooking({ context, onClearContext }) {
               rebooked_cabin: rebookingInfo?.cabin || "Economy",
               rebooked_seat: rebookingInfo?.seat || "TBD",
               rebooking_date: rebookingInfo?.date || new Date().toISOString(),
-              additional_services: (rebookingInfo?.services || []).map(service => ({
-                service_type: service,
-                description: service
-              })),
+              additional_services: (rebookingInfo?.services || []).map(
+                (service) => ({
+                  service_type: service,
+                  description: service,
+                }),
+              ),
               total_passengers_in_pnr:
                 filteredPnrGroups[passenger.pnr]?.length || 1,
               rebooking_cost: 0,
@@ -1338,11 +1341,12 @@ export function PassengerRebooking({ context, onClearContext }) {
           option_id: recoveryOption?.id || `SERVICES_${Date.now()}`,
           option_title:
             recoveryOption?.title || "Comprehensive Services Recovery",
-          estimated_cost: typeof recoveryOption?.cost === 'string' 
-            ? recoveryOption.cost 
-            : recoveryOption?.cost 
-              ? `AED ${recoveryOption.cost.toLocaleString()}`
-              : "AED 75,000",
+          estimated_cost:
+            typeof recoveryOption?.cost === "string"
+              ? recoveryOption.cost
+              : recoveryOption?.cost
+                ? `AED ${recoveryOption.cost.toLocaleString()}`
+                : "AED 75,000",
           estimated_delay: recoveryOption?.delay || 0,
           passenger_impact: {
             affected: hasPassenger ? passengersToApprove.length : 0,
@@ -1379,7 +1383,7 @@ export function PassengerRebooking({ context, onClearContext }) {
         if (crewHotelAssignmentsData.length > 0) {
           solutionData.crew_hotel_assignments = crewHotelAssignmentsData;
         }
-
+        debugger;
         const pendingSolutionSuccess =
           await databaseService.addPendingSolution(solutionData);
 
@@ -1390,17 +1394,13 @@ export function PassengerRebooking({ context, onClearContext }) {
           if (hasCrew)
             successMessage += `${Object.keys(crewHotelAssignments).length} crew hotel assignments completed.`;
 
-          alertService.success(
-            "Submission Successful",
-            successMessage,
-            () => {
-              // Clear selections after successful submission
-              setSelectedPnrs(new Set());
-              setSelectedPassenger(null);
-              setSelectedPnrGroup(null);
-              setCrewHotelAssignments({});
-            },
-          );
+          alertService.success("Submission Successful", successMessage, () => {
+            // Clear selections after successful submission
+            setSelectedPnrs(new Set());
+            setSelectedPassenger(null);
+            setSelectedPnrGroup(null);
+            setCrewHotelAssignments({});
+          });
         } else {
           alertService.error(
             "Submission Failed",
@@ -1611,7 +1611,10 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   const handleBulkRebookSelectedPnrs = () => {
     if (selectedPnrs.size === 0) {
-      alertService.warning("Selection Required", "Please select PNRs to rebook"); // Use custom alert
+      alertService.warning(
+        "Selection Required",
+        "Please select PNRs to rebook",
+      ); // Use custom alert
       return;
     }
 
@@ -3236,8 +3239,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                             )}
                           />
                           <span className="font-medium text-gray-700">
-                            Select All ({Object.keys(filteredPnrGroups).length} PNR
-                            groups)
+                            Select All ({Object.keys(filteredPnrGroups).length}{" "}
+                            PNR groups)
                           </span>
                           {selectedPnrs.size > 0 && (
                             <Badge variant="outline" className="ml-auto">
@@ -3249,10 +3252,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
                       {Object.entries(filteredPnrGroups).map(
                         ([pnr, groupPassengers]) => (
-                          <div
-                            key={pnr}
-                            className="border rounded-lg bg-white"
-                          >
+                          <div key={pnr} className="border rounded-lg bg-white">
                             <div className="p-4 border-b bg-gray-50">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -3440,9 +3440,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                             </TableCell>
                             <TableCell>
                               <Badge
-                                className={getPriorityColor(
-                                  passenger.priority,
-                                )}
+                                className={getPriorityColor(passenger.priority)}
                               >
                                 {passenger.priority}
                               </Badge>
@@ -3477,8 +3475,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Eye className="h-3 w-3 mr-1" />
                                   View
                                 </Button>
-                                {passenger.status ===
-                                  "Rebooking Required" && (
+                                {passenger.status === "Rebooking Required" && (
                                   <Button
                                     size="sm"
                                     className="btn-flydubai-primary text-xs"
