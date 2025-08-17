@@ -1425,14 +1425,10 @@ export function PassengerRebooking({ context, onClearContext }) {
             approval_status: "pending",
             created_by: "passenger_services",
             notes: `Submitted from passenger services with ${hasPassenger ? passengersToApprove.length : 0} passengers processed`,
-            // Include passenger rebooking data if available
-            ...(passengerRebookingData && {
-              passenger_rebooking: passengerRebookingData,
-            }),
-            // Include crew hotel assignments data if available
-            ...(crewHotelAssignmentsData && {
-              crew_hotel_assignments: crewHotelAssignmentsData,
-            }),
+            // Include passenger rebooking data - always include, even if empty
+            passenger_rebooking: passengerRebookingData || [],
+            // Include crew hotel assignments data - always include, even if empty
+            crew_hotel_assignments: crewHotelAssignmentsData || [],
             full_details: {
               passenger_services: hasPassenger,
               crew_services: hasCrew,
@@ -1442,7 +1438,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                 ? Object.keys(crewHotelAssignments).length
                 : 0,
               passenger_rebooking: hasPassenger ? passengersToApprove : [],
-              crew_hotel_assignments: hasCrew ? crewHotelAssignments : {},
+              crew_hotel_assignments: hasCrew ? Object.values(crewHotelAssignments) : [],
               recovery_option: recoveryOption,
             },
             rotation_impact: {
