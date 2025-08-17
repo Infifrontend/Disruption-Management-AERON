@@ -102,7 +102,7 @@ import { alertService } from "../services/alertService";
 
 export function PassengerRebooking({ context, onClearContext }) {
   const location = useLocation();
-  const navigate = useNavigate();
+  const useNavigate = useNavigate();
   const [activeTab, setActiveTab] = useState("passenger-service");
   const [crewData, setCrewData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -880,8 +880,7 @@ export function PassengerRebooking({ context, onClearContext }) {
           selectedPriority === "all-priorities" ||
           passenger.priority === selectedPriority;
         const matchesStatus =
-          selectedStatus === "all-statuses" ||
-          passenger.status === selectedStatus;
+          selectedStatus === "all-statuses" || passenger.status === selectedStatus;
 
         return matchesSearch && matchesPriority && matchesStatus;
       });
@@ -1269,7 +1268,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       });
 
       if (!allSelectedConfirmed) {
-        alertService.warn(
+        alertService.warning(
           "Approval Not Ready",
           "All selected passengers must have a 'Confirmed' status before sending for approval.",
         );
@@ -1278,7 +1277,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     }
 
     if (hasCrew && Object.keys(crewHotelAssignments).length === 0) {
-      alertService.warn(
+      alertService.warning(
         "Crew Assignment Required",
         "Crew hotel assignments are required before sending for approval.",
       );
@@ -1337,7 +1336,7 @@ export function PassengerRebooking({ context, onClearContext }) {
           disruptionFlightId,
           "services_pending",
         );
-    
+
         if (statusSuccess) {
           // Prepare passenger rebooking data if applicable
           let passengerRebookingData = null;
@@ -1483,7 +1482,7 @@ export function PassengerRebooking({ context, onClearContext }) {
             );
           }
         } else {
-          alertService.warn(
+          alertService.warning(
             "Status Update Warning",
             "Services information stored but failed to update flight status.",
           );
@@ -1695,7 +1694,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   const handleBulkRebookSelectedPnrs = () => {
     if (selectedPnrs.size === 0) {
-      alertService.warn("Selection Required", "Please select PNRs to rebook"); // Use custom alert
+      alertService.warning("Selection Required", "Please select PNRs to rebook"); // Use custom alert
       return;
     }
 
@@ -2850,7 +2849,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 <Checkbox />
                               </TableCell>
                               <TableCell className="font-medium">
-                                FO Sarah Johnson
+                                F/O Sarah Johnson
                               </TableCell>
                               <TableCell>First Officer</TableCell>
                               <TableCell>
@@ -3320,8 +3319,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                             )}
                           />
                           <span className="font-medium text-gray-700">
-                            Select All ({Object.keys(filteredPnrGroups).length}{" "}
-                            PNR groups)
+                            Select All ({Object.keys(filteredPnrGroups).length} PNR
+                            groups)
                           </span>
                           {selectedPnrs.size > 0 && (
                             <Badge variant="outline" className="ml-auto">
@@ -3333,7 +3332,10 @@ export function PassengerRebooking({ context, onClearContext }) {
 
                       {Object.entries(filteredPnrGroups).map(
                         ([pnr, groupPassengers]) => (
-                          <div key={pnr} className="border rounded-lg bg-white">
+                          <div
+                            key={pnr}
+                            className="border rounded-lg bg-white"
+                          >
                             <div className="p-4 border-b bg-gray-50">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -3521,7 +3523,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                             </TableCell>
                             <TableCell>
                               <Badge
-                                className={getPriorityColor(passenger.priority)}
+                                className={getPriorityColor(
+                                  passenger.priority,
+                                )}
                               >
                                 {passenger.priority}
                               </Badge>
@@ -3556,7 +3560,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Eye className="h-3 w-3 mr-1" />
                                   View
                                 </Button>
-                                {passenger.status === "Rebooking Required" && (
+                                {passenger.status ===
+                                  "Rebooking Required" && (
                                   <Button
                                     size="sm"
                                     className="btn-flydubai-primary text-xs"
