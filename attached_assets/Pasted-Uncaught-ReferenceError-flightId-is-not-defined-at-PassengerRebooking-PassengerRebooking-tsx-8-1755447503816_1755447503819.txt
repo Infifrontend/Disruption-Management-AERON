@@ -1,0 +1,77 @@
+Uncaught ReferenceError: flightId is not defined
+    at PassengerRebooking (PassengerRebooking.tsx:822:7)
+    at renderWithHooks (chunk-PJEEZAML.js?v=8197ef06:11548:26)
+    at mountIndeterminateComponent (chunk-PJEEZAML.js?v=8197ef06:14926:21)
+    at beginWork (chunk-PJEEZAML.js?v=8197ef06:15914:22)
+    at HTMLUnknownElement.callCallback2 (chunk-PJEEZAML.js?v=8197ef06:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-PJEEZAML.js?v=8197ef06:3699:24)
+    at invokeGuardedCallback (chunk-PJEEZAML.js?v=8197ef06:3733:39)
+    at beginWork$1 (chunk-PJEEZAML.js?v=8197ef06:19765:15)
+    at performUnitOfWork (chunk-PJEEZAML.js?v=8197ef06:19198:20)
+    at workLoopSync (chunk-PJEEZAML.js?v=8197ef06:19137:13)
+PassengerRebooking @ PassengerRebooking.tsx:822
+renderWithHooks @ chunk-PJEEZAML.js?v=8197ef06:11548
+mountIndeterminateComponent @ chunk-PJEEZAML.js?v=8197ef06:14926
+beginWork @ chunk-PJEEZAML.js?v=8197ef06:15914
+callCallback2 @ chunk-PJEEZAML.js?v=8197ef06:3674
+invokeGuardedCallbackDev @ chunk-PJEEZAML.js?v=8197ef06:3699
+invokeGuardedCallback @ chunk-PJEEZAML.js?v=8197ef06:3733
+beginWork$1 @ chunk-PJEEZAML.js?v=8197ef06:19765
+performUnitOfWork @ chunk-PJEEZAML.js?v=8197ef06:19198
+workLoopSync @ chunk-PJEEZAML.js?v=8197ef06:19137
+renderRootSync @ chunk-PJEEZAML.js?v=8197ef06:19116
+recoverFromConcurrentError @ chunk-PJEEZAML.js?v=8197ef06:18736
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=8197ef06:18684
+workLoop @ chunk-PJEEZAML.js?v=8197ef06:197
+flushWork @ chunk-PJEEZAML.js?v=8197ef06:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=8197ef06:384
+Show 15 more frames
+Show lessUnderstand this errorAI
+chunk-PJEEZAML.js?v=8197ef06:14032 The above error occurred in the <PassengerRebooking> component:
+
+    at PassengerRebooking (https://b75debbc-e13a-4222-91f0-9e719d73b403-00-3sp3wh6v7hulo.sisko.replit.dev/src/components/PassengerRebooking.tsx:101:38)
+    at PassengerServicesPage (https://b75debbc-e13a-4222-91f0-9e719d73b403-00-3sp3wh6v7hulo.sisko.replit.dev/src/pages/PassengerServicesPage.tsx:24:69)
+    at RenderedRoute (https://b75debbc-e13a-4222-91f0-9e719d73b403-00-3sp3wh6v7hulo.sisko.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=8197ef06:5525:26)
+    at Routes (https://b75debbc-e13a-4222-91f0-9e719d73b403-00-3sp3wh6v7hulo.sisko.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=8197ef06:6261:3)
+    at div
+    at div
+    at div
+    at div
+    at Layout (https://b75debbc-e13a-4222-91f0-9e719d73b403-00-3sp3wh6v7hulo.sisko.replit.dev/src/components/Layout.tsx:67:26)
+    at Suspense
+    at div
+    at Router (https://b75debbc-e13a-4222-91f0-9e719d73b403-00-3sp3wh6v7hulo.sisko.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=8197ef06:6204:13)
+    at BrowserRouter (https://b75debbc-e13a-4222-91f0-9e719d73b403-00-3sp3wh6v7hulo.sisko.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=8197ef06:9273:3)
+    at AppProvider (https://b75debbc-e13a-4222-91f0-9e719d73b403-00-3sp3wh6v7hulo.sisko.replit.dev/src/context/AppContext.tsx:20:31)
+    at App (https://b75debbc-e13a-4222-91f0-9e719d73b403-00-3sp3wh6v7hulo.sisko.replit.dev/src/App.tsx:67:77)
+    at ErrorBoundary (https://b75debbc-e13a-4222-91f0-9e719d73b403-00-3sp3wh6v7hulo.sisko.replit.dev/src/main.tsx:10:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+logCapturedError @ chunk-PJEEZAML.js?v=8197ef06:14032
+callback @ chunk-PJEEZAML.js?v=8197ef06:14078
+callCallback @ chunk-PJEEZAML.js?v=8197ef06:11248
+commitUpdateQueue @ chunk-PJEEZAML.js?v=8197ef06:11265
+commitLayoutEffectOnFiber @ chunk-PJEEZAML.js?v=8197ef06:17075
+commitLayoutMountEffects_complete @ chunk-PJEEZAML.js?v=8197ef06:17980
+commitLayoutEffects_begin @ chunk-PJEEZAML.js?v=8197ef06:17969
+commitLayoutEffects @ chunk-PJEEZAML.js?v=8197ef06:17920
+commitRootImpl @ chunk-PJEEZAML.js?v=8197ef06:19353
+commitRoot @ chunk-PJEEZAML.js?v=8197ef06:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=8197ef06:18760
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=8197ef06:18718
+workLoop @ chunk-PJEEZAML.js?v=8197ef06:197
+flushWork @ chunk-PJEEZAML.js?v=8197ef06:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=8197ef06:384
+Show 15 more frames
+Show lessUnderstand this errorAI
+main.tsx:19 Application Error: ReferenceError: flightId is not defined
+    at PassengerRebooking (PassengerRebooking.tsx:822:7)
+    at renderWithHooks (chunk-PJEEZAML.js?v=8197ef06:11548:26)
+    at mountIndeterminateComponent (chunk-PJEEZAML.js?v=8197ef06:14926:21)
+    at beginWork (chunk-PJEEZAML.js?v=8197ef06:15914:22)
+    at beginWork$1 (chunk-PJEEZAML.js?v=8197ef06:19753:22)
+    at performUnitOfWork (chunk-PJEEZAML.js?v=8197ef06:19198:20)
+    at workLoopSync (chunk-PJEEZAML.js?v=8197ef06:19137:13)
+    at renderRootSync (chunk-PJEEZAML.js?v=8197ef06:19116:15)
+    at recoverFromConcurrentError (chunk-PJEEZAML.js?v=8197ef06:18736:28)
+    at performConcurrentWorkOnRoot (chunk-PJEEZAML.js?v=8197ef06:18684:30) {componentStack: '\n    at PassengerRebooking (https://b75debbc-e13a-…3sp3wh6v7hulo.sisko.replit.dev/src/main.tsx:10:5)'}
