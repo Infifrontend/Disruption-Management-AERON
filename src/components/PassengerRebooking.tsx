@@ -778,13 +778,17 @@ export function PassengerRebooking({ context, onClearContext }) {
   useEffect(() => {
     let isMounted = true;
 
-    if (!selectedFlight || !recoveryOption) {
+    const flightId = selectedFlight?.id;
+    const recoveryOptionId = recoveryOption?.id;
+    const contextPassengersLength = contextPassengers.length;
+
+    if (!flightId || !recoveryOptionId) {
       return;
     }
 
     const loadPassengerData = async () => {
       try {
-        if (contextPassengers.length === 0 && isMounted) {
+        if (contextPassengersLength === 0 && isMounted) {
           const module = await import("./passenger-data-helpers");
           const flightData = context?.flight || selectedFlight;
           const optionData = context?.recoveryOption || recoveryOption;
@@ -815,7 +819,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     return () => {
       isMounted = false;
     };
-  }, [selectedFlight?.id, recoveryOption?.id, contextPassengers.length]);
+  }, [flightId, recoveryOptionId, contextPassengersLength, context?.flight, selectedFlight, context?.recoveryOption, recoveryOption]);
 
   const passengers = useMemo(() => {
     const base =
@@ -839,9 +843,8 @@ export function PassengerRebooking({ context, onClearContext }) {
       };
     });
   }, [
-    contextPassengers,
-    generatedPassengers,
-    defaultPassengers,
+    contextPassengers.length,
+    generatedPassengers.length,
     passengerRebookingStatus,
     confirmedRebookings,
   ]);
@@ -894,7 +897,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       }
     });
     return filtered;
-  }, [passengersByPnr, searchTerm, selectedPriority, selectedStatus]);
+  }, [JSON.stringify(passengersByPnr), searchTerm, selectedPriority, selectedStatus]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -1770,10 +1773,10 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // Load crew data when crew tab is accessed
   useEffect(() => {
-    if (activeTab === "crew-schedule" && recoveryOption && !crewData) {
+    if (activeTab === "crew-schedule" && recoveryOption?.id && !crewData) {
       loadCrewData();
     }
-  }, [activeTab, recoveryOption]);
+  }, [activeTab, recoveryOption?.id, crewData]);
 
   // Track confirmed PNRs for approval but don't auto-clear selectedPnrs
   useEffect(() => {
@@ -1786,9 +1789,16 @@ export function PassengerRebooking({ context, onClearContext }) {
 
     // Add confirmed PNRs to approval tracking
     if (confirmedPnrs.size > 0) {
-      setPnrsForApproval((prev) => new Set([...prev, ...confirmedPnrs]));
+      setPnrsForApproval((prev) => {
+        const newSet = new Set([...prev, ...confirmedPnrs]);
+        // Only update if there are actually new items
+        if (newSet.size !== prev.size) {
+          return newSet;
+        }
+        return prev;
+      });
     }
-  }, [passengerRebookingStatus, filteredPnrGroups]);
+  }, [passengerRebookingStatus, Object.keys(filteredPnrGroups).length]);
 
   const loadCrewData = async () => {
     setLoading(true);
