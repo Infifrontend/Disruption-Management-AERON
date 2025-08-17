@@ -1749,131 +1749,330 @@ export function PendingSolutions() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Target className="h-5 w-5" />
-                      Selected Recovery Solution
+                      Selected Option
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      {selectedPlan.title || "Recovery Plan Details"}
+                      {selectedPlan.title ||
+                        "Maintenance Fix + Gate Optimization/Option C for Immediate Launch/Post approval."}
                     </p>
                   </CardHeader>
                   <CardContent>
-                    {/* Selected Option Highlight */}
-                    <div className="bg-green-50 p-4 rounded-lg border border-green-200 mb-6">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span className="font-medium text-green-800">
-                          Selected Option: {selectedPlan.title}
-                        </span>
-                      </div>
-                      <p className="text-sm text-green-700">
-                        {selectedPlan.flightDetails?.description || 
-                         selectedPlan.fullDetails?.description ||
-                         `Recovery solution for ${selectedPlan.flightNumber} with ${selectedPlan.confidence}% confidence rating.`}
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
+                      <p className="text-sm text-blue-800">
+                        Service will launch Aircraft A307-007 with Crew
+                        Lunch/Post approval.
                       </p>
                     </div>
 
-                    {/* Key Metrics Summary */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="text-sm text-blue-600">Total Cost</div>
-                        <div className="text-lg font-semibold text-blue-800">
-                          AED {(selectedPlan.estimatedCost || 0).toLocaleString()}
-                        </div>
-                      </div>
-                      <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                        <div className="text-sm text-orange-600">Timeline</div>
-                        <div className="text-lg font-semibold text-orange-800">
-                          {selectedPlan.timeline || `${selectedPlan.estimatedDelay || 0}m`}
-                        </div>
-                      </div>
-                      <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                        <div className="text-sm text-green-600">Confidence</div>
-                        <div className="text-lg font-semibold text-green-800">
-                          {selectedPlan.confidence || 80}%
-                        </div>
-                      </div>
-                      <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                        <div className="text-sm text-purple-600">Impact Level</div>
-                        <div className="text-lg font-semibold text-purple-800">
-                          {selectedPlan.impact || "Moderate"}
-                        </div>
+                    <div className="space-y-4">
+                      <h4 className="font-medium">Option Comparison Matrix</h4>
+                      <div className="overflow-x-auto">
+                        <table className="w-full border-collapse border border-gray-200">
+                          <thead>
+                            <tr className="bg-gray-50">
+                              <th className="border border-gray-200 p-3 text-left">
+                                Option
+                              </th>
+                              <th className="border border-gray-200 p-3 text-left">
+                                Cost (AED)
+                              </th>
+                              <th className="border border-gray-200 p-3 text-left">
+                                Delay (min)
+                              </th>
+                              <th className="border border-gray-200 p-3 text-left">
+                                Confidence
+                              </th>
+                              <th className="border border-gray-200 p-3 text-left">
+                                Passenger Impact
+                              </th>
+                              <th className="border border-gray-200 p-3 text-left">
+                                Status
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr>
+                              <td className="border border-gray-200 p-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                  Option 1
+                                </div>
+                              </td>
+                              <td className="border border-gray-200 p-3">
+                                50K
+                              </td>
+                              <td className="border border-gray-200 p-3">65</td>
+                              <td className="border border-gray-200 p-3">
+                                96.8%
+                              </td>
+                              <td className="border border-gray-200 p-3">
+                                Minimal
+                              </td>
+                              <td className="border border-gray-200 p-3">
+                                <Badge className="bg-orange-100 text-orange-700">
+                                  Recommended
+                                </Badge>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="border border-gray-200 p-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                                  Option 2
+                                </div>
+                              </td>
+                              <td className="border border-gray-200 p-3">
+                                45K
+                              </td>
+                              <td className="border border-gray-200 p-3">87</td>
+                              <td className="border border-gray-200 p-3">
+                                94.2%
+                              </td>
+                              <td className="border border-gray-200 p-3">
+                                Low
+                              </td>
+                              <td className="border border-gray-200 p-3">
+                                <Badge className="bg-orange-100 text-orange-700">
+                                  Recommended
+                                </Badge>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="border border-gray-200 p-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
+                                  Option 3
+                                </div>
+                              </td>
+                              <td className="border border-gray-200 p-3">
+                                75K
+                              </td>
+                              <td className="border border-gray-200 p-3">0</td>
+                              <td className="border border-gray-200 p-3">
+                                86.1%
+                              </td>
+                              <td className="border border-gray-200 p-3">
+                                High
+                              </td>
+                              <td className="border border-gray-200 p-3">
+                                <Badge variant="outline">Alternative</Badge>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
                       </div>
                     </div>
 
-                    {/* Cost Breakdown */}
-                    {selectedPlan.costBreakdown && Object.keys(selectedPlan.costBreakdown).length > 0 && (
-                      <div className="mb-6">
-                        <h4 className="font-medium mb-3">Cost Breakdown</h4>
-                        <div className="grid grid-cols-2 gap-4">
-                          {Object.entries(selectedPlan.costBreakdown).map(([category, amount]) => (
-                            <div key={category} className="flex justify-between items-center p-3 border rounded-lg">
-                              <span className="text-sm capitalize">{category.replace(/_/g, ' ')}:</span>
-                              <span className="font-medium">
-                                {typeof amount === 'string' ? amount : `AED ${amount?.toLocaleString() || 0}`}
+                    <div className="space-y-4 mt-6">
+                      <div className="space-y-3">
+                        <Card className="border-orange-200 bg-orange-50">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start mb-2">
+                              <h5 className="font-medium text-orange-800">
+                                Option 1: Immediate Aircraft Swap • A317-007
+                              </h5>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                                onClick={() =>
+                                  handleViewOptionDetails(
+                                    {
+                                      id: "option_1",
+                                      title: "Immediate Aircraft Swap",
+                                      description:
+                                        "Service will launch Aircraft A307-007 with Crew Lunch/Post approval.",
+                                      cost: "AED 50K",
+                                      timeline: "65 min",
+                                      confidence: 96.8,
+                                      impact: "Minimal",
+                                    },
+                                    selectedPlan,
+                                  )
+                                }
+                              >
+                                View Option
+                              </Button>
+                            </div>
+                            <p className="text-sm text-orange-700 mb-3">
+                              Service will launch Aircraft A307-007 with Crew
+                              Lunch/Post approval.
+                            </p>
+                            <div className="grid grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-gray-600">Cost:</span>
+                                <div className="font-medium">AED 50K</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Timeline:</span>
+                                <div className="font-medium">65 min</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">
+                                  Confidence:
+                                </span>
+                                <div className="font-medium">96.8%</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Impact:</span>
+                                <div className="font-medium">Minimal</div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4 mt-3 text-sm">
+                              <span>
+                                Passenger Impact: <strong>Minimal</strong>
+                              </span>
+                              <span>
+                                Complexity: <strong>Medium</strong>
                               </span>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                          </CardContent>
+                        </Card>
 
-                    {/* Recovery Steps */}
-                    {selectedPlan.recoverySteps && selectedPlan.recoverySteps.length > 0 && (
-                      <div className="mb-6">
-                        <h4 className="font-medium mb-3">Recovery Steps</h4>
-                        <div className="space-y-3">
-                          {selectedPlan.recoverySteps.map((step, index) => (
-                            <div key={index} className="flex items-start gap-3 p-3 border rounded-lg">
-                              <div className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600 text-sm font-medium">
-                                {step.step_number || index + 1}
+                        <Card className="border-orange-200 bg-orange-50">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start mb-2">
+                              <h5 className="font-medium text-orange-800">
+                                Option 2: Maintenance Fix + Gate Optimization
+                              </h5>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                                onClick={() =>
+                                  handleViewOptionDetails(
+                                    {
+                                      id: "option_2",
+                                      title:
+                                        "Maintenance Fix + Gate Optimization",
+                                      description:
+                                        "Expected maintenance with crew onboard to functional things.",
+                                      cost: "AED 45K",
+                                      timeline: "87 min",
+                                      confidence: 94.2,
+                                      impact: "2h 15m",
+                                    },
+                                    selectedPlan,
+                                  )
+                                }
+                              >
+                                View Option
+                              </Button>
+                            </div>
+                            <p className="text-sm text-orange-700 mb-3">
+                              Expected maintenance with crew onboard to
+                              functional things.
+                            </p>
+                            <div className="grid grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-gray-600">Cost:</span>
+                                <div className="font-medium">AED 45K</div>
                               </div>
-                              <div className="flex-1">
-                                <div className="font-medium">{step.title || step.description}</div>
-                                {step.details && (
-                                  <div className="text-sm text-muted-foreground mt-1">{step.details}</div>
-                                )}
-                                <div className="text-xs text-muted-foreground mt-1">
-                                  Status: {step.status || "Pending"}
-                                </div>
+                              <div>
+                                <span className="text-gray-600">Timeline:</span>
+                                <div className="font-medium">87 min</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">
+                                  Confidence:
+                                </span>
+                                <div className="font-medium">94.2%</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Impact:</span>
+                                <div className="font-medium">2h 15m</div>
                               </div>
                             </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
+                            <div className="flex items-center gap-4 mt-3 text-sm">
+                              <span>
+                                Passenger Impact: <strong>High</strong>
+                              </span>
+                              <span>
+                                Complexity: <strong>High</strong>
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                              <span>Key Insight for Selected Option:</span>
+                              <span>
+                                Success Rate: <strong>94.2%</strong>
+                              </span>
+                              <span>
+                                Customer Satisfaction: <strong>86%</strong>
+                              </span>
+                              <span>
+                                Operational Risk: <strong>Medium</strong>
+                              </span>
+                              <span>
+                                Resource Utilization: <strong>Optimal</strong>
+                              </span>
+                            </div>
+                          </CardContent>
+                        </Card>
 
-                    {/* Additional Details */}
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <h5 className="font-medium mb-2">Solution Benefits</h5>
-                          <ul className="text-sm text-muted-foreground space-y-1">
-                            <li>• Optimized cost efficiency</li>
-                            <li>• Minimized passenger disruption</li>
-                            <li>• Rapid implementation timeline</li>
-                            <li>• High success probability</li>
-                          </ul>
-                        </div>
-                        <div>
-                          <h5 className="font-medium mb-2">Key Performance Indicators</h5>
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-sm">
-                              <span>Success Rate:</span>
-                              <span className="font-medium">{selectedPlan.confidence || 80}%</span>
+                        <Card className="border-gray-200">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start mb-2">
+                              <h5 className="font-medium text-gray-700">
+                                Option 3: Cancel Flight + Passenger Rebooking
+                              </h5>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                                onClick={() =>
+                                  handleViewOptionDetails(
+                                    {
+                                      id: "option_3",
+                                      title:
+                                        "Cancel Flight + Passenger Rebooking",
+                                      description:
+                                        "Cancel current flight and reaccommodate passengers on alternative flights.",
+                                      cost: "AED 75K",
+                                      timeline: "0 min",
+                                      confidence: 86.1,
+                                      impact: "4h 30m",
+                                    },
+                                    selectedPlan,
+                                  )
+                                }
+                              >
+                                View Option
+                              </Button>
                             </div>
-                            <div className="flex justify-between text-sm">
-                              <span>Customer Satisfaction:</span>
-                              <span className="font-medium">{selectedPlan.metrics?.customerSatisfaction || 85}%</span>
+                            <p className="text-sm text-gray-600 mb-3">
+                              Cancel current flight and reaccommodate passengers
+                              on alternative flights.
+                            </p>
+                            <div className="grid grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-gray-600">Cost:</span>
+                                <div className="font-medium">AED 75K</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Timeline:</span>
+                                <div className="font-medium">0 min</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">
+                                  Confidence:
+                                </span>
+                                <div className="font-medium">86.1%</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Impact:</span>
+                                <div className="font-medium">4h 30m</div>
+                              </div>
                             </div>
-                            <div className="flex justify-between text-sm">
-                              <span>On-Time Performance:</span>
-                              <span className="font-medium">{selectedPlan.metrics?.onTimePerformance || 90}%</span>
+                            <div className="flex items-center gap-4 mt-3 text-sm">
+                              <span>
+                                Passenger Impact: <strong>High</strong>
+                              </span>
+                              <span>
+                                Complexity: <strong>Low</strong>
+                              </span>
                             </div>
-                            <div className="flex justify-between text-sm">
-                              <span>Cost Efficiency:</span>
-                              <span className="font-medium">{selectedPlan.metrics?.costEfficiency || 75}%</span>
-                            </div>
-                          </div>
-                        </div>
+                          </CardContent>
+                        </Card>
                       </div>
                     </div>
                   </CardContent>
@@ -1891,58 +2090,40 @@ export function PendingSolutions() {
                         <div>
                           <span className="text-gray-600">Flight Number:</span>
                           <div className="font-medium">
-                            {selectedPlan.flightNumber || "N/A"}
+                            {selectedPlan.flightNumber || "FZ323"}
                           </div>
                         </div>
                         <div>
                           <span className="text-gray-600">Route:</span>
                           <div className="font-medium">
-                            {selectedPlan.route || "N/A"}
+                            {selectedPlan.route || "DXB → BOM"}
                           </div>
                         </div>
                         <div>
                           <span className="text-gray-600">Aircraft:</span>
                           <div className="font-medium">
-                            {selectedPlan.aircraft || "N/A"}
+                            {selectedPlan.aircraft || "Boeing 737-800"}
                           </div>
                         </div>
                         <div>
                           <span className="text-gray-600">
                             Scheduled Departure:
                           </span>
-                          <div className="font-medium">
-                            {selectedPlan.flightDetails?.scheduled_departure 
-                              ? formatIST(selectedPlan.flightDetails.scheduled_departure)
-                              : "N/A"}
-                          </div>
+                          <div className="font-medium">2025-01-16 14:30</div>
                         </div>
                         <div>
                           <span className="text-gray-600">
-                            Estimated Departure:
+                            Scheduled Arrival:
                           </span>
-                          <div className="font-medium">
-                            {selectedPlan.flightDetails?.estimated_departure 
-                              ? formatIST(selectedPlan.flightDetails.estimated_departure)
-                              : "N/A"}
-                          </div>
+                          <div className="font-medium">2025-01-16 17:45</div>
                         </div>
                         <div>
-                          <span className="text-gray-600">Passengers:</span>
-                          <div className="font-medium">
-                            {selectedPlan.affectedPassengers || 0}
-                          </div>
+                          <span className="text-gray-600">Gate:</span>
+                          <div className="font-medium">A12</div>
                         </div>
                         <div>
-                          <span className="text-gray-600">Crew:</span>
-                          <div className="font-medium">
-                            {selectedPlan.flightDetails?.crew || "N/A"}
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Connection Flights:</span>
-                          <div className="font-medium">
-                            {selectedPlan.flightDetails?.connection_flights || 0}
-                          </div>
+                          <span className="text-gray-600">Terminal:</span>
+                          <div className="font-medium">3</div>
                         </div>
                       </div>
                     </CardContent>
@@ -1957,14 +2138,14 @@ export function PendingSolutions() {
                         <div>
                           <span className="text-gray-600">Reason:</span>
                           <div className="font-medium text-red-600">
-                            {selectedPlan.disruptionReason || "N/A"}
+                            Technical Issue - Engine warning light
                           </div>
                         </div>
                         <div>
                           <span className="text-gray-600">Severity:</span>
                           <div className="font-medium">
-                            <Badge className={getPriorityColor(selectedPlan.priority)}>
-                              {selectedPlan.priority || "Medium"}
+                            <Badge className="bg-red-100 text-red-700">
+                              High
                             </Badge>
                           </div>
                         </div>
@@ -1973,39 +2154,21 @@ export function PendingSolutions() {
                             Affected Passengers:
                           </span>
                           <div className="font-medium">
-                            {selectedPlan.affectedPassengers || 0}
+                            {selectedPlan.affectedPassengers || "168"}
                           </div>
                         </div>
                         <div>
-                          <span className="text-gray-600">Delay Minutes:</span>
-                          <div className="font-medium">
-                            {selectedPlan.estimatedDelay || 0} minutes
-                          </div>
+                          <span className="text-gray-600">Cargo:</span>
+                          <div className="font-medium">8.5 tons</div>
                         </div>
                         <div>
                           <span className="text-gray-600">Submitted by:</span>
-                          <div className="font-medium">
-                            {selectedPlan.operationsUser || selectedPlan.submitterName || "N/A"}
-                          </div>
+                          <div className="font-medium">Sarah Mitchell</div>
                         </div>
                         <div>
-                          <span className="text-gray-600">Submission Time:</span>
-                          <div className="font-medium">
-                            {formatIST(selectedPlan.submittedAt)}
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Status:</span>
-                          <div className="font-medium">
-                            <Badge className={getStatusColor(selectedPlan.status)}>
-                              {selectedPlan.status}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div>
-                          <span className="text-gray-600">Approval Required:</span>
-                          <div className="font-medium">
-                            {selectedPlan.approvalRequired || "Operations Manager"}
+                          <span className="text-gray-600">SLA Deadline:</span>
+                          <div className="font-medium text-red-600">
+                            2025-01-16 16:00:00
                           </div>
                         </div>
                       </div>
@@ -2022,63 +2185,50 @@ export function PendingSolutions() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {selectedPlan.costAnalysis && Object.keys(selectedPlan.costAnalysis).length > 0 ? (
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            {Object.entries(selectedPlan.costAnalysis).map(([category, amount]) => (
-                              <div key={category}>
-                                <span className="text-gray-600 capitalize">{category.replace(/_/g, ' ')}:</span>
-                                <div className="font-medium">
-                                  {typeof amount === 'string' ? amount : `AED ${amount?.toLocaleString() || 0}`}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-600">Direct Costs:</span>
-                              <div className="font-medium">
-                                AED{" "}
-                                {(
-                                  (selectedPlan.estimatedCost || 0) * 0.6
-                                ).toLocaleString()}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">
-                                Indirect Costs:
-                              </span>
-                              <div className="font-medium">
-                                AED{" "}
-                                {(
-                                  (selectedPlan.estimatedCost || 0) * 0.4
-                                ).toLocaleString()}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">
-                                Passenger Compensation:
-                              </span>
-                              <div className="font-medium">
-                                AED{" "}
-                                {(
-                                  (selectedPlan.estimatedCost || 0) * 0.3
-                                ).toLocaleString()}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">
-                                Operational Costs:
-                              </span>
-                              <div className="font-medium">
-                                AED{" "}
-                                {(
-                                  (selectedPlan.estimatedCost || 0) * 0.7
-                                ).toLocaleString()}
-                              </div>
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-600">Direct Costs:</span>
+                            <div className="font-medium">
+                              AED{" "}
+                              {(
+                                (selectedPlan.estimatedCost || 50000) * 0.6
+                              ).toLocaleString()}
                             </div>
                           </div>
-                        )}
+                          <div>
+                            <span className="text-gray-600">
+                              Indirect Costs:
+                            </span>
+                            <div className="font-medium">
+                              AED{" "}
+                              {(
+                                (selectedPlan.estimatedCost || 50000) * 0.4
+                              ).toLocaleString()}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">
+                              Passenger Compensation:
+                            </span>
+                            <div className="font-medium">
+                              AED{" "}
+                              {(
+                                (selectedPlan.estimatedCost || 50000) * 0.3
+                              ).toLocaleString()}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">
+                              Operational Costs:
+                            </span>
+                            <div className="font-medium">
+                              AED{" "}
+                              {(
+                                (selectedPlan.estimatedCost || 50000) * 0.7
+                              ).toLocaleString()}
+                            </div>
+                          </div>
+                        </div>
                         <Separator />
                         <div className="flex justify-between items-center">
                           <span className="font-medium">
@@ -2087,7 +2237,7 @@ export function PendingSolutions() {
                           <span className="text-lg font-semibold text-flydubai-orange">
                             AED{" "}
                             {(
-                              selectedPlan.estimatedCost || 0
+                              selectedPlan.estimatedCost || 50000
                             ).toLocaleString()}
                           </span>
                         </div>
@@ -2110,8 +2260,8 @@ export function PendingSolutions() {
                               </span>
                             </div>
                             <p className="text-sm text-yellow-700">
-                              {selectedPlan.estimatedDelay || 0} minute delay
-                              expected • Timeline: {selectedPlan.timeline || "N/A"}
+                              {selectedPlan.estimatedDelay || 65} minute delay
+                              expected
                             </p>
                           </div>
 
@@ -2123,8 +2273,8 @@ export function PendingSolutions() {
                               </span>
                             </div>
                             <p className="text-sm text-blue-700">
-                              {selectedPlan.affectedPassengers || 0}{" "}
-                              passengers affected • Impact Level: {selectedPlan.impact || "Moderate"}
+                              {selectedPlan.affectedPassengers || 168}{" "}
+                              passengers affected
                             </p>
                           </div>
 
@@ -2136,7 +2286,7 @@ export function PendingSolutions() {
                               </span>
                             </div>
                             <p className="text-sm text-green-700">
-                              {selectedPlan.confidence || 0}% confidence in
+                              {selectedPlan.confidence || 85}% confidence in
                               successful resolution
                             </p>
                           </div>
@@ -2149,26 +2299,9 @@ export function PendingSolutions() {
                               </span>
                             </div>
                             <p className="text-sm text-purple-700">
-                              {selectedPlan.rotationImpact?.cascadeRisk || "Low"} cascade risk • 
-                              {selectedPlan.rotationImpact?.downstreamFlights || 0} downstream flights affected
+                              Minimal downstream flight disruptions expected
                             </p>
                           </div>
-
-                          {/* Additional rotation impact data if available */}
-                          {selectedPlan.rotationImpact && (
-                            <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Activity className="h-4 w-4 text-orange-600" />
-                                <span className="font-medium text-orange-800">
-                                  Rotation Details
-                                </span>
-                              </div>
-                              <p className="text-sm text-orange-700">
-                                {selectedPlan.rotationImpact.totalDelayMinutes || 0} minutes total rotation delay •
-                                {selectedPlan.rotationImpact.affectedRoutes?.length || 0} routes impacted
-                              </p>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </CardContent>
