@@ -1337,11 +1337,12 @@ export function PassengerRebooking({ context, onClearContext }) {
           disruptionFlightId,
           "services_pending",
         );
-
+    
         if (statusSuccess) {
           // Prepare passenger rebooking data if applicable
           let passengerRebookingData = null;
           if (hasPassenger && passengersToApprove.length > 0) {
+            console.log(passengersToApprove);
             passengerRebookingData = passengersToApprove.map((passenger) => {
               const rebookingInfo = confirmedRebookings[passenger.id];
               return {
@@ -1440,8 +1441,8 @@ export function PassengerRebooking({ context, onClearContext }) {
               crew_assignments: hasCrew
                 ? Object.keys(crewHotelAssignments).length
                 : 0,
-                passenger_rebooking: hasPassenger ? passengersToApprove : [],
-                crew_hotel_assignments: hasCrew ? crewHotelAssignments : {},
+              passenger_rebooking: hasPassenger ? passengersToApprove : [],
+              crew_hotel_assignments: hasCrew ? crewHotelAssignments : {},
               recovery_option: recoveryOption,
             },
             rotation_impact: {
@@ -2477,7 +2478,6 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 size="sm"
                                 className="btn-flydubai-primary"
                                 onClick={handleBulkRebookSelectedPnrs}
-                                disabled={!canSendForApproval}
                               >
                                 <RefreshCw className="h-3 w-3 mr-1" />
                                 Rebook {selectedPnrs.size} PNR(s)
@@ -3282,7 +3282,6 @@ export function PassengerRebooking({ context, onClearContext }) {
                               size="sm"
                               className="btn-flydubai-primary"
                               onClick={handleBulkRebookSelectedPnrs}
-                              disabled={!canSendForApproval}
                             >
                               <RefreshCw className="h-3 w-3 mr-1" />
                               Rebook {selectedPnrs.size} PNR(s)
