@@ -1851,24 +1851,46 @@ class DatabaseService {
   // Pending Recovery Solutions
   async addPendingSolution(solution: any): Promise<boolean> {
     try {
+      const payload = {
+        disruption_id: solution.disruption_id,
+        option_id: solution.option_id,
+        option_title: solution.option_title,
+        option_description: solution.option_description || solution.notes,
+        estimated_cost: solution.estimated_cost || solution.cost,
+        estimated_delay: solution.estimated_delay,
+        passenger_impact: solution.passenger_impact,
+        operational_complexity: solution.operational_complexity,
+        resource_requirements: solution.resource_requirements,
+        timeline_details: solution.timeline_details || solution.timeline,
+        approval_status: solution.approval_status || solution.status || 'pending',
+        created_by: solution.created_by || solution.submitted_by || 'system',
+        notes: solution.notes,
+        // Legacy fields for backward compatibility
+        cost: solution.cost,
+        timeline: solution.timeline,
+        confidence: solution.confidence,
+        impact: solution.impact,
+        status: solution.status || 'Pending',
+        full_details: solution.full_details,
+        rotation_impact: solution.rotation_impact,
+        submitted_by: solution.submitted_by || 'system',
+        approval_required: solution.approval_required || true
+      };
+
+      // Add optional passenger rebooking data if present
+      if (solution.passenger_rebooking && Array.isArray(solution.passenger_rebooking)) {
+        payload.passenger_rebooking = solution.passenger_rebooking;
+      }
+
+      // Add optional crew hotel assignments data if present
+      if (solution.crew_hotel_assignments && Array.isArray(solution.crew_hotel_assignments)) {
+        payload.crew_hotel_assignments = solution.crew_hotel_assignments;
+      }
+
       const response = await fetch(`${this.baseUrl}/pending-recovery-solutions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          disruption_id: solution.disruption_id,
-          option_id: solution.option_id,
-          option_title: solution.option_title,
-          option_description: solution.option_description,
-          cost: solution.cost,
-          timeline: solution.timeline,
-          confidence: solution.confidence,
-          impact: solution.impact,
-          status: solution.status || 'Pending',
-          full_details: solution.full_details,
-          rotation_impact: solution.rotation_impact,
-          submitted_by: solution.submitted_by || 'system',
-          approval_required: solution.approval_required || true
-        })
+        body: JSON.stringify(payload)
       });
       return response.ok;
     } catch (error) {
