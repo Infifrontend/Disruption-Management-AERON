@@ -102,7 +102,7 @@ import { alertService } from "../services/alertService";
 
 export function PassengerRebooking({ context, onClearContext }) {
   const location = useLocation();
-  const useNavigate = useNavigate();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("passenger-service");
   const [crewData, setCrewData] = useState(null);
   const [loading, setLoading] = useState(false);
