@@ -173,6 +173,9 @@ export function PassengerRebooking({ context, onClearContext }) {
   const [selectedCrewMembers, setSelectedCrewMembers] = useState(new Set());
   const [selectedHotelForCrew, setSelectedHotelForCrew] = useState(null);
 
+  // State to track PNRs that were selected for approval (prevents auto-clearing)
+  const [pnrsForApproval, setPnrsForApproval] = useState(new Set());
+
   // Enhanced default passenger data with PNR grouping
   const defaultPassengers = [
     {
@@ -1225,11 +1228,6 @@ export function PassengerRebooking({ context, onClearContext }) {
   };
 
   const handleSendForApproval = async () => {
-    const passengersToApprove = Array.from(selectedPnrs).flatMap((pnr) => {
-      const group = filteredPnrGroups[pnr];
-      return group ? group : [];
-    });
-
     const disruptionFlightId = context?.flight?.id || selectedFlight?.id;
 
     if (!disruptionFlightId) {
@@ -1244,21 +1242,19 @@ export function PassengerRebooking({ context, onClearContext }) {
     const hasPassenger = impactArea.includes("passenger");
     const hasCrew = impactArea.includes("crew");
 
-    // Validate based on impact area
-    if (hasPassenger) {
-      // Check if all selected passengers are confirmed
-      const allSelectedConfirmed = passengersToApprove.every((p) => {
-        const currentStatus = passengerRebookingStatus[p.id] || p.status;
-        return currentStatus === "Confirmed";
-      });
+    // Get all confirmed passengers (those who have been rebooked)
+    const confirmedPassengers = passengers.filter((p) => {
+      const currentStatus = passengerRebookingStatus[p.id] || p.status;
+      return currentStatus === "Confirmed" && confirmedRebookings[p.id];
+    });
 
-      if (!allSelectedConfirmed) {
-        alertService.warning(
-          "Approval Not Ready",
-          "All selected passengers must have a 'Confirmed' status before sending for approval.",
-        );
-        return;
-      }
+    // Validate based on impact area
+    if (hasPassenger && confirmedPassengers.length === 0) {
+      alertService.warning(
+        "No Passengers Processed",
+        "At least one passenger must be rebooked and confirmed before sending for approval.",
+      );
+      return;
     }
 
     if (hasCrew && Object.keys(crewHotelAssignments).length === 0) {
@@ -1281,8 +1277,8 @@ export function PassengerRebooking({ context, onClearContext }) {
       if (statusSuccess) {
         // Prepare passenger rebooking data if applicable
         let passengerRebookingData = [];
-        if (hasPassenger && passengersToApprove.length > 0) {
-          passengerRebookingData = passengersToApprove.map((passenger) => {
+        if (hasPassenger && confirmedPassengers.length > 0) {
+          passengerRebookingData = confirmedPassengers.map((passenger) => {
             const rebookingInfo = confirmedRebookings[passenger.id];
             return {
               disruption_id: disruptionFlightId,
@@ -1349,16 +1345,11 @@ export function PassengerRebooking({ context, onClearContext }) {
                 : "AED 75,000",
           estimated_delay: recoveryOption?.delay || 0,
           passenger_impact: {
-            affected: hasPassenger ? passengersToApprove.length : 0,
-            reaccommodated: hasPassenger
-              ? passengersToApprove.filter((p) => {
-                  const status = passengerRebookingStatus[p.id] || p.status;
-                  return status === "Confirmed";
-                }).length
-              : 0,
+            affected: hasPassenger ? confirmedPassengers.length : 0,
+            reaccommodated: hasPassenger ? confirmedPassengers.length : 0,
             compensated: 0,
             missingConnections: hasPassenger
-              ? passengersToApprove.filter(
+              ? confirmedPassengers.filter(
                   (p) => p.connectedFlights && p.connectedFlights.length > 0,
                 ).length
               : 0,
@@ -1372,7 +1363,7 @@ export function PassengerRebooking({ context, onClearContext }) {
           ),
           approval_status: "pending",
           created_by: "passenger_services",
-          notes: `Submitted from passenger services with ${hasPassenger ? passengersToApprove.length : 0} passengers processed`,
+          notes: `Submitted from passenger services with ${hasPassenger ? confirmedPassengers.length : 0} passengers processed`,
         };
 
         // Add optional data only if present
@@ -1389,8 +1380,10 @@ export function PassengerRebooking({ context, onClearContext }) {
 
         if (pendingSolutionSuccess) {
           let successMessage = "Services sent for approval successfully!\n";
-          if (hasPassenger)
-            successMessage += `${passengersToApprove.length} passengers across ${selectedPnrs.size} PNR groups processed.\n`;
+          if (hasPassenger) {
+            const uniquePnrs = new Set(confirmedPassengers.map(p => p.pnr)).size;
+            successMessage += `${confirmedPassengers.length} passengers across ${uniquePnrs} PNR groups processed.\n`;
+          }
           if (hasCrew)
             successMessage += `${Object.keys(crewHotelAssignments).length} crew hotel assignments completed.`;
 
@@ -1400,6 +1393,7 @@ export function PassengerRebooking({ context, onClearContext }) {
             setSelectedPassenger(null);
             setSelectedPnrGroup(null);
             setCrewHotelAssignments({});
+            setPnrsForApproval(new Set());
           });
         } else {
           alertService.error(
@@ -1781,7 +1775,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     }
   }, [activeTab, recoveryOption]);
 
-  // Automatically uncheck PNR groups that become confirmed
+  // Track confirmed PNRs for approval but don't auto-clear selectedPnrs
   useEffect(() => {
     const confirmedPnrs = new Set();
     Object.entries(filteredPnrGroups).forEach(([pnr, groupPassengers]) => {
@@ -1790,18 +1784,9 @@ export function PassengerRebooking({ context, onClearContext }) {
       }
     });
 
+    // Add confirmed PNRs to approval tracking
     if (confirmedPnrs.size > 0) {
-      setSelectedPnrs((prev) => {
-        const newSelection = new Set(prev);
-        let hasChanges = false;
-        confirmedPnrs.forEach((pnr) => {
-          if (newSelection.has(pnr)) {
-            newSelection.delete(pnr);
-            hasChanges = true;
-          }
-        });
-        return hasChanges ? newSelection : prev;
-      });
+      setPnrsForApproval((prev) => new Set([...prev, ...confirmedPnrs]));
     }
   }, [passengerRebookingStatus, filteredPnrGroups]);
 

@@ -1295,7 +1295,6 @@ app.post("/api/passenger-rebookings", async (req, res) => {
             rebooking_cost = EXCLUDED.rebooking_cost,
             notes = EXCLUDED.notes,
             updated_at = CURRENT_TIMESTAMP
-          RETURNING *
         `,
           [
             disruption_id,
@@ -1841,9 +1840,9 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
         if (existingOption.rows.length === 0) {
           const insertQuery = `
             INSERT INTO recovery_options (
-              disruption_id, title, description, cost, timeline, confidence, 
-              impact, status, priority, advantages, considerations, 
-              resource_requirements, cost_breakdown, timeline_details, 
+              disruption_id, title, description, cost, timeline, confidence,
+              impact, status, priority, advantages, considerations,
+              resource_requirements, cost_breakdown, timeline_details,
               risk_assessment, technical_specs, metrics, rotation_plan,
               impact_area, impact_summary
             ) VALUES (
@@ -2960,31 +2959,41 @@ app.get("/api/recovery-option-details/:optionId", async (req, res) => {
 // Pending Recovery Solutions endpoints
 app.post("/api/pending-recovery-solutions", async (req, res) => {
   try {
-    console.log("Received pending recovery solution request:", req.body);
+    console.log('Received pending recovery solution request:', req.body);
 
     const {
       disruption_id,
       option_id,
       option_title,
       option_description,
+      estimated_cost,
+      estimated_delay,
+      passenger_impact,
+      operational_complexity,
+      resource_requirements,
+      timeline_details,
+      approval_status = 'pending',
+      created_by = 'system',
+      notes,
+      passenger_rebooking,
+      crew_hotel_assignments,
+      // Legacy fields for backward compatibility
       cost,
       timeline,
       confidence,
       impact,
-      status,
-      full_details,
-      rotation_impact,
-      submitted_by,
-      approval_required,
-      passenger_rebooking,
-      crew_hotel_assignments,
+      status = 'Pending',
+      full_details = {},
+      rotation_impact = {},
+      submitted_by = 'system',
+      approval_required = true
     } = req.body;
 
     // Validate required fields
-    if (!disruption_id || !option_id) {
+    if (!disruption_id || !option_id || !option_title) {
       return res.status(400).json({
-        error: "Missing required fields",
-        message: "disruption_id and option_id are required",
+        success: false,
+        error: 'Missing required fields: disruption_id, option_id, option_title'
       });
     }
 
@@ -3043,7 +3052,7 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
     let passengerRebookingCount = 0;
     if (passenger_rebooking && Array.isArray(passenger_rebooking) && passenger_rebooking.length > 0) {
       console.log(`Processing ${passenger_rebooking.length} passenger rebooking records`);
-      
+
       for (const rebooking of passenger_rebooking) {
         try {
           // Minimal validation - check for required fields
@@ -3059,7 +3068,7 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
               original_seat, rebooked_flight, rebooked_cabin, rebooked_seat,
               rebooking_date, additional_services, status, total_passengers_in_pnr,
               rebooking_cost, notes
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             ON CONFLICT (disruption_id, passenger_id, pnr)
             DO UPDATE SET
               passenger_name = EXCLUDED.passenger_name,
@@ -3109,7 +3118,7 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
     let crewHotelCount = 0;
     if (crew_hotel_assignments && Array.isArray(crew_hotel_assignments) && crew_hotel_assignments.length > 0) {
       console.log(`Processing ${crew_hotel_assignments.length} crew hotel assignment records`);
-      
+
       for (const assignment of crew_hotel_assignments) {
         try {
           // Minimal validation - check for required fields
@@ -3155,26 +3164,35 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
     // Insert main pending recovery solution
     const result = await pool.query(
       `
-      INSERT INTO pending_recovery_solutions
-      (disruption_id, option_id, option_title, option_description, cost, timeline,
-       confidence, impact, status, full_details, rotation_impact, submitted_by, approval_required)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+      INSERT INTO pending_recovery_solutions (
+        disruption_id, option_id, option_title, option_description,
+        cost, timeline, confidence, impact, status, full_details,
+        rotation_impact, submitted_by, approval_required
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *
     `,
       [
         disruption_id,
-        option_id,
+        String(option_id),
         option_title,
-        option_description,
-        cost,
-        timeline,
+        option_description || notes,
+        estimated_cost || cost,
+        timeline_details || timeline,
         confidence,
-        impact,
-        status || "Pending",
-        JSON.stringify(full_details || {}),
-        JSON.stringify(rotation_impact || {}),
-        submitted_by || "system",
-        approval_required !== false, // Default to true
+        passenger_impact || impact,
+        approval_status || status,
+        JSON.stringify({
+          ...full_details,
+          passenger_impact,
+          operational_complexity,
+          resource_requirements,
+          timeline_details,
+          passenger_rebooking: passenger_rebooking || [],
+          crew_hotel_assignments: crew_hotel_assignments || []
+        }),
+        JSON.stringify(rotation_impact),
+        created_by || submitted_by,
+        approval_required
       ],
     );
 
@@ -3189,7 +3207,7 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
     );
 
     console.log("Successfully saved pending recovery solution:", result.rows[0]);
-    
+
     // Include processing results in response
     const response = {
       success: true,
@@ -3391,7 +3409,7 @@ app.put("/api/flight-recovery-status/:flightId", async (req, res) => {
 app.get("/api/pending-recovery-solutions/:solutionId", async (req, res) => {
   try {
     const { solutionId } = req.params;
-    
+
     const result = await pool.query(
       `
       SELECT
@@ -3412,7 +3430,7 @@ app.get("/api/pending-recovery-solutions/:solutionId", async (req, res) => {
 
     // Get additional details for the solution
     const solution = result.rows[0];
-    
+
     // Get recovery steps
     const stepsResult = await pool.query(
       `
