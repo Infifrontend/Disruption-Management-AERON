@@ -151,10 +151,17 @@ export function PendingSolutions() {
           plan.operations_user || plan.submitted_by || "AERON System",
         priority: plan.severity || "Medium",
         status: plan.status || "Pending Approval",
-        estimatedCost:
-          typeof plan.cost === "string"
-            ? parseInt(plan.cost.replace(/[^0-9]/g, "")) || 0
-            : plan.cost || 0,
+        estimatedCost: (() => {
+          if (typeof plan.estimated_cost === "string") {
+            const numericValue = parseInt(plan.estimated_cost.replace(/[^0-9]/g, ""));
+            return numericValue || 0;
+          }
+          if (typeof plan.cost === "string") {
+            const numericValue = parseInt(plan.cost.replace(/[^0-9]/g, ""));
+            return numericValue || 0;
+          }
+          return plan.estimated_cost || plan.cost || 0;
+        })(),
         estimatedDelay:
           plan.delay_minutes ||
           parseInt(plan.timeline?.replace(/[^0-9]/g, "") || "0") ||
