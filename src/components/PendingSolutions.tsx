@@ -75,6 +75,7 @@ import {
   PhoneCall,
   Package,
   Building,
+  Activity,
 } from "lucide-react";
 import { databaseService } from "../services/databaseService";
 
