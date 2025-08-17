@@ -819,7 +819,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     return () => {
       isMounted = false;
     };
-  }, [selectedFlight?.id, recoveryOption?.id, contextPassengersLength, context?.flight, selectedFlight, context?.recoveryOption, recoveryOption]);
+  }, [selectedFlight?.id, recoveryOption?.id, contextPassengers.length, context?.flight, selectedFlight, context?.recoveryOption, recoveryOption]);
 
   const passengers = useMemo(() => {
     const base =
