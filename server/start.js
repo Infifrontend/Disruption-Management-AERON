@@ -3387,6 +3387,80 @@ app.put("/api/flight-recovery-status/:flightId", async (req, res) => {
   }
 });
 
+// Get individual pending recovery solution
+app.get("/api/pending-recovery-solutions/:solutionId", async (req, res) => {
+  try {
+    const { solutionId } = req.params;
+    
+    const result = await pool.query(
+      `
+      SELECT
+        prs.*,
+        fd.flight_number, fd.route, fd.origin, fd.destination, fd.aircraft,
+        fd.passengers, fd.crew, fd.severity, fd.disruption_reason,
+        fd.scheduled_departure, fd.estimated_departure, fd.delay_minutes
+      FROM pending_recovery_solutions prs
+      LEFT JOIN flight_disruptions fd ON prs.disruption_id = fd.id
+      WHERE prs.id = $1
+    `,
+      [solutionId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Pending solution not found" });
+    }
+
+    // Get additional details for the solution
+    const solution = result.rows[0];
+    
+    // Get recovery steps
+    const stepsResult = await pool.query(
+      `
+      SELECT * FROM recovery_steps
+      WHERE disruption_id = $1
+      ORDER BY step_number ASC
+    `,
+      [solution.disruption_id]
+    );
+
+    // Get crew information
+    const crewResult = await pool.query(
+      `
+      SELECT cm.* FROM crew_members cm
+      JOIN crew_disruption_mapping cdm ON cm.id = cdm.crew_member_id
+      WHERE cdm.disruption_id = $1
+    `,
+      [solution.disruption_id]
+    );
+
+    // Get passenger information
+    const passengerResult = await pool.query(
+      `
+      SELECT * FROM passengers
+      WHERE flight_number = $1
+      LIMIT 10
+    `,
+      [solution.flight_number]
+    );
+
+    // Enhanced solution with additional data
+    const enhancedSolution = {
+      ...solution,
+      recovery_steps: stepsResult.rows,
+      crew_information: crewResult.rows,
+      passenger_information: passengerResult.rows,
+      operations_user: solution.submitted_by || "Operations Manager"
+    };
+
+    res.json(enhancedSolution);
+  } catch (error) {
+    console.error("Error fetching pending solution:", error);
+    res.status(500).json({
+      error: "Internal server error",
+    });
+  }
+});
+
 // Update pending solution status
 app.put(
   "/api/pending-recovery-solutions/:solutionId/status",

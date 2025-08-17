@@ -97,6 +97,7 @@ export function PendingSolutions() {
   const [sortOrder, setSortOrder] = useState("desc");
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingDetails, setLoadingDetails] = useState(null);
 
   useEffect(() => {
     fetchPlans();
@@ -483,16 +484,31 @@ export function PendingSolutions() {
   };
 
   const handleViewDetails = async (plan) => {
+    setLoadingDetails(plan.id);
+    
     try {
       console.log("Fetching detailed view for plan:", plan.id);
 
-      // Try to fetch the most up-to-date data from pending solutions
-      const allSolutions = await databaseService.getPendingRecoverySolutions();
-      const updatedPlan = allSolutions.find((s) => s.id === plan.id);
+      // Fetch the most up-to-date data from pending solutions API
+      const response = await fetch(`/api/pending-recovery-solutions/${plan.id}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      let updatedPlan = null;
+      
+      if (response.ok) {
+        updatedPlan = await response.json();
+        console.log("Found updated plan data from API:", updatedPlan);
+      } else {
+        // Fallback to fetching all solutions and finding the one we need
+        console.log("Direct API call failed, fetching all solutions...");
+        const allSolutions = await databaseService.getPendingRecoverySolutions();
+        updatedPlan = allSolutions.find((s) => s.id === plan.id);
+      }
 
       if (updatedPlan) {
-        console.log("Found updated plan data:", updatedPlan);
-        // Transform the updated plan data
+        // Transform the updated plan data with proper cost formatting
         const transformedPlan = {
           ...plan,
           title: updatedPlan.option_title || plan.title,
@@ -503,21 +519,37 @@ export function PendingSolutions() {
           costBreakdown:
             updatedPlan.cost_analysis?.breakdown ||
             updatedPlan.full_details?.costBreakdown ||
+            plan.costBreakdown ||
             {},
           recoverySteps:
             updatedPlan.recovery_steps ||
             updatedPlan.full_details?.recoverySteps ||
+            plan.recoverySteps ||
             [],
           assignedCrew:
             updatedPlan.crew_information ||
             updatedPlan.full_details?.assignedCrew ||
+            plan.assignedCrew ||
             [],
-          passengerInformation: updatedPlan.passenger_information || [],
-          operationsUser: updatedPlan.operations_user || "Operations Manager",
-          costAnalysis: updatedPlan.cost_analysis || {},
-          impact: updatedPlan.impact || plan.impact || "Moderate", // Ensure impact is available
-          confidence: updatedPlan.confidence || plan.confidence || 80, // Ensure confidence is available
+          passengerInformation: updatedPlan.passenger_information || plan.passengerInformation || [],
+          operationsUser: updatedPlan.operations_user || plan.operationsUser || "Operations Manager",
+          costAnalysis: updatedPlan.cost_analysis || plan.costAnalysis || {},
+          impact: updatedPlan.impact || plan.impact || "Moderate",
+          confidence: updatedPlan.confidence || plan.confidence || 80,
+          // Ensure estimatedCost is properly formatted
+          estimatedCost: (() => {
+            if (updatedPlan.cost) {
+              if (typeof updatedPlan.cost === "string") {
+                const numericValue = parseInt(updatedPlan.cost.replace(/[^0-9]/g, ""));
+                return numericValue || plan.estimatedCost || 0;
+              }
+              return updatedPlan.cost;
+            }
+            return plan.estimatedCost || 0;
+          })(),
         };
+        
+        console.log("Transformed plan with cost:", transformedPlan.estimatedCost);
         setSelectedPlan(transformedPlan);
       } else {
         console.log("No updated data found, using current plan data");
@@ -525,8 +557,10 @@ export function PendingSolutions() {
       }
     } catch (error) {
       console.error("Failed to fetch plan details:", error);
-      // Fallback to showing the plan with available data if details fetch fails
+      // Fallback to showing the plan with available data if API call fails
       setSelectedPlan(plan);
+    } finally {
+      setLoadingDetails(null);
     }
   };
 
@@ -1628,10 +1662,15 @@ export function PendingSolutions() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleViewDetails(plan)}
+                          disabled={loadingDetails === plan.id}
                           className="flex items-center gap-2"
                         >
-                          <Eye className="h-4 w-4" />
-                          View Details
+                          {loadingDetails === plan.id ? (
+                            <RefreshCw className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                          {loadingDetails === plan.id ? "Loading..." : "View Details"}
                         </Button>
 
                         {[
