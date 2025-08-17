@@ -1397,7 +1397,11 @@ export function PassengerRebooking({ context, onClearContext }) {
             option_title:
               recoveryOption?.title || "Comprehensive Services Recovery",
             option_description: `Services processing completed: ${hasPassenger ? `${passengersToApprove.length} passengers` : ""}${hasPassenger && hasCrew ? " and " : ""}${hasCrew ? `${Object.keys(crewHotelAssignments).length} crew assignments` : ""}`,
-            estimated_cost: recoveryOption?.cost || "AED 75,000",
+            estimated_cost: typeof recoveryOption?.cost === 'string' 
+              ? recoveryOption.cost 
+              : recoveryOption?.cost 
+                ? `AED ${recoveryOption.cost.toLocaleString()}`
+                : "AED 75,000",
             estimated_delay: recoveryOption?.delay || 0,
             passenger_impact: {
               affected: hasPassenger ? passengersToApprove.length : 0,
