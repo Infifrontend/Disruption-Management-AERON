@@ -220,7 +220,7 @@ export function PendingSolutions() {
 
   const filteredPlans = plans.filter((plan) => {
     if (!plan) return false;
-    
+
     const matchesPriority =
       filters.priority === "all" ||
       (plan.priority && plan.priority.toLowerCase() === filters.priority);
@@ -263,7 +263,7 @@ export function PendingSolutions() {
 
   const sortedPlans = filteredPlans.sort((a, b) => {
     if (!a || !b) return 0;
-    
+
     let aValue, bValue;
 
     switch (sortBy) {
@@ -1787,8 +1787,7 @@ export function PendingSolutions() {
                   <CardContent>
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
                       <p className="text-sm text-blue-800">
-                        Service will launch Aircraft A307-007 with Crew
-                        Lunch/Post approval.
+                        Service will launch Aircraft A307-007 with Crew Lunch/Post approval.
                       </p>
                     </div>
 
@@ -2675,14 +2674,16 @@ export function PendingSolutions() {
             <Button variant="outline" onClick={() => setSelectedPlan(null)}>
               Close
             </Button>
-            {["Pending Approval", "Under Review", "Pending"].includes(
+            {selectedPlan && selectedPlan.status && ["Pending Approval", "Under Review", "Pending"].includes(
               selectedPlan.status,
             ) && (
               <>
                 <Button
                   onClick={async () => {
-                    await handleApprove(selectedPlan.id);
-                    setSelectedPlan(null);
+                    if (selectedPlan && selectedPlan.id) {
+                      await handleApprove(selectedPlan.id);
+                      setSelectedPlan(null);
+                    }
                   }}
                   className="bg-green-600 hover:bg-green-700"
                 >
@@ -2692,366 +2693,10 @@ export function PendingSolutions() {
                 <Button
                   variant="outline"
                   onClick={async () => {
-                    await handleReject(selectedPlan.id);
-                    setSelectedPlan(null);
-                  }}
-                  className="text-red-600 border-red-200 hover:bg-red-50"
-                >
-                  <ThumbsDown className="h-4 w-4 mr-2" />
-                  Reject
-                </Button>
-              </>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Detailed Recovery Option Analysis Dialog */}
-      <Dialog
-        open={showDetailedOptionAnalysis}
-        onOpenChange={setShowDetailedOptionAnalysis}
-      >
-        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Detailed Recovery Option Analysis
-            </DialogTitle>
-            <DialogDescription>
-              Comprehensive view of {selectedOptionForDetails?.title} •{" "}
-              {selectedOptionForDetails?.id || "A321-007"} for{" "}
-              {selectedOptionForDetails?.flightNumber}
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedOptionForDetails && (
-            <Tabs defaultValue="option-details" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="option-details">Option Details</TabsTrigger>
-                <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
-                <TabsTrigger value="passenger-reaccommodation">
-                  Passenger Re-accommodation
-                </TabsTrigger>
-                <TabsTrigger value="rotation-impact">
-                  Rotation Impact
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="option-details" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="h-5 w-5" />
-                      Option Overview
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="font-medium mb-2">
-                            {selectedOptionForDetails.title}
-                          </h4>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            {selectedOptionForDetails.description}
-                          </p>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Total Cost:
-                              </span>
-                              <span className="font-medium text-flydubai-orange">
-                                {selectedOptionForDetails.cost}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Timeline:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.timeline}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Confidence:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.confidence}%
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Impact:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.impact}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-2">
-                            Key Performance Indicators
-                          </h4>
-                          <div className="space-y-3">
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Success Rate</span>
-                                <span>
-                                  {selectedOptionForDetails.confidence}%
-                                </span>
-                              </div>
-                              <Progress
-                                value={selectedOptionForDetails.confidence}
-                                className="h-2"
-                              />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Customer Satisfaction</span>
-                                <span>88%</span>
-                              </div>
-                              <Progress value={88} className="h-2" />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Operational Risk</span>
-                                <span className="text-green-600">Low</span>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Easy
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Operational Risk</span>
-                                <span className="text-red-600">High</span>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Easy
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="crew-hotac" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Crew Changes Required
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span className="font-medium text-green-800">
-                          No crew changes required.
-                        </span>
-                      </div>
-                      <p className="text-sm text-green-700">
-                        Current crew certified for{" "}
-                        {selectedOptionForDetails.id || "A321-007"}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent
-                value="passenger-reaccommodation"
-                className="space-y-6"
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Passenger Re-accommodation Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <div className="text-3xl font-bold text-blue-600">
-                          158
-                        </div>
-                        <div className="text-sm text-blue-700">
-                          Total Affected
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <div className="text-3xl font-bold text-green-600">
-                          158
-                        </div>
-                        <div className="text-sm text-green-700">
-                          Same Flight
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-3xl font-bold text-red-600">0</div>
-                        <div className="text-sm text-red-700">
-                          Other Flights
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium mb-3">
-                          Accommodation Breakdown
-                        </h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">Meal Vouchers:</span>
-                            <span className="font-medium">0 passengers</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">
-                              Hotel Accommodation:
-                            </span>
-                            <span className="font-medium">0 passengers</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-3">Compensation</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">
-                              €250 per passenger (EU261):
-                            </span>
-                            <span className="font-medium">
-                              €250 per passenger (EU261)
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Info className="h-4 w-4 text-blue-600" />
-                        <span className="font-medium text-blue-800">
-                          Re-accommodation Details:
-                        </span>
-                      </div>
-                      <p className="text-sm text-blue-700">
-                        All passengers accommodated on same aircraft with 65min
-                        delay.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="rotation-impact" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Activity className="h-5 w-5" />
-                      Aircraft Rotation Impact
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                        <div className="text-3xl font-bold text-yellow-600">
-                          2
-                        </div>
-                        <div className="text-sm text-yellow-700">
-                          Downstream flights
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-3xl font-bold text-red-600">
-                          75
-                        </div>
-                        <div className="text-sm text-red-700">
-                          Total Delay (min)
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-purple-50 rounded-lg">
-                        <div className="text-3xl font-bold text-purple-600">
-                          Low
-                        </div>
-                        <div className="text-sm text-purple-700">
-                          Cascade Risk
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h4 className="font-medium">Affected Routes</h4>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span className="font-medium">BOM-DXB</span>
-                          </div>
-                          <Badge variant="outline" className="text-green-700">
-                            Impacted
-                          </Badge>
-                        </div>
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span className="font-medium">DXB-DEL</span>
-                          </div>
-                          <Badge variant="outline" className="text-green-700">
-                            Impacted
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                        <div className="flex items-center gap-2 mb-2">
-                          <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                          <span className="font-medium text-yellow-800">
-                            Cascade Risk Assessment:
-                          </span>
-                        </div>
-                        <p className="text-sm text-yellow-700">
-                          Low risk of affecting subsequent flights in the
-                          rotation.
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
-          )}
-
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => setSelectedPlan(null)}>
-              Close
-            </Button>
-            {["Pending Approval", "Under Review", "Pending"].includes(
-              selectedPlan.status,
-            ) && (
-              <>
-                <Button
-                  onClick={async () => {
-                    await handleApprove(selectedPlan.id);
-                    setSelectedPlan(null);
-                  }}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <ThumbsUp className="h-4 w-4 mr-2" />
-                  Approve
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={async () => {
-                    await handleReject(selectedPlan.id);
-                    setSelectedPlan(null);
+                    if (selectedPlan && selectedPlan.id) {
+                      await handleReject(selectedPlan.id);
+                      setSelectedPlan(null);
+                    }
                   }}
                   className="text-red-600 border-red-200 hover:bg-red-50"
                 >
