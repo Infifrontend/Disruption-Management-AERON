@@ -1667,13 +1667,19 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
     );
 
     console.log("pendingRecoveryOptionResult ==>", pendingRecoveryOptionResult);
-    console.log("result ==>", result.rows);
+    console.log("result ==>", result);
 
     let response = result.rows.map((option) => {
       console.log("option data from map ==>", option);
-      if(option.id == ){
-        option["pending_recovery_solutions"] =
-          pendingRecoveryOptionResult.rows[0] || {};
+
+      if (!pendingRecoveryOptionResult.rows.length > 0) {
+        return option;
+      }
+
+      const pending_recovery_option = pendingRecoveryOptionResult.rows[0];
+      option["pending_recovery_solutions"] = {};
+      if (option.id == pending_recovery_option.option_id) {
+        option["pending_recovery_solutions"] = pending_recovery_option || {};
       }
       return option;
     });
