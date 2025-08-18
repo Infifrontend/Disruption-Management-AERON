@@ -2305,6 +2305,7 @@ export function ComparisonMatrix({
                                   .replace(/([A-Z])/g, " $1")
                                   .replace(/_/g, " ")
                                   .replace(/^./, (str) => str.toUpperCase())}
+                                
                               </h4>
                               {Array.isArray(value) ? (
                                 <ul className="text-sm text-gray-700 space-y-1">

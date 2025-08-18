@@ -349,7 +349,7 @@ export function DisruptionInput({
       // Then fetch all current disruptions from database, filtering by recovery_status = 'assigned'
       // Changed filter to 'assigned' as per the requirement
       const data = await databaseService.getAllDisruptions("assigned");
-
+      // debugger;
       // Process all data, including incomplete records with fallbacks
       const processedData = data
         .filter((disruption) => {
@@ -362,6 +362,7 @@ export function DisruptionInput({
         })
         .map((disruption) => {
           // Provide defaults for missing required fields
+          console.log(disruption, "test");
           return {
             ...disruption,
             flightNumber:
@@ -369,8 +370,8 @@ export function DisruptionInput({
               disruption.flightNumber ||
               `UNKNOWN-${Date.now()}`,
             scheduledDeparture:
-              disruption.scheduled_departure ||
               disruption.scheduledDeparture ||
+              disruption.scheduled_departure ||
               new Date().toISOString(),
             estimatedDeparture:
               disruption.estimated_departure || disruption.estimatedDeparture,
@@ -629,6 +630,7 @@ export function DisruptionInput({
       hour: "2-digit",
       minute: "2-digit",
       hour12: false,
+      timeZone: "UTC",
     });
   };
 
@@ -2196,7 +2198,7 @@ export function DisruptionInput({
                                       ) : (
                                         <>
                                           <Eye className="h-3 w-3 mr-1" />
-                                          Options
+                                          Generate Options
                                         </>
                                       )}
                                     </Button>
