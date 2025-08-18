@@ -1096,9 +1096,7 @@ export function PendingSolutions() {
                               FZ567 - Tomorrow 08:00
                             </span>
                           </div>
-                          <Badge className="bg-green-100 text-green-700">
-                            142 passengers
-                          </Badge>
+                          <Badge className="bg-green-100 text-green-700">142 passengers</Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
                           Primary rebooking flight - Same route, next day
@@ -1114,9 +1112,7 @@ export function PendingSolutions() {
                               EK425 - Today 16:45
                             </span>
                           </div>
-                          <Badge className="bg-blue-100 text-blue-700">
-                            15 passengers
-                          </Badge>
+                          <Badge className="bg-blue-100 text-blue-700">15 passengers</Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
                           Partner airline accommodation - Premium passengers
@@ -1131,9 +1127,7 @@ export function PendingSolutions() {
                               Hotel Accommodation
                             </span>
                           </div>
-                          <Badge className="bg-orange-100 text-orange-700">
-                            10 passengers
-                          </Badge>
+                          <Badge className="bg-orange-100 text-orange-700">10 passengers</Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
                           Overnight accommodation with meal vouchers
