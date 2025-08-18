@@ -1096,7 +1096,9 @@ export function PendingSolutions() {
                               FZ567 - Tomorrow 08:00
                             </span>
                           </div>
-                          <Badge className="bg-green-100 text-green-700">142 passengers</Badge>
+                          <Badge className="bg-green-100 text-green-700">
+                            142 passengers
+                          </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
                           Primary rebooking flight - Same route, next day
@@ -1112,7 +1114,9 @@ export function PendingSolutions() {
                               EK425 - Today 16:45
                             </span>
                           </div>
-                          <Badge className="bg-blue-100 text-blue-700">15 passengers</Badge>
+                          <Badge className="bg-blue-100 text-blue-700">
+                            15 passengers
+                          </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
                           Partner airline accommodation - Premium passengers
@@ -1127,7 +1131,9 @@ export function PendingSolutions() {
                               Hotel Accommodation
                             </span>
                           </div>
-                          <Badge className="bg-orange-100 text-orange-700">10 passengers</Badge>
+                          <Badge className="bg-orange-100 text-orange-700">
+                            10 passengers
+                          </Badge>
                         </div>
                         <div className="text-sm text-muted-foreground">
                           Overnight accommodation with meal vouchers
@@ -1322,42 +1328,17 @@ export function PendingSolutions() {
                     <Card className="p-4 bg-gray-50">
                       <div className="space-y-2 text-sm">
                         {selectedPlan.costBreakdown && Object.keys(selectedPlan.costBreakdown).length > 0 ? (
-                          Object.entries(selectedPlan.costBreakdown).map(([key, value]) => {
-                            let displayValue = 'N/A';
-
-                            if (typeof value === 'object' && value !== null) {
-                              if (typeof value.amount === 'number') {
-                                displayValue = value.amount.toLocaleString();
-                              } else if (typeof value.cost === 'number') {
-                                displayValue = value.cost.toLocaleString();
-                              } else if (typeof value.value === 'number') {
-                                displayValue = value.value.toLocaleString();
-                              } else {
-                                // Try to extract any numeric value from the object
-                                const numericValues = Object.values(value).filter(v => typeof v === 'number');
-                                if (numericValues.length > 0) {
-                                  displayValue = numericValues[0].toLocaleString();
+                          Object.entries(selectedPlan.costBreakdown).map(([key, value]) => (
+                            <div key={key} className="flex justify-between">
+                              <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
+                              <span>
+                                AED {typeof value === 'object' && value && typeof value.amount === 'number' ? 
+                                  value.amount.toLocaleString() :
+                                  (typeof value === 'number' ? value.toLocaleString() : String(value))
                                 }
-                              }
-                            } else if (typeof value === 'number') {
-                              displayValue = value.toLocaleString();
-                            } else if (typeof value === 'string') {
-                              // Try to extract numbers from string
-                              const numMatch = value.match(/\d+/);
-                              if (numMatch) {
-                                displayValue = parseInt(numMatch[0]).toLocaleString();
-                              } else {
-                                displayValue = value;
-                              }
-                            }
-
-                            return (
-                              <div key={key} className="flex justify-between">
-                                <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
-                                <span>AED {displayValue}</span>
-                              </div>
-                            );
-                          })
+                              </span>
+                            </div>
+                          ))
                         ) : (
                           <>
                             <div className="flex justify-between">
@@ -2202,42 +2183,17 @@ export function PendingSolutions() {
                       <div className="space-y-4">
                         {selectedPlan.costBreakdown && Object.keys(selectedPlan.costBreakdown).length > 0 ? (
                           <div className="grid grid-cols-2 gap-4 text-sm">
-                            {Object.entries(selectedPlan.costBreakdown).map(([key, value]) => {
-                              let displayValue = 'N/A';
-
-                              if (typeof value === 'object' && value !== null) {
-                                if (typeof value.amount === 'number') {
-                                  displayValue = value.amount.toLocaleString();
-                                } else if (typeof value.cost === 'number') {
-                                  displayValue = value.cost.toLocaleString();
-                                } else if (typeof value.value === 'number') {
-                                  displayValue = value.value.toLocaleString();
-                                } else {
-                                  // Try to extract any numeric value from the object
-                                  const numericValues = Object.values(value).filter(v => typeof v === 'number');
-                                  if (numericValues.length > 0) {
-                                    displayValue = numericValues[0].toLocaleString();
+                            {Object.entries(selectedPlan.costBreakdown).map(([key, value]) => (
+                              <div key={key}>
+                                <span className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
+                                <div className="font-medium">
+                                  AED {typeof value === 'object' && value && typeof value.amount === 'number' ? 
+                                    value.amount.toLocaleString() :
+                                    (typeof value === 'number' ? value.toLocaleString() : String(value))
                                   }
-                                }
-                              } else if (typeof value === 'number') {
-                                displayValue = value.toLocaleString();
-                              } else if (typeof value === 'string') {
-                                // Try to extract numbers from string
-                                const numMatch = value.match(/\d+/);
-                                if (numMatch) {
-                                  displayValue = parseInt(numMatch[0]).toLocaleString();
-                                } else {
-                                  displayValue = value;
-                                }
-                              }
-
-                              return (
-                                <div key={key} className="flex justify-between">
-                                  <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
-                                  <span>AED {displayValue}</span>
                                 </div>
-                              );
-                            })}
+                              </div>
+                            ))}
                           </div>
                         ) : (
                           <div className="grid grid-cols-2 gap-4 text-sm">
@@ -2341,48 +2297,48 @@ export function PendingSolutions() {
                 </div>
               </TabsContent>
             </Tabs>
-          </DialogHeader>
 
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => setSelectedPlan(null)}>
-              Close
-            </Button>
-            {selectedPlan &&
-              selectedPlan.status &&
-              ["Pending Approval", "Under Review", "Pending"].includes(
-                selectedPlan.status,
-              ) && (
-                <>
-                  <Button
-                    onClick={async () => {
-                      if (selectedPlan && selectedPlan.id) {
-                        await handleApprove(selectedPlan.id);
-                        setSelectedPlan(null);
-                      }
-                    }}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <ThumbsUp className="h-4 w-4 mr-2" />
-                    Approve
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={async () => {
-                      if (selectedPlan && selectedPlan.id) {
-                        await handleReject(selectedPlan.id);
-                        setSelectedPlan(null);
-                      }
-                    }}
-                    className="text-red-600 border-red-200 hover:bg-red-50"
-                  >
-                    <ThumbsDown className="h-4 w-4 mr-2" />
-                    Reject
-                  </Button>
-                </>
-              )}
-          </div>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setSelectedPlan(null)}>
+                Close
+              </Button>
+              {selectedPlan &&
+                selectedPlan.status &&
+                ["Pending Approval", "Under Review", "Pending"].includes(
+                  selectedPlan.status,
+                ) && (
+                  <>
+                    <Button
+                      onClick={async () => {
+                        if (selectedPlan && selectedPlan.id) {
+                          await handleApprove(selectedPlan.id);
+                          setSelectedPlan(null);
+                        }
+                      }}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <ThumbsUp className="h-4 w-4 mr-2" />
+                      Approve
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={async () => {
+                        if (selectedPlan && selectedPlan.id) {
+                          await handleReject(selectedPlan.id);
+                          setSelectedPlan(null);
+                        }
+                      }}
+                      className="text-red-600 border-red-200 hover:bg-red-50"
+                    >
+                      <ThumbsDown className="h-4 w-4 mr-2" />
+                      Reject
+                    </Button>
+                  </>
+                )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <Dialog open={showDetailedOptionAnalysis}
         onOpenChange={setShowDetailedOptionAnalysis}>
