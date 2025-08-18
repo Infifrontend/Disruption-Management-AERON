@@ -1651,7 +1651,36 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
     `,
       [disruptionId],
     );
-    res.json(result.rows || []);
+
+    const pendingRecoveryOptionResult = await pool.query(
+      `SELECT
+          prs.*,
+          fd.flight_number, fd.route, fd.origin, fd.destination, fd.aircraft,
+          fd.passengers, fd.crew, fd.severity, fd.disruption_reason,
+          fd.scheduled_departure, fd.estimated_departure, fd.delay_minutes
+        FROM pending_recovery_solutions prs
+        LEFT JOIN flight_disruptions fd ON prs.disruption_id = fd.id
+        WHERE prs.disruption_id = $1
+        ORDER BY prs.submitted_at DESC
+      `,
+      [disruptionId],
+    );
+
+    console.log("pendingRecoveryOptionResult ==>", pendingRecoveryOptionResult);
+    console.log("result ==>", result.rows);
+
+    let response = result.rows.map((option) => {
+      console.log("option data from map ==>", option);
+      if(option.id == ){
+        option["pending_recovery_solutions"] =
+          pendingRecoveryOptionResult.rows[0] || {};
+      }
+      return option;
+    });
+
+    res.json(response || []);
+
+    // res.json(result.rows || []);
   } catch (error) {
     console.error("Error fetching recovery options:", error);
     res.json([]);
