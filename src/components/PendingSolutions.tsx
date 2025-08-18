@@ -575,8 +575,7 @@ export function PendingSolutions() {
         // If no matching option found but we have recovery options, find the selected one by option_id
         if (!selectedOption && recoveryOptionsData && plan.optionId) {
           selectedOption = recoveryOptionsData.find(
-            (opt) =>
-              opt.id === plan.optionId || opt.option_id === plan.optionId,
+            (opt) => opt.id === plan.optionId || opt.option_id === plan.optionId
           );
           console.log("Found selected option by optionId:", selectedOption);
         }
@@ -728,11 +727,10 @@ export function PendingSolutions() {
               id: opt.id,
               option_id: opt.option_id,
               title: opt.title,
-              matches:
-                opt.id === transformedPlan.optionId ||
-                opt.option_id === transformedPlan.optionId ||
-                String(opt.id) === String(transformedPlan.optionId) ||
-                String(opt.option_id) === String(transformedPlan.optionId),
+              matches: opt.id === transformedPlan.optionId || 
+                      opt.option_id === transformedPlan.optionId ||
+                      String(opt.id) === String(transformedPlan.optionId) ||
+                      String(opt.option_id) === String(transformedPlan.optionId)
             });
           });
         }
@@ -822,32 +820,27 @@ export function PendingSolutions() {
         setLoadingPendingData(true);
         try {
           // Try to find the pending solution by disruption_id and option_id
-          const allPendingSolutions =
-            await databaseService.getPendingRecoverySolutions();
-          const matchingSolution = allPendingSolutions.find(
-            (solution) =>
-              solution.disruption_id === plan.disruptionId &&
-              solution.option_id === plan.optionId,
+          const allPendingSolutions = await databaseService.getPendingRecoverySolutions();
+          const matchingSolution = allPendingSolutions.find(solution => 
+            solution.disruption_id === plan.disruptionId && 
+            solution.option_id === plan.optionId
           );
 
           if (matchingSolution) {
             // Fetch detailed data for this specific solution
-            const response = await fetch(
-              `/api/pending-recovery-solutions/${matchingSolution.id}`,
-              {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-              },
-            );
+            const response = await fetch(`/api/pending-recovery-solutions/${matchingSolution.id}`, {
+              method: 'GET',
+              headers: { 'Content-Type': 'application/json' }
+            });
 
             if (response.ok) {
               const detailedData = await response.json();
               setPendingSolutionData(detailedData);
-              console.log("Loaded pending solution data:", detailedData);
+              console.log('Loaded pending solution data:', detailedData);
             }
           }
         } catch (error) {
-          console.error("Error fetching pending solution data:", error);
+          console.error('Error fetching pending solution data:', error);
         } finally {
           setLoadingPendingData(false);
         }
@@ -857,49 +850,29 @@ export function PendingSolutions() {
     }, [plan.id, plan.disruptionId, plan.optionId]);
 
     // Extract crew and passenger data from pending solution
-    const crewData =
-      pendingSolutionData?.full_details?.crew_hotel_assignments ||
-      pendingSolutionData?.crew_hotel_assignments ||
-      plan.assignedCrew ||
-      [];
+    const crewData = pendingSolutionData?.full_details?.crew_hotel_assignments || 
+                     pendingSolutionData?.crew_hotel_assignments || 
+                     plan.assignedCrew || [];
 
-    const passengerData =
-      pendingSolutionData?.full_details?.passenger_rebooking ||
-      pendingSolutionData?.passenger_rebooking ||
-      plan.passengerInformation ||
-      [];
+    const passengerData = pendingSolutionData?.full_details?.passenger_rebooking || 
+                         pendingSolutionData?.passenger_rebooking || 
+                         plan.passengerInformation || [];
 
-    const hasCrewData =
-      crewData &&
-      (Array.isArray(crewData)
-        ? crewData.length > 0
-        : Object.keys(crewData).length > 0);
-    const hasPassengerData =
-      passengerData &&
-      (Array.isArray(passengerData)
-        ? passengerData.length > 0
-        : Object.keys(passengerData).length > 0);
+    const hasCrewData = crewData && (Array.isArray(crewData) ? crewData.length > 0 : Object.keys(crewData).length > 0);
+    const hasPassengerData = passengerData && (Array.isArray(passengerData) ? passengerData.length > 0 : Object.keys(passengerData).length > 0);
 
     return (
       <div className="space-y-6">
         <Tabs value={activeOptionTab} onValueChange={setActiveOptionTab}>
-          <TabsList
-            className={`grid w-full ${
-              hasCrewData && hasPassengerData
-                ? "grid-cols-5"
-                : hasCrewData || hasPassengerData
-                  ? "grid-cols-4"
-                  : "grid-cols-3"
-            }`}
-          >
+          <TabsList className={`grid w-full ${
+            hasCrewData && hasPassengerData ? 'grid-cols-5' :
+            hasCrewData || hasPassengerData ? 'grid-cols-4' :
+            'grid-cols-3'
+          }`}>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
-            {hasCrewData && (
-              <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
-            )}
-            {hasPassengerData && (
-              <TabsTrigger value="passengers">Passengers</TabsTrigger>
-            )}
+            {hasCrewData && <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>}
+            {hasPassengerData && <TabsTrigger value="passengers">Passengers</TabsTrigger>}
             <TabsTrigger value="resources">Resources</TabsTrigger>
           </TabsList>
 
@@ -1072,12 +1045,9 @@ export function PendingSolutions() {
                 {!hasCrewData ? (
                   <div className="text-center py-8">
                     <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                    <h3 className="text-lg font-semibold mb-2">
-                      No Crew Data Available
-                    </h3>
+                    <h3 className="text-lg font-semibold mb-2">No Crew Data Available</h3>
                     <p className="text-muted-foreground">
-                      No crew assignments or HOTAC arrangements have been
-                      processed for this recovery option.
+                      No crew assignments or HOTAC arrangements have been processed for this recovery option.
                     </p>
                   </div>
                 ) : (
@@ -1092,21 +1062,16 @@ export function PendingSolutions() {
                           <div key={index} className="p-3 border rounded-lg">
                             <div className="flex items-center justify-between mb-2">
                               <div className="font-medium">
-                                {crew.crew_name ||
-                                  crew.name ||
-                                  `Crew Member ${index + 1}`}
+                                {crew.crew_name || crew.name || `Crew Member ${index + 1}`}
                               </div>
                               <Badge
                                 variant={
-                                  crew.assignment_status === "original" ||
-                                  crew.status === "Original"
+                                  crew.assignment_status === "original" || crew.status === "Original"
                                     ? "outline"
                                     : "default"
                                 }
                               >
-                                {crew.assignment_status ||
-                                  crew.status ||
-                                  "Assigned"}
+                                {crew.assignment_status || crew.status || "Assigned"}
                               </Badge>
                             </div>
                             <div className="text-sm space-y-1">
@@ -1114,9 +1079,7 @@ export function PendingSolutions() {
                                 <span className="text-muted-foreground">
                                   Role:
                                 </span>
-                                <span>
-                                  {crew.crew_role || crew.role || "N/A"}
-                                </span>
+                                <span>{crew.crew_role || crew.role || "N/A"}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-muted-foreground">
@@ -1131,16 +1094,11 @@ export function PendingSolutions() {
                                   <span className="text-muted-foreground">
                                     Hotel:
                                   </span>
-                                  <span>
-                                    {crew.hotel_booking.hotel_name || "N/A"}
-                                  </span>
+                                  <span>{crew.hotel_booking.hotel_name || "N/A"}</span>
                                 </div>
                               )}
                               <div className="text-xs text-muted-foreground mt-2">
-                                Notes:{" "}
-                                {crew.notes ||
-                                  crew.change ||
-                                  "No additional notes"}
+                                Notes: {crew.notes || crew.change || "No additional notes"}
                               </div>
                             </div>
                           </div>
@@ -1154,20 +1112,16 @@ export function PendingSolutions() {
                       <h4 className="font-medium mb-3">HOTAC Arrangements</h4>
                       <div className="space-y-4">
                         {/* Hotel Accommodations from crew data */}
-                        {crewData.some((crew) => crew.hotel_booking) ? (
+                        {crewData.some(crew => crew.hotel_booking) ? (
                           crewData
-                            .filter((crew) => crew.hotel_booking)
+                            .filter(crew => crew.hotel_booking)
                             .map((crew, index) => (
-                              <Card
-                                key={index}
-                                className="bg-blue-50 border-blue-200"
-                              >
+                              <Card key={index} className="bg-blue-50 border-blue-200">
                                 <CardContent className="p-4">
                                   <div className="flex items-center gap-2 mb-3">
                                     <Hotel className="h-4 w-4 text-blue-600" />
                                     <span className="font-medium text-blue-800">
-                                      Hotel Accommodation -{" "}
-                                      {crew.crew_name || `Crew ${index + 1}`}
+                                      Hotel Accommodation - {crew.crew_name || `Crew ${index + 1}`}
                                     </span>
                                   </div>
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -1184,8 +1138,7 @@ export function PendingSolutions() {
                                         Room Type:
                                       </span>
                                       <div className="font-medium">
-                                        {crew.hotel_booking.room_type ||
-                                          "Standard"}
+                                        {crew.hotel_booking.room_type || "Standard"}
                                       </div>
                                     </div>
                                     <div>
@@ -1193,10 +1146,8 @@ export function PendingSolutions() {
                                         Check-in:
                                       </span>
                                       <div className="font-medium">
-                                        {crew.hotel_booking.check_in_date
-                                          ? formatIST(
-                                              crew.hotel_booking.check_in_date,
-                                            )
+                                        {crew.hotel_booking.check_in_date 
+                                          ? formatIST(crew.hotel_booking.check_in_date)
                                           : "TBD"}
                                       </div>
                                     </div>
@@ -1205,10 +1156,8 @@ export function PendingSolutions() {
                                         Check-out:
                                       </span>
                                       <div className="font-medium">
-                                        {crew.hotel_booking.check_out_date
-                                          ? formatIST(
-                                              crew.hotel_booking.check_out_date,
-                                            )
+                                        {crew.hotel_booking.check_out_date 
+                                          ? formatIST(crew.hotel_booking.check_out_date)
                                           : "TBD"}
                                       </div>
                                     </div>
@@ -1217,8 +1166,7 @@ export function PendingSolutions() {
                                         Room Number:
                                       </span>
                                       <div className="font-medium">
-                                        {crew.hotel_booking.room_number ||
-                                          "TBD"}
+                                        {crew.hotel_booking.room_number || "TBD"}
                                       </div>
                                     </div>
                                     <div>
@@ -1226,7 +1174,7 @@ export function PendingSolutions() {
                                         Cost:
                                       </span>
                                       <div className="font-medium text-flydubai-orange">
-                                        {crew.hotel_booking.booking_cost
+                                        {crew.hotel_booking.booking_cost 
                                           ? `AED ${crew.hotel_booking.booking_cost}`
                                           : "TBD"}
                                       </div>
@@ -1234,8 +1182,7 @@ export function PendingSolutions() {
                                   </div>
                                   {crew.hotel_booking.booking_notes && (
                                     <div className="mt-3 text-sm text-blue-700">
-                                      <strong>Notes:</strong>{" "}
-                                      {crew.hotel_booking.booking_notes}
+                                      <strong>Notes:</strong> {crew.hotel_booking.booking_notes}
                                     </div>
                                   )}
                                 </CardContent>
@@ -1246,8 +1193,7 @@ export function PendingSolutions() {
                             <CardContent className="p-4 text-center">
                               <Hotel className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
                               <p className="text-muted-foreground">
-                                No hotel accommodations arranged for this
-                                recovery option.
+                                No hotel accommodations arranged for this recovery option.
                               </p>
                             </CardContent>
                           </Card>
@@ -1275,12 +1221,9 @@ export function PendingSolutions() {
                 {!hasPassengerData ? (
                   <div className="text-center py-8">
                     <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
-                    <h3 className="text-lg font-semibold mb-2">
-                      No Passenger Data Available
-                    </h3>
+                    <h3 className="text-lg font-semibold mb-2">No Passenger Data Available</h3>
                     <p className="text-muted-foreground">
-                      No passenger reaccommodation details have been processed
-                      for this recovery option.
+                      No passenger reaccommodation details have been processed for this recovery option.
                     </p>
                   </div>
                 ) : (
@@ -1289,11 +1232,9 @@ export function PendingSolutions() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div className="text-center p-3 bg-blue-50 rounded-lg">
                         <div className="text-2xl font-bold text-blue-600">
-                          {passengerData.length ||
-                            pendingSolutionData?.full_details?.passenger_impact
-                              ?.affected ||
-                            plan.affectedPassengers ||
-                            0}
+                          {passengerData.length || 
+                           pendingSolutionData?.full_details?.passenger_impact?.affected || 
+                           plan.affectedPassengers || 0}
                         </div>
                         <div className="text-sm text-blue-700">
                           Total Passengers
@@ -1301,29 +1242,16 @@ export function PendingSolutions() {
                       </div>
                       <div className="text-center p-3 bg-green-50 rounded-lg">
                         <div className="text-2xl font-bold text-green-600">
-                          {pendingSolutionData?.full_details?.passenger_impact
-                            ?.reaccommodated ||
-                            passengerData.filter(
-                              (p) => p.rebooking_status === "confirmed",
-                            ).length ||
-                            Math.floor(
-                              (passengerData.length ||
-                                plan.affectedPassengers ||
-                                167) * 0.85,
-                            )}
+                          {pendingSolutionData?.full_details?.passenger_impact?.reaccommodated ||
+                           passengerData.filter(p => p.rebooking_status === "confirmed").length ||
+                           Math.floor((passengerData.length || plan.affectedPassengers || 167) * 0.85)}
                         </div>
                         <div className="text-sm text-green-700">Rebooked</div>
                       </div>
                       <div className="text-center p-3 bg-yellow-50 rounded-lg">
                         <div className="text-2xl font-bold text-yellow-600">
-                          {passengerData.filter((p) =>
-                            p.additional_services?.includes("accommodation"),
-                          ).length ||
-                            Math.floor(
-                              (passengerData.length ||
-                                plan.affectedPassengers ||
-                                167) * 0.12,
-                            )}
+                          {passengerData.filter(p => p.additional_services?.includes("accommodation")).length ||
+                           Math.floor((passengerData.length || plan.affectedPassengers || 167) * 0.12)}
                         </div>
                         <div className="text-sm text-yellow-700">
                           Accommodation
@@ -1331,15 +1259,9 @@ export function PendingSolutions() {
                       </div>
                       <div className="text-center p-3 bg-orange-50 rounded-lg">
                         <div className="text-2xl font-bold text-orange-600">
-                          {pendingSolutionData?.full_details?.passenger_impact
-                            ?.compensated ||
-                            passengerData.filter((p) => p.rebooking_cost > 0)
-                              .length ||
-                            Math.floor(
-                              (passengerData.length ||
-                                plan.affectedPassengers ||
-                                167) * 0.03,
-                            )}
+                          {pendingSolutionData?.full_details?.passenger_impact?.compensated ||
+                           passengerData.filter(p => p.rebooking_cost > 0).length ||
+                           Math.floor((passengerData.length || plan.affectedPassengers || 167) * 0.03)}
                         </div>
                         <div className="text-sm text-orange-700">
                           Compensation
@@ -1349,69 +1271,48 @@ export function PendingSolutions() {
 
                     {/* Individual Passenger Details */}
                     <div>
-                      <h4 className="font-medium mb-3">
-                        Individual Passenger Rebookings
-                      </h4>
+                      <h4 className="font-medium mb-3">Individual Passenger Rebookings</h4>
                       <div className="space-y-3 max-h-64 overflow-y-auto">
                         {passengerData.slice(0, 10).map((passenger, index) => (
                           <Card key={index} className="p-3">
                             <div className="flex items-center justify-between mb-2">
                               <div className="font-medium">
-                                {passenger.passenger_name ||
-                                  `Passenger ${index + 1}`}
+                                {passenger.passenger_name || `Passenger ${index + 1}`}
                               </div>
-                              <Badge
-                                className={
-                                  passenger.rebooking_status === "confirmed"
-                                    ? "bg-green-100 text-green-700"
-                                    : passenger.rebooking_status === "pending"
-                                      ? "bg-yellow-100 text-yellow-700"
-                                      : "bg-gray-100 text-gray-700"
-                                }
-                              >
+                              <Badge className={
+                                passenger.rebooking_status === "confirmed" 
+                                  ? "bg-green-100 text-green-700"
+                                  : passenger.rebooking_status === "pending"
+                                  ? "bg-yellow-100 text-yellow-700"
+                                  : "bg-gray-100 text-gray-700"
+                              }>
                                 {passenger.rebooking_status || "Unknown"}
                               </Badge>
                             </div>
                             <div className="text-sm space-y-1">
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">
-                                  PNR:
-                                </span>
+                                <span className="text-muted-foreground">PNR:</span>
                                 <span>{passenger.pnr || "N/A"}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">
-                                  Original Flight:
-                                </span>
-                                <span>
-                                  {passenger.original_flight ||
-                                    plan.flightNumber}
-                                </span>
+                                <span className="text-muted-foreground">Original Flight:</span>
+                                <span>{passenger.original_flight || plan.flightNumber}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">
-                                  Rebooked Flight:
-                                </span>
-                                <span>
-                                  {passenger.rebooked_flight || "TBD"}
-                                </span>
+                                <span className="text-muted-foreground">Rebooked Flight:</span>
+                                <span>{passenger.rebooked_flight || "TBD"}</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">
-                                  Seat Change:
-                                </span>
+                                <span className="text-muted-foreground">Seat Change:</span>
                                 <span>
-                                  {passenger.original_seat &&
-                                  passenger.rebooked_seat
+                                  {passenger.original_seat && passenger.rebooked_seat
                                     ? `${passenger.original_seat} → ${passenger.rebooked_seat}`
                                     : "N/A"}
                                 </span>
                               </div>
                               {passenger.rebooking_cost > 0 && (
                                 <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Cost:
-                                  </span>
+                                  <span className="text-muted-foreground">Cost:</span>
                                   <span className="text-flydubai-orange">
                                     AED {passenger.rebooking_cost}
                                   </span>
@@ -1446,63 +1347,40 @@ export function PendingSolutions() {
                             <span className="font-medium">Meal Vouchers</span>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {
-                              passengerData.filter((p) =>
-                                p.additional_services?.includes("meal_voucher"),
-                              ).length
-                            }{" "}
-                            passengers provided meal vouchers
+                            {passengerData.filter(p => 
+                              p.additional_services?.includes("meal_voucher")
+                            ).length} passengers provided meal vouchers
                           </div>
                         </div>
                         <div className="p-3 border rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
                             <Hotel className="h-4 w-4 text-blue-600" />
-                            <span className="font-medium">
-                              Hotel Accommodation
-                            </span>
+                            <span className="font-medium">Hotel Accommodation</span>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {
-                              passengerData.filter((p) =>
-                                p.additional_services?.includes(
-                                  "accommodation",
-                                ),
-                              ).length
-                            }{" "}
-                            passengers provided hotel accommodation
+                            {passengerData.filter(p => 
+                              p.additional_services?.includes("accommodation")
+                            ).length} passengers provided hotel accommodation
                           </div>
                         </div>
                         <div className="p-3 border rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
                             <Car className="h-4 w-4 text-purple-600" />
-                            <span className="font-medium">
-                              Ground Transport
-                            </span>
+                            <span className="font-medium">Ground Transport</span>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {
-                              passengerData.filter((p) =>
-                                p.additional_services?.includes("transport"),
-                              ).length
-                            }{" "}
-                            passengers provided ground transport
+                            {passengerData.filter(p => 
+                              p.additional_services?.includes("transport")
+                            ).length} passengers provided ground transport
                           </div>
                         </div>
                         <div className="p-3 border rounded-lg">
                           <div className="flex items-center gap-2 mb-2">
                             <DollarSign className="h-4 w-4 text-red-600" />
-                            <span className="font-medium">
-                              Total Rebooking Cost
-                            </span>
+                            <span className="font-medium">Total Rebooking Cost</span>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            AED{" "}
-                            {passengerData
-                              .reduce(
-                                (sum, p) => sum + (p.rebooking_cost || 0),
-                                0,
-                              )
-                              .toLocaleString()}
+                            AED {passengerData.reduce((sum, p) => sum + (p.rebooking_cost || 0), 0).toLocaleString()}
                           </div>
                         </div>
                       </div>
@@ -2115,7 +1993,6 @@ export function PendingSolutions() {
                           "Pending Approval",
                           "Under Review",
                           "Pending",
-                          "pending",
                         ].includes(plan.status) && (
                           <>
                             <Button
@@ -2236,13 +2113,11 @@ export function PendingSolutions() {
                           selectedPlan.recoveryOptions.map((option, index) => {
                             // Check if this option is selected by matching option_id from pending solution
                             const isSelected =
-                              selectedPlan.optionId &&
-                              (option.id === selectedPlan.optionId ||
-                                option.option_id === selectedPlan.optionId ||
-                                String(option.id) ===
-                                  String(selectedPlan.optionId) ||
-                                String(option.option_id) ===
-                                  String(selectedPlan.optionId));
+                              selectedPlan.optionId && 
+                              (option.id === selectedPlan.optionId || 
+                               option.option_id === selectedPlan.optionId ||
+                               String(option.id) === String(selectedPlan.optionId) ||
+                               String(option.option_id) === String(selectedPlan.optionId));
 
                             return (
                               <Card
@@ -2577,14 +2452,11 @@ export function PendingSolutions() {
                             selectedPlan.recoveryOptions.map(
                               (option, index) => {
                                 const isSelected =
-                                  selectedPlan.optionId &&
-                                  (option.id === selectedPlan.optionId ||
-                                    option.option_id ===
-                                      selectedPlan.optionId ||
-                                    String(option.id) ===
-                                      String(selectedPlan.optionId) ||
-                                    String(option.option_id) ===
-                                      String(selectedPlan.optionId));
+                                  selectedPlan.optionId && 
+                                  (option.id === selectedPlan.optionId || 
+                                   option.option_id === selectedPlan.optionId ||
+                                   String(option.id) === String(selectedPlan.optionId) ||
+                                   String(option.option_id) === String(selectedPlan.optionId));
 
                                 return (
                                   <tr
@@ -2706,9 +2578,7 @@ export function PendingSolutions() {
                             </div>
                           </div>
                           <div className="text-center p-4 bg-red-50 rounded-lg">
-                            <div className="text-3xl font-bold text-red-600">
-                              0
-                            </div>
+                            <div className="text-3xl font-bold text-red-600">0</div>
                             <div className="text-sm text-red-700">
                               Other Flights
                             </div>
@@ -2723,17 +2593,13 @@ export function PendingSolutions() {
                             <div className="space-y-2">
                               <div className="flex justify-between">
                                 <span className="text-sm">Meal Vouchers:</span>
-                                <span className="font-medium">
-                                  0 passengers
-                                </span>
+                                <span className="font-medium">0 passengers</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-sm">
                                   Hotel Accommodation:
                                 </span>
-                                <span className="font-medium">
-                                  0 passengers
-                                </span>
+                                <span className="font-medium">0 passengers</span>
                               </div>
                             </div>
                           </div>
@@ -2760,8 +2626,8 @@ export function PendingSolutions() {
                             </span>
                           </div>
                           <p className="text-sm text-blue-700">
-                            All passengers accommodated on same aircraft with
-                            65min delay.
+                            All passengers accommodated on same aircraft with 65min
+                            delay.
                           </p>
                         </div>
                       </CardContent>
@@ -2992,15 +2858,13 @@ export function PendingSolutions() {
 
           {selectedOptionForDetails && (
             <Tabs defaultValue="option-details" className="w-full">
-              <TabsList
-                className={`grid w-full ${
-                  selectedPlan.hasCrewData && selectedPlan.hasPassengerData
-                    ? "grid-cols-5"
-                    : selectedPlan.hasCrewData || selectedPlan.hasPassengerData
-                      ? "grid-cols-4"
-                      : "grid-cols-3"
-                }`}
-              >
+              <TabsList className={`grid w-full ${
+                selectedPlan.hasCrewData && selectedPlan.hasPassengerData
+                  ? "grid-cols-5"
+                  : selectedPlan.hasCrewData || selectedPlan.hasPassengerData
+                    ? "grid-cols-4"
+                    : "grid-cols-3"
+              }`}>
                 <TabsTrigger value="option-details">Option Details</TabsTrigger>
                 <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
                 <TabsTrigger value="passenger-reaccommodation">
