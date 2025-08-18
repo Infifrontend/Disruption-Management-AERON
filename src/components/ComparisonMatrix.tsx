@@ -1245,6 +1245,150 @@ export function ComparisonMatrix({
     }
   };
 
+  // Helper function to generate available crew for specific role
+  const generateAvailableCrewForRole = (targetRole, excludeName = null) => {
+    const roleNormalized = targetRole.toLowerCase();
+    
+    // Define crew pools by role type
+    const crewPools = {
+      captain: [
+        {
+          id: "CREW_001",
+          name: "Capt. Mohammed Al-Zaabi",
+          rank: "Captain",
+          role: targetRole,
+          rating: "B737/A320 Type Rating",
+          availability: "Available",
+          location: "DXB",
+          score: 95,
+          experience: "15 years",
+          qualifications: ["B737", "A320", "Emergency Response", "Line Training"]
+        },
+        {
+          id: "CREW_002", 
+          name: "Capt. Sarah Mitchell",
+          rank: "Captain",
+          role: targetRole,
+          rating: "B737/MAX Type Rating",
+          availability: "Available",
+          location: "DXB",
+          score: 92,
+          experience: "12 years",
+          qualifications: ["B737 MAX", "ETOPS", "Training Captain"]
+        },
+        {
+          id: "CREW_005",
+          name: "Capt. Ali Rahman",
+          rank: "Captain",
+          role: targetRole,
+          rating: "A320/A321 Type Rating",
+          availability: "Available",
+          location: "SHJ",
+          score: 89,
+          experience: "14 years",
+          qualifications: ["A320", "A321", "Check Airman"]
+        }
+      ],
+      first_officer: [
+        {
+          id: "CREW_003",
+          name: "F/O Ahmed Hassan",
+          rank: "First Officer",
+          role: targetRole,
+          rating: "B737/MAX Type Rating",
+          availability: "Available",
+          location: "SHJ",
+          score: 88,
+          experience: "8 years",
+          qualifications: ["B737", "B737 MAX", "Multi-Engine"]
+        },
+        {
+          id: "CREW_004",
+          name: "F/O Priya Sharma",
+          rank: "First Officer",
+          role: targetRole,
+          rating: "A320 Type Rating",
+          availability: "Available",
+          location: "DXB",
+          score: 85,
+          experience: "6 years",
+          qualifications: ["A320", "A321", "Glass Cockpit"]
+        },
+        {
+          id: "CREW_006",
+          name: "F/O James Wilson",
+          rank: "First Officer",
+          role: targetRole,
+          rating: "B737 Type Rating",
+          availability: "Available",
+          location: "DXB",
+          score: 83,
+          experience: "5 years",
+          qualifications: ["B737", "TCAS", "RNAV"]
+        }
+      ],
+      cabin_crew: [
+        {
+          id: "CREW_007",
+          name: "Fatima Al-Mansoori",
+          rank: "Senior Flight Attendant",
+          role: targetRole,
+          rating: "Cabin Safety Certified",
+          availability: "Available",
+          location: "DXB",
+          score: 91,
+          experience: "9 years",
+          qualifications: ["Safety Instructor", "First Aid", "Multi-lingual"]
+        },
+        {
+          id: "CREW_008",
+          name: "Maria Santos",
+          rank: "Flight Attendant",
+          role: targetRole,
+          rating: "Service Excellence Certified",
+          availability: "Available",
+          location: "DXB",
+          score: 87,
+          experience: "4 years",
+          qualifications: ["Customer Service", "Emergency Response"]
+        },
+        {
+          id: "CREW_009",
+          name: "Aisha Khan",
+          rank: "Flight Attendant",
+          role: targetRole,
+          rating: "Cabin Crew Certified",
+          availability: "Available",
+          location: "SHJ",
+          score: 84,
+          experience: "3 years",
+          qualifications: ["Safety Procedures", "Food Service"]
+        }
+      ]
+    };
+
+    // Determine which pool to use based on role
+    let availableCrew = [];
+    
+    if (roleNormalized.includes('captain') || roleNormalized.includes('capt')) {
+      availableCrew = crewPools.captain;
+    } else if (roleNormalized.includes('first officer') || roleNormalized.includes('f/o') || roleNormalized.includes('fo')) {
+      availableCrew = crewPools.first_officer;
+    } else if (roleNormalized.includes('flight attendant') || roleNormalized.includes('cabin') || roleNormalized.includes('fa')) {
+      availableCrew = crewPools.cabin_crew;
+    } else {
+      // Default to captain pool if role is unclear
+      availableCrew = crewPools.captain;
+    }
+
+    // Filter out the current crew member if editing
+    if (excludeName) {
+      availableCrew = availableCrew.filter(crew => crew.name !== excludeName);
+    }
+
+    return availableCrew;
+  };
+
   const getConfirmationMessage = (option) => {
     if (!option.impact_area || !Array.isArray(option.impact_area)) {
       return `Are you sure you want to execute "${option.title}"? This action will submit the recovery plan for approval.`;
@@ -2037,12 +2181,34 @@ export function ComparisonMatrix({
                               {crewMember.replacedCrew && crewMember.assignedAt ? (
                                 <div className="space-y-4">
                                   {/* Header for swap indication */}
-                                  <div className="flex items-center gap-2 p-2 bg-blue-100 rounded-md border border-blue-200">
-                                    <ArrowRight className="h-4 w-4 text-blue-600" />
-                                    <span className="text-sm font-medium text-blue-800">Crew Assignment Updated</span>
-                                    <Badge variant="outline" className="text-xs bg-white">
-                                      {new Date(crewMember.assignedAt).toLocaleTimeString()}
-                                    </Badge>
+                                  <div className="flex items-center justify-between p-2 bg-blue-100 rounded-md border border-blue-200">
+                                    <div className="flex items-center gap-2">
+                                      <ArrowRight className="h-4 w-4 text-blue-600" />
+                                      <span className="text-sm font-medium text-blue-800">Crew Assignment Updated</span>
+                                      <Badge variant="outline" className="text-xs bg-white">
+                                        {new Date(crewMember.assignedAt).toLocaleTimeString()}
+                                      </Badge>
+                                    </div>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      className="border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
+                                      onClick={() => {
+                                        setSelectedCrewForSwap({
+                                          ...crewMember,
+                                          originalIndex: index,
+                                          isEditing: true
+                                        });
+                                        // Generate available crew for the same role
+                                        const currentRole = crewMember.type || crewMember.role || crewMember.position;
+                                        const filteredCrew = generateAvailableCrewForRole(currentRole, crewMember.name);
+                                        setAvailableCrewForSwap(filteredCrew);
+                                        setShowCrewSwapDialog(true);
+                                      }}
+                                    >
+                                      <Settings className="h-4 w-4 mr-2" />
+                                      Edit
+                                    </Button>
                                   </div>
                                   
                                   {/* Side by side comparison */}
@@ -2066,7 +2232,7 @@ export function ComparisonMatrix({
                                     <div className="p-3 bg-green-50 rounded-lg border border-green-200">
                                       <div className="flex items-center gap-2 mb-2">
                                         <CheckCircle className="h-4 w-4 text-green-500" />
-                                        <span className="text-sm font-medium text-green-700">New Assignment</span>
+                                        <span className="text-sm font-medium text-green-700">Current Assignment</span>
                                       </div>
                                       <div className="space-y-2">
                                         <h5 className="font-medium text-green-900">{crewMember.name}</h5>
@@ -2146,65 +2312,13 @@ export function ComparisonMatrix({
                                       onClick={() => {
                                         setSelectedCrewForSwap({
                                           ...crewMember,
-                                          originalIndex: index
+                                          originalIndex: index,
+                                          isEditing: false
                                         });
-                                        // Generate available crew for the same role with scoring
-                                        const sampleAvailableCrew = [
-                                          {
-                                            id: "CREW_001",
-                                            name: "Capt. Mohammed Al-Zaabi",
-                                            rank: "Captain",
-                                            role: crewMember.type || crewMember.role || crewMember.position,
-                                            rating: "B737/A320 Type Rating",
-                                            availability: "Available",
-                                            location: "DXB",
-                                            score: 95,
-                                            experience: "15 years",
-                                            qualifications: ["B737", "A320", "Emergency Response"]
-                                          },
-                                          {
-                                            id: "CREW_002", 
-                                            name: "Capt. Sarah Mitchell",
-                                            rank: "Captain",
-                                            role: crewMember.type || crewMember.role || crewMember.position,
-                                            rating: "B737/MAX Type Rating",
-                                            availability: "Available",
-                                            location: "DXB",
-                                            score: 92,
-                                            experience: "12 years",
-                                            qualifications: ["B737 MAX", "ETOPS", "Training Captain"]
-                                          },
-                                          {
-                                            id: "CREW_003",
-                                            name: "F/O Ahmed Hassan",
-                                            rank: "First Officer",
-                                            role: crewMember.type || crewMember.role || crewMember.position,
-                                            rating: "B737/MAX Type Rating",
-                                            availability: "Available",
-                                            location: "SHJ",
-                                            score: 88,
-                                            experience: "8 years",
-                                            qualifications: ["B737", "B737 MAX", "Multi-Engine"]
-                                          },
-                                          {
-                                            id: "CREW_004",
-                                            name: "F/O Priya Sharma",
-                                            rank: "First Officer",
-                                            role: crewMember.type || crewMember.role || crewMember.position,
-                                            rating: "A320 Type Rating",
-                                            availability: "Available",
-                                            location: "DXB",
-                                            score: 85,
-                                            experience: "6 years",
-                                            qualifications: ["A320", "A321", "Glass Cockpit"]
-                                          }
-                                        ].filter(crew => {
-                                          const currentRole = (crewMember.type || crewMember.role || crewMember.position).toLowerCase();
-                                          const crewRole = crew.role.toLowerCase();
-                                          return crewRole.includes(currentRole) || currentRole.includes(crewRole);
-                                        });
-                                        
-                                        setAvailableCrewForSwap(sampleAvailableCrew);
+                                        // Generate available crew for the same role with role-based filtering
+                                        const currentRole = crewMember.type || crewMember.role || crewMember.position;
+                                        const filteredCrew = generateAvailableCrewForRole(currentRole, crewMember.name);
+                                        setAvailableCrewForSwap(filteredCrew);
                                         setShowCrewSwapDialog(true);
                                       }}
                                     >
@@ -2990,18 +3104,28 @@ export function ComparisonMatrix({
 
       {/* Crew Swap Dialog */}
       <Dialog open={showCrewSwapDialog} onOpenChange={setShowCrewSwapDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-flydubai-blue" />
-              Crew Assignment - Replace {selectedCrewForSwap?.name}
+              {selectedCrewForSwap?.isEditing ? 'Edit' : 'Replace'} Crew Assignment - {selectedCrewForSwap?.name}
             </DialogTitle>
+            <div className="text-sm text-muted-foreground">
+              Role: {selectedCrewForSwap?.type || selectedCrewForSwap?.role || selectedCrewForSwap?.position}
+              {selectedCrewForSwap?.isEditing && (
+                <Badge className="ml-2 bg-orange-100 text-orange-700 border-orange-300">
+                  Editing Assignment
+                </Badge>
+              )}
+            </div>
           </DialogHeader>
           
           {selectedCrewForSwap && (
             <div className="space-y-6">
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="font-medium text-blue-800 mb-2">Current Assignment</h4>
+                <h4 className="font-medium text-blue-800 mb-2">
+                  {selectedCrewForSwap.isEditing ? 'Current Assignment' : 'Assignment to Replace'}
+                </h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <span className="text-sm text-blue-700 font-medium">Name:</span>
@@ -3021,14 +3145,43 @@ export function ComparisonMatrix({
                     <span className="text-sm text-blue-700 font-medium">Location:</span>
                     <p className="text-blue-900">{selectedCrewForSwap.location || "DXB"}</p>
                   </div>
+                  {selectedCrewForSwap.experience && (
+                    <div>
+                      <span className="text-sm text-blue-700 font-medium">Experience:</span>
+                      <p className="text-blue-900">{selectedCrewForSwap.experience}</p>
+                    </div>
+                  )}
+                  {selectedCrewForSwap.score && (
+                    <div>
+                      <span className="text-sm text-blue-700 font-medium">Performance Score:</span>
+                      <p className="text-blue-900">{selectedCrewForSwap.score}/100</p>
+                    </div>
+                  )}
                 </div>
+                {selectedCrewForSwap.qualifications && Array.isArray(selectedCrewForSwap.qualifications) && (
+                  <div className="mt-3">
+                    <span className="text-sm text-blue-700 font-medium">Qualifications:</span>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {selectedCrewForSwap.qualifications.map((qual, qIndex) => (
+                        <Badge key={qIndex} variant="outline" className="text-xs bg-white">
+                          {qual}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               
               <div className="space-y-4">
-                <h4 className="font-medium text-gray-800 flex items-center gap-2">
-                  <UserCheck className="h-4 w-4" />
-                  Available Crew Members
-                </h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-gray-800 flex items-center gap-2">
+                    <UserCheck className="h-4 w-4" />
+                    Available Crew Members ({selectedCrewForSwap.type || selectedCrewForSwap.role || selectedCrewForSwap.position})
+                  </h4>
+                  <Badge variant="outline" className="text-xs">
+                    {availableCrewForSwap.length} matches found
+                  </Badge>
+                </div>
                 
                 {availableCrewForSwap.length > 0 ? (
                   <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -3037,20 +3190,18 @@ export function ComparisonMatrix({
                         key={index}
                         className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                       >
-                        <div className="flex-1 grid grid-cols-4 gap-4">
+                        <div className="flex-1 grid grid-cols-5 gap-4">
                           <div>
                             <h5 className="font-medium text-gray-900">{crewMember.name}</h5>
                             <p className="text-sm text-gray-600">{crewMember.rank}</p>
                           </div>
                           <div>
-                            <span className="text-xs text-gray-500">Availability</span>
-                            <Badge className={`block mt-1 w-fit ${
-                              crewMember.availability === "Available" 
-                                ? "bg-green-100 text-green-700" 
-                                : "bg-yellow-100 text-yellow-700"
-                            }`}>
-                              {crewMember.availability}
-                            </Badge>
+                            <span className="text-xs text-gray-500">Experience</span>
+                            <p className="text-sm font-medium text-gray-700">{crewMember.experience}</p>
+                          </div>
+                          <div>
+                            <span className="text-xs text-gray-500">Location</span>
+                            <p className="text-sm font-medium text-gray-700">{crewMember.location}</p>
                           </div>
                           <div>
                             <span className="text-xs text-gray-500">Score</span>
@@ -3065,6 +3216,15 @@ export function ComparisonMatrix({
                             </div>
                           </div>
                           <div className="text-right">
+                            <div className="flex flex-col gap-1 mb-2">
+                              <Badge className={`text-xs w-fit ${
+                                crewMember.availability === "Available" 
+                                  ? "bg-green-100 text-green-700" 
+                                  : "bg-yellow-100 text-yellow-700"
+                              }`}>
+                                {crewMember.availability}
+                              </Badge>
+                            </div>
                             <Button
                               size="sm"
                               className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
@@ -3073,12 +3233,14 @@ export function ComparisonMatrix({
                                 if (selectedOptionDetails && selectedOptionDetails.rotation_plan) {
                                   const updatedCrew = [...(selectedOptionDetails.rotation_plan.crew || selectedOptionDetails.rotation_plan.crewData || [])];
                                   if (selectedCrewForSwap.originalIndex !== undefined) {
+                                    const originalCrewName = selectedCrewForSwap.replacedCrew || selectedCrewForSwap.name;
+                                    
                                     updatedCrew[selectedCrewForSwap.originalIndex] = {
                                       ...updatedCrew[selectedCrewForSwap.originalIndex],
                                       name: crewMember.name,
-                                      type: crewMember.rank,
-                                      role: crewMember.rank,
-                                      position: crewMember.rank,
+                                      type: crewMember.role,
+                                      role: crewMember.role,
+                                      position: crewMember.role,
                                       status: "Assigned",
                                       availability: "Assigned",
                                       location: crewMember.location,
@@ -3086,7 +3248,8 @@ export function ComparisonMatrix({
                                       experience: crewMember.experience,
                                       qualifications: crewMember.qualifications,
                                       assignedAt: new Date().toISOString(),
-                                      replacedCrew: selectedCrewForSwap.name
+                                      replacedCrew: originalCrewName,
+                                      rating: crewMember.rating
                                     };
                                     
                                     // Update the state
@@ -3107,7 +3270,8 @@ export function ComparisonMatrix({
                                   originalCrew: selectedCrewForSwap,
                                   newCrew: crewMember,
                                   timestamp: new Date().toISOString(),
-                                  reason: 'Manual crew swap via interface'
+                                  reason: selectedCrewForSwap.isEditing ? 'Crew assignment edited via interface' : 'Manual crew swap via interface',
+                                  isEdit: selectedCrewForSwap.isEditing
                                 };
                                 
                                 console.log("Crew assignment updated:", assignmentUpdate);
@@ -3117,7 +3281,7 @@ export function ComparisonMatrix({
                               }}
                             >
                               <UserCheck className="h-4 w-4 mr-2" />
-                              Assign
+                              {selectedCrewForSwap.isEditing ? 'Update' : 'Assign'}
                             </Button>
                           </div>
                         </div>
@@ -3127,7 +3291,7 @@ export function ComparisonMatrix({
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No available crew members found for this role</p>
+                    <p>No available crew members found for role: {selectedCrewForSwap.type || selectedCrewForSwap.role || selectedCrewForSwap.position}</p>
                     <p className="text-xs mt-1">Please contact crew scheduling for alternatives</p>
                   </div>
                 )}
