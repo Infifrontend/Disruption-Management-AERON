@@ -862,7 +862,7 @@ export function PendingSolutions() {
     const hasPassengerData = passengerData && (Array.isArray(passengerData) ? passengerData.length > 0 : Object.keys(passengerData).length > 0);
 
     return (
-      <div className="space-y-6">
+      <React.Fragment>
         <Tabs value={activeOptionTab} onValueChange={setActiveOptionTab}>
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -1598,83 +1598,1079 @@ export function PendingSolutions() {
               </Card>
             </TabsContent>
           </Tabs>
+        </React.Fragment>
+    );
+  };
+
+  const getPassengerTabContent = () => {
+    // This is a placeholder component, you can expand it with actual passenger data rendering
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Passenger Reaccommodation Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p>Passenger reaccommodation information will be displayed here.</p>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="container mx-auto p-4">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold mb-4 md:mb-0">
+          Pending Recovery Solutions
+        </h1>
+        <div className="flex items-center gap-4">
+          <Input
+            type="search"
+            placeholder="Search by Flight Number or Plan ID..."
+            className="w-64"
+            value={filters.flightNumber || filters.planId}
+            onChange={(e) => {
+              setFilters({ ...filters, flightNumber: e.target.value, planId: e.target.value });
+            }}
+          />
+          <Button variant="outline" onClick={refreshPlans} disabled={loading}>
+            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            Refresh
+          </Button>
+        </div>
+      </div>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-5">
+          <TabsTrigger value="all">All ({tabCounts.all})</TabsTrigger>
+          <TabsTrigger value="pending">Pending ({tabCounts.pending})</TabsTrigger>
+          <TabsTrigger value="approved">Approved ({tabCounts.approved})</TabsTrigger>
+          <TabsTrigger value="rejected">Rejected ({tabCounts.rejected})</TabsTrigger>
+          <TabsTrigger value="critical">Critical ({tabCounts.critical})</TabsTrigger>
+        </TabsList>
+
+        <div className="my-6 flex justify-between items-center">
+          <div className="flex gap-4">
+            <Select
+              onValueChange={(value) => setFilters({ ...filters, priority: value })}
+              defaultValue={filters.priority}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priorities</SelectItem>
+                <SelectItem value="Critical">Critical</SelectItem>
+                <SelectItem value="High">High</SelectItem>
+                <SelectItem value="Medium">Medium</SelectItem>
+                <SelectItem value="Low">Low</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              onValueChange={(value) => setFilters({ ...filters, submitter: value })}
+              defaultValue={filters.submitter}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by Submitter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Submitters</SelectItem>
+                <SelectItem value="AERON">AERON System</SelectItem>
+                <SelectItem value="OpsManager">Operations Manager</SelectItem>
+                <SelectItem value="CrewDesk">Crew Desk</SelectItem>
+                {/* Add more submitters as needed */}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex gap-4">
+            <Select
+              onValueChange={(value) => setSortBy(value)}
+              defaultValue={sortBy}
+            >
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="submitted">Date Submitted</SelectItem>
+                <SelectItem value="priority">Priority</SelectItem>
+                <SelectItem value="cost">Estimated Cost</SelectItem>
+                <SelectItem value="confidence">Confidence</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+            >
+              {sortOrder === "asc" ? (
+                <ChevronRight className="h-4 w-4 rotate-90" />
+              ) : (
+                <ChevronRight className="h-4 w-4 -rotate-90" />
+              )}
+            </Button>
+          </div>
         </div>
 
-        <Dialog
-          open={!!selectedPlan}
-          onOpenChange={() => setSelectedPlan(null)}
-        >
-          <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            {selectedPlan && (
-              <>
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    Recovery Plan Details
-                  </DialogTitle>
-                  <DialogDescription>
-                    Detailed analysis of recovery options for{" "}
-                    {selectedPlan.flightNumber || "N/A"} • {selectedPlan.route || "N/A"}
-                  </DialogDescription>
-                </DialogHeader>
+        <TabsContent value="all">
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Clock3 className="h-8 w-8 animate-spin text-muted-foreground mr-3" />
+              <span className="text-muted-foreground">Loading solutions...</span>
+            </div>
+          ) : sortedPlans.length === 0 ? (
+            <div className="text-center py-16">
+              <Info className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <h3 className="text-xl font-semibold mb-2">No Pending Solutions Found</h3>
+              <p className="text-muted-foreground">
+                There are no pending recovery solutions matching your current filters.
+              </p>
+            </div>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Pending Recovery Solutions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Flight</TableHead>
+                      <TableHead>Route</TableHead>
+                      <TableHead>Submitter</TableHead>
+                      <TableHead>Submitted At</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Est. Cost</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedPlans.map((plan) => (
+                      <React.Fragment key={plan.id}>
+                        <TableRow>
+                          <TableCell className="font-medium">
+                            {plan.flightNumber}
+                          </TableCell>
+                          <TableCell>{plan.route}</TableCell>
+                          <TableCell>{plan.submitterName}</TableCell>
+                          <TableCell>{formatIST(plan.submittedAt)}</TableCell>
+                          <TableCell>
+                            <Badge className={getPriorityColor(plan.priority)}>
+                              {plan.priority}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(plan.status)}>
+                              {plan.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            AED {plan.estimatedCost.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2 justify-end">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleViewDetails(plan)}
+                                disabled={loadingDetails === plan.id}
+                              >
+                                {loadingDetails === plan.id ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </Button>
+                              {plan.status === "Pending Approval" && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    className="bg-green-600 hover:bg-green-700"
+                                    onClick={() => handleApprove(plan.id)}
+                                  >
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleReject(plan.id)}
+                                  >
+                                    Reject
+                                  </Button>
+                                </>
+                              )}
+                              {plan.status === "Approved" && (
+                                <Button size="sm" onClick={() => handleExecute(plan)}>
+                                  Execute
+                                </Button>
+                              )}
+                              {(plan.status === "Rejected" || plan.status === "Pending") && (
+                                <Button variant="secondary" size="sm" onClick={() => handleViewDetails(plan)}>
+                                  View Details
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </React.Fragment>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
-                <Tabs defaultValue="overview" className="w-full">
-                  <TabsList
-                    className={`grid w-full ${
-                      selectedPlan.hasCrewData && selectedPlan.hasPassengerData
-                        ? "grid-cols-5"
-                        : selectedPlan.hasCrewData || selectedPlan.hasPassengerData
-                          ? "grid-cols-4"
-                          : "grid-cols-3"
-                    }`}
-                  >
-                    <TabsTrigger value="overview">
-                      Recovery Options Overview
+        <TabsContent value="pending">
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Clock3 className="h-8 w-8 animate-spin text-muted-foreground mr-3" />
+              <span className="text-muted-foreground">Loading pending solutions...</span>
+            </div>
+          ) : sortedPlans.filter((p) => {
+              if (!p) return false;
+              const status = p.status ? p.status.trim().toLowerCase() : "pending";
+              return ["pending approval", "under review", "pending"].includes(status);
+            }).length === 0 ? (
+            <div className="text-center py-16">
+              <Info className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <h3 className="text-xl font-semibold mb-2">No Pending Solutions</h3>
+              <p className="text-muted-foreground">
+                There are no solutions currently in a pending state.
+              </p>
+            </div>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Pending Recovery Solutions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Flight</TableHead>
+                      <TableHead>Route</TableHead>
+                      <TableHead>Submitter</TableHead>
+                      <TableHead>Submitted At</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Est. Cost</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedPlans.filter((p) => {
+                        if (!p) return false;
+                        const status = p.status ? p.status.trim().toLowerCase() : "pending";
+                        return ["pending approval", "under review", "pending"].includes(status);
+                      }).map((plan) => (
+                      <React.Fragment key={plan.id}>
+                        <TableRow>
+                          <TableCell className="font-medium">
+                            {plan.flightNumber}
+                          </TableCell>
+                          <TableCell>{plan.route}</TableCell>
+                          <TableCell>{plan.submitterName}</TableCell>
+                          <TableCell>{formatIST(plan.submittedAt)}</TableCell>
+                          <TableCell>
+                            <Badge className={getPriorityColor(plan.priority)}>
+                              {plan.priority}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(plan.status)}>
+                              {plan.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            AED {plan.estimatedCost.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2 justify-end">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleViewDetails(plan)}
+                                disabled={loadingDetails === plan.id}
+                              >
+                                {loadingDetails === plan.id ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </Button>
+                              {plan.status === "Pending Approval" && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    className="bg-green-600 hover:bg-green-700"
+                                    onClick={() => handleApprove(plan.id)}
+                                  >
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleReject(plan.id)}
+                                  >
+                                    Reject
+                                  </Button>
+                                </>
+                              )}
+                               {plan.status === "Approved" && (
+                                <Button size="sm" onClick={() => handleExecute(plan)}>
+                                  Execute
+                                </Button>
+                              )}
+                              {(plan.status === "Rejected" || plan.status === "Pending") && (
+                                <Button variant="secondary" size="sm" onClick={() => handleViewDetails(plan)}>
+                                  View Details
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </React.Fragment>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="approved">
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Clock3 className="h-8 w-8 animate-spin text-muted-foreground mr-3" />
+              <span className="text-muted-foreground">Loading approved solutions...</span>
+            </div>
+          ) : sortedPlans.filter((p) => {
+              if (!p) return false;
+              const status = p.status ? p.status.trim().toLowerCase() : "";
+              return status === "approved";
+            }).length === 0 ? (
+            <div className="text-center py-16">
+              <Info className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <h3 className="text-xl font-semibold mb-2">No Approved Solutions</h3>
+              <p className="text-muted-foreground">
+                There are no recovery solutions that have been approved.
+              </p>
+            </div>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Approved Recovery Solutions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Flight</TableHead>
+                      <TableHead>Route</TableHead>
+                      <TableHead>Submitter</TableHead>
+                      <TableHead>Submitted At</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Est. Cost</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedPlans.filter((p) => {
+                        if (!p) return false;
+                        const status = p.status ? p.status.trim().toLowerCase() : "";
+                        return status === "approved";
+                      }).map((plan) => (
+                      <React.Fragment key={plan.id}>
+                        <TableRow>
+                          <TableCell className="font-medium">
+                            {plan.flightNumber}
+                          </TableCell>
+                          <TableCell>{plan.route}</TableCell>
+                          <TableCell>{plan.submitterName}</TableCell>
+                          <TableCell>{formatIST(plan.submittedAt)}</TableCell>
+                          <TableCell>
+                            <Badge className={getPriorityColor(plan.priority)}>
+                              {plan.priority}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(plan.status)}>
+                              {plan.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            AED {plan.estimatedCost.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2 justify-end">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleViewDetails(plan)}
+                                disabled={loadingDetails === plan.id}
+                              >
+                                {loadingDetails === plan.id ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </Button>
+                               {plan.status === "Approved" && (
+                                <Button size="sm" onClick={() => handleExecute(plan)}>
+                                  Execute
+                                </Button>
+                              )}
+                               {plan.status === "Rejected" && (
+                                <Button variant="secondary" size="sm" onClick={() => handleViewDetails(plan)}>
+                                  View Details
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </React.Fragment>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="rejected">
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Clock3 className="h-8 w-8 animate-spin text-muted-foreground mr-3" />
+              <span className="text-muted-foreground">Loading rejected solutions...</span>
+            </div>
+          ) : sortedPlans.filter((p) => {
+              if (!p) return false;
+              const status = p.status ? p.status.trim().toLowerCase() : "";
+              return status === "rejected";
+            }).length === 0 ? (
+            <div className="text-center py-16">
+              <Info className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <h3 className="text-xl font-semibold mb-2">No Rejected Solutions</h3>
+              <p className="text-muted-foreground">
+                There are no recovery solutions that have been rejected.
+              </p>
+            </div>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Rejected Recovery Solutions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Flight</TableHead>
+                      <TableHead>Route</TableHead>
+                      <TableHead>Submitter</TableHead>
+                      <TableHead>Submitted At</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Est. Cost</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedPlans.filter((p) => {
+                        if (!p) return false;
+                        const status = p.status ? p.status.trim().toLowerCase() : "";
+                        return status === "rejected";
+                      }).map((plan) => (
+                      <React.Fragment key={plan.id}>
+                        <TableRow>
+                          <TableCell className="font-medium">
+                            {plan.flightNumber}
+                          </TableCell>
+                          <TableCell>{plan.route}</TableCell>
+                          <TableCell>{plan.submitterName}</TableCell>
+                          <TableCell>{formatIST(plan.submittedAt)}</TableCell>
+                          <TableCell>
+                            <Badge className={getPriorityColor(plan.priority)}>
+                              {plan.priority}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(plan.status)}>
+                              {plan.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            AED {plan.estimatedCost.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2 justify-end">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleViewDetails(plan)}
+                                disabled={loadingDetails === plan.id}
+                              >
+                                {loadingDetails === plan.id ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </Button>
+                              {plan.status === "Rejected" && (
+                                <Button variant="secondary" size="sm" onClick={() => handleViewDetails(plan)}>
+                                  View Details
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </React.Fragment>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="critical">
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Clock3 className="h-8 w-8 animate-spin text-muted-foreground mr-3" />
+              <span className="text-muted-foreground">Loading critical solutions...</span>
+            </div>
+          ) : sortedPlans.filter((p) => {
+              if (!p) return false;
+              return p.priority && ["Critical", "High"].includes(p.priority);
+            }).length === 0 ? (
+            <div className="text-center py-16">
+              <Info className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+              <h3 className="text-xl font-semibold mb-2">No Critical Solutions</h3>
+              <p className="text-muted-foreground">
+                There are no solutions with critical or high priority.
+              </p>
+            </div>
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Critical & High Priority Recovery Solutions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Flight</TableHead>
+                      <TableHead>Route</TableHead>
+                      <TableHead>Submitter</TableHead>
+                      <TableHead>Submitted At</TableHead>
+                      <TableHead>Priority</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead className="text-right">Est. Cost</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedPlans.filter((p) => {
+                        if (!p) return false;
+                        return p.priority && ["Critical", "High"].includes(p.priority);
+                      }).map((plan) => (
+                      <React.Fragment key={plan.id}>
+                        <TableRow>
+                          <TableCell className="font-medium">
+                            {plan.flightNumber}
+                          </TableCell>
+                          <TableCell>{plan.route}</TableCell>
+                          <TableCell>{plan.submitterName}</TableCell>
+                          <TableCell>{formatIST(plan.submittedAt)}</TableCell>
+                          <TableCell>
+                            <Badge className={getPriorityColor(plan.priority)}>
+                              {plan.priority}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(plan.status)}>
+                              {plan.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            AED {plan.estimatedCost.toLocaleString()}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2 justify-end">
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => handleViewDetails(plan)}
+                                disabled={loadingDetails === plan.id}
+                              >
+                                {loadingDetails === plan.id ? (
+                                  <RefreshCw className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </Button>
+                              {plan.status === "Pending Approval" && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    className="bg-green-600 hover:bg-green-700"
+                                    onClick={() => handleApprove(plan.id)}
+                                  >
+                                    Approve
+                                  </Button>
+                                  <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={() => handleReject(plan.id)}
+                                  >
+                                    Reject
+                                  </Button>
+                                </>
+                              )}
+                               {plan.status === "Approved" && (
+                                <Button size="sm" onClick={() => handleExecute(plan)}>
+                                  Execute
+                                </Button>
+                              )}
+                              {(plan.status === "Rejected" || plan.status === "Pending") && (
+                                <Button variant="secondary" size="sm" onClick={() => handleViewDetails(plan)}>
+                                  View Details
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      </React.Fragment>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Dialog for viewing plan details */}
+      <Dialog
+        open={!!selectedPlan}
+        onOpenChange={() => setSelectedPlan(null)}
+      >
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          {selectedPlan && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Recovery Plan Details
+                </DialogTitle>
+                <DialogDescription>
+                  Detailed analysis of recovery options for{" "}
+                  {selectedPlan.flightNumber || "N/A"} • {selectedPlan.route || "N/A"}
+                </DialogDescription>
+              </DialogHeader>
+
+              <Tabs defaultValue="overview" className="w-full">
+                <TabsList
+                  className={`grid w-full ${
+                    selectedPlan.hasCrewData && selectedPlan.hasPassengerData
+                      ? "grid-cols-5"
+                      : selectedPlan.hasCrewData || selectedPlan.hasPassengerData
+                        ? "grid-cols-4"
+                        : "grid-cols-3"
+                  }`}
+                >
+                  <TabsTrigger value="overview">
+                    Recovery Options Overview
+                  </TabsTrigger>
+                  <TabsTrigger value="flight">Flight Details</TabsTrigger>
+                  <TabsTrigger value="impact">Impact Analysis</TabsTrigger>
+                  {selectedPlan.hasCrewData && (
+                    <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
+                  )}
+                  {selectedPlan.hasPassengerData && (
+                    <TabsTrigger value="passenger-reaccommodation">
+                      Passenger Re-accommodation
                     </TabsTrigger>
-                    <TabsTrigger value="flight">Flight Details</TabsTrigger>
-                    <TabsTrigger value="impact">Impact Analysis</TabsTrigger>
-                    {selectedPlan.hasCrewData && (
-                      <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
-                    )}
-                    {selectedPlan.hasPassengerData && (
-                      <TabsTrigger value="passenger-reaccommodation">
-                        Passenger Re-accommodation
-                      </TabsTrigger>
-                    )}
-                  </TabsList>
+                  )}
+                </TabsList>
 
-                  <TabsContent value="overview" className="space-y-4">
+                <TabsContent value="overview" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Target className="h-5 w-5" />
+                        Recovery Options Overview
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground">
+                        Available recovery options for {selectedPlan.flightNumber} •{" "}
+                        {selectedPlan.route}
+                      </p>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedPlan.matchingOption && (
+                        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Badge className="bg-blue-100 text-blue-700">
+                              Selected Option
+                            </Badge>
+                            <h4 className="font-medium text-blue-800">
+                              {selectedPlan.matchingOption.title}
+                            </h4>
+                          </div>
+                          <p className="text-sm text-blue-800">
+                            {selectedPlan.matchingOption.description ||
+                              "Recovery option details"}
+                          </p>
+                        </div>
+                      )}
+
+                      <div className="space-y-4">
+                        <div className="space-y-3">
+                          {selectedPlan.recoveryOptions &&
+                          selectedPlan.recoveryOptions.length > 0 ? (
+                            selectedPlan.recoveryOptions.map(
+                              (option, index) => {
+                                // Check if this option is selected by matching option_id from pending solution
+                                const isSelected =
+                                  selectedPlan.optionId && 
+                                  (option.id === selectedPlan.optionId || 
+                                   option.option_id === selectedPlan.optionId ||
+                                   String(option.id) === String(selectedPlan.optionId) ||
+                                   String(option.option_id) === String(selectedPlan.optionId));
+
+                                return (
+                                  <Card
+                                    key={option.id || index}
+                                    className={
+                                      isSelected
+                                        ? "border-orange-200 bg-orange-50"
+                                        : "border-gray-200"
+                                    }
+                                  >
+                                    <CardContent className="p-4">
+                                      <div className="flex justify-between items-start mb-2">
+                                        <h5
+                                          className={`font-medium ${isSelected ? "text-orange-800" : ""}`}
+                                        >
+                                          {option.title}
+                                        </h5>
+                                        <div className="flex gap-2">
+                                          {isSelected && (
+                                            <Badge className="bg-orange-100 text-orange-700">
+                                              Selected
+                                            </Badge>
+                                          )}
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="text-xs"
+                                            onClick={() =>
+                                              handleViewOptionDetails(
+                                                option,
+                                                selectedPlan,
+                                              )
+                                            }
+                                          >
+                                            View Option
+                                          </Button>
+                                        </div>
+                                      </div>
+                                      <p
+                                        className={`text-sm mb-3 ${isSelected ? "text-orange-700" : "text-gray-600"}`}
+                                      >
+                                        {option.description ||
+                                          "Recovery option description"}
+                                      </p>
+                                      <div className="grid grid-cols-4 gap-4 text-sm">
+                                        <div>
+                                          <span className="text-gray-600">
+                                            Cost:
+                                          </span>
+                                          <div className="font-medium">
+                                            {option.cost
+                                              ? typeof option.cost === "string"
+                                                ? option.cost
+                                                : `AED ${option.cost.toLocaleString()}`
+                                              : `AED ${(option.estimated_cost || 0).toLocaleString()}`}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <span className="text-gray-600">
+                                            Timeline:
+                                          </span>
+                                          <div className="font-medium">
+                                            {option.timeline || "TBD"}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <span className="text-gray-600">
+                                            Confidence:
+                                          </span>
+                                          <div className="font-medium">
+                                            {option.confidence || 85}%
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <span className="text-gray-600">
+                                            Impact:
+                                          </span>
+                                          <div className="font-medium">
+                                            {option.impact || "Medium"}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      {option.advantages &&
+                                      Array.isArray(option.advantages) && (
+                                        <div className="flex items-center gap-4 mt-3 text-sm">
+                                          <span>
+                                            Advantages:{" "}
+                                            <strong>
+                                              {option.advantages
+                                                .slice(0, 2)
+                                                .join(", ")}
+                                            </strong>
+                                          </span>
+                                        </div>
+                                      )}
+                                      {isSelected && option.metrics && (
+                                        <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                                          <span>Metrics:</span>
+                                          {option.metrics.otpScore && (
+                                            <span>
+                                              OTP:{" "}
+                                              <strong>
+                                                {option.metrics.otpScore}%
+                                              </strong>
+                                            </span>
+                                          )}
+                                          {option.metrics.networkImpact && (
+                                            <span>
+                                              Network Impact:{" "}
+                                              <strong>
+                                                {option.metrics.networkImpact}
+                                              </strong>
+                                            </span>
+                                          )}
+                                          {option.metrics.regulatoryRisk && (
+                                            <span>
+                                              Risk:{" "}
+                                              <strong>
+                                                {option.metrics.regulatoryRisk}
+                                              </strong>
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                    </CardContent>
+                                  </Card>
+                                );
+                              })
+                          ) : (
+                            <Card className="border-gray-200">
+                              <CardContent className="p-4 text-center">
+                                <div className="text-gray-500">
+                                  <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                  <p>No recovery options available</p>
+                                  <p className="text-sm">
+                                    Recovery options may still be generating for
+                                    this disruption.
+                                  </p>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="flight" className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
                       <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Target className="h-5 w-5" />
-                          Recovery Options Overview
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          Available recovery options for {selectedPlan.flightNumber} •{" "}
-                          {selectedPlan.route}
-                        </p>
+                        <CardTitle>Flight Information</CardTitle>
                       </CardHeader>
-                      <CardContent>
-                        {selectedPlan.matchingOption && (
-                          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge className="bg-blue-100 text-blue-700">
-                                Selected Option
-                              </Badge>
-                              <h4 className="font-medium text-blue-800">
-                                {selectedPlan.matchingOption.title}
-                              </h4>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-600">Flight Number:</span>
+                            <div className="font-medium">
+                              {selectedPlan.flightNumber || "N/A"}
                             </div>
-                            <p className="text-sm text-blue-800">
-                              {selectedPlan.matchingOption.description ||
-                                "Recovery option details"}
-                            </p>
                           </div>
-                        )}
+                          <div>
+                            <span className="text-gray-600">Route:</span>
+                            <div className="font-medium">
+                              {selectedPlan.route || "N/A"}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Aircraft:</span>
+                            <div className="font-medium">
+                              {selectedPlan.aircraft || "N/A"}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">
+                              Scheduled Departure:
+                            </span>
+                            <div className="font-medium">
+                              {selectedPlan.flightDetails?.scheduled_departure
+                                ? formatIST(
+                                    selectedPlan.flightDetails
+                                      .scheduled_departure,
+                                  )
+                                : "N/A"}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">
+                              Estimated Departure:
+                            </span>
+                            <div className="font-medium">
+                              {selectedPlan.flightDetails?.estimated_departure
+                                ? formatIST(
+                                    selectedPlan.flightDetails
+                                      .estimated_departure,
+                                  )
+                                : "N/A"}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Gate:</span>
+                            <div className="font-medium">
+                              {selectedPlan.flightDetails?.gate || "TBD"}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Terminal:</span>
+                            <div className="font-medium">
+                              {selectedPlan.flightDetails?.terminal || "TBD"}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Delay:</span>
+                            <div className="font-medium">
+                              {selectedPlan.estimatedDelay || 0} minutes
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                        <div className="space-y-4">
-                          <div className="space-y-3">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Disruption Details</CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-600">Reason:</span>
+                            <div className="font-medium text-red-600">
+                              {selectedPlan.disruptionReason || "Technical Issue"}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Severity:</span>
+                            <div className="font-medium">
+                              <Badge
+                                className={getPriorityColor(
+                                  selectedPlan.priority || "Medium",
+                                )}
+                              >
+                                {selectedPlan.priority || "Medium"}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">
+                              Affected Passengers:
+                            </span>
+                            <div className="font-medium">
+                              {selectedPlan.affectedPassengers || "N/A"}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Crew:</span>
+                            <div className="font-medium">
+                              {selectedPlan.flightDetails?.crew ||
+                                selectedPlan.assignedCrew?.length ||
+                                "N/A"}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Submitted by:</span>
+                            <div className="font-medium">
+                              {selectedPlan.submitterName ||
+                                selectedPlan.operationsUser ||
+                                "System"}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Submitted At:</span>
+                            <div className="font-medium">
+                              {formatIST(selectedPlan.submittedAt)}
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Current Status:</span>
+                            <div className="font-medium">
+                              <Badge
+                                className={getStatusColor(selectedPlan.status)}
+                              >
+                                {selectedPlan.status}
+                              </Badge>
+                            </div>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Plan ID:</span>
+                            <div className="font-medium text-blue-600">
+                              {selectedPlan.id}
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="impact" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5" />
+                        Option Comparison Matrix
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <table className="w-full border-collapse border border-gray-200">
+                          <thead>
+                            <tr className="bg-gray-50">
+                              <th className="border border-gray-200 p-3 text-left">
+                                Option
+                              </th>
+                              <th className="border border-gray-200 p-3 text-left">
+                                Cost (AED)
+                              </th>
+                              <th className="border border-gray-200 p-3 text-left">
+                                Timeline
+                              </th>
+                              <th className="border border-gray-200 p-3 text-left">
+                                Confidence
+                              </th>
+                              <th className="border border-gray-200 p-3 text-left">
+                                Impact
+                              </th>
+                              <th className="border border-gray-200 p-3 text-left">
+                                Status
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody>
                             {selectedPlan.recoveryOptions &&
                             selectedPlan.recoveryOptions.length > 0 ? (
                               selectedPlan.recoveryOptions.map(
@@ -1688,947 +2684,604 @@ export function PendingSolutions() {
                                      String(option.option_id) === String(selectedPlan.optionId));
 
                                   return (
-                                    <Card
+                                    <tr
                                       key={option.id || index}
-                                      className={
-                                        isSelected
-                                          ? "border-orange-200 bg-orange-50"
-                                          : "border-gray-200"
-                                      }
+                                      className={isSelected ? "bg-orange-50" : ""}
                                     >
-                                      <CardContent className="p-4">
-                                        <div className="flex justify-between items-start mb-2">
-                                          <h5
-                                            className={`font-medium ${isSelected ? "text-orange-800" : ""}`}
-                                          >
-                                            {option.title}
-                                          </h5>
-                                          <div className="flex gap-2">
-                                            {isSelected && (
-                                              <Badge className="bg-orange-100 text-orange-700">
-                                                Selected
-                                              </Badge>
-                                            )}
-                                            <Button
-                                              variant="outline"
-                                              size="sm"
-                                              className="text-xs"
-                                              onClick={() =>
-                                                handleViewOptionDetails(
-                                                  option,
-                                                  selectedPlan,
-                                                )
-                                              }
-                                            >
-                                              View Option
-                                            </Button>
-                                          </div>
+                                      <td className="border border-gray-200 p-3">
+                                        <div className="flex items-center gap-2">
+                                          <div
+                                            className={`w-2 h-2 rounded-full ${isSelected ? "bg-orange-500" : "bg-gray-400"}`}
+                                          ></div>
+                                          {option.title || `Option ${index + 1}`}
                                         </div>
-                                        <p
-                                          className={`text-sm mb-3 ${isSelected ? "text-orange-700" : "text-gray-600"}`}
-                                        >
-                                          {option.description ||
-                                            "Recovery option description"}
-                                        </p>
-                                        <div className="grid grid-cols-4 gap-4 text-sm">
-                                          <div>
-                                            <span className="text-gray-600">
-                                              Cost:
-                                            </span>
-                                            <div className="font-medium">
-                                              {option.cost
-                                                ? typeof option.cost === "string"
-                                                  ? option.cost
-                                                  : `AED ${option.cost.toLocaleString()}`
-                                                : `AED ${(option.estimated_cost || 0).toLocaleString()}`}
-                                            </div>
-                                          </div>
-                                          <div>
-                                            <span className="text-gray-600">
-                                              Timeline:
-                                            </span>
-                                            <div className="font-medium">
-                                              {option.timeline || "TBD"}
-                                            </div>
-                                          </div>
-                                          <div>
-                                            <span className="text-gray-600">
-                                              Confidence:
-                                            </span>
-                                            <div className="font-medium">
-                                              {option.confidence || 85}%
-                                            </div>
-                                          </div>
-                                          <div>
-                                            <span className="text-gray-600">
-                                              Impact:
-                                            </span>
-                                            <div className="font-medium">
-                                              {option.impact || "Medium"}
-                                            </div>
-                                          </div>
-                                        </div>
-                                        {option.advantages &&
-                                        Array.isArray(option.advantages) && (
-                                          <div className="flex items-center gap-4 mt-3 text-sm">
-                                            <span>
-                                              Advantages:{" "}
-                                              <strong>
-                                                {option.advantages
-                                                  .slice(0, 2)
-                                                  .join(", ")}
-                                              </strong>
-                                            </span>
-                                          </div>
+                                      </td>
+                                      <td className="border border-gray-200 p-3">
+                                        {option.cost
+                                          ? typeof option.cost === "string"
+                                            ? option.cost
+                                            : `AED ${option.cost.toLocaleString()}`
+                                          : `AED ${(option.estimated_cost || 0).toLocaleString()}`}
+                                      </td>
+                                      <td className="border border-gray-200 p-3">
+                                        {option.timeline || "TBD"}
+                                      </td>
+                                      <td className="border border-gray-200 p-3">
+                                        {option.confidence || 85}%
+                                      </td>
+                                      <td className="border border-gray-200 p-3">
+                                        {option.impact || "Medium"}
+                                      </td>
+                                      <td className="border border-gray-200 p-3">
+                                        {isSelected ? (
+                                          <Badge className="bg-orange-100 text-orange-700">
+                                            Selected
+                                          </Badge>
+                                        ) : (
+                                          <Badge variant="outline">
+                                            Available
+                                          </Badge>
                                         )}
-                                        {isSelected && option.metrics && (
-                                          <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                                            <span>Metrics:</span>
-                                            {option.metrics.otpScore && (
-                                              <span>
-                                                OTP:{" "}
-                                                <strong>
-                                                  {option.metrics.otpScore}%
-                                                </strong>
-                                              </span>
-                                            )}
-                                            {option.metrics.networkImpact && (
-                                              <span>
-                                                Network Impact:{" "}
-                                                <strong>
-                                                  {option.metrics.networkImpact}
-                                                </strong>
-                                              </span>
-                                            )}
-                                            {option.metrics.regulatoryRisk && (
-                                              <span>
-                                                Risk:{" "}
-                                                <strong>
-                                                  {option.metrics.regulatoryRisk}
-                                                </strong>
-                                              </span>
-                                            )}
-                                          </div>
-                                        )}
-                                      </CardContent>
-                                    </Card>
+                                      </td>
+                                    </tr>
                                   );
-                                })
+                                },
+                              )
                             ) : (
-                              <Card className="border-gray-200">
-                                <CardContent className="p-4 text-center">
-                                  <div className="text-gray-500">
-                                    <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                    <p>No recovery options available</p>
-                                    <p className="text-sm">
-                                      Recovery options may still be generating for
-                                      this disruption.
-                                    </p>
-                                  </div>
-                                </CardContent>
-                              </Card>
+                              <tr>
+                                <td
+                                  colSpan={6}
+                                  className="border border-gray-200 p-4 text-center text-gray-500"
+                                >
+                                  No recovery options data available
+                                </td>
+                              </tr>
                             )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </TabsContent>
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                  <TabsContent value="flight" className="space-y-6">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Flight Information</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-600">Flight Number:</span>
-                              <div className="font-medium">
-                                {selectedPlan.flightNumber || "N/A"}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Route:</span>
-                              <div className="font-medium">
-                                {selectedPlan.route || "N/A"}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Aircraft:</span>
-                              <div className="font-medium">
-                                {selectedPlan.aircraft || "N/A"}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">
-                                Scheduled Departure:
-                              </span>
-                              <div className="font-medium">
-                                {selectedPlan.flightDetails?.scheduled_departure
-                                  ? formatIST(
-                                      selectedPlan.flightDetails
-                                        .scheduled_departure,
-                                    )
-                                  : "N/A"}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">
-                                Estimated Departure:
-                              </span>
-                              <div className="font-medium">
-                                {selectedPlan.flightDetails?.estimated_departure
-                                  ? formatIST(
-                                      selectedPlan.flightDetails
-                                        .estimated_departure,
-                                    )
-                                  : "N/A"}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Gate:</span>
-                              <div className="font-medium">
-                                {selectedPlan.flightDetails?.gate || "TBD"}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Terminal:</span>
-                              <div className="font-medium">
-                                {selectedPlan.flightDetails?.terminal || "TBD"}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Delay:</span>
-                              <div className="font-medium">
-                                {selectedPlan.estimatedDelay || 0} minutes
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Disruption Details</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-600">Reason:</span>
-                              <div className="font-medium text-red-600">
-                                {selectedPlan.disruptionReason || "Technical Issue"}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Severity:</span>
-                              <div className="font-medium">
-                                <Badge
-                                  className={getPriorityColor(
-                                    selectedPlan.priority || "Medium",
-                                  )}
-                                >
-                                  {selectedPlan.priority || "Medium"}
-                                </Badge>
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">
-                                Affected Passengers:
-                              </span>
-                              <div className="font-medium">
-                                {selectedPlan.affectedPassengers || "N/A"}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Crew:</span>
-                              <div className="font-medium">
-                                {selectedPlan.flightDetails?.crew ||
-                                  selectedPlan.assignedCrew?.length ||
-                                  "N/A"}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Submitted by:</span>
-                              <div className="font-medium">
-                                {selectedPlan.submitterName ||
-                                  selectedPlan.operationsUser ||
-                                  "System"}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Submitted At:</span>
-                              <div className="font-medium">
-                                {formatIST(selectedPlan.submittedAt)}
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Current Status:</span>
-                              <div className="font-medium">
-                                <Badge
-                                  className={getStatusColor(selectedPlan.status)}
-                                >
-                                  {selectedPlan.status}
-                                </Badge>
-                              </div>
-                            </div>
-                            <div>
-                              <span className="text-gray-600">Plan ID:</span>
-                              <div className="font-medium text-blue-600">
-                                {selectedPlan.id}
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="impact" className="space-y-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <Card>
                       <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <BarChart3 className="h-5 w-5" />
-                          Option Comparison Matrix
-                        </CardTitle>
+                        <CardTitle>Cost Impact Analysis</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="overflow-x-auto">
-                          <table className="w-full border-collapse border border-gray-200">
-                            <thead>
-                              <tr className="bg-gray-50">
-                                <th className="border border-gray-200 p-3 text-left">
-                                  Option
-                                </th>
-                                <th className="border border-gray-200 p-3 text-left">
-                                  Cost (AED)
-                                </th>
-                                <th className="border border-gray-200 p-3 text-left">
-                                  Timeline
-                                </th>
-                                <th className="border border-gray-200 p-3 text-left">
-                                  Confidence
-                                </th>
-                                <th className="border border-gray-200 p-3 text-left">
-                                  Impact
-                                </th>
-                                <th className="border border-gray-200 p-3 text-left">
-                                  Status
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {selectedPlan.recoveryOptions &&
-                              selectedPlan.recoveryOptions.length > 0 ? (
-                                selectedPlan.recoveryOptions.map(
-                                  (option, index) => {
-                                    // Check if this option is selected by matching option_id from pending solution
-                                    const isSelected =
-                                      selectedPlan.optionId && 
-                                      (option.id === selectedPlan.optionId || 
-                                       option.option_id === selectedPlan.optionId ||
-                                       String(option.id) === String(selectedPlan.optionId) ||
-                                       String(option.option_id) === String(selectedPlan.optionId));
-
-                                    return (
-                                      <tr
-                                        key={option.id || index}
-                                        className={isSelected ? "bg-orange-50" : ""}
-                                      >
-                                        <td className="border border-gray-200 p-3">
-                                          <div className="flex items-center gap-2">
-                                            <div
-                                              className={`w-2 h-2 rounded-full ${isSelected ? "bg-orange-500" : "bg-gray-400"}`}
-                                            ></div>
-                                            {option.title || `Option ${index + 1}`}
-                                          </div>
-                                        </td>
-                                        <td className="border border-gray-200 p-3">
-                                          {option.cost
-                                            ? typeof option.cost === "string"
-                                              ? option.cost
-                                              : `AED ${option.cost.toLocaleString()}`
-                                            : `AED ${(option.estimated_cost || 0).toLocaleString()}`}
-                                        </td>
-                                        <td className="border border-gray-200 p-3">
-                                          {option.timeline || "TBD"}
-                                        </td>
-                                        <td className="border border-gray-200 p-3">
-                                          {option.confidence || 85}%
-                                        </td>
-                                        <td className="border border-gray-200 p-3">
-                                          {option.impact || "Medium"}
-                                        </td>
-                                        <td className="border border-gray-200 p-3">
-                                          {isSelected ? (
-                                            <Badge className="bg-orange-100 text-orange-700">
-                                              Selected
-                                            </Badge>
-                                          ) : (
-                                            <Badge variant="outline">
-                                              Available
-                                            </Badge>
-                                          )}
-                                        </td>
-                                      </tr>
-                                    );
-                                  },
-                                )
-                              ) : (
-                                <tr>
-                                  <td
-                                    colSpan={6}
-                                    className="border border-gray-200 p-4 text-center text-gray-500"
-                                  >
-                                    No recovery options data available
-                                  </td>
-                                </tr>
+                        <div className="space-y-4">
+                          {selectedPlan.costBreakdown &&
+                          Object.keys(selectedPlan.costBreakdown).length > 0 ? (
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              {Object.entries(selectedPlan.costBreakdown).map(
+                                ([key, value]) => (
+                                  <div key={key}>
+                                    <span className="text-gray-600 capitalize">
+                                      {key.replace(/([A-Z])/g, " $1")}:
+                                    </span>
+                                    <div className="font-medium">
+                                      AED{" "}
+                                      {typeof value === "object" &&
+                                      value &&
+                                      typeof value.amount === "number"
+                                        ? value.amount.toLocaleString()
+                                        : typeof value === "number"
+                                          ? value.toLocaleString()
+                                          : String(value)}
+                                    </div>
+                                  </div>
+                                ),
                               )}
-                            </tbody>
-                          </table>
+                            </div>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="text-gray-600">Direct Costs:</span>
+                                <div className="font-medium">
+                                  AED{" "}
+                                  {(
+                                    (selectedPlan.estimatedCost || 50000) * 0.6
+                                  ).toLocaleString()}
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Indirect Costs:</span>
+                                <div className="font-medium">
+                                  AED{" "}
+                                  {(
+                                    (selectedPlan.estimatedCost || 50000) * 0.4
+                                  ).toLocaleString()}
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">
+                                  Passenger Compensation:
+                                </span>
+                                <div className="font-medium">
+                                  AED{" "}
+                                  {(
+                                    (selectedPlan.estimatedCost || 50000) * 0.3
+                                  ).toLocaleString()}
+                                </div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">
+                                  Operational Costs:
+                                </span>
+                                <div className="font-medium">
+                                  AED{" "}
+                                  {(
+                                    (selectedPlan.estimatedCost || 50000) * 0.7
+                                  ).toLocaleString()}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          <Separator />
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">
+                              Total Estimated Cost:
+                            </span>
+                            <span className="text-lg font-semibold text-flydubai-orange">
+                              AED{" "}
+                              {(
+                                selectedPlan.estimatedCost || 50000
+                              ).toLocaleString()}
+                            </span>
+                          </div>
                         </div>
                       </CardContent>
                     </Card>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Cost Impact Analysis</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            {selectedPlan.costBreakdown &&
-                            Object.keys(selectedPlan.costBreakdown).length > 0 ? (
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                {Object.entries(selectedPlan.costBreakdown).map(
-                                  ([key, value]) => (
-                                    <div key={key}>
-                                      <span className="text-gray-600 capitalize">
-                                        {key.replace(/([A-Z])/g, " $1")}:
-                                      </span>
-                                      <div className="font-medium">
-                                        AED{" "}
-                                        {typeof value === "object" &&
-                                        value &&
-                                        typeof value.amount === "number"
-                                          ? value.amount.toLocaleString()
-                                          : typeof value === "number"
-                                            ? value.toLocaleString()
-                                            : String(value)}
-                                      </div>
-                                    </div>
-                                  ),
-                                )}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Operational Impact</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 gap-3">
+                            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Clock className="h-4 w-4 text-yellow-600" />
+                                <span className="font-medium text-yellow-800">
+                                  Schedule Impact
+                                </span>
                               </div>
-                            ) : (
-                              <div className="grid grid-cols-2 gap-4 text-sm">
-                                <div>
-                                  <span className="text-gray-600">Direct Costs:</span>
-                                  <div className="font-medium">
-                                    AED{" "}
-                                    {(
-                                      (selectedPlan.estimatedCost || 50000) * 0.6
-                                    ).toLocaleString()}
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-gray-600">Indirect Costs:</span>
-                                  <div className="font-medium">
-                                    AED{" "}
-                                    {(
-                                      (selectedPlan.estimatedCost || 50000) * 0.4
-                                    ).toLocaleString()}
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-gray-600">
-                                    Passenger Compensation:
-                                  </span>
-                                  <div className="font-medium">
-                                    AED{" "}
-                                    {(
-                                      (selectedPlan.estimatedCost || 50000) * 0.3
-                                    ).toLocaleString()}
-                                  </div>
-                                </div>
-                                <div>
-                                  <span className="text-gray-600">
-                                    Operational Costs:
-                                  </span>
-                                  <div className="font-medium">
-                                    AED{" "}
-                                    {(
-                                      (selectedPlan.estimatedCost || 50000) * 0.7
-                                    ).toLocaleString()}
-                                  </div>
-                                </div>
+                              <p className="text-sm text-yellow-700">
+                                {selectedPlan.estimatedDelay || 0} minute delay
+                                expected
+                              </p>
+                            </div>
+
+                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Users className="h-4 w-4 text-blue-600" />
+                                <span className="font-medium text-blue-800">
+                                  Passenger Impact
+                                </span>
                               </div>
-                            )}
-                            <Separator />
-                            <div className="flex justify-between items-center">
+                              <p className="text-sm text-blue-700">
+                                {selectedPlan.affectedPassengers || "N/A"}{" "}
+                                passengers affected
+                              </p>
+                            </div>
+
+                            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                              <div className="flex items-center gap-2 mb-1">
+                                <TrendingUp className="h-4 w-4 text-green-600" />
+                                <span className="font-medium text-green-800">
+                                  Success Probability
+                                </span>
+                              </div>
+                              <p className="text-sm text-green-700">
+                                {selectedPlan.confidence || 80}% confidence in
+                                successful resolution
+                              </p>
+                            </div>
+
+                            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Target className="h-4 w-4 text-purple-600" />
+                                <span className="font-medium text-purple-800">
+                                  Network Impact
+                                </span>
+                              </div>
+                              <p className="text-sm text-purple-700">
+                                {selectedPlan.rotationImpact?.networkImpact ||
+                                  selectedPlan.matchingOption?.rotation_plan
+                                    ?.networkImpact ||
+                                  "Assessment pending"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </TabsContent>
+
+                {selectedPlan.hasCrewData && (
+                  <DetailedRecoveryOptionView plan={selectedPlan} />
+                )}
+
+                {selectedPlan.hasPassengerData && (
+                  <DetailedRecoveryOptionView plan={selectedPlan} />
+                )}
+              </Tabs>
+
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => setSelectedPlan(null)}>
+                  Close
+                </Button>
+                {selectedPlan &&
+                  selectedPlan.status &&
+                  ["Pending Approval", "Under Review", "Pending"].includes(
+                    selectedPlan.status,
+                  ) && (
+                    <>
+                      <Button
+                        onClick={async () => {
+                          if (selectedPlan && selectedPlan.id) {
+                            await handleApprove(selectedPlan.id);
+                            setSelectedPlan(null);
+                          }
+                        }}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        <ThumbsUp className="h-4 w-4 mr-2" />
+                        Approve
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={async () => {
+                          if (selectedPlan && selectedPlan.id) {
+                            await handleReject(selectedPlan.id);
+                            setSelectedPlan(null);
+                          }
+                        }}
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                      >
+                        <ThumbsDown className="h-4 w-4 mr-2" />
+                        Reject
+                      </Button>
+                    </>
+                  )}
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog for viewing detailed option analysis */}
+      <Dialog
+        open={showDetailedOptionAnalysis}
+        onOpenChange={setShowDetailedOptionAnalysis}
+      >
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Detailed Recovery Option Analysis
+            </DialogTitle>
+            <DialogDescription>
+              Comprehensive view of {selectedOptionForDetails?.title} •{" "}
+              {selectedOptionForDetails?.id || "A321-007"} for{" "}
+              {selectedOptionForDetails?.flightNumber || "N/A"}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedOptionForDetails && (
+            <Tabs defaultValue="option-details" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="option-details">Option Details</TabsTrigger>
+                <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
+                <TabsTrigger value="passenger-reaccommodation">
+                  Passenger Re-accommodation
+                </TabsTrigger>
+                <TabsTrigger value="rotation-impact">
+                  Rotation Impact
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="option-details" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      Option Overview
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <h4 className="font-medium mb-2">
+                            {selectedOptionForDetails.title}
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            {selectedOptionForDetails.description}
+                          </p>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">
+                                Total Cost:
+                              </span>
+                              <span className="font-medium text-flydubai-orange">
+                                {selectedOptionForDetails.cost}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">
+                                Timeline:
+                              </span>
                               <span className="font-medium">
-                                Total Estimated Cost:
+                                {selectedOptionForDetails.timeline}
                               </span>
-                              <span className="text-lg font-semibold text-flydubai-orange">
-                                AED{" "}
-                                {(
-                                  selectedPlan.estimatedCost || 50000
-                                ).toLocaleString()}
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">
+                                Confidence:
+                              </span>
+                              <span className="font-medium">
+                                {selectedOptionForDetails.confidence}%
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">
+                                Impact:
+                              </span>
+                              <span className="font-medium">
+                                {selectedOptionForDetails.impact}
                               </span>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
-
-                      <Card>
-                        <CardHeader>
-                          <CardTitle>Operational Impact</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-1 gap-3">
-                              <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Clock className="h-4 w-4 text-yellow-600" />
-                                  <span className="font-medium text-yellow-800">
-                                    Schedule Impact
-                                  </span>
-                                </div>
-                                <p className="text-sm text-yellow-700">
-                                  {selectedPlan.estimatedDelay || 0} minute delay
-                                  expected
-                                </p>
-                              </div>
-
-                              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Users className="h-4 w-4 text-blue-600" />
-                                  <span className="font-medium text-blue-800">
-                                    Passenger Impact
-                                  </span>
-                                </div>
-                                <p className="text-sm text-blue-700">
-                                  {selectedPlan.affectedPassengers || "N/A"}{" "}
-                                  passengers affected
-                                </p>
-                              </div>
-
-                              <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <TrendingUp className="h-4 w-4 text-green-600" />
-                                  <span className="font-medium text-green-800">
-                                    Success Probability
-                                  </span>
-                                </div>
-                                <p className="text-sm text-green-700">
-                                  {selectedPlan.confidence || 80}% confidence in
-                                  successful resolution
-                                </p>
-                              </div>
-
-                              <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <Target className="h-4 w-4 text-purple-600" />
-                                  <span className="font-medium text-purple-800">
-                                    Network Impact
-                                  </span>
-                                </div>
-                                <p className="text-sm text-purple-700">
-                                  {selectedPlan.rotationImpact?.networkImpact ||
-                                    selectedPlan.matchingOption?.rotation_plan
-                                      ?.networkImpact ||
-                                    "Assessment pending"}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </TabsContent>
-
-                  {selectedPlan.hasCrewData && (
-                    <DetailedRecoveryOptionView plan={selectedPlan} />
-                  )}
-
-                  {selectedPlan.hasPassengerData && (
-                    <DetailedRecoveryOptionView plan={selectedPlan} />
-                  )}
-                </Tabs>
-
-                <div className="flex justify-end gap-2 pt-4 border-t">
-                  <Button variant="outline" onClick={() => setSelectedPlan(null)}>
-                    Close
-                  </Button>
-                  {selectedPlan &&
-                    selectedPlan.status &&
-                    ["Pending Approval", "Under Review", "Pending"].includes(
-                      selectedPlan.status,
-                    ) && (
-                      <>
-                        <Button
-                          onClick={async () => {
-                            if (selectedPlan && selectedPlan.id) {
-                              await handleApprove(selectedPlan.id);
-                              setSelectedPlan(null);
-                            }
-                          }}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          <ThumbsUp className="h-4 w-4 mr-2" />
-                          Approve
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={async () => {
-                            if (selectedPlan && selectedPlan.id) {
-                              await handleReject(selectedPlan.id);
-                              setSelectedPlan(null);
-                            }
-                          }}
-                          className="text-red-600 border-red-200 hover:bg-red-50"
-                        >
-                          <ThumbsDown className="h-4 w-4 mr-2" />
-                          Reject
-                        </Button>
-                      </>
-                    )}
-                </div>
-              </>
-            )}
-          </DialogContent>
-        </Dialog>
-
-        <Dialog
-          open={showDetailedOptionAnalysis}
-          onOpenChange={setShowDetailedOptionAnalysis}
-        >
-          <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Detailed Recovery Option Analysis
-              </DialogTitle>
-              <DialogDescription>
-                Comprehensive view of {selectedOptionForDetails?.title} •{" "}
-                {selectedOptionForDetails?.id || "A321-007"} for{" "}
-                {selectedOptionForDetails?.flightNumber || "N/A"}
-              </DialogDescription>
-            </DialogHeader>
-
-            {selectedOptionForDetails && (
-              <Tabs defaultValue="option-details" className="w-full">
-                <TabsList className="grid w-full grid-cols-4">
-                  <TabsTrigger value="option-details">Option Details</TabsTrigger>
-                  <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
-                  <TabsTrigger value="passenger-reaccommodation">
-                    Passenger Re-accommodation
-                  </TabsTrigger>
-                  <TabsTrigger value="rotation-impact">
-                    Rotation Impact
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="option-details" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Target className="h-5 w-5" />
-                        Option Overview
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-6">
-                          <div>
-                            <h4 className="font-medium mb-2">
-                              {selectedOptionForDetails.title}
-                            </h4>
-                            <p className="text-sm text-muted-foreground mb-4">
-                              {selectedOptionForDetails.description}
-                            </p>
-                            <div className="space-y-2">
-                              <div className="flex justify-between">
-                                <span className="text-sm text-muted-foreground">
-                                  Total Cost:
-                                </span>
-                                <span className="font-medium text-flydubai-orange">
-                                  {selectedOptionForDetails.cost}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm text-muted-foreground">
-                                  Timeline:
-                                </span>
-                                <span className="font-medium">
-                                  {selectedOptionForDetails.timeline}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm text-muted-foreground">
-                                  Confidence:
-                                </span>
-                                <span className="font-medium">
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-2">
+                            Key Performance Indicators
+                          </h4>
+                          <div className="space-y-3">
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Success Rate</span>
+                                <span>
                                   {selectedOptionForDetails.confidence}%
                                 </span>
                               </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm text-muted-foreground">
-                                  Impact:
-                                </span>
-                                <span className="font-medium">
-                                  {selectedOptionForDetails.impact}
-                                </span>
+                              <Progress
+                                value={selectedOptionForDetails.confidence}
+                                className="h-2"
+                              />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Customer Satisfaction</span>
+                                <span>88%</span>
+                              </div>
+                              <Progress value={88} className="h-2" />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Operational Risk</span>
+                                <span className="text-green-600">Low</span>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Easy
                               </div>
                             </div>
-                          </div>
-                          <div>
-                            <h4 className="font-medium mb-2">
-                              Key Performance Indicators
-                            </h4>
-                            <div className="space-y-3">
-                              <div>
-                                <div className="flex justify-between text-sm mb-1">
-                                  <span>Success Rate</span>
-                                  <span>
-                                    {selectedOptionForDetails.confidence}%
-                                  </span>
-                                </div>
-                                <Progress
-                                  value={selectedOptionForDetails.confidence}
-                                  className="h-2"
-                                />
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Operational Risk</span>
+                                <span className="text-red-600">High</span>
                               </div>
-                              <div>
-                                <div className="flex justify-between text-sm mb-1">
-                                  <span>Customer Satisfaction</span>
-                                  <span>88%</span>
-                                </div>
-                                <Progress value={88} className="h-2" />
-                              </div>
-                              <div>
-                                <div className="flex justify-between text-sm mb-1">
-                                  <span>Operational Risk</span>
-                                  <span className="text-green-600">Low</span>
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  Easy
-                                </div>
-                              </div>
-                              <div>
-                                <div className="flex justify-between text-sm mb-1">
-                                  <span>Operational Risk</span>
-                                  <span className="text-red-600">High</span>
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  Easy
-                                </div>
+                              <div className="text-xs text-muted-foreground">
+                                Easy
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-                <TabsContent value="crew-hotac" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Users className="h-5 w-5" />
-                        Crew Changes Required
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          <span className="font-medium text-green-800">
-                            No crew changes required.
-                          </span>
-                        </div>
-                        <p className="text-sm text-green-700">
-                          Current crew certified for{" "}
-                          {selectedOptionForDetails.id || "A321-007"}
-                        </p>
+              <TabsContent value="crew-hotac" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Crew Changes Required
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="font-medium text-green-800">
+                          No crew changes required.
+                        </span>
                       </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
+                      <p className="text-sm text-green-700">
+                        Current crew certified for{" "}
+                        {selectedOptionForDetails.id || "A321-007"}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
 
-                <TabsContent
-                  value="passenger-reaccommodation"
-                  className="space-y-6"
-                >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Users className="h-5 w-5" />
-                        Passenger Re-accommodation Summary
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-3 gap-4 mb-6">
-                        <div className="text-center p-4 bg-blue-50 rounded-lg">
-                          <div className="text-3xl font-bold text-blue-600">
-                            158
-                          </div>
-                          <div className="text-sm text-blue-700">
-                            Total Affected
-                          </div>
+              <TabsContent
+                value="passenger-reaccommodation"
+                className="space-y-6"
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Passenger Re-accommodation Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="text-center p-4 bg-blue-50 rounded-lg">
+                        <div className="text-3xl font-bold text-blue-600">
+                          158
                         </div>
-                        <div className="text-center p-4 bg-green-50 rounded-lg">
-                          <div className="text-3xl font-bold text-green-600">
-                            158
-                          </div>
-                          <div className="text-sm text-green-700">
-                            Same Flight
-                          </div>
-                        </div>
-                        <div className="text-center p-4 bg-red-50 rounded-lg">
-                          <div className="text-3xl font-bold text-red-600">0</div>
-                          <div className="text-sm text-red-700">
-                            Other Flights
-                          </div>
+                        <div className="text-sm text-blue-700">
+                          Total Affected
                         </div>
                       </div>
-
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="font-medium mb-3">
-                            Accommodation Breakdown
-                          </h4>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm">Meal Vouchers:</span>
-                              <span className="font-medium">0 passengers</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm">
-                                Hotel Accommodation:
-                              </span>
-                              <span className="font-medium">0 passengers</span>
-                            </div>
-                          </div>
+                      <div className="text-center p-4 bg-green-50 rounded-lg">
+                        <div className="text-3xl font-bold text-green-600">
+                          158
                         </div>
-                        <div>
-                          <h4 className="font-medium mb-3">Compensation</h4>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm">
-                                €250 per passenger (EU261):
-                              </span>
-                              <span className="font-medium">
-                                €250 per passenger (EU261)
-                              </span>
-                            </div>
+                        <div className="text-sm text-green-700">
+                          Same Flight
+                        </div>
+                      </div>
+                      <div className="text-center p-4 bg-red-50 rounded-lg">
+                        <div className="text-3xl font-bold text-red-600">0</div>
+                        <div className="text-sm text-red-700">
+                          Other Flights
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-medium mb-3">
+                          Accommodation Breakdown
+                        </h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm">Meal Vouchers:</span>
+                            <span className="font-medium">0 passengers</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">
+                              Hotel Accommodation:
+                            </span>
+                            <span className="font-medium">0 passengers</span>
                           </div>
                         </div>
                       </div>
-
-                      <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Info className="h-4 w-4 text-blue-600" />
-                          <span className="font-medium text-blue-800">
-                            Re-accommodation Details:
-                          </span>
-                        </div>
-                        <p className="text-sm text-blue-700">
-                          All passengers accommodated on same aircraft with 65min
-                          delay.
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="rotation-impact" className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Activity className="h-5 w-5" />
-                        Aircraft Rotation Impact
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-3 gap-4 mb-6">
-                        <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                          <div className="text-3xl font-bold text-yellow-600">
-                            2
-                          </div>
-                          <div className="text-sm text-yellow-700">
-                            Downstream flights
-                          </div>
-                        </div>
-                        <div className="text-center p-4 bg-red-50 rounded-lg">
-                          <div className="text-3xl font-bold text-red-600">
-                            75
-                          </div>
-                          <div className="text-sm text-red-700">
-                            Total Delay (min)
-                          </div>
-                        </div>
-                        <div className="text-center p-4 bg-purple-50 rounded-lg">
-                          <div className="text-3xl font-bold text-purple-600">
-                            Low
-                          </div>
-                          <div className="text-sm text-purple-700">
-                            Cascade Risk
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        <h4 className="font-medium">Affected Routes</h4>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="font-medium">BOM-DXB</span>
-                            </div>
-                            <Badge variant="outline" className="text-green-700">
-                              Impacted
-                            </Badge>
-                          </div>
-                          <div className="flex items-center justify-between p-3 border rounded-lg">
-                            <div className="flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="font-medium">DXB-DEL</span>
-                            </div>
-                            <Badge variant="outline" className="text-green-700">
-                              Impacted
-                            </Badge>
-                          </div>
-                        </div>
-
-                        <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                            <span className="font-medium text-yellow-800">
-                              Cascade Risk Assessment:
+                      <div>
+                        <h4 className="font-medium mb-3">Compensation</h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm">
+                              €250 per passenger (EU261):
+                            </span>
+                            <span className="font-medium">
+                              €250 per passenger (EU261)
                             </span>
                           </div>
-                          <p className="text-sm text-yellow-700">
-                            Low risk of affecting subsequent flights in the
-                            rotation.
-                          </p>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              </Tabs>
-            )}
+                    </div>
 
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setShowDetailedOptionAnalysis(false)}>
-                Close
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
-      </div>
+                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Info className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium text-blue-800">
+                          Re-accommodation Details:
+                        </span>
+                      </div>
+                      <p className="text-sm text-blue-700">
+                        All passengers accommodated on same aircraft with 65min
+                        delay.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="rotation-impact" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="h-5 w-5" />
+                      Aircraft Rotation Impact
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                        <div className="text-3xl font-bold text-yellow-600">
+                          2
+                        </div>
+                        <div className="text-sm text-yellow-700">
+                          Downstream flights
+                        </div>
+                      </div>
+                      <div className="text-center p-4 bg-red-50 rounded-lg">
+                        <div className="text-3xl font-bold text-red-600">
+                          75
+                        </div>
+                        <div className="text-sm text-red-700">
+                          Total Delay (min)
+                        </div>
+                      </div>
+                      <div className="text-center p-4 bg-purple-50 rounded-lg">
+                        <div className="text-3xl font-bold text-purple-600">
+                          Low
+                        </div>
+                        <div className="text-sm text-purple-700">
+                          Cascade Risk
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="font-medium">Affected Routes</h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span className="font-medium">BOM-DXB</span>
+                          </div>
+                          <Badge variant="outline" className="text-green-700">
+                            Impacted
+                          </Badge>
+                        </div>
+                        <div className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span className="font-medium">DXB-DEL</span>
+                          </div>
+                          <Badge variant="outline" className="text-green-700">
+                            Impacted
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                        <div className="flex items-center gap-2 mb-2">
+                          <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                          <span className="font-medium text-yellow-800">
+                            Cascade Risk Assessment:
+                          </span>
+                        </div>
+                        <p className="text-sm text-yellow-700">
+                          Low risk of affecting subsequent flights in the
+                          rotation.
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          )}
+
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button variant="outline" onClick={() => setShowDetailedOptionAnalysis(false)}>
+              Close
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
