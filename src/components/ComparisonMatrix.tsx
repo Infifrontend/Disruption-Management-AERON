@@ -103,6 +103,8 @@ export function ComparisonMatrix({
   const [loadingFullDetails, setLoadingFullDetails] = useState(null);
   const [loadingRotationImpact, setLoadingRotationImpact] = useState(null);
   const [executingOption, setExecutingOption] = useState(null);
+  const [showExecuteConfirmDialog, setShowExecuteConfirmDialog] = useState(false);
+  const [optionToConfirm, setOptionToConfirm] = useState(null);
 
   // Load recovery options from database based on disruption category
   useEffect(() => {
@@ -1061,7 +1063,17 @@ export function ComparisonMatrix({
   };
 
   const handleExecuteOption = async (option, letter) => {
+    // Store the option and letter for confirmation
+    setOptionToConfirm({ option, letter });
+    setShowExecuteConfirmDialog(true);
+  };
+
+  const confirmExecuteOption = async () => {
+    if (!optionToConfirm) return;
+    
+    const { option, letter } = optionToConfirm;
     setExecutingOption(option.id);
+    setShowExecuteConfirmDialog(false);
 
     try {
       // Check if option requires execution based on impact_area
@@ -1226,6 +1238,28 @@ export function ComparisonMatrix({
         return "bg-red-100 text-red-700 border-red-200";
       default:
         return "bg-gray-100 text-gray-700 border-gray-200";
+    }
+  };
+
+  const getConfirmationMessage = (option) => {
+    if (!option.impact_area || !Array.isArray(option.impact_area)) {
+      return `Are you sure you want to execute "${option.title}"? This action will submit the recovery plan for approval.`;
+    }
+
+    const impactAreas = option.impact_area;
+    
+    if (impactAreas.includes("passenger") && impactAreas.includes("crew")) {
+      return `This recovery option will impact both passengers and crew operations. Executing "${option.title}" will require coordination with Passenger Services and Crew Management teams. Do you want to proceed?`;
+    } else if (impactAreas.includes("passenger")) {
+      return `This recovery option will impact passenger services. Executing "${option.title}" will redirect you to the Passenger Services page to handle rebooking and accommodations. Do you want to proceed?`;
+    } else if (impactAreas.includes("crew")) {
+      return `This recovery option will impact crew operations. Executing "${option.title}" will require crew schedule adjustments and may affect duty time regulations. Do you want to proceed?`;
+    } else if (impactAreas.includes("aircraft")) {
+      return `This recovery option involves aircraft operations. Executing "${option.title}" will initiate aircraft-related procedures including potential maintenance coordination. Do you want to proceed?`;
+    } else if (impactAreas.includes("operations")) {
+      return `This recovery option will impact operational procedures. Executing "${option.title}" will modify flight operations and may affect network scheduling. Do you want to proceed?`;
+    } else {
+      return `Are you sure you want to execute "${option.title}"? This action will submit the recovery plan for approval and implementation.`;
     }
   };
 
@@ -3072,6 +3106,57 @@ export function ComparisonMatrix({
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Execute Confirmation Dialog */}
+      <Dialog open={showExecuteConfirmDialog} onOpenChange={setShowExecuteConfirmDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-flydubai-orange" />
+              Confirm Recovery Plan Execution
+            </DialogTitle>
+          </DialogHeader>
+          
+          {optionToConfirm && (
+            <div className="space-y-4">
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <p className="text-sm text-blue-800">
+                  {getConfirmationMessage(optionToConfirm.option)}
+                </p>
+              </div>
+              
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setShowExecuteConfirmDialog(false);
+                    setOptionToConfirm(null);
+                  }}
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={confirmExecuteOption}
+                  className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
+                  disabled={executingOption === optionToConfirm?.option?.id}
+                >
+                  {executingOption === optionToConfirm?.option?.id ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      OK
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
