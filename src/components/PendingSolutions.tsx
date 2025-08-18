@@ -226,12 +226,16 @@ export function PendingSolutions() {
       (plan.priority && plan.priority.toLowerCase() === filters.priority);
     const matchesSubmitter =
       filters.submitter === "all" ||
-      (plan.submittedBy && plan.submittedBy.toLowerCase().includes(filters.submitter.toLowerCase()));
+      (plan.submittedBy &&
+        plan.submittedBy
+          .toLowerCase()
+          .includes(filters.submitter.toLowerCase()));
     const matchesFlightNumber =
       !filters.flightNumber ||
-      (plan.flightNumber && plan.flightNumber
-        .toLowerCase()
-        .includes(filters.flightNumber.toLowerCase()));
+      (plan.flightNumber &&
+        plan.flightNumber
+          .toLowerCase()
+          .includes(filters.flightNumber.toLowerCase()));
     const matchesPlanId =
       !filters.planId ||
       (plan.id && plan.id.toLowerCase().includes(filters.planId.toLowerCase()));
@@ -1787,16 +1791,17 @@ export function PendingSolutions() {
                   <CardContent>
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
                       <p className="text-sm text-blue-800">
-                        Service will launch Aircraft A307-007 with Crew Lunch/Post approval.
+                        Service will launch Aircraft A307-007 with Crew
+                        Lunch/Post approval.
                       </p>
                     </div>
 
                     <div className="space-y-4">
                       <div className="space-y-3">
-                        <Card className="border-orange-200 bg-orange-50">
+                        <Card className="border-gray-200">
                           <CardContent className="p-4">
                             <div className="flex justify-between items-start mb-2">
-                              <h5 className="font-medium text-orange-800">
+                              <h5 className="font-medium ">
                                 Option 1: Immediate Aircraft Swap • A317-007
                               </h5>
                               <Button
@@ -1822,7 +1827,7 @@ export function PendingSolutions() {
                                 View Option
                               </Button>
                             </div>
-                            <p className="text-sm text-orange-700 mb-3">
+                            <p className="text-sm  mb-3">
                               Service will launch Aircraft A307-007 with Crew
                               Lunch/Post approval.
                             </p>
@@ -2146,9 +2151,7 @@ export function PendingSolutions() {
                                 Option 1
                               </div>
                             </td>
-                            <td className="border border-gray-200 p-3">
-                              50K
-                            </td>
+                            <td className="border border-gray-200 p-3">50K</td>
                             <td className="border border-gray-200 p-3">65</td>
                             <td className="border border-gray-200 p-3">
                               96.8%
@@ -2169,16 +2172,12 @@ export function PendingSolutions() {
                                 Option 2
                               </div>
                             </td>
-                            <td className="border border-gray-200 p-3">
-                              45K
-                            </td>
+                            <td className="border border-gray-200 p-3">45K</td>
                             <td className="border border-gray-200 p-3">87</td>
                             <td className="border border-gray-200 p-3">
                               94.2%
                             </td>
-                            <td className="border border-gray-200 p-3">
-                              Low
-                            </td>
+                            <td className="border border-gray-200 p-3">Low</td>
                             <td className="border border-gray-200 p-3">
                               <Badge className="bg-orange-100 text-orange-700">
                                 Recommended
@@ -2192,16 +2191,12 @@ export function PendingSolutions() {
                                 Option 3
                               </div>
                             </td>
-                            <td className="border border-gray-200 p-3">
-                              75K
-                            </td>
+                            <td className="border border-gray-200 p-3">75K</td>
                             <td className="border border-gray-200 p-3">0</td>
                             <td className="border border-gray-200 p-3">
                               86.1%
                             </td>
-                            <td className="border border-gray-200 p-3">
-                              High
-                            </td>
+                            <td className="border border-gray-200 p-3">High</td>
                             <td className="border border-gray-200 p-3">
                               <Badge variant="outline">Alternative</Badge>
                             </td>
@@ -2674,37 +2669,39 @@ export function PendingSolutions() {
             <Button variant="outline" onClick={() => setSelectedPlan(null)}>
               Close
             </Button>
-            {selectedPlan && selectedPlan.status && ["Pending Approval", "Under Review", "Pending"].includes(
-              selectedPlan.status,
-            ) && (
-              <>
-                <Button
-                  onClick={async () => {
-                    if (selectedPlan && selectedPlan.id) {
-                      await handleApprove(selectedPlan.id);
-                      setSelectedPlan(null);
-                    }
-                  }}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <ThumbsUp className="h-4 w-4 mr-2" />
-                  Approve
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={async () => {
-                    if (selectedPlan && selectedPlan.id) {
-                      await handleReject(selectedPlan.id);
-                      setSelectedPlan(null);
-                    }
-                  }}
-                  className="text-red-600 border-red-200 hover:bg-red-50"
-                >
-                  <ThumbsDown className="h-4 w-4 mr-2" />
-                  Reject
-                </Button>
-              </>
-            )}
+            {selectedPlan &&
+              selectedPlan.status &&
+              ["Pending Approval", "Under Review", "Pending"].includes(
+                selectedPlan.status,
+              ) && (
+                <>
+                  <Button
+                    onClick={async () => {
+                      if (selectedPlan && selectedPlan.id) {
+                        await handleApprove(selectedPlan.id);
+                        setSelectedPlan(null);
+                      }
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <ThumbsUp className="h-4 w-4 mr-2" />
+                    Approve
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      if (selectedPlan && selectedPlan.id) {
+                        await handleReject(selectedPlan.id);
+                        setSelectedPlan(null);
+                      }
+                    }}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <ThumbsDown className="h-4 w-4 mr-2" />
+                    Reject
+                  </Button>
+                </>
+              )}
           </div>
         </DialogContent>
       </Dialog>
@@ -3033,7 +3030,10 @@ export function PendingSolutions() {
           )}
 
           <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => setShowDetailedOptionAnalysis(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowDetailedOptionAnalysis(false)}
+            >
               Close
             </Button>
           </div>
