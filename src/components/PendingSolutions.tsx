@@ -2340,9 +2340,7 @@ export function PendingSolutions() {
         </DialogContent>
       </Dialog>
 
-      {/* Detailed Recovery Option Analysis Dialog */}
-      <Dialog
-        open={showDetailedOptionAnalysis}
+      <Dialog open={showDetailedOptionAnalysis}
         onOpenChange={setShowDetailedOptionAnalysis}>
         <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader>
