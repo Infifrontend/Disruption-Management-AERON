@@ -643,7 +643,7 @@ export function PendingSolutions() {
       aircraft: plan.aircraft,
       passengers: plan.affectedPassengers,
       disruptionReason: plan.disruptionReason,
-      
+
       // Include additional API data
       advantages: option.advantages || [],
       considerations: option.considerations || [],
@@ -1327,29 +1327,38 @@ export function PendingSolutions() {
                     <h4 className="font-medium mb-3">Cost Breakdown</h4>
                     <Card className="p-4 bg-gray-50">
                       <div className="space-y-2 text-sm">
-                        <div className="flex justify-between">
-                          <span>Aircraft & Crew:</span>
-                          <span>AED 15,000</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>HOTAC Arrangements:</span>
-                          <span>AED 8,500</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Passenger Services:</span>
-                          <span>AED 12,000</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span>Ground Operations:</span>
-                          <span>AED 9,000</span>
-                        </div>
-                        <Separator />
-                        <div className="flex justify-between font-medium text-lg">
-                          <span>Total Estimated Cost:</span>
-                          <span className="text-flydubai-orange">
-                            AED {(plan.estimatedCost || 44500).toLocaleString()}
-                          </span>
-                        </div>
+                        {selectedPlan.costBreakdown && Object.keys(selectedPlan.costBreakdown).length > 0 ? (
+                          Object.entries(selectedPlan.costBreakdown).map(([key, value]) => (
+                            <div key={key} className="flex justify-between">
+                              <span className="capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
+                              <span>
+                                AED {typeof value === 'object' && value && typeof value.amount === 'number' ? 
+                                  value.amount.toLocaleString() :
+                                  (typeof value === 'number' ? value.toLocaleString() : String(value))
+                                }
+                              </span>
+                            </div>
+                          ))
+                        ) : (
+                          <>
+                            <div className="flex justify-between">
+                              <span>Direct Costs:</span>
+                              <span>AED {((selectedPlan.estimatedCost || 50000) * 0.6).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Indirect Costs:</span>
+                              <span>AED {((selectedPlan.estimatedCost || 50000) * 0.4).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Passenger Compensation:</span>
+                              <span>AED {((selectedPlan.estimatedCost || 50000) * 0.3).toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Operational Costs:</span>
+                              <span>AED {((selectedPlan.estimatedCost || 50000) * 0.7).toLocaleString()}</span>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </Card>
                   </div>
@@ -1853,7 +1862,7 @@ export function PendingSolutions() {
                           selectedPlan.recoveryOptions.map((option, index) => {
                             const isSelected = selectedPlan.matchingOption && 
                               (option.id === selectedPlan.matchingOption.id || option.option_id === selectedPlan.matchingOption.option_id);
-                            
+
                             return (
                               <Card key={option.id || index} className={isSelected ? "border-orange-200 bg-orange-50" : "border-gray-200"}>
                                 <CardContent className="p-4">
@@ -2116,7 +2125,7 @@ export function PendingSolutions() {
                             selectedPlan.recoveryOptions.map((option, index) => {
                               const isSelected = selectedPlan.matchingOption && 
                                 (option.id === selectedPlan.matchingOption.id || option.option_id === selectedPlan.matchingOption.option_id);
-                              
+
                               return (
                                 <tr key={option.id || index} className={isSelected ? "bg-orange-50" : ""}>
                                   <td className="border border-gray-200 p-3">
@@ -2178,7 +2187,10 @@ export function PendingSolutions() {
                               <div key={key}>
                                 <span className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
                                 <div className="font-medium">
-                                  AED {typeof value === 'number' ? value.toLocaleString() : value}
+                                  AED {typeof value === 'object' && value && typeof value.amount === 'number' ? 
+                                    value.amount.toLocaleString() :
+                                    (typeof value === 'number' ? value.toLocaleString() : String(value))
+                                  }
                                 </div>
                               </div>
                             ))}
@@ -2283,331 +2295,6 @@ export function PendingSolutions() {
                     </CardContent>
                   </Card>
                 </div>
-              </TabsContent>
-            </Tabs>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Detailed Recovery Option Analysis Dialog */}
-      <Dialog
-        open={showDetailedOptionAnalysis}
-        onOpenChange={setShowDetailedOptionAnalysis}
-      >
-        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Detailed Recovery Option Analysis
-            </DialogTitle>
-            <DialogDescription>
-              Comprehensive view of {selectedOptionForDetails?.title} •{" "}
-              {selectedOptionForDetails?.id || "A321-007"} for{" "}
-              {selectedOptionForDetails?.flightNumber}
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedOptionForDetails && (
-            <Tabs defaultValue="option-details" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
-                <TabsTrigger value="option-details">Option Details</TabsTrigger>
-                <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
-                <TabsTrigger value="passenger-reaccommodation">
-                  Passenger Re-accommodation
-                </TabsTrigger>
-                <TabsTrigger value="rotation-impact">
-                  Rotation Impact
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="option-details" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="h-5 w-5" />
-                      Option Overview
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="font-medium mb-2">
-                            {selectedOptionForDetails.title}
-                          </h4>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            {selectedOptionForDetails.description}
-                          </p>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Total Cost:
-                              </span>
-                              <span className="font-medium text-flydubai-orange">
-                                {selectedOptionForDetails.cost}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Timeline:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.timeline}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Confidence:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.confidence}%
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Impact:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.impact}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-2">
-                            Key Performance Indicators
-                          </h4>
-                          <div className="space-y-3">
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Success Rate</span>
-                                <span>
-                                  {selectedOptionForDetails.confidence}%
-                                </span>
-                              </div>
-                              <Progress
-                                value={selectedOptionForDetails.confidence}
-                                className="h-2"
-                              />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Customer Satisfaction</span>
-                                <span>88%</span>
-                              </div>
-                              <Progress value={88} className="h-2" />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Operational Risk</span>
-                                <span className="text-green-600">Low</span>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Easy
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Operational Risk</span>
-                                <span className="text-red-600">High</span>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Easy
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="crew-hotac" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Crew Changes Required
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span className="font-medium text-green-800">
-                          No crew changes required.
-                        </span>
-                      </div>
-                      <p className="text-sm text-green-700">
-                        Current crew certified for{" "}
-                        {selectedOptionForDetails.id || "A321-007"}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent
-                value="passenger-reaccommodation"
-                className="space-y-6"
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Passenger Re-accommodation Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <div className="text-3xl font-bold text-blue-600">
-                          158
-                        </div>
-                        <div className="text-sm text-blue-700">
-                          Total Affected
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <div className="text-3xl font-bold text-green-600">
-                          158
-                        </div>
-                        <div className="text-sm text-green-700">
-                          Same Flight
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-3xl font-bold text-red-600">0</div>
-                        <div className="text-sm text-red-700">
-                          Other Flights
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium mb-3">
-                          Accommodation Breakdown
-                        </h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">Meal Vouchers:</span>
-                            <span className="font-medium">0 passengers</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">
-                              Hotel Accommodation:
-                            </span>
-                            <span className="font-medium">0 passengers</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-3">Compensation</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">
-                              €250 per passenger (EU261):
-                            </span>
-                            <span className="font-medium">
-                              €250 per passenger (EU261)
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Info className="h-4 w-4 text-blue-600" />
-                        <span className="font-medium text-blue-800">
-                          Re-accommodation Details:
-                        </span>
-                      </div>
-                      <p className="text-sm text-blue-700">
-                        All passengers accommodated on same aircraft with 65min
-                        delay.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="rotation-impact" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Activity className="h-5 w-5" />
-                      Aircraft Rotation Impact
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                        <div className="text-3xl font-bold text-yellow-600">
-                          2
-                        </div>
-                        <div className="text-sm text-yellow-700">
-                          Downstream flights
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-3xl font-bold text-red-600">
-                          75
-                        </div>
-                        <div className="text-sm text-red-700">
-                          Total Delay (min)
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-purple-50 rounded-lg">
-                        <div className="text-3xl font-bold text-purple-600">
-                          Low
-                        </div>
-                        <div className="text-sm text-purple-700">
-                          Cascade Risk
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h4 className="font-medium">Affected Routes</h4>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span className="font-medium">BOM-DXB</span>
-                          </div>
-                          <Badge variant="outline" className="text-green-700">
-                            Impacted
-                          </Badge>
-                        </div>
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span className="font-medium">DXB-DEL</span>
-                          </div>
-                          <Badge variant="outline" className="text-green-700">
-                            Impacted
-                          </Badge>
-                        </div>
-                      </div>
-
-                      <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                        <div className="flex items-center gap-2 mb-2">
-                          <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                          <span className="font-medium text-yellow-800">
-                            Cascade Risk Assessment:
-                          </span>
-                        </div>
-                        <p className="text-sm text-yellow-700">
-                          Low risk of affecting subsequent flights in the
-                          rotation.
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
               </TabsContent>
             </Tabs>
           )}
