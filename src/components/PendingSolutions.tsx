@@ -154,7 +154,9 @@ export function PendingSolutions() {
         status: plan.status || "Pending Approval",
         estimatedCost: (() => {
           if (typeof plan.estimated_cost === "string") {
-            const numericValue = parseInt(plan.estimated_cost.replace(/[^0-9]/g, ""));
+            const numericValue = parseInt(
+              plan.estimated_cost.replace(/[^0-9]/g, ""),
+            );
             return numericValue || 0;
           }
           if (typeof plan.cost === "string") {
@@ -485,25 +487,29 @@ export function PendingSolutions() {
 
   const handleViewDetails = async (plan) => {
     setLoadingDetails(plan.id);
-    
+
     try {
       console.log("Fetching detailed view for plan:", plan.id);
 
       // Fetch the most up-to-date data from pending solutions API
-      const response = await fetch(`/api/pending-recovery-solutions/${plan.id}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      const response = await fetch(
+        `/api/pending-recovery-solutions/${plan.id}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
 
       let updatedPlan = null;
-      
+
       if (response.ok) {
         updatedPlan = await response.json();
         console.log("Found updated plan data from API:", updatedPlan);
       } else {
         // Fallback to fetching all solutions and finding the one we need
         console.log("Direct API call failed, fetching all solutions...");
-        const allSolutions = await databaseService.getPendingRecoverySolutions();
+        const allSolutions =
+          await databaseService.getPendingRecoverySolutions();
         updatedPlan = allSolutions.find((s) => s.id === plan.id);
       }
 
@@ -531,8 +537,14 @@ export function PendingSolutions() {
             updatedPlan.full_details?.assignedCrew ||
             plan.assignedCrew ||
             [],
-          passengerInformation: updatedPlan.passenger_information || plan.passengerInformation || [],
-          operationsUser: updatedPlan.operations_user || plan.operationsUser || "Operations Manager",
+          passengerInformation:
+            updatedPlan.passenger_information ||
+            plan.passengerInformation ||
+            [],
+          operationsUser:
+            updatedPlan.operations_user ||
+            plan.operationsUser ||
+            "Operations Manager",
           costAnalysis: updatedPlan.cost_analysis || plan.costAnalysis || {},
           impact: updatedPlan.impact || plan.impact || "Moderate",
           confidence: updatedPlan.confidence || plan.confidence || 80,
@@ -540,7 +552,9 @@ export function PendingSolutions() {
           estimatedCost: (() => {
             if (updatedPlan.cost) {
               if (typeof updatedPlan.cost === "string") {
-                const numericValue = parseInt(updatedPlan.cost.replace(/[^0-9]/g, ""));
+                const numericValue = parseInt(
+                  updatedPlan.cost.replace(/[^0-9]/g, ""),
+                );
                 return numericValue || plan.estimatedCost || 0;
               }
               return updatedPlan.cost;
@@ -548,8 +562,11 @@ export function PendingSolutions() {
             return plan.estimatedCost || 0;
           })(),
         };
-        
-        console.log("Transformed plan with cost:", transformedPlan.estimatedCost);
+
+        console.log(
+          "Transformed plan with cost:",
+          transformedPlan.estimatedCost,
+        );
         setSelectedPlan(transformedPlan);
       } else {
         console.log("No updated data found, using current plan data");
@@ -1670,7 +1687,9 @@ export function PendingSolutions() {
                           ) : (
                             <Eye className="h-4 w-4" />
                           )}
-                          {loadingDetails === plan.id ? "Loading..." : "View Details"}
+                          {loadingDetails === plan.id
+                            ? "Loading..."
+                            : "View Details"}
                         </Button>
 
                         {[
@@ -1727,7 +1746,7 @@ export function PendingSolutions() {
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                Recovery Plan Details - {selectedPlan.id}
+                Recovery Plan Details
               </DialogTitle>
               <DialogDescription>
                 Detailed analysis of recovery options for{" "}
