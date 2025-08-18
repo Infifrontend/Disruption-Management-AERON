@@ -219,20 +219,22 @@ export function PendingSolutions() {
   };
 
   const filteredPlans = plans.filter((plan) => {
+    if (!plan) return false;
+    
     const matchesPriority =
       filters.priority === "all" ||
-      plan.priority.toLowerCase() === filters.priority;
+      (plan.priority && plan.priority.toLowerCase() === filters.priority);
     const matchesSubmitter =
       filters.submitter === "all" ||
-      plan.submittedBy.toLowerCase().includes(filters.submitter.toLowerCase());
+      (plan.submittedBy && plan.submittedBy.toLowerCase().includes(filters.submitter.toLowerCase()));
     const matchesFlightNumber =
       !filters.flightNumber ||
-      plan.flightNumber
+      (plan.flightNumber && plan.flightNumber
         .toLowerCase()
-        .includes(filters.flightNumber.toLowerCase());
+        .includes(filters.flightNumber.toLowerCase()));
     const matchesPlanId =
       !filters.planId ||
-      plan.id.toLowerCase().includes(filters.planId.toLowerCase());
+      (plan.id && plan.id.toLowerCase().includes(filters.planId.toLowerCase()));
 
     // Normalize status for consistent comparison
     const normalizedStatus = plan.status
@@ -260,12 +262,14 @@ export function PendingSolutions() {
   });
 
   const sortedPlans = filteredPlans.sort((a, b) => {
+    if (!a || !b) return 0;
+    
     let aValue, bValue;
 
     switch (sortBy) {
       case "submitted":
-        aValue = new Date(a.submittedAt);
-        bValue = new Date(b.submittedAt);
+        aValue = new Date(a.submittedAt || 0);
+        bValue = new Date(b.submittedAt || 0);
         break;
       case "priority":
         const priorityOrder = { Critical: 4, High: 3, Medium: 2, Low: 1 };
@@ -273,16 +277,16 @@ export function PendingSolutions() {
         bValue = priorityOrder[b.priority] || 0;
         break;
       case "cost":
-        aValue = a.estimatedCost;
-        bValue = b.estimatedCost;
+        aValue = a.estimatedCost || 0;
+        bValue = b.estimatedCost || 0;
         break;
       case "confidence":
-        aValue = a.confidence;
-        bValue = b.confidence;
+        aValue = a.confidence || 0;
+        bValue = b.confidence || 0;
         break;
       default:
-        aValue = a.submittedAt;
-        bValue = b.submittedAt;
+        aValue = a.submittedAt || 0;
+        bValue = b.submittedAt || 0;
     }
 
     if (sortOrder === "asc") {
@@ -347,19 +351,24 @@ export function PendingSolutions() {
     return {
       all: plans.length,
       pending: plans.filter((p) => {
+        if (!p) return false;
         const status = p.status ? p.status.trim().toLowerCase() : "pending";
         return ["pending approval", "under review", "pending"].includes(status);
       }).length,
       approved: plans.filter((p) => {
+        if (!p) return false;
         const status = p.status ? p.status.trim().toLowerCase() : "";
         return status === "approved";
       }).length,
       rejected: plans.filter((p) => {
+        if (!p) return false;
         const status = p.status ? p.status.trim().toLowerCase() : "";
         return status === "rejected";
       }).length,
-      critical: plans.filter((p) => ["Critical", "High"].includes(p.priority))
-        .length,
+      critical: plans.filter((p) => {
+        if (!p) return false;
+        return p.priority && ["Critical", "High"].includes(p.priority);
+      }).length,
     };
   };
 
