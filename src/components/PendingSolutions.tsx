@@ -1045,224 +1045,149 @@ export function PendingSolutions() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Passenger Reaccommodation - Selected Option
+                  Passenger Reaccommodation
                 </CardTitle>
-                <CardDescription>
-                  {selectedPlan.matchingOption ? 
-                    `Passenger arrangements for: ${selectedPlan.matchingOption.title}` : 
-                    "Selected recovery option passenger details"
-                  }
-                </CardDescription>
               </CardHeader>
               <CardContent>
-                {selectedPlan.matchingOption ? (
-                  <div className="space-y-6">
-                    {/* Selected Option Notice */}
-                    <div className="bg-flydubai-orange/10 p-4 rounded-lg border border-flydubai-orange/30">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Badge className="bg-flydubai-orange text-white">Selected Option</Badge>
-                        <span className="font-medium text-flydubai-orange">
-                          {selectedPlan.matchingOption.title}
-                        </span>
+                <div className="space-y-6">
+                  {/* Passenger Summary */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">
+                        {plan.affectedPassengers || 167}
                       </div>
-                      <p className="text-sm text-flydubai-orange/80">
-                        Passenger reaccommodation details specific to this recovery option
-                      </p>
-                    </div>
-
-                    {/* Passenger Summary */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div className="text-center p-3 bg-blue-50 rounded-lg">
-                        <div className="text-2xl font-bold text-blue-600">
-                          {selectedPlan.affectedPassengers || 167}
-                        </div>
-                        <div className="text-sm text-blue-700">
-                          Total Affected
-                        </div>
-                      </div>
-                      <div className="text-center p-3 bg-green-50 rounded-lg">
-                        <div className="text-2xl font-bold text-green-600">
-                          {selectedPlan.passengerInformation?.filter(p => p.status === 'rebooked')?.length || 
-                           Math.floor((selectedPlan.affectedPassengers || 167) * 0.85)}
-                        </div>
-                        <div className="text-sm text-green-700">Rebooked</div>
-                      </div>
-                      <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                        <div className="text-2xl font-bold text-yellow-600">
-                          {selectedPlan.passengerInformation?.filter(p => p.accommodation)?.length || 
-                           Math.floor((selectedPlan.affectedPassengers || 167) * 0.12)}
-                        </div>
-                        <div className="text-sm text-yellow-700">
-                          Accommodation
-                        </div>
-                      </div>
-                      <div className="text-center p-3 bg-orange-50 rounded-lg">
-                        <div className="text-2xl font-bold text-orange-600">
-                          {selectedPlan.passengerInformation?.filter(p => p.compensation)?.length || 
-                           Math.floor((selectedPlan.affectedPassengers || 167) * 0.03)}
-                        </div>
-                        <div className="text-sm text-orange-700">
-                          Compensation
-                        </div>
+                      <div className="text-sm text-blue-700">
+                        Total Passengers
                       </div>
                     </div>
-
-                    {/* Rebooking Details */}
-                    <div>
-                      <h4 className="font-medium mb-3">Rebooking Arrangements</h4>
-                      <div className="space-y-3">
-                        {selectedPlan.matchingOption.title?.toLowerCase().includes('cancel') ? (
-                          <Card className="p-4 bg-red-50 border-red-200">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <XCircle className="h-4 w-4 text-red-600" />
-                                <span className="font-medium text-red-800">
-                                  Flight Cancellation
-                                </span>
-                              </div>
-                              <Badge className="bg-red-100 text-red-700">
-                                {selectedPlan.affectedPassengers || 167} passengers
-                              </Badge>
-                            </div>
-                            <div className="text-sm text-red-700">
-                              All passengers to be rebooked on alternative flights with full compensation
-                            </div>
-                          </Card>
-                        ) : selectedPlan.matchingOption.title?.toLowerCase().includes('delay') ? (
-                          <Card className="p-4 bg-yellow-50 border-yellow-200">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                <Clock className="h-4 w-4 text-yellow-600" />
-                                <span className="font-medium text-yellow-800">
-                                  Same Flight - Delayed Departure
-                                </span>
-                              </div>
-                              <Badge className="bg-yellow-100 text-yellow-700">
-                                {selectedPlan.affectedPassengers || 167} passengers
-                              </Badge>
-                            </div>
-                            <div className="text-sm text-yellow-700">
-                              Passengers accommodated on original flight with delay compensation
-                            </div>
-                          </Card>
-                        ) : (
-                          <>
-                            <Card className="p-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <Plane className="h-4 w-4 text-flydubai-blue" />
-                                  <span className="font-medium">
-                                    Next Available Flight
-                                  </span>
-                                </div>
-                                <Badge className="bg-green-100 text-green-700">
-                                  {selectedPlan.matchingOption.passengerRebooking?.nextFlight || Math.floor((selectedPlan.affectedPassengers || 167) * 0.8)} passengers
-                                </Badge>
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                Primary rebooking on next available flydubai service
-                              </div>
-                            </Card>
-
-                            <Card className="p-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <Plane className="h-4 w-4 text-blue-600" />
-                                  <span className="font-medium">
-                                    Partner Airlines
-                                  </span>
-                                </div>
-                                <Badge className="bg-blue-100 text-blue-700">
-                                  {selectedPlan.matchingOption.passengerRebooking?.partnerAirlines || Math.floor((selectedPlan.affectedPassengers || 167) * 0.15)} passengers
-                                </Badge>
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                Premium passengers on partner airline services
-                              </div>
-                            </Card>
-
-                            <Card className="p-4">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="flex items-center gap-2">
-                                  <Hotel className="h-4 w-4 text-orange-600" />
-                                  <span className="font-medium">
-                                    Overnight Accommodation
-                                  </span>
-                                </div>
-                                <Badge className="bg-orange-100 text-orange-700">
-                                  {selectedPlan.matchingOption.passengerReaccommodation?.hotel || Math.floor((selectedPlan.affectedPassengers || 167) * 0.05)} passengers
-                                </Badge>
-                              </div>
-                              <div className="text-sm text-muted-foreground">
-                                Hotel accommodation with meal vouchers
-                              </div>
-                            </Card>
-                          </>
-                        )}
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">
+                        {Math.floor((plan.affectedPassengers || 167) * 0.85)}
+                      </div>
+                      <div className="text-sm text-green-700">Rebooked</div>
+                    </div>
+                    <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                      <div className="text-2xl font-bold text-yellow-600">
+                        {Math.floor((plan.affectedPassengers || 167) * 0.12)}
+                      </div>
+                      <div className="text-sm text-yellow-700">
+                        Accommodation
                       </div>
                     </div>
+                    <div className="text-center p-3 bg-orange-50 rounded-lg">
+                      <div className="text-2xl font-bold text-orange-600">
+                        {Math.floor((plan.affectedPassengers || 167) * 0.03)}
+                      </div>
+                      <div className="text-sm text-orange-700">
+                        Compensation
+                      </div>
+                    </div>
+                  </div>
 
-                    {/* Additional Services */}
-                    <Separator />
-                    <div>
-                      <h4 className="font-medium mb-3">
-                        Additional Services for Selected Option
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-3 border rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <UtensilsCrossed className="h-4 w-4 text-green-600" />
-                            <span className="font-medium">Meal Vouchers</span>
+                  {/* Rebooking Details */}
+                  <div>
+                    <h4 className="font-medium mb-3">Rebooking Arrangements</h4>
+                    <div className="space-y-3">
+                      <Card className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Plane className="h-4 w-4 text-flydubai-blue" />
+                            <span className="font-medium">
+                              FZ567 - Tomorrow 08:00
+                            </span>
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            AED 75 per passenger - {selectedPlan.matchingOption.services?.mealVouchers || Math.floor((selectedPlan.affectedPassengers || 167) * 0.3)} vouchers
-                          </div>
+                          <Badge className="bg-green-100 text-green-700">
+                            142 passengers
+                          </Badge>
                         </div>
-                        <div className="p-3 border rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Car className="h-4 w-4 text-blue-600" />
-                            <span className="font-medium">Ground Transport</span>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            Airport shuttle services as required
-                          </div>
+                        <div className="text-sm text-muted-foreground">
+                          Primary rebooking flight - Same route, next day
+                          departure
                         </div>
-                        <div className="p-3 border rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <PhoneCall className="h-4 w-4 text-purple-600" />
-                            <span className="font-medium">Priority Support</span>
+                      </Card>
+
+                      <Card className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Plane className="h-4 w-4 text-blue-600" />
+                            <span className="font-medium">
+                              EK425 - Today 16:45
+                            </span>
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            Dedicated customer service for affected passengers
-                          </div>
+                          <Badge className="bg-blue-100 text-blue-700">
+                            15 passengers
+                          </Badge>
                         </div>
-                        <div className="p-3 border rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <DollarSign className="h-4 w-4 text-red-600" />
-                            <span className="font-medium">Compensation</span>
+                        <div className="text-sm text-muted-foreground">
+                          Partner airline accommodation - Premium passengers
+                        </div>
+                      </Card>
+
+                      <Card className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Hotel className="h-4 w-4 text-orange-600" />
+                            <span className="font-medium">
+                              Hotel Accommodation
+                            </span>
                           </div>
-                          <div className="text-sm text-muted-foreground">
-                            As per regulations - 
-                            {selectedPlan.matchingOption.title?.toLowerCase().includes('cancel') ? 
-                              ' Full refund + compensation' : 
-                              selectedPlan.matchingOption.title?.toLowerCase().includes('delay') ? 
-                                ' Delay compensation' : 
-                                ' Standard compensation'
-                            }
-                          </div>
+                          <Badge className="bg-orange-100 text-orange-700">
+                            10 passengers
+                          </Badge>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Overnight accommodation with meal vouchers
+                        </div>
+                      </Card>
+                    </div>
+                  </div>
+
+                  {/* Additional Services */}
+                  <Separator />
+                  <div>
+                    <h4 className="font-medium mb-3">
+                      Additional Services Provided
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-3 border rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <UtensilsCrossed className="h-4 w-4 text-green-600" />
+                          <span className="font-medium">Meal Vouchers</span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          AED 75 per passenger - 25 vouchers issued
+                        </div>
+                      </div>
+                      <div className="p-3 border rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Car className="h-4 w-4 text-blue-600" />
+                          <span className="font-medium">Ground Transport</span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Taxi services for 10 passengers
+                        </div>
+                      </div>
+                      <div className="p-3 border rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <PhoneCall className="h-4 w-4 text-purple-600" />
+                          <span className="font-medium">Priority Support</span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Dedicated helpline for affected passengers
+                        </div>
+                      </div>
+                      <div className="p-3 border rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <DollarSign className="h-4 w-4 text-red-600" />
+                          <span className="font-medium">Compensation</span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          EU261 compliance - AED 600 per eligible passenger
                         </div>
                       </div>
                     </div>
                   </div>
-                ) : (
-                  <div className="text-center p-8">
-                    <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-600 mb-2">No Selected Option</h3>
-                    <p className="text-sm text-gray-500">
-                      Please select a recovery option to view passenger reaccommodation details.
-                    </p>
-                  </div>
-                )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
