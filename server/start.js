@@ -1666,12 +1666,7 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
       [disruptionId],
     );
 
-    console.log("pendingRecoveryOptionResult ==>", pendingRecoveryOptionResult);
-    console.log("result ==>", result);
-
     let response = result.rows.map((option) => {
-      console.log("option data from map ==>", option);
-
       if (!pendingRecoveryOptionResult.rows.length > 0) {
         return option;
       }
@@ -1685,8 +1680,6 @@ app.get("/api/recovery-options/:disruptionId", async (req, res) => {
     });
 
     res.json(response || []);
-
-    // res.json(result.rows || []);
   } catch (error) {
     console.error("Error fetching recovery options:", error);
     res.json([]);
