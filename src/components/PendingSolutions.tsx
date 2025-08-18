@@ -504,7 +504,30 @@ export function PendingSolutions() {
     try {
       console.log("Fetching detailed view for plan:", plan.id);
 
-      // Fetch the most up-to-date data from pending solutions API
+      // Fetch recovery options data for the disruption
+      let recoveryOptionsData = null;
+      let updatedPlan = null;
+
+      // First try to get recovery options from the disruption
+      if (plan.disruptionId) {
+        console.log(`Fetching recovery options for disruption ${plan.disruptionId}`);
+        const recoveryResponse = await fetch(
+          `/api/recovery-options/${plan.disruptionId}`,
+          {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+          },
+        );
+
+        if (recoveryResponse.ok) {
+          recoveryOptionsData = await recoveryResponse.json();
+          console.log("Found recovery options data:", recoveryOptionsData);
+        } else {
+          console.log("Recovery options fetch failed, status:", recoveryResponse.status);
+        }
+      }
+
+      // Also fetch the most up-to-date data from pending solutions API
       const response = await fetch(
         `/api/pending-recovery-solutions/${plan.id}`,
         {
@@ -512,8 +535,6 @@ export function PendingSolutions() {
           headers: { "Content-Type": "application/json" },
         },
       );
-
-      let updatedPlan = null;
 
       if (response.ok) {
         updatedPlan = await response.json();
@@ -526,44 +547,55 @@ export function PendingSolutions() {
         updatedPlan = allSolutions.find((s) => s.id === plan.id);
       }
 
-      if (updatedPlan) {
+      if (updatedPlan || recoveryOptionsData) {
+        // Find the specific recovery option from the options data
+        let matchingOption = null;
+        if (recoveryOptionsData && Array.isArray(recoveryOptionsData) && plan.optionId) {
+          matchingOption = recoveryOptionsData.find(opt => opt.id === plan.optionId || opt.option_id === plan.optionId);
+          console.log("Found matching recovery option:", matchingOption);
+        }
+
         // Transform the updated plan data with proper cost formatting
         const transformedPlan = {
           ...plan,
-          title: updatedPlan.option_title || plan.title,
-          status: updatedPlan.status || plan.status,
-          flightDetails: updatedPlan.full_details || plan.flightDetails || {},
-          rotationImpact: updatedPlan.rotation_impact || {},
-          fullDetails: updatedPlan.full_details || {},
+          title: updatedPlan?.option_title || plan.title,
+          status: updatedPlan?.status || plan.status,
+          flightDetails: updatedPlan?.full_details || plan.flightDetails || {},
+          rotationImpact: updatedPlan?.rotation_impact || matchingOption?.rotation_plan || {},
+          fullDetails: updatedPlan?.full_details || {},
           costBreakdown:
-            updatedPlan.cost_analysis?.breakdown ||
-            updatedPlan.full_details?.costBreakdown ||
+            updatedPlan?.cost_analysis?.breakdown ||
+            updatedPlan?.full_details?.costBreakdown ||
+            matchingOption?.cost_breakdown ||
             plan.costBreakdown ||
             {},
           recoverySteps:
-            updatedPlan.recovery_steps ||
-            updatedPlan.full_details?.recoverySteps ||
+            updatedPlan?.recovery_steps ||
+            updatedPlan?.full_details?.recoverySteps ||
             plan.recoverySteps ||
             [],
           assignedCrew:
-            updatedPlan.crew_information ||
-            updatedPlan.full_details?.assignedCrew ||
+            updatedPlan?.crew_information ||
+            updatedPlan?.full_details?.assignedCrew ||
             plan.assignedCrew ||
             [],
           passengerInformation:
-            updatedPlan.passenger_information ||
+            updatedPlan?.passenger_information ||
             plan.passengerInformation ||
             [],
           operationsUser:
-            updatedPlan.operations_user ||
+            updatedPlan?.operations_user ||
             plan.operationsUser ||
             "Operations Manager",
-          costAnalysis: updatedPlan.cost_analysis || plan.costAnalysis || {},
-          impact: updatedPlan.impact || plan.impact || "Moderate",
-          confidence: updatedPlan.confidence || plan.confidence || 80,
+          costAnalysis: updatedPlan?.cost_analysis || matchingOption?.cost_breakdown || plan.costAnalysis || {},
+          impact: updatedPlan?.impact || matchingOption?.impact || plan.impact || "Moderate",
+          confidence: updatedPlan?.confidence || matchingOption?.confidence || plan.confidence || 80,
+          // Store recovery options for the overview tab
+          recoveryOptions: recoveryOptionsData || [],
+          matchingOption: matchingOption,
           // Ensure estimatedCost is properly formatted
           estimatedCost: (() => {
-            if (updatedPlan.cost) {
+            if (updatedPlan?.cost) {
               if (typeof updatedPlan.cost === "string") {
                 const numericValue = parseInt(
                   updatedPlan.cost.replace(/[^0-9]/g, ""),
@@ -577,8 +609,9 @@ export function PendingSolutions() {
         };
 
         console.log(
-          "Transformed plan with cost:",
-          transformedPlan.estimatedCost,
+          "Transformed plan with recovery options:",
+          transformedPlan.recoveryOptions?.length || 0,
+          "options"
         );
         setSelectedPlan(transformedPlan);
       } else {
@@ -595,25 +628,39 @@ export function PendingSolutions() {
   };
 
   const handleViewOptionDetails = (option, plan) => {
-    // Create a detailed option object with all necessary data
+    // Create a detailed option object with all necessary data from API
     const detailedOption = {
       ...option,
-      id: option.id || `option_${Date.now()}`,
+      id: option.id || option.option_id || `option_${Date.now()}`,
       title: option.title || plan.title,
-      description:
-        option.description || "Comprehensive recovery option analysis",
-      cost:
-        option.cost || `AED ${(plan.estimatedCost || 50000).toLocaleString()}`,
-      timeline: option.timeline || plan.timeline || "65 min",
-      confidence: option.confidence || plan.confidence || 96.8,
-      impact: option.impact || plan.impact || "Minimal",
+      description: option.description || "Comprehensive recovery option analysis",
+      cost: option.cost || `AED ${(option.estimated_cost || plan.estimatedCost || 50000).toLocaleString()}`,
+      timeline: option.timeline || plan.timeline || "TBD",
+      confidence: option.confidence || plan.confidence || 80,
+      impact: option.impact || plan.impact || "Medium",
       flightNumber: plan.flightNumber,
       route: plan.route,
       aircraft: plan.aircraft,
       passengers: plan.affectedPassengers,
       disruptionReason: plan.disruptionReason,
+      
+      // Include additional API data
+      advantages: option.advantages || [],
+      considerations: option.considerations || [],
+      resourceRequirements: option.resource_requirements || {},
+      costBreakdown: option.cost_breakdown || {},
+      timelineDetails: option.timeline_details || {},
+      riskAssessment: option.risk_assessment || {},
+      technicalSpecs: option.technical_specs || {},
+      metrics: option.metrics || {},
+      rotationPlan: option.rotation_plan || {},
+      impactArea: option.impact_area || [],
+      impactSummary: option.impact_summary || "",
+      priority: option.priority || 1,
+      status: option.status || "available"
     };
 
+    console.log("Setting detailed option for view:", detailedOption);
     setSelectedOptionForDetails(detailedOption);
     setShowDetailedOptionAnalysis(true);
   };
@@ -1781,231 +1828,116 @@ export function PendingSolutions() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Target className="h-5 w-5" />
-                      Selected Option
+                      Recovery Options Overview
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      {selectedPlan.title ||
-                        "Maintenance Fix + Gate Optimization/Option C for Immediate Launch/Post approval."}
+                      Available recovery options for {selectedPlan.flightNumber} • {selectedPlan.route}
                     </p>
                   </CardHeader>
                   <CardContent>
-                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
-                      <p className="text-sm text-blue-800">
-                        Service will launch Aircraft A307-007 with Crew
-                        Lunch/Post approval.
-                      </p>
-                    </div>
+                    {selectedPlan.matchingOption && (
+                      <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Badge className="bg-blue-100 text-blue-700">Selected Option</Badge>
+                          <h4 className="font-medium text-blue-800">{selectedPlan.matchingOption.title}</h4>
+                        </div>
+                        <p className="text-sm text-blue-800">
+                          {selectedPlan.matchingOption.description || "Recovery option details"}
+                        </p>
+                      </div>
+                    )}
 
                     <div className="space-y-4">
                       <div className="space-y-3">
-                        <Card className="border-gray-200">
-                          <CardContent className="p-4">
-                            <div className="flex justify-between items-start mb-2">
-                              <h5 className="font-medium ">
-                                Option 1: Immediate Aircraft Swap • A317-007
-                              </h5>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-xs"
-                                onClick={() =>
-                                  handleViewOptionDetails(
-                                    {
-                                      id: "option_1",
-                                      title: "Immediate Aircraft Swap",
-                                      description:
-                                        "Service will launch Aircraft A307-007 with Crew Lunch/Post approval.",
-                                      cost: "AED 50K",
-                                      timeline: "65 min",
-                                      confidence: 96.8,
-                                      impact: "Minimal",
-                                    },
-                                    selectedPlan,
-                                  )
-                                }
-                              >
-                                View Option
-                              </Button>
-                            </div>
-                            <p className="text-sm  mb-3">
-                              Service will launch Aircraft A307-007 with Crew
-                              Lunch/Post approval.
-                            </p>
-                            <div className="grid grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <span className="text-gray-600">Cost:</span>
-                                <div className="font-medium">AED 50K</div>
+                        {selectedPlan.recoveryOptions && selectedPlan.recoveryOptions.length > 0 ? (
+                          selectedPlan.recoveryOptions.map((option, index) => {
+                            const isSelected = selectedPlan.matchingOption && 
+                              (option.id === selectedPlan.matchingOption.id || option.option_id === selectedPlan.matchingOption.option_id);
+                            
+                            return (
+                              <Card key={option.id || index} className={isSelected ? "border-orange-200 bg-orange-50" : "border-gray-200"}>
+                                <CardContent className="p-4">
+                                  <div className="flex justify-between items-start mb-2">
+                                    <h5 className={`font-medium ${isSelected ? "text-orange-800" : ""}`}>
+                                      {option.title}
+                                    </h5>
+                                    <div className="flex gap-2">
+                                      {isSelected && (
+                                        <Badge className="bg-orange-100 text-orange-700">
+                                          Selected
+                                        </Badge>
+                                      )}
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-xs"
+                                        onClick={() =>
+                                          handleViewOptionDetails(option, selectedPlan)
+                                        }
+                                      >
+                                        View Option
+                                      </Button>
+                                    </div>
+                                  </div>
+                                  <p className={`text-sm mb-3 ${isSelected ? "text-orange-700" : "text-gray-600"}`}>
+                                    {option.description || "Recovery option description"}
+                                  </p>
+                                  <div className="grid grid-cols-4 gap-4 text-sm">
+                                    <div>
+                                      <span className="text-gray-600">Cost:</span>
+                                      <div className="font-medium">
+                                        {option.cost || `AED ${(option.estimated_cost || 0).toLocaleString()}`}
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600">Timeline:</span>
+                                      <div className="font-medium">{option.timeline || "TBD"}</div>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600">Confidence:</span>
+                                      <div className="font-medium">{option.confidence || 85}%</div>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600">Impact:</span>
+                                      <div className="font-medium">{option.impact || "Medium"}</div>
+                                    </div>
+                                  </div>
+                                  {option.advantages && Array.isArray(option.advantages) && (
+                                    <div className="flex items-center gap-4 mt-3 text-sm">
+                                      <span>
+                                        Advantages: <strong>{option.advantages.slice(0, 2).join(", ")}</strong>
+                                      </span>
+                                    </div>
+                                  )}
+                                  {isSelected && option.metrics && (
+                                    <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                                      <span>Metrics:</span>
+                                      {option.metrics.otpScore && (
+                                        <span>OTP: <strong>{option.metrics.otpScore}%</strong></span>
+                                      )}
+                                      {option.metrics.networkImpact && (
+                                        <span>Network Impact: <strong>{option.metrics.networkImpact}</strong></span>
+                                      )}
+                                      {option.metrics.regulatoryRisk && (
+                                        <span>Risk: <strong>{option.metrics.regulatoryRisk}</strong></span>
+                                      )}
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            );
+                          })
+                        ) : (
+                          <Card className="border-gray-200">
+                            <CardContent className="p-4 text-center">
+                              <div className="text-gray-500">
+                                <Target className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                <p>No recovery options available</p>
+                                <p className="text-sm">Recovery options may still be generating for this disruption.</p>
                               </div>
-                              <div>
-                                <span className="text-gray-600">Timeline:</span>
-                                <div className="font-medium">65 min</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">
-                                  Confidence:
-                                </span>
-                                <div className="font-medium">96.8%</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Impact:</span>
-                                <div className="font-medium">Minimal</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4 mt-3 text-sm">
-                              <span>
-                                Passenger Impact: <strong>Minimal</strong>
-                              </span>
-                              <span>
-                                Complexity: <strong>Medium</strong>
-                              </span>
-                            </div>
-                          </CardContent>
-                        </Card>
-
-                        <Card className="border-orange-200 bg-orange-50">
-                          <CardContent className="p-4">
-                            <div className="flex justify-between items-start mb-2">
-                              <h5 className="font-medium text-orange-800">
-                                Option 2: Maintenance Fix + Gate Optimization
-                              </h5>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-xs"
-                                onClick={() =>
-                                  handleViewOptionDetails(
-                                    {
-                                      id: "option_2",
-                                      title:
-                                        "Maintenance Fix + Gate Optimization",
-                                      description:
-                                        "Expected maintenance with crew onboard to functional things.",
-                                      cost: "AED 45K",
-                                      timeline: "87 min",
-                                      confidence: 94.2,
-                                      impact: "2h 15m",
-                                    },
-                                    selectedPlan,
-                                  )
-                                }
-                              >
-                                View Option
-                              </Button>
-                            </div>
-                            <p className="text-sm text-orange-700 mb-3">
-                              Expected maintenance with crew onboard to
-                              functional things.
-                            </p>
-                            <div className="grid grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <span className="text-gray-600">Cost:</span>
-                                <div className="font-medium">AED 45K</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Timeline:</span>
-                                <div className="font-medium">87 min</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">
-                                  Confidence:
-                                </span>
-                                <div className="font-medium">94.2%</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Impact:</span>
-                                <div className="font-medium">2h 15m</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4 mt-3 text-sm">
-                              <span>
-                                Passenger Impact: <strong>High</strong>
-                              </span>
-                              <span>
-                                Complexity: <strong>High</strong>
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                              <span>Key Insight for Selected Option:</span>
-                              <span>
-                                Success Rate: <strong>94.2%</strong>
-                              </span>
-                              <span>
-                                Customer Satisfaction: <strong>86%</strong>
-                              </span>
-                              <span>
-                                Operational Risk: <strong>Medium</strong>
-                              </span>
-                              <span>
-                                Resource Utilization: <strong>Optimal</strong>
-                              </span>
-                            </div>
-                          </CardContent>
-                        </Card>
-
-                        <Card className="border-gray-200">
-                          <CardContent className="p-4">
-                            <div className="flex justify-between items-start mb-2">
-                              <h5 className="font-medium text-gray-700">
-                                Option 3: Cancel Flight + Passenger Rebooking
-                              </h5>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-xs"
-                                onClick={() =>
-                                  handleViewOptionDetails(
-                                    {
-                                      id: "option_3",
-                                      title:
-                                        "Cancel Flight + Passenger Rebooking",
-                                      description:
-                                        "Cancel current flight and reaccommodate passengers on alternative flights.",
-                                      cost: "AED 75K",
-                                      timeline: "0 min",
-                                      confidence: 86.1,
-                                      impact: "4h 30m",
-                                    },
-                                    selectedPlan,
-                                  )
-                                }
-                              >
-                                View Option
-                              </Button>
-                            </div>
-                            <p className="text-sm text-gray-600 mb-3">
-                              Cancel current flight and reaccommodate passengers
-                              on alternative flights.
-                            </p>
-                            <div className="grid grid-cols-4 gap-4 text-sm">
-                              <div>
-                                <span className="text-gray-600">Cost:</span>
-                                <div className="font-medium">AED 75K</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Timeline:</span>
-                                <div className="font-medium">0 min</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">
-                                  Confidence:
-                                </span>
-                                <div className="font-medium">86.1%</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Impact:</span>
-                                <div className="font-medium">4h 30m</div>
-                              </div>
-                            </div>
-                            <div className="flex items-center gap-4 mt-3 text-sm">
-                              <span>
-                                Passenger Impact: <strong>High</strong>
-                              </span>
-                              <span>
-                                Complexity: <strong>Low</strong>
-                              </span>
-                            </div>
-                          </CardContent>
-                        </Card>
+                            </CardContent>
+                          </Card>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -2023,40 +1955,58 @@ export function PendingSolutions() {
                         <div>
                           <span className="text-gray-600">Flight Number:</span>
                           <div className="font-medium">
-                            {selectedPlan.flightNumber || "FZ323"}
+                            {selectedPlan.flightNumber || "N/A"}
                           </div>
                         </div>
                         <div>
                           <span className="text-gray-600">Route:</span>
                           <div className="font-medium">
-                            {selectedPlan.route || "DXB → BOM"}
+                            {selectedPlan.route || "N/A"}
                           </div>
                         </div>
                         <div>
                           <span className="text-gray-600">Aircraft:</span>
                           <div className="font-medium">
-                            {selectedPlan.aircraft || "Boeing 737-800"}
+                            {selectedPlan.aircraft || "N/A"}
                           </div>
                         </div>
                         <div>
                           <span className="text-gray-600">
                             Scheduled Departure:
                           </span>
-                          <div className="font-medium">2025-01-16 14:30</div>
+                          <div className="font-medium">
+                            {selectedPlan.flightDetails?.scheduled_departure ? 
+                              formatIST(selectedPlan.flightDetails.scheduled_departure) : 
+                              "N/A"}
+                          </div>
                         </div>
                         <div>
                           <span className="text-gray-600">
-                            Scheduled Arrival:
+                            Estimated Departure:
                           </span>
-                          <div className="font-medium">2025-01-16 17:45</div>
+                          <div className="font-medium">
+                            {selectedPlan.flightDetails?.estimated_departure ? 
+                              formatIST(selectedPlan.flightDetails.estimated_departure) : 
+                              "N/A"}
+                          </div>
                         </div>
                         <div>
                           <span className="text-gray-600">Gate:</span>
-                          <div className="font-medium">A12</div>
+                          <div className="font-medium">
+                            {selectedPlan.flightDetails?.gate || "TBD"}
+                          </div>
                         </div>
                         <div>
                           <span className="text-gray-600">Terminal:</span>
-                          <div className="font-medium">3</div>
+                          <div className="font-medium">
+                            {selectedPlan.flightDetails?.terminal || "TBD"}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Delay:</span>
+                          <div className="font-medium">
+                            {selectedPlan.estimatedDelay || 0} minutes
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -2071,14 +2021,14 @@ export function PendingSolutions() {
                         <div>
                           <span className="text-gray-600">Reason:</span>
                           <div className="font-medium text-red-600">
-                            Technical Issue - Engine warning light
+                            {selectedPlan.disruptionReason || "Technical Issue"}
                           </div>
                         </div>
                         <div>
                           <span className="text-gray-600">Severity:</span>
                           <div className="font-medium">
-                            <Badge className="bg-red-100 text-red-700">
-                              High
+                            <Badge className={getPriorityColor(selectedPlan.priority || "Medium")}>
+                              {selectedPlan.priority || "Medium"}
                             </Badge>
                           </div>
                         </div>
@@ -2087,21 +2037,39 @@ export function PendingSolutions() {
                             Affected Passengers:
                           </span>
                           <div className="font-medium">
-                            {selectedPlan.affectedPassengers || "168"}
+                            {selectedPlan.affectedPassengers || "N/A"}
                           </div>
                         </div>
                         <div>
-                          <span className="text-gray-600">Cargo:</span>
-                          <div className="font-medium">8.5 tons</div>
+                          <span className="text-gray-600">Crew:</span>
+                          <div className="font-medium">
+                            {selectedPlan.flightDetails?.crew || selectedPlan.assignedCrew?.length || "N/A"}
+                          </div>
                         </div>
                         <div>
                           <span className="text-gray-600">Submitted by:</span>
-                          <div className="font-medium">Sarah Mitchell</div>
+                          <div className="font-medium">
+                            {selectedPlan.submitterName || selectedPlan.operationsUser || "System"}
+                          </div>
                         </div>
                         <div>
-                          <span className="text-gray-600">SLA Deadline:</span>
-                          <div className="font-medium text-red-600">
-                            2025-01-16 16:00:00
+                          <span className="text-gray-600">Submitted At:</span>
+                          <div className="font-medium">
+                            {formatIST(selectedPlan.submittedAt)}
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Current Status:</span>
+                          <div className="font-medium">
+                            <Badge className={getStatusColor(selectedPlan.status)}>
+                              {selectedPlan.status}
+                            </Badge>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-gray-600">Plan ID:</span>
+                          <div className="font-medium text-blue-600">
+                            {selectedPlan.id}
                           </div>
                         </div>
                       </div>
@@ -2130,13 +2098,13 @@ export function PendingSolutions() {
                               Cost (AED)
                             </th>
                             <th className="border border-gray-200 p-3 text-left">
-                              Delay (min)
+                              Timeline
                             </th>
                             <th className="border border-gray-200 p-3 text-left">
                               Confidence
                             </th>
                             <th className="border border-gray-200 p-3 text-left">
-                              Passenger Impact
+                              Impact
                             </th>
                             <th className="border border-gray-200 p-3 text-left">
                               Status
@@ -2144,63 +2112,53 @@ export function PendingSolutions() {
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>
-                            <td className="border border-gray-200 p-3">
-                              <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                Option 1
-                              </div>
-                            </td>
-                            <td className="border border-gray-200 p-3">50K</td>
-                            <td className="border border-gray-200 p-3">65</td>
-                            <td className="border border-gray-200 p-3">
-                              96.8%
-                            </td>
-                            <td className="border border-gray-200 p-3">
-                              Minimal
-                            </td>
-                            <td className="border border-gray-200 p-3">
-                              <Badge className="bg-orange-100 text-orange-700">
-                                Recommended
-                              </Badge>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="border border-gray-200 p-3">
-                              <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                                Option 2
-                              </div>
-                            </td>
-                            <td className="border border-gray-200 p-3">45K</td>
-                            <td className="border border-gray-200 p-3">87</td>
-                            <td className="border border-gray-200 p-3">
-                              94.2%
-                            </td>
-                            <td className="border border-gray-200 p-3">Low</td>
-                            <td className="border border-gray-200 p-3">
-                              <Badge className="bg-orange-100 text-orange-700">
-                                Recommended
-                              </Badge>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="border border-gray-200 p-3">
-                              <div className="flex items-center gap-2">
-                                <div className="w-2 h-2 bg-gray-400 rounded-full"></div>
-                                Option 3
-                              </div>
-                            </td>
-                            <td className="border border-gray-200 p-3">75K</td>
-                            <td className="border border-gray-200 p-3">0</td>
-                            <td className="border border-gray-200 p-3">
-                              86.1%
-                            </td>
-                            <td className="border border-gray-200 p-3">High</td>
-                            <td className="border border-gray-200 p-3">
-                              <Badge variant="outline">Alternative</Badge>
-                            </td>
-                          </tr>
+                          {selectedPlan.recoveryOptions && selectedPlan.recoveryOptions.length > 0 ? (
+                            selectedPlan.recoveryOptions.map((option, index) => {
+                              const isSelected = selectedPlan.matchingOption && 
+                                (option.id === selectedPlan.matchingOption.id || option.option_id === selectedPlan.matchingOption.option_id);
+                              
+                              return (
+                                <tr key={option.id || index} className={isSelected ? "bg-orange-50" : ""}>
+                                  <td className="border border-gray-200 p-3">
+                                    <div className="flex items-center gap-2">
+                                      <div className={`w-2 h-2 rounded-full ${isSelected ? "bg-orange-500" : "bg-gray-400"}`}></div>
+                                      {option.title || `Option ${index + 1}`}
+                                    </div>
+                                  </td>
+                                  <td className="border border-gray-200 p-3">
+                                    {option.cost ? 
+                                      (typeof option.cost === 'string' ? option.cost : `AED ${option.cost.toLocaleString()}`) :
+                                      `AED ${(option.estimated_cost || 0).toLocaleString()}`
+                                    }
+                                  </td>
+                                  <td className="border border-gray-200 p-3">
+                                    {option.timeline || "TBD"}
+                                  </td>
+                                  <td className="border border-gray-200 p-3">
+                                    {option.confidence || 85}%
+                                  </td>
+                                  <td className="border border-gray-200 p-3">
+                                    {option.impact || "Medium"}
+                                  </td>
+                                  <td className="border border-gray-200 p-3">
+                                    {isSelected ? (
+                                      <Badge className="bg-orange-100 text-orange-700">
+                                        Selected
+                                      </Badge>
+                                    ) : (
+                                      <Badge variant="outline">Available</Badge>
+                                    )}
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          ) : (
+                            <tr>
+                              <td colSpan={6} className="border border-gray-200 p-4 text-center text-gray-500">
+                                No recovery options data available
+                              </td>
+                            </tr>
+                          )}
                         </tbody>
                       </table>
                     </div>
@@ -2214,60 +2172,50 @@ export function PendingSolutions() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-600">Direct Costs:</span>
-                            <div className="font-medium">
-                              AED{" "}
-                              {(
-                                (selectedPlan.estimatedCost || 50000) * 0.6
-                              ).toLocaleString()}
+                        {selectedPlan.costBreakdown && Object.keys(selectedPlan.costBreakdown).length > 0 ? (
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            {Object.entries(selectedPlan.costBreakdown).map(([key, value]) => (
+                              <div key={key}>
+                                <span className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
+                                <div className="font-medium">
+                                  AED {typeof value === 'number' ? value.toLocaleString() : value}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="text-gray-600">Direct Costs:</span>
+                              <div className="font-medium">
+                                AED {((selectedPlan.estimatedCost || 50000) * 0.6).toLocaleString()}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">Indirect Costs:</span>
+                              <div className="font-medium">
+                                AED {((selectedPlan.estimatedCost || 50000) * 0.4).toLocaleString()}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">Passenger Compensation:</span>
+                              <div className="font-medium">
+                                AED {((selectedPlan.estimatedCost || 50000) * 0.3).toLocaleString()}
+                              </div>
+                            </div>
+                            <div>
+                              <span className="text-gray-600">Operational Costs:</span>
+                              <div className="font-medium">
+                                AED {((selectedPlan.estimatedCost || 50000) * 0.7).toLocaleString()}
+                              </div>
                             </div>
                           </div>
-                          <div>
-                            <span className="text-gray-600">
-                              Indirect Costs:
-                            </span>
-                            <div className="font-medium">
-                              AED{" "}
-                              {(
-                                (selectedPlan.estimatedCost || 50000) * 0.4
-                              ).toLocaleString()}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">
-                              Passenger Compensation:
-                            </span>
-                            <div className="font-medium">
-                              AED{" "}
-                              {(
-                                (selectedPlan.estimatedCost || 50000) * 0.3
-                              ).toLocaleString()}
-                            </div>
-                          </div>
-                          <div>
-                            <span className="text-gray-600">
-                              Operational Costs:
-                            </span>
-                            <div className="font-medium">
-                              AED{" "}
-                              {(
-                                (selectedPlan.estimatedCost || 50000) * 0.7
-                              ).toLocaleString()}
-                            </div>
-                          </div>
-                        </div>
+                        )}
                         <Separator />
                         <div className="flex justify-between items-center">
-                          <span className="font-medium">
-                            Total Estimated Cost:
-                          </span>
+                          <span className="font-medium">Total Estimated Cost:</span>
                           <span className="text-lg font-semibold text-flydubai-orange">
-                            AED{" "}
-                            {(
-                              selectedPlan.estimatedCost || 50000
-                            ).toLocaleString()}
+                            AED {(selectedPlan.estimatedCost || 50000).toLocaleString()}
                           </span>
                         </div>
                       </div>
@@ -2289,8 +2237,7 @@ export function PendingSolutions() {
                               </span>
                             </div>
                             <p className="text-sm text-yellow-700">
-                              {selectedPlan.estimatedDelay || 65} minute delay
-                              expected
+                              {selectedPlan.estimatedDelay || 0} minute delay expected
                             </p>
                           </div>
 
@@ -2302,8 +2249,7 @@ export function PendingSolutions() {
                               </span>
                             </div>
                             <p className="text-sm text-blue-700">
-                              {selectedPlan.affectedPassengers || 168}{" "}
-                              passengers affected
+                              {selectedPlan.affectedPassengers || "N/A"} passengers affected
                             </p>
                           </div>
 
@@ -2315,8 +2261,7 @@ export function PendingSolutions() {
                               </span>
                             </div>
                             <p className="text-sm text-green-700">
-                              {selectedPlan.confidence || 85}% confidence in
-                              successful resolution
+                              {selectedPlan.confidence || 80}% confidence in successful resolution
                             </p>
                           </div>
 
@@ -2328,7 +2273,9 @@ export function PendingSolutions() {
                               </span>
                             </div>
                             <p className="text-sm text-purple-700">
-                              Minimal downstream flight disruptions expected
+                              {selectedPlan.rotationImpact?.networkImpact || 
+                               selectedPlan.matchingOption?.rotation_plan?.networkImpact || 
+                               "Assessment pending"}
                             </p>
                           </div>
                         </div>
