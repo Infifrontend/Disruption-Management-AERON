@@ -445,7 +445,7 @@ export function PendingSolutions() {
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.JSON.stringify({ status: "Rejected" }),
+          body: JSON.stringify({ status: "Rejected" }),
         },
       );
 
@@ -816,7 +816,7 @@ export function PendingSolutions() {
     useEffect(() => {
       const fetchPendingSolutionData = async () => {
         if (!plan.id) return;
-
+        
         setLoadingPendingData(true);
         try {
           // Try to find the pending solution by disruption_id and option_id
@@ -825,14 +825,14 @@ export function PendingSolutions() {
             solution.disruption_id === plan.disruptionId && 
             solution.option_id === plan.optionId
           );
-
+          
           if (matchingSolution) {
             // Fetch detailed data for this specific solution
             const response = await fetch(`/api/pending-recovery-solutions/${matchingSolution.id}`, {
               method: 'GET',
               headers: { 'Content-Type': 'application/json' }
             });
-
+            
             if (response.ok) {
               const detailedData = await response.json();
               setPendingSolutionData(detailedData);
@@ -853,7 +853,7 @@ export function PendingSolutions() {
     const crewData = pendingSolutionData?.full_details?.crew_hotel_assignments || 
                      pendingSolutionData?.crew_hotel_assignments || 
                      plan.assignedCrew || [];
-
+    
     const passengerData = pendingSolutionData?.full_details?.passenger_rebooking || 
                          pendingSolutionData?.passenger_rebooking || 
                          plan.passengerInformation || [];
@@ -1592,7 +1592,11 @@ export function PendingSolutions() {
           </TabsContent>
         </Tabs>
       </div>
+    );
+  };
 
+  return (
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
