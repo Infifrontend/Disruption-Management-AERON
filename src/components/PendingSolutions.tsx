@@ -632,6 +632,9 @@ export function PendingSolutions() {
           }
         }
 
+        // Ensure we have the correct option_id for matching
+        const finalOptionId = updatedPlan?.option_id || plan.optionId;
+
         // Transform the updated plan data with proper cost formatting
         const transformedPlan = {
           ...plan,
@@ -677,7 +680,7 @@ export function PendingSolutions() {
           recoveryOptions: recoveryOptionsData || [],
           matchingOption: selectedOption || matchingOption,
           // Store the option_id from the pending solution for matching
-          optionId: updatedPlan?.option_id || plan.optionId,
+          optionId: finalOptionId,
           // Store flags for conditional tab display
           hasCrewData: !!(
             crewData &&
@@ -713,7 +716,24 @@ export function PendingSolutions() {
           transformedPlan.hasCrewData,
           "passenger data:",
           transformedPlan.hasPassengerData,
+          "optionId for matching:",
+          transformedPlan.optionId,
         );
+
+        // Debug log recovery options for matching
+        if (transformedPlan.recoveryOptions) {
+          transformedPlan.recoveryOptions.forEach((opt, idx) => {
+            console.log(`Recovery option ${idx}:`, {
+              id: opt.id,
+              option_id: opt.option_id,
+              title: opt.title,
+              matches: opt.id === transformedPlan.optionId || 
+                      opt.option_id === transformedPlan.optionId ||
+                      String(opt.id) === String(transformedPlan.optionId) ||
+                      String(opt.option_id) === String(transformedPlan.optionId)
+            });
+          });
+        }
         setSelectedPlan(transformedPlan);
       } else {
         console.log("No updated data found, using current plan data");
@@ -2018,12 +2038,11 @@ export function PendingSolutions() {
                           selectedPlan.recoveryOptions.map((option, index) => {
                             // Check if this option is selected by matching option_id from pending solution
                             const isSelected =
-                              (selectedPlan.matchingOption &&
-                                (option.id === selectedPlan.matchingOption.id ||
-                                  option.option_id === selectedPlan.matchingOption.option_id)) ||
-                              (selectedPlan.optionId && 
-                                (option.id === selectedPlan.optionId || 
-                                 option.option_id === selectedPlan.optionId));
+                              selectedPlan.optionId && 
+                              (option.id === selectedPlan.optionId || 
+                               option.option_id === selectedPlan.optionId ||
+                               String(option.id) === String(selectedPlan.optionId) ||
+                               String(option.option_id) === String(selectedPlan.optionId));
 
                             return (
                               <Card
@@ -2358,12 +2377,11 @@ export function PendingSolutions() {
                             selectedPlan.recoveryOptions.map(
                               (option, index) => {
                                 const isSelected =
-                                  (selectedPlan.matchingOption &&
-                                    (option.id === selectedPlan.matchingOption.id ||
-                                      option.option_id === selectedPlan.matchingOption.option_id)) ||
-                                  (selectedPlan.optionId && 
-                                    (option.id === selectedPlan.optionId || 
-                                     option.option_id === selectedPlan.optionId));
+                                  selectedPlan.optionId && 
+                                  (option.id === selectedPlan.optionId || 
+                                   option.option_id === selectedPlan.optionId ||
+                                   String(option.id) === String(selectedPlan.optionId) ||
+                                   String(option.option_id) === String(selectedPlan.optionId));
 
                                 return (
                                   <tr
