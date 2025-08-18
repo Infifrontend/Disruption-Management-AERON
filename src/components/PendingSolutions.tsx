@@ -816,7 +816,7 @@ export function PendingSolutions() {
     useEffect(() => {
       const fetchPendingSolutionData = async () => {
         if (!plan.id) return;
-        
+
         setLoadingPendingData(true);
         try {
           // Try to find the pending solution by disruption_id and option_id
@@ -825,14 +825,14 @@ export function PendingSolutions() {
             solution.disruption_id === plan.disruptionId && 
             solution.option_id === plan.optionId
           );
-          
+
           if (matchingSolution) {
             // Fetch detailed data for this specific solution
             const response = await fetch(`/api/pending-recovery-solutions/${matchingSolution.id}`, {
               method: 'GET',
               headers: { 'Content-Type': 'application/json' }
             });
-            
+
             if (response.ok) {
               const detailedData = await response.json();
               setPendingSolutionData(detailedData);
@@ -853,7 +853,7 @@ export function PendingSolutions() {
     const crewData = pendingSolutionData?.full_details?.crew_hotel_assignments || 
                      pendingSolutionData?.crew_hotel_assignments || 
                      plan.assignedCrew || [];
-    
+
     const passengerData = pendingSolutionData?.full_details?.passenger_rebooking || 
                          pendingSolutionData?.passenger_rebooking || 
                          plan.passengerInformation || [];
@@ -864,11 +864,15 @@ export function PendingSolutions() {
     return (
       <div className="space-y-6">
         <Tabs value={activeOptionTab} onValueChange={setActiveOptionTab}>
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className={`grid w-full ${
+            hasCrewData && hasPassengerData ? 'grid-cols-5' :
+            hasCrewData || hasPassengerData ? 'grid-cols-4' :
+            'grid-cols-3'
+          }`}>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
-            <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
-            <TabsTrigger value="passengers">Passengers</TabsTrigger>
+            {hasCrewData && <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>}
+            {hasPassengerData && <TabsTrigger value="passengers">Passengers</TabsTrigger>}
             <TabsTrigger value="resources">Resources</TabsTrigger>
           </TabsList>
 
@@ -2521,167 +2525,21 @@ export function PendingSolutions() {
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <Users className="h-5 w-5" />
-                          Crew Assignments & HOTAC Changes
+                          Crew Changes Required
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          Crew and hotel accommodation details for the selected
-                          recovery option
-                        </p>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-6">
-                          {/* Crew Assignment Changes */}
-                          <div>
-                            <h4 className="font-medium mb-3">
-                              Crew Assignment Modifications
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {(selectedPlan.assignedCrew &&
-                              selectedPlan.assignedCrew.length > 0
-                                ? selectedPlan.assignedCrew
-                                : [
-                                    {
-                                      name: "Capt. Ahmed Al-Mansouri",
-                                      role: "Captain",
-                                      status: "Reassigned",
-                                      change: "Replaced fatigued crew member",
-                                      dutyTime: "8h 30m",
-                                    },
-                                    {
-                                      name: "F/O Sarah Rahman",
-                                      role: "First Officer",
-                                      status: "Original",
-                                      change: "No change required",
-                                      dutyTime: "7h 45m",
-                                    },
-                                  ]
-                              ).map((crew, index) => (
-                                <div
-                                  key={index}
-                                  className="p-3 border rounded-lg"
-                                >
-                                  <div className="flex items-center justify-between mb-2">
-                                    <div className="font-medium">
-                                      {crew.name}
-                                    </div>
-                                    <Badge
-                                      variant={
-                                        crew.status === "Original"
-                                          ? "outline"
-                                          : "default"
-                                      }
-                                    >
-                                      {crew.status}
-                                    </Badge>
-                                  </div>
-                                  <div className="text-sm space-y-1">
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Role:
-                                      </span>
-                                      <span>{crew.role}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-muted-foreground">
-                                        Duty Time:
-                                      </span>
-                                      <span>
-                                        {crew.dutyTime ||
-                                          crew.duty_time ||
-                                          "N/A"}
-                                      </span>
-                                    </div>
-                                    <div className="text-xs text-muted-foreground mt-2">
-                                      Change:{" "}
-                                      {crew.change ||
-                                        crew.modification ||
-                                        "No changes"}
-                                    </div>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>
+                        <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span className="font-medium text-green-800">
+                              No crew changes required.
+                            </span>
                           </div>
-
-                          {/* HOTAC Arrangements */}
-                          <Separator />
-                          <div>
-                            <h4 className="font-medium mb-3">
-                              HOTAC Arrangements
-                            </h4>
-                            <div className="space-y-4">
-                              <Card className="bg-blue-50 border-blue-200">
-                                <CardContent className="p-4">
-                                  <div className="flex items-center gap-2 mb-3">
-                                    <Hotel className="h-4 w-4 text-blue-600" />
-                                    <span className="font-medium text-blue-800">
-                                      Hotel Accommodation
-                                    </span>
-                                  </div>
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Hotel:
-                                      </span>
-                                      <div className="font-medium">
-                                        {selectedPlan.matchingOption
-                                          ?.hotac_details?.hotel ||
-                                          "Mumbai Airport Hotel"}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Category:
-                                      </span>
-                                      <div className="font-medium">
-                                        {selectedPlan.matchingOption
-                                          ?.hotac_details?.category || "4-Star"}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Check-in:
-                                      </span>
-                                      <div className="font-medium">
-                                        {selectedPlan.matchingOption
-                                          ?.hotac_details?.checkin ||
-                                          "Today 15:30"}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Check-out:
-                                      </span>
-                                      <div className="font-medium">
-                                        {selectedPlan.matchingOption
-                                          ?.hotac_details?.checkout ||
-                                          "Tomorrow 12:00"}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Rooms:
-                                      </span>
-                                      <div className="font-medium">
-                                        {selectedPlan.matchingOption
-                                          ?.hotac_details?.rooms ||
-                                          "3 rooms reserved"}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Total Cost:
-                                      </span>
-                                      <div className="font-medium text-flydubai-orange">
-                                        {selectedPlan.matchingOption
-                                          ?.hotac_details?.cost || "AED 1,350"}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          </div>
+                          <p className="text-sm text-green-700">
+                            Current crew certified for{" "}
+                            {selectedOptionForDetails.id || "A321-007"}
+                          </p>
                         </div>
                       </CardContent>
                     </Card>
@@ -2698,139 +2556,79 @@ export function PendingSolutions() {
                       <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                           <Users className="h-5 w-5" />
-                          Passenger Re-accommodation
+                          Passenger Re-accommodation Summary
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                          Passenger rebooking and accommodation details for the
-                          selected recovery option
-                        </p>
                       </CardHeader>
                       <CardContent>
-                        <div className="space-y-6">
-                          {/* Passenger Summary */}
-                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <div className="text-center p-3 bg-blue-50 rounded-lg">
-                              <div className="text-2xl font-bold text-blue-600">
-                                {selectedPlan.affectedPassengers ||
-                                  selectedPlan.passengerInformation?.length ||
-                                  selectedPlan.matchingOption
-                                    ?.passenger_count ||
-                                  167}
-                              </div>
-                              <div className="text-sm text-blue-700">
-                                Total Passengers
-                              </div>
+                        <div className="grid grid-cols-3 gap-4 mb-6">
+                          <div className="text-center p-4 bg-blue-50 rounded-lg">
+                            <div className="text-3xl font-bold text-blue-600">
+                              158
                             </div>
-                            <div className="text-center p-3 bg-green-50 rounded-lg">
-                              <div className="text-2xl font-bold text-green-600">
-                                {selectedPlan.matchingOption?.passenger_details
-                                  ?.rebooked ||
-                                  Math.floor(
-                                    (selectedPlan.affectedPassengers || 167) *
-                                      0.85,
-                                  )}
-                              </div>
-                              <div className="text-sm text-green-700">
-                                Rebooked
-                              </div>
+                            <div className="text-sm text-blue-700">
+                              Total Affected
                             </div>
-                            <div className="text-center p-3 bg-yellow-50 rounded-lg">
-                              <div className="text-2xl font-bold text-yellow-600">
-                                {selectedPlan.matchingOption?.passenger_details
-                                  ?.accommodation ||
-                                  Math.floor(
-                                    (selectedPlan.affectedPassengers || 167) *
-                                      0.12,
-                                  )}
-                              </div>
-                              <div className="text-sm text-yellow-700">
-                                Accommodation
-                              </div>
+                          </div>
+                          <div className="text-center p-4 bg-green-50 rounded-lg">
+                            <div className="text-3xl font-bold text-green-600">
+                              158
                             </div>
-                            <div className="text-center p-3 bg-orange-50 rounded-lg">
-                              <div className="text-2xl font-bold text-orange-600">
-                                {selectedPlan.matchingOption?.passenger_details
-                                  ?.compensation ||
-                                  Math.floor(
-                                    (selectedPlan.affectedPassengers || 167) *
-                                      0.03,
-                                  )}
+                            <div className="text-sm text-green-700">
+                              Same Flight
+                            </div>
+                          </div>
+                          <div className="text-center p-4 bg-red-50 rounded-lg">
+                            <div className="text-3xl font-bold text-red-600">0</div>
+                            <div className="text-sm text-red-700">
+                              Other Flights
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-6">
+                          <div>
+                            <h4 className="font-medium mb-3">
+                              Accommodation Breakdown
+                            </h4>
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-sm">Meal Vouchers:</span>
+                                <span className="font-medium">0 passengers</span>
                               </div>
-                              <div className="text-sm text-orange-700">
-                                Compensation
+                              <div className="flex justify-between">
+                                <span className="text-sm">
+                                  Hotel Accommodation:
+                                </span>
+                                <span className="font-medium">0 passengers</span>
                               </div>
                             </div>
                           </div>
-
-                          {/* Passenger Rebooking Details */}
-                          {selectedPlan.passengerInformation &&
-                            selectedPlan.passengerInformation.length > 0 && (
-                              <div>
-                                <h4 className="font-medium mb-3">
-                                  Individual Passenger Details
-                                </h4>
-                                <div className="space-y-3 max-h-64 overflow-y-auto">
-                                  {selectedPlan.passengerInformation
-                                    .slice(0, 5)
-                                    .map((passenger, index) => (
-                                      <Card key={index} className="p-3">
-                                        <div className="flex items-center justify-between mb-2">
-                                          <div className="font-medium">
-                                            {passenger.passenger_name ||
-                                              `Passenger ${index + 1}`}
-                                          </div>
-                                          <Badge className="bg-green-100 text-green-700">
-                                            {passenger.rebooking_status ||
-                                              "Rebooked"}
-                                          </Badge>
-                                        </div>
-                                        <div className="text-sm space-y-1">
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              PNR:
-                                            </span>
-                                            <span>
-                                              {passenger.pnr || "N/A"}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Original Flight:
-                                            </span>
-                                            <span>
-                                              {passenger.original_flight ||
-                                                selectedPlan.flightNumber}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Rebooked Flight:
-                                            </span>
-                                            <span>
-                                              {passenger.rebooked_flight ||
-                                                "TBD"}
-                                            </span>
-                                          </div>
-                                          {passenger.notes && (
-                                            <div className="text-xs text-muted-foreground mt-2">
-                                              Notes: {passenger.notes}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </Card>
-                                    ))}
-                                  {selectedPlan.passengerInformation.length >
-                                    5 && (
-                                    <div className="text-center text-sm text-muted-foreground p-2">
-                                      ... and{" "}
-                                      {selectedPlan.passengerInformation
-                                        .length - 5}{" "}
-                                      more passengers
-                                    </div>
-                                  )}
-                                </div>
+                          <div>
+                            <h4 className="font-medium mb-3">Compensation</h4>
+                            <div className="space-y-2">
+                              <div className="flex justify-between">
+                                <span className="text-sm">
+                                  €250 per passenger (EU261):
+                                </span>
+                                <span className="font-medium">
+                                  €250 per passenger (EU261)
+                                </span>
                               </div>
-                            )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Info className="h-4 w-4 text-blue-600" />
+                            <span className="font-medium text-blue-800">
+                              Re-accommodation Details:
+                            </span>
+                          </div>
+                          <p className="text-sm text-blue-700">
+                            All passengers accommodated on same aircraft with 65min
+                            delay.
+                          </p>
                         </div>
                       </CardContent>
                     </Card>
@@ -3060,7 +2858,13 @@ export function PendingSolutions() {
 
           {selectedOptionForDetails && (
             <Tabs defaultValue="option-details" className="w-full">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className={`grid w-full ${
+                selectedPlan.hasCrewData && selectedPlan.hasPassengerData
+                  ? "grid-cols-5"
+                  : selectedPlan.hasCrewData || selectedPlan.hasPassengerData
+                    ? "grid-cols-4"
+                    : "grid-cols-3"
+              }`}>
                 <TabsTrigger value="option-details">Option Details</TabsTrigger>
                 <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
                 <TabsTrigger value="passenger-reaccommodation">
