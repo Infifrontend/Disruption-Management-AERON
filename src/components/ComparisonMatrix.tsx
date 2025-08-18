@@ -105,6 +105,10 @@ export function ComparisonMatrix({
   const [executingOption, setExecutingOption] = useState(null);
   const [showExecuteConfirmDialog, setShowExecuteConfirmDialog] = useState(false);
   const [optionToConfirm, setOptionToConfirm] = useState(null);
+  const [selectedAircraftFlight, setSelectedAircraftFlight] = useState(null);
+  const [showCrewSwapDialog, setShowCrewSwapDialog] = useState(false);
+  const [selectedCrewForSwap, setSelectedCrewForSwap] = useState(null);
+  const [availableCrewForSwap, setAvailableCrewForSwap] = useState([]);
 
   // Load recovery options from database based on disruption category
   useEffect(() => {
@@ -1711,11 +1715,11 @@ export function ComparisonMatrix({
               <Tabs defaultValue="overview" className="w-full">
                 <TabsList className="grid w-full grid-cols-6">
                   <TabsTrigger value="overview">Overview</TabsTrigger>
+                  <TabsTrigger value="aircraft">Alternate Aircraft Options</TabsTrigger>
+                  <TabsTrigger value="crew">Crew Availability</TabsTrigger>
                   <TabsTrigger value="costs">Cost Analysis</TabsTrigger>
                   <TabsTrigger value="timeline">Timeline</TabsTrigger>
-                  <TabsTrigger value="resources">Resources</TabsTrigger>
-                  <TabsTrigger value="risks">Risk Assessment</TabsTrigger>
-                  <TabsTrigger value="technical">Technical Details</TabsTrigger>
+                  <TabsTrigger value="resources-risks">Resources & Risk Assessment</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="overview" className="space-y-4">
@@ -1882,6 +1886,231 @@ export function ComparisonMatrix({
                       </CardContent>
                     </Card>
                   </div>
+                </TabsContent>
+
+                <TabsContent value="aircraft" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Plane className="h-4 w-4 text-flydubai-blue" />
+                        Available Aircraft Options - {selectedOptionDetails?.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedOptionDetails?.rotation_plan?.aircraftOptions?.length > 0 ? (
+                        <div className="space-y-4">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Aircraft Reg</TableHead>
+                                <TableHead>Type/Config</TableHead>
+                                <TableHead>ETOPS Capability</TableHead>
+                                <TableHead>Cabin Match</TableHead>
+                                <TableHead>Availability</TableHead>
+                                <TableHead>Assigned Elsewhere</TableHead>
+                                <TableHead>Turnaround</TableHead>
+                                <TableHead>Maintenance</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {selectedOptionDetails.rotation_plan.aircraftOptions.map((aircraft, index) => (
+                                <TableRow 
+                                  key={index}
+                                  className={`cursor-pointer hover:bg-blue-50 ${
+                                    selectedAircraftFlight === index || (selectedAircraftFlight === null && index === 0) 
+                                      ? "bg-blue-100 border-l-4 border-flydubai-blue" 
+                                      : ""
+                                  }`}
+                                  onClick={() => setSelectedAircraftFlight(index)}
+                                >
+                                  <TableCell className="font-medium">
+                                    {aircraft.reg || aircraft.aircraft}
+                                  </TableCell>
+                                  <TableCell>{aircraft.type || "B737-800 (189Y)"}</TableCell>
+                                  <TableCell>
+                                    {aircraft.etops?.status === "available" ? (
+                                      <div className="flex items-center gap-1">
+                                        <CheckCircle className="h-4 w-4 text-green-600" />
+                                        <span className="text-green-600">{aircraft.etops.value || "180min"}</span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1">
+                                        <XCircle className="h-4 w-4 text-red-600" />
+                                        <span className="text-red-600">Reduced</span>
+                                      </div>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    {aircraft.cabinMatch?.status === "exact" ? (
+                                      <div className="flex items-center gap-1">
+                                        <CheckCircle className="h-4 w-4 text-green-600" />
+                                        <span className="text-green-600">Exact</span>
+                                      </div>
+                                    ) : aircraft.cabinMatch?.status === "similar" ? (
+                                      <div className="flex items-center gap-1">
+                                        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                                        <span className="text-yellow-600">Similar</span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1">
+                                        <XCircle className="h-4 w-4 text-red-600" />
+                                        <span className="text-red-600">Reduced</span>
+                                      </div>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    <span className={aircraft.availability?.includes("Available") ? "text-green-600" : "text-blue-600"}>
+                                      {aircraft.availability || "Available Now"}
+                                    </span>
+                                  </TableCell>
+                                  <TableCell>
+                                    {aircraft.assigned?.status === "none" ? (
+                                      <div className="flex items-center gap-1">
+                                        <CheckCircle className="h-4 w-4 text-green-600" />
+                                        <span className="text-green-600">None</span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1">
+                                        <XCircle className="h-4 w-4 text-red-600" />
+                                        <span className="text-red-600">{aircraft.assigned?.value || "FZ892"}</span>
+                                      </div>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>{aircraft.turnaround || aircraft.turnaroundTime || "45 min"}</TableCell>
+                                  <TableCell>
+                                    {aircraft.maintenance?.status === "current" ? (
+                                      <div className="flex items-center gap-1">
+                                        <CheckCircle className="h-4 w-4 text-green-600" />
+                                        <span className="text-green-600">Current</span>
+                                      </div>
+                                    ) : aircraft.maintenance?.status === "due" ? (
+                                      <div className="flex items-center gap-1">
+                                        <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                                        <span className="text-yellow-600">Due A-Check</span>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1">
+                                        <XCircle className="h-4 w-4 text-red-600" />
+                                        <span className="text-red-600">AOG</span>
+                                      </div>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <Plane className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>No alternate aircraft options available</p>
+                          <p className="text-xs mt-1">Standard aircraft assignment will be maintained</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+
+                <TabsContent value="crew" className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <Users className="h-4 w-4 text-flydubai-blue" />
+                        Crew Status - {selectedOptionDetails?.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {selectedOptionDetails?.rotation_plan?.crew?.length > 0 || selectedOptionDetails?.rotation_plan?.crewData?.length > 0 ? (
+                        <div className="space-y-4">
+                          {(selectedOptionDetails.rotation_plan.crew || selectedOptionDetails.rotation_plan.crewData || []).map((crewMember, index) => (
+                            <div
+                              key={index}
+                              className={`p-4 border rounded-lg ${
+                                crewMember.status === "Available" || crewMember.availability === "Available"
+                                  ? "bg-green-50 border-green-200"
+                                  : crewMember.status === "Reassigned" || crewMember.status === "On Duty"
+                                  ? "bg-yellow-50 border-yellow-200"
+                                  : "bg-red-50 border-red-200"
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-3">
+                                    <div>
+                                      <h4 className="font-medium text-lg">{crewMember.name}</h4>
+                                      <p className="text-sm text-gray-600">{crewMember.type || crewMember.role || crewMember.position}</p>
+                                    </div>
+                                  </div>
+                                  {crewMember.location && (
+                                    <p className="text-xs text-gray-500 mt-1">Location: {crewMember.location}</p>
+                                  )}
+                                  {crewMember.issue && (
+                                    <p className="text-xs text-red-600 mt-1">{crewMember.issue}</p>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <Badge
+                                    className={`px-3 py-1 ${
+                                      crewMember.status === "Available" || crewMember.availability === "Available"
+                                        ? "bg-green-100 text-green-700 border-green-300"
+                                        : crewMember.status === "On Duty" || crewMember.status === "Reassigned"
+                                        ? "bg-yellow-100 text-yellow-700 border-yellow-300"
+                                        : "bg-red-100 text-red-700 border-red-300"
+                                    }`}
+                                  >
+                                    {crewMember.status || crewMember.availability}
+                                  </Badge>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                    onClick={() => {
+                                      setSelectedCrewForSwap(crewMember);
+                                      // Generate sample available crew for the same role
+                                      const sampleAvailableCrew = [
+                                        {
+                                          name: "Capt. Mohammed Al-Zaabi",
+                                          role: crewMember.type || crewMember.role || crewMember.position,
+                                          rating: "B737 Type Rating",
+                                          status: "Available",
+                                          location: "DXB",
+                                        },
+                                        {
+                                          name: "Capt. Sarah Mitchell",
+                                          role: crewMember.type || crewMember.role || crewMember.position,
+                                          rating: "B737/MAX Type Rating",
+                                          status: "Available",
+                                          location: "DXB",
+                                        },
+                                        {
+                                          name: "FO Ahmed Hassan",
+                                          role: crewMember.type || crewMember.role || crewMember.position,
+                                          rating: "B737/MAX Type Rating",
+                                          status: "Available",
+                                          location: "SHJ",
+                                        },
+                                      ].filter(crew => crew.role === (crewMember.type || crewMember.role || crewMember.position));
+                                      setAvailableCrewForSwap(sampleAvailableCrew);
+                                      setShowCrewSwapDialog(true);
+                                    }}
+                                  >
+                                    <UserCheck className="h-4 w-4 mr-2" />
+                                    Swap
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                          <p>No crew assignments available</p>
+                          <p className="text-xs mt-1">Standard crew assignment will be managed</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 </TabsContent>
 
                 <TabsContent value="costs" className="space-y-4">
@@ -2170,34 +2399,34 @@ export function ComparisonMatrix({
                   </Card>
                 </TabsContent>
 
-                <TabsContent value="resources" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Users className="h-4 w-4 text-flydubai-blue" />
-                        Resource Requirements
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {selectedOptionDetails.resourceRequirements &&
-                      selectedOptionDetails.resourceRequirements.length > 0 ? (
-                        <div className="space-y-4">
-                          {selectedOptionDetails.resourceRequirements.map(
-                            (resource, index) => (
-                              <div
-                                key={index}
-                                className="p-4 border rounded-lg"
-                              >
-                                <div className="flex justify-between items-start mb-2">
-                                  <div>
-                                    <h4 className="font-medium text-sm">
-                                      {resource.title || resource.type}
-                                    </h4>
-                                    <p className="text-sm text-gray-700">
-                                      {resource.subtitle || resource.resource}
-                                    </p>
-                                  </div>
-                                  <div className="flex flex-col gap-1">
+                <TabsContent value="resources-risks" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <Users className="h-4 w-4 text-flydubai-blue" />
+                          Resource Requirements
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {selectedOptionDetails.resourceRequirements &&
+                        selectedOptionDetails.resourceRequirements.length > 0 ? (
+                          <div className="space-y-4">
+                            {selectedOptionDetails.resourceRequirements.map(
+                              (resource, index) => (
+                                <div
+                                  key={index}
+                                  className="p-3 border rounded-lg"
+                                >
+                                  <div className="flex justify-between items-start mb-2">
+                                    <div>
+                                      <h4 className="font-medium text-sm">
+                                        {resource.title || resource.type}
+                                      </h4>
+                                      <p className="text-xs text-gray-600">
+                                        {resource.subtitle || resource.resource}
+                                      </p>
+                                    </div>
                                     <Badge
                                       className={
                                         resource.availability === "Available" ||
@@ -2208,66 +2437,45 @@ export function ComparisonMatrix({
                                     >
                                       {resource.availability}
                                     </Badge>
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs"
-                                    >
-                                      {resource.status}
-                                    </Badge>
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    <div><strong>Location:</strong> {resource.location}</div>
+                                    <div><strong>ETA:</strong> {resource.eta}</div>
                                   </div>
                                 </div>
-                                <div className="text-xs text-gray-600 space-y-1">
-                                  <div>
-                                    <strong>Location:</strong>{" "}
-                                    {resource.location}
-                                  </div>
-                                  <div>
-                                    <strong>ETA:</strong> {resource.eta}
-                                  </div>
-                                  <div>
-                                    <strong>Details:</strong> {resource.details}
-                                  </div>
-                                </div>
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 text-gray-500">
-                          <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>
-                            Standard operational resources will be allocated as
-                            needed.
-                          </p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
+                              ),
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center py-6 text-gray-500">
+                            <Users className="h-6 w-6 mx-auto mb-2 opacity-50" />
+                            <p className="text-xs">Standard resources allocated</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
 
-                <TabsContent value="risks" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4 text-flydubai-blue" />
-                        Risk Assessment
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {selectedOptionDetails.riskAssessment &&
-                      selectedOptionDetails.riskAssessment.length > 0 ? (
-                        <div className="space-y-4">
-                          {selectedOptionDetails.riskAssessment.map(
-                            (riskItem, index) => (
-                              <div
-                                key={index}
-                                className="p-4 border rounded-lg"
-                              >
-                                <div className="flex justify-between items-start mb-2">
-                                  <h4 className="font-medium text-sm">
-                                    {riskItem.risk}
-                                  </h4>
-                                  <div className="flex gap-2">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-sm flex items-center gap-2">
+                          <AlertTriangle className="h-4 w-4 text-flydubai-blue" />
+                          Risk Assessment
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {selectedOptionDetails.riskAssessment &&
+                        selectedOptionDetails.riskAssessment.length > 0 ? (
+                          <div className="space-y-4">
+                            {selectedOptionDetails.riskAssessment.map(
+                              (riskItem, index) => (
+                                <div
+                                  key={index}
+                                  className="p-3 border rounded-lg"
+                                >
+                                  <div className="flex justify-between items-start mb-2">
+                                    <h4 className="font-medium text-sm">
+                                      {riskItem.risk}
+                                    </h4>
                                     <Badge
                                       className={getRiskColor(
                                         riskItem.riskImpact ||
@@ -2278,209 +2486,28 @@ export function ComparisonMatrix({
                                       {riskItem.riskImpact ||
                                         riskItem.probability}
                                     </Badge>
-                                    <Badge
-                                      className={getRiskColor(
-                                        riskItem.mitigationImpact ||
-                                          riskItem.impact,
-                                      )}
-                                      variant="outline"
-                                    >
-                                      {riskItem.mitigationImpact ||
-                                        riskItem.impact}
-                                    </Badge>
                                   </div>
-                                </div>
-                                <p className="text-sm text-gray-700">
-                                  <strong>Mitigation:</strong>{" "}
-                                  {riskItem.mitigation}
-                                </p>
-                                {riskItem.score && (
-                                  <p className="text-xs text-gray-600 mt-1">
-                                    <strong>Risk Score:</strong>{" "}
-                                    {riskItem.score}/10
+                                  <p className="text-xs text-gray-700">
+                                    <strong>Mitigation:</strong> {riskItem.mitigation}
                                   </p>
-                                )}
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 text-gray-500">
-                          <AlertTriangle className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>Standard operational risk procedures apply.</p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="technical" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Settings className="h-4 w-4 text-flydubai-blue" />
-                        Technical Specifications
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {selectedOptionDetails.technical_specs &&
-                      typeof selectedOptionDetails.technical_specs ===
-                        "object" &&
-                      selectedOptionDetails.technical_specs !== null &&
-                      Object.keys(selectedOptionDetails.technical_specs)
-                        .length > 0 ? (
-                        <div className="space-y-4">
-                          {Object.entries(
-                            selectedOptionDetails.technical_specs || {},
-                          ).map(([key, value]) => (
-                            <div key={key} className="p-3 border rounded-lg">
-                              <h4 className="font-medium text-sm capitalize mb-2">
-                                {key
-                                  .replace(/([A-Z])/g, " $1")
-                                  .replace(/_/g, " ")
-                                  .replace(/^./, (str) => str.toUpperCase())}
-                                
-                              </h4>
-                              {Array.isArray(value) ? (
-                                <ul className="text-sm text-gray-700 space-y-1">
-                                  {value.map((item, index) => (
-                                    <li
-                                      key={index}
-                                      className="flex items-start gap-2"
-                                    >
-                                      <div className="w-2 h-2 bg-flydubai-blue rounded-full mt-1.5 flex-shrink-0"></div>
-                                      {typeof item === "object"
-                                        ? JSON.stringify(item)
-                                        : item}
-                                    </li>
-                                  ))}
-                                </ul>
-                              ) : typeof value === "object" &&
-                                value !== null ? (
-                                <div className="space-y-2">
-                                  {Object.entries(value || {}).map(
-                                    ([subKey, subValue]) => (
-                                      <div key={subKey} className="text-sm">
-                                        <span className="font-medium capitalize">
-                                          {subKey.replace(/_/g, " ")}:
-                                        </span>{" "}
-                                        <span className="text-gray-700">
-                                          {Array.isArray(subValue) ? (
-                                            <ul className="mt-1 ml-4 space-y-1">
-                                              {subValue.map(
-                                                (listItem, listIndex) => (
-                                                  <li
-                                                    key={listIndex}
-                                                    className="flex items-start gap-2"
-                                                  >
-                                                    <div className="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 flex-shrink-0"></div>
-                                                    {typeof listItem ===
-                                                    "object"
-                                                      ? JSON.stringify(listItem)
-                                                      : listItem}
-                                                  </li>
-                                                ),
-                                              )}
-                                            </ul>
-                                          ) : typeof subValue === "object" &&
-                                            subValue !== null ? (
-                                            JSON.stringify(subValue)
-                                          ) : (
-                                            subValue || "N/A"
-                                          )}
-                                        </span>
-                                      </div>
-                                    ),
+                                  {riskItem.score && (
+                                    <p className="text-xs text-gray-600 mt-1">
+                                      Risk Score: {riskItem.score}/10
+                                    </p>
                                   )}
                                 </div>
-                              ) : typeof value === "string" &&
-                                value.startsWith("[") &&
-                                value.endsWith("]") ? (
-                                // Handle string arrays that look like ["item1","item2","item3"]
-                                <div>
-                                  {(() => {
-                                    try {
-                                      const parsed = JSON.parse(value);
-                                      if (Array.isArray(parsed)) {
-                                        return (
-                                          <ul className="text-sm text-gray-700 space-y-1">
-                                            {parsed.map((item, index) => (
-                                              <li
-                                                key={index}
-                                                className="flex items-start gap-2"
-                                              >
-                                                <div className="w-2 h-2 bg-flydubai-blue rounded-full mt-1.5 flex-shrink-0"></div>
-                                                {item}
-                                              </li>
-                                            ))}
-                                          </ul>
-                                        );
-                                      }
-                                    } catch (e) {
-                                      // If parsing fails, treat as regular string
-                                    }
-                                    return (
-                                      <p className="text-sm text-gray-700">
-                                        {value}
-                                      </p>
-                                    );
-                                  })()}
-                                </div>
-                              ) : (
-                                <p className="text-sm text-gray-700">{value}</p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : selectedOptionDetails.technicalSpecs &&
-                        typeof selectedOptionDetails.technicalSpecs ===
-                          "object" &&
-                        selectedOptionDetails.technicalSpecs !== null &&
-                        Object.keys(selectedOptionDetails.technicalSpecs)
-                          .length > 0 ? (
-                        <div className="space-y-4">
-                          {Object.entries(
-                            selectedOptionDetails.technicalSpecs || {},
-                          ).map(([key, value]) => (
-                            <div key={key} className="p-3 border rounded-lg">
-                              <h4 className="font-medium text-sm capitalize mb-2">
-                                {key
-                                  .replace(/([A-Z])/g, " $1")
-                                  .replace(/^./, (str) => str.toUpperCase())}
-                              </h4>
-                              {Array.isArray(value) ? (
-                                <ul className="text-sm text-gray-700 space-y-1">
-                                  {value.map((item, index) => (
-                                    <li
-                                      key={index}
-                                      className="flex items-start gap-2"
-                                    >
-                                      <div className="w-2 h-2 bg-flydubai-blue rounded-full mt-1.5 flex-shrink-0"></div>
-                                      {item}
-                                    </li>
-                                  ))}
-                                </ul>
-                              ) : (
-                                <p className="text-sm text-gray-700">{value}</p>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 text-gray-500">
-                          <Settings className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>
-                            Standard operational procedures and aircraft
-                            specifications apply.
-                          </p>
-                          <p className="text-xs mt-2 text-gray-400">
-                            Technical specifications will be populated when
-                            detailed analysis is available.
-                          </p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
+                              ),
+                            )}
+                          </div>
+                        ) : (
+                          <div className="text-center py-6 text-gray-500">
+                            <AlertTriangle className="h-6 w-6 mx-auto mb-2 opacity-50" />
+                            <p className="text-xs">Standard risk procedures apply</p>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </div>
                 </TabsContent>
               </Tabs>
             </div>
@@ -3106,6 +3133,76 @@ export function ComparisonMatrix({
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Crew Swap Dialog */}
+      <Dialog open={showCrewSwapDialog} onOpenChange={setShowCrewSwapDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5 text-flydubai-blue" />
+              Swap Crew Member
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedCrewForSwap && (
+            <div className="space-y-4">
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-800">Current Assignment</h4>
+                <p className="text-sm text-blue-700">
+                  {selectedCrewForSwap.name} - {selectedCrewForSwap.type || selectedCrewForSwap.role || selectedCrewForSwap.position}
+                </p>
+              </div>
+              
+              <div className="space-y-2">
+                <h4 className="font-medium text-gray-800">Available Crew Members</h4>
+                {availableCrewForSwap.length > 0 ? (
+                  availableCrewForSwap.map((crewMember, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                    >
+                      <div>
+                        <p className="font-medium">{crewMember.name}</p>
+                        <p className="text-sm text-gray-600">{crewMember.rating}</p>
+                        <p className="text-xs text-gray-500">Location: {crewMember.location}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Badge className="bg-green-100 text-green-700">
+                          {crewMember.status}
+                        </Badge>
+                        <Button
+                          size="sm"
+                          className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
+                          onClick={() => {
+                            setShowCrewSwapDialog(false);
+                            // Here you would implement the actual crew swap logic
+                            console.log("Assigning crew:", crewMember, "to replace:", selectedCrewForSwap);
+                          }}
+                        >
+                          Assign
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-gray-500">
+                    <p>No available crew members found for this role</p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex justify-end gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowCrewSwapDialog(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
