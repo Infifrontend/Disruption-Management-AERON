@@ -567,36 +567,45 @@ export function PendingSolutions() {
           console.log("Found matching recovery option:", matchingOption);
         }
 
-        // Parse crew and passenger data from the matching option
+        // Parse crew and passenger data from the matching option or find selected option
         let crewData = null;
         let passengerData = null;
+        let selectedOption = matchingOption;
 
-        if (matchingOption) {
-          // Check for crew information in the matching option
+        // If no matching option found but we have recovery options, find the selected one by option_id
+        if (!selectedOption && recoveryOptionsData && plan.optionId) {
+          selectedOption = recoveryOptionsData.find(
+            (opt) => opt.id === plan.optionId || opt.option_id === plan.optionId
+          );
+          console.log("Found selected option by optionId:", selectedOption);
+        }
+
+        if (selectedOption) {
+          // Check for crew information in the selected option
           if (
-            matchingOption.crew_information ||
-            matchingOption.crew_details ||
-            matchingOption.resource_requirements?.crew ||
-            matchingOption.hotac_requirements
+            selectedOption.crew_information ||
+            selectedOption.crew_details ||
+            selectedOption.resource_requirements?.crew ||
+            selectedOption.hotac_requirements
           ) {
             crewData =
-              matchingOption.crew_information ||
-              matchingOption.crew_details ||
-              matchingOption.resource_requirements?.crew ||
-              matchingOption.hotac_requirements;
+              selectedOption.crew_information ||
+              selectedOption.crew_details ||
+              selectedOption.resource_requirements?.crew ||
+              selectedOption.hotac_requirements;
           }
 
-          // Check for passenger information in the matching option
+          // Check for passenger information in the selected option
           if (
-            matchingOption.passenger_information ||
-            matchingOption.passenger_details ||
-            matchingOption.passenger_reaccommodation ||
-            matchingOption.impact_area?.includes("passenger")
+            selectedOption.passenger_information ||
+            selectedOption.passenger_details ||
+            selectedOption.passenger_reaccommodation ||
+            selectedOption.impact_area?.includes("passenger")
           ) {
             passengerData =
-              matchingOption.passenger_information ||
-              matchingOption.passenger_details ||
-              matchingOption.passenger_reaccommodation;
+              selectedOption.passenger_information ||
+              selectedOption.passenger_details ||
+              selectedOption.passenger_reaccommodation;
           }
         }
 
@@ -666,7 +675,9 @@ export function PendingSolutions() {
             80,
           // Store recovery options for the overview tab
           recoveryOptions: recoveryOptionsData || [],
-          matchingOption: matchingOption,
+          matchingOption: selectedOption || matchingOption,
+          // Store the option_id from the pending solution for matching
+          optionId: updatedPlan?.option_id || plan.optionId,
           // Store flags for conditional tab display
           hasCrewData: !!(
             crewData &&
@@ -2005,11 +2016,14 @@ export function PendingSolutions() {
                         {selectedPlan.recoveryOptions &&
                         selectedPlan.recoveryOptions.length > 0 ? (
                           selectedPlan.recoveryOptions.map((option, index) => {
+                            // Check if this option is selected by matching option_id from pending solution
                             const isSelected =
-                              selectedPlan.matchingOption &&
-                              (option.id === selectedPlan.matchingOption.id ||
-                                option.option_id ===
-                                  selectedPlan.matchingOption.option_id);
+                              (selectedPlan.matchingOption &&
+                                (option.id === selectedPlan.matchingOption.id ||
+                                  option.option_id === selectedPlan.matchingOption.option_id)) ||
+                              (selectedPlan.optionId && 
+                                (option.id === selectedPlan.optionId || 
+                                 option.option_id === selectedPlan.optionId));
 
                             return (
                               <Card
@@ -2344,11 +2358,12 @@ export function PendingSolutions() {
                             selectedPlan.recoveryOptions.map(
                               (option, index) => {
                                 const isSelected =
-                                  selectedPlan.matchingOption &&
-                                  (option.id ===
-                                    selectedPlan.matchingOption.id ||
-                                    option.option_id ===
-                                      selectedPlan.matchingOption.option_id);
+                                  (selectedPlan.matchingOption &&
+                                    (option.id === selectedPlan.matchingOption.id ||
+                                      option.option_id === selectedPlan.matchingOption.option_id)) ||
+                                  (selectedPlan.optionId && 
+                                    (option.id === selectedPlan.optionId || 
+                                     option.option_id === selectedPlan.optionId));
 
                                 return (
                                   <tr
