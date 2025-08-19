@@ -1,36 +1,64 @@
-import React from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAppContext } from '../context/AppContext'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Badge } from '../components/ui/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select'
-import { Alert, AlertDescription } from '../components/ui/alert'
-import { WorldMap } from '../components/WorldMap'
-import { 
-  AlertTriangle, BarChart3, Filter, AlertCircle, Zap, UserCheck, 
-  Plane, Fuel, Wrench, Hotel, ClockIcon, CheckSquare, Users, Calendar,
-  Globe, TrendingUp, MapPin, Activity, Radar
-} from 'lucide-react'
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAppContext } from "../context/AppContext";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Badge } from "../components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../components/ui/select";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { WorldMap } from "../components/WorldMap";
+import {
+  AlertTriangle,
+  BarChart3,
+  Filter,
+  AlertCircle,
+  Zap,
+  UserCheck,
+  Plane,
+  Fuel,
+  Wrench,
+  Hotel,
+  ClockIcon,
+  CheckSquare,
+  Users,
+  Calendar,
+  Globe,
+  TrendingUp,
+  MapPin,
+  Activity,
+  Radar,
+} from "lucide-react";
 
 export function Dashboard() {
-  const navigate = useNavigate()
-  const { filters, setFilters, screenSettings, setSelectedDisruption } = useAppContext()
+  const navigate = useNavigate();
+  const { filters, setFilters, screenSettings, setSelectedDisruption } =
+    useAppContext();
 
-  const enabledScreens = screenSettings.filter(screen => screen.enabled)
+  const enabledScreens = screenSettings.filter((screen) => screen.enabled);
 
   const handleCreateRecoveryPlan = (disruption: any) => {
-    setSelectedDisruption(disruption)
-    navigate('/disruption')
-  }
+    setSelectedDisruption(disruption);
+    navigate("/disruption");
+  };
 
   const navigateToScreen = (screenId: string) => {
-    const screen = enabledScreens.find(s => s.id === screenId)
+    const screen = enabledScreens.find((s) => s.id === screenId);
     if (screen) {
-      navigate(screenId === 'dashboard' ? '/' : `/${screenId}`)
+      navigate(screenId === "dashboard" ? "/" : `/${screenId}`);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -38,7 +66,8 @@ export function Dashboard() {
       <Alert className="border-flydubai-orange bg-orange-50">
         <AlertTriangle className="h-4 w-4 text-flydubai-orange" />
         <AlertDescription className="text-orange-800">
-          <strong>Active Disruptions:</strong> 18 Flydubai flights affected by sandstorm at DXB. AERON recovery plans available.
+          <strong>Active Disruptions:</strong> 18 Flydubai flights affected by
+          sandstorm at DXB. AERON recovery plans available.
         </AlertDescription>
       </Alert>
 
@@ -52,24 +81,41 @@ export function Dashboard() {
                 <div className="absolute -inset-1 bg-flydubai-blue rounded-lg opacity-10 blur-sm"></div>
               </div>
               <div>
-                <h3 className="font-medium text-flydubai-navy">Flydubai AERON Performance Today</h3>
-                <p className="text-sm text-muted-foreground">8 recovery decisions processed • 96.1% success rate</p>
+                <h3 className="font-medium text-flydubai-navy">
+                  Flydubai AERON Performance Today
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  8 recovery decisions processed • 96.1% success rate
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-6">
               <div className="text-center">
-                <p className="text-lg font-semibold text-flydubai-blue">AED 312K</p>
+                <p className="text-lg font-semibold text-flydubai-blue">
+                  AED 312K
+                </p>
                 <p className="text-xs text-muted-foreground">Cost Savings</p>
               </div>
               <div className="text-center">
-                <p className="text-lg font-semibold text-flydubai-navy">7.8 min</p>
+                <p className="text-lg font-semibold text-flydubai-navy">
+                  7.8 min
+                </p>
                 <p className="text-xs text-muted-foreground">Avg Decision</p>
               </div>
               <div className="text-center">
-                <p className="text-lg font-semibold text-flydubai-orange">2,847</p>
-                <p className="text-xs text-muted-foreground">Passengers Served</p>
+                <p className="text-lg font-semibold text-flydubai-orange">
+                  2,847
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Passengers Served
+                </p>
               </div>
-              <Button variant="outline" size="sm" onClick={() => navigateToScreen('reports')} className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigateToScreen("reports")}
+                className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+              >
                 View Full Analytics
               </Button>
             </div>
@@ -91,34 +137,46 @@ export function Dashboard() {
               <div className="bg-red-50 p-4 rounded-lg border border-red-200">
                 <div className="flex items-center gap-2 mb-2">
                   <AlertTriangle className="h-4 w-4 text-red-600" />
-                  <span className="text-sm font-medium text-red-900">Affected Passengers</span>
+                  <span className="text-sm font-medium text-red-900">
+                    Affected Passengers
+                  </span>
                 </div>
-                <p className="text-2xl font-bold text-red-700">4,127</p>
+                <p className="text-2xl font-bold text-red-700">754</p>
                 <p className="text-xs text-red-600">Across all disruptions</p>
               </div>
               <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
                 <div className="flex items-center gap-2 mb-2">
                   <ClockIcon className="h-4 w-4 text-yellow-600" />
-                  <span className="text-sm font-medium text-yellow-900">High Priority</span>
+                  <span className="text-sm font-medium text-yellow-900">
+                    High Priority
+                  </span>
                 </div>
-                <p className="text-2xl font-bold text-yellow-700">1,238</p>
-                <p className="text-xs text-yellow-600">Need immediate attention</p>
+                <p className="text-2xl font-bold text-yellow-700">400</p>
+                <p className="text-xs text-yellow-600">
+                  Need immediate attention
+                </p>
               </div>
               <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                 <div className="flex items-center gap-2 mb-2">
                   <Plane className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm font-medium text-blue-900">Rebookings</span>
+                  <span className="text-sm font-medium text-blue-900">
+                    Rebookings
+                  </span>
                 </div>
-                <p className="text-2xl font-bold text-blue-700">892</p>
+                <p className="text-2xl font-bold text-blue-700">255</p>
                 <p className="text-xs text-blue-600">Successfully rebooked</p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                 <div className="flex items-center gap-2 mb-2">
                   <CheckSquare className="h-4 w-4 text-green-600" />
-                  <span className="text-sm font-medium text-green-900">Resolved</span>
+                  <span className="text-sm font-medium text-green-900">
+                    Resolved
+                  </span>
                 </div>
-                <p className="text-2xl font-bold text-green-700">2,997</p>
-                <p className="text-xs text-green-600">Passengers accommodated</p>
+                <p className="text-2xl font-bold text-green-700">750</p>
+                <p className="text-xs text-green-600">
+                  Passengers accommodated
+                </p>
               </div>
             </div>
           </CardContent>
@@ -152,7 +210,9 @@ export function Dashboard() {
                   <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
                   <div>
                     <p className="font-semibold text-orange-900">DEL - Delhi</p>
-                    <p className="text-xs text-orange-600">7 disrupted flights</p>
+                    <p className="text-xs text-orange-600">
+                      7 disrupted flights
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -165,8 +225,12 @@ export function Dashboard() {
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
                   <div>
-                    <p className="font-semibold text-yellow-900">BOM - Mumbai</p>
-                    <p className="text-xs text-yellow-600">4 disrupted flights</p>
+                    <p className="font-semibold text-yellow-900">
+                      BOM - Mumbai
+                    </p>
+                    <p className="text-xs text-yellow-600">
+                      4 disrupted flights
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
@@ -192,7 +256,9 @@ export function Dashboard() {
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
               <div className="flex items-center gap-2 mb-2">
                 <TrendingUp className="h-4 w-4 text-blue-600" />
-                <span className="text-sm font-medium text-blue-900">Recovery Rate</span>
+                <span className="text-sm font-medium text-blue-900">
+                  Recovery Rate
+                </span>
               </div>
               <p className="text-2xl font-bold text-blue-800">89.2%</p>
               <p className="text-xs text-blue-600">+4.3% from yesterday</p>
@@ -201,7 +267,9 @@ export function Dashboard() {
             <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
               <div className="flex items-center gap-2 mb-2">
                 <ClockIcon className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium text-green-900">Avg Resolution</span>
+                <span className="text-sm font-medium text-green-900">
+                  Avg Resolution
+                </span>
               </div>
               <p className="text-2xl font-bold text-green-800">2.4h</p>
               <p className="text-xs text-green-600">-18 min improvement</p>
@@ -210,7 +278,9 @@ export function Dashboard() {
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
               <div className="flex items-center gap-2 mb-2">
                 <Globe className="h-4 w-4 text-purple-600" />
-                <span className="text-sm font-medium text-purple-900">Network Impact</span>
+                <span className="text-sm font-medium text-purple-900">
+                  Network Impact
+                </span>
               </div>
               <p className="text-2xl font-bold text-purple-800">Medium</p>
               <p className="text-xs text-purple-600">23 active disruptions</p>
@@ -219,18 +289,26 @@ export function Dashboard() {
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="h-4 w-4 text-orange-600" />
-                <span className="text-sm font-medium text-orange-900">Critical Priority</span>
+                <span className="text-sm font-medium text-orange-900">
+                  Critical Priority
+                </span>
               </div>
               <p className="text-2xl font-bold text-orange-800">5</p>
-              <p className="text-xs text-orange-600">Require immediate action</p>
+              <p className="text-xs text-orange-600">
+                Require immediate action
+              </p>
             </div>
           </div>
 
           <div className="mt-4 p-4 bg-gray-50 rounded-lg border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="font-medium text-gray-900">Most Disrupted Route</p>
-                <p className="text-sm text-gray-600">DXB → DEL experiencing weather delays</p>
+                <p className="font-medium text-gray-900">
+                  Most Disrupted Route
+                </p>
+                <p className="text-sm text-gray-600">
+                  DXB → DEL experiencing weather delays
+                </p>
               </div>
               <Badge className="bg-red-100 text-red-700 border-red-200">
                 High Impact
@@ -255,8 +333,12 @@ export function Dashboard() {
                 <div className="flex items-center gap-3">
                   <Plane className="h-5 w-5 text-flydubai-blue" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Active Flights</p>
-                    <p className="text-xl font-semibold text-flydubai-blue">847</p>
+                    <p className="text-sm text-muted-foreground">
+                      Active Flights
+                    </p>
+                    <p className="text-xl font-semibold text-flydubai-blue">
+                      847
+                    </p>
                     <p className="text-xs text-green-600 flex items-center gap-1">
                       <TrendingUp className="h-3 w-3" />
                       +12 from yesterday
@@ -272,8 +354,12 @@ export function Dashboard() {
                   <AlertTriangle className="h-5 w-5 text-flydubai-orange" />
                   <div>
                     <p className="text-sm text-muted-foreground">Disruptions</p>
-                    <p className="text-xl font-semibold text-flydubai-orange">23</p>
-                    <p className="text-xs text-red-600">5 critical • 4,127 pax affected</p>
+                    <p className="text-xl font-semibold text-flydubai-orange">
+                      23
+                    </p>
+                    <p className="text-xs text-red-600">
+                      5 critical • 4,127 pax affected
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -284,8 +370,12 @@ export function Dashboard() {
                 <div className="flex items-center gap-3">
                   <Users className="h-5 w-5 text-purple-600" />
                   <div>
-                    <p className="text-sm text-muted-foreground">Total Passengers</p>
-                    <p className="text-xl font-semibold text-purple-600">42,158</p>
+                    <p className="text-sm text-muted-foreground">
+                      Total Passengers
+                    </p>
+                    <p className="text-xl font-semibold text-purple-600">
+                      42,158
+                    </p>
                     <p className="text-xs text-red-600">9.8% disrupted today</p>
                   </div>
                 </div>
@@ -297,8 +387,12 @@ export function Dashboard() {
                 <div className="flex items-center gap-3">
                   <Activity className="h-5 w-5 text-green-600" />
                   <div>
-                    <p className="text-sm text-muted-foreground">OTP Performance</p>
-                    <p className="text-xl font-semibold text-green-600">89.2%</p>
+                    <p className="text-sm text-muted-foreground">
+                      OTP Performance
+                    </p>
+                    <p className="text-xl font-semibold text-green-600">
+                      89.2%
+                    </p>
                     <p className="text-xs text-green-600 flex items-center gap-1">
                       <TrendingUp className="h-3 w-3" />
                       +2.1% this week
@@ -322,17 +416,26 @@ export function Dashboard() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Flight Number</label>
-              <Input 
+              <label className="text-sm font-medium mb-2 block">
+                Flight Number
+              </label>
+              <Input
                 placeholder="FZ123"
                 value={filters.flightNumber}
-                onChange={(e) => setFilters({...filters, flightNumber: e.target.value})}
+                onChange={(e) =>
+                  setFilters({ ...filters, flightNumber: e.target.value })
+                }
                 className="input-flydubai"
               />
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Station</label>
-              <Select value={filters.station} onValueChange={(value) => setFilters({...filters, station: value})}>
+              <Select
+                value={filters.station}
+                onValueChange={(value) =>
+                  setFilters({ ...filters, station: value })
+                }
+              >
                 <SelectTrigger className="select-flydubai">
                   <SelectValue placeholder="Select station" />
                 </SelectTrigger>
@@ -348,24 +451,35 @@ export function Dashboard() {
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">Region</label>
-              <Select value={filters.region} onValueChange={(value) => setFilters({...filters, region: value})}>
+              <Select
+                value={filters.region}
+                onValueChange={(value) =>
+                  setFilters({ ...filters, region: value })
+                }
+              >
                 <SelectTrigger className="select-flydubai">
                   <SelectValue placeholder="Select region" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="gcc">GCC</SelectItem>
-                  <SelectItem value="indian-subcontinent">Indian Subcontinent</SelectItem>
+                  <SelectItem value="indian-subcontinent">
+                    Indian Subcontinent
+                  </SelectItem>
                   <SelectItem value="europe">Europe</SelectItem>
                   <SelectItem value="middle-east">Middle East</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <label className="text-sm font-medium mb-2 block">Date/Time</label>
-              <Input 
+              <label className="text-sm font-medium mb-2 block">
+                Date/Time
+              </label>
+              <Input
                 type="datetime-local"
                 value={filters.dateTime}
-                onChange={(e) => setFilters({...filters, dateTime: e.target.value})}
+                onChange={(e) =>
+                  setFilters({ ...filters, dateTime: e.target.value })
+                }
                 className="input-flydubai"
               />
             </div>
@@ -380,10 +494,10 @@ export function Dashboard() {
 
       {/* Action Buttons */}
       <div className="flex flex-wrap gap-3">
-        {enabledScreens.find(s => s.id === 'flight-disruption-list') && (
-          <Button 
-            variant="outline" 
-            onClick={() => navigateToScreen('flight-disruption-list')}
+        {enabledScreens.find((s) => s.id === "flight-disruption-list") && (
+          <Button
+            variant="outline"
+            onClick={() => navigateToScreen("flight-disruption-list")}
             className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
           >
             <AlertCircle className="h-4 w-4" />
@@ -391,10 +505,10 @@ export function Dashboard() {
           </Button>
         )}
 
-        {enabledScreens.find(s => s.id === 'recovery') && (
-          <Button 
-            variant="outline" 
-            onClick={() => navigateToScreen('recovery')}
+        {enabledScreens.find((s) => s.id === "recovery") && (
+          <Button
+            variant="outline"
+            onClick={() => navigateToScreen("recovery")}
             className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
           >
             <Zap className="h-4 w-4" />
@@ -402,10 +516,10 @@ export function Dashboard() {
           </Button>
         )}
 
-        {enabledScreens.find(s => s.id === 'passengers') && (
-          <Button 
-            variant="outline" 
-            onClick={() => navigateToScreen('passengers')}
+        {enabledScreens.find((s) => s.id === "passengers") && (
+          <Button
+            variant="outline"
+            onClick={() => navigateToScreen("passengers")}
             className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
           >
             <UserCheck className="h-4 w-4" />
@@ -413,10 +527,10 @@ export function Dashboard() {
           </Button>
         )}
 
-        {enabledScreens.find(s => s.id === 'flight-tracking') && (
-          <Button 
-            variant="outline" 
-            onClick={() => navigateToScreen('flight-tracking')}
+        {enabledScreens.find((s) => s.id === "flight-tracking") && (
+          <Button
+            variant="outline"
+            onClick={() => navigateToScreen("flight-tracking")}
             className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
           >
             <Plane className="h-4 w-4" />
@@ -424,10 +538,10 @@ export function Dashboard() {
           </Button>
         )}
 
-        {enabledScreens.find(s => s.id === 'fuel-optimization') && (
-          <Button 
-            variant="outline" 
-            onClick={() => navigateToScreen('fuel-optimization')}
+        {enabledScreens.find((s) => s.id === "fuel-optimization") && (
+          <Button
+            variant="outline"
+            onClick={() => navigateToScreen("fuel-optimization")}
             className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
           >
             <Fuel className="h-4 w-4" />
@@ -435,10 +549,10 @@ export function Dashboard() {
           </Button>
         )}
 
-        {enabledScreens.find(s => s.id === 'maintenance') && (
-          <Button 
-            variant="outline" 
-            onClick={() => navigateToScreen('maintenance')}
+        {enabledScreens.find((s) => s.id === "maintenance") && (
+          <Button
+            variant="outline"
+            onClick={() => navigateToScreen("maintenance")}
             className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
           >
             <Wrench className="h-4 w-4" />
@@ -446,10 +560,10 @@ export function Dashboard() {
           </Button>
         )}
 
-        {enabledScreens.find(s => s.id === 'hotac') && (
-          <Button 
-            variant="outline" 
-            onClick={() => navigateToScreen('hotac')}
+        {enabledScreens.find((s) => s.id === "hotac") && (
+          <Button
+            variant="outline"
+            onClick={() => navigateToScreen("hotac")}
             className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
           >
             <Hotel className="h-4 w-4" />
@@ -457,10 +571,10 @@ export function Dashboard() {
           </Button>
         )}
 
-        {enabledScreens.find(s => s.id === 'pending') && (
-          <Button 
-            variant="outline" 
-            onClick={() => navigateToScreen('pending')}
+        {enabledScreens.find((s) => s.id === "pending") && (
+          <Button
+            variant="outline"
+            onClick={() => navigateToScreen("pending")}
             className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
           >
             <ClockIcon className="h-4 w-4" />
@@ -468,10 +582,10 @@ export function Dashboard() {
           </Button>
         )}
 
-        {enabledScreens.find(s => s.id === 'past-logs') && (
-          <Button 
-            variant="outline" 
-            onClick={() => navigateToScreen('past-logs')}
+        {enabledScreens.find((s) => s.id === "past-logs") && (
+          <Button
+            variant="outline"
+            onClick={() => navigateToScreen("past-logs")}
             className="flex items-center gap-2 hover:bg-blue-50 hover:text-flydubai-blue border-blue-200"
           >
             <CheckSquare className="h-4 w-4" />
@@ -480,5 +594,5 @@ export function Dashboard() {
         )}
       </div>
     </div>
-  )
+  );
 }
