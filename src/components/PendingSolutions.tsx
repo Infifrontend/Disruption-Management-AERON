@@ -944,29 +944,29 @@ export function PendingSolutions() {
                     <Label className="text-xs text-muted-foreground">
                       Option Type
                     </Label>
-                    <div className="font-medium">{plan.title}</div>
+                    <div className="font-medium">{plan?.title || 'N/A'}</div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       Estimated Cost
                     </Label>
                     <div className="font-medium text-flydubai-orange">
-                      AED {(plan.estimatedCost || 0).toLocaleString()}
+                      AED {((plan?.estimatedCost || 0)).toLocaleString()}
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       Timeline
                     </Label>
-                    <div className="font-medium">{plan.timeline}</div>
+                    <div className="font-medium">{plan?.timeline || 'TBD'}</div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       Confidence
                     </Label>
                     <div className="flex items-center gap-2">
-                      <Progress value={plan.confidence} className="w-16 h-2" />
-                      <span className="font-medium">{plan.confidence}%</span>
+                      <Progress value={plan?.confidence || 0} className="w-16 h-2" />
+                      <span className="font-medium">{plan?.confidence || 0}%</span>
                     </div>
                   </div>
                 </div>
@@ -2094,10 +2094,10 @@ export function PendingSolutions() {
                               Flight & Route
                             </Label>
                             <p className="font-medium">
-                              {plan.flightNumber} • {plan.route}
+                              {plan?.flightNumber || 'N/A'} • {plan?.route || 'N/A'}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {plan.aircraft}
+                              {plan?.aircraft || 'N/A'}
                             </p>
                           </div>
                           <div>
@@ -2128,7 +2128,7 @@ export function PendingSolutions() {
                               Confidence & Timeline
                             </Label>
                             <p className="font-medium">
-                              {plan.confidence}% • {plan.timeline}
+                              {plan?.confidence || 0}% • {plan?.timeline || 'TBD'}
                             </p>
                             <p
                               className={`text-sm ${getTimeRemainingColor(plan.timeRemaining)}`}
@@ -2257,7 +2257,7 @@ export function PendingSolutions() {
               </DialogTitle>
               <DialogDescription>
                 Detailed analysis of recovery options for{" "}
-                {selectedPlan.flightNumber} • {selectedPlan.route}
+                {selectedPlan?.flightNumber || 'N/A'} • {selectedPlan?.route || 'N/A'}
               </DialogDescription>
             </DialogHeader>
 
