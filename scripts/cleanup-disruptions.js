@@ -228,6 +228,10 @@ async function main() {
     if (args[0] === "single" && args[1]) {
       // Delete single disruption by ID
       await deleteFlightDisruption(parseInt(args[1]));
+    } else if (args[0] === "multiple" && args[1]) {
+      args[1].split(",").forEach(async (id) => {
+        await deleteFlightDisruption(parseInt(id));
+      });
     } else if (args[0] === "bulk") {
       // Bulk delete examples
       if (args[1] === "resolved") {
@@ -242,6 +246,9 @@ async function main() {
     } else {
       console.log("Usage:");
       console.log("  node cleanup-disruptions.js single <disruption_id>");
+      console.log(
+        "  node cleanup-disruptions.js multiple <disruption_id,disruption_id>",
+      );
       console.log("  node cleanup-disruptions.js bulk resolved");
       console.log("  node cleanup-disruptions.js bulk cancelled");
       console.log("  node cleanup-disruptions.js bulk flight <flight_number>");
