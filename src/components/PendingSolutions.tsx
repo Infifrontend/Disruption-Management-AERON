@@ -849,32 +849,33 @@ export function PendingSolutions() {
       fetchPendingSolutionData();
     }, [plan.id, plan.disruptionId, plan.optionId]);
 
-    // Extract crew and passenger data from pending solution
-    const crewData = pendingSolutionData?.full_details?.crew_hotel_assignments || 
+    // Extract crew and passenger data from pending solution with proper path navigation
+    const fullDetails = pendingSolutionData?.full_details || {};
+    const crewData = fullDetails?.crew_hotel_assignments || 
                      pendingSolutionData?.crew_hotel_assignments || 
                      plan.assignedCrew || [];
 
-    const passengerData = pendingSolutionData?.full_details?.passenger_rebooking || 
-                         pendingSolutionData?.passenger_rebooking || 
-                         plan.passengerInformation || [];
+    const passengerImpactData = fullDetails?.passenger_impact || {};
+    const passengerRebookingData = fullDetails?.passenger_rebooking || 
+                                  pendingSolutionData?.passenger_rebooking || 
+                                  plan.passengerInformation || [];
 
     const hasCrewData = crewData && (Array.isArray(crewData) ? crewData.length > 0 : Object.keys(crewData).length > 0);
-    const hasPassengerData = passengerData && (Array.isArray(passengerData) ? passengerData.length > 0 : Object.keys(passengerData).length > 0);
+    const hasPassengerData = (passengerRebookingData && (Array.isArray(passengerRebookingData) ? passengerRebookingData.length > 0 : Object.keys(passengerRebookingData).length > 0)) ||
+                            (passengerImpactData && Object.keys(passengerImpactData).length > 0);
 
     return (
       <div className="space-y-6">
         <Tabs value={activeOptionTab} onValueChange={setActiveOptionTab}>
-          <TabsList className={`grid w-full ${
-            hasCrewData && hasPassengerData ? 'grid-cols-5' :
-            hasCrewData || hasPassengerData ? 'grid-cols-4' :
-            'grid-cols-3'
-          }`}>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline</TabsTrigger>
-            {hasCrewData && <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>}
-            {hasPassengerData && <TabsTrigger value="passengers">Passengers</TabsTrigger>}
-            <TabsTrigger value="resources">Resources</TabsTrigger>
-          </TabsList>
+          <div className="w-full overflow-x-auto">
+            <TabsList className="grid grid-cols-5 min-w-max w-full">
+              <TabsTrigger value="overview" className="whitespace-nowrap px-2 text-sm">Overview</TabsTrigger>
+              <TabsTrigger value="timeline" className="whitespace-nowrap px-2 text-sm">Timeline</TabsTrigger>
+              <TabsTrigger value="crew-hotac" className="whitespace-nowrap px-2 text-sm">Crew & HOTAC</TabsTrigger>
+              <TabsTrigger value="passengers" className="whitespace-nowrap px-2 text-sm">Passenger Re-accommodation</TabsTrigger>
+              <TabsTrigger value="resources" className="whitespace-nowrap px-2 text-sm">Resources</TabsTrigger>
+            </TabsList>
+          </div>
 
           <TabsContent value="overview" className="space-y-4">
             <Card>
@@ -1058,17 +1059,17 @@ export function PendingSolutions() {
                         Crew Assignment Modifications
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {crewData.map((crew, index) => (
+                        {(Array.isArray(crewData) ? crewData : [crewData]).map((crew, index) => (
                           <div key={index} className="p-3 border rounded-lg">
                             <div className="flex items-center justify-between mb-2">
                               <div className="font-medium">
-                                {crew.crew_name || crew.name || `Crew Member ${index + 1}`}
+                                {crew.crew_name || crew.name || (crew.crew_member && Array.isArray(crew.crew_member) ? crew.crew_member.map(c => c.name).join(', ') : `Crew Member ${index + 1}`)}
                               </div>
                               <Badge
                                 variant={
-                                  crew.assignment_status === "original" || crew.status === "Original"
-                                    ? "outline"
-                                    : "default"
+                                  crew.assignment_status === "assigned" || crew.status === "assigned"
+                                    ? "default"
+                                    : "outline"
                                 }
                               >
                                 {crew.assignment_status || crew.status || "Assigned"}
@@ -1077,28 +1078,50 @@ export function PendingSolutions() {
                             <div className="text-sm space-y-1">
                               <div className="flex justify-between">
                                 <span className="text-muted-foreground">
-                                  Role:
+                                  Hotel:
                                 </span>
-                                <span>{crew.crew_role || crew.role || "N/A"}</span>
+                                <span>{crew.hotel_name || "N/A"}</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-muted-foreground">
-                                  Duty Time:
+                                  Location:
+                                </span>
+                                <span>{crew.hotel_location || "N/A"}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                  Check-in:
                                 </span>
                                 <span>
-                                  {crew.duty_hours || crew.dutyTime || "N/A"}
+                                  {crew.check_in_date ? formatIST(crew.check_in_date) : "TBD"}
                                 </span>
                               </div>
-                              {crew.hotel_booking && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                  Check-out:
+                                </span>
+                                <span>
+                                  {crew.check_out_date ? formatIST(crew.check_out_date) : "TBD"}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                  Room:
+                                </span>
+                                <span>{crew.room_number || "TBD"}</span>
+                              </div>
+                              {crew.total_cost && (
                                 <div className="flex justify-between">
                                   <span className="text-muted-foreground">
-                                    Hotel:
+                                    Cost:
                                   </span>
-                                  <span>{crew.hotel_booking.hotel_name || "N/A"}</span>
+                                  <span className="font-medium text-flydubai-orange">
+                                    AED {crew.total_cost}
+                                  </span>
                                 </div>
                               )}
                               <div className="text-xs text-muted-foreground mt-2">
-                                Notes: {crew.notes || crew.change || "No additional notes"}
+                                Reference: {crew.booking_reference || "N/A"}
                               </div>
                             </div>
                           </div>
@@ -1106,97 +1129,60 @@ export function PendingSolutions() {
                       </div>
                     </div>
 
-                    {/* HOTAC Arrangements */}
+                    {/* Transport Details */}
                     <Separator />
                     <div>
-                      <h4 className="font-medium mb-3">HOTAC Arrangements</h4>
+                      <h4 className="font-medium mb-3">Transport Arrangements</h4>
                       <div className="space-y-4">
-                        {/* Hotel Accommodations from crew data */}
-                        {crewData.some(crew => crew.hotel_booking) ? (
-                          crewData
-                            .filter(crew => crew.hotel_booking)
-                            .map((crew, index) => (
-                              <Card key={index} className="bg-blue-50 border-blue-200">
-                                <CardContent className="p-4">
-                                  <div className="flex items-center gap-2 mb-3">
-                                    <Hotel className="h-4 w-4 text-blue-600" />
-                                    <span className="font-medium text-blue-800">
-                                      Hotel Accommodation - {crew.crew_name || `Crew ${index + 1}`}
+                        {(Array.isArray(crewData) ? crewData : [crewData]).map((crew, index) => 
+                          crew.transport_details && (
+                            <Card key={index} className="bg-green-50 border-green-200">
+                              <CardContent className="p-4">
+                                <div className="flex items-center gap-2 mb-3">
+                                  <Car className="h-4 w-4 text-green-600" />
+                                  <span className="font-medium text-green-800">
+                                    Transport for {crew.crew_name || `Crew ${index + 1}`}
+                                  </span>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                  <div>
+                                    <span className="text-muted-foreground">
+                                      Pickup Location:
                                     </span>
-                                  </div>
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Hotel:
-                                      </span>
-                                      <div className="font-medium">
-                                        {crew.hotel_booking.hotel_name || "N/A"}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Room Type:
-                                      </span>
-                                      <div className="font-medium">
-                                        {crew.hotel_booking.room_type || "Standard"}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Check-in:
-                                      </span>
-                                      <div className="font-medium">
-                                        {crew.hotel_booking.check_in_date 
-                                          ? formatIST(crew.hotel_booking.check_in_date)
-                                          : "TBD"}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Check-out:
-                                      </span>
-                                      <div className="font-medium">
-                                        {crew.hotel_booking.check_out_date 
-                                          ? formatIST(crew.hotel_booking.check_out_date)
-                                          : "TBD"}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Room Number:
-                                      </span>
-                                      <div className="font-medium">
-                                        {crew.hotel_booking.room_number || "TBD"}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Cost:
-                                      </span>
-                                      <div className="font-medium text-flydubai-orange">
-                                        {crew.hotel_booking.booking_cost 
-                                          ? `AED ${crew.hotel_booking.booking_cost}`
-                                          : "TBD"}
-                                      </div>
+                                    <div className="font-medium">
+                                      {crew.transport_details.pickup_location || "N/A"}
                                     </div>
                                   </div>
-                                  {crew.hotel_booking.booking_notes && (
-                                    <div className="mt-3 text-sm text-blue-700">
-                                      <strong>Notes:</strong> {crew.hotel_booking.booking_notes}
+                                  <div>
+                                    <span className="text-muted-foreground">
+                                      Pickup Time:
+                                    </span>
+                                    <div className="font-medium">
+                                      {crew.transport_details.pickup_time 
+                                        ? formatIST(crew.transport_details.pickup_time)
+                                        : "TBD"}
                                     </div>
-                                  )}
-                                </CardContent>
-                              </Card>
-                            ))
-                        ) : (
-                          <Card className="bg-gray-50 border-gray-200">
-                            <CardContent className="p-4 text-center">
-                              <Hotel className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
-                              <p className="text-muted-foreground">
-                                No hotel accommodations arranged for this recovery option.
-                              </p>
-                            </CardContent>
-                          </Card>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">
+                                      Vehicle Type:
+                                    </span>
+                                    <div className="font-medium">
+                                      {crew.transport_details.vehicle_type || "Standard"}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-muted-foreground">
+                                      Vendor:
+                                    </span>
+                                    <div className="font-medium">
+                                      {crew.transport_details.vendor || "N/A"}
+                                    </div>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          )
                         )}
                       </div>
                     </div>
@@ -1211,7 +1197,7 @@ export function PendingSolutions() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Users className="h-5 w-5" />
-                  Passenger Reaccommodation
+                  Passenger Re-accommodation
                   {loadingPendingData && (
                     <RefreshCw className="h-4 w-4 animate-spin ml-2" />
                   )}
@@ -1228,117 +1214,136 @@ export function PendingSolutions() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {/* Passenger Summary */}
+                    {/* Passenger Impact Summary */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                       <div className="text-center p-3 bg-blue-50 rounded-lg">
                         <div className="text-2xl font-bold text-blue-600">
-                          {passengerData.length || 
-                           pendingSolutionData?.full_details?.passenger_impact?.affected || 
+                          {passengerImpactData.affected || 
+                           (Array.isArray(passengerRebookingData) ? passengerRebookingData.length : 0) || 
                            plan.affectedPassengers || 0}
                         </div>
                         <div className="text-sm text-blue-700">
-                          Total Passengers
+                          Total Affected
                         </div>
                       </div>
                       <div className="text-center p-3 bg-green-50 rounded-lg">
                         <div className="text-2xl font-bold text-green-600">
-                          {pendingSolutionData?.full_details?.passenger_impact?.reaccommodated ||
-                           passengerData.filter(p => p.rebooking_status === "confirmed").length ||
-                           Math.floor((passengerData.length || plan.affectedPassengers || 167) * 0.85)}
+                          {passengerImpactData.reaccommodated ||
+                           (Array.isArray(passengerRebookingData) ? 
+                             passengerRebookingData.filter(p => p.rebooking_status === "confirmed").length : 0) ||
+                           Math.floor((passengerImpactData.affected || plan.affectedPassengers || 167) * 0.85)}
                         </div>
-                        <div className="text-sm text-green-700">Rebooked</div>
+                        <div className="text-sm text-green-700">Reaccommodated</div>
                       </div>
                       <div className="text-center p-3 bg-yellow-50 rounded-lg">
                         <div className="text-2xl font-bold text-yellow-600">
-                          {passengerData.filter(p => p.additional_services?.includes("accommodation")).length ||
-                           Math.floor((passengerData.length || plan.affectedPassengers || 167) * 0.12)}
+                          {(Array.isArray(passengerRebookingData) ? 
+                             passengerRebookingData.filter(p => 
+                               p.additional_services && p.additional_services.some(s => s.service_type === "accommodation")
+                             ).length : 0) ||
+                           Math.floor((passengerImpactData.affected || plan.affectedPassengers || 167) * 0.12)}
                         </div>
                         <div className="text-sm text-yellow-700">
-                          Accommodation
+                          Hotel Accommodation
                         </div>
                       </div>
                       <div className="text-center p-3 bg-orange-50 rounded-lg">
                         <div className="text-2xl font-bold text-orange-600">
-                          {pendingSolutionData?.full_details?.passenger_impact?.compensated ||
-                           passengerData.filter(p => p.rebooking_cost > 0).length ||
-                           Math.floor((passengerData.length || plan.affectedPassengers || 167) * 0.03)}
+                          {passengerImpactData.compensated ||
+                           (Array.isArray(passengerRebookingData) ? 
+                             passengerRebookingData.filter(p => p.rebooking_cost > 0).length : 0) ||
+                           Math.floor((passengerImpactData.affected || plan.affectedPassengers || 167) * 0.03)}
                         </div>
                         <div className="text-sm text-orange-700">
-                          Compensation
+                          Compensation Required
                         </div>
                       </div>
                     </div>
 
                     {/* Individual Passenger Details */}
-                    <div>
-                      <h4 className="font-medium mb-3">Individual Passenger Rebookings</h4>
-                      <div className="space-y-3 max-h-64 overflow-y-auto">
-                        {passengerData.slice(0, 10).map((passenger, index) => (
-                          <Card key={index} className="p-3">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="font-medium">
-                                {passenger.passenger_name || `Passenger ${index + 1}`}
+                    {Array.isArray(passengerRebookingData) && passengerRebookingData.length > 0 && (
+                      <div>
+                        <h4 className="font-medium mb-3">Individual Passenger Rebookings</h4>
+                        <div className="space-y-3 max-h-64 overflow-y-auto">
+                          {passengerRebookingData.slice(0, 10).map((passenger, index) => (
+                            <Card key={index} className="p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="font-medium">
+                                  {passenger.passenger_name || `Passenger ${index + 1}`}
+                                </div>
+                                <Badge className={
+                                  passenger.rebooking_status === "confirmed" 
+                                    ? "bg-green-100 text-green-700"
+                                    : passenger.rebooking_status === "pending"
+                                    ? "bg-yellow-100 text-yellow-700"
+                                    : "bg-gray-100 text-gray-700"
+                                }>
+                                  {passenger.rebooking_status || "Processed"}
+                                </Badge>
                               </div>
-                              <Badge className={
-                                passenger.rebooking_status === "confirmed" 
-                                  ? "bg-green-100 text-green-700"
-                                  : passenger.rebooking_status === "pending"
-                                  ? "bg-yellow-100 text-yellow-700"
-                                  : "bg-gray-100 text-gray-700"
-                              }>
-                                {passenger.rebooking_status || "Unknown"}
-                              </Badge>
-                            </div>
-                            <div className="text-sm space-y-1">
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">PNR:</span>
-                                <span>{passenger.pnr || "N/A"}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Original Flight:</span>
-                                <span>{passenger.original_flight || plan.flightNumber}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Rebooked Flight:</span>
-                                <span>{passenger.rebooked_flight || "TBD"}</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">Seat Change:</span>
-                                <span>
-                                  {passenger.original_seat && passenger.rebooked_seat
-                                    ? `${passenger.original_seat} → ${passenger.rebooked_seat}`
-                                    : "N/A"}
-                                </span>
-                              </div>
-                              {passenger.rebooking_cost > 0 && (
+                              <div className="text-sm space-y-1">
                                 <div className="flex justify-between">
-                                  <span className="text-muted-foreground">Cost:</span>
-                                  <span className="text-flydubai-orange">
-                                    AED {passenger.rebooking_cost}
+                                  <span className="text-muted-foreground">PNR:</span>
+                                  <span>{passenger.pnr || "N/A"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Original Flight:</span>
+                                  <span>{passenger.original_flight || plan.flightNumber}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Rebooked Flight:</span>
+                                  <span>{passenger.rebooked_flight || "TBD"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Cabin:</span>
+                                  <span>{passenger.rebooked_cabin || "Economy"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-muted-foreground">Seat Change:</span>
+                                  <span>
+                                    {passenger.original_seat && passenger.rebooked_seat
+                                      ? `${passenger.original_seat} → ${passenger.rebooked_seat}`
+                                      : passenger.rebooked_seat || "TBD"}
                                   </span>
                                 </div>
-                              )}
-                              {passenger.notes && (
-                                <div className="text-xs text-muted-foreground mt-2">
-                                  Notes: {passenger.notes}
-                                </div>
-                              )}
+                                {passenger.rebooking_cost > 0 && (
+                                  <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Cost:</span>
+                                    <span className="text-flydubai-orange">
+                                      AED {passenger.rebooking_cost}
+                                    </span>
+                                  </div>
+                                )}
+                                {passenger.additional_services && passenger.additional_services.length > 0 && (
+                                  <div className="flex justify-between">
+                                    <span className="text-muted-foreground">Services:</span>
+                                    <span className="text-xs">
+                                      {passenger.additional_services.map(s => s.service_type || s.description).join(', ')}
+                                    </span>
+                                  </div>
+                                )}
+                                {passenger.notes && (
+                                  <div className="text-xs text-muted-foreground mt-2">
+                                    Notes: {passenger.notes}
+                                  </div>
+                                )}
+                              </div>
+                            </Card>
+                          ))}
+                          {passengerRebookingData.length > 10 && (
+                            <div className="text-center text-sm text-muted-foreground p-2">
+                              ... and {passengerRebookingData.length - 10} more passengers
                             </div>
-                          </Card>
-                        ))}
-                        {passengerData.length > 10 && (
-                          <div className="text-center text-sm text-muted-foreground p-2">
-                            ... and {passengerData.length - 10} more passengers
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Additional Services Summary */}
                     <Separator />
                     <div>
                       <h4 className="font-medium mb-3">
-                        Additional Services Provided
+                        Additional Services Breakdown
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="p-3 border rounded-lg">
@@ -1347,9 +1352,12 @@ export function PendingSolutions() {
                             <span className="font-medium">Meal Vouchers</span>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {passengerData.filter(p => 
-                              p.additional_services?.includes("meal_voucher")
-                            ).length} passengers provided meal vouchers
+                            {Array.isArray(passengerRebookingData) ? 
+                              passengerRebookingData.filter(p => 
+                                p.additional_services && p.additional_services.some(s => 
+                                  s.service_type === "meal_voucher" || s.description.toLowerCase().includes("meal")
+                                )
+                              ).length : 0} passengers provided meal vouchers
                           </div>
                         </div>
                         <div className="p-3 border rounded-lg">
@@ -1358,9 +1366,12 @@ export function PendingSolutions() {
                             <span className="font-medium">Hotel Accommodation</span>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {passengerData.filter(p => 
-                              p.additional_services?.includes("accommodation")
-                            ).length} passengers provided hotel accommodation
+                            {Array.isArray(passengerRebookingData) ? 
+                              passengerRebookingData.filter(p => 
+                                p.additional_services && p.additional_services.some(s => 
+                                  s.service_type === "accommodation" || s.description.toLowerCase().includes("hotel")
+                                )
+                              ).length : 0} passengers provided hotel accommodation
                           </div>
                         </div>
                         <div className="p-3 border rounded-lg">
@@ -1369,9 +1380,12 @@ export function PendingSolutions() {
                             <span className="font-medium">Ground Transport</span>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {passengerData.filter(p => 
-                              p.additional_services?.includes("transport")
-                            ).length} passengers provided ground transport
+                            {Array.isArray(passengerRebookingData) ? 
+                              passengerRebookingData.filter(p => 
+                                p.additional_services && p.additional_services.some(s => 
+                                  s.service_type === "transport" || s.description.toLowerCase().includes("transport")
+                                )
+                              ).length : 0} passengers provided ground transport
                           </div>
                         </div>
                         <div className="p-3 border rounded-lg">
@@ -1380,7 +1394,8 @@ export function PendingSolutions() {
                             <span className="font-medium">Total Rebooking Cost</span>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            AED {passengerData.reduce((sum, p) => sum + (p.rebooking_cost || 0), 0).toLocaleString()}
+                            AED {Array.isArray(passengerRebookingData) ? 
+                              passengerRebookingData.reduce((sum, p) => sum + (p.rebooking_cost || 0), 0).toLocaleString() : "0"}
                           </div>
                         </div>
                       </div>
@@ -2040,7 +2055,7 @@ export function PendingSolutions() {
           open={!!selectedPlan}
           onOpenChange={() => setSelectedPlan(null)}
         >
-          <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[90vw] w-full max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
