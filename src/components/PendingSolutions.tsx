@@ -1993,6 +1993,7 @@ export function PendingSolutions() {
                           "Pending Approval",
                           "Under Review",
                           "Pending",
+                          "pending"
                         ].includes(plan.status) && (
                           <>
                             <Button
