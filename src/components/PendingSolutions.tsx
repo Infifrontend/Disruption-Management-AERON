@@ -890,9 +890,9 @@ export function PendingSolutions() {
           <div className="w-full overflow-x-auto">
             <TabsList
               className={`grid w-full ${
-                plan.hasCrewData && plan.hasPassengerData
+                (selectedPlan && selectedPlan.hasCrewData && selectedPlan.hasPassengerData)
                   ? "grid-cols-5"
-                  : plan.hasCrewData || plan.hasPassengerData
+                  : (selectedPlan && (selectedPlan.hasCrewData || selectedPlan.hasPassengerData))
                     ? "grid-cols-4"
                     : "grid-cols-3"
               }`}
@@ -1223,7 +1223,7 @@ export function PendingSolutions() {
                                 <CardContent className="p-4">
                                   <div className="flex items-center gap-2 mb-3">
                                     <Car className="h-4 w-4 text-green-600" />
-                                    <span className="font-medium text-green-800">
+                                    <span className="font-medium">
                                       Transport for{" "}
                                       {crew.crew_name || `Crew ${index + 1}`}
                                     </span>
@@ -2295,9 +2295,9 @@ export function PendingSolutions() {
           <Tabs defaultValue="overview" className="w-full">
             <TabsList
               className={`grid w-full ${
-                selectedPlan?.hasCrewData && selectedPlan?.hasPassengerData
+                (selectedPlan && selectedPlan.hasCrewData && selectedPlan.hasPassengerData)
                   ? "grid-cols-5"
-                  : selectedPlan?.hasCrewData || selectedPlan?.hasPassengerData
+                  : (selectedPlan && (selectedPlan.hasCrewData || selectedPlan.hasPassengerData))
                     ? "grid-cols-4"
                     : "grid-cols-3"
               }`}
