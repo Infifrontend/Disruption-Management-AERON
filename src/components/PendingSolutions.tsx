@@ -1190,214 +1190,367 @@ export function PendingSolutions() {
               <CardContent>
                 {!hasCrewData ? (
                   <div className="space-y-6">
-                    {/* Display default crew assignment status when no specific crew data */}
-                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                        <span className="font-medium text-green-800">
-                          No crew changes required
-                        </span>
+                    {/* Enhanced header with flight context */}
+                    <div className="bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg border border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-100 rounded-full">
+                            <CheckCircle className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-green-800">
+                              No crew changes required
+                            </h3>
+                            <p className="text-sm text-green-700">
+                              Current crew is certified and available for{" "}
+                              {selectedOptionForDetails?.aircraft ||
+                                plan.aircraft ||
+                                "B737-800"}
+                            </p>
+                          </div>
+                        </div>
+                        <Badge className="bg-green-100 text-green-700 px-3 py-1">
+                          Optimal Assignment
+                        </Badge>
                       </div>
-                      <p className="text-sm text-green-700">
-                        Current crew certified for{" "}
-                        {selectedOptionForDetails?.aircraft ||
-                          plan.aircraft ||
-                          "aircraft"}
-                      </p>
                     </div>
 
-                    {/* Default crew information */}
+                    {/* Flight & Route Information */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card className="bg-blue-50 border-blue-200">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Plane className="h-4 w-4 text-blue-600" />
+                            <span className="font-medium text-sm">Flight Details</span>
+                          </div>
+                          <div className="text-sm space-y-1">
+                            <p className="font-semibold">{plan.flightNumber}</p>
+                            <p className="text-gray-600">{plan.route}</p>
+                            <p className="text-gray-600">{plan.aircraft}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-orange-50 border-orange-200">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Clock className="h-4 w-4 text-orange-600" />
+                            <span className="font-medium text-sm">Schedule</span>
+                          </div>
+                          <div className="text-sm space-y-1">
+                            <p className="text-gray-600">Departure</p>
+                            <p className="font-semibold">
+                              {plan.flightDetails?.scheduled_departure
+                                ? formatIST(plan.flightDetails.scheduled_departure)
+                                : "As Scheduled"}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-purple-50 border-purple-200">
+                        <CardContent className="p-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Users className="h-4 w-4 text-purple-600" />
+                            <span className="font-medium text-sm">Crew Count</span>
+                          </div>
+                          <div className="text-sm space-y-1">
+                            <p className="text-2xl font-bold text-purple-700">4</p>
+                            <p className="text-gray-600">Total Members</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+
+                    {/* Current Crew Assignment */}
                     <div>
                       <h4 className="font-medium mb-4 flex items-center gap-2">
                         <Users className="h-4 w-4 text-flydubai-blue" />
                         Current Crew Assignment
+                        <Badge variant="outline" className="ml-2">
+                          Standard Configuration
+                        </Badge>
                       </h4>
 
-                      <Card className="border-l-4 border-l-flydubai-blue">
-                        <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <Users className="h-5 w-5 text-flydubai-blue" />
-                              <h5 className="font-semibold text-lg">
-                                Standard Crew Assignment
-                              </h5>
-                            </div>
-                            <Badge className="bg-green-100 text-green-700">
-                              Active
-                            </Badge>
-                          </div>
-                        </CardHeader>
-
-                        <CardContent className="space-y-4">
-                          {/* Default crew members */}
-                          <div>
-                            <h6 className="font-medium mb-3 flex items-center gap-2">
-                              <Users className="h-4 w-4 text-flydubai-blue" />
-                              Assigned Crew Members (4)
-                            </h6>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              {[
-                                {
-                                  name: "Capt. Ahmed Al-Mansouri",
-                                  rank: "Captain",
-                                  employee_id: "C10914",
-                                  base: "DXB",
-                                  contact: "+971500706562",
-                                },
-                                {
-                                  name: "FO Sarah Johnson",
-                                  rank: "First Officer",
-                                  employee_id: "C10163",
-                                  base: "DXB",
-                                  contact: "+971500391721",
-                                },
-                                {
-                                  name: "SSCC Lisa Martinez",
-                                  rank: "Senior Cabin Crew",
-                                  employee_id: "C10970",
-                                  base: "DXB",
-                                  contact: "+971501353831",
-                                },
-                                {
-                                  name: "CC Maria Santos",
-                                  rank: "Cabin Crew",
-                                  employee_id: "C10259",
-                                  base: "DXB",
-                                  contact: "+971505396903",
-                                },
-                              ].map((crew, crewIndex) => (
-                                <div
-                                  key={crewIndex}
-                                  className="p-3 border rounded-lg bg-white"
-                                >
-                                  <div className="flex items-center justify-between mb-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {[
+                          {
+                            name: "Capt. Ahmed Al-Mansouri",
+                            rank: "Captain",
+                            employee_id: "C10914",
+                            base: "DXB",
+                            contact: "+971500706562",
+                            experience: "15 years",
+                            certification: "B737-800, A320",
+                            status: "Active",
+                            availability: "Available",
+                          },
+                          {
+                            name: "FO Sarah Johnson",
+                            rank: "First Officer",
+                            employee_id: "C10163",
+                            base: "DXB",
+                            contact: "+971500391721",
+                            experience: "8 years",
+                            certification: "B737-800",
+                            status: "Active",
+                            availability: "Available",
+                          },
+                          {
+                            name: "SSCC Lisa Martinez",
+                            rank: "Senior Cabin Crew",
+                            employee_id: "C10970",
+                            base: "DXB",
+                            contact: "+971501353831",
+                            experience: "12 years",
+                            certification: "Safety Lead",
+                            status: "Active",
+                            availability: "Available",
+                          },
+                          {
+                            name: "CC Maria Santos",
+                            rank: "Cabin Crew",
+                            employee_id: "C10259",
+                            base: "DXB",
+                            contact: "+971505396903",
+                            experience: "5 years",
+                            certification: "Standard",
+                            status: "Active",
+                            availability: "Available",
+                          },
+                        ].map((crew, crewIndex) => (
+                          <Card
+                            key={crewIndex}
+                            className="border-l-4 border-l-green-400 hover:shadow-md transition-shadow"
+                          >
+                            <CardContent className="p-4">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 bg-flydubai-blue text-white rounded-full flex items-center justify-center text-sm font-medium">
+                                    {crew.name.split(' ').map(n => n[0]).join('')}
+                                  </div>
+                                  <div>
                                     <div className="font-medium text-flydubai-navy">
                                       {crew.name}
                                     </div>
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs"
-                                    >
-                                      {crew.employee_id}
-                                    </Badge>
-                                  </div>
-
-                                  <div className="space-y-1 text-sm">
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Rank:
-                                      </span>
-                                      <span className="font-medium">
-                                        {crew.rank}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Base:
-                                      </span>
-                                      <span className="font-medium">
-                                        {crew.base}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span className="text-gray-600">
-                                        Contact:
-                                      </span>
-                                      <a
-                                        href={`tel:${crew.contact}`}
-                                        className="font-medium text-flydubai-blue hover:underline"
-                                      >
-                                        {crew.contact}
-                                      </a>
+                                    <div className="text-sm text-gray-600">
+                                      {crew.rank}
                                     </div>
                                   </div>
                                 </div>
-                              ))}
+                                <div className="flex gap-1">
+                                  <Badge variant="outline" className="text-xs">
+                                    {crew.employee_id}
+                                  </Badge>
+                                  <Badge className="bg-green-100 text-green-700 text-xs">
+                                    {crew.availability}
+                                  </Badge>
+                                </div>
+                              </div>
+
+                              <div className="space-y-2 text-sm">
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Base:</span>
+                                    <span className="font-medium">{crew.base}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Experience:</span>
+                                    <span className="font-medium">{crew.experience}</span>
+                                  </div>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Certification:</span>
+                                  <span className="font-medium">{crew.certification}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Contact:</span>
+                                  <a
+                                    href={`tel:${crew.contact}`}
+                                    className="font-medium text-flydubai-blue hover:underline"
+                                  >
+                                    {crew.contact}
+                                  </a>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* HOTAC Information */}
+                    <div>
+                      <h4 className="font-medium mb-4 flex items-center gap-2">
+                        <Hotel className="h-4 w-4 text-blue-600" />
+                        HOTAC Arrangements
+                        <Badge variant="outline" className="ml-2">
+                          Standard Rest Period
+                        </Badge>
+                      </h4>
+
+                      <Card className="border-l-4 border-l-blue-400">
+                        <CardContent className="p-6">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Hotel className="h-5 w-5 text-blue-600" />
+                                <span className="font-semibold text-lg">Hotel Details</span>
+                              </div>
+                              <div className="space-y-2">
+                                <p className="font-medium text-flydubai-navy">
+                                  Dubai International Hotel
+                                </p>
+                                <p className="text-sm text-gray-600 flex items-center gap-1">
+                                  <MapPin className="h-3 w-3" />
+                                  0.5 km from DXB Airport
+                                </p>
+                                <Badge className="bg-yellow-100 text-yellow-700">
+                                  4-Star Hotel
+                                </Badge>
+                              </div>
+                            </div>
+
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Calendar className="h-5 w-5 text-green-600" />
+                                <span className="font-semibold text-lg">Schedule</span>
+                              </div>
+                              <div className="space-y-2">
+                                <div>
+                                  <p className="text-sm text-gray-600">Check-in</p>
+                                  <p className="font-medium">Today 14:30</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-600">Check-out</p>
+                                  <p className="font-medium">Tomorrow 10:00</p>
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                  Duration: <strong>19h 30m</strong>
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 mb-3">
+                                <Building className="h-5 w-5 text-purple-600" />
+                                <span className="font-semibold text-lg">Room Assignment</span>
+                              </div>
+                              <div className="space-y-2">
+                                <div>
+                                  <p className="text-sm text-gray-600">Rooms Reserved</p>
+                                  <p className="font-medium">1937, 1938</p>
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-600">Total Cost</p>
+                                  <p className="font-semibold text-flydubai-orange text-lg">
+                                    AED 1,800
+                                  </p>
+                                </div>
+                                <Badge className="bg-green-100 text-green-700">
+                                  Confirmed
+                                </Badge>
+                              </div>
                             </div>
                           </div>
 
-                          {/* HOTAC Information when no specific data */}
-                          <div>
-                            <h6 className="font-medium mb-3 flex items-center gap-2">
-                              <Hotel className="h-4 w-4 text-blue-600" />
-                              HOTAC Arrangements
-                            </h6>
-
-                            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <Hotel className="h-4 w-4 text-gray-600" />
-                                    <span className="font-medium text-sm">
-                                      Hotel
-                                    </span>
-                                  </div>
-                                  <p className="text-sm text-gray-700">
-                                    Dubai International Hotel
-                                  </p>
-                                  <p className="text-sm text-gray-600">
-                                    0.5 km from DXB Airport
-                                  </p>
+                          {/* Transport Details */}
+                          <div className="mt-6 pt-6 border-t">
+                            <h5 className="font-medium mb-3 flex items-center gap-2">
+                              <Car className="h-4 w-4 text-orange-600" />
+                              Transport Arrangements
+                            </h5>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Provider:</span>
+                                  <span className="font-medium">DXB Airport Shuttle</span>
                                 </div>
-                                <div>
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <Calendar className="h-4 w-4 text-gray-600" />
-                                    <span className="font-medium text-sm">
-                                      Duration
-                                    </span>
-                                  </div>
-                                  <p className="text-sm text-gray-700">
-                                    Standard Rest Period
-                                  </p>
-                                  <p className="text-sm text-gray-600">
-                                    As per company policy
-                                  </p>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Pickup:</span>
+                                  <span className="font-medium">Terminal 2 Arrivals</span>
                                 </div>
-                                <div>
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <Building className="h-4 w-4 text-gray-600" />
-                                    <span className="font-medium text-sm">
-                                      Room Assignment
-                                    </span>
-                                  </div>
-                                  <p className="text-sm text-gray-700">
-                                    Rooms: 1937, 1938
-                                  </p>
-                                  <p className="text-sm font-medium text-flydubai-orange">
-                                    Cost: AED 1,800
-                                  </p>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Time:</span>
+                                  <span className="font-medium">Today 14:15</span>
+                                </div>
+                              </div>
+                              <div className="space-y-2">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Vehicle:</span>
+                                  <span className="font-medium">Bus - DXB-001</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Journey:</span>
+                                  <span className="font-medium">15 minutes</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-600">Status:</span>
+                                  <Badge className="bg-green-100 text-green-700">
+                                    Confirmed
+                                  </Badge>
                                 </div>
                               </div>
                             </div>
                           </div>
 
-                          {/* Assignment Metadata */}
-                          <div className="pt-3 border-t">
-                            <div className="flex items-center justify-between text-sm text-gray-600">
-                              <span>
-                                Status: <strong>Active Assignment</strong>
-                              </span>
-                              <span>
-                                Type: <strong>Standard HOTAC</strong>
-                              </span>
-                              <span>
-                                Reference: <strong>HOTAC-{plan.id}</strong>
-                              </span>
+                          {/* Assignment Summary */}
+                          <div className="mt-6 pt-6 border-t bg-gray-50 -mx-6 -mb-6 p-6 rounded-b-lg">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                              <div className="text-center">
+                                <p className="text-gray-600">Assignment Status</p>
+                                <p className="font-semibold text-green-700">Active & Confirmed</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-gray-600">HOTAC Type</p>
+                                <p className="font-semibold">Standard Rest Period</p>
+                              </div>
+                              <div className="text-center">
+                                <p className="text-gray-600">Reference Number</p>
+                                <p className="font-semibold font-mono">HOTAC-{plan.id}</p>
+                              </div>
                             </div>
                           </div>
                         </CardContent>
                       </Card>
                     </div>
 
-                    {/* Quick Actions */}
-                    <div className="pt-4 border-t">
-                      <div className="flex gap-2 flex-wrap">
+                    {/* Compliance & Regulations */}
+                    <div>
+                      <h4 className="font-medium mb-4 flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-green-600" />
+                        Compliance & Regulations
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Card className="bg-green-50 border-green-200">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <span className="font-medium text-green-800">Flight Time Limitations</span>
+                            </div>
+                            <p className="text-sm text-green-700">All crew within duty time limits</p>
+                          </CardContent>
+                        </Card>
+                        <Card className="bg-green-50 border-green-200">
+                          <CardContent className="p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <span className="font-medium text-green-800">Rest Requirements</span>
+                            </div>
+                            <p className="text-sm text-green-700">Minimum rest period satisfied</p>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="pt-6 border-t">
+                      <div className="flex flex-wrap gap-3">
                         <Button
                           size="sm"
                           className="bg-flydubai-blue hover:bg-flydubai-blue/90 text-white"
                         >
-                          <Phone className="h-3 w-3 mr-1" />
+                          <Phone className="h-3 w-3 mr-2" />
                           Contact Hotel
                         </Button>
                         <Button
@@ -1405,7 +1558,7 @@ export function PendingSolutions() {
                           variant="outline"
                           className="border-green-600 text-green-600 hover:bg-green-50"
                         >
-                          <Car className="h-3 w-3 mr-1" />
+                          <Car className="h-3 w-3 mr-2" />
                           Arrange Transport
                         </Button>
                         <Button
@@ -1413,12 +1566,20 @@ export function PendingSolutions() {
                           variant="outline"
                           className="border-orange-600 text-orange-600 hover:bg-orange-50"
                         >
-                          <Mail className="h-3 w-3 mr-1" />
+                          <Mail className="h-3 w-3 mr-2" />
                           Notify Crew
                         </Button>
                         <Button size="sm" variant="outline">
-                          <FileText className="h-3 w-3 mr-1" />
+                          <FileText className="h-3 w-3 mr-2" />
                           Generate Report
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-purple-600 text-purple-600 hover:bg-purple-50"
+                        >
+                          <Activity className="h-3 w-3 mr-2" />
+                          View History
                         </Button>
                       </div>
                     </div>
