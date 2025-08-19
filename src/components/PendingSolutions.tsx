@@ -888,13 +888,15 @@ export function PendingSolutions() {
       <div className="space-y-6">
         <Tabs value={activeOptionTab} onValueChange={setActiveOptionTab}>
           <div className="w-full overflow-x-auto">
-            <TabsList className={`grid w-full ${
+            <TabsList
+              className={`grid w-full ${
                 plan.hasCrewData && plan.hasPassengerData
                   ? "grid-cols-5"
                   : plan.hasCrewData || plan.hasPassengerData
                     ? "grid-cols-4"
                     : "grid-cols-3"
-              }`}>
+              }`}
+            >
               <TabsTrigger
                 value="overview"
                 className="whitespace-nowrap px-2 text-sm"
@@ -1803,11 +1805,10 @@ export function PendingSolutions() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
-  );
-}
+    );
+  };
 
-return (
+  return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
