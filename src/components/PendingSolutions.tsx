@@ -1400,10 +1400,7 @@ export function PendingSolutions() {
                                                 </span>
                                                 <span className="text-xs">
                                                   {passenger.additional_services.map(
-                                                    (
-                                                      service,
-                                                      serviceIndex,
-                                                    ) => (
+                                                    (service, serviceIndex) => (
                                                       <Badge
                                                         key={serviceIndex}
                                                         variant="outline"
@@ -1440,12 +1437,15 @@ export function PendingSolutions() {
 
                           const groupCount = Array.isArray(currentPassengerData)
                             ? Object.keys(
-                                currentPassengerData.reduce((acc, passenger) => {
-                                  const pnr = passenger.pnr || "UNKNOWN";
-                                  if (!acc[pnr]) acc[pnr] = [];
-                                  acc[pnr].push(passenger);
-                                  return acc;
-                                }, {}),
+                                currentPassengerData.reduce(
+                                  (acc, passenger) => {
+                                    const pnr = passenger.pnr || "UNKNOWN";
+                                    if (!acc[pnr]) acc[pnr] = [];
+                                    acc[pnr].push(passenger);
+                                    return acc;
+                                  },
+                                  {},
+                                ),
                               ).length
                             : 0;
 
@@ -1852,8 +1852,11 @@ export function PendingSolutions() {
                                                   ? `AED ${value.amount.toLocaleString()}`
                                                   : typeof value === "number"
                                                     ? `AED ${value.toLocaleString()}`
-                                                    : typeof value === "string" &&
-                                                        !value.includes("[object")
+                                                    : typeof value ===
+                                                          "string" &&
+                                                        !value.includes(
+                                                          "[object",
+                                                        )
                                                       ? value
                                                       : "N/A"}
                                               </span>
@@ -1874,8 +1877,7 @@ export function PendingSolutions() {
                                     Direct Costs:
                                   </span>
                                   <div className="font-medium">
-                                    AED{" "}
-                                    {(estimatedCost * 0.6).toLocaleString()}
+                                    AED {(estimatedCost * 0.6).toLocaleString()}
                                   </div>
                                 </div>
                                 <div>
@@ -1883,8 +1885,7 @@ export function PendingSolutions() {
                                     Indirect Costs:
                                   </span>
                                   <div className="font-medium">
-                                    AED{" "}
-                                    {(estimatedCost * 0.4).toLocaleString()}
+                                    AED {(estimatedCost * 0.4).toLocaleString()}
                                   </div>
                                 </div>
                                 <div>
@@ -1892,8 +1893,7 @@ export function PendingSolutions() {
                                     Passenger Compensation:
                                   </span>
                                   <div className="font-medium">
-                                    AED{" "}
-                                    {(estimatedCost * 0.3).toLocaleString()}
+                                    AED {(estimatedCost * 0.3).toLocaleString()}
                                   </div>
                                 </div>
                                 <div>
@@ -1901,8 +1901,7 @@ export function PendingSolutions() {
                                     Operational Costs:
                                   </span>
                                   <div className="font-medium">
-                                    AED{" "}
-                                    {(estimatedCost * 0.7).toLocaleString()}
+                                    AED {(estimatedCost * 0.7).toLocaleString()}
                                   </div>
                                 </div>
                               </div>
@@ -2866,8 +2865,8 @@ export function PendingSolutions() {
                             <div className="text-3xl font-bold text-blue-600">
                               {
                                 selectedOptionForDetails
-                                  ?.pending_recovery_solutions
-                                  ?.full_details?.passenger_impact?.affected
+                                  ?.pending_recovery_solutions?.full_details
+                                  ?.passenger_impact?.affected
                               }
                             </div>
                             <div className="text-sm text-blue-700">
@@ -2878,8 +2877,8 @@ export function PendingSolutions() {
                             <div className="text-3xl font-bold text-green-600">
                               {
                                 selectedOptionForDetails
-                                  ?.pending_recovery_solutions
-                                  ?.full_details?.passenger_impact?.reaccommodated
+                                  ?.pending_recovery_solutions?.full_details
+                                  ?.passenger_impact?.reaccommodated
                               }
                             </div>
                             <div className="text-sm text-green-700">
@@ -2904,13 +2903,17 @@ export function PendingSolutions() {
                             <div className="space-y-2">
                               <div className="flex justify-between">
                                 <span className="text-sm">Meal Vouchers:</span>
-                                <span className="font-medium">0 passengers</span>
+                                <span className="font-medium">
+                                  0 passengers
+                                </span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-sm">
                                   Hotel Accommodation:
                                 </span>
-                                <span className="font-medium">0 passengers</span>
+                                <span className="font-medium">
+                                  0 passengers
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -2922,8 +2925,8 @@ export function PendingSolutions() {
                                   AED{" "}
                                   {
                                     selectedOptionForDetails
-                                      ?.pending_recovery_solutions
-                                      ?.full_details?.passenger_impact?.affected
+                                      ?.pending_recovery_solutions?.full_details
+                                      ?.passenger_impact?.affected
                                   }{" "}
                                   per passenger (AED261):
                                 </span>
@@ -2931,8 +2934,8 @@ export function PendingSolutions() {
                                   AED{" "}
                                   {
                                     selectedOptionForDetails
-                                      .pending_recovery_solutions
-                                      ?.full_details?.passenger_impact?.affected
+                                      .pending_recovery_solutions?.full_details
+                                      ?.passenger_impact?.affected
                                   }{" "}
                                   per passenger (AED261):
                                 </span>
@@ -3067,8 +3070,11 @@ export function PendingSolutions() {
                                                   ? `AED ${value.amount.toLocaleString()}`
                                                   : typeof value === "number"
                                                     ? `AED ${value.toLocaleString()}`
-                                                    : typeof value === "string" &&
-                                                        !value.includes("[object")
+                                                    : typeof value ===
+                                                          "string" &&
+                                                        !value.includes(
+                                                          "[object",
+                                                        )
                                                       ? value
                                                       : `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
                                               </span>
@@ -3635,8 +3641,7 @@ export function PendingSolutions() {
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
                         <div className="text-3xl font-bold text-blue-600">
                           {
-                            selectedOptionForDetails
-                              ?.pending_recovery_solutions
+                            selectedOptionForDetails?.pending_recovery_solutions
                               ?.full_details?.passenger_impact?.affected
                           }
                         </div>
@@ -3647,8 +3652,7 @@ export function PendingSolutions() {
                       <div className="text-center p-4 bg-green-50 rounded-lg">
                         <div className="text-3xl font-bold text-green-600">
                           {
-                            selectedOptionForDetails
-                              ?.pending_recovery_solutions
+                            selectedOptionForDetails?.pending_recovery_solutions
                               ?.full_details?.passenger_impact?.reaccommodated
                           }
                         </div>
@@ -3690,8 +3694,8 @@ export function PendingSolutions() {
                               AED{" "}
                               {
                                 selectedOptionForDetails
-                                  ?.pending_recovery_solutions
-                                  ?.full_details?.passenger_impact?.affected
+                                  ?.pending_recovery_solutions?.full_details
+                                  ?.passenger_impact?.affected
                               }{" "}
                               per passenger (AED261):
                             </span>
@@ -3699,8 +3703,8 @@ export function PendingSolutions() {
                               AED{" "}
                               {
                                 selectedOptionForDetails
-                                  .pending_recovery_solutions
-                                  ?.full_details?.passenger_impact?.affected
+                                  .pending_recovery_solutions?.full_details
+                                  ?.passenger_impact?.affected
                               }{" "}
                               per passenger (AED261):
                             </span>
@@ -3852,10 +3856,7 @@ export function PendingSolutions() {
                                                 </span>
                                                 <span className="text-xs">
                                                   {passenger.additional_services.map(
-                                                    (
-                                                      service,
-                                                      serviceIndex,
-                                                    ) => (
+                                                    (service, serviceIndex) => (
                                                       <Badge
                                                         key={serviceIndex}
                                                         variant="outline"
@@ -3892,12 +3893,15 @@ export function PendingSolutions() {
 
                           const groupCount = Array.isArray(currentPassengerData)
                             ? Object.keys(
-                                currentPassengerData.reduce((acc, passenger) => {
-                                  const pnr = passenger.pnr || "UNKNOWN";
-                                  if (!acc[pnr]) acc[pnr] = [];
-                                  acc[pnr].push(passenger);
-                                  return acc;
-                                }, {}),
+                                currentPassengerData.reduce(
+                                  (acc, passenger) => {
+                                    const pnr = passenger.pnr || "UNKNOWN";
+                                    if (!acc[pnr]) acc[pnr] = [];
+                                    acc[pnr].push(passenger);
+                                    return acc;
+                                  },
+                                  {},
+                                ),
                               ).length
                             : 0;
 
