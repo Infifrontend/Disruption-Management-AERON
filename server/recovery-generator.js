@@ -2463,7 +2463,7 @@ const getWeatherIssuesRecoveryData = () => {
         },
       },
       metrics: {
-        crewViolations: 0,
+        crewViolations: 1,
         aircraftSwaps: 0,
         networkImpact: "Low",
       },
@@ -3159,9 +3159,9 @@ const getWeatherIssuesRecoveryData = () => {
         },
       },
       metrics: {
-        crewViolations: 0,
-          aircraftSwaps: 0,
-          networkImpact: "Low",
+        crewViolations: 1,
+        aircraftSwaps: 1,
+        networkImpact: "Low",
       },
       rotation_plan: {
         aircraftOptions: [

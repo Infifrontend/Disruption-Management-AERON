@@ -78,6 +78,7 @@ import {
   Activity,
 } from "lucide-react";
 import { databaseService } from "../services/databaseService";
+import { Console } from "console";
 
 export function PendingSolutions() {
   const [activeTab, setActiveTab] = useState("all");
@@ -1656,6 +1657,10 @@ export function PendingSolutions() {
                     <Card className="p-4 bg-gray-50">
                       <div className="space-y-2 text-sm">
                         {(() => {
+                          console.log(
+                            recoveryOptionData,
+                            "@@@@@@@@@@@@@@@@@@@",
+                          );
                           const costBreakdown =
                             recoveryOptionData?.cost_breakdown ||
                             pendingSolutionData?.cost_analysis?.breakdown ||
@@ -3127,9 +3132,13 @@ export function PendingSolutions() {
                   </CardHeader>
                   <CardContent>
                     {(() => {
-                      const crewData = selectedOptionForDetails?.pending_recovery_solutions?.full_details?.crew_hotel_assignments;
-                      const hasCrewData = crewData && Object.keys(crewData).length > 0;
-
+                      const crewData =
+                        selectedOptionForDetails?.pending_recovery_solutions
+                          ?.full_details?.crew_hotel_assignments;
+                      console.log(crewData, "RRRR");
+                      const hasCrewData =
+                        crewData && Object.keys(crewData).length > 0;
+                      console.log(hasCrewData, "sssss");
                       if (!hasCrewData) {
                         return (
                           <div className="p-4 bg-green-50 rounded-lg border border-green-200">
@@ -3140,7 +3149,8 @@ export function PendingSolutions() {
                               </span>
                             </div>
                             <p className="text-sm text-green-700">
-                              Current crew certified for {selectedOptionForDetails?.id || "A321-007"}
+                              Current crew certified for{" "}
+                              {selectedOptionForDetails?.id || "A321-007"}
                             </p>
                           </div>
                         );
@@ -3148,210 +3158,127 @@ export function PendingSolutions() {
 
                       return (
                         <div className="space-y-6">
-                          {/* Crew Status Overview */}
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
-                              <div className="text-2xl font-bold text-blue-600">
-                                {Object.keys(crewData).length}
+                          {crewData.map((assignment, index) => (
+                            <div key={index} className="space-y-6">
+                              {/* Hotel Overview */}
+                              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <h3 className="text-lg font-semibold">
+                                  {assignment.hotel_name}
+                                </h3>
+                                <p className="text-sm text-gray-600">
+                                  {assignment.hotel_location}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  Room: {assignment.room_number}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  Booking Ref: {assignment.booking_reference}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  Status: {assignment.assignment_status}
+                                </p>
                               </div>
-                              <div className="text-sm text-blue-700">Total Crew Members</div>
-                            </div>
-                            <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
-                              <div className="text-2xl font-bold text-green-600">
-                                {Object.values(crewData).filter(crew => crew.status === 'confirmed').length}
-                              </div>
-                              <div className="text-sm text-green-700">Confirmed Assignments</div>
-                            </div>
-                            <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
-                              <div className="text-2xl font-bold text-orange-600">
-                                {Object.values(crewData).filter(crew => crew.hotel_name).length}
-                              </div>
-                              <div className="text-sm text-orange-700">Hotel Assignments</div>
-                            </div>
-                          </div>
 
-                          {/* Crew Details Table */}
-                          <div>
-                            <h4 className="font-medium mb-3">Crew Assignment Details</h4>
-                            <div className="overflow-x-auto">
-                              <table className="w-full border-collapse border border-gray-200 text-sm">
-                                <thead>
-                                  <tr className="bg-gray-50">
-                                    <th className="border border-gray-200 p-3 text-left">Crew Member</th>
-                                    <th className="border border-gray-200 p-3 text-left">Rank</th>
-                                    <th className="border border-gray-200 p-3 text-left">Status</th>
-                                    <th className="border border-gray-200 p-3 text-left">Hotel</th>
-                                    <th className="border border-gray-200 p-3 text-left">Booking Ref</th>
-                                    <th className="border border-gray-200 p-3 text-left">Check-in</th>
-                                    <th className="border border-gray-200 p-3 text-left">Check-out</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {Object.entries(crewData).map(([crewId, crewInfo], index) => (
-                                    <tr key={index} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
-                                      <td className="border border-gray-200 p-3">
-                                        <div className="font-medium">{crewInfo.crew_name || `Crew Member ${index + 1}`}</div>
-                                        <div className="text-xs text-gray-500">{crewInfo.crew_id || crewId}</div>
-                                      </td>
-                                      <td className="border border-gray-200 p-3">
-                                        <Badge variant="outline" className="text-xs">
-                                          {crewInfo.rank || crewInfo.position || "N/A"}
-                                        </Badge>
-                                      </td>
-                                      <td className="border border-gray-200 p-3">
-                                        <Badge 
-                                          className={
-                                            crewInfo.status === 'confirmed' 
-                                              ? "bg-green-100 text-green-700" 
-                                              : crewInfo.status === 'pending'
-                                              ? "bg-yellow-100 text-yellow-700"
-                                              : "bg-gray-100 text-gray-700"
-                                          }
-                                        >
-                                          {crewInfo.status || "Pending"}
-                                        </Badge>
-                                      </td>
-                                      <td className="border border-gray-200 p-3">
-                                        <div className="font-medium">{crewInfo.hotel_name || "Not Assigned"}</div>
-                                        {crewInfo.hotel_address && (
-                                          <div className="text-xs text-gray-500">{crewInfo.hotel_address}</div>
-                                        )}
-                                      </td>
-                                      <td className="border border-gray-200 p-3">
-                                        <span className="font-mono text-xs">
-                                          {crewInfo.booking_reference || "TBD"}
-                                        </span>
-                                      </td>
-                                      <td className="border border-gray-200 p-3">
-                                        {crewInfo.check_in_date ? (
-                                          <div>
-                                            <div className="font-medium">{new Date(crewInfo.check_in_date).toLocaleDateString()}</div>
-                                            <div className="text-xs text-gray-500">{crewInfo.check_in_time || "TBD"}</div>
-                                          </div>
-                                        ) : (
-                                          "TBD"
-                                        )}
-                                      </td>
-                                      <td className="border border-gray-200 p-3">
-                                        {crewInfo.check_out_date ? (
-                                          <div>
-                                            <div className="font-medium">{new Date(crewInfo.check_out_date).toLocaleDateString()}</div>
-                                            <div className="text-xs text-gray-500">{crewInfo.check_out_time || "TBD"}</div>
-                                          </div>
-                                        ) : (
-                                          "TBD"
-                                        )}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-
-                          {/* Hotel Information Summary */}
-                          <div>
-                            <h4 className="font-medium mb-3">Hotel Accommodation Summary</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {(() => {
-                                const hotelGroups = Object.values(crewData).reduce((acc, crew) => {
-                                  if (crew.hotel_name) {
-                                    if (!acc[crew.hotel_name]) {
-                                      acc[crew.hotel_name] = {
-                                        name: crew.hotel_name,
-                                        address: crew.hotel_address,
-                                        crew_count: 0,
-                                        bookings: []
-                                      };
-                                    }
-                                    acc[crew.hotel_name].crew_count++;
-                                    acc[crew.hotel_name].bookings.push({
-                                      crew_name: crew.crew_name,
-                                      booking_ref: crew.booking_reference
-                                    });
-                                  }
-                                  return acc;
-                                }, {});
-
-                                return Object.values(hotelGroups).map((hotel, index) => (
-                                  <Card key={index} className="p-4 bg-blue-50 border-blue-200">
-                                    <div className="flex items-start justify-between mb-2">
-                                      <div>
-                                        <h5 className="font-medium text-blue-800">{hotel.name}</h5>
-                                        {hotel.address && (
-                                          <p className="text-sm text-blue-600">{hotel.address}</p>
-                                        )}
-                                      </div>
-                                      <Badge className="bg-blue-100 text-blue-700">
-                                        {hotel.crew_count} crew
-                                      </Badge>
-                                    </div>
-                                    <div className="space-y-1">
-                                      {hotel.bookings.slice(0, 3).map((booking, idx) => (
-                                        <div key={idx} className="text-sm">
-                                          <span className="font-medium">{booking.crew_name}</span>
-                                          {booking.booking_ref && (
-                                            <span className="text-blue-600 ml-2">({booking.booking_ref})</span>
-                                          )}
-                                        </div>
-                                      ))}
-                                      {hotel.bookings.length > 3 && (
-                                        <div className="text-sm text-blue-600">
-                                          +{hotel.bookings.length - 3} more...
-                                        </div>
+                              {/* Crew Members Table */}
+                              <div>
+                                <h4 className="font-medium mb-3">
+                                  Crew Assignment Details
+                                </h4>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full border-collapse border border-gray-200 text-sm">
+                                    <thead>
+                                      <tr className="bg-gray-50">
+                                        <th className="border border-gray-200 p-3 text-left">
+                                          Name
+                                        </th>
+                                        <th className="border border-gray-200 p-3 text-left">
+                                          Rank
+                                        </th>
+                                        <th className="border border-gray-200 p-3 text-left">
+                                          Base
+                                        </th>
+                                        <th className="border border-gray-200 p-3 text-left">
+                                          Employee ID
+                                        </th>
+                                        <th className="border border-gray-200 p-3 text-left">
+                                          Contact
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {assignment.crew_member.map(
+                                        (crew, crewIndex) => (
+                                          <tr
+                                            key={crewIndex}
+                                            className={
+                                              crewIndex % 2 === 0
+                                                ? "bg-white"
+                                                : "bg-gray-50"
+                                            }
+                                          >
+                                            <td className="border border-gray-200 p-3">
+                                              {crew.name}
+                                            </td>
+                                            <td className="border border-gray-200 p-3">
+                                              {crew.rank}
+                                            </td>
+                                            <td className="border border-gray-200 p-3">
+                                              {crew.base}
+                                            </td>
+                                            <td className="border border-gray-200 p-3">
+                                              {crew.employee_id}
+                                            </td>
+                                            <td className="border border-gray-200 p-3">
+                                              {crew.contact_number}
+                                            </td>
+                                          </tr>
+                                        ),
                                       )}
-                                    </div>
-                                  </Card>
-                                ));
-                              })()}
-                            </div>
-                          </div>
-
-                          {/* Transportation & Logistics */}
-                          <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                            <h4 className="font-medium mb-2 flex items-center gap-2">
-                              <Car className="h-4 w-4 text-gray-600" />
-                              Transportation & Logistics
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <span className="text-gray-600">Airport Transfer:</span>
-                                <div className="font-medium">Arranged for all crew members</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Transport Type:</span>
-                                <div className="font-medium">Private shuttle service</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Pickup Point:</span>
-                                <div className="font-medium">Terminal 2 Arrival Hall</div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Estimated Cost:</span>
-                                <div className="font-medium text-orange-600">
-                                  AED {(Object.keys(crewData).length * 150).toLocaleString()}
+                                    </tbody>
+                                  </table>
                                 </div>
                               </div>
-                            </div>
-                          </div>
 
-                          {/* Contact Information */}
-                          <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                            <h4 className="font-medium mb-2 flex items-center gap-2">
-                              <PhoneCall className="h-4 w-4 text-yellow-600" />
-                              Emergency Contacts
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <span className="text-yellow-700">Crew Operations:</span>
-                                <div className="font-medium">+971 4 xxx xxxx</div>
-                              </div>
-                              <div>
-                                <span className="text-yellow-700">Hotel Concierge:</span>
-                                <div className="font-medium">+971 4 xxx xxxx</div>
-                              </div>
+                              {/* Transport Info */}
+                              {assignment.transport_details && (
+                                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                  <h4 className="font-medium mb-2">
+                                    Transport Details
+                                  </h4>
+                                  <p className="text-sm">
+                                    Vendor:{" "}
+                                    {assignment.transport_details.vendor}
+                                  </p>
+                                  <p className="text-sm">
+                                    Pickup:{" "}
+                                    {
+                                      assignment.transport_details
+                                        .pickup_location
+                                    }{" "}
+                                    at{" "}
+                                    {new Date(
+                                      assignment.transport_details.pickup_time,
+                                    ).toLocaleString()}
+                                  </p>
+                                  <p className="text-sm">
+                                    Dropoff:{" "}
+                                    {
+                                      assignment.transport_details
+                                        .dropoff_location
+                                    }{" "}
+                                    at{" "}
+                                    {new Date(
+                                      assignment.transport_details.dropoff_time,
+                                    ).toLocaleString()}
+                                  </p>
+                                  <p className="text-sm">
+                                    Vehicle:{" "}
+                                    {assignment.transport_details.vehicle_type}
+                                  </p>
+                                </div>
+                              )}
                             </div>
-                          </div>
+                          ))}
                         </div>
                       );
                     })()}
