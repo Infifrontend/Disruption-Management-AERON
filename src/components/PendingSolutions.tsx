@@ -890,19 +890,19 @@ export function PendingSolutions() {
         <Tabs value={activeOptionTab} onValueChange={setActiveOptionTab}>
           <TabsList
             className={`grid w-full ${
-              hasCrewData && hasPassengerData
+              plan?.hasCrewData && plan?.hasPassengerData
                 ? "grid-cols-5"
-                : hasCrewData || hasPassengerData
+                : plan?.hasCrewData || plan?.hasPassengerData
                   ? "grid-cols-4"
                   : "grid-cols-3"
             }`}
           >
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
-            {hasCrewData && (
+            {plan?.hasCrewData && (
               <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
             )}
-            {hasPassengerData && (
+            {plan?.hasPassengerData && (
               <TabsTrigger value="passengers">Passengers</TabsTrigger>
             )}
             <TabsTrigger value="resources">Resources</TabsTrigger>
@@ -1455,7 +1455,7 @@ export function PendingSolutions() {
                             <span className="font-medium">Meal Vouchers</span>
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {Array.isArray(passengerData) ? 
+                            {Array.isArray(passengerData) ?
                               passengerData.filter((p) =>
                                 p.additional_services?.includes("meal_voucher"),
                               ).length : 0
@@ -2187,9 +2187,9 @@ export function PendingSolutions() {
             <Tabs defaultValue="overview" className="w-full">
               <TabsList
                 className={`grid w-full ${
-                  selectedPlan.hasCrewData && selectedPlan.hasPassengerData
+                  selectedPlan?.hasCrewData && selectedPlan?.hasPassengerData
                     ? "grid-cols-5"
-                    : selectedPlan.hasCrewData || selectedPlan.hasPassengerData
+                    : selectedPlan?.hasCrewData || selectedPlan?.hasPassengerData
                       ? "grid-cols-4"
                       : "grid-cols-3"
                 }`}
@@ -2199,10 +2199,10 @@ export function PendingSolutions() {
                 </TabsTrigger>
                 <TabsTrigger value="flight">Flight Details</TabsTrigger>
                 <TabsTrigger value="impact">Impact Analysis</TabsTrigger>
-                {selectedPlan.hasCrewData && (
+                {selectedPlan?.hasCrewData && (
                   <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
                 )}
-                {selectedPlan.hasPassengerData && (
+                {selectedPlan?.hasPassengerData && (
                   <TabsTrigger value="passenger-reaccommodation">
                     Passenger Re-accommodation
                   </TabsTrigger>
@@ -2657,7 +2657,7 @@ export function PendingSolutions() {
                 </Card>
 
                 {/* Conditional Crew & HOTAC Tab */}
-                {selectedPlan.hasCrewData && (
+                {selectedPlan?.hasCrewData && (
                   <TabsContent value="crew-hotac" className="space-y-4">
                     <Card>
                       <CardHeader>
@@ -2685,7 +2685,7 @@ export function PendingSolutions() {
                 )}
 
                 {/* Conditional Passenger Re-accommodation Tab */}
-                {selectedPlan.hasPassengerData && (
+                {selectedPlan?.hasPassengerData && (
                   <TabsContent
                     value="passenger-reaccommodation"
                     className="space-y-4"
@@ -3004,9 +3004,9 @@ export function PendingSolutions() {
             <Tabs defaultValue="option-details" className="w-full">
               <TabsList
                 className={`grid w-full ${
-                  selectedPlan.hasCrewData && selectedPlan.hasPassengerData
+                  selectedPlan?.hasCrewData && selectedPlan?.hasPassengerData
                     ? "grid-cols-5"
-                    : selectedPlan.hasCrewData || selectedPlan.hasPassengerData
+                    : selectedPlan?.hasCrewData || selectedPlan?.hasPassengerData
                       ? "grid-cols-4"
                       : "grid-cols-3"
                 }`}
