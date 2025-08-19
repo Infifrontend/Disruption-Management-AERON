@@ -1269,97 +1269,144 @@ export function PendingSolutions() {
                       </div>
                     </div>
 
-                    {/* Individual Passenger Details */}
+                    {/* PNR Grouped Passenger Details */}
                     <div>
                       <h4 className="font-medium mb-3">
-                        Individual Passenger Rebookings
+                        Passenger Rebookings by PNR
                       </h4>
-                      <div className="space-y-3 max-h-64 overflow-y-auto">
+                      <div className="space-y-4 max-h-64 overflow-y-auto">
                         {Array.isArray(passengerData) ? (
-                          passengerData.slice(0, 10).map((passenger, index) => (
-                            <Card key={index} className="p-3">
-                              <div className="flex items-center justify-between mb-2">
-                                <div className="font-medium">
-                                  {passenger.passenger_name ||
-                                    `Passenger ${index + 1}`}
-                                </div>
-                                <Badge
-                                  className={
-                                    passenger.rebooking_status === "confirmed"
-                                      ? "bg-green-100 text-green-700"
-                                      : passenger.rebooking_status === "pending"
-                                        ? "bg-yellow-100 text-yellow-700"
-                                        : "bg-gray-100 text-gray-700"
-                                  }
-                                >
-                                  {passenger.rebooking_status || "Unknown"}
-                                </Badge>
-                              </div>
-                              <div className="text-sm space-y-1">
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    PNR:
-                                  </span>
-                                  <span>{passenger.pnr || "N/A"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Original Flight:
-                                  </span>
-                                  <span>
-                                    {passenger.original_flight ||
-                                      plan.flightNumber}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Rebooked Flight:
-                                  </span>
-                                  <span>
-                                    {passenger.rebooked_flight || "TBD"}
-                                  </span>
-                                </div>
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Seat Change:
-                                  </span>
-                                  <span>
-                                    {passenger.original_seat &&
-                                    passenger.rebooked_seat
-                                      ? `${passenger.original_seat} → ${passenger.rebooked_seat}`
-                                      : "N/A"}
-                                  </span>
-                                </div>
-                                {passenger.rebooking_cost > 0 && (
-                                  <div className="flex justify-between">
-                                    <span className="text-muted-foreground">
-                                      Cost:
-                                    </span>
-                                    <span className="text-flydubai-orange">
-                                      AED {passenger.rebooking_cost}
-                                    </span>
+                          (() => {
+                            // Group passengers by PNR
+                            const groupedByPnr = passengerData.reduce((acc, passenger) => {
+                              const pnr = passenger.pnr || "UNKNOWN";
+                              if (!acc[pnr]) {
+                                acc[pnr] = [];
+                              }
+                              acc[pnr].push(passenger);
+                              return acc;
+                            }, {});
+
+                            return Object.entries(groupedByPnr).slice(0, 8).map(([pnr, passengers], groupIndex) => (
+                              <Card key={groupIndex} className="border border-gray-200">
+                                <div className="p-3 bg-gray-50 border-b">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <Users className="h-4 w-4 text-blue-600" />
+                                      <span className="font-semibold text-gray-900">
+                                        PNR: {pnr}
+                                      </span>
+                                      <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+                                        {passengers.length} passenger{passengers.length > 1 ? 's' : ''}
+                                      </Badge>
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">
+                                      Group Booking
+                                    </div>
                                   </div>
-                                )}
-                                {passenger.notes && (
-                                  <div className="text-xs text-muted-foreground mt-2">
-                                    Notes: {passenger.notes}
-                                  </div>
-                                )}
-                              </div>
-                            </Card>
-                          ))
+                                </div>
+                                <div className="p-3 space-y-3">
+                                  {passengers.map((passenger, passengerIndex) => (
+                                    <div key={passengerIndex} className="border-l-2 border-blue-200 pl-3">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <div className="font-medium text-gray-900">
+                                          {passenger.passenger_name || `Passenger ${passengerIndex + 1}`}
+                                        </div>
+                                        <Badge
+                                          className={
+                                            passenger.rebooking_status === "confirmed"
+                                              ? "bg-green-100 text-green-700"
+                                              : passenger.rebooking_status === "pending"
+                                                ? "bg-yellow-100 text-yellow-700"
+                                                : "bg-gray-100 text-gray-700"
+                                          }
+                                        >
+                                          {passenger.rebooking_status || "Unknown"}
+                                        </Badge>
+                                      </div>
+                                      <div className="text-sm space-y-1">
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">
+                                            Original Flight:
+                                          </span>
+                                          <span>
+                                            {passenger.original_flight || plan.flightNumber}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">
+                                            Rebooked Flight:
+                                          </span>
+                                          <span>
+                                            {passenger.rebooked_flight || "TBD"}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-muted-foreground">
+                                            Seat Change:
+                                          </span>
+                                          <span>
+                                            {passenger.original_seat && passenger.rebooked_seat
+                                              ? `${passenger.original_seat} → ${passenger.rebooked_seat}`
+                                              : "N/A"}
+                                          </span>
+                                        </div>
+                                        {passenger.rebooking_cost > 0 && (
+                                          <div className="flex justify-between">
+                                            <span className="text-muted-foreground">
+                                              Cost:
+                                            </span>
+                                            <span className="text-flydubai-orange">
+                                              AED {passenger.rebooking_cost}
+                                            </span>
+                                          </div>
+                                        )}
+                                        {passenger.additional_services && passenger.additional_services.length > 0 && (
+                                          <div className="flex justify-between">
+                                            <span className="text-muted-foreground">
+                                              Services:
+                                            </span>
+                                            <span className="text-xs">
+                                              {passenger.additional_services.map((service, serviceIndex) => (
+                                                <Badge key={serviceIndex} variant="outline" className="mr-1 text-xs">
+                                                  {service.service_type || service}
+                                                </Badge>
+                                              ))}
+                                            </span>
+                                          </div>
+                                        )}
+                                        {passenger.notes && (
+                                          <div className="text-xs text-muted-foreground mt-2">
+                                            Notes: {passenger.notes}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </Card>
+                            ));
+                          })()
                         ) : (
                           <div className="text-center text-sm text-muted-foreground p-4">
                             No passenger rebooking details available
                           </div>
                         )}
-                        {Array.isArray(passengerData) &&
-                          passengerData.length > 10 && (
-                            <div className="text-center text-sm text-muted-foreground p-2">
-                              ... and {passengerData.length - 10} more
-                              passengers
-                            </div>
-                          )}
+                        {Array.isArray(passengerData) && Object.keys(passengerData.reduce((acc, passenger) => {
+                          const pnr = passenger.pnr || "UNKNOWN";
+                          if (!acc[pnr]) acc[pnr] = [];
+                          acc[pnr].push(passenger);
+                          return acc;
+                        }, {})).length > 8 && (
+                          <div className="text-center text-sm text-muted-foreground p-2">
+                            ... and {Object.keys(passengerData.reduce((acc, passenger) => {
+                              const pnr = passenger.pnr || "UNKNOWN";
+                              if (!acc[pnr]) acc[pnr] = [];
+                              acc[pnr].push(passenger);
+                              return acc;
+                            }, {})).length - 8} more PNR groups
+                          </div>
+                        )}
                       </div>
                     </div>
 
