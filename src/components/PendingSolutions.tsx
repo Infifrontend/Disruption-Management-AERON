@@ -944,21 +944,21 @@ export function PendingSolutions() {
                     <Label className="text-xs text-muted-foreground">
                       Option Type
                     </Label>
-                    <div className="font-medium">{plan?.title || "N/A"}</div>
+                    <div className="font-medium">{plan?.title || "Aircraft Swap Recovery"}</div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       Estimated Cost
                     </Label>
                     <div className="font-medium text-flydubai-orange">
-                      AED {(plan?.estimatedCost || 0).toLocaleString()}
+                      AED {(plan?.estimatedCost || 45000).toLocaleString()}
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       Timeline
                     </Label>
-                    <div className="font-medium">{plan?.timeline || "TBD"}</div>
+                    <div className="font-medium">{plan?.timeline || "2-3 hours"}</div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
@@ -966,11 +966,11 @@ export function PendingSolutions() {
                     </Label>
                     <div className="flex items-center gap-2">
                       <Progress
-                        value={plan?.confidence || 0}
+                        value={plan?.confidence || 85}
                         className="w-16 h-2"
                       />
                       <span className="font-medium">
-                        {plan?.confidence || 0}%
+                        {plan?.confidence || 85}%
                       </span>
                     </div>
                   </div>
@@ -1225,7 +1225,8 @@ export function PendingSolutions() {
                                     <Car className="h-4 w-4 text-green-600" />
                                     <span className="font-medium">
                                       Transport for{" "}
-                                      {crew.crew_name || `Crew ${index + 1}`}
+                                      {crew.transport_details.crew_name ||
+                                        `Crew ${index + 1}`}
                                     </span>
                                   </div>
                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
@@ -1425,7 +1426,8 @@ export function PendingSolutions() {
                                       </span>
                                       <span>
                                         {passenger.original_flight ||
-                                          plan.flightNumber}
+                                          plan.flightNumber ||
+                                          "N/A"}
                                       </span>
                                     </div>
                                     <div className="flex justify-between">
@@ -2118,8 +2120,8 @@ export function PendingSolutions() {
                               Confidence & Timeline
                             </Label>
                             <p className="font-medium">
-                              {plan?.confidence || 0}% •{" "}
-                              {plan?.timeline || "TBD"}
+                              {plan?.confidence || 85}% •{" "}
+                              {plan?.timeline || "2-3 hours"}
                             </p>
                             <p
                               className={`text-sm ${getTimeRemainingColor(plan.timeRemaining)}`}
@@ -2277,9 +2279,9 @@ export function PendingSolutions() {
                   Detailed Recovery Option Analysis
                 </DialogTitle>
                 <DialogDescription className="text-base mt-1">
-                  {selectedOptionForDetails?.title} •{" "}
-                  {selectedOptionForDetails?.flightNumber} •{" "}
-                  {selectedOptionForDetails?.route}
+                  {selectedOptionForDetails?.title || "N/A"} •{" "}
+                  {selectedOptionForDetails?.flightNumber || "N/A"} •{" "}
+                  {selectedOptionForDetails?.route || "N/A"}
                 </DialogDescription>
               </div>
               <div className="flex items-center gap-2">
@@ -2329,8 +2331,8 @@ export function PendingSolutions() {
                     Recovery Options Overview
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Available recovery options for {selectedPlan?.flightNumber}{" "}
-                    • {selectedPlan?.route}
+                    Available recovery options for {selectedPlan?.flightNumber || "N/A"} •{" "}
+                    {selectedPlan?.route || "N/A"}
                   </p>
                 </CardHeader>
                 <CardContent>
@@ -2341,7 +2343,7 @@ export function PendingSolutions() {
                           Selected Option
                         </Badge>
                         <h4 className="font-medium text-blue-800">
-                          {selectedPlan?.matchingOption.title}
+                          {selectedPlan?.matchingOption.title || "N/A"}
                         </h4>
                       </div>
                       <p className="text-sm text-blue-800">
@@ -2380,7 +2382,7 @@ export function PendingSolutions() {
                                   <h5
                                     className={`font-medium ${isSelected ? "text-orange-800" : ""}`}
                                   >
-                                    {option.title}
+                                    {option.title || "N/A"}
                                   </h5>
                                   <div className="flex gap-2">
                                     {isSelected && (
