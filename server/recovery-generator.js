@@ -3160,7 +3160,7 @@ const getWeatherIssuesRecoveryData = () => {
       },
       metrics: {
         crewViolations: 1,
-        aircraftSwaps: 1,
+        aircraftSwaps: 0,
         networkImpact: "Low",
       },
       rotation_plan: {
