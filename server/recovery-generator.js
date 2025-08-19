@@ -236,9 +236,9 @@ const getAircraftIssuesRecoveryData = () => {
         passengerSatisfaction: 85,
         recovery_analysis:
           "Aircraft Swap Recovery for FZ147 (IST→DXB): Replace B737 MAX 8 A6-FDU with available replacement aircraft at IST. The replacement aircraft has been selected based on availability and route certification for IST-DXB. Estimated passenger transfer time: 35-45 minutes. All cargo and baggage will be transferred with priority handling. This solution maintains schedule integrity with minimal passenger disruption. Current disruption: Engine maintenance check.",
-        crewViolations: 0,
-        aircraftSwaps: 1,
-        networkImpact: "Minimal",
+        "crewViolations": 0,
+        "aircraftSwaps": 1,
+        "networkImpact": "Low"
       },
       rotation_plan: {
         aircraftOptions: [
@@ -668,9 +668,6 @@ const getAircraftIssuesRecoveryData = () => {
         costEfficiency: 70,
         timeEfficiency: 60,
         passengerSatisfaction: 50,
-        crewViolations: 2,
-        aircraftSwaps: 0,
-        networkImpact: "High",
       },
       rotation_plan: {
         aircraftOptions: [
@@ -1009,11 +1006,7 @@ const getAircraftIssuesRecoveryData = () => {
           details: "Integration with existing operational systems verified",
         },
       },
-      metrics: {
-        crewViolations: 0,
-        aircraftSwaps: 0,
-        networkImpact: "None",
-      },
+      metrics: {},
       rotation_plan: {
         aircraftOptions: [
           {
@@ -1384,9 +1377,6 @@ const getCrewIssuesRecoveryData = () => {
         costEfficiency: 85,
         timeEfficiency: 80,
         passengerSatisfaction: 75,
-        crewViolations: 1,
-        aircraftSwaps: 0,
-        networkImpact: "None",
       },
       rotation_plan: {
         aircraftOptions: [
@@ -1748,11 +1738,7 @@ const getCrewIssuesRecoveryData = () => {
             "All crew current on recurrent training, emergency procedures, and company standards",
         },
       },
-      metrics: {
-        crewViolations: 1,
-        aircraftSwaps: 0,
-        networkImpact: "Low",
-      },
+      metrics: {},
       rotation_plan: {
         aircraftOptions: [
           {
@@ -2102,11 +2088,7 @@ const getCrewIssuesRecoveryData = () => {
             "Meets all passenger care requirements for delay duration and circumstances",
         },
       },
-      metrics: {
-        crewViolations: 1,
-        aircraftSwaps: 0,
-        networkImpact: "Medium",
-      },
+      metrics: {},
       rotation_plan: {
         aircraftOptions: [
           {
@@ -2278,7 +2260,7 @@ const getWeatherIssuesRecoveryData = () => {
         "Potential for further delays",
         "Passenger accommodation required",
       ],
-      impact_area: [],
+      impact_area: ["weather", "schedule"],
       impact_summary: `Weather delay recovery for DEL: Weather-related operational adjustments with passenger care provisions.`,
       resource_requirements: [
         {
@@ -2462,11 +2444,7 @@ const getWeatherIssuesRecoveryData = () => {
             "Meets all passenger care requirements for delay duration and circumstances",
         },
       },
-      metrics: {
-        crewViolations: 0,
-        aircraftSwaps: 0,
-        networkImpact: "Low",
-      },
+      metrics: {},
       rotation_plan: {
         aircraftOptions: [
           {
@@ -2811,11 +2789,7 @@ const getWeatherIssuesRecoveryData = () => {
           details: "Integration with existing operational systems verified",
         },
       },
-      metrics: {
-        crewViolations: 0,
-        aircraftSwaps: 0,
-        networkImpact: "Medium",
-      },
+      metrics: {},
       rotation_plan: {
         aircraftOptions: [
           {
@@ -3158,11 +3132,7 @@ const getWeatherIssuesRecoveryData = () => {
           details: "Integration with existing operational systems verified",
         },
       },
-      metrics: {
-        crewViolations: 1,
-        aircraftSwaps: 0,
-        networkImpact: "None",
-      },
+      metrics: {},
       rotation_plan: {
         aircraftOptions: [
           {

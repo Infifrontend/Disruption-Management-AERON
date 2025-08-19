@@ -795,8 +795,6 @@ export function PendingSolutions() {
       impactSummary: option.impact_summary || "",
       priority: option.priority || 1,
       status: option.status || "available",
-      // Embed the full pending solution data for easier access
-      pending_recovery_solutions: selectedPlan,
     };
 
     console.log("Setting detailed option for view:", detailedOption);
@@ -1260,10 +1258,10 @@ export function PendingSolutions() {
                         <Hotel className="h-4 w-4 text-flydubai-blue" />
                         Hotel Assignments & Crew Details
                       </h4>
-
+                      
                       {(() => {
                         const assignments = Array.isArray(crewData) ? crewData : [crewData];
-
+                        
                         return assignments.map((assignment, assignmentIndex) => (
                           <Card key={assignmentIndex} className="mb-4 border-l-4 border-l-flydubai-blue">
                             <CardHeader className="pb-3">
@@ -1284,7 +1282,7 @@ export function PendingSolutions() {
                                 </div>
                               </div>
                             </CardHeader>
-
+                            
                             <CardContent className="space-y-4">
                               {/* Hotel Information */}
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
@@ -1327,60 +1325,43 @@ export function PendingSolutions() {
                               <div>
                                 <h6 className="font-medium mb-3 flex items-center gap-2">
                                   <Users className="h-4 w-4 text-flydubai-blue" />
-                                  Assigned Crew Members ({(() => {
-                                    const crewMembers = assignment.crew_member || assignment.crew_members;
-                                    return Array.isArray(crewMembers) ? crewMembers.length : 0;
-                                  })()})
+                                  Assigned Crew Members ({assignment.crew_member?.length || 0})
                                 </h6>
-
+                                
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                  {(assignment.crew_member || assignment.crew_members || []).map((crew, crewIndex) => (
+                                  {(assignment.crew_member || []).map((crew, crewIndex) => (
                                     <div key={crewIndex} className="p-3 border rounded-lg bg-white">
                                       <div className="flex items-center justify-between mb-2">
                                         <div className="font-medium text-flydubai-navy">
-                                          {crew.name || crew.crew_name || `Crew Member ${crewIndex + 1}`}
+                                          {crew.name || `Crew Member ${crewIndex + 1}`}
                                         </div>
                                         <Badge variant="outline" className="text-xs">
-                                          {crew.employee_id || crew.crew_id || "N/A"}
+                                          {crew.employee_id || "N/A"}
                                         </Badge>
                                       </div>
-
+                                      
                                       <div className="space-y-1 text-sm">
                                         <div className="flex justify-between">
                                           <span className="text-gray-600">Rank:</span>
                                           <span className="font-medium">
-                                            {crew.rank || crew.position || crew.role || "N/A"}
+                                            {crew.rank || "N/A"}
                                           </span>
                                         </div>
                                         <div className="flex justify-between">
                                           <span className="text-gray-600">Base:</span>
                                           <span className="font-medium">
-                                            {crew.base || crew.base_location || "N/A"}
+                                            {crew.base || "N/A"}
                                           </span>
                                         </div>
                                         <div className="flex justify-between">
                                           <span className="text-gray-600">Contact:</span>
                                           <a 
-                                            href={`tel:${crew.contact_number || crew.contact}`}
+                                            href={`tel:${crew.contact_number}`}
                                             className="font-medium text-flydubai-blue hover:underline"
                                           >
-                                            {crew.contact_number || crew.contact || "N/A"}
+                                            {crew.contact_number || "N/A"}
                                           </a>
                                         </div>
-                                        {crew.status && (
-                                          <div className="flex justify-between">
-                                            <span className="text-gray-600">Status:</span>
-                                            <Badge 
-                                              className={
-                                                crew.status === 'confirmed' 
-                                                  ? "bg-green-100 text-green-700" 
-                                                  : "bg-yellow-100 text-yellow-700"
-                                              }
-                                            >
-                                              {crew.status}
-                                            </Badge>
-                                          </div>
-                                        )}
                                       </div>
                                     </div>
                                   ))}
@@ -1394,7 +1375,7 @@ export function PendingSolutions() {
                                     <Car className="h-4 w-4 text-green-600" />
                                     Transport Arrangements
                                   </h6>
-
+                                  
                                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                       <div>
@@ -1408,7 +1389,7 @@ export function PendingSolutions() {
                                           Vehicle: {assignment.transport_details.vehicle_type || "N/A"}
                                         </p>
                                       </div>
-
+                                      
                                       <div>
                                         <div className="flex items-center gap-2 mb-2">
                                           <Clock className="h-4 w-4 text-gray-600" />
@@ -1423,7 +1404,7 @@ export function PendingSolutions() {
                                             formatIST(assignment.transport_details.dropoff_time) : "TBD"}
                                         </p>
                                       </div>
-
+                                      
                                       <div>
                                         <div className="flex items-center gap-2 mb-2">
                                           <MapPin className="h-4 w-4 text-gray-600" />
@@ -1433,7 +1414,7 @@ export function PendingSolutions() {
                                           {assignment.transport_details.pickup_location || "TBD"}
                                         </p>
                                       </div>
-
+                                      
                                       <div>
                                         <div className="flex items-center gap-2 mb-2">
                                           <MapPin className="h-4 w-4 text-gray-600" />
@@ -1566,13 +1547,20 @@ export function PendingSolutions() {
                       </div>
                       <div className="text-center p-3 bg-yellow-50 rounded-lg">
                         <div className="text-2xl font-bold text-yellow-600">
-                          {Array.isArray(passengerData)
+                          {(Array.isArray(passengerData)
                             ? passengerData.filter((p) =>
                                 p.additional_services?.includes(
                                   "accommodation",
                                 ),
                               ).length
-                            : 0}
+                            : 0) ||
+                            Math.floor(
+                              ((Array.isArray(passengerData)
+                                ? passengerData.length
+                                : 0) ||
+                                plan.affectedPassengers ||
+                                167) * 0.12,
+                            )}
                         </div>
                         <div className="text-sm text-yellow-700">
                           Accommodation
@@ -2064,7 +2052,194 @@ export function PendingSolutions() {
 
   return (
     <div className="space-y-6">
-      {/* Main Tabs for Pending Solutions */}
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold">Pending Recovery Solutions</h2>
+          <p className="text-muted-foreground">
+            Recovery plans submitted for approval and management review
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={refreshPlans}
+            className="flex items-center gap-2"
+            disabled={loading}
+          >
+            <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+            Refresh
+          </Button>
+          <Button variant="outline" className="flex items-center gap-2">
+            <Download className="h-4 w-4" />
+            Export
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="bg-gradient-to-br from-yellow-50 to-orange-50 border-yellow-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 text-yellow-600" />
+              <div>
+                <p className="text-sm text-yellow-600">Pending Approval</p>
+                <p className="text-2xl font-semibold text-yellow-900">
+                  {tabCounts.pending}
+                </p>
+                <p className="text-xs text-yellow-600">Awaiting decision</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              <div>
+                <p className="text-sm text-red-600">Critical Priority</p>
+                <p className="text-2xl font-semibold text-red-900">
+                  {tabCounts.critical}
+                </p>
+                <p className="text-xs text-red-600">Immediate attention</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm text-green-600">Approved Today</p>
+                <p className="text-2xl font-semibold text-green-900">
+                  {tabCounts.approved}
+                </p>
+                <p className="text-xs text-green-600">Ready for execution</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <BarChart3 className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm text-blue-600">Avg Response Time</p>
+                <p className="text-2xl font-semibold text-blue-900">23m</p>
+                <p className="text-xs text-blue-600">Below SLA target</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filters & Search
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <div>
+              <Label>Flight Number</Label>
+              <div className="relative">
+                <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
+                <Input
+                  placeholder="EK123"
+                  value={filters.flightNumber}
+                  onChange={(e) =>
+                    setFilters({ ...filters, flightNumber: e.target.value })
+                  }
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Plan ID</Label>
+              <Input
+                placeholder="RP-2025-001"
+                value={filters.planId}
+                onChange={(e) =>
+                  setFilters({ ...filters, planId: e.target.value })
+                }
+              />
+            </div>
+            <div>
+              <Label>Priority</Label>
+              <Select
+                value={filters.priority}
+                onValueChange={(value) =>
+                  setFilters({ ...filters, priority: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Priorities</SelectItem>
+                  <SelectItem value="critical">Critical</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="low">Low</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Submitter</Label>
+              <Select
+                value={filters.submitter}
+                onValueChange={(value) =>
+                  setFilters({ ...filters, submitter: value })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Submitters</SelectItem>
+                  <SelectItem value="ops.manager">Operations</SelectItem>
+                  <SelectItem value="crew.scheduler">Crew</SelectItem>
+                  <SelectItem value="maintenance">Maintenance</SelectItem>
+                  <SelectItem value="ground.ops">Ground Ops</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Sort By</Label>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="submitted">Submission Time</SelectItem>
+                  <SelectItem value="priority">Priority</SelectItem>
+                  <SelectItem value="cost">Estimated Cost</SelectItem>
+                  <SelectItem value="confidence">Confidence</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Order</Label>
+              <Select value={sortOrder} onValueChange={setSortOrder}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="desc">Descending</SelectItem>
+                  <SelectItem value="asc">Ascending</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger
@@ -2311,25 +2486,23 @@ export function PendingSolutions() {
         </TabsContent>
       </Tabs>
 
-      {/* Dialog for Selected Plan Details */}
-      <Dialog
-        open={!!selectedPlan}
-        onOpenChange={() => setSelectedPlan(null)}
-      >
-        <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Recovery Plan Details
-            </DialogTitle>
-            <DialogDescription>
-              Comprehensive view of {selectedOptionForDetails?.title} •{" "}
-              {selectedOptionForDetails?.id || "A321-007"} for{" "}
-              {selectedOptionForDetails?.flightNumber || "N/A"}
-            </DialogDescription>
-          </DialogHeader>
+      {selectedPlan && (
+        <Dialog
+          open={!!selectedPlan}
+          onOpenChange={() => setSelectedPlan(null)}
+        >
+          <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Recovery Plan Details
+              </DialogTitle>
+              <DialogDescription>
+                Detailed analysis of recovery options for{" "}
+                {selectedPlan.flightNumber} • {selectedPlan.route}
+              </DialogDescription>
+            </DialogHeader>
 
-          {selectedPlan ? (
             <Tabs defaultValue="overview" className="w-full">
               <TabsList
                 className={`grid w-full ${
@@ -2364,8 +2537,8 @@ export function PendingSolutions() {
                       Recovery Options Overview
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      Available recovery options for {selectedPlan.flightNumber} •{" "}
-                      {selectedPlan.route}
+                      Available recovery options for {selectedPlan.flightNumber}{" "}
+                      • {selectedPlan.route}
                     </p>
                   </CardHeader>
                   <CardContent>
@@ -2850,8 +3023,8 @@ export function PendingSolutions() {
                             <div className="text-3xl font-bold text-blue-600">
                               {
                                 selectedOptionForDetails
-                                  ?.pending_recovery_solutions?.full_details
-                                  ?.passenger_impact?.affected
+                                  .pending_recovery_solutions.full_details
+                                  .affected
                               }
                             </div>
                             <div className="text-sm text-blue-700">
@@ -2862,8 +3035,8 @@ export function PendingSolutions() {
                             <div className="text-3xl font-bold text-green-600">
                               {
                                 selectedOptionForDetails
-                                  ?.pending_recovery_solutions?.full_details
-                                  ?.passenger_impact?.reaccommodated
+                                  .pending_recovery_solutions.full_details
+                                  .reaccommodated
                               }
                             </div>
                             <div className="text-sm text-green-700">
@@ -2889,7 +3062,7 @@ export function PendingSolutions() {
                               <div className="flex justify-between">
                                 <span className="text-sm">Meal Vouchers:</span>
                                 <span className="font-medium">
-                                  0 passengers
+                                  1 passengers
                                 </span>
                               </div>
                               <div className="flex justify-between">
@@ -2907,22 +3080,10 @@ export function PendingSolutions() {
                             <div className="space-y-2">
                               <div className="flex justify-between">
                                 <span className="text-sm">
-                                  AED{" "}
-                                  {
-                                    selectedOptionForDetails
-                                      .pending_recovery_solutions?.full_details
-                                      ?.passenger_impact?.affected
-                                  }{" "}
-                                  per passenger (AED261):
+                                  €250 per passenger (EU261):
                                 </span>
                                 <span className="font-medium">
-                                  AED{" "}
-                                  {
-                                    selectedOptionForDetails
-                                      .pending_recovery_solutions?.full_details
-                                      ?.passenger_impact?.affected
-                                  }{" "}
-                                  per passenger (AED261):
+                                  €250 per passenger (EU261)
                                 </span>
                               </div>
                             </div>
@@ -2937,8 +3098,8 @@ export function PendingSolutions() {
                             </span>
                           </div>
                           <p className="text-sm text-blue-700">
-                            All passengers accommodated on same aircraft with 65min
-                            delay.
+                            All passengers accommodated on same aircraft with
+                            65min delay.
                           </p>
                         </div>
                       </CardContent>
@@ -3068,7 +3229,7 @@ export function PendingSolutions() {
                               </span>
                             </div>
                             <p className="text-sm text-blue-700">
-                              {selectedPlan.affectedPassengers || "N/A"}
+                              {selectedPlan.affectedPassengers || "N/A"}{" "}
                               passengers affected
                             </p>
                           </div>
@@ -3107,52 +3268,48 @@ export function PendingSolutions() {
                 </div>
               </TabsContent>
             </Tabs>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">No plan data available</p>
-            </div>
-          )}
 
-          <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button variant="outline" onClick={() => setSelectedPlan(null)}>
-              Close
-            </Button>
-            {selectedPlan &&
-              selectedPlan.status &&
-              ["Pending Approval", "Under Review", "Pending"].includes(
-                selectedPlan.status,
-              ) && (
-                <>
-                  <Button
-                    onClick={async () => {
-                      if (selectedPlan && selectedPlan.id) {
-                        await handleApprove(selectedPlan.id);
-                        setSelectedPlan(null);
-                      }
-                    }}
-                    className="bg-green-600 hover:bg-green-700"
-                  >
-                    <ThumbsUp className="h-4 w-4 mr-2" />
-                    Approve
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={async () => {
-                      if (selectedPlan && selectedPlan.id) {
-                        await handleReject(selectedPlan.id);
-                        setSelectedPlan(null);
-                      }
-                    }}
-                    className="text-red-600 border-red-200 hover:bg-red-50"
-                  >
-                    <ThumbsDown className="h-4 w-4 mr-2" />
-                    Reject
-                  </Button>
-                </>
-              )}
-          </div>
-        </DialogContent>
-      </Dialog>
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => setSelectedPlan(null)}>
+                Close
+              </Button>
+              {selectedPlan &&
+                selectedPlan.status &&
+                ["Pending Approval", "Under Review", "Pending"].includes(
+                  selectedPlan.status,
+                ) && (
+                  <>
+                    <Button
+                      onClick={async () => {
+                        if (selectedPlan && selectedPlan.id) {
+                          await handleApprove(selectedPlan.id);
+                          setSelectedPlan(null);
+                        }
+                      }}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <ThumbsUp className="h-4 w-4 mr-2" />
+                      Approve
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={async () => {
+                        if (selectedPlan && selectedPlan.id) {
+                          await handleReject(selectedPlan.id);
+                          setSelectedPlan(null);
+                        }
+                      }}
+                      className="text-red-600 border-red-200 hover:bg-red-50"
+                    >
+                      <ThumbsDown className="h-4 w-4 mr-2" />
+                      Reject
+                    </Button>
+                  </>
+                )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <Dialog
         open={showDetailedOptionAnalysis}
@@ -3167,7 +3324,7 @@ export function PendingSolutions() {
             <DialogDescription>
               Comprehensive view of {selectedOptionForDetails?.title} •{" "}
               {selectedOptionForDetails?.id || "A321-007"} for{" "}
-              {selectedOptionForDetails?.flightNumber || "N/A"}
+              {selectedOptionForDetails?.flightNumber}
             </DialogDescription>
           </DialogHeader>
 
@@ -3350,9 +3507,8 @@ export function PendingSolutions() {
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
                         <div className="text-3xl font-bold text-blue-600">
                           {
-                            selectedOptionForDetails
-                              ?.pending_recovery_solutions?.full_details
-                              ?.passenger_impact?.affected
+                            selectedOptionForDetails?.pending_recovery_solutions
+                              ?.full_details?.passenger_impact?.affected
                           }
                         </div>
                         <div className="text-sm text-blue-700">
@@ -3362,9 +3518,8 @@ export function PendingSolutions() {
                       <div className="text-center p-4 bg-green-50 rounded-lg">
                         <div className="text-3xl font-bold text-green-600">
                           {
-                            selectedOptionForDetails
-                              ?.pending_recovery_solutions?.full_details
-                              ?.passenger_impact?.reaccommodated
+                            selectedOptionForDetails?.pending_recovery_solutions
+                              ?.full_details?.passenger_impact?.reaccommodated
                           }
                         </div>
                         <div className="text-sm text-green-700">
@@ -3405,7 +3560,7 @@ export function PendingSolutions() {
                               AED{" "}
                               {
                                 selectedOptionForDetails
-                                  .pending_recovery_solutions?.full_details
+                                  ?.pending_recovery_solutions?.full_details
                                   ?.passenger_impact?.affected
                               }{" "}
                               per passenger (AED261):
