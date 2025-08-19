@@ -895,22 +895,17 @@ export function PendingSolutions() {
       fetchDetailedData();
     }, [plan.id, plan.disruptionId, plan.optionId]);
 
-    // Extract crew and passenger data from pending solution and recovery option
-
+    // Extract crew and passenger data
     const crewData =
-      pendingSolutionData?.pending_recovery_solutions?.crew_information ||
-      pendingSolutionData?.crew_information ||
       pendingSolutionData?.full_details?.crew_hotel_assignments ||
-      recoveryOptionData?.crew_information ||
-      recoveryOptionData?.crew_details ||
-      recoveryOptionData?.resource_requirements?.crew ||
+      pendingSolutionData?.crew_hotel_assignments ||
+      recoveryOptionData?.crew_hotel_assignments ||
       plan.assignedCrew ||
       [];
 
     const passengerData =
-      pendingSolutionData?.pending_recovery_solutions?.passenger_rebooking ||
-      pendingSolutionData?.passenger_rebooking ||
       pendingSolutionData?.full_details?.passenger_rebooking ||
+      pendingSolutionData?.passenger_rebooking ||
       recoveryOptionData?.passenger_rebooking ||
       recoveryOptionData?.passenger_information ||
       recoveryOptionData?.passenger_reaccommodation ||
@@ -1238,20 +1233,13 @@ export function PendingSolutions() {
                       </div>
                       <div className="text-center p-3 bg-yellow-50 rounded-lg">
                         <div className="text-2xl font-bold text-yellow-600">
-                          {(Array.isArray(passengerData)
+                          {Array.isArray(passengerData)
                             ? passengerData.filter((p) =>
                                 p.additional_services?.includes(
                                   "accommodation",
                                 ),
                               ).length
-                            : 0) ||
-                            Math.floor(
-                              ((Array.isArray(passengerData)
-                                ? passengerData.length
-                                : 0) ||
-                                plan.affectedPassengers ||
-                                167) * 0.12,
-                            )}
+                            : 0}
                         </div>
                         <div className="text-sm text-yellow-700">
                           Accommodation
@@ -3162,19 +3150,19 @@ export function PendingSolutions() {
                         <div className="space-y-6">
                           {/* Crew Status Overview */}
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="text-center p-3 bg-blue-50 rounded-lg border border-blue-200">
                               <div className="text-2xl font-bold text-blue-600">
                                 {Object.keys(crewData).length}
                               </div>
                               <div className="text-sm text-blue-700">Total Crew Members</div>
                             </div>
-                            <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+                            <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
                               <div className="text-2xl font-bold text-green-600">
                                 {Object.values(crewData).filter(crew => crew.status === 'confirmed').length}
                               </div>
                               <div className="text-sm text-green-700">Confirmed Assignments</div>
                             </div>
-                            <div className="text-center p-4 bg-orange-50 rounded-lg border border-orange-200">
+                            <div className="text-center p-3 bg-orange-50 rounded-lg border border-orange-200">
                               <div className="text-2xl font-bold text-orange-600">
                                 {Object.values(crewData).filter(crew => crew.hotel_name).length}
                               </div>
