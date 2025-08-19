@@ -1201,176 +1201,282 @@ export function PendingSolutions() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {/* Crew Assignment Changes */}
-                    <div>
-                      <h4 className="font-medium mb-3">
-                        Crew Assignment Modifications
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {crewData.map((crew, index) => (
-                          <div key={index} className="p-3 border rounded-lg">
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="font-medium">
-                                {crew.crew_name ||
-                                  crew.name ||
-                                  `Crew Member ${index + 1}`}
-                              </div>
-                              <Badge
-                                variant={
-                                  crew.assignment_status === "original" ||
-                                  crew.status === "Original"
-                                    ? "outline"
-                                    : "default"
-                                }
-                              >
-                                {crew.assignment_status ||
-                                  crew.status ||
-                                  "Assigned"}
-                              </Badge>
-                            </div>
-                            <div className="text-sm space-y-1">
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">
-                                  Role:
-                                </span>
-                                <span>
-                                  {crew.crew_role || crew.role || "N/A"}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-muted-foreground">
-                                  Duty Time:
-                                </span>
-                                <span>
-                                  {crew.duty_hours || crew.dutyTime || "N/A"}
-                                </span>
-                              </div>
-                              {crew.hotel_booking && (
-                                <div className="flex justify-between">
-                                  <span className="text-muted-foreground">
-                                    Hotel:
-                                  </span>
-                                  <span>
-                                    {crew.hotel_booking.hotel_name || "N/A"}
-                                  </span>
-                                </div>
-                              )}
-                              <div className="text-xs text-muted-foreground mt-2">
-                                Notes:{" "}
-                                {crew.notes ||
-                                  crew.change ||
-                                  "No additional notes"}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
+                    {/* HOTAC Summary Statistics */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="text-center p-3 bg-blue-50 rounded-lg">
+                        <div className="text-2xl font-bold text-blue-600">
+                          {(() => {
+                            if (Array.isArray(crewData)) {
+                              return crewData.length;
+                            }
+                            if (crewData?.crew_member) {
+                              return crewData.crew_member.length;
+                            }
+                            return 0;
+                          })()}
+                        </div>
+                        <div className="text-sm text-blue-700">Total Crew</div>
+                      </div>
+                      <div className="text-center p-3 bg-green-50 rounded-lg">
+                        <div className="text-2xl font-bold text-green-600">
+                          {(() => {
+                            if (Array.isArray(crewData)) {
+                              return crewData.filter(c => c.hotel_name).length || 1;
+                            }
+                            return 1;
+                          })()}
+                        </div>
+                        <div className="text-sm text-green-700">Hotels Booked</div>
+                      </div>
+                      <div className="text-center p-3 bg-orange-50 rounded-lg">
+                        <div className="text-2xl font-bold text-orange-600">
+                          {(() => {
+                            if (Array.isArray(crewData)) {
+                              return crewData.filter(c => c.room_number).length || 1;
+                            }
+                            return crewData?.room_number ? 1 : 0;
+                          })()}
+                        </div>
+                        <div className="text-sm text-orange-700">Rooms Reserved</div>
+                      </div>
+                      <div className="text-center p-3 bg-purple-50 rounded-lg">
+                        <div className="text-2xl font-bold text-purple-600">
+                          AED {(() => {
+                            if (Array.isArray(crewData)) {
+                              return crewData.reduce((sum, c) => sum + (c.total_cost || 0), 0).toLocaleString();
+                            }
+                            return (crewData?.total_cost || 0).toLocaleString();
+                          })()}
+                        </div>
+                        <div className="text-sm text-purple-700">Total Cost</div>
                       </div>
                     </div>
 
-                    {/* HOTAC Arrangements */}
-                    <Separator />
+                    {/* Hotel Assignments */}
                     <div>
-                      <h4 className="font-medium mb-3">HOTAC Arrangements</h4>
-                      <div className="space-y-4">
-                        {/* Hotel Accommodations from crew data */}
-                        {crewData.some((crew) => crew.hotel_booking) ? (
-                          crewData
-                            .filter((crew) => crew.hotel_booking)
-                            .map((crew, index) => (
-                              <Card
-                                key={index}
-                                className="bg-blue-50 border-blue-200"
-                              >
-                                <CardContent className="p-4">
-                                  <div className="flex items-center gap-2 mb-3">
-                                    <Hotel className="h-4 w-4 text-blue-600" />
-                                    <span className="font-medium text-blue-800">
-                                      Hotel Accommodation -{" "}
-                                      {crew.crew_name || `Crew ${index + 1}`}
-                                    </span>
+                      <h4 className="font-medium mb-4 flex items-center gap-2">
+                        <Hotel className="h-4 w-4 text-flydubai-blue" />
+                        Hotel Assignments & Crew Details
+                      </h4>
+                      
+                      {(() => {
+                        const assignments = Array.isArray(crewData) ? crewData : [crewData];
+                        
+                        return assignments.map((assignment, assignmentIndex) => (
+                          <Card key={assignmentIndex} className="mb-4 border-l-4 border-l-flydubai-blue">
+                            <CardHeader className="pb-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Hotel className="h-5 w-5 text-flydubai-blue" />
+                                  <h5 className="font-semibold text-lg">
+                                    {assignment.hotel_name || "Hotel Assignment"}
+                                  </h5>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <Badge className="bg-green-100 text-green-700">
+                                    {assignment.assignment_status || "Confirmed"}
+                                  </Badge>
+                                  <Badge variant="outline" className="border-flydubai-blue text-flydubai-blue">
+                                    {assignment.booking_reference || "HOTAC-REF"}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </CardHeader>
+                            
+                            <CardContent className="space-y-4">
+                              {/* Hotel Information */}
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <MapPin className="h-4 w-4 text-gray-600" />
+                                    <span className="font-medium text-sm">Location</span>
                                   </div>
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Hotel:
-                                      </span>
-                                      <div className="font-medium">
-                                        {crew.hotel_booking.hotel_name || "N/A"}
+                                  <p className="text-sm text-gray-700">
+                                    {assignment.hotel_location || "Location TBD"}
+                                  </p>
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Calendar className="h-4 w-4 text-gray-600" />
+                                    <span className="font-medium text-sm">Check-in/out</span>
+                                  </div>
+                                  <p className="text-sm text-gray-700">
+                                    {assignment.check_in_date ? formatIST(assignment.check_in_date) : "TBD"}
+                                  </p>
+                                  <p className="text-sm text-gray-700">
+                                    {assignment.check_out_date ? formatIST(assignment.check_out_date) : "TBD"}
+                                  </p>
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Building className="h-4 w-4 text-gray-600" />
+                                    <span className="font-medium text-sm">Room Details</span>
+                                  </div>
+                                  <p className="text-sm text-gray-700">
+                                    Room: {assignment.room_number || "TBD"}
+                                  </p>
+                                  <p className="text-sm font-medium text-flydubai-orange">
+                                    Cost: AED {(assignment.total_cost || 0).toLocaleString()}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {/* Crew Members */}
+                              <div>
+                                <h6 className="font-medium mb-3 flex items-center gap-2">
+                                  <Users className="h-4 w-4 text-flydubai-blue" />
+                                  Assigned Crew Members ({assignment.crew_member?.length || 0})
+                                </h6>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  {(assignment.crew_member || []).map((crew, crewIndex) => (
+                                    <div key={crewIndex} className="p-3 border rounded-lg bg-white">
+                                      <div className="flex items-center justify-between mb-2">
+                                        <div className="font-medium text-flydubai-navy">
+                                          {crew.name || `Crew Member ${crewIndex + 1}`}
+                                        </div>
+                                        <Badge variant="outline" className="text-xs">
+                                          {crew.employee_id || "N/A"}
+                                        </Badge>
+                                      </div>
+                                      
+                                      <div className="space-y-1 text-sm">
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-600">Rank:</span>
+                                          <span className="font-medium">
+                                            {crew.rank || "N/A"}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-600">Base:</span>
+                                          <span className="font-medium">
+                                            {crew.base || "N/A"}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-600">Contact:</span>
+                                          <a 
+                                            href={`tel:${crew.contact_number}`}
+                                            className="font-medium text-flydubai-blue hover:underline"
+                                          >
+                                            {crew.contact_number || "N/A"}
+                                          </a>
+                                        </div>
                                       </div>
                                     </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Room Type:
-                                      </span>
-                                      <div className="font-medium">
-                                        {crew.hotel_booking.room_type ||
-                                          "Standard"}
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Transport Details */}
+                              {assignment.transport_details && (
+                                <div>
+                                  <h6 className="font-medium mb-3 flex items-center gap-2">
+                                    <Car className="h-4 w-4 text-green-600" />
+                                    Transport Arrangements
+                                  </h6>
+                                  
+                                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <span className="font-medium text-sm">Service Provider</span>
+                                        </div>
+                                        <p className="text-sm text-gray-700">
+                                          {assignment.transport_details.vendor || "N/A"}
+                                        </p>
+                                        <p className="text-sm text-gray-600">
+                                          Vehicle: {assignment.transport_details.vehicle_type || "N/A"}
+                                        </p>
                                       </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Check-in:
-                                      </span>
-                                      <div className="font-medium">
-                                        {crew.hotel_booking.check_in_date
-                                          ? formatIST(
-                                              crew.hotel_booking.check_in_date,
-                                            )
-                                          : "TBD"}
+                                      
+                                      <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <Clock className="h-4 w-4 text-gray-600" />
+                                          <span className="font-medium text-sm">Schedule</span>
+                                        </div>
+                                        <p className="text-sm text-gray-700">
+                                          Pickup: {assignment.transport_details.pickup_time ? 
+                                            formatIST(assignment.transport_details.pickup_time) : "TBD"}
+                                        </p>
+                                        <p className="text-sm text-gray-700">
+                                          Drop-off: {assignment.transport_details.dropoff_time ? 
+                                            formatIST(assignment.transport_details.dropoff_time) : "TBD"}
+                                        </p>
                                       </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Check-out:
-                                      </span>
-                                      <div className="font-medium">
-                                        {crew.hotel_booking.check_out_date
-                                          ? formatIST(
-                                              crew.hotel_booking.check_out_date,
-                                            )
-                                          : "TBD"}
+                                      
+                                      <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <MapPin className="h-4 w-4 text-gray-600" />
+                                          <span className="font-medium text-sm">Pickup Location</span>
+                                        </div>
+                                        <p className="text-sm text-gray-700">
+                                          {assignment.transport_details.pickup_location || "TBD"}
+                                        </p>
                                       </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Room Number:
-                                      </span>
-                                      <div className="font-medium">
-                                        {crew.hotel_booking.room_number ||
-                                          "TBD"}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-muted-foreground">
-                                        Cost:
-                                      </span>
-                                      <div className="font-medium text-flydubai-orange">
-                                        {crew.hotel_booking.booking_cost
-                                          ? `AED ${crew.hotel_booking.booking_cost}`
-                                          : "TBD"}
+                                      
+                                      <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <MapPin className="h-4 w-4 text-gray-600" />
+                                          <span className="font-medium text-sm">Drop-off Location</span>
+                                        </div>
+                                        <p className="text-sm text-gray-700">
+                                          {assignment.transport_details.dropoff_location || "TBD"}
+                                        </p>
                                       </div>
                                     </div>
                                   </div>
-                                  {crew.hotel_booking.booking_notes && (
-                                    <div className="mt-3 text-sm text-blue-700">
-                                      <strong>Notes:</strong>{" "}
-                                      {crew.hotel_booking.booking_notes}
-                                    </div>
-                                  )}
-                                </CardContent>
-                              </Card>
-                            ))
-                        ) : (
-                          <Card className="bg-gray-50 border-gray-200">
-                            <CardContent className="p-4 text-center">
-                              <Hotel className="h-8 w-8 text-muted-foreground mx-auto mb-2 opacity-50" />
-                              <p className="text-muted-foreground">
-                                No hotel accommodations arranged for this
-                                recovery option.
-                              </p>
+                                </div>
+                              )}
+
+                              {/* Special Requests */}
+                              {assignment.special_requests && (
+                                <div>
+                                  <h6 className="font-medium mb-2 flex items-center gap-2">
+                                    <FileText className="h-4 w-4 text-orange-600" />
+                                    Special Requests
+                                  </h6>
+                                  <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                                    <p className="text-sm text-orange-800">
+                                      {assignment.special_requests}
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Assignment Metadata */}
+                              <div className="pt-3 border-t">
+                                <div className="flex items-center justify-between text-sm text-gray-600">
+                                  <span>Created by: <strong>{assignment.created_by || "System"}</strong></span>
+                                  <span>Disruption ID: <strong>{assignment.disruption_id || plan.disruptionId}</strong></span>
+                                  <span>Reference: <strong>{assignment.booking_reference || "HOTAC-REF"}</strong></span>
+                                </div>
+                              </div>
                             </CardContent>
                           </Card>
-                        )}
+                        ));
+                      })()}
+                    </div>
+
+                    {/* Quick Actions */}
+                    <div className="pt-4 border-t">
+                      <div className="flex gap-2 flex-wrap">
+                        <Button size="sm" className="bg-flydubai-blue hover:bg-flydubai-blue/90 text-white">
+                          <Phone className="h-3 w-3 mr-1" />
+                          Contact Hotel
+                        </Button>
+                        <Button size="sm" variant="outline" className="border-green-600 text-green-600 hover:bg-green-50">
+                          <Car className="h-3 w-3 mr-1" />
+                          Update Transport
+                        </Button>
+                        <Button size="sm" variant="outline" className="border-orange-600 text-orange-600 hover:bg-orange-50">
+                          <Mail className="h-3 w-3 mr-1" />
+                          Notify Crew
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <FileText className="h-3 w-3 mr-1" />
+                          Generate Report
+                        </Button>
                       </div>
                     </div>
                   </div>
