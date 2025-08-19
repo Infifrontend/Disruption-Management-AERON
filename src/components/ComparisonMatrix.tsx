@@ -2246,7 +2246,7 @@ export function ComparisonMatrix({
                               )}
                             </TableBody>
                           </Table>
-                          
+
                           {/* Selected Aircraft Summary */}
                           {(selectedAircraftFlight !== null || selectedOptionDetails.rotation_plan.aircraftOptions.length > 0) && (
                             <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
@@ -2319,12 +2319,12 @@ export function ComparisonMatrix({
                                   .map((crewMember, index) => {
                                     const isAffected = crewMember.status === "Sick" || crewMember.status === "Unavailable" || crewMember.issue;
                                     const hasBeenSwapped = crewMember.replacedCrew && crewMember.assignedAt;
-                                    
+
                                     return (
-                                      <TableRow 
-                                        key={index} 
+                                      <TableRow
+                                        key={index}
                                         className={`hover:bg-gray-50 ${
-                                          isAffected ? "bg-red-50" : 
+                                          isAffected ? "bg-red-50" :
                                           hasBeenSwapped ? "bg-blue-50" : "bg-white"
                                         }`}
                                       >
@@ -2404,7 +2404,7 @@ export function ComparisonMatrix({
                                             </div>
                                           ) : isAffected ? (
                                             <div className="space-y-2">
-                                              <div className="flex items-center gap-2">
+                                              <div className="flex items-center gap-1">
                                                 <AlertTriangle className="h-4 w-4 text-yellow-600" />
                                                 <span className="text-sm text-yellow-700 font-medium">
                                                   Replacement Required
@@ -2554,10 +2554,10 @@ export function ComparisonMatrix({
                                 </div>
                                 <div className="text-2xl font-bold text-green-900">
                                   {(selectedOptionDetails.rotation_plan.crew || selectedOptionDetails.rotation_plan.crewData || [])
-                                    .filter(crew => 
-                                      crew.status !== "Sick" && 
-                                      crew.status !== "Unavailable" && 
-                                      !crew.issue && 
+                                    .filter(crew =>
+                                      crew.status !== "Sick" &&
+                                      crew.status !== "Unavailable" &&
+                                      !crew.issue &&
                                       !crew.replacedCrew
                                     ).length}
                                 </div>
@@ -2600,7 +2600,7 @@ export function ComparisonMatrix({
                           <p>No crew assignments available</p>
                           <p className="text-xs mt-1">
                             Standard crew assignment will be managed
-          </p>
+                          </p>
                         </div>
                       )}
                     </CardContent>
@@ -3226,7 +3226,7 @@ export function ComparisonMatrix({
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-6">
-                          {(rotationPlanDetails?.crew || []).filter(crew => 
+                          {(rotationPlanDetails?.crew || []).filter(crew =>
                             crew.status === "Sick" || crew.status === "Unavailable" || crew.issue
                           ).map((violatedCrew, index) => (
                             <div key={index} className="border rounded-lg p-4 bg-red-50 border-red-200">
@@ -3254,14 +3254,14 @@ export function ComparisonMatrix({
                                   </Badge>
                                 </div>
                               </div>
-                              
+
                               {/* Affected Pairing Information Accordion */}
                               <div className="mt-4">
                                 <h4 className="text-sm font-medium text-red-800 mb-3">Affected Pairing Information</h4>
                                 <div className="space-y-2">
                                   {/* High Priority Pairing */}
                                   <div className="border border-red-300 rounded-lg">
-                                    <div 
+                                    <div
                                       className="p-3 bg-red-100 cursor-pointer hover:bg-red-150 flex items-center justify-between"
                                       onClick={() => {
                                         const element = document.getElementById(`high-${index}`);
@@ -3294,7 +3294,7 @@ export function ComparisonMatrix({
 
                                   {/* Medium Priority Pairing */}
                                   <div className="border border-yellow-300 rounded-lg">
-                                    <div 
+                                    <div
                                       className="p-3 bg-yellow-100 cursor-pointer hover:bg-yellow-150 flex items-center justify-between"
                                       onClick={() => {
                                         const element = document.getElementById(`medium-${index}`);
@@ -3327,7 +3327,7 @@ export function ComparisonMatrix({
 
                                   {/* Low Priority Pairing */}
                                   <div className="border border-green-300 rounded-lg">
-                                    <div 
+                                    <div
                                       className="p-3 bg-green-100 cursor-pointer hover:bg-green-150 flex items-center justify-between"
                                       onClick={() => {
                                         const element = document.getElementById(`low-${index}`);
@@ -3361,9 +3361,9 @@ export function ComparisonMatrix({
                               </div>
                             </div>
                           ))}
-                          
+
                           {/* Show message if no violated crew */}
-                          {!(rotationPlanDetails?.crew || []).some(crew => 
+                          {!(rotationPlanDetails?.crew || []).some(crew =>
                             crew.status === "Sick" || crew.status === "Unavailable" || crew.issue
                           ) && (
                             <div className="text-center py-8 text-gray-500">
@@ -3552,8 +3552,8 @@ export function ComparisonMatrix({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Users className="h-5 w-5 text-flydubai-blue" />
-              {selectedCrewForSwap?.isEditing ? "Edit" : "Replace"} Crew
-              Assignment - {selectedCrewForSwap?.name}
+              Swap Crew Member
+              {selectedCrewForSwap && ` - ${selectedCrewForSwap.type || selectedCrewForSwap.role || selectedCrewForSwap.position}`}
             </DialogTitle>
             <div className="text-sm text-muted-foreground">
               Role:{" "}
@@ -3576,58 +3576,44 @@ export function ComparisonMatrix({
                     ? "Current Assignment"
                     : "Assignment to Replace"}
                 </h4>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-sm text-blue-700 font-medium">
-                      Name:
-                    </span>
-                    <p className="text-blue-900">{selectedCrewForSwap.name}</p>
+                    <span className="text-blue-700">Original Crew:</span>
+                    <div className="font-medium">{selectedCrewForSwap.replacedCrew || selectedCrewForSwap.name}</div>
                   </div>
                   <div>
-                    <span className="text-sm text-blue-700 font-medium">
-                      Role:
-                    </span>
-                    <p className="text-blue-900">
+                    <span className="text-blue-700">Role:</span>
+                    <div className="font-medium">
                       {selectedCrewForSwap.type ||
                         selectedCrewForSwap.role ||
                         selectedCrewForSwap.position}
-                    </p>
+                    </div>
                   </div>
                   <div>
-                    <span className="text-sm text-blue-700 font-medium">
-                      Status:
-                    </span>
-                    <Badge className="ml-2 bg-blue-100 text-blue-800">
+                    <span className="text-blue-700">Status:</span>
+                    <Badge className={
+                      selectedCrewForSwap.status === "Available"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    }>
                       {selectedCrewForSwap.status ||
                         selectedCrewForSwap.availability}
                     </Badge>
                   </div>
                   <div>
-                    <span className="text-sm text-blue-700 font-medium">
-                      Location:
-                    </span>
-                    <p className="text-blue-900">
-                      {selectedCrewForSwap.location || "DXB"}
-                    </p>
+                    <span className="text-blue-700">Location:</span>
+                    <div className="font-medium">{selectedCrewForSwap.location || "N/A"}</div>
                   </div>
                   {selectedCrewForSwap.experience && (
                     <div>
-                      <span className="text-sm text-blue-700 font-medium">
-                        Experience:
-                      </span>
-                      <p className="text-blue-900">
-                        {selectedCrewForSwap.experience}
-                      </p>
+                      <span className="text-blue-700">Experience:</span>
+                      <div className="font-medium">{selectedCrewForSwap.experience}</div>
                     </div>
                   )}
                   {selectedCrewForSwap.score && (
                     <div>
-                      <span className="text-sm text-blue-700 font-medium">
-                        Performance Score:
-                      </span>
-                      <p className="text-blue-900">
-                        {selectedCrewForSwap.score}/100
-                      </p>
+                      <span className="text-blue-700">Performance Score:</span>
+                      <div className="font-medium">{selectedCrewForSwap.score}/100</div>
                     </div>
                   )}
                 </div>
@@ -3671,35 +3657,23 @@ export function ComparisonMatrix({
 
                 {availableCrewForSwap.length > 0 ? (
                   <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {availableCrewForSwap.map((crewMember, index) => (
+                    {availableCrewForSwap.map((crew, index) => (
                       <div
                         key={index}
                         className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
                       >
                         <div className="flex-1 grid grid-cols-5 gap-4">
                           <div>
-                            <h5 className="font-medium text-gray-900">
-                              {crewMember.name}
-                            </h5>
-                            <p className="text-sm text-gray-600">
-                              {crewMember.rank}
-                            </p>
+                            <h5 className="font-medium text-gray-900">{crew.name}</h5>
+                            <p className="text-sm text-gray-600">{crew.role || crew.rank}</p>
                           </div>
                           <div>
-                            <span className="text-xs text-gray-500">
-                              Experience
-                            </span>
-                            <p className="text-sm font-medium text-gray-700">
-                              {crewMember.experience}
-                            </p>
+                            <span className="text-xs text-gray-500">Experience</span>
+                            <p className="text-sm font-medium text-gray-700">{crew.experience}</p>
                           </div>
                           <div>
-                            <span className="text-xs text-gray-500">
-                              Location
-                            </span>
-                            <p className="text-sm font-medium text-gray-700">
-                              {crewMember.location}
-                            </p>
+                            <span className="text-xs text-gray-500">Location</span>
+                            <p className="text-sm font-medium text-gray-700">{crew.location}</p>
                           </div>
                           <div>
                             <span className="text-xs text-gray-500">Score</span>
@@ -3707,24 +3681,22 @@ export function ComparisonMatrix({
                               <div className="flex-1 bg-gray-200 rounded-full h-2">
                                 <div
                                   className="bg-flydubai-blue h-2 rounded-full"
-                                  style={{ width: `${crewMember.score}%` }}
+                                  style={{ width: `${crew.score}%` }}
                                 ></div>
                               </div>
-                              <span className="text-sm font-medium text-flydubai-blue">
-                                {crewMember.score}
-                              </span>
+                              <span className="text-sm font-medium text-flydubai-blue">{crew.score}</span>
                             </div>
                           </div>
                           <div className="text-right">
                             <div className="flex flex-col gap-1 mb-2">
                               <Badge
                                 className={`text-xs w-fit ${
-                                  crewMember.availability === "Available"
+                                  crew.availability === "Available"
                                     ? "bg-green-100 text-green-700"
                                     : "bg-yellow-100 text-yellow-700"
                                 }`}
                               >
-                                {crewMember.availability}
+                                {crew.availability}
                               </Badge>
                             </div>
                             <Button
@@ -3743,52 +3715,37 @@ export function ComparisonMatrix({
                                         .crewData ||
                                       []),
                                   ];
-                                  if (
-                                    selectedCrewForSwap.originalIndex !==
-                                    undefined
-                                  ) {
-                                    const originalCrewName =
-                                      selectedCrewForSwap.replacedCrew ||
-                                      selectedCrewForSwap.name;
+                                  const originalIndex = selectedCrewForSwap.originalIndex;
 
-                                    updatedCrew[
-                                      selectedCrewForSwap.originalIndex
-                                    ] = {
-                                      ...updatedCrew[
-                                        selectedCrewForSwap.originalIndex
-                                      ],
-                                      name: crewMember.name,
-                                      type: crewMember.role,
-                                      role: crewMember.role,
-                                      position: crewMember.role,
-                                      status: "Assigned",
-                                      availability: "Assigned",
-                                      location: crewMember.location,
-                                      score: crewMember.score,
-                                      experience: crewMember.experience,
-                                      qualifications: crewMember.qualifications,
-                                      assignedAt: new Date().toISOString(),
-                                      replacedCrew: originalCrewName,
-                                      rating: crewMember.rating,
-                                    };
+                                  // Update the crew member with swap information
+                                  updatedCrew[originalIndex] = {
+                                    ...updatedCrew[originalIndex],
+                                    name: crew.name,
+                                    experience: crew.experience,
+                                    location: crew.location,
+                                    score: crew.score,
+                                    qualifications: crew.qualifications,
+                                    replacedCrew: selectedCrewForSwap.replacedCrew || selectedCrewForSwap.name,
+                                    assignedAt: new Date().toISOString(),
+                                    status: "Reassigned",
+                                    availability: "On Duty",
+                                  };
 
-                                    // Update the state
-                                    setSelectedOptionDetails({
-                                      ...selectedOptionDetails,
-                                      rotation_plan: {
-                                        ...selectedOptionDetails.rotation_plan,
-                                        crew: updatedCrew,
-                                        crewData: updatedCrew,
-                                      },
-                                    });
-                                  }
+                                  setSelectedOptionDetails({
+                                    ...selectedOptionDetails,
+                                    rotation_plan: {
+                                      ...selectedOptionDetails.rotation_plan,
+                                      crew: updatedCrew,
+                                      crewData: updatedCrew,
+                                    },
+                                  });
                                 }
 
                                 // Store the assignment update
                                 const assignmentUpdate = {
                                   optionId: selectedOptionDetails?.id,
                                   originalCrew: selectedCrewForSwap,
-                                  newCrew: crewMember,
+                                  newCrew: crew,
                                   timestamp: new Date().toISOString(),
                                   reason: selectedCrewForSwap.isEditing
                                     ? "Crew assignment edited via interface"
@@ -3818,14 +3775,9 @@ export function ComparisonMatrix({
                 ) : (
                   <div className="text-center py-8 text-gray-500">
                     <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>
-                      No available crew members found for role:{" "}
-                      {selectedCrewForSwap.type ||
-                        selectedCrewForSwap.role ||
-                        selectedCrewForSwap.position}
-                    </p>
+                    <p>No available crew found for this role</p>
                     <p className="text-xs mt-1">
-                      Please contact crew scheduling for alternatives
+                      All qualified crew members are currently assigned
                     </p>
                   </div>
                 )}
@@ -3837,6 +3789,7 @@ export function ComparisonMatrix({
                   onClick={() => {
                     setShowCrewSwapDialog(false);
                     setSelectedCrewForSwap(null);
+                    setAvailableCrewForSwap([]);
                   }}
                 >
                   Cancel
