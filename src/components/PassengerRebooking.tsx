@@ -1298,12 +1298,12 @@ export function PassengerRebooking({ context, onClearContext }) {
     const checkOutDate = new Date(checkInDate);
     checkOutDate.setDate(checkOutDate.getDate() + 1); // Next day
 
-    // Get crew data from multiple sources
+    // Get crew data from multiple sources with proper null checks
     const allCrewData = [
-      ...(selectedFlight?.crew || []),
-      ...(context?.flight?.crew || []),
-      ...(context?.crewData || []),
-      ...(crewData || [])
+      ...(Array.isArray(selectedFlight?.crew) ? selectedFlight.crew : []),
+      ...(Array.isArray(context?.flight?.crew) ? context.flight.crew : []),
+      ...(Array.isArray(context?.crewData) ? context.crewData : []),
+      ...(Array.isArray(crewData?.crew) ? crewData.crew : [])
     ];
 
     // Prepare crew list from selected members
