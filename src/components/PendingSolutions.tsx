@@ -1321,8 +1321,8 @@ export function PendingSolutions() {
                       </div>
                       <div className="text-center p-3 bg-yellow-50 rounded-lg">
                         <div className="text-2xl font-bold text-yellow-600">
-                          {(Array.isArray(passengerData) ? passengerData.filter((p) =>
-                            p.additional_services?.includes("accommodation"),
+                          { (Array.isArray(passengerData) ? passengerData.filter(
+                            (p) => p.additional_services?.includes("accommodation"),
                           ).length : 0) ||
                             Math.floor(
                               ((Array.isArray(passengerData) ? passengerData.length : 0) ||
@@ -2172,7 +2172,7 @@ export function PendingSolutions() {
           open={!!selectedPlan}
           onOpenChange={() => setSelectedPlan(null)}
         >
-          <DialogContent className="max-w-7xl w-full max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
@@ -3314,12 +3314,42 @@ export function PendingSolutions() {
           )}
 
           <div className="flex justify-end gap-2 pt-4 border-t">
-            <Button
-              variant="outline"
-              onClick={() => setShowDetailedOptionAnalysis(false)}
-            >
+            <Button variant="outline" onClick={() => setSelectedPlan(null)}>
               Close
             </Button>
+            {selectedPlan &&
+              selectedPlan.status &&
+              ["Pending Approval", "Under Review", "Pending"].includes(
+                selectedPlan.status,
+              ) && (
+                <>
+                  <Button
+                    onClick={async () => {
+                      if (selectedPlan && selectedPlan.id) {
+                        await handleApprove(selectedPlan.id);
+                        setSelectedPlan(null);
+                      }
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <ThumbsUp className="h-4 w-4 mr-2" />
+                    Approve
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      if (selectedPlan && selectedPlan.id) {
+                        await handleReject(selectedPlan.id);
+                        setSelectedPlan(null);
+                      }
+                    }}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <ThumbsDown className="h-4 w-4 mr-2" />
+                    Reject
+                  </Button>
+                </>
+              )}
           </div>
         </DialogContent>
       </Dialog>
