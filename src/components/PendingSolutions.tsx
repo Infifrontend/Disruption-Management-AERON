@@ -1493,7 +1493,9 @@ export function PendingSolutions() {
                             ? `(${hotacData.length} items)`
                             : typeof hotacData}
                         </div>
-                        <div>Plan Data: {plan.assignedCrew ? "✓" : "✗"}</div>
+                        <div>
+                          Plan Data: {plan.assignedCrew ? "✓" : "✗"}
+                        </div>
                       </div>
                     </div>
 
@@ -1719,12 +1721,16 @@ export function PendingSolutions() {
                                     </div>
                                     <p className="text-sm text-gray-700">
                                       {assignment.check_in_date
-                                        ? formatIST(assignment.check_in_date)
+                                        ? formatIST(
+                                            assignment.check_in_date,
+                                          )
                                         : "TBD"}
                                     </p>
                                     <p className="text-sm text-gray-700">
                                       {assignment.check_out_date
-                                        ? formatIST(assignment.check_out_date)
+                                        ? formatIST(
+                                            assignment.check_out_date,
+                                          )
                                         : "TBD"}
                                     </p>
                                   </div>
@@ -1765,7 +1771,8 @@ export function PendingSolutions() {
                                       <>
                                         <h6 className="font-medium mb-3 flex items-center gap-2">
                                           <Users className="h-4 w-4 text-flydubai-blue" />
-                                          Assigned Crew Members ({memberCount})
+                                          Assigned Crew Members (
+                                          {memberCount})
                                         </h6>
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1838,8 +1845,8 @@ export function PendingSolutions() {
                                                 details available
                                               </p>
                                               <p className="text-sm">
-                                                Standard crew assignment will be
-                                                managed
+                                                Standard crew assignment will
+                                                be managed
                                               </p>
                                             </div>
                                           )}
@@ -1888,7 +1895,8 @@ export function PendingSolutions() {
                                             {assignment.transport_details
                                               .pickup_time
                                               ? formatIST(
-                                                  assignment.transport_details
+                                                  assignment
+                                                    .transport_details
                                                     .pickup_time,
                                                 )
                                               : "TBD"}
@@ -1898,7 +1906,8 @@ export function PendingSolutions() {
                                             {assignment.transport_details
                                               .dropoff_time
                                               ? formatIST(
-                                                  assignment.transport_details
+                                                  assignment
+                                                    .transport_details
                                                     .dropoff_time,
                                                 )
                                               : "TBD"}
@@ -3558,7 +3567,8 @@ export function PendingSolutions() {
                             <div className="text-3xl font-bold text-blue-600">
                               {
                                 selectedOptionForDetails
-                                  .pending_recovery_solutions.full_details
+                                  .pending_recovery_solutions
+                                  .full_details
                                   .affected
                               }
                             </div>
@@ -3570,7 +3580,8 @@ export function PendingSolutions() {
                             <div className="text-3xl font-bold text-green-600">
                               {
                                 selectedOptionForDetails
-                                  .pending_recovery_solutions.full_details
+                                  .pending_recovery_solutions
+                                  .full_details
                                   .reaccommodated
                               }
                             </div>
@@ -3615,10 +3626,24 @@ export function PendingSolutions() {
                             <div className="space-y-2">
                               <div className="flex justify-between">
                                 <span className="text-sm">
-                                  €250 per passenger (EU261):
+                                  AED{" "}
+                                  {
+                                    selectedOptionForDetails
+                                      .pending_recovery_solutions
+                                      .full_details
+                                      .affected
+                                  }{" "}
+                                  per passenger (AED261):
                                 </span>
                                 <span className="font-medium">
-                                  €250 per passenger (EU261)
+                                  AED{" "}
+                                  {
+                                    selectedOptionForDetails
+                                      .pending_recovery_solutions
+                                      .full_details
+                                      .affected
+                                  }{" "}
+                                  per passenger (AED261):
                                 </span>
                               </div>
                             </div>
@@ -3803,45 +3828,6 @@ export function PendingSolutions() {
                 </div>
               </TabsContent>
             </Tabs>
-
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setSelectedPlan(null)}>
-                Close
-              </Button>
-              {selectedPlan &&
-                selectedPlan.status &&
-                ["Pending Approval", "Under Review", "Pending"].includes(
-                  selectedPlan.status,
-                ) && (
-                  <>
-                    <Button
-                      onClick={async () => {
-                        if (selectedPlan && selectedPlan.id) {
-                          await handleApprove(selectedPlan.id);
-                          setSelectedPlan(null);
-                        }
-                      }}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <ThumbsUp className="h-4 w-4 mr-2" />
-                      Approve
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={async () => {
-                        if (selectedPlan && selectedPlan.id) {
-                          await handleReject(selectedPlan.id);
-                          setSelectedPlan(null);
-                        }
-                      }}
-                      className="text-red-600 border-red-200 hover:bg-red-50"
-                    >
-                      <ThumbsDown className="h-4 w-4 mr-2" />
-                      Reject
-                    </Button>
-                  </>
-                )}
-            </div>
           </DialogContent>
         </Dialog>
       )}
@@ -4024,8 +4010,7 @@ export function PendingSolutions() {
                             </span>
                           </div>
                           <p className="text-sm text-green-700">
-                            Current crew certified for{" "}
-                            {plan.aircraft || "aircraft"}
+                            Current crew certified for {plan.aircraft || "aircraft"}
                           </p>
                         </div>
 
@@ -4295,18 +4280,15 @@ export function PendingSolutions() {
                                 return 4; // Default crew size
                               })()}
                             </div>
-                            <div className="text-sm text-blue-700">
-                              Total Crew
-                            </div>
+                            <div className="text-sm text-blue-700">Total Crew</div>
                           </div>
                           <div className="text-center p-3 bg-green-50 rounded-lg">
                             <div className="text-2xl font-bold text-green-600">
                               {(() => {
                                 if (Array.isArray(crewData)) {
                                   return (
-                                    crewData.filter(
-                                      (c) => c.hotel_name || c.hotel,
-                                    ).length || 1
+                                    crewData.filter((c) => c.hotel_name || c.hotel)
+                                      .length || 1
                                   );
                                 }
                                 if (
@@ -4327,9 +4309,8 @@ export function PendingSolutions() {
                               {(() => {
                                 if (Array.isArray(crewData)) {
                                   return (
-                                    crewData.filter(
-                                      (c) => c.room_number || c.room,
-                                    ).length || 2
+                                    crewData.filter((c) => c.room_number || c.room)
+                                      .length || 2
                                   );
                                 }
                                 if (
@@ -4813,110 +4794,6 @@ export function PendingSolutions() {
                 </Card>
               </TabsContent>
 
-              <TabsContent
-                value="passenger-reaccommodation"
-                className="space-y-6"
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Passenger Re-accommodation Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <div className="text-3xl font-bold text-blue-600">
-                          {
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.full_details?.passenger_impact?.affected
-                          }
-                        </div>
-                        <div className="text-sm text-blue-700">
-                          Total Affected
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <div className="text-3xl font-bold text-green-600">
-                          {
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.full_details?.passenger_impact?.reaccommodated
-                          }
-                        </div>
-                        <div className="text-sm text-green-700">
-                          Same Flight
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-3xl font-bold text-red-600">0</div>
-                        <div className="text-sm text-red-700">
-                          Other Flights
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium mb-3">
-                          Accommodation Breakdown
-                        </h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">Meal Vouchers:</span>
-                            <span className="font-medium">0 passengers</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">
-                              Hotel Accommodation:
-                            </span>
-                            <span className="font-medium">0 passengers</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-3">Compensation</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">
-                              AED{" "}
-                              {
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions?.full_details
-                                  ?.passenger_impact?.affected
-                              }{" "}
-                              per passenger (AED261):
-                            </span>
-                            <span className="font-medium">
-                              AED{" "}
-                              {
-                                selectedOptionForDetails
-                                  .pending_recovery_solutions?.full_details
-                                  ?.passenger_impact?.affected
-                              }{" "}
-                              per passenger (AED261):
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Info className="h-4 w-4 text-blue-600" />
-                        <span className="font-medium text-blue-800">
-                          Re-accommodation Details:
-                        </span>
-                      </div>
-                      <p className="text-sm text-blue-700">
-                        All passengers accommodated on same aircraft with 65min
-                        delay.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
               <TabsContent value="rotation-impact" className="space-y-6">
                 <Card>
                   <CardHeader>
@@ -4989,6 +4866,1011 @@ export function PendingSolutions() {
                         </p>
                       </div>
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          )}
+
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button variant="outline" onClick={() => setSelectedPlan(null)}>
+              Close
+            </Button>
+            {selectedPlan &&
+              selectedPlan.status &&
+              ["Pending Approval", "Under Review", "Pending"].includes(
+                selectedPlan.status,
+              ) && (
+                <>
+                  <Button
+                    onClick={async () => {
+                      if (selectedPlan && selectedPlan.id) {
+                        await handleApprove(selectedPlan.id);
+                        setSelectedPlan(null);
+                      }
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <ThumbsUp className="h-4 w-4 mr-2" />
+                    Approve
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      if (selectedPlan && selectedPlan.id) {
+                        await handleReject(selectedPlan.id);
+                        setSelectedPlan(null);
+                      }
+                    }}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <ThumbsDown className="h-4 w-4 mr-2" />
+                    Reject
+                  </Button>
+                </>
+              )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={showDetailedOptionAnalysis}
+        onOpenChange={setShowDetailedOptionAnalysis}
+      >
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Detailed Recovery Option Analysis
+            </DialogTitle>
+            <DialogDescription>
+              Comprehensive view of {selectedOptionForDetails?.title} •{" "}
+              {selectedOptionForDetails?.id || "A321-007"} for{" "}
+              {selectedOptionForDetails?.flightNumber}
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedOptionForDetails && (
+            <Tabs defaultValue="option-details" className="w-full">
+              <TabsList
+                className={`grid w-full ${
+                  selectedPlan?.hasCrewData && selectedPlan?.hasPassengerData
+                    ? "grid-cols-5"
+                    : selectedPlan?.hasCrewData ||
+                        selectedPlan?.hasPassengerData
+                      ? "grid-cols-4"
+                      : "grid-cols-4"
+                }`}
+              >
+                <TabsTrigger value="option-details">Option Details</TabsTrigger>
+                {Object.keys(
+                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
+                ).length > 0 &&
+                  selectedOptionForDetails?.pending_recovery_solutions
+                    ?.full_details?.crew_hotel_assignments && (
+                    <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
+                  )}
+
+                {Object.keys(
+                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
+                ).length > 0 &&
+                  selectedOptionForDetails?.pending_recovery_solutions
+                    ?.full_details?.passenger_rebooking && (
+                    <TabsTrigger value="passenger-reaccommodation">
+                      Passenger Re-accommodation
+                    </TabsTrigger>
+                  )}
+                <TabsTrigger value="rotation-impact">
+                  Rotation Impact
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="option-details" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      Option Overview
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <h4 className="font-medium mb-2">
+                            {selectedOptionForDetails.title}
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            {selectedOptionForDetails.description}
+                          </p>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">
+                                Total Cost:
+                              </span>
+                              <span className="font-medium text-flydubai-orange">
+                                {selectedOptionForDetails.cost}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">
+                                Timeline:
+                              </span>
+                              <span className="font-medium">
+                                {selectedOptionForDetails.timeline}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">
+                                Confidence:
+                              </span>
+                              <span className="font-medium">
+                                {selectedOptionForDetails.confidence}%
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">
+                                Impact:
+                              </span>
+                              <span className="font-medium">
+                                {selectedOptionForDetails.impact}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-2">
+                            Key Performance Indicators
+                          </h4>
+                          <div className="space-y-3">
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Success Rate</span>
+                                <span>
+                                  {selectedOptionForDetails.confidence}%
+                                </span>
+                              </div>
+                              <Progress
+                                value={selectedOptionForDetails.confidence}
+                                className="h-2"
+                              />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Customer Satisfaction</span>
+                                <span>88%</span>
+                              </div>
+                              <Progress value={88} className="h-2" />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Operational Risk</span>
+                                <span className="text-green-600">Low</span>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Easy
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Operational Risk</span>
+                                <span className="text-red-600">High</span>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Easy
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="crew-hotac" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Crew Assignments & HOTAC Information
+                      {loadingPendingData && (
+                        <RefreshCw className="h-4 w-4 animate-spin ml-2" />
+                      )}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {!hasCrewData && !hasHotacData ? (
+                      <div className="space-y-6">
+                        {/* Display default crew assignment status when no specific crew data */}
+                        <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span className="font-medium text-green-800">
+                              No crew changes required
+                            </span>
+                          </div>
+                          <p className="text-sm text-green-700">
+                            Current crew certified for {plan.aircraft || "aircraft"}
+                          </p>
+                        </div>
+
+                        {/* Default crew information */}
+                        <div>
+                          <h4 className="font-medium mb-4 flex items-center gap-2">
+                            <Users className="h-4 w-4 text-flydubai-blue" />
+                            Current Crew Assignment
+                          </h4>
+
+                          <Card className="border-l-4 border-l-flydubai-blue">
+                            <CardHeader className="pb-3">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <Users className="h-5 w-5 text-flydubai-blue" />
+                                  <h5 className="font-semibold text-lg">
+                                    Standard Crew Assignment
+                                  </h5>
+                                </div>
+                                <Badge className="bg-green-100 text-green-700">
+                                  Active
+                                </Badge>
+                              </div>
+                            </CardHeader>
+
+                            <CardContent className="space-y-4">
+                              {/* Default crew members */}
+                              <div>
+                                <h6 className="font-medium mb-3 flex items-center gap-2">
+                                  <Users className="h-4 w-4 text-flydubai-blue" />
+                                  Assigned Crew Members (4)
+                                </h6>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                  {[
+                                    {
+                                      name: "Capt. Ahmed Al-Mansouri",
+                                      rank: "Captain",
+                                      employee_id: "C10914",
+                                      base: "DXB",
+                                      contact: "+971500706562",
+                                    },
+                                    {
+                                      name: "FO Sarah Johnson",
+                                      rank: "First Officer",
+                                      employee_id: "C10163",
+                                      base: "DXB",
+                                      contact: "+971500391721",
+                                    },
+                                    {
+                                      name: "SSCC Lisa Martinez",
+                                      rank: "Senior Cabin Crew",
+                                      employee_id: "C10970",
+                                      base: "DXB",
+                                      contact: "+971501353831",
+                                    },
+                                    {
+                                      name: "CC Maria Santos",
+                                      rank: "Cabin Crew",
+                                      employee_id: "C10259",
+                                      base: "DXB",
+                                      contact: "+971505396903",
+                                    },
+                                  ].map((crew, crewIndex) => (
+                                    <div
+                                      key={crewIndex}
+                                      className="p-3 border rounded-lg bg-white"
+                                    >
+                                      <div className="flex items-center justify-between mb-2">
+                                        <div className="font-medium text-flydubai-navy">
+                                          {crew.name}
+                                        </div>
+                                        <Badge
+                                          variant="outline"
+                                          className="text-xs"
+                                        >
+                                          {crew.employee_id}
+                                        </Badge>
+                                      </div>
+
+                                      <div className="space-y-1 text-sm">
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-600">
+                                            Rank:
+                                          </span>
+                                          <span className="font-medium">
+                                            {crew.rank}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-600">
+                                            Base:
+                                          </span>
+                                          <span className="font-medium">
+                                            {crew.base}
+                                          </span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                          <span className="text-gray-600">
+                                            Contact:
+                                          </span>
+                                          <a
+                                            href={`tel:${crew.contact}`}
+                                            className="font-medium text-flydubai-blue hover:underline"
+                                          >
+                                            {crew.contact}
+                                          </a>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* HOTAC Information when no specific data */}
+                              <div>
+                                <h6 className="font-medium mb-3 flex items-center gap-2">
+                                  <Hotel className="h-4 w-4 text-blue-600" />
+                                  HOTAC Arrangements
+                                </h6>
+
+                                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <Hotel className="h-4 w-4 text-gray-600" />
+                                        <span className="font-medium text-sm">
+                                          Hotel
+                                        </span>
+                                      </div>
+                                      <p className="text-sm text-gray-700">
+                                        Dubai International Hotel
+                                      </p>
+                                      <p className="text-sm text-gray-600">
+                                        0.5 km from DXB Airport
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <Calendar className="h-4 w-4 text-gray-600" />
+                                        <span className="font-medium text-sm">
+                                          Duration
+                                        </span>
+                                      </div>
+                                      <p className="text-sm text-gray-700">
+                                        Standard Rest Period
+                                      </p>
+                                      <p className="text-sm text-gray-600">
+                                        As per company policy
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <Building className="h-4 w-4 text-gray-600" />
+                                        <span className="font-medium text-sm">
+                                          Room Assignment
+                                        </span>
+                                      </div>
+                                      <p className="text-sm text-gray-700">
+                                        Rooms: 1937, 1938
+                                      </p>
+                                      <p className="text-sm font-medium text-flydubai-orange">
+                                        Cost: AED 1,800
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Assignment Metadata */}
+                              <div className="pt-3 border-t">
+                                <div className="flex items-center justify-between text-sm text-gray-600">
+                                  <span>
+                                    Status: <strong>Active Assignment</strong>
+                                  </span>
+                                  <span>
+                                    Type: <strong>Standard HOTAC</strong>
+                                  </span>
+                                  <span>
+                                    Reference: <strong>HOTAC-{plan.id}</strong>
+                                  </span>
+                                </div>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+
+                        {/* Quick Actions */}
+                        <div className="pt-4 border-t">
+                          <div className="flex gap-2 flex-wrap">
+                            <Button
+                              size="sm"
+                              className="bg-flydubai-blue hover:bg-flydubai-blue/90 text-white"
+                            >
+                              <Phone className="h-3 w-3 mr-1" />
+                              Contact Hotel
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-green-600 text-green-600 hover:bg-green-50"
+                            >
+                              <Car className="h-3 w-3 mr-1" />
+                              Arrange Transport
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                            >
+                              <Mail className="h-3 w-3 mr-1" />
+                              Notify Crew
+                            </Button>
+                            <Button size="sm" variant="outline">
+                              <FileText className="h-3 w-3 mr-1" />
+                              Generate Report
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        {/* Debug Information */}
+                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <h4 className="font-medium text-blue-800 mb-2">
+                            Data Sources Found:
+                          </h4>
+                          <div className="text-sm text-blue-700 space-y-1">
+                            <div>
+                              Crew Data: {hasCrewData ? "✓" : "✗"}{" "}
+                              {Array.isArray(crewData)
+                                ? `(${crewData.length} items)`
+                                : typeof crewData}
+                            </div>
+                            <div>
+                              HOTAC Data: {hasHotacData ? "✓" : "✗"}{" "}
+                              {Array.isArray(hotacData)
+                                ? `(${hotacData.length} items)`
+                                : typeof hotacData}
+                            </div>
+                            <div>
+                              Plan Data: {plan.assignedCrew ? "✓" : "✗"}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* HOTAC Summary Statistics */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                          <div className="text-center p-3 bg-blue-50 rounded-lg">
+                            <div className="text-2xl font-bold text-blue-600">
+                              {(() => {
+                                if (Array.isArray(crewData)) {
+                                  return crewData.length;
+                                }
+                                if (
+                                  crewData?.crew_member &&
+                                  Array.isArray(crewData.crew_member)
+                                ) {
+                                  return crewData.crew_member.length;
+                                }
+                                if (
+                                  crewData?.crew &&
+                                  Array.isArray(crewData.crew)
+                                ) {
+                                  return crewData.crew.length;
+                                }
+                                return 4; // Default crew size
+                              })()}
+                            </div>
+                            <div className="text-sm text-blue-700">Total Crew</div>
+                          </div>
+                          <div className="text-center p-3 bg-green-50 rounded-lg">
+                            <div className="text-2xl font-bold text-green-600">
+                              {(() => {
+                                if (Array.isArray(crewData)) {
+                                  return (
+                                    crewData.filter((c) => c.hotel_name || c.hotel)
+                                      .length || 1
+                                  );
+                                }
+                                if (
+                                  crewData?.hotel_name ||
+                                  hotacData?.hotel_name
+                                ) {
+                                  return 1;
+                                }
+                                return 1;
+                              })()}
+                            </div>
+                            <div className="text-sm text-green-700">
+                              Hotels Booked
+                            </div>
+                          </div>
+                          <div className="text-center p-3 bg-orange-50 rounded-lg">
+                            <div className="text-2xl font-bold text-orange-600">
+                              {(() => {
+                                if (Array.isArray(crewData)) {
+                                  return (
+                                    crewData.filter((c) => c.room_number || c.room)
+                                      .length || 2
+                                  );
+                                }
+                                if (
+                                  crewData?.room_number ||
+                                  crewData?.rooms ||
+                                  hotacData?.rooms
+                                ) {
+                                  return crewData?.rooms || 2;
+                                }
+                                return 2;
+                              })()}
+                            </div>
+                            <div className="text-sm text-orange-700">
+                              Rooms Reserved
+                            </div>
+                          </div>
+                          <div className="text-center p-3 bg-purple-50 rounded-lg">
+                            <div className="text-2xl font-bold text-purple-600">
+                              AED{" "}
+                              {(() => {
+                                if (Array.isArray(crewData)) {
+                                  return crewData
+                                    .reduce(
+                                      (sum, c) =>
+                                        sum + (c.total_cost || c.cost || 0),
+                                      0,
+                                    )
+                                    .toLocaleString();
+                                }
+                                if (crewData?.total_cost) {
+                                  return crewData.total_cost.toLocaleString();
+                                }
+                                if (hotacData?.total_cost) {
+                                  return hotacData.total_cost.toLocaleString();
+                                }
+                                return "1,800"; // Default HOTAC cost
+                              })()}
+                            </div>
+                            <div className="text-sm text-purple-700">
+                              Total Cost
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Hotel Assignments */}
+                        <div>
+                          <h4 className="font-medium mb-4 flex items-center gap-2">
+                            <Hotel className="h-4 w-4 text-flydubai-blue" />
+                            Hotel Assignments & Crew Details
+                          </h4>
+
+                          {(() => {
+                            // Determine how to display assignments based on data structure
+                            let assignments = [];
+
+                            if (Array.isArray(crewData)) {
+                              assignments = crewData;
+                            } else if (
+                              crewData &&
+                              typeof crewData === "object"
+                            ) {
+                              assignments = [crewData];
+                            } else if (hotacData) {
+                              assignments = Array.isArray(hotacData)
+                                ? hotacData
+                                : [hotacData];
+                            } else {
+                              // Create default assignment with realistic data
+                              assignments = [
+                                {
+                                  hotel_name: "Dubai International Hotel",
+                                  hotel_location: "0.5 km from DXB Airport",
+                                  check_in_date: new Date().toISOString(),
+                                  check_out_date: new Date(
+                                    Date.now() + 24 * 60 * 60 * 1000,
+                                  ).toISOString(),
+                                  room_number: "1937, 1938",
+                                  total_cost: 1800,
+                                  assignment_status: "Confirmed",
+                                  booking_reference: `HOTAC-${plan.id}`,
+                                  crew_member: [
+                                    {
+                                      name: "Capt. Ahmed Al-Mansouri",
+                                      rank: "Captain",
+                                      employee_id: "C10914",
+                                      base: "DXB",
+                                      contact_number: "+971500706562",
+                                    },
+                                    {
+                                      name: "FO Sarah Johnson",
+                                      rank: "First Officer",
+                                      employee_id: "C10163",
+                                      base: "DXB",
+                                      contact_number: "+971500391721",
+                                    },
+                                    {
+                                      name: "SSCC Lisa Martinez",
+                                      rank: "Senior Cabin Crew",
+                                      employee_id: "C10970",
+                                      base: "DXB",
+                                      contact_number: "+971501353831",
+                                    },
+                                    {
+                                      name: "CC Maria Santos",
+                                      rank: "Cabin Crew",
+                                      employee_id: "C10259",
+                                      base: "DXB",
+                                      contact_number: "+971505396903",
+                                    },
+                                  ],
+                                  created_by: "Operations Manager",
+                                  disruption_id: plan.disruptionId,
+                                },
+                              ];
+                            }
+
+                            return assignments.map(
+                              (assignment, assignmentIndex) => (
+                                <Card
+                                  key={assignmentIndex}
+                                  className="mb-4 border-l-4 border-l-flydubai-blue"
+                                >
+                                  <CardHeader className="pb-3">
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex items-center gap-2">
+                                        <Hotel className="h-5 w-5 text-flydubai-blue" />
+                                        <h5 className="font-semibold text-lg">
+                                          {assignment.hotel_name ||
+                                            assignment.hotel ||
+                                            "Dubai International Hotel"}
+                                        </h5>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Badge className="bg-green-100 text-green-700">
+                                          {assignment.assignment_status ||
+                                            assignment.status ||
+                                            "Confirmed"}
+                                        </Badge>
+                                        <Badge
+                                          variant="outline"
+                                          className="border-flydubai-blue text-flydubai-blue"
+                                        >
+                                          {assignment.booking_reference ||
+                                            assignment.reference ||
+                                            `HOTAC-${plan.id}`}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  </CardHeader>
+
+                                  <CardContent className="space-y-4">
+                                    {/* Hotel Information */}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                                      <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <MapPin className="h-4 w-4 text-gray-600" />
+                                          <span className="font-medium text-sm">
+                                            Location
+                                          </span>
+                                        </div>
+                                        <p className="text-sm text-gray-700">
+                                          {assignment.hotel_location ||
+                                            "Location TBD"}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <Calendar className="h-4 w-4 text-gray-600" />
+                                          <span className="font-medium text-sm">
+                                            Check-in/out
+                                          </span>
+                                        </div>
+                                        <p className="text-sm text-gray-700">
+                                          {assignment.check_in_date
+                                            ? formatIST(
+                                                assignment.check_in_date,
+                                              )
+                                            : "TBD"}
+                                        </p>
+                                        <p className="text-sm text-gray-700">
+                                          {assignment.check_out_date
+                                            ? formatIST(
+                                                assignment.check_out_date,
+                                              )
+                                            : "TBD"}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                          <Building className="h-4 w-4 text-gray-600" />
+                                          <span className="font-medium text-sm">
+                                            Room Details
+                                          </span>
+                                        </div>
+                                        <p className="text-sm text-gray-700">
+                                          Room:{" "}
+                                          {assignment.room_number || "TBD"}
+                                        </p>
+                                        <p className="text-sm font-medium text-flydubai-orange">
+                                          Cost: AED{" "}
+                                          {(
+                                            assignment.total_cost || 0
+                                          ).toLocaleString()}
+                                        </p>
+                                      </div>
+                                    </div>
+
+                                    {/* Crew Members */}
+                                    <div>
+                                      {(() => {
+                                        const crewMembers =
+                                          assignment.crew_member ||
+                                          assignment.crew ||
+                                          assignment.crew_list ||
+                                          [];
+                                        const memberCount = Array.isArray(
+                                          crewMembers,
+                                        )
+                                          ? crewMembers.length
+                                          : 0;
+
+                                        return (
+                                          <>
+                                            <h6 className="font-medium mb-3 flex items-center gap-2">
+                                              <Users className="h-4 w-4 text-flydubai-blue" />
+                                              Assigned Crew Members (
+                                              {memberCount})
+                                            </h6>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                              {memberCount > 0 ? (
+                                                crewMembers.map(
+                                                  (crew, crewIndex) => (
+                                                    <div
+                                                      key={crewIndex}
+                                                      className="p-3 border rounded-lg bg-white"
+                                                    >
+                                                      <div className="flex items-center justify-between mb-2">
+                                                        <div className="font-medium text-flydubai-navy">
+                                                          {crew.name ||
+                                                            crew.crew_name ||
+                                                            `Crew Member ${crewIndex + 1}`}
+                                                        </div>
+                                                        <Badge
+                                                          variant="outline"
+                                                          className="text-xs"
+                                                        >
+                                                          {crew.employee_id ||
+                                                            crew.id ||
+                                                            "N/A"}
+                                                        </Badge>
+                                                      </div>
+
+                                                      <div className="space-y-1 text-sm">
+                                                        <div className="flex justify-between">
+                                                          <span className="text-gray-600">
+                                                            Rank:
+                                                          </span>
+                                                          <span className="font-medium">
+                                                            {crew.rank ||
+                                                              crew.position ||
+                                                              "N/A"}
+                                                          </span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                          <span className="text-gray-600">
+                                                            Base:
+                                                          </span>
+                                                          <span className="font-medium">
+                                                            {crew.base ||
+                                                              crew.home_base ||
+                                                              "DXB"}
+                                                          </span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                          <span className="text-gray-600">
+                                                            Contact:
+                                                          </span>
+                                                          <a
+                                                            href={`tel:${crew.contact_number || crew.phone}`}
+                                                            className="font-medium text-flydubai-blue hover:underline"
+                                                          >
+                                                            {crew.contact_number ||
+                                                              crew.phone ||
+                                                              "N/A"}
+                                                          </a>
+                                                        </div>
+                                                      </div>
+                                                    </div>
+                                                  ),
+                                                )
+                                              ) : (
+                                                <div className="col-span-2 text-center text-gray-500 py-4">
+                                                  <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                                                  <p>
+                                                    No specific crew assignment
+                                                    details available
+                                                  </p>
+                                                  <p className="text-sm">
+                                                    Standard crew assignment
+                                                    will be managed
+                                                  </p>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </>
+                                        );
+                                      })()}
+                                    </div>
+
+                                    {/* Transport Details */}
+                                    {assignment.transport_details && (
+                                      <div>
+                                        <h6 className="font-medium mb-3 flex items-center gap-2">
+                                          <Car className="h-4 w-4 text-green-600" />
+                                          Transport Arrangements
+                                        </h6>
+
+                                        <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div>
+                                              <div className="flex items-center gap-2 mb-2">
+                                                <span className="font-medium text-sm">
+                                                  Service Provider
+                                                </span>
+                                              </div>
+                                              <p className="text-sm text-gray-700">
+                                                {assignment.transport_details
+                                                  .vendor || "N/A"}
+                                              </p>
+                                              <p className="text-sm text-gray-600">
+                                                Vehicle:{" "}
+                                                {assignment.transport_details
+                                                  .vehicle_type || "N/A"}
+                                              </p>
+                                            </div>
+
+                                            <div>
+                                              <div className="flex items-center gap-2 mb-2">
+                                                <Clock className="h-4 w-4 text-gray-600" />
+                                                <span className="font-medium text-sm">
+                                                  Schedule
+                                                </span>
+                                              </div>
+                                              <p className="text-sm text-gray-700">
+                                                Pickup:{" "}
+                                                {assignment.transport_details
+                                                  .pickup_time
+                                                  ? formatIST(
+                                                      assignment
+                                                        .transport_details
+                                                        .pickup_time,
+                                                    )
+                                                  : "TBD"}
+                                              </p>
+                                              <p className="text-sm text-gray-700">
+                                                Drop-off:{" "}
+                                                {assignment.transport_details
+                                                  .dropoff_time
+                                                  ? formatIST(
+                                                      assignment
+                                                        .transport_details
+                                                        .dropoff_time,
+                                                    )
+                                                  : "TBD"}
+                                              </p>
+                                            </div>
+
+                                            <div>
+                                              <div className="flex items-center gap-2 mb-2">
+                                                <MapPin className="h-4 w-4 text-gray-600" />
+                                                <span className="font-medium text-sm">
+                                                  Pickup Location
+                                                </span>
+                                              </div>
+                                              <p className="text-sm text-gray-700">
+                                                {assignment.transport_details
+                                                  .pickup_location || "TBD"}
+                                              </p>
+                                            </div>
+
+                                            <div>
+                                              <div className="flex items-center gap-2 mb-2">
+                                                <MapPin className="h-4 w-4 text-gray-600" />
+                                                <span className="font-medium text-sm">
+                                                  Drop-off Location
+                                                </span>
+                                              </div>
+                                              <p className="text-sm text-gray-700">
+                                                {assignment.transport_details
+                                                  .dropoff_location || "TBD"}
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Special Requests */}
+                                    {assignment.special_requests && (
+                                      <div>
+                                        <h6 className="font-medium mb-2 flex items-center gap-2">
+                                          <FileText className="h-4 w-4 text-orange-600" />
+                                          Special Requests
+                                        </h6>
+                                        <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                                          <p className="text-sm text-orange-800">
+                                            {assignment.special_requests}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Assignment Metadata */}
+                                    <div className="pt-3 border-t">
+                                      <div className="flex items-center justify-between text-sm text-gray-600">
+                                        <span>
+                                          Created by:{" "}
+                                          <strong>
+                                            {assignment.created_by || "System"}
+                                          </strong>
+                                        </span>
+                                        <span>
+                                          Disruption ID:{" "}
+                                          <strong>
+                                            {assignment.disruption_id ||
+                                              plan.disruptionId}
+                                          </strong>
+                                        </span>
+                                        <span>
+                                          Reference:{" "}
+                                          <strong>
+                                            {assignment.booking_reference ||
+                                              "HOTAC-REF"}
+                                          </strong>
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              ),
+                            );
+                          })()}
+                        </div>
+
+                        {/* Quick Actions */}
+                        <div className="pt-4 border-t">
+                          <div className="flex gap-2 flex-wrap">
+                            <Button
+                              size="sm"
+                              className="bg-flydubai-blue hover:bg-flydubai-blue/90 text-white"
+                            >
+                              <Phone className="h-3 w-3 mr-1" />
+                              Contact Hotel
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-green-600 text-green-600 hover:bg-green-50"
+                            >
+                              <Car className="h-3 w-3 mr-1" />
+                              Update Transport
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                            >
+                              <Mail className="h-3 w-3 mr-1" />
+                              Notify Crew
+                            </Button>
+                            <Button size="sm" variant="outline">
+                              <FileText className="h-3 w-3 mr-1" />
+                              Generate Report
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
