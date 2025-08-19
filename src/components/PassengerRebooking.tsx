@@ -1118,6 +1118,145 @@ export function PassengerRebooking({ context, onClearContext }) {
     }));
   };
 
+  const handlePnrSelection = (pnr) => {
+    setSelectedPnrs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(pnr)) {
+        newSet.delete(pnr);
+      } else {
+        newSet.add(pnr);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = (checked) => {
+    if (checked) {
+      const unconfirmedPnrs = Object.keys(filteredPnrGroups).filter(
+        pnr => !isPnrGroupConfirmed(filteredPnrGroups[pnr])
+      );
+      setSelectedPnrs(new Set(unconfirmedPnrs));
+    } else {
+      setSelectedPnrs(new Set());
+    }
+  };
+
+  const handleExpandPnr = (pnr) => {
+    setExpandedPnrs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(pnr)) {
+        newSet.delete(pnr);
+      } else {
+        newSet.add(pnr);
+      }
+      return newSet;
+    });
+  };
+
+  const handleBulkRebookSelectedPnrs = () => {
+    if (selectedPnrs.size === 0) {
+      toast.error("Please select PNR groups to rebook");
+      return;
+    }
+    
+    const selectedPnrGroups = Array.from(selectedPnrs).map(pnr => ({
+      pnr,
+      passengers: filteredPnrGroups[pnr]
+    }));
+    
+    setSelectedPnrGroup({
+      pnr: `${selectedPnrs.size} groups`,
+      passengers: selectedPnrGroups.flatMap(group => group.passengers)
+    });
+    setSelectedPassenger(null);
+    setShowRebookingDialog(true);
+  };
+
+  const handleBackToFlightSelection = () => {
+    setShowAdditionalServices(false);
+    setSelectedFlightForServices(null);
+    setSelectedAdditionalServices({
+      hotel: false,
+      mealVoucher: false,
+      transport: false,
+      specialAssistance: false,
+      priorityBaggageHandling: false,
+      loungeAccess: false,
+    });
+  };
+
+  const handleSkipAdditionalServices = () => {
+    handleSaveChanges();
+  };
+
+  const handleSaveChanges = () => {
+    if (!selectedFlightForServices) return;
+
+    const passengersToUpdate = selectedPnrGroup ? selectedPnrGroup.passengers : [selectedPassenger];
+    const selectedServices = Object.entries(selectedAdditionalServices)
+      .filter(([_, selected]) => selected)
+      .map(([service, _]) => service);
+
+    // Update passenger rebooking status
+    const newRebookings = {};
+    const newStatuses = {};
+
+    passengersToUpdate.forEach(passenger => {
+      newRebookings[passenger.id] = {
+        flightNumber: selectedFlightForServices.flightNumber,
+        cabin: selectedFlightForServices.selectedCabin,
+        seat: `${Math.floor(Math.random() * 30) + 1}${String.fromCharCode(65 + Math.floor(Math.random() * 6))}`,
+        date: new Date().toISOString(),
+        services: selectedServices
+      };
+      newStatuses[passenger.id] = "Confirmed";
+    });
+
+    setConfirmedRebookings(prev => ({ ...prev, ...newRebookings }));
+    setPassengerRebookingStatus(prev => ({ ...prev, ...newStatuses }));
+
+    // Close dialogs and reset state
+    setShowRebookingDialog(false);
+    setShowAdditionalServices(false);
+    setSelectedFlightForServices(null);
+    setSelectedPassenger(null);
+    setSelectedPnrGroup(null);
+    setSelectedAdditionalServices({
+      hotel: false,
+      mealVoucher: false,
+      transport: false,
+      specialAssistance: false,
+      priorityBaggageHandling: false,
+      loungeAccess: false,
+    });
+
+    toast.success(`Successfully rebooked ${passengersToUpdate.length} passenger(s)`, {
+      description: `Flight: ${selectedFlightForServices.flightNumber} (${selectedFlightForServices.selectedCabin})`
+    });
+  };
+
+  const confirmHotelBooking = (hotel) => {
+    setSelectedHotel(hotel);
+    setHotelBookingConfirmed(true);
+    toast.success("Hotel booking confirmed", {
+      description: `Reservation made at ${hotel.name}`
+    });
+  };
+
+  const issueVoucher = (amount, type) => {
+    setVoucherIssued(true);
+    toast.success(`${type} meal voucher issued`, {
+      description: `AED ${selectedPnrGroup ? amount * selectedPnrGroup.passengers.length : amount} credit`
+    });
+  };
+
+  const arrangeTransport = (type, description) => {
+    setTransportArranged(true);
+    toast.success("Transportation arranged", {
+      description: description
+    });
+  };
+
   // Function to check if all passengers in a PNR group are confirmed
   const isPnrGroupConfirmed = (groupPassengers) => {
     return groupPassengers.every((p) => {
@@ -1128,6 +1267,22 @@ export function PassengerRebooking({ context, onClearContext }) {
   };
 
   // Logic to handle crew assignment confirmation
+  const handleCrewSelection = (memberIdentifier) => {
+    setSelectedCrewMembers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(memberIdentifier)) {
+        newSet.delete(memberIdentifier);
+      } else {
+        newSet.add(memberIdentifier);
+      }
+      return newSet;
+    });
+  };
+
+  const handleHotelSelectionForCrew = (hotel) => {
+    setSelectedHotelForCrew(hotel);
+  };
+
   const handleConfirmCrewAssignment = () => {
     if (selectedCrewMembers.size === 0 || !selectedHotelForCrew) {
       alert("Please select crew members and a hotel before confirming assignment");
