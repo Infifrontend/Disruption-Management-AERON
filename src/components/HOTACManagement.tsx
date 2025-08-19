@@ -1003,6 +1003,7 @@ export function HOTACManagement() {
                 <TableHead>Accommodation Period</TableHead>
                 <TableHead>Transport Details</TableHead>
                 <TableHead>Booking Status</TableHead>
+                <TableHead>Category</TableHead>
                 <TableHead className="w-56">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -1174,6 +1175,12 @@ export function HOTACManagement() {
                         <div className="text-xs text-flydubai-orange font-medium">
                           {record.totalCost}
                         </div>
+                      </div>
+                    </TableCell>
+
+                    <TableCell>
+                      <div className="space-y-1">
+                        {getCategoryBadge(record.dateOfDisruption)}
                       </div>
                     </TableCell>
 
@@ -1351,7 +1358,7 @@ export function HOTACManagement() {
                   {/* Expanded Row Details */}
                   {expandedRows.includes(record.id) && (
                     <TableRow>
-                      <TableCell colSpan="12" className="bg-gray-50 p-4">
+                      <TableCell colSpan="13" className="bg-gray-50 p-4">
                         <ExpandedRowDetails record={record} />
                       </TableCell>
                     </TableRow>
@@ -2168,4 +2175,21 @@ function getHotelCategoryBadge(category) {
       {category}
     </Badge>
   );
+}
+
+function getCategoryBadge(dateOfDisruption) {
+  if (dateOfDisruption) {
+    return (
+      <Badge className="bg-red-100 text-red-700 border-red-200">
+        <AlertTriangle className="h-3 w-3 mr-1" />
+        Disrupted
+      </Badge>
+    );
+  } else {
+    return (
+      <Badge className="bg-green-100 text-green-700 border-green-200">
+        Normal
+      </Badge>
+    );
+  }
 }
