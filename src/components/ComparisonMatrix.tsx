@@ -1873,19 +1873,13 @@ export function ComparisonMatrix({
               <Tabs defaultValue="overview" className="w-full">
                 <TabsList
                   className={`grid w-full ${
-                    flight?.categorization === "Aircraft issue (e.g., AOG)" ||
-                    flight?.categorization === "Aircraft Issue (e.g., AOG)" ||
-                    selectedOptionDetails?.rotation_plan?.aircraftOptions
-                      ?.length > 0
+                    selectedOptionDetails?.title === "Aircraft Swap - Immediate"
                       ? "grid-cols-6"
                       : "grid-cols-5"
                   }`}
                 >
                   <TabsTrigger value="overview">Overview</TabsTrigger>
-                  {(flight?.categorization === "Aircraft issue (e.g., AOG)" ||
-                    flight?.categorization === "Aircraft Issue (e.g., AOG)" ||
-                    selectedOptionDetails?.rotation_plan?.aircraftOptions
-                      ?.length > 0) && (
+                  {selectedOptionDetails?.title === "Aircraft Swap - Immediate" && (
                     <TabsTrigger value="aircraft">
                       Alternate Aircraft Options
                     </TabsTrigger>
