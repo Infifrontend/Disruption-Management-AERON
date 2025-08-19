@@ -2573,123 +2573,6 @@ export function PendingSolutions() {
                 </CardContent>
               </Card>
 
-              {/* Conditional Crew & HOTAC Tab */}
-              {selectedPlan.hasCrewData && (
-                <TabsContent value="crew-hotac" className="space-y-6 max-h-[70vh] overflow-y-auto">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Users className="h-5 w-5 text-flydubai-blue" />
-                        Crew Changes Required
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="h-4 w-4 text-green-600" />
-                          <span className="font-medium text-green-800">
-                            No crew changes required.
-                          </span>
-                        </div>
-                        <p className="text-sm text-green-700">
-                          Current crew certified for{" "}
-                          {selectedOptionForDetails.id || "A321-007"}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              )}
-
-              {/* Conditional Passenger Re-accommodation Tab */}
-              {selectedPlan.hasPassengerData && (
-                <TabsContent
-                  value="passenger-reaccommodation"
-                  className="space-y-6 max-h-[70vh] overflow-y-auto"
-                >
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Users className="h-5 w-5 text-flydubai-blue" />
-                        Passenger Re-accommodation Summary
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-3 gap-4 mb-6">
-                        <div className="text-center p-4 bg-blue-50 rounded-lg">
-                          <div className="text-3xl font-bold text-blue-600">
-                            158
-                          </div>
-                          <div className="text-sm text-blue-700">
-                            Total Affected
-                          </div>
-                        </div>
-                        <div className="text-center p-4 bg-green-50 rounded-lg">
-                          <div className="text-3xl font-bold text-green-600">
-                            158
-                          </div>
-                          <div className="text-sm text-green-700">
-                            Same Flight
-                          </div>
-                        </div>
-                        <div className="text-center p-4 bg-red-50 rounded-lg">
-                          <div className="text-3xl font-bold text-red-600">0</div>
-                          <div className="text-sm text-red-700">
-                            Other Flights
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="font-medium mb-3">
-                            Accommodation Breakdown
-                          </h4>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm">Meal Vouchers:</span>
-                              <span className="font-medium">0 passengers</span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm">
-                                Hotel Accommodation:
-                              </span>
-                              <span className="font-medium">0 passengers</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-3">Compensation</h4>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm">
-                                €250 per passenger (EU261):
-                              </span>
-                              <span className="font-medium">
-                                €250 per passenger (EU261)
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Info className="h-4 w-4 text-blue-600" />
-                          <span className="font-medium text-blue-800">
-                            Re-accommodation Details:
-                          </span>
-                        </div>
-                        <p className="text-sm text-blue-700">
-                          All passengers accommodated on same aircraft with 65min
-                          delay.
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-              )}
-
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
@@ -2850,6 +2733,123 @@ export function PendingSolutions() {
                 </Card>
               </div>
             </TabsContent>
+
+            {/* Conditional Crew & HOTAC Tab */}
+            {selectedPlan.hasCrewData && (
+              <TabsContent value="crew-hotac" className="space-y-6 max-h-[70vh] overflow-y-auto">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-flydubai-blue" />
+                      Crew Changes Required
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                        <span className="font-medium text-green-800">
+                          No crew changes required.
+                        </span>
+                      </div>
+                      <p className="text-sm text-green-700">
+                        Current crew certified for{" "}
+                        {selectedOptionForDetails?.id || "A321-007"}
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
+
+            {/* Conditional Passenger Re-accommodation Tab */}
+            {selectedPlan.hasPassengerData && (
+              <TabsContent
+                value="passenger-reaccommodation"
+                className="space-y-6 max-h-[70vh] overflow-y-auto"
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-flydubai-blue" />
+                      Passenger Re-accommodation Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="text-center p-4 bg-blue-50 rounded-lg">
+                        <div className="text-3xl font-bold text-blue-600">
+                          158
+                        </div>
+                        <div className="text-sm text-blue-700">
+                          Total Affected
+                        </div>
+                      </div>
+                      <div className="text-center p-4 bg-green-50 rounded-lg">
+                        <div className="text-3xl font-bold text-green-600">
+                          158
+                        </div>
+                        <div className="text-sm text-green-700">
+                          Same Flight
+                        </div>
+                      </div>
+                      <div className="text-center p-4 bg-red-50 rounded-lg">
+                        <div className="text-3xl font-bold text-red-600">0</div>
+                        <div className="text-sm text-red-700">
+                          Other Flights
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-medium mb-3">
+                          Accommodation Breakdown
+                        </h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm">Meal Vouchers:</span>
+                            <span className="font-medium">0 passengers</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">
+                              Hotel Accommodation:
+                            </span>
+                            <span className="font-medium">0 passengers</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium mb-3">Compensation</h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm">
+                              €250 per passenger (EU261):
+                            </span>
+                            <span className="font-medium">
+                              €250 per passenger (EU261)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Info className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium text-blue-800">
+                          Re-accommodation Details:
+                        </span>
+                      </div>
+                      <p className="text-sm text-blue-700">
+                        All passengers accommodated on same aircraft with 65min
+                        delay.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
           </Tabs>
 
           <div className="flex justify-end gap-2 pt-4 border-t">
