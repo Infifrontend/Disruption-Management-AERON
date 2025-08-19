@@ -890,9 +890,13 @@ export function PendingSolutions() {
           <div className="w-full overflow-x-auto">
             <TabsList
               className={`grid w-full ${
-                (selectedPlan && selectedPlan.hasCrewData && selectedPlan.hasPassengerData)
+                selectedPlan &&
+                selectedPlan.hasCrewData &&
+                selectedPlan.hasPassengerData
                   ? "grid-cols-5"
-                  : (selectedPlan && (selectedPlan.hasCrewData || selectedPlan.hasPassengerData))
+                  : selectedPlan &&
+                      (selectedPlan.hasCrewData ||
+                        selectedPlan.hasPassengerData)
                     ? "grid-cols-4"
                     : "grid-cols-3"
               }`}
@@ -2295,9 +2299,13 @@ export function PendingSolutions() {
           <Tabs defaultValue="overview" className="w-full">
             <TabsList
               className={`grid w-full ${
-                (selectedPlan && selectedPlan.hasCrewData && selectedPlan.hasPassengerData)
+                selectedPlan &&
+                selectedPlan.hasCrewData &&
+                selectedPlan.hasPassengerData
                   ? "grid-cols-5"
-                  : (selectedPlan && (selectedPlan.hasCrewData || selectedPlan.hasPassengerData))
+                  : selectedPlan &&
+                      (selectedPlan.hasCrewData ||
+                        selectedPlan.hasPassengerData)
                     ? "grid-cols-4"
                     : "grid-cols-3"
               }`}
@@ -2325,23 +2333,23 @@ export function PendingSolutions() {
                     Recovery Options Overview
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Available recovery options for {selectedPlan.flightNumber} •{" "}
-                    {selectedPlan.route}
+                    Available recovery options for {selectedPlan?.flightNumber}{" "}
+                    • {selectedPlan?.route}
                   </p>
                 </CardHeader>
                 <CardContent>
-                  {selectedPlan.matchingOption && (
+                  {selectedPlan?.matchingOption && (
                     <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-6">
                       <div className="flex items-center gap-2 mb-2">
                         <Badge className="bg-blue-100 text-blue-700">
                           Selected Option
                         </Badge>
                         <h4 className="font-medium text-blue-800">
-                          {selectedPlan.matchingOption.title}
+                          {selectedPlan?.matchingOption.title}
                         </h4>
                       </div>
                       <p className="text-sm text-blue-800">
-                        {selectedPlan.matchingOption.description ||
+                        {selectedPlan?.matchingOption.description ||
                           "Recovery option details"}
                       </p>
                     </div>
@@ -2349,9 +2357,9 @@ export function PendingSolutions() {
 
                   <div className="space-y-4">
                     <div className="space-y-3">
-                      {selectedPlan.recoveryOptions &&
+                      {selectedPlan?.recoveryOptions &&
                       selectedPlan.recoveryOptions.length > 0 ? (
-                        selectedPlan.recoveryOptions.map((option, index) => {
+                        selectedPlan?.recoveryOptions.map((option, index) => {
                           // Check if this option is selected by matching option_id from pending solution
                           const isSelected =
                             selectedPlan.optionId &&
