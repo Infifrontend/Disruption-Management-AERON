@@ -1895,8 +1895,8 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
               rotation_plan = EXCLUDED.rotation_plan,
               impact_area = EXCLUDED.impact_area,
               impact_summary = EXCLUDED.impact_summary,
+              crew_available = EXCLUDED.crew_available,
               updated_at = CURRENT_TIMESTAMP
-              crew_available = EXCLUDED.crew_available
             RETURNING id`;
 
           // Ensure arrays are properly formatted for PostgreSQL
