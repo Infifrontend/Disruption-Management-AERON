@@ -2443,23 +2443,18 @@ export function ComparisonMatrix({
                                           <div className="space-y-2">
                                             <Badge
                                               className={`px-3 py-1 ${
-                                                isAffected
-                                                  ? "bg-red-100 text-red-700 border-red-300"
-                                                  : hasBeenSwapped
-                                                    ? "bg-blue-100 text-blue-700 border-blue-300"
-                                                    : crewMember.status === "Available" || crewMember.availability === "Available"
-                                                      ? "bg-green-100 text-green-700 border-green-300"
-                                                      : crewMember.status === "On Duty" || crewMember.status === "Reassigned"
+                                                (crewMember.status || crewMember.availability) === "Available"
+                                                  ? "bg-green-100 text-green-700 border-green-300"
+                                                  : (crewMember.status || crewMember.availability) === "Sick"
+                                                    ? "bg-red-100 text-red-700 border-red-300"
+                                                    : (crewMember.status || crewMember.availability) === "Unavailable"
+                                                      ? "bg-red-100 text-red-700 border-red-300"
+                                                      : (crewMember.status || crewMember.availability) === "On Duty"
                                                         ? "bg-yellow-100 text-yellow-700 border-yellow-300"
                                                         : "bg-gray-100 text-gray-700 border-gray-300"
                                               }`}
                                             >
-                                              {isAffected 
-                                                ? (crewMember.status || crewMember.availability)
-                                                : hasBeenSwapped
-                                                  ? "Swapped"
-                                                  : (crewMember.status || crewMember.availability)
-                                              }
+                                              {crewMember.status || crewMember.availability}
                                             </Badge>
                                             {hasBeenSwapped && (
                                               <p className="text-xs text-gray-500">
@@ -3063,11 +3058,18 @@ export function ComparisonMatrix({
 
           <div className="flex-1 overflow-y-auto min-h-0 pr-2 -mr-2">
             <Tabs defaultValue="rotation" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsList className={`grid w-full ${
+                selectedOptionDetails?.impact_area?.includes("crew") 
+                  ? "grid-cols-3" 
+                  : "grid-cols-2"
+              } mb-6`}>
                 <TabsTrigger value="rotation">
                   Rotation & Ops Impact
                 </TabsTrigger>
                 <TabsTrigger value="cost">Cost & Delay Metrics</TabsTrigger>
+                {selectedOptionDetails?.impact_area?.includes("crew") && (
+                  <TabsTrigger value="crew-impact">Crew Impact</TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="rotation" className="space-y-4">
@@ -3365,6 +3367,250 @@ export function ComparisonMatrix({
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              {selectedOptionDetails?.impact_area?.includes("crew") && (
+                <TabsContent value="crew-impact" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Violated Crew Section */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <AlertTriangle className="h-5 w-5 text-red-600" />
+                          Violated Crew
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {rotationPlanDetails?.crew?.filter(crew => 
+                            crew.status === "Sick" || 
+                            crew.status === "Unavailable" || 
+                            crew.issue
+                          ).map((crewMember, index) => (
+                            <div key={index} className="p-4 border border-red-200 bg-red-50 rounded-lg">
+                              <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                  <span className="font-medium text-red-800">Name:</span>
+                                  <p className="text-red-900">{crewMember.name}</p>
+                                </div>
+                                <div>
+                                  <span className="font-medium text-red-800">Experience:</span>
+                                  <p className="text-red-900">{crewMember.experience || "8 years"}</p>
+                                </div>
+                                <div>
+                                  <span className="font-medium text-red-800">Location:</span>
+                                  <p className="text-red-900">{crewMember.location || "DXB"}</p>
+                                </div>
+                                <div>
+                                  <span className="font-medium text-red-800">Score:</span>
+                                  <p className="text-red-900">{crewMember.score || 85}/100</p>
+                                </div>
+                                <div className="col-span-2">
+                                  <span className="font-medium text-red-800">Status:</span>
+                                  <p className="text-red-900">{crewMember.status || crewMember.availability}</p>
+                                </div>
+                                {crewMember.issue && (
+                                  <div className="col-span-2">
+                                    <span className="font-medium text-red-800">Issue:</span>
+                                    <p className="text-red-900">{crewMember.issue}</p>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          )) || (
+                            <div className="text-center py-8 text-gray-500">
+                              <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                              <p>No crew violations detected</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    {/* Newly Assigned Crew Section */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <UserCheck className="h-5 w-5 text-green-600" />
+                          Newly Assigned Crew
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {rotationPlanDetails?.crew?.filter(crew => 
+                            crew.replacedCrew && crew.assignedAt
+                          ).map((crewMember, index) => (
+                            <div key={index} className="p-4 border border-green-200 bg-green-50 rounded-lg">
+                              <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                  <span className="font-medium text-green-800">Name:</span>
+                                  <p className="text-green-900">{crewMember.name}</p>
+                                </div>
+                                <div>
+                                  <span className="font-medium text-green-800">Experience:</span>
+                                  <p className="text-green-900">{crewMember.experience || "6 years"}</p>
+                                </div>
+                                <div>
+                                  <span className="font-medium text-green-800">Location:</span>
+                                  <p className="text-green-900">{crewMember.location || "DXB"}</p>
+                                </div>
+                                <div>
+                                  <span className="font-medium text-green-800">Score:</span>
+                                  <p className="text-green-900">{crewMember.score || 92}/100</p>
+                                </div>
+                                <div className="col-span-2">
+                                  <span className="font-medium text-green-800">Status:</span>
+                                  <p className="text-green-900">Newly Assigned</p>
+                                </div>
+                                <div className="col-span-2">
+                                  <span className="font-medium text-green-800">Replaced:</span>
+                                  <p className="text-green-900">{crewMember.replacedCrew}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )) || (
+                            <div className="text-center py-8 text-gray-500">
+                              <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p>No new crew assignments</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Affected Pairing Information Accordion */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Calendar className="h-5 w-5 text-flydubai-blue" />
+                        Affected Pairing Information
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {/* High Priority Pairing */}
+                        <div className="border border-red-200 rounded-lg">
+                          <div className="p-4 bg-red-50 border-b border-red-200">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <AlertTriangle className="h-4 w-4 text-red-600" />
+                                <span className="font-medium text-red-800">High Priority Impact</span>
+                              </div>
+                              <Badge className="bg-red-100 text-red-700 border-red-300">
+                                Critical
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="p-4 space-y-3">
+                            {(rotationPlanDetails?.crew || []).slice(0, 2).map((crewMember, index) => (
+                              <div key={index} className="border-l-4 border-red-400 pl-3">
+                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                  <div>
+                                    <span className="font-medium text-gray-600">Pairing Number:</span>
+                                    <p className="text-gray-900">PAR-{(index + 1).toString().padStart(3, '0')}</p>
+                                  </div>
+                                  <div>
+                                    <span className="font-medium text-gray-600">Date:</span>
+                                    <p className="text-gray-900">{new Date().toLocaleDateString()}</p>
+                                  </div>
+                                  <div>
+                                    <span className="font-medium text-gray-600">Sector:</span>
+                                    <p className="text-gray-900">{flight?.route || "DXB-SHJ"}</p>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Crew: {crewMember.name} - {crewMember.type || crewMember.role || crewMember.position}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Medium Priority Pairing */}
+                        <div className="border border-yellow-200 rounded-lg">
+                          <div className="p-4 bg-yellow-50 border-b border-yellow-200">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                                <span className="font-medium text-yellow-800">Medium Priority Impact</span>
+                              </div>
+                              <Badge className="bg-yellow-100 text-yellow-700 border-yellow-300">
+                                Moderate
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="p-4 space-y-3">
+                            {(rotationPlanDetails?.crew || []).slice(2, 4).map((crewMember, index) => (
+                              <div key={index} className="border-l-4 border-yellow-400 pl-3">
+                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                  <div>
+                                    <span className="font-medium text-gray-600">Pairing Number:</span>
+                                    <p className="text-gray-900">PAR-{(index + 3).toString().padStart(3, '0')}</p>
+                                  </div>
+                                  <div>
+                                    <span className="font-medium text-gray-600">Date:</span>
+                                    <p className="text-gray-900">{new Date(Date.now() + 86400000).toLocaleDateString()}</p>
+                                  </div>
+                                  <div>
+                                    <span className="font-medium text-gray-600">Sector:</span>
+                                    <p className="text-gray-900">{flight?.route || "SHJ-DXB"}</p>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Crew: {crewMember.name} - {crewMember.type || crewMember.role || crewMember.position}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Low Priority Pairing */}
+                        <div className="border border-green-200 rounded-lg">
+                          <div className="p-4 bg-green-50 border-b border-green-200">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4 text-green-600" />
+                                <span className="font-medium text-green-800">Low Priority Impact</span>
+                              </div>
+                              <Badge className="bg-green-100 text-green-700 border-green-300">
+                                Minor
+                              </Badge>
+                            </div>
+                          </div>
+                          <div className="p-4 space-y-3">
+                            {(rotationPlanDetails?.crew || []).slice(4, 6).map((crewMember, index) => (
+                              <div key={index} className="border-l-4 border-green-400 pl-3">
+                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                  <div>
+                                    <span className="font-medium text-gray-600">Pairing Number:</span>
+                                    <p className="text-gray-900">PAR-{(index + 5).toString().padStart(3, '0')}</p>
+                                  </div>
+                                  <div>
+                                    <span className="font-medium text-gray-600">Date:</span>
+                                    <p className="text-gray-900">{new Date(Date.now() + 172800000).toLocaleDateString()}</p>
+                                  </div>
+                                  <div>
+                                    <span className="font-medium text-gray-600">Sector:</span>
+                                    <p className="text-gray-900">{flight?.route || "DXB-AUH"}</p>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Crew: {crewMember.name} - {crewMember.type || crewMember.role || crewMember.position}
+                                </p>
+                              </div>
+                            )) || (
+                              <div className="text-center py-4 text-gray-500">
+                                <CheckCircle className="h-6 w-6 mx-auto mb-1 text-green-500" />
+                                <p className="text-sm">No low priority impacts</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              )}
             </Tabs>
           </div>
 
