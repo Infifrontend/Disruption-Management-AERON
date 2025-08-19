@@ -230,13 +230,99 @@ const getAircraftIssuesRecoveryData = () => {
             "Aircraft certified for destination, operational approvals verified",
         },
       },
+      crew_available: [
+          {
+              "name": "Capt. James Walker",
+              "role": "Captain",
+              "type": "B737 Type Rating",
+              "status": "Available",
+              "issue": null
+          },
+          {
+              "name": "Capt. Ravi Sharma",
+              "role": "Captain",
+              "type": "B737 Type Rating",
+              "status": "Available",
+              "issue": null
+          },
+          {
+              "name": "Capt. Elena Petrova",
+              "role": "Captain",
+              "type": "B737 Type Rating",
+              "status": "Available",
+              "issue": null
+          },
+          {
+              "name": "FO Michael Adams",
+              "role": "First Officer",
+              "type": "B737/MAX Type Rating",
+              "status": "Available",
+              "issue": null
+          },
+          {
+              "name": "FO Hannah Lee",
+              "role": "First Officer",
+              "type": "B737/MAX Type Rating",
+              "status": "Available",
+              "issue": null
+          },
+          {
+              "name": "FO Ahmed Nasser",
+              "role": "First Officer",
+              "type": "B737/MAX Type Rating",
+              "status": "Available",
+              "issue": null
+          },
+          {
+              "name": "SSCC Grace Thompson",
+              "role": "Senior Cabin Crew",
+              "type": "Senior Cabin Crew",
+              "status": "Available",
+              "issue": null
+          },
+          {
+              "name": "SSCC Pedro Alvarez",
+              "role": "Senior Cabin Crew",
+              "type": "Senior Cabin Crew",
+              "status": "Available",
+              "issue": null
+          },
+          {
+              "name": "SSCC Fatima Noor",
+              "role": "Senior Cabin Crew",
+              "type": "Senior Cabin Crew",
+              "status": "Available",
+              "issue": null
+          },
+          {
+              "name": "CC Laura Bennett",
+              "role": "Cabin Crew",
+              "type": "Cabin Crew",
+              "status": "Available",
+              "issue": null
+          },
+          {
+              "name": "CC Samuel Osei",
+              "role": "Cabin Crew",
+              "type": "Cabin Crew",
+              "status": "Available",
+              "issue": null
+          },
+          {
+              "name": "CC Yuki Tanaka",
+              "role": "Cabin Crew",
+              "type": "Cabin Crew",
+              "status": "Available",
+              "issue": null
+          }
+      ],
       metrics: {
         costEfficiency: 85,
         timeEfficiency: 90,
         passengerSatisfaction: 85,
         recovery_analysis:
           "Aircraft Swap Recovery for FZ147 (IST→DXB): Replace B737 MAX 8 A6-FDU with available replacement aircraft at IST. The replacement aircraft has been selected based on availability and route certification for IST-DXB. Estimated passenger transfer time: 35-45 minutes. All cargo and baggage will be transferred with priority handling. This solution maintains schedule integrity with minimal passenger disruption. Current disruption: Engine maintenance check.",
-        crewViolations: 0,
+        crewViolations: 1,
         aircraftSwaps: 1,
         networkImpact: "Minimal",
       },
@@ -309,8 +395,8 @@ const getAircraftIssuesRecoveryData = () => {
             name: "Capt. Ahmed Al-Mansouri",
             role: "Captain",
             type: "B737 Type Rating",
-            status: "Available",
-            issue: null,
+            status: "",
+            issue: "",
           },
           {
             name: "FO Sarah Johnson",
@@ -668,7 +754,7 @@ const getAircraftIssuesRecoveryData = () => {
         costEfficiency: 70,
         timeEfficiency: 60,
         passengerSatisfaction: 50,
-        crewViolations: 2,
+        crewViolations: 0,
         aircraftSwaps: 0,
         networkImpact: "High",
       },
@@ -1010,7 +1096,7 @@ const getAircraftIssuesRecoveryData = () => {
         },
       },
       metrics: {
-        crewViolations: 0,
+        crewViolations: 1,
         aircraftSwaps: 0,
         networkImpact: "None",
       },
