@@ -1870,7 +1870,7 @@ export function ComparisonMatrix({
 
           {selectedOptionDetails && (
             <div className="space-y-6">
-              <Tabs defaultValue="overview" className="w-full">
+              <Tabs defaultValue={selectedOptionDetails?.title === "Aircraft Swap - Immediate" ? "aircraft" : "overview"} className="w-full">
                 <TabsList
                   className={`grid w-full ${
                     selectedOptionDetails?.title === "Aircraft Swap - Immediate"
@@ -2082,142 +2082,201 @@ export function ComparisonMatrix({
                                 <TableHead>Assigned Elsewhere</TableHead>
                                 <TableHead>Turnaround</TableHead>
                                 <TableHead>Maintenance</TableHead>
+                                <TableHead>Actions</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
                               {selectedOptionDetails.rotation_plan.aircraftOptions.map(
-                                (aircraft, index) => (
-                                  <TableRow
-                                    key={index}
-                                    className={`cursor-pointer hover:bg-blue-50 ${
-                                      selectedAircraftFlight === index ||
-                                      (selectedAircraftFlight === null &&
-                                        index === 0)
-                                        ? "bg-blue-100 border-l-4 border-flydubai-blue"
-                                        : ""
-                                    }`}
-                                    onClick={() =>
-                                      setSelectedAircraftFlight(index)
-                                    }
-                                  >
-                                    <TableCell className="font-medium">
-                                      {aircraft.reg || aircraft.aircraft}
-                                    </TableCell>
-                                    <TableCell>
-                                      {aircraft.type || "B737-800 (189Y)"}
-                                    </TableCell>
-                                    <TableCell>
-                                      {aircraft.etops?.status ===
-                                      "available" ? (
-                                        <div className="flex items-center gap-1">
-                                          <CheckCircle className="h-4 w-4 text-green-600" />
-                                          <span className="text-green-600">
-                                            {aircraft.etops.value || "180min"}
-                                          </span>
+                                (aircraft, index) => {
+                                  const isDefault = index === 0;
+                                  const isSelected = selectedAircraftFlight === index || (selectedAircraftFlight === null && isDefault);
+                                  return (
+                                    <TableRow
+                                      key={index}
+                                      className={`cursor-pointer hover:bg-blue-50 ${
+                                        isSelected
+                                          ? "bg-blue-100 border-l-4 border-flydubai-blue"
+                                          : ""
+                                      }`}
+                                      onClick={() =>
+                                        setSelectedAircraftFlight(index)
+                                      }
+                                    >
+                                      <TableCell className="font-medium">
+                                        <div className="flex items-center gap-2">
+                                          {aircraft.reg || aircraft.aircraft}
+                                          {isDefault && (
+                                            <Badge className="bg-green-100 text-green-700 border-green-300 text-xs">
+                                              Default Assigned
+                                            </Badge>
+                                          )}
+                                          {isSelected && !isDefault && (
+                                            <Badge className="bg-blue-100 text-blue-700 border-blue-300 text-xs">
+                                              Selected
+                                            </Badge>
+                                          )}
                                         </div>
-                                      ) : (
-                                        <div className="flex items-center gap-1">
-                                          <XCircle className="h-4 w-4 text-red-600" />
-                                          <span className="text-red-600">
-                                            Reduced
-                                          </span>
-                                        </div>
-                                      )}
-                                    </TableCell>
-                                    <TableCell>
-                                      {aircraft.cabinMatch?.status ===
-                                      "exact" ? (
-                                        <div className="flex items-center gap-1">
-                                          <CheckCircle className="h-4 w-4 text-green-600" />
-                                          <span className="text-green-600">
-                                            Exact
-                                          </span>
-                                        </div>
-                                      ) : aircraft.cabinMatch?.status ===
-                                        "similar" ? (
-                                        <div className="flex items-center gap-1">
-                                          <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                                          <span className="text-yellow-600">
-                                            Similar
-                                          </span>
-                                        </div>
-                                      ) : (
-                                        <div className="flex items-center gap-1">
-                                          <XCircle className="h-4 w-4 text-red-600" />
-                                          <span className="text-red-600">
-                                            Reduced
-                                          </span>
-                                        </div>
-                                      )}
-                                    </TableCell>
-                                    <TableCell>
-                                      <span
-                                        className={
-                                          aircraft.availability?.includes(
-                                            "Available",
-                                          )
-                                            ? "text-green-600"
-                                            : "text-blue-600"
-                                        }
-                                      >
-                                        {aircraft.availability ||
-                                          "Available Now"}
-                                      </span>
-                                    </TableCell>
-                                    <TableCell>
-                                      {aircraft.assigned?.status === "none" ? (
-                                        <div className="flex items-center gap-1">
-                                          <CheckCircle className="h-4 w-4 text-green-600" />
-                                          <span className="text-green-600">
-                                            None
-                                          </span>
-                                        </div>
-                                      ) : (
-                                        <div className="flex items-center gap-1">
-                                          <XCircle className="h-4 w-4 text-red-600" />
-                                          <span className="text-red-600">
-                                            {aircraft.assigned?.value ||
-                                              "FZ892"}
-                                          </span>
-                                        </div>
-                                      )}
-                                    </TableCell>
-                                    <TableCell>
-                                      {aircraft.turnaround ||
-                                        aircraft.turnaroundTime ||
-                                        "45 min"}
-                                    </TableCell>
-                                    <TableCell>
-                                      {aircraft.maintenance?.status ===
-                                      "current" ? (
-                                        <div className="flex items-center gap-1">
-                                          <CheckCircle className="h-4 w-4 text-green-600" />
-                                          <span className="text-green-600">
-                                            Current
-                                          </span>
-                                        </div>
-                                      ) : aircraft.maintenance?.status ===
-                                        "due" ? (
-                                        <div className="flex items-center gap-1">
-                                          <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                                          <span className="text-yellow-600">
-                                            Due A-Check
-                                          </span>
-                                        </div>
-                                      ) : (
-                                        <div className="flex items-center gap-1">
-                                          <XCircle className="h-4 w-4 text-red-600" />
-                                          <span className="text-red-600">
-                                            AOG
-                                          </span>
-                                        </div>
-                                      )}
-                                    </TableCell>
-                                  </TableRow>
-                                ),
+                                      </TableCell>
+                                      <TableCell>
+                                        {aircraft.type || "B737-800 (189Y)"}
+                                      </TableCell>
+                                      <TableCell>
+                                        {aircraft.etops?.status ===
+                                        "available" ? (
+                                          <div className="flex items-center gap-1">
+                                            <CheckCircle className="h-4 w-4 text-green-600" />
+                                            <span className="text-green-600">
+                                              {aircraft.etops.value || "180min"}
+                                            </span>
+                                          </div>
+                                        ) : (
+                                          <div className="flex items-center gap-1">
+                                            <XCircle className="h-4 w-4 text-red-600" />
+                                            <span className="text-red-600">
+                                              Reduced
+                                            </span>
+                                          </div>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        {aircraft.cabinMatch?.status ===
+                                        "exact" ? (
+                                          <div className="flex items-center gap-1">
+                                            <CheckCircle className="h-4 w-4 text-green-600" />
+                                            <span className="text-green-600">
+                                              Exact
+                                            </span>
+                                          </div>
+                                        ) : aircraft.cabinMatch?.status ===
+                                          "similar" ? (
+                                          <div className="flex items-center gap-1">
+                                            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                                            <span className="text-yellow-600">
+                                              Similar
+                                            </span>
+                                          </div>
+                                        ) : (
+                                          <div className="flex items-center gap-1">
+                                            <XCircle className="h-4 w-4 text-red-600" />
+                                            <span className="text-red-600">
+                                              Reduced
+                                            </span>
+                                          </div>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        <span
+                                          className={
+                                            aircraft.availability?.includes(
+                                              "Available",
+                                            )
+                                              ? "text-green-600"
+                                              : "text-blue-600"
+                                          }
+                                        >
+                                          {aircraft.availability ||
+                                            "Available Now"}
+                                        </span>
+                                      </TableCell>
+                                      <TableCell>
+                                        {aircraft.assigned?.status === "none" ? (
+                                          <div className="flex items-center gap-1">
+                                            <CheckCircle className="h-4 w-4 text-green-600" />
+                                            <span className="text-green-600">
+                                              None
+                                            </span>
+                                          </div>
+                                        ) : (
+                                          <div className="flex items-center gap-1">
+                                            <XCircle className="h-4 w-4 text-red-600" />
+                                            <span className="text-red-600">
+                                              {aircraft.assigned?.value ||
+                                                "FZ892"}
+                                            </span>
+                                          </div>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        {aircraft.turnaround ||
+                                          aircraft.turnaroundTime ||
+                                          "45 min"}
+                                      </TableCell>
+                                      <TableCell>
+                                        {aircraft.maintenance?.status ===
+                                        "current" ? (
+                                          <div className="flex items-center gap-1">
+                                            <CheckCircle className="h-4 w-4 text-green-600" />
+                                            <span className="text-green-600">
+                                              Current
+                                            </span>
+                                          </div>
+                                        ) : aircraft.maintenance?.status ===
+                                          "due" ? (
+                                          <div className="flex items-center gap-1">
+                                            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                                            <span className="text-yellow-600">
+                                              Due A-Check
+                                            </span>
+                                          </div>
+                                        ) : (
+                                          <div className="flex items-center gap-1">
+                                            <XCircle className="h-4 w-4 text-red-600" />
+                                            <span className="text-red-600">
+                                              AOG
+                                            </span>
+                                          </div>
+                                        )}
+                                      </TableCell>
+                                      <TableCell>
+                                        <Button
+                                          size="sm"
+                                          variant={isSelected ? "default" : "outline"}
+                                          className={isSelected ? "bg-flydubai-blue hover:bg-flydubai-blue/90 text-white" : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedAircraftFlight(index);
+                                          }}
+                                        >
+                                          {isSelected ? "Selected" : "Change to This"}
+                                        </Button>
+                                      </TableCell>
+                                    </TableRow>
+                                  );
+                                }
                               )}
                             </TableBody>
                           </Table>
+                          
+                          {/* Selected Aircraft Summary */}
+                          {(selectedAircraftFlight !== null || selectedOptionDetails.rotation_plan.aircraftOptions.length > 0) && (
+                            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                              <h4 className="font-medium text-blue-800 mb-2">Selected Aircraft Summary</h4>
+                              {(() => {
+                                const selectedIndex = selectedAircraftFlight !== null ? selectedAircraftFlight : 0;
+                                const selectedAircraft = selectedOptionDetails.rotation_plan.aircraftOptions[selectedIndex];
+                                return (
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <span className="text-blue-700 font-medium">Aircraft:</span>
+                                      <p className="text-blue-900">{selectedAircraft?.reg || selectedAircraft?.aircraft}</p>
+                                    </div>
+                                    <div>
+                                      <span className="text-blue-700 font-medium">Type:</span>
+                                      <p className="text-blue-900">{selectedAircraft?.type || "B737-800 (189Y)"}</p>
+                                    </div>
+                                    <div>
+                                      <span className="text-blue-700 font-medium">Turnaround Time:</span>
+                                      <p className="text-blue-900">{selectedAircraft?.turnaround || selectedAircraft?.turnaroundTime || "45 min"}</p>
+                                    </div>
+                                    <div>
+                                      <span className="text-blue-700 font-medium">Availability:</span>
+                                      <p className="text-blue-900">{selectedAircraft?.availability || "Available Now"}</p>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="text-center py-8 text-gray-500">
@@ -2242,251 +2301,271 @@ export function ComparisonMatrix({
                     </CardHeader>
                     <CardContent>
                       {selectedOptionDetails?.rotation_plan?.crew?.length > 0 ||
-                      selectedOptionDetails?.rotation_plan?.crewData?.length >
-                        0 ? (
-                        <div className="space-y-4">
-                          {(
-                            selectedOptionDetails.rotation_plan.crew ||
-                            selectedOptionDetails.rotation_plan.crewData ||
-                            []
-                          ).map((crewMember, index) => (
-                            <div
-                              key={index}
-                              className={`p-4 border rounded-lg ${
-                                crewMember.status === "Available" ||
-                                crewMember.availability === "Available"
-                                  ? "bg-green-50 border-green-200"
-                                  : crewMember.status === "Reassigned" ||
-                                      crewMember.status === "On Duty" ||
-                                      crewMember.status === "Assigned"
-                                    ? "bg-yellow-50 border-yellow-200"
-                                    : "bg-red-50 border-red-200"
-                              }`}
-                            >
-                              {/* Check if this crew member has been swapped */}
-                              {crewMember.replacedCrew &&
-                              crewMember.assignedAt ? (
-                                <div className="space-y-4">
-                                  {/* Header for swap indication */}
-                                  <div className="flex items-center justify-between p-2 bg-blue-100 rounded-md border border-blue-200">
-                                    <div className="flex items-center gap-2">
-                                      <ArrowRight className="h-4 w-4 text-blue-600" />
-                                      <span className="text-sm font-medium text-blue-800">
-                                        Crew Assignment Updated
-                                      </span>
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs bg-white"
-                                      >
-                                        {new Date(
-                                          crewMember.assignedAt,
-                                        ).toLocaleTimeString()}
-                                      </Badge>
-                                    </div>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
-                                      onClick={() => {
-                                        setSelectedCrewForSwap({
-                                          ...crewMember,
-                                          originalIndex: index,
-                                          isEditing: true,
-                                        });
-                                        // Generate available crew for the same role
-                                        const currentRole =
-                                          crewMember.type ||
-                                          crewMember.role ||
-                                          crewMember.position;
-                                        const filteredCrew =
-                                          generateAvailableCrewForRole(
-                                            currentRole,
-                                            crewMember.name,
-                                          );
-                                        setAvailableCrewForSwap(filteredCrew);
-                                        setShowCrewSwapDialog(true);
-                                      }}
-                                    >
-                                      <Settings className="h-4 w-4 mr-2" />
-                                      Edit
-                                    </Button>
-                                  </div>
-
-                                  {/* Side by side comparison */}
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {/* Original Crew */}
-                                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                      <div className="flex items-center gap-2 mb-2">
-                                        <XCircle className="h-4 w-4 text-red-500" />
-                                        <span className="text-sm font-medium text-gray-700">
-                                          Original Assignment
-                                        </span>
-                                      </div>
-                                      <div className="space-y-2">
-                                        <h5 className="font-medium text-gray-900">
-                                          {crewMember.replacedCrew}
-                                        </h5>
-                                        <p className="text-sm text-gray-600">
-                                          {crewMember.type ||
-                                            crewMember.role ||
-                                            crewMember.position}
-                                        </p>
-                                        <Badge className="bg-red-100 text-red-700 border-red-300">
-                                          Replaced
-                                        </Badge>
-                                      </div>
-                                    </div>
-
-                                    {/* New Crew */}
-                                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                                      <div className="flex items-center gap-2 mb-2">
-                                        <CheckCircle className="h-4 w-4 text-green-500" />
-                                        <span className="text-sm font-medium text-green-700">
-                                          Current Assignment
-                                        </span>
-                                      </div>
-                                      <div className="space-y-2">
-                                        <h5 className="font-medium text-green-900">
-                                          {crewMember.name}
-                                        </h5>
-                                        <p className="text-sm text-green-600">
-                                          {crewMember.type ||
-                                            crewMember.role ||
-                                            crewMember.position}
-                                        </p>
-                                        {crewMember.experience && (
-                                          <p className="text-xs text-green-600">
-                                            Experience: {crewMember.experience}
+                      selectedOptionDetails?.rotation_plan?.crewData?.length > 0 ? (
+                        <div className="space-y-6">
+                          {/* Affected Crew Section */}
+                          <div>
+                            <h4 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
+                              <AlertTriangle className="h-4 w-4 text-red-600" />
+                              Affected Crew
+                            </h4>
+                            <div className="space-y-3">
+                              {(selectedOptionDetails.rotation_plan.crew || selectedOptionDetails.rotation_plan.crewData || [])
+                                .filter(crew => crew.status === "Sick" || crew.status === "Unavailable" || crew.issue)
+                                .map((crewMember, index) => (
+                                  <div
+                                    key={`affected-${index}`}
+                                    className="p-4 border rounded-lg bg-red-50 border-red-200"
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-3">
+                                          <div>
+                                            <h5 className="font-medium text-lg text-red-900">
+                                              {crewMember.name}
+                                            </h5>
+                                            <p className="text-sm text-red-700">
+                                              {crewMember.type || crewMember.role || crewMember.position}
+                                            </p>
+                                          </div>
+                                        </div>
+                                        {crewMember.location && (
+                                          <p className="text-xs text-red-600 mt-1">
+                                            Location: {crewMember.location}
                                           </p>
                                         )}
-                                        {crewMember.score && (
-                                          <div className="flex items-center gap-2">
-                                            <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                              <div
-                                                className="bg-green-500 h-2 rounded-full"
-                                                style={{
-                                                  width: `${crewMember.score}%`,
-                                                }}
-                                              ></div>
-                                            </div>
-                                            <span className="text-xs font-medium text-green-600">
-                                              {crewMember.score}
-                                            </span>
-                                          </div>
+                                        {crewMember.issue && (
+                                          <p className="text-xs text-red-700 mt-1 font-medium">
+                                            Issue: {crewMember.issue}
+                                          </p>
                                         )}
-                                        <Badge className="bg-green-100 text-green-700 border-green-300">
-                                          {crewMember.status ||
-                                            crewMember.availability ||
-                                            "Assigned"}
+                                      </div>
+                                      <div className="flex items-center gap-3">
+                                        <Badge className="bg-red-100 text-red-700 border-red-300 px-3 py-1">
+                                          {crewMember.status || crewMember.availability}
                                         </Badge>
                                       </div>
                                     </div>
                                   </div>
-
-                                  {/* Additional info */}
-                                  {(crewMember.location ||
-                                    crewMember.qualifications) && (
-                                    <div className="pt-2 border-t border-gray-200">
-                                      {crewMember.location && (
-                                        <p className="text-xs text-gray-500">
-                                          Location: {crewMember.location}
-                                        </p>
-                                      )}
-                                      {crewMember.qualifications &&
-                                        Array.isArray(
-                                          crewMember.qualifications,
-                                        ) && (
-                                          <div className="flex flex-wrap gap-1 mt-1">
-                                            {crewMember.qualifications.map(
-                                              (qual, qIndex) => (
-                                                <Badge
-                                                  key={qIndex}
-                                                  variant="outline"
-                                                  className="text-xs"
-                                                >
-                                                  {qual}
-                                                </Badge>
-                                              ),
-                                            )}
-                                          </div>
-                                        )}
-                                    </div>
-                                  )}
-                                </div>
-                              ) : (
-                                // Original single crew display
-                                <div className="flex items-center justify-between">
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-3">
-                                      <div>
-                                        <h4 className="font-medium text-lg">
-                                          {crewMember.name}
-                                        </h4>
-                                        <p className="text-sm text-gray-600">
-                                          {crewMember.type ||
-                                            crewMember.role ||
-                                            crewMember.position}
-                                        </p>
-                                      </div>
-                                    </div>
-                                    {crewMember.location && (
-                                      <p className="text-xs text-gray-500 mt-1">
-                                        Location: {crewMember.location}
-                                      </p>
-                                    )}
-                                    {crewMember.issue && (
-                                      <p className="text-xs text-red-600 mt-1">
-                                        {crewMember.issue}
-                                      </p>
-                                    )}
-                                  </div>
-                                  <div className="flex items-center gap-3">
-                                    <Badge
-                                      className={`px-3 py-1 ${
-                                        crewMember.status === "Available" ||
-                                        crewMember.availability === "Available"
-                                          ? "bg-green-100 text-green-700 border-green-300"
-                                          : crewMember.status === "On Duty" ||
-                                              crewMember.status === "Reassigned"
-                                            ? "bg-yellow-100 text-yellow-700 border-yellow-300"
-                                            : "bg-red-100 text-red-700 border-red-300"
-                                      }`}
-                                    >
-                                      {crewMember.status ||
-                                        crewMember.availability}
-                                    </Badge>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                                      onClick={() => {
-                                        setSelectedCrewForSwap({
-                                          ...crewMember,
-                                          originalIndex: index,
-                                          isEditing: false,
-                                        });
-                                        // Generate available crew for the same role with role-based filtering
-                                        const currentRole =
-                                          crewMember.type ||
-                                          crewMember.role ||
-                                          crewMember.position;
-                                        const filteredCrew =
-                                          generateAvailableCrewForRole(
-                                            currentRole,
-                                            crewMember.name,
-                                          );
-                                        setAvailableCrewForSwap(filteredCrew);
-                                        setShowCrewSwapDialog(true);
-                                      }}
-                                    >
-                                      <UserCheck className="h-4 w-4 mr-2" />
-                                      Swap
-                                    </Button>
-                                  </div>
+                                ))}
+                              {(selectedOptionDetails.rotation_plan.crew || selectedOptionDetails.rotation_plan.crewData || [])
+                                .filter(crew => crew.status === "Sick" || crew.status === "Unavailable" || crew.issue).length === 0 && (
+                                <div className="text-center py-4 text-gray-500">
+                                  <CheckCircle className="h-6 w-6 mx-auto mb-2 text-green-500" />
+                                  <p className="text-sm">No affected crew members</p>
                                 </div>
                               )}
                             </div>
-                          ))}
+                          </div>
+
+                          {/* Available Mapped Crew Section */}
+                          <div>
+                            <h4 className="font-medium text-gray-800 mb-3 flex items-center gap-2">
+                              <UserCheck className="h-4 w-4 text-green-600" />
+                              Available Mapped Crew
+                            </h4>
+                            <div className="space-y-3">
+                              {(selectedOptionDetails.rotation_plan.crew || selectedOptionDetails.rotation_plan.crewData || [])
+                                .filter(crew => crew.status !== "Sick" && crew.status !== "Unavailable" && !crew.issue)
+                                .map((crewMember, index) => (
+                                  <div
+                                    key={`available-${index}`}
+                                    className={`p-4 border rounded-lg ${
+                                      crewMember.status === "Available" || crewMember.availability === "Available"
+                                        ? "bg-green-50 border-green-200"
+                                        : crewMember.status === "Reassigned" || crewMember.status === "On Duty" || crewMember.status === "Assigned"
+                                          ? "bg-yellow-50 border-yellow-200"
+                                          : "bg-blue-50 border-blue-200"
+                                    }`}
+                                  >
+                                    {/* Check if this crew member has been swapped */}
+                                    {crewMember.replacedCrew && crewMember.assignedAt ? (
+                                      <div className="space-y-4">
+                                        {/* Header for swap indication */}
+                                        <div className="flex items-center justify-between p-2 bg-blue-100 rounded-md border border-blue-200">
+                                          <div className="flex items-center gap-2">
+                                            <ArrowRight className="h-4 w-4 text-blue-600" />
+                                            <span className="text-sm font-medium text-blue-800">
+                                              Recently Swapped In
+                                            </span>
+                                            <Badge variant="outline" className="text-xs bg-white">
+                                              {new Date(crewMember.assignedAt).toLocaleTimeString()}
+                                            </Badge>
+                                          </div>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
+                                            onClick={() => {
+                                              setSelectedCrewForSwap({
+                                                ...crewMember,
+                                                originalIndex: index,
+                                                isEditing: true,
+                                              });
+                                              const currentRole = crewMember.type || crewMember.role || crewMember.position;
+                                              const filteredCrew = generateAvailableCrewForRole(currentRole, crewMember.name);
+                                              setAvailableCrewForSwap(filteredCrew);
+                                              setShowCrewSwapDialog(true);
+                                            }}
+                                          >
+                                            <Settings className="h-4 w-4 mr-2" />
+                                            Edit
+                                          </Button>
+                                        </div>
+
+                                        {/* Side by side comparison */}
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                          {/* Original Crew */}
+                                          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                            <div className="flex items-center gap-2 mb-2">
+                                              <XCircle className="h-4 w-4 text-red-500" />
+                                              <span className="text-sm font-medium text-gray-700">
+                                                Replaced Crew
+                                              </span>
+                                            </div>
+                                            <div className="space-y-2">
+                                              <h5 className="font-medium text-gray-900">
+                                                {crewMember.replacedCrew}
+                                              </h5>
+                                              <p className="text-sm text-gray-600">
+                                                {crewMember.type || crewMember.role || crewMember.position}
+                                              </p>
+                                              <Badge className="bg-red-100 text-red-700 border-red-300">
+                                                Replaced
+                                              </Badge>
+                                            </div>
+                                          </div>
+
+                                          {/* New Crew */}
+                                          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                                            <div className="flex items-center gap-2 mb-2">
+                                              <CheckCircle className="h-4 w-4 text-green-500" />
+                                              <span className="text-sm font-medium text-green-700">
+                                                Current Assignment
+                                              </span>
+                                            </div>
+                                            <div className="space-y-2">
+                                              <h5 className="font-medium text-green-900">
+                                                {crewMember.name}
+                                              </h5>
+                                              <p className="text-sm text-green-600">
+                                                {crewMember.type || crewMember.role || crewMember.position}
+                                              </p>
+                                              {crewMember.experience && (
+                                                <p className="text-xs text-green-600">
+                                                  Experience: {crewMember.experience}
+                                                </p>
+                                              )}
+                                              {crewMember.score && (
+                                                <div className="flex items-center gap-2">
+                                                  <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                                    <div
+                                                      className="bg-green-500 h-2 rounded-full"
+                                                      style={{ width: `${crewMember.score}%` }}
+                                                    ></div>
+                                                  </div>
+                                                  <span className="text-xs font-medium text-green-600">
+                                                    {crewMember.score}
+                                                  </span>
+                                                </div>
+                                              )}
+                                              <Badge className="bg-green-100 text-green-700 border-green-300">
+                                                {crewMember.status || crewMember.availability || "Assigned"}
+                                              </Badge>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* Additional info */}
+                                        {(crewMember.location || crewMember.qualifications) && (
+                                          <div className="pt-2 border-t border-gray-200">
+                                            {crewMember.location && (
+                                              <p className="text-xs text-gray-500">
+                                                Location: {crewMember.location}
+                                              </p>
+                                            )}
+                                            {crewMember.qualifications && Array.isArray(crewMember.qualifications) && (
+                                              <div className="flex flex-wrap gap-1 mt-1">
+                                                {crewMember.qualifications.map((qual, qIndex) => (
+                                                  <Badge key={qIndex} variant="outline" className="text-xs">
+                                                    {qual}
+                                                  </Badge>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      // Original single crew display
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex-1">
+                                          <div className="flex items-center gap-3">
+                                            <div>
+                                              <h5 className="font-medium text-lg">
+                                                {crewMember.name}
+                                              </h5>
+                                              <p className="text-sm text-gray-600">
+                                                {crewMember.type || crewMember.role || crewMember.position}
+                                              </p>
+                                            </div>
+                                          </div>
+                                          {crewMember.location && (
+                                            <p className="text-xs text-gray-500 mt-1">
+                                              Location: {crewMember.location}
+                                            </p>
+                                          )}
+                                          {crewMember.experience && (
+                                            <p className="text-xs text-gray-600 mt-1">
+                                              Experience: {crewMember.experience}
+                                            </p>
+                                          )}
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                          <Badge
+                                            className={`px-3 py-1 ${
+                                              crewMember.status === "Available" || crewMember.availability === "Available"
+                                                ? "bg-green-100 text-green-700 border-green-300"
+                                                : crewMember.status === "On Duty" || crewMember.status === "Reassigned"
+                                                  ? "bg-yellow-100 text-yellow-700 border-yellow-300"
+                                                  : "bg-blue-100 text-blue-700 border-blue-300"
+                                            }`}
+                                          >
+                                            {crewMember.status || crewMember.availability}
+                                          </Badge>
+                                          <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                            onClick={() => {
+                                              setSelectedCrewForSwap({
+                                                ...crewMember,
+                                                originalIndex: index,
+                                                isEditing: false,
+                                              });
+                                              const currentRole = crewMember.type || crewMember.role || crewMember.position;
+                                              const filteredCrew = generateAvailableCrewForRole(currentRole, crewMember.name);
+                                              setAvailableCrewForSwap(filteredCrew);
+                                              setShowCrewSwapDialog(true);
+                                            }}
+                                          >
+                                            <UserCheck className="h-4 w-4 mr-2" />
+                                            Swap
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              {(selectedOptionDetails.rotation_plan.crew || selectedOptionDetails.rotation_plan.crewData || [])
+                                .filter(crew => crew.status !== "Sick" && crew.status !== "Unavailable" && !crew.issue).length === 0 && (
+                                <div className="text-center py-4 text-gray-500">
+                                  <AlertTriangle className="h-6 w-6 mx-auto mb-2 text-yellow-500" />
+                                  <p className="text-sm">No available crew mapped</p>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       ) : (
                         <div className="text-center py-8 text-gray-500">
@@ -2494,7 +2573,7 @@ export function ComparisonMatrix({
                           <p>No crew assignments available</p>
                           <p className="text-xs mt-1">
                             Standard crew assignment will be managed
-                          </p>
+          </p>
                         </div>
                       )}
                     </CardContent>
