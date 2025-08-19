@@ -2059,7 +2059,11 @@ export function PendingSolutions() {
           </TabsContent>
         </Tabs>
       </div>
+    );
+  };
 
+  return (
+    <div className="space-y-6">
       {/* Main Tabs for Pending Solutions */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-5">
