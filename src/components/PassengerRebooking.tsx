@@ -99,6 +99,8 @@ import { Alert, AlertDescription } from "./ui/alert";
 import { Checkbox } from "./ui/checkbox";
 import { Textarea } from "./ui/textarea";
 import { alertService } from "../services/alertService";
+import { useCustomAlert } from "../hooks/useCustomAlert";
+import { CustomAlertDialog } from "./CustomAlertDialog";
 
 export function PassengerRebooking({ context, onClearContext }) {
   const location = useLocation();
@@ -106,6 +108,9 @@ export function PassengerRebooking({ context, onClearContext }) {
   const [activeTab, setActiveTab] = useState("passenger-service");
   const [crewData, setCrewData] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Custom alert state
+  const { alertState, showAlert, hideAlert, handleConfirm, handleCancel } = useCustomAlert();
 
   // States for the original PassengerRebooking component
   const [searchTerm, setSearchTerm] = useState("");
@@ -1285,7 +1290,11 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   const handleConfirmCrewAssignment = () => {
     if (selectedCrewMembers.size === 0 || !selectedHotelForCrew) {
-      alert("Please select crew members and a hotel before confirming assignment");
+      showAlert(
+        "Assignment Required",
+        "Please select crew members and a hotel before confirming assignment.",
+        "warning"
+      );
       return;
     }
 
@@ -1356,7 +1365,11 @@ export function PassengerRebooking({ context, onClearContext }) {
     setSelectedCrewMembers(new Set());
     setSelectedHotelForCrew(null);
 
-    alert(`Successfully assigned ${crewList.length} crew members to ${selectedHotelForCrew.name}. Booking reference: ${assignmentId}`);
+    showAlert(
+      "Assignment Successful",
+      `Successfully assigned ${crewList.length} crew members to ${selectedHotelForCrew.name}. Booking reference: ${assignmentId}`,
+      "success"
+    );
   };
 
   const handleSendForApproval = async () => {
@@ -1526,6 +1539,9 @@ export function PassengerRebooking({ context, onClearContext }) {
             setSelectedPnrGroup(null);
             setCrewHotelAssignments({});
             setPnrsForApproval(new Set());
+            
+            // Navigate to Affected Flights page
+            navigate("/affected-flights");
           });
         } else {
           alertService.error(
@@ -4843,6 +4859,18 @@ export function PassengerRebooking({ context, onClearContext }) {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Custom Alert Dialog */}
+      <CustomAlertDialog
+        isOpen={alertState.isOpen}
+        onOpenChange={hideAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+        showCancel={alertState.showCancel}
+      />
     </div>
   );
 }
