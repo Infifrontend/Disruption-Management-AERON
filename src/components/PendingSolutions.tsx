@@ -184,7 +184,7 @@ export function PendingSolutions() {
           onTimePerformance: 90,
           costEfficiency: 75,
         },
-        flightDetails: plan.full_details || {},
+        flightDetails: plan?.full_details || {},
         costBreakdown:
           plan.cost_analysis?.breakdown ||
           plan.full_details?.costBreakdown ||
@@ -485,7 +485,7 @@ export function PendingSolutions() {
       await databaseService.addPendingSolution({
         ...plan,
         status: "Pending",
-        flightDetails: plan.flightDetails,
+        flightDetails: plan?.flightDetails,
         costBreakdown: plan.costBreakdown,
         recoverySteps: plan.recoverySteps,
         assignedCrew: plan.assignedCrew,
@@ -642,7 +642,7 @@ export function PendingSolutions() {
           ...plan,
           title: updatedPlan?.option_title || plan.title,
           status: updatedPlan?.status || plan.status,
-          flightDetails: updatedPlan?.full_details || plan.flightDetails || {},
+          flightDetails: updatedPlan?.full_details || plan?.flightDetails || {},
           rotationImpact:
             updatedPlan?.rotation_impact || matchingOption?.rotation_plan || {},
           fullDetails: updatedPlan?.full_details || {},
@@ -890,9 +890,9 @@ export function PendingSolutions() {
           <div className="w-full overflow-x-auto">
             <TabsList
               className={`grid w-full ${
-                (plan && plan.hasCrewData && plan.hasPassengerData)
+                plan && plan.hasCrewData && plan.hasPassengerData
                   ? "grid-cols-5"
-                  : (plan && (plan.hasCrewData || plan.hasPassengerData))
+                  : plan && (plan.hasCrewData || plan.hasPassengerData)
                     ? "grid-cols-4"
                     : "grid-cols-3"
               }`}
@@ -944,7 +944,9 @@ export function PendingSolutions() {
                     <Label className="text-xs text-muted-foreground">
                       Option Type
                     </Label>
-                    <div className="font-medium">{plan?.title || "Aircraft Swap Recovery"}</div>
+                    <div className="font-medium">
+                      {plan?.title || "Aircraft Swap Recovery"}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
@@ -958,7 +960,9 @@ export function PendingSolutions() {
                     <Label className="text-xs text-muted-foreground">
                       Timeline
                     </Label>
-                    <div className="font-medium">{plan?.timeline || "2-3 hours"}</div>
+                    <div className="font-medium">
+                      {plan?.timeline || "2-3 hours"}
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
@@ -982,7 +986,7 @@ export function PendingSolutions() {
                   <div>
                     <Label className="text-sm font-medium">Description</Label>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {plan.flightDetails?.description ||
+                      {plan?.flightDetails?.description ||
                         plan.title ||
                         "Recovery option to address the flight disruption with minimal impact to operations and passengers."}
                     </p>
@@ -2109,10 +2113,10 @@ export function PendingSolutions() {
                             </Label>
                             <p className="font-medium">
                               AED {(plan.estimatedCost / 1000).toFixed(0)}K •{" "}
-                              {plan.estimatedDelay}m delay
+                              {plan?.estimatedDelay}m delay
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {plan.affectedPassengers} passengers
+                              {plan?.affectedPassengers} passengers
                             </p>
                           </div>
                           <div>
@@ -2124,7 +2128,7 @@ export function PendingSolutions() {
                               {plan?.timeline || "2-3 hours"}
                             </p>
                             <p
-                              className={`text-sm ${getTimeRemainingColor(plan.timeRemaining)}`}
+                              className={`text-sm ${getTimeRemainingColor(plan?.timeRemaining)}`}
                             ></p>
                           </div>
                         </div>
@@ -2331,7 +2335,8 @@ export function PendingSolutions() {
                     Recovery Options Overview
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Available recovery options for {selectedPlan?.flightNumber || "N/A"} •{" "}
+                    Available recovery options for{" "}
+                    {selectedPlan?.flightNumber || "N/A"} •{" "}
                     {selectedPlan?.route || "N/A"}
                   </p>
                 </CardHeader>
@@ -2549,9 +2554,9 @@ export function PendingSolutions() {
                         Scheduled Departure:
                       </span>
                       <div className="font-medium">
-                        {selectedPlan.flightDetails?.scheduled_departure
+                        {selectedPlan?.flightDetails?.scheduled_departure
                           ? formatIST(
-                              selectedPlan.flightDetails.scheduled_departure,
+                              selectedPlan?.flightDetails?.scheduled_departure,
                             )
                           : "N/A"}
                       </div>
@@ -2561,9 +2566,9 @@ export function PendingSolutions() {
                         Estimated Departure:
                       </span>
                       <div className="font-medium">
-                        {selectedPlan.flightDetails?.estimated_departure
+                        {selectedPlan?.flightDetails?.estimated_departure
                           ? formatIST(
-                              selectedPlan.flightDetails.estimated_departure,
+                              selectedPlan?.flightDetails?.estimated_departure,
                             )
                           : "N/A"}
                       </div>
@@ -2571,19 +2576,19 @@ export function PendingSolutions() {
                     <div>
                       <span className="text-gray-600">Gate:</span>
                       <div className="font-medium">
-                        {selectedPlan.flightDetails?.gate || "TBD"}
+                        {selectedPlan?.flightDetails?.gate || "TBD"}
                       </div>
                     </div>
                     <div>
                       <span className="text-gray-600">Terminal:</span>
                       <div className="font-medium">
-                        {selectedPlan.flightDetails?.terminal || "TBD"}
+                        {selectedPlan?.flightDetails?.terminal || "TBD"}
                       </div>
                     </div>
                     <div>
                       <span className="text-gray-600">Delay:</span>
                       <div className="font-medium">
-                        {selectedPlan.estimatedDelay || 0} minutes
+                        {selectedPlan?.estimatedDelay || 0} minutes
                       </div>
                     </div>
                   </div>
@@ -2625,8 +2630,8 @@ export function PendingSolutions() {
                     <div>
                       <span className="text-gray-600">Crew:</span>
                       <div className="font-medium">
-                        {selectedPlan.flightDetails?.crew ||
-                          selectedPlan.assignedCrew?.length ||
+                        {selectedPlan?.flightDetails?.crew ||
+                          selectedPlan?.assignedCrew?.length ||
                           "N/A"}
                       </div>
                     </div>
