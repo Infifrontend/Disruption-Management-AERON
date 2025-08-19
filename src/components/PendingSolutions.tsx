@@ -890,13 +890,9 @@ export function PendingSolutions() {
           <div className="w-full overflow-x-auto">
             <TabsList
               className={`grid w-full ${
-                selectedPlan &&
-                selectedPlan.hasCrewData &&
-                selectedPlan.hasPassengerData
+                (plan && plan.hasCrewData && plan.hasPassengerData)
                   ? "grid-cols-5"
-                  : selectedPlan &&
-                      (selectedPlan.hasCrewData ||
-                        selectedPlan.hasPassengerData)
+                  : (plan && (plan.hasCrewData || plan.hasPassengerData))
                     ? "grid-cols-4"
                     : "grid-cols-3"
               }`}
@@ -1726,9 +1722,9 @@ export function PendingSolutions() {
                     <h4 className="font-medium mb-3">Cost Breakdown</h4>
                     <Card className="p-4 bg-gray-50">
                       <div className="space-y-2 text-sm">
-                        {selectedPlan.costBreakdown &&
-                        Object.keys(selectedPlan.costBreakdown).length > 0 ? (
-                          Object.entries(selectedPlan.costBreakdown).map(
+                        {plan.costBreakdown &&
+                        Object.keys(plan.costBreakdown).length > 0 ? (
+                          Object.entries(plan.costBreakdown).map(
                             ([key, value]) => (
                               <div key={key} className="flex justify-between">
                                 <span className="capitalize">
@@ -1754,7 +1750,7 @@ export function PendingSolutions() {
                               <span>
                                 AED{" "}
                                 {(
-                                  (selectedPlan.estimatedCost || 50000) * 0.6
+                                  (plan.estimatedCost || 50000) * 0.6
                                 ).toLocaleString()}
                               </span>
                             </div>
@@ -1763,7 +1759,7 @@ export function PendingSolutions() {
                               <span>
                                 AED{" "}
                                 {(
-                                  (selectedPlan.estimatedCost || 50000) * 0.4
+                                  (plan.estimatedCost || 50000) * 0.4
                                 ).toLocaleString()}
                               </span>
                             </div>
@@ -1772,7 +1768,7 @@ export function PendingSolutions() {
                               <span>
                                 AED{" "}
                                 {(
-                                  (selectedPlan.estimatedCost || 50000) * 0.3
+                                  (plan.estimatedCost || 50000) * 0.3
                                 ).toLocaleString()}
                               </span>
                             </div>
@@ -1781,7 +1777,7 @@ export function PendingSolutions() {
                               <span>
                                 AED{" "}
                                 {(
-                                  (selectedPlan.estimatedCost || 50000) * 0.7
+                                  (plan.estimatedCost || 50000) * 0.7
                                 ).toLocaleString()}
                               </span>
                             </div>
@@ -3190,7 +3186,7 @@ export function PendingSolutions() {
                           Total Estimated Cost
                         </span>
                         <span className="text-lg font-bold text-flydubai-orange">
-                          {selectedOptionForDetails?.cost || "AED 25,000"}
+                          AED {(plan.estimatedCost || 0).toLocaleString()}
                         </span>
                       </div>
                     </div>
