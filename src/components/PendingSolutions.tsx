@@ -151,7 +151,7 @@ export function PendingSolutions() {
         submittedBy: plan.submitted_by || "system",
         submitterName:
           plan.operations_user || plan.submitted_by || "AERON System",
-        priority: plan.severity || "Medium",
+        priority: plan.priority || "Medium",
         status: plan.status || "Pending Approval",
         estimatedCost: (() => {
           if (typeof plan.estimated_cost === "string") {
@@ -944,29 +944,34 @@ export function PendingSolutions() {
                     <Label className="text-xs text-muted-foreground">
                       Option Type
                     </Label>
-                    <div className="font-medium">{plan?.title || 'N/A'}</div>
+                    <div className="font-medium">{plan?.title || "N/A"}</div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       Estimated Cost
                     </Label>
                     <div className="font-medium text-flydubai-orange">
-                      AED {((plan?.estimatedCost || 0)).toLocaleString()}
+                      AED {(plan?.estimatedCost || 0).toLocaleString()}
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       Timeline
                     </Label>
-                    <div className="font-medium">{plan?.timeline || 'TBD'}</div>
+                    <div className="font-medium">{plan?.timeline || "TBD"}</div>
                   </div>
                   <div className="space-y-2">
                     <Label className="text-xs text-muted-foreground">
                       Confidence
                     </Label>
                     <div className="flex items-center gap-2">
-                      <Progress value={plan?.confidence || 0} className="w-16 h-2" />
-                      <span className="font-medium">{plan?.confidence || 0}%</span>
+                      <Progress
+                        value={plan?.confidence || 0}
+                        className="w-16 h-2"
+                      />
+                      <span className="font-medium">
+                        {plan?.confidence || 0}%
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1460,24 +1465,6 @@ export function PendingSolutions() {
                                         </span>
                                       </div>
                                     )}
-                                    {passenger.additional_services &&
-                                      passenger.additional_services.length >
-                                        0 && (
-                                        <div className="flex justify-between">
-                                          <span className="text-muted-foreground">
-                                            Services:
-                                          </span>
-                                          <span className="text-xs">
-                                            {passenger.additional_services
-                                              .map(
-                                                (s) =>
-                                                  s.service_type ||
-                                                  s.description,
-                                              )
-                                              .join(", ")}
-                                          </span>
-                                        </div>
-                                      )}
                                     {passenger.notes && (
                                       <div className="text-xs text-muted-foreground mt-2">
                                         Notes: {passenger.notes}
@@ -2094,10 +2081,13 @@ export function PendingSolutions() {
                               Flight & Route
                             </Label>
                             <p className="font-medium">
-                              {plan?.flightNumber || 'N/A'} • {plan?.route || 'N/A'}
+                              {plan && plan.flightNumber
+                                ? plan.flightNumber
+                                : "N/A"}{" "}
+                              • {plan && plan.route ? plan.route : "N/A"}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {plan?.aircraft || 'N/A'}
+                              {plan && plan.aircraft ? plan.aircraft : "N/A"}
                             </p>
                           </div>
                           <div>
@@ -2128,7 +2118,8 @@ export function PendingSolutions() {
                               Confidence & Timeline
                             </Label>
                             <p className="font-medium">
-                              {plan?.confidence || 0}% • {plan?.timeline || 'TBD'}
+                              {plan?.confidence || 0}% •{" "}
+                              {plan?.timeline || "TBD"}
                             </p>
                             <p
                               className={`text-sm ${getTimeRemainingColor(plan.timeRemaining)}`}
@@ -2257,7 +2248,8 @@ export function PendingSolutions() {
               </DialogTitle>
               <DialogDescription>
                 Detailed analysis of recovery options for{" "}
-                {selectedPlan?.flightNumber || 'N/A'} • {selectedPlan?.route || 'N/A'}
+                {selectedPlan?.flightNumber || "N/A"} •{" "}
+                {selectedPlan?.route || "N/A"}
               </DialogDescription>
             </DialogHeader>
 
@@ -2525,19 +2517,25 @@ export function PendingSolutions() {
                     <div>
                       <span className="text-gray-600">Flight Number:</span>
                       <div className="font-medium">
-                        {selectedPlan.flightNumber || "N/A"}
+                        {selectedPlan && selectedPlan.flightNumber
+                          ? selectedPlan.flightNumber
+                          : "N/A"}
                       </div>
                     </div>
                     <div>
                       <span className="text-gray-600">Route:</span>
                       <div className="font-medium">
-                        {selectedPlan.route || "N/A"}
+                        {selectedPlan && selectedPlan.route
+                          ? selectedPlan.route
+                          : "N/A"}
                       </div>
                     </div>
                     <div>
                       <span className="text-gray-600">Aircraft:</span>
                       <div className="font-medium">
-                        {selectedPlan.aircraft || "N/A"}
+                        {selectedPlan && selectedPlan.aircraft
+                          ? selectedPlan.aircraft
+                          : "N/A"}
                       </div>
                     </div>
                     <div>
