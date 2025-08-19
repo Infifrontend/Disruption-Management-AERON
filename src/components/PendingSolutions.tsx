@@ -99,6 +99,7 @@ export function PendingSolutions() {
   const [plans, setPlans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingDetails, setLoadingDetails] = useState(null);
+  const [loadingPendingData, setLoadingPendingData] = useState(false);
 
   useEffect(() => {
     fetchPlans();
