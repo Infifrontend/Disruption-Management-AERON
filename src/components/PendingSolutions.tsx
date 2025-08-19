@@ -82,6 +82,7 @@ import { databaseService } from "../services/databaseService";
 export function PendingSolutions() {
   const [activeTab, setActiveTab] = useState("all");
   const [selectedPlan, setSelectedPlan] = useState(null);
+
   const [selectedOptionForDetails, setSelectedOptionForDetails] =
     useState(null);
   const [showDetailedOptionAnalysis, setShowDetailedOptionAnalysis] =
@@ -757,6 +758,10 @@ export function PendingSolutions() {
   };
 
   const handleViewOptionDetails = (option, plan) => {
+    console.log(
+      "Viewing detailed option analysis for ++++++++++++++++++++++++++++++:",
+      option,
+    );
     // Create a detailed option object with all necessary data from API
     const detailedOption = {
       ...option,
@@ -796,7 +801,6 @@ export function PendingSolutions() {
     setSelectedOptionForDetails(detailedOption);
     setShowDetailedOptionAnalysis(true);
   };
-
   const refreshPlans = async () => {
     await fetchPlans();
   };
@@ -816,6 +820,7 @@ export function PendingSolutions() {
 
   // Component for detailed recovery option view
   const DetailedRecoveryOptionView = ({ plan }) => {
+    console.log(plan, "hold");
     const [activeOptionTab, setActiveOptionTab] = useState("overview");
     const [pendingSolutionData, setPendingSolutionData] = useState(null);
     const [loadingPendingData, setLoadingPendingData] = useState(false);
@@ -829,7 +834,8 @@ export function PendingSolutions() {
         setLoadingPendingData(true);
         try {
           // Fetch pending solution data
-          const allPendingSolutions = await databaseService.getPendingRecoverySolutions();
+          const allPendingSolutions =
+            await databaseService.getPendingRecoverySolutions();
           const matchingSolution = allPendingSolutions.find(
             (solution) =>
               solution.disruption_id === plan.disruptionId &&
@@ -870,9 +876,9 @@ export function PendingSolutions() {
                   opt.id === plan.optionId ||
                   opt.option_id === plan.optionId ||
                   String(opt.id) === String(plan.optionId) ||
-                  String(opt.option_id) === String(plan.optionId)
+                  String(opt.option_id) === String(plan.optionId),
               );
-              
+
               if (matchingOption) {
                 setRecoveryOptionData(matchingOption);
                 console.log("Loaded recovery option data:", matchingOption);
@@ -890,7 +896,8 @@ export function PendingSolutions() {
     }, [plan.id, plan.disruptionId, plan.optionId]);
 
     // Extract crew and passenger data from pending solution and recovery option
-    const crewData = 
+
+    const crewData =
       pendingSolutionData?.pending_recovery_solutions?.crew_information ||
       pendingSolutionData?.crew_information ||
       pendingSolutionData?.full_details?.crew_hotel_assignments ||
@@ -920,7 +927,7 @@ export function PendingSolutions() {
       (Array.isArray(passengerData)
         ? passengerData.length > 0
         : Object.keys(passengerData).length > 0);
-
+    console.log(selectedPlan, "oooooo");
     return (
       <div className="space-y-6">
         <Tabs value={activeOptionTab} onValueChange={setActiveOptionTab}>
@@ -962,9 +969,9 @@ export function PendingSolutions() {
                       Option Type
                     </Label>
                     <div className="font-medium">
-                      {pendingSolutionData?.option_title || 
-                       recoveryOptionData?.title || 
-                       plan.title}
+                      {pendingSolutionData?.option_title ||
+                        recoveryOptionData?.title ||
+                        plan.title}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -972,9 +979,9 @@ export function PendingSolutions() {
                       Estimated Cost
                     </Label>
                     <div className="font-medium text-flydubai-orange">
-                      {pendingSolutionData?.cost || 
-                       recoveryOptionData?.cost || 
-                       `AED ${(plan.estimatedCost || 0).toLocaleString()}`}
+                      {pendingSolutionData?.cost ||
+                        recoveryOptionData?.cost ||
+                        `AED ${(plan.estimatedCost || 0).toLocaleString()}`}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -982,9 +989,9 @@ export function PendingSolutions() {
                       Timeline
                     </Label>
                     <div className="font-medium">
-                      {pendingSolutionData?.timeline || 
-                       recoveryOptionData?.timeline || 
-                       plan.timeline}
+                      {pendingSolutionData?.timeline ||
+                        recoveryOptionData?.timeline ||
+                        plan.timeline}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -992,15 +999,21 @@ export function PendingSolutions() {
                       Confidence
                     </Label>
                     <div className="flex items-center gap-2">
-                      <Progress value={
-                        pendingSolutionData?.confidence || 
-                        recoveryOptionData?.confidence || 
-                        plan.confidence || 80
-                      } className="w-16 h-2" />
+                      <Progress
+                        value={
+                          pendingSolutionData?.confidence ||
+                          recoveryOptionData?.confidence ||
+                          plan.confidence ||
+                          80
+                        }
+                        className="w-16 h-2"
+                      />
                       <span className="font-medium">
-                        {pendingSolutionData?.confidence || 
-                         recoveryOptionData?.confidence || 
-                         plan.confidence || 80}%
+                        {pendingSolutionData?.confidence ||
+                          recoveryOptionData?.confidence ||
+                          plan.confidence ||
+                          80}
+                        %
                       </span>
                     </div>
                   </div>
@@ -1013,19 +1026,22 @@ export function PendingSolutions() {
                     <Label className="text-sm font-medium">Description</Label>
                     <p className="text-sm text-muted-foreground mt-1">
                       {pendingSolutionData?.option_description ||
-                       recoveryOptionData?.description ||
-                       plan.flightDetails?.description ||
-                       "Recovery option to address the flight disruption with minimal impact to operations and passengers."}
+                        recoveryOptionData?.description ||
+                        plan.flightDetails?.description ||
+                        "Recovery option to address the flight disruption with minimal impact to operations and passengers."}
                     </p>
                   </div>
 
                   <div>
                     <Label className="text-sm font-medium">Key Benefits</Label>
-                    {recoveryOptionData?.advantages && Array.isArray(recoveryOptionData.advantages) ? (
+                    {recoveryOptionData?.advantages &&
+                    Array.isArray(recoveryOptionData.advantages) ? (
                       <ul className="text-sm text-muted-foreground mt-1 space-y-1">
-                        {recoveryOptionData.advantages.map((advantage, index) => (
-                          <li key={index}>• {advantage}</li>
-                        ))}
+                        {recoveryOptionData.advantages.map(
+                          (advantage, index) => (
+                            <li key={index}>• {advantage}</li>
+                          ),
+                        )}
                       </ul>
                     ) : (
                       <ul className="text-sm text-muted-foreground mt-1 space-y-1">
@@ -1037,16 +1053,21 @@ export function PendingSolutions() {
                     )}
                   </div>
 
-                  {recoveryOptionData?.considerations && Array.isArray(recoveryOptionData.considerations) && (
-                    <div>
-                      <Label className="text-sm font-medium">Considerations</Label>
-                      <ul className="text-sm text-muted-foreground mt-1 space-y-1">
-                        {recoveryOptionData.considerations.map((consideration, index) => (
-                          <li key={index}>• {consideration}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {recoveryOptionData?.considerations &&
+                    Array.isArray(recoveryOptionData.considerations) && (
+                      <div>
+                        <Label className="text-sm font-medium">
+                          Considerations
+                        </Label>
+                        <ul className="text-sm text-muted-foreground mt-1 space-y-1">
+                          {recoveryOptionData.considerations.map(
+                            (consideration, index) => (
+                              <li key={index}>• {consideration}</li>
+                            ),
+                          )}
+                        </ul>
+                      </div>
+                    )}
                 </div>
               </CardContent>
             </Card>
@@ -1067,7 +1088,7 @@ export function PendingSolutions() {
                 <div className="space-y-4">
                   {(() => {
                     // Try to get timeline from API data first
-                    const timelineSteps = 
+                    const timelineSteps =
                       recoveryOptionData?.timeline_details?.timelineSteps ||
                       pendingSolutionData?.timeline_details ||
                       plan.recoverySteps;
@@ -1084,26 +1105,35 @@ export function PendingSolutions() {
                         step: 2,
                         title: "Resource Allocation",
                         status: "completed",
-                        timestamp: new Date(Date.now() + 15 * 60000).toLocaleTimeString(),
+                        timestamp: new Date(
+                          Date.now() + 15 * 60000,
+                        ).toLocaleTimeString(),
                         details: "Required resources identified and allocated",
                       },
                       {
                         step: 3,
                         title: "Implementation",
                         status: "in-progress",
-                        timestamp: new Date(Date.now() + 30 * 60000).toLocaleTimeString(),
+                        timestamp: new Date(
+                          Date.now() + 30 * 60000,
+                        ).toLocaleTimeString(),
                         details: "Recovery plan execution in progress",
                       },
                       {
                         step: 4,
                         title: "Verification",
                         status: "pending",
-                        timestamp: new Date(Date.now() + 45 * 60000).toLocaleTimeString(),
+                        timestamp: new Date(
+                          Date.now() + 45 * 60000,
+                        ).toLocaleTimeString(),
                         details: "Final verification and confirmation",
                       },
                     ];
 
-                    const steps = (timelineSteps && timelineSteps.length > 0) ? timelineSteps : defaultSteps;
+                    const steps =
+                      timelineSteps && timelineSteps.length > 0
+                        ? timelineSteps
+                        : defaultSteps;
 
                     return steps.map((step, index) => (
                       <div
@@ -1115,7 +1145,9 @@ export function PendingSolutions() {
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <h4 className="font-medium">{step.title || step.action}</h4>
+                            <h4 className="font-medium">
+                              {step.title || step.action}
+                            </h4>
                             <Badge
                               className={
                                 step.status === "completed"
@@ -1656,8 +1688,11 @@ export function PendingSolutions() {
                           </span>
                         </div>
                         <div className="space-y-2 text-sm">
-                          {recoveryOptionData?.resource_requirements?.aircraft ? (
-                            Object.entries(recoveryOptionData.resource_requirements.aircraft).map(([key, value]) => (
+                          {recoveryOptionData?.resource_requirements
+                            ?.aircraft ? (
+                            Object.entries(
+                              recoveryOptionData.resource_requirements.aircraft,
+                            ).map(([key, value]) => (
                               <div key={key} className="flex justify-between">
                                 <span className="text-muted-foreground capitalize">
                                   {key.replace(/([A-Z])/g, " $1")}:
@@ -1674,7 +1709,9 @@ export function PendingSolutions() {
                                 <span>A6-FEB</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">Type:</span>
+                                <span className="text-muted-foreground">
+                                  Type:
+                                </span>
                                 <span>B737-800</span>
                               </div>
                               <div className="flex justify-between">
@@ -1697,7 +1734,9 @@ export function PendingSolutions() {
                         </div>
                         <div className="space-y-2 text-sm">
                           {recoveryOptionData?.resource_requirements?.ground ? (
-                            Object.entries(recoveryOptionData.resource_requirements.ground).map(([key, value]) => (
+                            Object.entries(
+                              recoveryOptionData.resource_requirements.ground,
+                            ).map(([key, value]) => (
                               <div key={key} className="flex justify-between">
                                 <span className="text-muted-foreground capitalize">
                                   {key.replace(/([A-Z])/g, " $1")}:
@@ -1714,7 +1753,9 @@ export function PendingSolutions() {
                                 <span>Terminal 2</span>
                               </div>
                               <div className="flex justify-between">
-                                <span className="text-muted-foreground">Gate:</span>
+                                <span className="text-muted-foreground">
+                                  Gate:
+                                </span>
                                 <span>B3</span>
                               </div>
                               <div className="flex justify-between">
@@ -1737,82 +1778,89 @@ export function PendingSolutions() {
                   <div>
                     <h4 className="font-medium mb-3">Operational Support</h4>
                     <div className="space-y-3">
-                      {recoveryOptionData?.resource_requirements?.personnel ? (
-                        recoveryOptionData.resource_requirements.personnel.map((resource, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-3 border rounded-lg"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              <span className="font-medium">
-                                {resource.role || resource.type || `Resource ${index + 1}`}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-4 text-sm">
-                              <Badge variant="outline">
-                                {resource.status || resource.availability || "Available"}
-                              </Badge>
-                              <span className="text-muted-foreground">
-                                Count: {resource.count || resource.quantity || 1}
-                              </span>
-                              {resource.cost && (
+                      {recoveryOptionData?.resource_requirements?.personnel
+                        ? recoveryOptionData.resource_requirements.personnel.map(
+                            (resource, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between p-3 border rounded-lg"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                  <span className="font-medium">
+                                    {resource.role ||
+                                      resource.type ||
+                                      `Resource ${index + 1}`}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-4 text-sm">
+                                  <Badge variant="outline">
+                                    {resource.status ||
+                                      resource.availability ||
+                                      "Available"}
+                                  </Badge>
+                                  <span className="text-muted-foreground">
+                                    Count:{" "}
+                                    {resource.count || resource.quantity || 1}
+                                  </span>
+                                  {resource.cost && (
+                                    <span className="font-medium text-flydubai-orange">
+                                      {resource.cost}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ),
+                          )
+                        : [
+                            {
+                              resource: "Ground Handling Team",
+                              status: "Available",
+                              eta: "Immediate",
+                              cost: "AED 2,500",
+                            },
+                            {
+                              resource: "Baggage Transfer Service",
+                              status: "Confirmed",
+                              eta: "30 minutes",
+                              cost: "AED 1,800",
+                            },
+                            {
+                              resource: "Catering Services",
+                              status: "Arranged",
+                              eta: "45 minutes",
+                              cost: "AED 3,200",
+                            },
+                            {
+                              resource: "Customer Service Agents",
+                              status: "Deployed",
+                              eta: "Immediate",
+                              cost: "AED 1,500",
+                            },
+                          ].map((resource, index) => (
+                            <div
+                              key={index}
+                              className="flex items-center justify-between p-3 border rounded-lg"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                <span className="font-medium">
+                                  {resource.resource}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-4 text-sm">
+                                <Badge variant="outline">
+                                  {resource.status}
+                                </Badge>
+                                <span className="text-muted-foreground">
+                                  ETA: {resource.eta}
+                                </span>
                                 <span className="font-medium text-flydubai-orange">
                                   {resource.cost}
                                 </span>
-                              )}
+                              </div>
                             </div>
-                          </div>
-                        ))
-                      ) : (
-                        [
-                          {
-                            resource: "Ground Handling Team",
-                            status: "Available",
-                            eta: "Immediate",
-                            cost: "AED 2,500",
-                          },
-                          {
-                            resource: "Baggage Transfer Service",
-                            status: "Confirmed",
-                            eta: "30 minutes",
-                            cost: "AED 1,800",
-                          },
-                          {
-                            resource: "Catering Services",
-                            status: "Arranged",
-                            eta: "45 minutes",
-                            cost: "AED 3,200",
-                          },
-                          {
-                            resource: "Customer Service Agents",
-                            status: "Deployed",
-                            eta: "Immediate",
-                            cost: "AED 1,500",
-                          },
-                        ].map((resource, index) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-3 border rounded-lg"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                              <span className="font-medium">
-                                {resource.resource}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-4 text-sm">
-                              <Badge variant="outline">{resource.status}</Badge>
-                              <span className="text-muted-foreground">
-                                ETA: {resource.eta}
-                              </span>
-                              <span className="font-medium text-flydubai-orange">
-                                {resource.cost}
-                              </span>
-                            </div>
-                          </div>
-                        ))
-                      )}
+                          ))}
                     </div>
                   </div>
 
@@ -1823,48 +1871,62 @@ export function PendingSolutions() {
                     <Card className="p-4 bg-gray-50">
                       <div className="space-y-2 text-sm">
                         {(() => {
-                          const costBreakdown = 
+                          const costBreakdown =
                             recoveryOptionData?.cost_breakdown ||
                             pendingSolutionData?.cost_analysis?.breakdown ||
                             selectedPlan.costBreakdown;
 
-                          if (costBreakdown && Object.keys(costBreakdown).length > 0) {
-                            return Object.entries(costBreakdown).map(([key, value]) => (
-                              <div key={key} className="flex justify-between">
-                                <span className="capitalize">
-                                  {key.replace(/([A-Z])/g, " $1")}:
-                                </span>
-                                <span>
-                                  AED{" "}
-                                  {typeof value === "object" &&
-                                  value &&
-                                  typeof value.amount === "number"
-                                    ? value.amount.toLocaleString()
-                                    : typeof value === "number"
-                                      ? value.toLocaleString()
-                                      : String(value)}
-                                </span>
-                              </div>
-                            ));
+                          if (
+                            costBreakdown &&
+                            Object.keys(costBreakdown).length > 0
+                          ) {
+                            return Object.entries(costBreakdown).map(
+                              ([key, value]) => (
+                                <div key={key} className="flex justify-between">
+                                  <span className="capitalize">
+                                    {key.replace(/([A-Z])/g, " $1")}:
+                                  </span>
+                                  <span>
+                                    AED{" "}
+                                    {typeof value === "object" &&
+                                    value &&
+                                    typeof value.amount === "number"
+                                      ? value.amount.toLocaleString()
+                                      : typeof value === "number"
+                                        ? value.toLocaleString()
+                                        : String(value)}
+                                  </span>
+                                </div>
+                              ),
+                            );
                           } else {
-                            const estimatedCost = selectedPlan.estimatedCost || 50000;
+                            const estimatedCost =
+                              selectedPlan.estimatedCost || 50000;
                             return (
                               <>
                                 <div className="flex justify-between">
                                   <span>Direct Costs:</span>
-                                  <span>AED {(estimatedCost * 0.6).toLocaleString()}</span>
+                                  <span>
+                                    AED {(estimatedCost * 0.6).toLocaleString()}
+                                  </span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span>Indirect Costs:</span>
-                                  <span>AED {(estimatedCost * 0.4).toLocaleString()}</span>
+                                  <span>
+                                    AED {(estimatedCost * 0.4).toLocaleString()}
+                                  </span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span>Passenger Compensation:</span>
-                                  <span>AED {(estimatedCost * 0.3).toLocaleString()}</span>
+                                  <span>
+                                    AED {(estimatedCost * 0.3).toLocaleString()}
+                                  </span>
                                 </div>
                                 <div className="flex justify-between">
                                   <span>Operational Costs:</span>
-                                  <span>AED {(estimatedCost * 0.7).toLocaleString()}</span>
+                                  <span>
+                                    AED {(estimatedCost * 0.7).toLocaleString()}
+                                  </span>
                                 </div>
                               </>
                             );
@@ -2853,7 +2915,11 @@ export function PendingSolutions() {
                         <div className="grid grid-cols-3 gap-4 mb-6">
                           <div className="text-center p-4 bg-blue-50 rounded-lg">
                             <div className="text-3xl font-bold text-blue-600">
-                              158
+                              {
+                                selectedOptionForDetails
+                                  .pending_recovery_solutions.full_details
+                                  .affected
+                              }
                             </div>
                             <div className="text-sm text-blue-700">
                               Total Affected
@@ -2861,7 +2927,11 @@ export function PendingSolutions() {
                           </div>
                           <div className="text-center p-4 bg-green-50 rounded-lg">
                             <div className="text-3xl font-bold text-green-600">
-                              158
+                              {
+                                selectedOptionForDetails
+                                  .pending_recovery_solutions.full_details
+                                  .reaccommodated
+                              }
                             </div>
                             <div className="text-sm text-green-700">
                               Same Flight
@@ -2886,7 +2956,7 @@ export function PendingSolutions() {
                               <div className="flex justify-between">
                                 <span className="text-sm">Meal Vouchers:</span>
                                 <span className="font-medium">
-                                  0 passengers
+                                  1 passengers
                                 </span>
                               </div>
                               <div className="flex justify-between">
@@ -3165,10 +3235,23 @@ export function PendingSolutions() {
                 }`}
               >
                 <TabsTrigger value="option-details">Option Details</TabsTrigger>
-                <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
-                <TabsTrigger value="passenger-reaccommodation">
-                  Passenger Re-accommodation
-                </TabsTrigger>
+                {Object.keys(
+                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
+                ).length > 0 &&
+                  selectedOptionForDetails?.pending_recovery_solutions
+                    ?.full_details?.crew_hotel_assignments && (
+                    <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
+                  )}
+
+                {Object.keys(
+                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
+                ).length > 0 &&
+                  selectedOptionForDetails?.pending_recovery_solutions
+                    ?.full_details?.passenger_rebooking && (
+                    <TabsTrigger value="passenger-reaccommodation">
+                      Passenger Re-accommodation
+                    </TabsTrigger>
+                  )}
                 <TabsTrigger value="rotation-impact">
                   Rotation Impact
                 </TabsTrigger>
@@ -3317,7 +3400,10 @@ export function PendingSolutions() {
                     <div className="grid grid-cols-3 gap-4 mb-6">
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
                         <div className="text-3xl font-bold text-blue-600">
-                          158
+                          {
+                            selectedOptionForDetails?.pending_recovery_solutions
+                              ?.full_details?.passenger_impact?.affected
+                          }
                         </div>
                         <div className="text-sm text-blue-700">
                           Total Affected
@@ -3325,7 +3411,10 @@ export function PendingSolutions() {
                       </div>
                       <div className="text-center p-4 bg-green-50 rounded-lg">
                         <div className="text-3xl font-bold text-green-600">
-                          158
+                          {
+                            selectedOptionForDetails?.pending_recovery_solutions
+                              ?.full_details?.passenger_impact?.reaccommodated
+                          }
                         </div>
                         <div className="text-sm text-green-700">
                           Same Flight
@@ -3362,10 +3451,22 @@ export function PendingSolutions() {
                         <div className="space-y-2">
                           <div className="flex justify-between">
                             <span className="text-sm">
-                              €250 per passenger (EU261):
+                              AED{" "}
+                              {
+                                selectedOptionForDetails
+                                  ?.pending_recovery_solutions?.full_details
+                                  ?.passenger_impact?.affected
+                              }{" "}
+                              per passenger (AED261):
                             </span>
                             <span className="font-medium">
-                              €250 per passenger (EU261)
+                              AED{" "}
+                              {
+                                selectedOptionForDetails
+                                  .pending_recovery_solutions?.full_details
+                                  ?.passenger_impact?.affected
+                              }{" "}
+                              per passenger (AED261):
                             </span>
                           </div>
                         </div>
