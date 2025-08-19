@@ -231,90 +231,90 @@ const getAircraftIssuesRecoveryData = () => {
         },
       },
       crew_available: [
-          {
-              "name": "Capt. James Walker",
-              "role": "Captain",
-              "type": "B737 Type Rating",
-              "status": "Available",
-              "issue": null
-          },
-          {
-              "name": "Capt. Ravi Sharma",
-              "role": "Captain",
-              "type": "B737 Type Rating",
-              "status": "Available",
-              "issue": null
-          },
-          {
-              "name": "Capt. Elena Petrova",
-              "role": "Captain",
-              "type": "B737 Type Rating",
-              "status": "Available",
-              "issue": null
-          },
-          {
-              "name": "FO Michael Adams",
-              "role": "First Officer",
-              "type": "B737/MAX Type Rating",
-              "status": "Available",
-              "issue": null
-          },
-          {
-              "name": "FO Hannah Lee",
-              "role": "First Officer",
-              "type": "B737/MAX Type Rating",
-              "status": "Available",
-              "issue": null
-          },
-          {
-              "name": "FO Ahmed Nasser",
-              "role": "First Officer",
-              "type": "B737/MAX Type Rating",
-              "status": "Available",
-              "issue": null
-          },
-          {
-              "name": "SSCC Grace Thompson",
-              "role": "Senior Cabin Crew",
-              "type": "Senior Cabin Crew",
-              "status": "Available",
-              "issue": null
-          },
-          {
-              "name": "SSCC Pedro Alvarez",
-              "role": "Senior Cabin Crew",
-              "type": "Senior Cabin Crew",
-              "status": "Available",
-              "issue": null
-          },
-          {
-              "name": "SSCC Fatima Noor",
-              "role": "Senior Cabin Crew",
-              "type": "Senior Cabin Crew",
-              "status": "Available",
-              "issue": null
-          },
-          {
-              "name": "CC Laura Bennett",
-              "role": "Cabin Crew",
-              "type": "Cabin Crew",
-              "status": "Available",
-              "issue": null
-          },
-          {
-              "name": "CC Samuel Osei",
-              "role": "Cabin Crew",
-              "type": "Cabin Crew",
-              "status": "Available",
-              "issue": null
-          },
-          {
-              "name": "CC Yuki Tanaka",
-              "role": "Cabin Crew",
-              "type": "Cabin Crew",
-              "status": "Available",
-              "issue": null
-          }
+        {
+          name: "Capt. James Walker",
+          role: "Captain",
+          type: "B737 Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "Capt. Ravi Sharma",
+          role: "Captain",
+          type: "B737 Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "Capt. Elena Petrova",
+          role: "Captain",
+          type: "B737 Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "FO Michael Adams",
+          role: "First Officer",
+          type: "B737/MAX Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "FO Hannah Lee",
+          role: "First Officer",
+          type: "B737/MAX Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "FO Ahmed Nasser",
+          role: "First Officer",
+          type: "B737/MAX Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "SSCC Grace Thompson",
+          role: "Senior Cabin Crew",
+          type: "Senior Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "SSCC Pedro Alvarez",
+          role: "Senior Cabin Crew",
+          type: "Senior Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "SSCC Fatima Noor",
+          role: "Senior Cabin Crew",
+          type: "Senior Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "CC Laura Bennett",
+          role: "Cabin Crew",
+          type: "Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "CC Samuel Osei",
+          role: "Cabin Crew",
+          type: "Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "CC Yuki Tanaka",
+          role: "Cabin Crew",
+          type: "Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
       ],
       metrics: {
         costEfficiency: 85,
@@ -395,8 +395,8 @@ const getAircraftIssuesRecoveryData = () => {
             name: "Capt. Ahmed Al-Mansouri",
             role: "Captain",
             type: "B737 Type Rating",
-            status: "",
-            issue: "",
+            status: "Duty Time Exceeded",
+            issue: "Crew exceeded allowed maximum duty hours under regulations",
           },
           {
             name: "FO Sarah Johnson",
@@ -750,6 +750,92 @@ const getAircraftIssuesRecoveryData = () => {
           details: ["Standard fuel load", "Contingency fuel: 1200kg"],
         },
       },
+      crew_available: [
+        {
+          name: "Capt. James Walker",
+          role: "Captain",
+          type: "B737 Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "Capt. Ravi Sharma",
+          role: "Captain",
+          type: "B737 Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "Capt. Elena Petrova",
+          role: "Captain",
+          type: "B737 Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "FO Michael Adams",
+          role: "First Officer",
+          type: "B737/MAX Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "FO Hannah Lee",
+          role: "First Officer",
+          type: "B737/MAX Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "FO Ahmed Nasser",
+          role: "First Officer",
+          type: "B737/MAX Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "SSCC Grace Thompson",
+          role: "Senior Cabin Crew",
+          type: "Senior Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "SSCC Pedro Alvarez",
+          role: "Senior Cabin Crew",
+          type: "Senior Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "SSCC Fatima Noor",
+          role: "Senior Cabin Crew",
+          type: "Senior Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "CC Laura Bennett",
+          role: "Cabin Crew",
+          type: "Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "CC Samuel Osei",
+          role: "Cabin Crew",
+          type: "Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "CC Yuki Tanaka",
+          role: "Cabin Crew",
+          type: "Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+      ],
       metrics: {
         costEfficiency: 70,
         timeEfficiency: 60,
@@ -958,6 +1044,92 @@ const getAircraftIssuesRecoveryData = () => {
           details: "Customer service support team",
         },
       ],
+      crew_available: [
+        {
+          name: "Capt. James Walker",
+          role: "Captain",
+          type: "B737 Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "Capt. Ravi Sharma",
+          role: "Captain",
+          type: "B737 Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "Capt. Elena Petrova",
+          role: "Captain",
+          type: "B737 Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "FO Michael Adams",
+          role: "First Officer",
+          type: "B737/MAX Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "FO Hannah Lee",
+          role: "First Officer",
+          type: "B737/MAX Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "FO Ahmed Nasser",
+          role: "First Officer",
+          type: "B737/MAX Type Rating",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "SSCC Grace Thompson",
+          role: "Senior Cabin Crew",
+          type: "Senior Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "SSCC Pedro Alvarez",
+          role: "Senior Cabin Crew",
+          type: "Senior Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "SSCC Fatima Noor",
+          role: "Senior Cabin Crew",
+          type: "Senior Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "CC Laura Bennett",
+          role: "Cabin Crew",
+          type: "Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "CC Samuel Osei",
+          role: "Cabin Crew",
+          type: "Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+        {
+          name: "CC Yuki Tanaka",
+          role: "Cabin Crew",
+          type: "Cabin Crew",
+          status: "Available",
+          issue: null,
+        },
+      ],
       cost_breakdown: {
         breakdown: [
           {
@@ -1151,8 +1323,8 @@ const getAircraftIssuesRecoveryData = () => {
             name: "SSCC Lisa Martinez",
             role: "Senior Cabin Crew",
             type: "Senior Cabin Crew",
-            status: "Reassigned",
-            issue: "Reassigned to FZ891",
+            status: "Roster Violation",
+            issue: "Assigned duty breaks rostering or regulatory rules",
           },
           {
             name: "CC Maria Santos",
