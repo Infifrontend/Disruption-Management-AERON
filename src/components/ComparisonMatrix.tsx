@@ -1870,7 +1870,14 @@ export function ComparisonMatrix({
 
           {selectedOptionDetails && (
             <div className="space-y-6">
-              <Tabs defaultValue="overview" className="w-full">
+              <Tabs 
+                defaultValue={
+                  selectedOptionDetails?.title === "Aircraft Swap - Immediate" 
+                    ? "aircraft" 
+                    : "overview"
+                } 
+                className="w-full"
+              >
                 <TabsList
                   className={`grid w-full ${
                     selectedOptionDetails?.title === "Aircraft Swap - Immediate"
@@ -2061,16 +2068,44 @@ export function ComparisonMatrix({
                 <TabsContent value="aircraft" className="space-y-4">
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Plane className="h-4 w-4 text-flydubai-blue" />
-                        Available Aircraft Options -{" "}
-                        {selectedOptionDetails?.title}
+                      <CardTitle className="text-sm flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Plane className="h-4 w-4 text-flydubai-blue" />
+                          Available Aircraft Options -{" "}
+                          {selectedOptionDetails?.title}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
+                          onClick={() => {
+                            // Reset selected aircraft to allow new selection
+                            setSelectedAircraftFlight(null);
+                          }}
+                        >
+                          <Settings className="h-4 w-4 mr-2" />
+                          Change Flight Assignment
+                        </Button>
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
                       {selectedOptionDetails?.rotation_plan?.aircraftOptions
                         ?.length > 0 ? (
                         <div className="space-y-4">
+                          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <p className="text-sm text-blue-800">
+                              <strong>Current Assignment:</strong> {flight?.aircraft || "A6-FDB"} → 
+                              <strong className="ml-1">
+                                {selectedAircraftFlight !== null 
+                                  ? selectedOptionDetails.rotation_plan.aircraftOptions[selectedAircraftFlight]?.reg 
+                                  : selectedOptionDetails.rotation_plan.aircraftOptions[0]?.reg || "A6-FED"
+                                }
+                              </strong>
+                            </p>
+                            <p className="text-xs text-blue-600 mt-1">
+                              Click on any aircraft row below to select it as the new assignment
+                            </p>
+                          </div>
                           <Table>
                             <TableHeader>
                               <TableRow>
@@ -2089,19 +2124,37 @@ export function ComparisonMatrix({
                                 (aircraft, index) => (
                                   <TableRow
                                     key={index}
-                                    className={`cursor-pointer hover:bg-blue-50 ${
+                                    className={`cursor-pointer hover:bg-blue-50 transition-colors ${
                                       selectedAircraftFlight === index ||
                                       (selectedAircraftFlight === null &&
                                         index === 0)
-                                        ? "bg-blue-100 border-l-4 border-flydubai-blue"
-                                        : ""
+                                        ? "bg-blue-100 border-l-4 border-flydubai-blue shadow-sm"
+                                        : aircraft.recommended
+                                          ? "bg-green-50 border-l-2 border-green-300"
+                                          : ""
                                     }`}
                                     onClick={() =>
                                       setSelectedAircraftFlight(index)
                                     }
                                   >
                                     <TableCell className="font-medium">
-                                      {aircraft.reg || aircraft.aircraft}
+                                      <div className="flex items-center gap-2">
+                                        {aircraft.reg || aircraft.aircraft}
+                                        {(selectedAircraftFlight === index ||
+                                          (selectedAircraftFlight === null &&
+                                            index === 0)) && (
+                                          <Badge className="bg-flydubai-blue text-white text-xs">
+                                            Selected
+                                          </Badge>
+                                        )}
+                                        {aircraft.recommended && 
+                                         selectedAircraftFlight !== index &&
+                                         !(selectedAircraftFlight === null && index === 0) && (
+                                          <Badge className="bg-green-100 text-green-700 text-xs">
+                                            Recommended
+                                          </Badge>
+                                        )}
+                                      </div>
                                     </TableCell>
                                     <TableCell>
                                       {aircraft.type || "B737-800 (189Y)"}
@@ -2237,19 +2290,66 @@ export function ComparisonMatrix({
                     <CardHeader>
                       <CardTitle className="text-sm flex items-center gap-2">
                         <Users className="h-4 w-4 text-flydubai-blue" />
-                        Crew Availability - {selectedOptionDetails?.title}
+                        Crew Impact & Availability - {selectedOptionDetails?.title}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      {selectedOptionDetails?.rotation_plan?.crew?.length > 0 ||
-                      selectedOptionDetails?.rotation_plan?.crewData?.length >
-                        0 ? (
-                        <div className="space-y-4">
-                          {(
-                            selectedOptionDetails.rotation_plan.crew ||
-                            selectedOptionDetails.rotation_plan.crewData ||
-                            []
-                          ).map((crewMember, index) => (
+                      <div className="space-y-6">
+                        {/* Affected Crew Section */}
+                        <div>
+                          <h4 className="font-medium text-gray-800 flex items-center gap-2 mb-4">
+                            <AlertTriangle className="h-4 w-4 text-red-600" />
+                            Affected Original Crew
+                          </h4>
+                          <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium text-red-800">Captain:</span>
+                                  <span className="text-red-700">Capt. Ahmed Al-Rashid</span>
+                                  <Badge className="bg-red-100 text-red-700 border-red-300 text-xs">
+                                    Affected
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-red-600">
+                                  Issue: {flight?.categorization?.includes("Crew") 
+                                    ? "Duty time breach - exceeded maximum flight hours"
+                                    : "Aircraft change requires different type rating"}
+                                </p>
+                              </div>
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-sm font-medium text-red-800">First Officer:</span>
+                                  <span className="text-red-700">F/O Sarah Mitchell</span>
+                                  <Badge className="bg-red-100 text-red-700 border-red-300 text-xs">
+                                    Affected
+                                  </Badge>
+                                </div>
+                                <p className="text-xs text-red-600">
+                                  Issue: {flight?.categorization?.includes("Crew") 
+                                    ? "Sick report - unfit for duty"
+                                    : "Standby required for aircraft swap procedure"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Available Mapped Crew Section */}
+                        <div>
+                          <h4 className="font-medium text-gray-800 flex items-center gap-2 mb-4">
+                            <UserCheck className="h-4 w-4 text-green-600" />
+                            Available Mapped Crew ({selectedOptionDetails?.rotation_plan?.crew?.length || selectedOptionDetails?.rotation_plan?.crewData?.length || 0} assignments)
+                          </h4>
+                          
+                          {selectedOptionDetails?.rotation_plan?.crew?.length > 0 ||
+                          selectedOptionDetails?.rotation_plan?.crewData?.length > 0 ? (
+                            <div className="space-y-4">
+                              {(
+                                selectedOptionDetails.rotation_plan.crew ||
+                                selectedOptionDetails.rotation_plan.crewData ||
+                                []
+                              ).map((crewMember, index) => (
                             <div
                               key={index}
                               className={`p-4 border rounded-lg ${
@@ -2486,17 +2586,17 @@ export function ComparisonMatrix({
                                 </div>
                               )}
                             </div>
-                          ))}
+                          ) : (
+                            <div className="text-center py-6 text-gray-500">
+                              <Users className="h-6 w-6 mx-auto mb-2 opacity-50" />
+                              <p className="text-sm">No crew mappings available</p>
+                              <p className="text-xs mt-1">
+                                Standard crew assignment procedures will apply
+                              </p>
+                            </div>
+                          )}
                         </div>
-                      ) : (
-                        <div className="text-center py-8 text-gray-500">
-                          <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>No crew assignments available</p>
-                          <p className="text-xs mt-1">
-                            Standard crew assignment will be managed
-                          </p>
-                        </div>
-                      )}
+                      </div>
                     </CardContent>
                   </Card>
                 </TabsContent>
