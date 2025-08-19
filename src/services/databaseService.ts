@@ -2016,9 +2016,15 @@ class DatabaseService {
 
   async getCrewHotelAssignmentsByDisruption(disruptionId: string): Promise<any[]> {
     try {
+      console.log(`Fetching crew hotel assignments for disruption ${disruptionId}`);
       const response = await fetch(`${this.baseUrl}/crew-hotel-assignments/disruption/${disruptionId}`);
-      if (!response.ok) return [];
-      return await response.json();
+      if (!response.ok) {
+        console.log(`No crew hotel assignments found for disruption ${disruptionId}`);
+        return [];
+      }
+      const assignments = await response.json();
+      console.log(`Found ${assignments.length} crew hotel assignments for disruption ${disruptionId}`);
+      return assignments;
     } catch (error) {
       console.error('Failed to fetch crew hotel assignments:', error);
       return [];
