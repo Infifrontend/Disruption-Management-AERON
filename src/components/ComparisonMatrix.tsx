@@ -2309,7 +2309,7 @@ export function ComparisonMatrix({
                               <TableHeader>
                                 <TableRow className="bg-gray-50">
                                   <TableHead className="font-semibold text-flydubai-navy">Current Crew</TableHead>
-                                  <TableHead className="font-semibold text-flydubai-navy">System Suggested</TableHead>
+                                  <TableHead className="font-semibold text-flydubai-navy">Assigned Crew</TableHead>
                                   <TableHead className="font-semibold text-flydubai-navy">Status</TableHead>
                                   <TableHead className="font-semibold text-flydubai-navy">Swap Action</TableHead>
                                 </TableRow>
@@ -2354,7 +2354,7 @@ export function ComparisonMatrix({
                                           </div>
                                         </TableCell>
 
-                                        {/* System Suggested Column */}
+                                        {/* Assigned Crew Column */}
                                         <TableCell className="p-4">
                                           {hasBeenSwapped ? (
                                             <div className="space-y-2">
@@ -2416,14 +2416,23 @@ export function ComparisonMatrix({
                                             </div>
                                           ) : (
                                             <div className="space-y-2">
-                                              <div className="flex items-center gap-2">
-                                                <CheckCircle className="h-4 w-4 text-green-600" />
-                                                <span className="text-sm text-green-700 font-medium">
-                                                  Current Assignment OK
-                                                </span>
+                                              <div className="flex items-center gap-3">
+                                                <div className="flex-1">
+                                                  <h5 className="font-medium text-gray-900">
+                                                    {crewMember.name}
+                                                  </h5>
+                                                  <p className="text-sm text-gray-600">
+                                                    {crewMember.type || crewMember.role || crewMember.position}
+                                                  </p>
+                                                  {crewMember.location && (
+                                                    <p className="text-xs text-gray-500">
+                                                      Location: {crewMember.location}
+                                                    </p>
+                                                  )}
+                                                </div>
                                               </div>
                                               <p className="text-xs text-gray-500">
-                                                No changes recommended
+                                                Same as current crew (no violations)
                                               </p>
                                             </div>
                                           )}
