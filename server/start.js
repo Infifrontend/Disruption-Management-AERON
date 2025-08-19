@@ -1874,7 +1874,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
               risk_assessment, technical_specs, metrics, rotation_plan,
               impact_area, impact_summary, crew_available
             ) VALUES (
-              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
             )
             ON CONFLICT (disruption_id, title) DO UPDATE SET
               description = EXCLUDED.description,
@@ -1896,6 +1896,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
               impact_area = EXCLUDED.impact_area,
               impact_summary = EXCLUDED.impact_summary,
               updated_at = CURRENT_TIMESTAMP
+              crew_available = EXCLUDED.crew_available
             RETURNING id`;
 
           // Ensure arrays are properly formatted for PostgreSQL
@@ -1945,7 +1946,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
             safeStringify(option.rotationPlan || option.rotation_plan || {}),
             safeStringify(option.impact_area || []), // Convert to JSON string
             option.impact_summary || "",
-            option.crew_available || {},
+            safeStringify(option.crew_available || {}),
           ];
 
           try {
