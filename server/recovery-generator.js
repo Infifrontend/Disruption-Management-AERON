@@ -236,6 +236,9 @@ const getAircraftIssuesRecoveryData = () => {
         passengerSatisfaction: 85,
         recovery_analysis:
           "Aircraft Swap Recovery for FZ147 (IST→DXB): Replace B737 MAX 8 A6-FDU with available replacement aircraft at IST. The replacement aircraft has been selected based on availability and route certification for IST-DXB. Estimated passenger transfer time: 35-45 minutes. All cargo and baggage will be transferred with priority handling. This solution maintains schedule integrity with minimal passenger disruption. Current disruption: Engine maintenance check.",
+        "crewViolations": 0,
+        "aircraftSwaps": 1,
+        "networkImpact": "Low"
       },
       rotation_plan: {
         aircraftOptions: [
