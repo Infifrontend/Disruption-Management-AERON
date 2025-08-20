@@ -1309,8 +1309,21 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   const handleConfirmCrewAssignment = async () => {
     try {
-      if (!context?.disruption_id || selectedCrewMembers.size === 0 || !selectedHotelForCrew) {
-        console.warn("Missing required data for crew assignment");
+      if (selectedCrewMembers.size === 0) {
+        showAlert(
+          "Selection Required",
+          "Please select at least one crew member before confirming assignment.",
+          "error",
+        );
+        return;
+      }
+
+      if (!selectedHotelForCrew) {
+        showAlert(
+          "Hotel Selection Required",
+          "Please select a hotel for crew accommodation before confirming assignment.",
+          "error",
+        );
         return;
       }
 
@@ -1362,7 +1375,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
       const assignment = {
         disruption_id:
-          selectedFlight?.id || context?.flight?.id || context?.disruptionId,
+          selectedFlight?.id || context?.flight?.id || context?.disruption_id || "CREW_DISRUPTION",
         crew_member: crewList,
         hotel_name: selectedHotelForCrew.name,
         hotel_location: `${selectedHotelForCrew.distance} from Airport`,
@@ -3552,9 +3565,13 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   checked={
                                     selectedHotelForCrew?.id === hotel.id
                                   }
-                                  onCheckedChange={() =>
-                                    handleHotelSelectionForCrew(hotel)
-                                  }
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      handleHotelSelectionForCrew(hotel);
+                                    } else {
+                                      setSelectedHotelForCrew(null);
+                                    }
+                                  }}
                                 />
                                 <span className="text-xs font-medium">
                                   Select for crew
