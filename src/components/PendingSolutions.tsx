@@ -1584,13 +1584,6 @@ export function PendingSolutions() {
                                 <span>{value}</span>
                               </div>
                             ))
-                              <div key={key} className="flex justify-between">
-                                <span className="text-muted-foreground capitalize">
-                                  {key.replace(/([A-Z])/g, " $1")}:
-                                </span>
-                                <span>{value}</span>
-                              </div>
-                            ))
                           ) : (
                             <>
                               <div className="flex justify-between">
@@ -1624,7 +1617,8 @@ export function PendingSolutions() {
                           <span className="font-medium">Ground Resources</span>
                         </div>
                         <div className="space-y-2 text-sm">
-                          {selectedOptionForDetails?.matchingOption?.resource_requirements?.ground ? (
+                          {selectedOptionForDetails?.matchingOption?.resource_requirements
+                            ?.ground ? (
                             Object.entries(
                               selectedOptionForDetails.matchingOption.resource_requirements.ground,
                             ).map(([key, value]) => (
@@ -2911,17 +2905,13 @@ export function PendingSolutions() {
                             <div className="space-y-2">
                               <div className="flex justify-between">
                                 <span className="text-sm">Meal Vouchers:</span>
-                                <span className="font-medium">
-                                  0 passengers
-                                </span>
+                                <span className="font-medium">0 passengers</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-sm">
                                   Hotel Accommodation:
                                 </span>
-                                <span className="font-medium">
-                                  0 passengers
-                                </span>
+                                <span className="font-medium">0 passengers</span>
                               </div>
                             </div>
                           </div>
@@ -3479,6 +3469,7 @@ export function PendingSolutions() {
                   </CardHeader>
                   <CardContent>
                     {(() => {
+                      // Get crew data from selected option details
                       const crewData =
                         selectedOptionForDetails?.pending_recovery_solutions
                           ?.full_details?.crew_hotel_assignments;
@@ -3649,8 +3640,9 @@ export function PendingSolutions() {
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
                         <div className="text-3xl font-bold text-blue-600">
                           {
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.full_details?.passenger_impact?.affected
+                            selectedOptionForDetails
+                              ?.pending_recovery_solutions?.full_details
+                              ?.passenger_impact?.affected
                           }
                         </div>
                         <div className="text-sm text-blue-700">
@@ -3938,7 +3930,7 @@ export function PendingSolutions() {
                   <CardContent>
                     {(() => {
                       // Get rotation impact data from API
-                      const rotationData = 
+                      const rotationData =
                         selectedOptionForDetails?.matchingOption?.rotation_plan ||
                         selectedOptionForDetails?.rotationImpact ||
                         selectedOptionForDetails?.pending_recovery_solutions?.rotation_impact ||
@@ -3962,8 +3954,8 @@ export function PendingSolutions() {
                             </div>
                             <div className="text-center p-4 bg-red-50 rounded-lg">
                               <div className="text-3xl font-bold text-red-600">
-                                {operationalMetrics.totalDelayMinutes || 
-                                 flightImpacts.reduce((total, flight) => 
+                                {operationalMetrics.totalDelayMinutes ||
+                                 flightImpacts.reduce((total, flight) =>
                                    total + (parseInt(flight.delay?.replace(/\D/g, '') || 0)), 0) || 75}
                               </div>
                               <div className="text-sm text-red-700">
@@ -3988,7 +3980,7 @@ export function PendingSolutions() {
                                 {flightImpacts.length} Flights Affected
                               </Badge>
                             </div>
-                            
+
                             {flightImpacts.length > 0 ? (
                               <div className="space-y-3">
                                 {flightImpacts.map((flight, index) => (
@@ -4019,7 +4011,7 @@ export function PendingSolutions() {
                                           {flight.status}
                                         </Badge>
                                       </div>
-                                      
+
                                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                         <div>
                                           <span className="text-muted-foreground">Departure:</span>
@@ -4046,7 +4038,7 @@ export function PendingSolutions() {
                                           </div>
                                         </div>
                                       </div>
-                                      
+
                                       {flight.reason && (
                                         <div className="mt-3 p-2 bg-white bg-opacity-50 rounded">
                                           <span className="text-xs text-muted-foreground">Reason: </span>
@@ -4082,7 +4074,7 @@ export function PendingSolutions() {
                                 {crewImpacts.length} Crew Members
                               </Badge>
                             </div>
-                            
+
                             {crewImpacts.length > 0 ? (
                               <div className="space-y-3">
                                 {crewImpacts.map((crew, index) => (
@@ -4113,7 +4105,7 @@ export function PendingSolutions() {
                                           {crew.status || crew.availability}
                                         </Badge>
                                       </div>
-                                      
+
                                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                         <div>
                                           <span className="text-muted-foreground">Experience:</span>
@@ -4134,14 +4126,14 @@ export function PendingSolutions() {
                                           </div>
                                         </div>
                                       </div>
-                                      
+
                                       {crew.issue && (
                                         <div className="mt-3 p-2 bg-red-100 rounded border border-red-200">
                                           <span className="text-xs font-medium text-red-800">Issue: </span>
                                           <span className="text-xs text-red-700">{crew.issue}</span>
                                         </div>
                                       )}
-                                      
+
                                       {crew.notes && (
                                         <div className="mt-3 p-2 bg-white bg-opacity-50 rounded">
                                           <span className="text-xs text-muted-foreground">Notes: </span>
@@ -4173,7 +4165,7 @@ export function PendingSolutions() {
                           <Separator />
                           <div className="space-y-4">
                             <h4 className="font-medium text-lg">Operational Impact Summary</h4>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <Card className="bg-blue-50 border-blue-200">
                                 <CardContent className="p-4">
@@ -4185,12 +4177,12 @@ export function PendingSolutions() {
                                     {operationalMetrics.networkImpact || rotationData?.networkImpact || "Low"}
                                   </div>
                                   <p className="text-sm text-blue-700">
-                                    {operationalMetrics.networkDescription || 
+                                    {operationalMetrics.networkDescription ||
                                      "Minimal disruption to the overall flight network"}
                                   </p>
                                 </CardContent>
                               </Card>
-                              
+
                               <Card className="bg-orange-50 border-orange-200">
                                 <CardContent className="p-4">
                                   <div className="flex items-center gap-2 mb-2">
@@ -4216,11 +4208,11 @@ export function PendingSolutions() {
                                 </span>
                               </div>
                               <p className="text-sm text-yellow-700">
-                                {rotationData?.riskAssessment || 
+                                {rotationData?.riskAssessment ||
                                  operationalMetrics.riskDescription ||
                                  "Low risk of affecting subsequent flights in the rotation. The recovery option is designed to minimize downstream impacts and maintain schedule integrity."}
                               </p>
-                              
+
                               {operationalMetrics.mitigationActions && (
                                 <div className="mt-3">
                                   <span className="text-sm font-medium text-yellow-800">Mitigation Actions:</span>
