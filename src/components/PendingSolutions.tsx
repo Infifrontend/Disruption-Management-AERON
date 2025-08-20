@@ -1627,7 +1627,14 @@ export function PendingSolutions() {
                           {selectedOptionForDetails?.matchingOption?.resource_requirements?.ground ? (
                             Object.entries(
                               selectedOptionForDetails.matchingOption.resource_requirements.ground,
-                            ).map(([key, value]) => (</old_str>
+                            ).map(([key, value]) => (
+                              <div key={key} className="flex justify-between">
+                                <span className="text-muted-foreground capitalize">
+                                  {key.replace(/([A-Z])/g, " $1")}:
+                                </span>
+                                <span>{value}</span>
+                              </div>
+                            ))</old_str>
                               <div key={key} className="flex justify-between">
                                 <span className="text-muted-foreground capitalize">
                                   {key.replace(/([A-Z])/g, " $1")}:
@@ -1670,7 +1677,39 @@ export function PendingSolutions() {
                     <h4 className="font-medium mb-3">Operational Support</h4>
                     <div className="space-y-3">
                       {selectedOptionForDetails?.matchingOption?.resource_requirements?.personnel
-                        ? selectedOptionForDetails.matchingOption.resource_requirements.personnel.map(</old_str>
+                        ? selectedOptionForDetails.matchingOption.resource_requirements.personnel.map(
+                            (resource, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between p-3 border rounded-lg"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                  <span className="font-medium">
+                                    {resource.role ||
+                                      resource.type ||
+                                      `Resource ${index + 1}`}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-4 text-sm">
+                                  <Badge variant="outline">
+                                    {resource.status ||
+                                      resource.availability ||
+                                      "Available"}
+                                  </Badge>
+                                  <span className="text-muted-foreground">
+                                    Count:{" "}
+                                    {resource.count || resource.quantity || 1}
+                                  </span>
+                                  {resource.cost && (
+                                    <span className="font-medium text-flydubai-orange">
+                                      {resource.cost}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            ),
+                          )</old_str>
                             (resource, index) => (
                               <div
                                 key={index}
