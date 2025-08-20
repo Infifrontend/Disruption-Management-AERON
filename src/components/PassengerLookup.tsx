@@ -24,21 +24,13 @@ import {
   FileText
 } from 'lucide-react'
 
-interface PassengerLookupProps {
-  passengers: any[];
-  selectedPassengers: any[];
-  onPassengerSelection: (passengerId: string, checked: boolean) => void; // Corrected signature
-  onSelectAll: () => void;
-  onClearSelection: () => void;
-}
-
 export function PassengerLookup({ 
   passengers, 
   selectedPassengers, 
   onPassengerSelection, 
   onSelectAll, 
   onClearSelection 
-}: PassengerLookupProps) {
+}) {
   const [searchFilters, setSearchFilters] = useState({
     searchTerm: '',
     passengerType: 'all',
@@ -80,7 +72,7 @@ export function PassengerLookup({
 
       // Special needs filter
       const matchesSpecialNeeds = !searchFilters.specialNeeds || 
-        (passenger.specialNeeds && passenger.specialNeeds.length > 0) // Added check for existence
+        passenger.specialNeeds.length > 0
 
       return matchesSearch && matchesType && matchesFlight && matchesTier && matchesStatus && matchesSpecialNeeds
     })
@@ -332,7 +324,7 @@ export function PassengerLookup({
                     onCheckedChange={(checked) => onPassengerSelection(passenger.id, checked)}
                     className="mt-1"
                   />
-
+                  
                   <div className="flex-1">
                     <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
                       {/* Passenger Info */}
@@ -372,7 +364,7 @@ export function PassengerLookup({
 
                       {/* Special Info */}
                       <div>
-                        {passenger.specialNeeds && passenger.specialNeeds.length > 0 && (
+                        {passenger.specialNeeds.length > 0 && (
                           <div>
                             <p className="text-xs font-medium text-orange-600 mb-1">Special Needs:</p>
                             {passenger.specialNeeds.map((need, index) => (
@@ -382,7 +374,7 @@ export function PassengerLookup({
                             ))}
                           </div>
                         )}
-
+                        
                         {passenger.type === 'FIM' && passenger.fimDetails && (
                           <div className="mt-2">
                             <p className="text-xs font-medium text-purple-600">FIM Details:</p>

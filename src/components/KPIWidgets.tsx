@@ -2,87 +2,79 @@
 
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import {
-  TrendingUp,
-  TrendingDown,
-  Plane,
-  Users,
-  Clock,
-  AlertTriangle,
-  CheckCircle,
-  DollarSign
-} from 'lucide-react'
-import { databaseService } from '../services/databaseService'
+import { Progress } from './ui/progress'
+import { Badge } from './ui/badge'
+import { TrendingUp, TrendingDown, Plane, Users, Clock, AlertTriangle, CheckCircle } from 'lucide-react'
+import { databaseService } from '@/services/database'
 
-interface KPIData {
-  title: string
-  value: string | number
-  change?: string
-  trend?: 'up' | 'down' | 'neutral'
-  icon: React.ComponentType
-  color: string
-}
-
-const kpiData: KPIData[] = [
-  {
-    title: 'Active Disruptions',
-    value: 5,
-    change: '+2 from yesterday',
-    trend: 'up' as const,
-    icon: AlertTriangle,
-    color: 'text-red-500'
-  },
-  {
-    title: 'Affected Passengers',
-    value: '2,840',
-    change: '-15% from last week',
-    trend: 'down' as const,
-    icon: Users,
-    color: 'text-blue-500'
-  },
+const kpiData = [
   {
     title: 'On-Time Performance',
     value: '87.3%',
-    change: '+2.1% improvement',
-    trend: 'up' as const,
-    icon: CheckCircle,
-    color: 'text-green-500'
+    change: '+2.1%',
+    trend: 'up',
+    target: 90,
+    current: 87.3,
+    icon: Clock,
+    color: 'text-blue-600'
   },
   {
-    title: 'Average Delay',
-    value: '23 min',
-    change: '-5 min improvement',
-    trend: 'down' as const,
-    icon: Clock,
-    color: 'text-orange-500'
+    title: 'Flights Disrupted',
+    value: '23',
+    change: '+8',
+    trend: 'up',
+    subtitle: 'Last 24 hours',
+    icon: AlertTriangle,
+    color: 'text-orange-600'
+  },
+  {
+    title: 'Recovery Plans Active',
+    value: '7',
+    change: '-2',
+    trend: 'down',
+    subtitle: 'In progress',
+    icon: Plane,
+    color: 'text-green-600'
+  },
+  {
+    title: 'Passengers Affected',
+    value: '4,127',
+    change: '+892',
+    trend: 'up',
+    subtitle: 'Today',
+    icon: Users,
+    color: 'text-purple-600'
   },
   {
     title: 'Recovery Success Rate',
     value: '94.2%',
-    change: '+1.8% this month',
-    trend: 'up' as const,
-    icon: TrendingUp,
-    color: 'text-emerald-500'
+    change: '+1.8%',
+    trend: 'up',
+    target: 95,
+    current: 94.2,
+    icon: CheckCircle,
+    color: 'text-green-600'
   },
   {
-    title: 'Cost Savings',
-    value: 'AED 125K',
-    change: '+12% this quarter',
-    trend: 'up' as const,
-    icon: DollarSign,
-    color: 'text-green-600'
+    title: 'Avg Recovery Time',
+    value: '2.4h',
+    change: '-18min',
+    trend: 'down',
+    subtitle: 'Per incident',
+    icon: Clock,
+    color: 'text-blue-600'
   }
 ]
 
 export function KPIWidgets() {
-  const [kpiDataState, setKpiDataState] = useState<any>({})
+  const [kpiData, setKpiData] = useState<any>({})
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchKPIData = async () => {
       try {
         const data = await databaseService.getKPIData()
-        setKpiDataState(data)
+        setKpiData(data)
       } catch (error) {
         console.error('Error fetching KPI data:', error)
       } finally {
@@ -100,7 +92,7 @@ export function KPIWidgets() {
     <div className="space-y-4">
       <h3 className="font-medium">Key Performance Indicators</h3>
 
-      {kpiData.map((kpi: KPIData, index: number) => {
+      {kpiData.map((kpi, index) => {
         const Icon = kpi.icon
         const isPositiveTrend = kpi.trend === 'up'
         const TrendIcon = isPositiveTrend ? TrendingUp : TrendingDown
@@ -138,8 +130,8 @@ export function KPIWidgets() {
                     <span>Progress to Target</span>
                     <span>{kpi.current}% / {kpi.target}%</span>
                   </div>
-                  <Progress
-                    value={(kpi.current / kpi.target) * 100}
+                  <Progress 
+                    value={(kpi.current / kpi.target) * 100} 
                     className="h-2"
                   />
                 </div>
@@ -169,6 +161,29 @@ export function KPIWidgets() {
       </Card>
     </div>
   )
+}
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { 
+  TrendingUp, 
+  TrendingDown, 
+  Plane, 
+  Users, 
+  Clock, 
+  AlertTriangle,
+  CheckCircle,
+  DollarSign,
+  RefreshCw
+} from 'lucide-react'
+import { databaseService } from '../services/databaseService'
+
+interface KPIData {
+  title: string
+  value: string
+  change: string
+  changeType: 'increase' | 'decrease'
+  icon: any
+  color: string
 }
 
 export function KPIWidgetsOld() {
