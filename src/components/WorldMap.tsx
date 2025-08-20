@@ -546,7 +546,6 @@ export function WorldMap() {
                 const coords = latLngToXY(hub.lat, hub.lng);
                 return (
                   <div
-                    key={hub.id}
                     className="absolute transform -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-30"
                     style={{
                       left: `${(coords.x / 1000) * 100}%`,
