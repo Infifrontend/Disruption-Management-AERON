@@ -4067,27 +4067,84 @@ export function PendingSolutions() {
                                             <p className="text-xs text-red-600 font-medium mb-2">Affected Pairing Information</p>
                                             
                                             <div className="space-y-2">
-                                              <div className="p-2 bg-red-100 rounded border border-red-200">
-                                                <div className="flex items-center justify-between">
-                                                  <span className="text-xs text-red-800 font-medium">High Priority</span>
-                                                  <span className="text-xs text-red-700">Critical Pairing Impact</span>
+                                              {/* High Priority Pairing */}
+                                              <div className="border border-red-200 rounded overflow-hidden">
+                                                <div className="bg-red-100 p-2 flex items-center justify-between cursor-pointer hover:bg-red-150 transition-colors">
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-red-800 font-medium">High Priority</span>
+                                                    <span className="text-xs text-red-700">Critical Pairing Impact</span>
+                                                  </div>
                                                   <ChevronRight className="h-3 w-3 text-red-600" />
                                                 </div>
-                                              </div>
-                                              
-                                              <div className="p-2 bg-yellow-100 rounded border border-yellow-200">
-                                                <div className="flex items-center justify-between">
-                                                  <span className="text-xs text-yellow-800 font-medium">Medium Priority</span>
-                                                  <span className="text-xs text-yellow-700">Moderate Pairing Impact</span>
-                                                  <ChevronRight className="h-3 w-3 text-yellow-600" />
+                                                <div className="bg-white p-3 border-t border-red-100">
+                                                  <div className="grid grid-cols-3 gap-4 text-xs">
+                                                    <div>
+                                                      <span className="text-gray-600">Pairing Number:</span>
+                                                      <div className="font-medium text-gray-900">FZ-P-001</div>
+                                                    </div>
+                                                    <div>
+                                                      <span className="text-gray-600">Date:</span>
+                                                      <div className="font-medium text-gray-900">8/20/2025</div>
+                                                    </div>
+                                                    <div>
+                                                      <span className="text-gray-600">Sector:</span>
+                                                      <div className="font-medium text-gray-900">DXB → BOM → DXB</div>
+                                                    </div>
+                                                  </div>
                                                 </div>
                                               </div>
                                               
-                                              <div className="p-2 bg-green-100 rounded border border-green-200">
-                                                <div className="flex items-center justify-between">
-                                                  <span className="text-xs text-green-800 font-medium">Low Priority</span>
-                                                  <span className="text-xs text-green-700">Minor Pairing Impact</span>
+                                              {/* Medium Priority Pairing */}
+                                              <div className="border border-yellow-200 rounded overflow-hidden">
+                                                <div className="bg-yellow-100 p-2 flex items-center justify-between cursor-pointer hover:bg-yellow-150 transition-colors">
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-yellow-800 font-medium">Medium Priority</span>
+                                                    <span className="text-xs text-yellow-700">Moderate Pairing Impact</span>
+                                                  </div>
+                                                  <ChevronRight className="h-3 w-3 text-yellow-600" />
+                                                </div>
+                                                <div className="bg-white p-3 border-t border-yellow-100">
+                                                  <div className="grid grid-cols-3 gap-4 text-xs">
+                                                    <div>
+                                                      <span className="text-gray-600">Pairing Number:</span>
+                                                      <div className="font-medium text-gray-900">FZ-P-002</div>
+                                                    </div>
+                                                    <div>
+                                                      <span className="text-gray-600">Date:</span>
+                                                      <div className="font-medium text-gray-900">8/21/2025</div>
+                                                    </div>
+                                                    <div>
+                                                      <span className="text-gray-600">Sector:</span>
+                                                      <div className="font-medium text-gray-900">DXB → KWI → DXB</div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                              
+                                              {/* Low Priority Pairing */}
+                                              <div className="border border-green-200 rounded overflow-hidden">
+                                                <div className="bg-green-100 p-2 flex items-center justify-between cursor-pointer hover:bg-green-150 transition-colors">
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-green-800 font-medium">Low Priority</span>
+                                                    <span className="text-xs text-green-700">Minor Pairing Impact</span>
+                                                  </div>
                                                   <ChevronRight className="h-3 w-3 text-green-600" />
+                                                </div>
+                                                <div className="bg-white p-3 border-t border-green-100">
+                                                  <div className="grid grid-cols-3 gap-4 text-xs">
+                                                    <div>
+                                                      <span className="text-gray-600">Pairing Number:</span>
+                                                      <div className="font-medium text-gray-900">FZ-P-003</div>
+                                                    </div>
+                                                    <div>
+                                                      <span className="text-gray-600">Date:</span>
+                                                      <div className="font-medium text-gray-900">8/22/2025</div>
+                                                    </div>
+                                                    <div>
+                                                      <span className="text-gray-600">Sector:</span>
+                                                      <div className="font-medium text-gray-900">DXB → MCT → DXB</div>
+                                                    </div>
+                                                  </div>
                                                 </div>
                                               </div>
                                             </div>
