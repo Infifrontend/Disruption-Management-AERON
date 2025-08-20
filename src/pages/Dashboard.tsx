@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
-import { databaseService } from "../services/databaseService";
 import {
   Card,
   CardContent,
@@ -49,184 +48,6 @@ export function Dashboard() {
 
   const enabledScreens = screenSettings.filter((screen) => screen.enabled);
 
-  // State for dashboard data
-  const [dashboardData, setDashboardData] = useState({
-    kpiData: {
-      activeDisruptions: 0,
-      affectedPassengers: 0,
-      averageDelay: 0,
-      recoverySuccessRate: 0,
-      onTimePerformance: 0,
-      costSavings: 0
-    },
-    passengerImpact: {
-      totalAffected: 0,
-      highPriority: 0,
-      successfulRebookings: 0,
-      resolved: 0,
-      pendingAccommodation: 0
-    },
-    disruptedStations: [],
-    operationalInsights: {
-      recoveryRate: 0,
-      averageResolutionTime: '0h',
-      networkImpact: 'Low',
-      criticalPriority: 0,
-      mostDisruptedRoute: 'N/A',
-      routeDisruptionCause: 'N/A'
-    },
-    flightData: {
-      totalFlights: 0,
-      activeFlights: 0,
-      totalPassengers: 0,
-      onTimePerformance: 0
-    }
-  });
-
-  const [loading, setLoading] = useState(true);
-
-  // Fetch dashboard data
-  const fetchDashboardData = async () => {
-    try {
-      setLoading(true);
-      
-      // Fetch all data in parallel
-      const [
-        kpiData,
-        passengerImpact,
-        disruptedStations,
-        operationalInsights,
-        disruptions,
-        pendingSolutions,
-        rebookings,
-        crewAssignments
-      ] = await Promise.all([
-        databaseService.getKPIData(),
-        databaseService.getPassengerImpactData(),
-        databaseService.getHighlyDisruptedStations(),
-        databaseService.getOperationalInsights(),
-        databaseService.getAllDisruptions(),
-        databaseService.getPendingRecoverySolutions(),
-        databaseService.getPassengerRebookingsByDisruption(''),
-        databaseService.getCrewHotelAssignmentsByDisruption('')
-      ]);
-
-      // Calculate real metrics from database data
-      const activeDisruptions = disruptions.filter(d => d.status === 'Active' || d.status === 'Delayed').length;
-      const totalAffectedPassengers = disruptions.reduce((sum, d) => sum + (d.passengers || 0), 0);
-      const avgDelay = disruptions.length > 0 
-        ? Math.round(disruptions.reduce((sum, d) => sum + (d.delay || 0), 0) / disruptions.length)
-        : 0;
-      
-      const completedRecoveries = disruptions.filter(d => d.recoveryStatus === 'completed').length;
-      const recoverySuccessRate = disruptions.length > 0 
-        ? Math.round((completedRecoveries / disruptions.length) * 100 * 10) / 10
-        : 0;
-
-      // Calculate passenger impact metrics
-      const highPriorityPassengers = disruptions
-        .filter(d => d.severity === 'High' || d.severity === 'Critical')
-        .reduce((sum, d) => sum + (d.passengers || 0), 0);
-      
-      const successfulRebookings = rebookings.filter(r => r.status === 'Confirmed').length;
-      const resolvedDisruptions = disruptions.filter(d => d.recoveryStatus === 'completed').length;
-      const resolvedPassengers = disruptions
-        .filter(d => d.recoveryStatus === 'completed')
-        .reduce((sum, d) => sum + (d.passengers || 0), 0);
-
-      // Group disruptions by station for disrupted stations data
-      const stationStats = {};
-      disruptions.forEach(d => {
-        const station = d.origin;
-        const stationName = d.originCity;
-        if (!stationStats[station]) {
-          stationStats[station] = {
-            station,
-            stationName,
-            disruptedFlights: 0,
-            affectedPassengers: 0,
-            severity: 'low',
-            primaryCause: 'Unknown'
-          };
-        }
-        stationStats[station].disruptedFlights++;
-        stationStats[station].affectedPassengers += d.passengers || 0;
-        if (d.severity === 'High' || d.severity === 'Critical') {
-          stationStats[station].severity = 'high';
-        } else if (d.severity === 'Medium' && stationStats[station].severity === 'low') {
-          stationStats[station].severity = 'medium';
-        }
-        stationStats[station].primaryCause = d.type || 'Unknown';
-      });
-
-      const sortedStations = Object.values(stationStats)
-        .sort((a, b) => b.affectedPassengers - a.affectedPassengers)
-        .slice(0, 5);
-
-      // Calculate operational insights
-      const avgResolutionTime = `${Math.round(avgDelay / 60)}h ${avgDelay % 60}m`;
-      const criticalCount = disruptions.filter(d => d.severity === 'Critical').length;
-      const networkImpact = criticalCount > 10 ? 'High' : criticalCount > 5 ? 'Medium' : 'Low';
-      
-      // Find most disrupted route
-      const routeStats = {};
-      disruptions.forEach(d => {
-        if (!routeStats[d.route]) {
-          routeStats[d.route] = { count: 0, cause: d.disruptionReason };
-        }
-        routeStats[d.route].count++;
-      });
-      const mostDisruptedRoute = Object.entries(routeStats)
-        .sort(([,a], [,b]) => b.count - a.count)[0];
-
-      setDashboardData({
-        kpiData: {
-          activeDisruptions,
-          affectedPassengers: totalAffectedPassengers,
-          averageDelay: avgDelay,
-          recoverySuccessRate,
-          onTimePerformance: kpiData.onTimePerformance || 87.3,
-          costSavings: kpiData.costSavings || 2.8
-        },
-        passengerImpact: {
-          totalAffected: totalAffectedPassengers,
-          highPriority: highPriorityPassengers,
-          successfulRebookings,
-          resolved: resolvedPassengers,
-          pendingAccommodation: totalAffectedPassengers - resolvedPassengers
-        },
-        disruptedStations: sortedStations,
-        operationalInsights: {
-          recoveryRate: recoverySuccessRate,
-          averageResolutionTime: avgResolutionTime,
-          networkImpact,
-          criticalPriority: criticalCount,
-          mostDisruptedRoute: mostDisruptedRoute ? mostDisruptedRoute[0] : 'N/A',
-          routeDisruptionCause: mostDisruptedRoute ? mostDisruptedRoute[1].cause : 'N/A'
-        },
-        flightData: {
-          totalFlights: disruptions.length,
-          activeFlights: activeDisruptions,
-          totalPassengers: totalAffectedPassengers,
-          onTimePerformance: kpiData.onTimePerformance || 87.3
-        }
-      });
-
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-      // Keep default mock data on error
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchDashboardData();
-    // Refresh data every 30 seconds
-    const interval = setInterval(fetchDashboardData, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
   const handleCreateRecoveryPlan = (disruption: any) => {
     setSelectedDisruption(disruption);
     navigate("/disruption");
@@ -245,10 +66,8 @@ export function Dashboard() {
       <Alert className="border-flydubai-orange bg-orange-50">
         <AlertTriangle className="h-4 w-4 text-flydubai-orange" />
         <AlertDescription className="text-orange-800">
-          <strong>Active Disruptions:</strong> {dashboardData.kpiData.activeDisruptions} Flydubai flights affected.
-          {dashboardData.disruptedStations.length > 0 && (
-            <> Primary concern: {dashboardData.disruptedStations[0]?.stationName || 'Multiple stations'}.</>
-          )} AERON recovery plans available.
+          <strong>Active Disruptions:</strong> 18 Flydubai flights affected by
+          sandstorm at DXB. AERON recovery plans available.
         </AlertDescription>
       </Alert>
 
@@ -266,26 +85,26 @@ export function Dashboard() {
                   Flydubai AERON Performance Today
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {dashboardData.flightData.totalFlights} recovery decisions processed • {dashboardData.operationalInsights.recoveryRate}% success rate
+                  8 recovery decisions processed • 96.1% success rate
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-6">
               <div className="text-center">
                 <p className="text-lg font-semibold text-flydubai-blue">
-                  AED {Math.round(dashboardData.kpiData.costSavings * 100)}K
+                  AED 312K
                 </p>
                 <p className="text-xs text-muted-foreground">Cost Savings</p>
               </div>
               <div className="text-center">
                 <p className="text-lg font-semibold text-flydubai-navy">
-                  {dashboardData.operationalInsights.averageResolutionTime}
+                  7.8 min
                 </p>
                 <p className="text-xs text-muted-foreground">Avg Decision</p>
               </div>
               <div className="text-center">
                 <p className="text-lg font-semibold text-flydubai-orange">
-                  {dashboardData.kpiData.affectedPassengers.toLocaleString()}
+                  2,847
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Passengers Served
@@ -322,9 +141,7 @@ export function Dashboard() {
                     Affected Passengers
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-red-700">
-                  {dashboardData.passengerImpact.totalAffected.toLocaleString()}
-                </p>
+                <p className="text-2xl font-bold text-red-700">754</p>
                 <p className="text-xs text-red-600">Across all disruptions</p>
               </div>
               <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
@@ -334,9 +151,7 @@ export function Dashboard() {
                     High Priority
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-yellow-700">
-                  {dashboardData.passengerImpact.highPriority.toLocaleString()}
-                </p>
+                <p className="text-2xl font-bold text-yellow-700">400</p>
                 <p className="text-xs text-yellow-600">
                   Need immediate attention
                 </p>
@@ -348,9 +163,7 @@ export function Dashboard() {
                     Rebookings
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-blue-700">
-                  {dashboardData.passengerImpact.successfulRebookings.toLocaleString()}
-                </p>
+                <p className="text-2xl font-bold text-blue-700">255</p>
                 <p className="text-xs text-blue-600">Successfully rebooked</p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
@@ -360,9 +173,7 @@ export function Dashboard() {
                     Resolved
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-green-700">
-                  {dashboardData.passengerImpact.resolved.toLocaleString()}
-                </p>
+                <p className="text-2xl font-bold text-green-700">750</p>
                 <p className="text-xs text-green-600">
                   Passengers accommodated
                 </p>
@@ -380,51 +191,53 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {dashboardData.disruptedStations.length === 0 ? (
-                <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                  <p className="text-sm text-green-600">No major disruptions at this time</p>
+              <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+                  <div>
+                    <p className="font-semibold text-red-900">DXB - Dubai</p>
+                    <p className="text-xs text-red-600">12 disrupted flights</p>
+                  </div>
                 </div>
-              ) : (
-                dashboardData.disruptedStations.slice(0, 3).map((station, index) => {
-                  const bgColor = station.severity === 'high' ? 'bg-red-50 border-red-200' : 
-                                 station.severity === 'medium' ? 'bg-orange-50 border-orange-200' : 
-                                 'bg-yellow-50 border-yellow-200';
-                  const dotColor = station.severity === 'high' ? 'bg-red-500' : 
-                                  station.severity === 'medium' ? 'bg-orange-500' : 
-                                  'bg-yellow-500';
-                  const textColor = station.severity === 'high' ? 'text-red-900' : 
-                                   station.severity === 'medium' ? 'text-orange-900' : 
-                                   'text-yellow-900';
-                  const subTextColor = station.severity === 'high' ? 'text-red-600' : 
-                                      station.severity === 'medium' ? 'text-orange-600' : 
-                                      'text-yellow-600';
-                  const valueColor = station.severity === 'high' ? 'text-red-700' : 
-                                    station.severity === 'medium' ? 'text-orange-700' : 
-                                    'text-yellow-700';
+                <div className="text-right">
+                  <p className="text-lg font-bold text-red-700">2,847</p>
+                  <p className="text-xs text-red-600">passengers affected</p>
+                </div>
+              </div>
 
-                  return (
-                    <div key={station.station} className={`flex items-center justify-between p-3 rounded-lg border ${bgColor}`}>
-                      <div className="flex items-center gap-3">
-                        <div className={`w-3 h-3 rounded-full ${dotColor}`}></div>
-                        <div>
-                          <p className={`font-semibold ${textColor}`}>
-                            {station.station} - {station.stationName}
-                          </p>
-                          <p className={`text-xs ${subTextColor}`}>
-                            {station.disruptedFlights} disrupted flights
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className={`text-lg font-bold ${valueColor}`}>
-                          {station.affectedPassengers.toLocaleString()}
-                        </p>
-                        <p className={`text-xs ${subTextColor}`}>passengers affected</p>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
+              <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
+                  <div>
+                    <p className="font-semibold text-orange-900">DEL - Delhi</p>
+                    <p className="text-xs text-orange-600">
+                      7 disrupted flights
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-orange-700">823</p>
+                  <p className="text-xs text-orange-600">passengers affected</p>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                  <div>
+                    <p className="font-semibold text-yellow-900">
+                      BOM - Mumbai
+                    </p>
+                    <p className="text-xs text-yellow-600">
+                      4 disrupted flights
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-yellow-700">457</p>
+                  <p className="text-xs text-yellow-600">passengers affected</p>
+                </div>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -447,10 +260,8 @@ export function Dashboard() {
                   Recovery Rate
                 </span>
               </div>
-              <p className="text-2xl font-bold text-blue-800">
-                {dashboardData.operationalInsights.recoveryRate}%
-              </p>
-              <p className="text-xs text-blue-600">Real-time calculation</p>
+              <p className="text-2xl font-bold text-blue-800">89.2%</p>
+              <p className="text-xs text-blue-600">+4.3% from yesterday</p>
             </div>
 
             <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
@@ -460,10 +271,8 @@ export function Dashboard() {
                   Avg Resolution
                 </span>
               </div>
-              <p className="text-2xl font-bold text-green-800">
-                {dashboardData.operationalInsights.averageResolutionTime}
-              </p>
-              <p className="text-xs text-green-600">Based on current data</p>
+              <p className="text-2xl font-bold text-green-800">2.4h</p>
+              <p className="text-xs text-green-600">-18 min improvement</p>
             </div>
 
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
@@ -473,12 +282,8 @@ export function Dashboard() {
                   Network Impact
                 </span>
               </div>
-              <p className="text-2xl font-bold text-purple-800">
-                {dashboardData.operationalInsights.networkImpact}
-              </p>
-              <p className="text-xs text-purple-600">
-                {dashboardData.kpiData.activeDisruptions} active disruptions
-              </p>
+              <p className="text-2xl font-bold text-purple-800">Medium</p>
+              <p className="text-xs text-purple-600">23 active disruptions</p>
             </div>
 
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
@@ -488,9 +293,7 @@ export function Dashboard() {
                   Critical Priority
                 </span>
               </div>
-              <p className="text-2xl font-bold text-orange-800">
-                {dashboardData.operationalInsights.criticalPriority}
-              </p>
+              <p className="text-2xl font-bold text-orange-800">5</p>
               <p className="text-xs text-orange-600">
                 Require immediate action
               </p>
@@ -504,20 +307,11 @@ export function Dashboard() {
                   Most Disrupted Route
                 </p>
                 <p className="text-sm text-gray-600">
-                  {dashboardData.operationalInsights.mostDisruptedRoute !== 'N/A' 
-                    ? `${dashboardData.operationalInsights.mostDisruptedRoute} - ${dashboardData.operationalInsights.routeDisruptionCause}`
-                    : 'No major route disruptions at this time'
-                  }
+                  DXB → DEL experiencing weather delays
                 </p>
               </div>
-              <Badge className={`${
-                dashboardData.operationalInsights.networkImpact === 'High' 
-                  ? 'bg-red-100 text-red-700 border-red-200'
-                  : dashboardData.operationalInsights.networkImpact === 'Medium'
-                  ? 'bg-orange-100 text-orange-700 border-orange-200'
-                  : 'bg-green-100 text-green-700 border-green-200'
-              }`}>
-                {dashboardData.operationalInsights.networkImpact} Impact
+              <Badge className="bg-red-100 text-red-700 border-red-200">
+                High Impact
               </Badge>
             </div>
           </div>
@@ -543,11 +337,11 @@ export function Dashboard() {
                       Active Flights
                     </p>
                     <p className="text-xl font-semibold text-flydubai-blue">
-                      {dashboardData.flightData.activeFlights}
+                      847
                     </p>
-                    <p className="text-xs text-blue-600 flex items-center gap-1">
-                      <Activity className="h-3 w-3" />
-                      {loading ? 'Loading...' : 'Real-time data'}
+                    <p className="text-xs text-green-600 flex items-center gap-1">
+                      <TrendingUp className="h-3 w-3" />
+                      +12 from yesterday
                     </p>
                   </div>
                 </div>
@@ -561,10 +355,10 @@ export function Dashboard() {
                   <div>
                     <p className="text-sm text-muted-foreground">Disruptions</p>
                     <p className="text-xl font-semibold text-flydubai-orange">
-                      {dashboardData.kpiData.activeDisruptions}
+                      23
                     </p>
                     <p className="text-xs text-red-600">
-                      {dashboardData.operationalInsights.criticalPriority} critical • {dashboardData.kpiData.affectedPassengers.toLocaleString()} pax affected
+                      5 critical • 4,127 pax affected
                     </p>
                   </div>
                 </div>
@@ -580,13 +374,9 @@ export function Dashboard() {
                       Total Passengers
                     </p>
                     <p className="text-xl font-semibold text-purple-600">
-                      {dashboardData.flightData.totalPassengers.toLocaleString()}
+                      42,158
                     </p>
-                    <p className="text-xs text-red-600">
-                      {dashboardData.flightData.totalPassengers > 0 
-                        ? Math.round((dashboardData.kpiData.affectedPassengers / dashboardData.flightData.totalPassengers) * 100 * 10) / 10
-                        : 0}% disrupted today
-                    </p>
+                    <p className="text-xs text-red-600">9.8% disrupted today</p>
                   </div>
                 </div>
               </CardContent>
@@ -601,11 +391,11 @@ export function Dashboard() {
                       OTP Performance
                     </p>
                     <p className="text-xl font-semibold text-green-600">
-                      {dashboardData.kpiData.onTimePerformance}%
+                      89.2%
                     </p>
                     <p className="text-xs text-green-600 flex items-center gap-1">
                       <TrendingUp className="h-3 w-3" />
-                      Recovery rate: {dashboardData.operationalInsights.recoveryRate}%
+                      +2.1% this week
                     </p>
                   </div>
                 </div>
