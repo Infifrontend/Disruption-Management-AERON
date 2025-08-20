@@ -742,8 +742,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       availability: "Available",
       image:
         "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=250&fit=crop",
-      description:
-        "Elegant hotel with excellent conference facilities and dining options",
+      description: "Elegant hotel with excellent conference facilities and dining options",
     },
     {
       id: "HTL-003",
@@ -1308,107 +1307,112 @@ export function PassengerRebooking({ context, onClearContext }) {
     setSelectedHotelForCrew(hotel);
   };
 
-  const handleConfirmCrewAssignment = () => {
-    if (selectedCrewMembers.size === 0 || !selectedHotelForCrew) {
-      showAlert(
-        "Assignment Required",
-        "Please select crew members and a hotel before confirming assignment.",
-        "warning",
-      );
-      return;
-    }
+  const handleConfirmCrewAssignment = async () => {
+    try {
+      if (!context?.disruption_id || selectedCrewMembers.size === 0 || !selectedHotelForCrew) {
+        console.warn("Missing required data for crew assignment");
+        return;
+      }
 
-    // Generate a unique assignment ID
-    const assignmentId = `CHA-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
+      // Generate a unique assignment ID
+      const assignmentId = `CHA-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
 
-    // Calculate check-in and check-out dates
-    const checkInDate = new Date();
-    checkInDate.setHours(checkInDate.getHours() + 2); // 2 hours from now
-    const checkOutDate = new Date(checkInDate);
-    checkOutDate.setDate(checkOutDate.getDate() + 1); // Next day
+      // Calculate check-in and check-out dates
+      const checkInDate = new Date();
+      checkInDate.setHours(checkInDate.getHours() + 2); // 2 hours from now
+      const checkOutDate = new Date(checkInDate);
+      checkOutDate.setDate(checkOutDate.getDate() + 1); // Next day
 
-    // Get crew data from multiple sources with proper null checks
-    const allCrewData = [
-      ...(Array.isArray(selectedFlight?.crew) ? selectedFlight.crew : []),
-      ...(Array.isArray(context?.flight?.crew) ? context.flight.crew : []),
-      ...(Array.isArray(context?.crewData) ? context.crewData : []),
-      ...(Array.isArray(crewData?.crew) ? crewData.crew : []),
-    ];
+      // Get crew data from multiple sources with proper null checks
+      const allCrewData = [
+        ...(Array.isArray(selectedFlight?.crew) ? selectedFlight.crew : []),
+        ...(Array.isArray(context?.flight?.crew) ? context.flight.crew : []),
+        ...(Array.isArray(context?.crewData) ? context.crewData : []),
+        ...(Array.isArray(crewData?.crew) ? crewData.crew : []),
+      ];
 
-    // Prepare crew list from selected members
-    const crewList = Array.from(selectedCrewMembers).map((crewName) => {
-      const crewMember = allCrewData.find(
-        (member) =>
-          member.name === crewName ||
-          member.employee_id === crewName ||
-          `${member.name} (${member.role || member.rank || "Crew"})` ===
-            crewName,
-      );
+      // Prepare crew list from selected members
+      const crewList = Array.from(selectedCrewMembers).map((crewName) => {
+        const crewMember = allCrewData.find(
+          (member) =>
+            member.name === crewName ||
+            member.employee_id === crewName ||
+            `${member.name} (${member.role || member.rank || "Crew"})` ===
+              crewName,
+        );
 
-      return {
-        employee_id:
-          crewMember?.employee_id ||
-          crewMember?.id ||
-          `EMP-${Math.random().toString(36).substr(2, 8)}`,
-        name: crewMember?.name || crewName.split(" (")[0] || crewName,
-        rank:
-          crewMember?.role ||
-          crewMember?.rank ||
-          crewMember?.position ||
-          "Crew Member",
-        base: crewMember?.base || crewMember?.home_base || "DXB",
-        contact_number:
-          crewMember?.contact ||
-          crewMember?.phone ||
-          `+971-50-${Math.floor(Math.random() * 9000000) + 1000000}`,
+        return {
+          employee_id:
+            crewMember?.employee_id ||
+            crewMember?.id ||
+            `EMP-${Math.random().toString(36).substr(2, 8)}`,
+          name: crewMember?.name || crewName.split(" (")[0] || crewName,
+          rank:
+            crewMember?.role ||
+            crewMember?.rank ||
+            crewMember?.position ||
+            "Crew Member",
+          base: crewMember?.base || crewMember?.home_base || "DXB",
+          contact_number:
+            crewMember?.contact ||
+            crewMember?.phone ||
+            `+971-50-${Math.floor(Math.random() * 9000000) + 1000000}`,
+        };
+      });
+
+      const assignment = {
+        disruption_id:
+          selectedFlight?.id || context?.flight?.id || context?.disruptionId,
+        crew_member: crewList,
+        hotel_name: selectedHotelForCrew.name,
+        hotel_location: `${selectedHotelForCrew.distance} from Airport`,
+        check_in_date: checkInDate.toISOString(),
+        check_out_date: checkOutDate.toISOString(),
+        room_number: `${Math.floor(Math.random() * 3000) + 1000}`,
+        special_requests: "Standard crew accommodation",
+        assignment_status: "assigned",
+        total_cost:
+          parseFloat(selectedHotelForCrew.pricePerNight.replace(/[^\d.]/g, "")) *
+          crewList.length,
+        booking_reference: assignmentId,
+        transport_details: {
+          pickup_location: "DXB Terminal 3 Crew Gate",
+          pickup_time: new Date(
+            checkInDate.getTime() - 30 * 60 * 1000,
+          ).toISOString(), // 30 min before check-in
+          dropoff_location: "Hotel Lobby",
+          dropoff_time: new Date(
+            checkOutDate.getTime() + 30 * 60 * 1000,
+          ).toISOString(), // 30 min after check-out
+          vehicle_type: "Mini Van",
+          vendor: "City Crew Transport",
+        },
+        created_by: "ops_user_01",
       };
-    });
 
-    const assignment = {
-      disruption_id:
-        selectedFlight?.id || context?.flight?.id || context?.disruptionId,
-      crew_member: crewList,
-      hotel_name: selectedHotelForCrew.name,
-      hotel_location: `${selectedHotelForCrew.distance} from Airport`,
-      check_in_date: checkInDate.toISOString(),
-      check_out_date: checkOutDate.toISOString(),
-      room_number: `${Math.floor(Math.random() * 3000) + 1000}`,
-      special_requests: "Standard crew accommodation",
-      assignment_status: "assigned",
-      total_cost:
-        parseFloat(selectedHotelForCrew.pricePerNight.replace(/[^\d.]/g, "")) *
-        crewList.length,
-      booking_reference: assignmentId,
-      transport_details: {
-        pickup_location: "DXB Terminal 3 Crew Gate",
-        pickup_time: new Date(
-          checkInDate.getTime() - 30 * 60 * 1000,
-        ).toISOString(), // 30 min before check-in
-        dropoff_location: "Hotel Lobby",
-        dropoff_time: new Date(
-          checkOutDate.getTime() + 30 * 60 * 1000,
-        ).toISOString(), // 30 min after check-out
-        vehicle_type: "Mini Van",
-        vendor: "City Crew Transport",
-      },
-      created_by: "ops_user_01",
-    };
+      // Store assignment in state
+      setCrewHotelAssignments((prev) => ({
+        ...prev,
+        [assignmentId]: assignment,
+      }));
 
-    // Store assignment in state
-    setCrewHotelAssignments((prev) => ({
-      ...prev,
-      [assignmentId]: assignment,
-    }));
+      // Clear selections
+      setSelectedCrewMembers(new Set());
+      setSelectedHotelForCrew(null);
 
-    // Clear selections
-    setSelectedCrewMembers(new Set());
-    setSelectedHotelForCrew(null);
-
-    showAlert(
-      "Assignment Successful",
-      `Successfully assigned ${crewList.length} crew members to ${selectedHotelForCrew.name}. Booking reference: ${assignmentId}`,
-      "success",
-    );
+      showAlert(
+        "Assignment Successful",
+        `Successfully assigned ${crewList.length} crew members to ${selectedHotelForCrew.name}. Booking reference: ${assignmentId}`,
+        "success",
+      );
+    } catch (error) {
+      console.error("Error in handleConfirmCrewAssignment:", error);
+      showAlert(
+        "Assignment Failed",
+        `An error occurred while assigning crew: ${error.message}`,
+        "error",
+      );
+    }
   };
 
   const handleSendForApproval = async () => {
@@ -1425,6 +1429,10 @@ export function PassengerRebooking({ context, onClearContext }) {
     const impactArea = recoveryOption?.impact_area || [];
     const hasPassenger = impactArea.includes("passenger");
     const hasCrew = impactArea.includes("crew");
+    const showBothTabs = hasPassenger && hasCrew;
+    const showOnlyPassenger = hasPassenger && !hasCrew;
+    const showOnlyCrew = hasCrew && !hasPassenger;
+    const shouldShowBoth = showBothTabs || (!hasPassenger && !hasCrew);
 
     // Get all confirmed passengers (those who have been rebooked)
     const confirmedPassengers = passengers.filter((p) => {
@@ -2269,9 +2277,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                           className="bg-blue-100 text-blue-800"
                                         >
                                           {groupPassengers.length} passenger
-                                          {groupPassengers.length > 1
-                                            ? "s"
-                                            : ""}
+                                          {groupPassengers.length > 1 ? "s" : ""}
                                         </Badge>
                                         {isPnrGroupConfirmed(
                                           groupPassengers,
@@ -2613,14 +2619,16 @@ export function PassengerRebooking({ context, onClearContext }) {
                                     />
                                   </TableCell>
                                   <TableCell className="font-medium">
-                                    {crewMember.name}
+                                    {crewMember.name || "Crew Member"}
                                     {isAssigned && (
                                       <Badge className="ml-2 bg-green-100 text-green-700">
                                         Assigned
                                       </Badge>
                                     )}
                                   </TableCell>
-                                  <TableCell>{crewMember.role}</TableCell>
+                                  <TableCell>
+                                    {crewMember.role || "Crew"}
+                                  </TableCell>
                                   <TableCell>
                                     <Badge
                                       className={
@@ -3268,7 +3276,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                             </TableCell>
                             <TableCell>
                               <Badge
-                                className={getPriorityColor(passenger.priority)}
+                                className={getPriorityColor(
+                                  passenger.priority,
+                                )}
                               >
                                 {passenger.priority}
                               </Badge>
@@ -3303,7 +3313,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Eye className="h-3 w-3 mr-1" />
                                   View
                                 </Button>
-                                {passenger.status === "Rebooking Required" && (
+                                {passenger.status ===
+                                  "Rebooking Required" && (
                                   <Button
                                     size="sm"
                                     className="btn-flydubai-primary text-xs"
