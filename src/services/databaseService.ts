@@ -1329,20 +1329,63 @@ class DatabaseService {
     }
   }
 
+  // Get consolidated dashboard data
+  async getDashboardData() {
+    try {
+      const response = await fetch(`${this.baseUrl}/api/dashboard-data`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      return {
+        kpiData: {
+          activeDisruptions: 0,
+          affectedPassengers: 0,
+          averageDelay: 0,
+          recoverySuccessRate: 0,
+          onTimePerformance: 87.3,
+          costSavings: 2.8
+        },
+        passengerImpact: {
+          totalAffected: 0,
+          highPriority: 0,
+          successfulRebookings: 0,
+          resolved: 0,
+          pendingAccommodation: 0
+        },
+        disruptedStations: [],
+        operationalInsights: {
+          recoveryRate: 0,
+          averageResolutionTime: '0h',
+          networkImpact: 'Low',
+          criticalPriority: 0,
+          mostDisruptedRoute: 'N/A',
+          routeDisruptionCause: 'N/A'
+        }
+      };
+    }
+  }
+
+  // Get operational insights
   async getOperationalInsights() {
     try {
-      const response = await this.api('/operational-insights')
-      return response
-    } catch (error) {
-      console.error('Error fetching operational insights:', error)
-      return {
-        recoveryRate: 89.2,
-        averageResolutionTime: '2.4h',
-        networkImpact: 'Medium',
-        criticalPriority: 5,
-        mostDisruptedRoute: 'DXB → DEL',
-        routeDisruptionCause: 'Weather delays'
+      const response = await fetch(`${this.baseUrl}/api/operational-insights`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching operational insights:', error);
+      return {
+        recoveryRate: 0,
+        averageResolutionTime: '0h',
+        networkImpact: 'Low',
+        criticalPriority: 0,
+        mostDisruptedRoute: 'N/A',
+        routeDisruptionCause: 'N/A'
+      };
     }
   }
 
