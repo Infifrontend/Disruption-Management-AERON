@@ -947,6 +947,7 @@ export function PendingSolutions() {
               <TabsTrigger value="passengers">Passengers</TabsTrigger>
             )}
             <TabsTrigger value="resources">Resources</TabsTrigger>
+            <TabsTrigger value="rotation-impact">Rotation Impact</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -1911,6 +1912,187 @@ export function PendingSolutions() {
                         })()}
                       </div>
                     </Card>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="rotation-impact" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Plane className="h-5 w-5" />
+                  Aircraft Rotation Impact
+                  {loadingPendingData && (
+                    <RefreshCw className="h-4 w-4 animate-spin ml-2" />
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                  <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div className="text-2xl font-bold text-yellow-700">
+                      {recoveryOptionData?.rotation_plan?.downstream_flights || 
+                       pendingSolutionData?.full_details?.rotation_impact?.downstream_flights || 2}
+                    </div>
+                    <div className="text-sm text-yellow-600">Downstream flights</div>
+                  </div>
+                  <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
+                    <div className="text-2xl font-bold text-red-700">
+                      {recoveryOptionData?.rotation_plan?.total_delay || 
+                       pendingSolutionData?.full_details?.rotation_impact?.total_delay || 75}
+                    </div>
+                    <div className="text-sm text-red-600">Total Delay (min)</div>
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-lg border border-purple-200">
+                    <div className="text-2xl font-bold text-purple-700">
+                      {recoveryOptionData?.rotation_plan?.cascade_risk || 
+                       pendingSolutionData?.full_details?.rotation_impact?.cascade_risk || "Low"}
+                    </div>
+                    <div className="text-sm text-purple-600">Cascade Risk</div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-medium text-gray-700">Affected Routes</h4>
+                  <div className="space-y-2">
+                    {(() => {
+                      const affectedRoutes = recoveryOptionData?.rotation_plan?.affected_routes ||
+                        pendingSolutionData?.full_details?.rotation_impact?.affected_routes || [
+                          { route: "BOM-DXB", status: "Impacted", delay: 35 },
+                          { route: "DXB-DEL", status: "Impacted", delay: 40 }
+                        ];
+
+                      return affectedRoutes.map((route, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 border rounded-lg bg-green-50 border-green-200">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <span className="font-medium">{route.route}</span>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <Badge className="bg-green-100 text-green-700 border-green-300">
+                              {route.status}
+                            </Badge>
+                            {route.delay && (
+                              <span className="text-sm text-gray-600">{route.delay} min delay</span>
+                            )}
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+
+                  <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="h-5 w-5 text-yellow-600 mt-0.5" />
+                      <div>
+                        <h5 className="font-medium text-yellow-800">Cascade Risk Assessment:</h5>
+                        <p className="text-sm text-yellow-700 mt-1">
+                          {recoveryOptionData?.rotation_plan?.risk_assessment ||
+                           pendingSolutionData?.full_details?.rotation_impact?.risk_assessment ||
+                           "Low risk of affecting subsequent flights in the rotation."}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Crew Rotation Impact
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-3">Crew Utilization</h4>
+                    <div className="space-y-3">
+                      {(() => {
+                        const crewRotation = recoveryOptionData?.crew_rotation ||
+                          pendingSolutionData?.full_details?.crew_rotation || [
+                            { role: "Captain", name: "Ahmed Hassan", dutyTime: "8h 45m", status: "Available" },
+                            { role: "First Officer", name: "Sara Ahmed", dutyTime: "7h 30m", status: "Available" },
+                            { role: "Cabin Crew", name: "Fatima Al Zahra", dutyTime: "9h 15m", status: "Near Limit" }
+                          ];
+
+                        return crewRotation.map((crew, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div>
+                              <div className="font-medium">{crew.name}</div>
+                              <div className="text-sm text-gray-600">{crew.role}</div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm">{crew.dutyTime}</span>
+                              <Badge className={getCrewStatusColor(crew.status)}>
+                                {crew.status}
+                              </Badge>
+                            </div>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-700 mb-3">Rotation Schedule</h4>
+                    <div className="space-y-3">
+                      {(() => {
+                        const rotationSchedule = recoveryOptionData?.rotation_schedule ||
+                          pendingSolutionData?.full_details?.rotation_schedule || [
+                            { flight: "FZ444", time: "14:30", status: "Current" },
+                            { flight: "FZ445", time: "18:15", status: "Next" },
+                            { flight: "FZ446", time: "22:45", status: "Planned" }
+                          ];
+
+                        return rotationSchedule.map((schedule, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                            <div>
+                              <div className="font-medium">{schedule.flight}</div>
+                              <div className="text-sm text-gray-600">{schedule.time}</div>
+                            </div>
+                            <Badge variant="outline" className={
+                              schedule.status === "Current" ? "border-blue-300 text-blue-700" :
+                              schedule.status === "Next" ? "border-orange-300 text-orange-700" :
+                              "border-gray-300 text-gray-700"
+                            }>
+                              {schedule.status}
+                            </Badge>
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-6">
+                  <h4 className="font-medium text-gray-700 mb-3">Impact Summary</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="text-center p-3 bg-blue-50 rounded-lg">
+                      <div className="text-xl font-bold text-blue-600">
+                        {recoveryOptionData?.crew_impact?.total_crew ||
+                         pendingSolutionData?.full_details?.crew_impact?.total_crew || 6}
+                      </div>
+                      <div className="text-sm text-blue-700">Total Crew</div>
+                    </div>
+                    <div className="text-center p-3 bg-green-50 rounded-lg">
+                      <div className="text-xl font-bold text-green-600">
+                        {recoveryOptionData?.crew_impact?.available_crew ||
+                         pendingSolutionData?.full_details?.crew_impact?.available_crew || 4}
+                      </div>
+                      <div className="text-sm text-green-700">Available</div>
+                    </div>
+                    <div className="text-center p-3 bg-yellow-50 rounded-lg">
+                      <div className="text-xl font-bold text-yellow-600">
+                        {recoveryOptionData?.crew_impact?.replacement_needed ||
+                         pendingSolutionData?.full_details?.crew_impact?.replacement_needed || 2}
+                      </div>
+                      <div className="text-sm text-yellow-700">Replacement Needed</div>
+                    </div>
                   </div>
                 </div>
               </CardContent>
