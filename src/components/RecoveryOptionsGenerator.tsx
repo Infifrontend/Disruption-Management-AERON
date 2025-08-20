@@ -124,21 +124,13 @@ import {
 } from "./passenger-data-helpers";
 import { generateScheduleImpactAnalysis } from "./schedule-impact-helpers";
 
-interface RecoveryOptionsGeneratorProps {
-  selectedFlight: any;
-  onSelectPlan: (plan: any) => void;
-  onCompare: (options: any[]) => void;
-  onPassengerServices: (context: any) => void;
-  onNavigateToPendingSolutions: () => void;
-}
-
 export function RecoveryOptionsGenerator({
   selectedFlight,
   onSelectPlan,
   onCompare,
   onPassengerServices,
   onNavigateToPendingSolutions,
-}: RecoveryOptionsGeneratorProps) {
+}) {
   const [isMounted, setIsMounted] = useState(true);
 
   useEffect(() => {
@@ -170,8 +162,8 @@ export function RecoveryOptionsGenerator({
   const [showExecuteConfirmation, setShowExecuteConfirmation] = useState(false);
   const [optionToExecute, setOptionToExecute] = useState(null);
   const [useDatabaseData, setUseDatabaseData] = useState(true); // Use database by default
-  const [recoveryOptions, setRecoveryOptions] = useState<any[]>([]);
-  const [recoverySteps, setRecoverySteps] = useState<any[]>([]);
+  const [recoveryOptions, setRecoveryOptions] = useState([]);
+  const [recoverySteps, setRecoverySteps] = useState([]);
   const [isLoadingOptions, setIsLoadingOptions] = useState(false);
   const [loadingError, setLoadingError] = useState(null);
   const [loadingRecoveryOption, setLoadingRecoveryOption] = useState(null);

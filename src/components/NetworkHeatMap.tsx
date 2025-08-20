@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { Alert, AlertDescription } from './ui/alert'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
 import { Progress } from './ui/progress'
 import { 
@@ -34,60 +35,13 @@ import {
 import { ImageWithFallback } from './figma/ImageWithFallback'
 import worldMapImage from 'figma:asset/f497ef8e5a05ab25bb00d39bb281fadf3e573e35.png'
 
-// Define interfaces for clarity and type safety
-interface Airport {
-  code: string;
-  name: string;
-  city: string;
-  country: string;
-  x: number;
-  y: number;
-  status: 'normal' | 'warning' | 'disrupted';
-  flights: number;
-  delays: number;
-  passengers: number;
-}
-
-interface Route {
-  from: string;
-  to: string;
-  status: 'active' | 'delayed' | 'disrupted';
-  flights: number;
-}
-
-interface Weather {
-  x: number;
-  y: number;
-  type: 'storm' | 'rain' | 'wind' | 'cloud' | 'clear';
-  severity: 'high' | 'medium' | 'low';
-  description: string;
-}
-
-interface Filters {
-  station?: string;
-  region?: string;
-}
-
-interface DisruptionInfo {
-  type: 'airport' | 'route';
-  location: string;
-  severity: 'normal' | 'warning' | 'disrupted';
-  affectedFlights: number;
-  details?: string;
-}
-
-export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisruption: (info: DisruptionInfo) => void, filters: Filters }) {
-  const [selectedAirport, setSelectedAirport] = useState<Airport | null>(null)
-  const [viewMode, setViewMode] = useState<'disruptions' | 'routes' | 'traffic'>('disruptions') // disruptions, routes, traffic
-  const [showRoutes, setShowRoutes] = useState<boolean>(true)
-  const [showWeather, setShowWeather] = useState<boolean>(true)
-  const [animateFlights, setAnimateFlights] = useState<boolean>(true)
-  const [mapLayers, setMapLayers] = useState<{
-    disruptions: boolean;
-    routes: boolean;
-    weather: boolean;
-    traffic: boolean;
-  }>({
+export function NetworkHeatMap({ onSelectDisruption, filters }) {
+  const [selectedAirport, setSelectedAirport] = useState(null)
+  const [viewMode, setViewMode] = useState('disruptions') // disruptions, routes, traffic
+  const [showRoutes, setShowRoutes] = useState(true)
+  const [showWeather, setShowWeather] = useState(true)
+  const [animateFlights, setAnimateFlights] = useState(true)
+  const [mapLayers, setMapLayers] = useState({
     disruptions: true,
     routes: true,
     weather: true,
@@ -95,24 +49,24 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
   })
 
   // Major airports with coordinates (approximate positioning for the map)
-  const airports: Airport[] = [
+  const airports = [
     // North America
     { code: 'JFK', name: 'John F. Kennedy International', city: 'New York', country: 'USA', x: 22, y: 25, status: 'disrupted', flights: 45, delays: 8, passengers: 2150 },
     { code: 'LAX', name: 'Los Angeles International', city: 'Los Angeles', country: 'USA', x: 12, y: 32, status: 'normal', flights: 38, delays: 2, passengers: 1890 },
     { code: 'ORD', name: 'O\'Hare International', city: 'Chicago', country: 'USA', x: 20, y: 28, status: 'warning', flights: 42, delays: 5, passengers: 2010 },
     { code: 'YYZ', name: 'Pearson International', city: 'Toronto', country: 'Canada', x: 22, y: 22, status: 'normal', flights: 28, delays: 1, passengers: 1340 },
-
+    
     // Europe
     { code: 'LHR', name: 'Heathrow', city: 'London', country: 'UK', x: 48, y: 20, status: 'normal', flights: 52, delays: 3, passengers: 2480 },
     { code: 'CDG', name: 'Charles de Gaulle', city: 'Paris', country: 'France', x: 50, y: 22, status: 'warning', flights: 41, delays: 4, passengers: 1950 },
     { code: 'FRA', name: 'Frankfurt', city: 'Frankfurt', country: 'Germany', x: 52, y: 21, status: 'normal', flights: 39, delays: 2, passengers: 1860 },
     { code: 'AMS', name: 'Schiphol', city: 'Amsterdam', country: 'Netherlands', x: 50, y: 19, status: 'normal', flights: 35, delays: 1, passengers: 1670 },
     { code: 'FCO', name: 'Fiumicino', city: 'Rome', country: 'Italy', x: 53, y: 28, status: 'normal', flights: 29, delays: 2, passengers: 1380 },
-
+    
     // Middle East
     { code: 'DXB', name: 'Dubai International', city: 'Dubai', country: 'UAE', x: 62, y: 35, status: 'normal', flights: 67, delays: 3, passengers: 3180 },
     { code: 'DOH', name: 'Hamad International', city: 'Doha', country: 'Qatar', x: 60, y: 36, status: 'normal', flights: 44, delays: 1, passengers: 2090 },
-
+    
     // Asia Pacific
     { code: 'NRT', name: 'Narita International', city: 'Tokyo', country: 'Japan', x: 85, y: 32, status: 'warning', flights: 48, delays: 6, passengers: 2280 },
     { code: 'ICN', name: 'Incheon International', city: 'Seoul', country: 'South Korea', x: 83, y: 30, status: 'normal', flights: 41, delays: 2, passengers: 1950 },
@@ -121,18 +75,18 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
     { code: 'BKK', name: 'Suvarnabhumi', city: 'Bangkok', country: 'Thailand', x: 76, y: 48, status: 'normal', flights: 36, delays: 3, passengers: 1710 },
     { code: 'DEL', name: 'Indira Gandhi International', city: 'Delhi', country: 'India', x: 70, y: 38, status: 'warning', flights: 43, delays: 7, passengers: 2050 },
     { code: 'BOM', name: 'Chhatrapati Shivaji Maharaj International', city: 'Mumbai', country: 'India', x: 68, y: 42, status: 'normal', flights: 37, delays: 4, passengers: 1760 },
-
+    
     // Oceania
     { code: 'SYD', name: 'Kingsford Smith', city: 'Sydney', country: 'Australia', x: 90, y: 70, status: 'normal', flights: 31, delays: 1, passengers: 1470 },
     { code: 'MEL', name: 'Melbourne', city: 'Melbourne', country: 'Australia', x: 88, y: 72, status: 'normal', flights: 27, delays: 2, passengers: 1280 },
-
+    
     // Africa
     { code: 'CAI', name: 'Cairo International', city: 'Cairo', country: 'Egypt', x: 56, y: 40, status: 'normal', flights: 24, delays: 3, passengers: 1140 },
     { code: 'JNB', name: 'O.R. Tambo International', city: 'Johannesburg', country: 'South Africa', x: 58, y: 68, status: 'normal', flights: 22, delays: 1, passengers: 1050 }
   ]
 
   // Flight routes (showing major connections)
-  const routes: Route[] = [
+  const routes = [
     { from: 'JFK', to: 'LHR', status: 'active', flights: 12 },
     { from: 'LAX', to: 'NRT', status: 'delayed', flights: 8 },
     { from: 'DXB', to: 'SIN', status: 'active', flights: 15 },
@@ -146,16 +100,16 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
   ]
 
   // Weather conditions
-  const weatherData: Weather[] = [
+  const weatherData = [
     { x: 22, y: 25, type: 'storm', severity: 'high', description: 'Thunderstorms' },
     { x: 80, y: 42, type: 'rain', severity: 'medium', description: 'Heavy Rain' },
     { x: 85, y: 32, type: 'wind', severity: 'medium', description: 'Strong Winds' },
     { x: 50, y: 22, type: 'cloud', severity: 'low', description: 'Overcast' }
   ]
 
-  const getAirport = (code: string): Airport | undefined => airports.find(a => a.code === code)
+  const getAirport = (code) => airports.find(a => a.code === code)
 
-  const getStatusColor = (status: Airport['status']): string => {
+  const getStatusColor = (status) => {
     switch (status) {
       case 'disrupted': return 'bg-red-500'
       case 'warning': return 'bg-yellow-500'
@@ -164,7 +118,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
     }
   }
 
-  const getRouteColor = (status: Route['status']): string => {
+  const getRouteColor = (status) => {
     switch (status) {
       case 'disrupted': return 'stroke-red-500'
       case 'delayed': return 'stroke-yellow-500'
@@ -173,13 +127,12 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
     }
   }
 
-  const getWeatherIcon = (type: Weather['type']): React.ElementType => {
+  const getWeatherIcon = (type) => {
     switch (type) {
       case 'storm': return CloudRain
       case 'rain': return CloudRain
       case 'wind': return Wind
       case 'cloud': return Cloud
-      case 'clear': return Sun
       default: return Sun
     }
   }
@@ -187,7 +140,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
   const filteredAirports = airports.filter(airport => {
     if (filters.station && airport.code !== filters.station.toUpperCase()) return false
     if (filters.region) {
-      const regionMap: Record<string, string[]> = {
+      const regionMap = {
         'na': ['USA', 'Canada'],
         'eu': ['UK', 'France', 'Germany', 'Netherlands', 'Italy'],
         'me': ['UAE', 'Qatar'],
@@ -200,7 +153,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
     return true
   })
 
-  const handleAirportClick = (airport: Airport) => {
+  const handleAirportClick = (airport) => {
     setSelectedAirport(airport)
     if (airport.status === 'disrupted' || airport.status === 'warning') {
       onSelectDisruption({
@@ -213,7 +166,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
     }
   }
 
-  const toggleLayer = (layer: keyof typeof mapLayers) => {
+  const toggleLayer = (layer) => {
     setMapLayers(prev => ({
       ...prev,
       [layer]: !prev[layer]
@@ -233,7 +186,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
             <div className="flex items-center gap-2">
               <Select value={viewMode} onValueChange={setViewMode}>
                 <SelectTrigger className="w-40">
-                  <SelectValue placeholder="Select view mode" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="disruptions">Disruptions</SelectItem>
@@ -283,7 +236,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
                 Traffic
               </Button>
             </div>
-
+            
             <div className="flex items-center gap-2 ml-auto">
               <Badge variant="outline" className="text-xs">
                 <div className="w-2 h-2 bg-green-500 rounded-full mr-1"></div>
@@ -316,7 +269,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
                 backgroundSize: '40px 40px'
               }}
             />
-
+            
             {/* World Map Base Layer - Increased width by 20% */}
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative w-[120%] h-full max-w-[76.8rem] max-h-[550px]">
@@ -329,7 +282,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
                     mixBlendMode: 'multiply'
                   }}
                 />
-
+                
                 {/* SVG Overlay for Interactive Elements */}
                 <svg 
                   className="absolute inset-0 w-full h-full"
@@ -341,11 +294,10 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
                     const fromAirport = getAirport(route.from)
                     const toAirport = getAirport(route.to)
                     if (!fromAirport || !toAirport) return null
-
+                    
                     return (
                       <g key={`route-${index}`}>
                         <path
-                          id={`route-path-${index}`} // Added id for animateMotion
                           d={`M ${fromAirport.x} ${fromAirport.y} Q ${(fromAirport.x + toAirport.x) / 2} ${Math.min(fromAirport.y, toAirport.y) - 5} ${toAirport.x} ${toAirport.y}`}
                           stroke={route.status === 'disrupted' ? '#ef4444' : route.status === 'delayed' ? '#eab308' : '#22c55e'}
                           strokeWidth="0.4"
@@ -363,7 +315,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
                             />
                           )}
                         </path>
-
+                        
                         {/* Flight indicator */}
                         {animateFlights && (
                           <circle r="0.4" fill="#3b82f6" opacity="0.9" className="drop-shadow-sm">
@@ -379,7 +331,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
                       </g>
                     )
                   })}
-
+                  
                   {/* Weather Indicators */}
                   {mapLayers.weather && weatherData.map((weather, index) => {
                     const WeatherIcon = getWeatherIcon(weather.type)
@@ -404,7 +356,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
                       </g>
                     )
                   })}
-
+                  
                   {/* Airport Markers */}
                   {filteredAirports.map((airport) => (
                     <g key={airport.code}>
@@ -419,7 +371,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
                         opacity="0.95"
                         className="drop-shadow-sm"
                       />
-
+                      
                       {/* Airport Dot */}
                       <circle
                         cx={airport.x}
@@ -429,7 +381,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
                         className="cursor-pointer hover:opacity-80 transition-opacity drop-shadow-md"
                         onClick={() => handleAirportClick(airport)}
                       />
-
+                      
                       {/* Pulse Animation for Disrupted Airports */}
                       {airport.status === 'disrupted' && (
                         <circle
@@ -453,7 +405,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
                           />
                         </circle>
                       )}
-
+                      
                       {/* Airport Label */}
                       <text
                         x={airport.x}
@@ -475,11 +427,11 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
                 </svg>
               </div>
             </div>
-
+            
             {/* Decorative corner elements */}
             <div className="absolute top-4 right-4 w-12 h-12 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full opacity-20"></div>
             <div className="absolute bottom-4 left-4 w-8 h-8 bg-gradient-to-br from-slate-100 to-blue-100 rounded-full opacity-15"></div>
-
+            
             {/* Map border highlight */}
             <div className="absolute inset-0 rounded-lg ring-1 ring-inset ring-blue-200/30 pointer-events-none"></div>
           </div>
@@ -570,7 +522,7 @@ export function NetworkHeatMap({ onSelectDisruption, filters }: { onSelectDisrup
                 <p className="font-medium">{selectedAirport.passengers.toLocaleString()}</p>
               </div>
             </div>
-
+            
             {selectedAirport.status !== 'normal' && (
               <div className="mt-4">
                 <Button onClick={() => onSelectDisruption({
