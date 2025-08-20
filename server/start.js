@@ -3956,8 +3956,9 @@ app.get("/api/passenger-impact", async (req, res) => {
       SELECT
         COUNT(*) as total_disruptions,
         SUM(passengers) as total_affected,
-        SUM(CASE WHEN severity = 'High' THEN passengers ELSE 0 END) as high_priority_affected,
-        COUNT(CASE WHEN recovery_status = 'completed' THEN 1 END) as resolved_disruptions
+        SUM(CASE WHEN severity = 'High' OR severity = 'Critical' THEN passengers ELSE 0 END) as high_priority_affected,
+        COUNT(CASE WHEN recovery_status = 'completed' THEN 1 END) as resolved_disruptions,
+        SUM(CASE WHEN recovery_status = 'completed' THEN passengers ELSE 0 END) as resolved_passengers
       FROM flight_disruptions
       WHERE status = 'Active' OR status = 'Delayed'
     `);
@@ -3965,12 +3966,133 @@ app.get("/api/passenger-impact", async (req, res) => {
     const rebookingsResult = await pool.query(`
       SELECT COUNT(*) as successful_rebookings
       FROM passenger_rebookings
-      WHERE status = 'confirmed'
+      WHERE status = 'Confirmed'
       AND created_at >= CURRENT_DATE
     `);
 
     const data = disruptionsResult.rows[0];
     const rebookings = rebookingsResult.rows[0];
+
+    const passengerImpact = {
+      totalAffected: parseInt(data.total_affected) || 0,
+      highPriority: parseInt(data.high_priority_affected) || 0,
+      successfulRebookings: parseInt(rebookings.successful_rebookings) || 0,
+      resolved: parseInt(data.resolved_passengers) || 0,
+      pendingAccommodation: (parseInt(data.total_affected) || 0) - (parseInt(data.resolved_passengers) || 0)
+    };
+
+    res.json(passengerImpact);
+  } catch (error) {
+    console.error("Error fetching passenger impact data:", error);
+    // Return fallback data
+    res.json({
+      totalAffected: 0,
+      highPriority: 0,
+      successfulRebookings: 0,
+      resolved: 0,
+      pendingAccommodation: 0
+    });
+  }
+});
+
+// Get highly disrupted stations
+app.get("/api/disrupted-stations", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        origin as station,
+        origin_city as station_name,
+        COUNT(*) as disrupted_flights,
+        SUM(passengers) as affected_passengers,
+        CASE 
+          WHEN COUNT(CASE WHEN severity = 'Critical' THEN 1 END) > 0 THEN 'high'
+          WHEN COUNT(CASE WHEN severity = 'High' THEN 1 END) > 0 THEN 'medium'
+          ELSE 'low'
+        END as severity,
+        array_agg(DISTINCT disruption_type)[1] as primary_cause
+      FROM flight_disruptions
+      WHERE status = 'Active' OR status = 'Delayed'
+      GROUP BY origin, origin_city
+      HAVING COUNT(*) > 0
+      ORDER BY SUM(passengers) DESC
+      LIMIT 5
+    `);
+
+    const stations = result.rows.map(row => ({
+      station: row.station,
+      stationName: row.station_name,
+      disruptedFlights: parseInt(row.disrupted_flights),
+      affectedPassengers: parseInt(row.affected_passengers),
+      severity: row.severity,
+      primaryCause: row.primary_cause || 'Unknown'
+    }));
+
+    res.json(stations);
+  } catch (error) {
+    console.error("Error fetching disrupted stations:", error);
+    res.json([]);
+  }
+});
+
+// Get operational insights
+app.get("/api/operational-insights", async (req, res) => {
+  try {
+    const disruptionsResult = await pool.query(`
+      SELECT
+        COUNT(*) as total_disruptions,
+        COUNT(CASE WHEN recovery_status = 'completed' THEN 1 END) as completed_recoveries,
+        AVG(delay_minutes) as avg_delay,
+        COUNT(CASE WHEN severity = 'Critical' THEN 1 END) as critical_count
+      FROM flight_disruptions
+      WHERE status = 'Active' OR status = 'Delayed'
+    `);
+
+    const routeResult = await pool.query(`
+      SELECT route, COUNT(*) as count, array_agg(DISTINCT disruption_reason)[1] as cause
+      FROM flight_disruptions
+      WHERE status = 'Active' OR status = 'Delayed'
+      GROUP BY route
+      ORDER BY COUNT(*) DESC
+      LIMIT 1
+    `);
+
+    const data = disruptionsResult.rows[0];
+    const routeData = routeResult.rows[0];
+
+    const totalDisruptions = parseInt(data.total_disruptions) || 0;
+    const completedRecoveries = parseInt(data.completed_recoveries) || 0;
+    const avgDelay = parseFloat(data.avg_delay) || 0;
+    const criticalCount = parseInt(data.critical_count) || 0;
+
+    const recoveryRate = totalDisruptions > 0 
+      ? Math.round((completedRecoveries / totalDisruptions) * 100 * 10) / 10
+      : 0;
+
+    const avgResolutionTime = `${Math.floor(avgDelay / 60)}h ${Math.round(avgDelay % 60)}m`;
+    const networkImpact = criticalCount > 10 ? 'High' : criticalCount > 5 ? 'Medium' : 'Low';
+
+    const insights = {
+      recoveryRate,
+      averageResolutionTime: avgResolutionTime,
+      networkImpact,
+      criticalPriority: criticalCount,
+      mostDisruptedRoute: routeData?.route || 'N/A',
+      routeDisruptionCause: routeData?.cause || 'N/A'
+    };
+
+    res.json(insights);
+  } catch (error) {
+    console.error("Error fetching operational insights:", error);
+    res.json({
+      recoveryRate: 0,
+      averageResolutionTime: '0h',
+      networkImpact: 'Low',
+      criticalPriority: 0,
+      mostDisruptedRoute: 'N/A',
+      routeDisruptionCause: 'N/A'
+    });
+  }
+});bookingsResult.rows[0];
 
     const passengerImpact = {
       totalAffected: parseInt(data.total_affected) || 4127,
