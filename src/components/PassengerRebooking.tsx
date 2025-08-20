@@ -1303,13 +1303,16 @@ export function PassengerRebooking({ context, onClearContext }) {
     });
   };
 
-  const handleHotelSelectionForCrew = (hotel) => {
-    setSelectedHotelForCrew(hotel);
-  };
+  
 
   const handleConfirmCrewAssignment = async () => {
     try {
+      console.log("handleConfirmCrewAssignment called");
+      console.log("selectedCrewMembers:", selectedCrewMembers);
+      console.log("selectedHotelForCrew:", selectedHotelForCrew);
+      
       if (selectedCrewMembers.size === 0) {
+        console.log("No crew members selected");
         showAlert(
           "Selection Required",
           "Please select at least one crew member before confirming assignment.",
@@ -1319,6 +1322,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       }
 
       if (!selectedHotelForCrew) {
+        console.log("No hotel selected");
         showAlert(
           "Hotel Selection Required",
           "Please select a hotel for crew accommodation before confirming assignment.",
@@ -2719,7 +2723,11 @@ export function PassengerRebooking({ context, onClearContext }) {
                       {availableHotels.slice(0, 4).map((hotel) => (
                         <Card
                           key={hotel.id}
-                          className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-flydubai-blue"
+                          className={`hover:shadow-md transition-shadow cursor-pointer border-2 ${
+                            selectedHotelForCrew?.id === hotel.id 
+                              ? "border-flydubai-blue bg-blue-50" 
+                              : "hover:border-flydubai-blue"
+                          }`}
                         >
                           <CardContent className="p-4">
                             <div className="flex items-start gap-4">
@@ -3593,7 +3601,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   }
                                   onCheckedChange={(checked) => {
                                     if (checked) {
-                                      handleHotelSelectionForCrew(hotel);
+                                      setSelectedHotelForCrew(hotel);
                                     } else {
                                       setSelectedHotelForCrew(null);
                                     }
@@ -3639,7 +3647,11 @@ export function PassengerRebooking({ context, onClearContext }) {
                           !selectedHotelForCrew
                         }
                       >
-                        Confirm Assignment
+                        {selectedCrewMembers.size === 0 
+                          ? "Select Crew Members" 
+                          : !selectedHotelForCrew 
+                            ? "Select Hotel" 
+                            : `Confirm Assignment (${selectedCrewMembers.size} crew)`}
                       </Button>
                       <Button size="sm" variant="outline">
                         View Assignment Details (
