@@ -1572,11 +1572,11 @@ export function PendingSolutions() {
                           </span>
                         </div>
                         <div className="space-y-2 text-sm">
-                          {recoveryOptionData?.resource_requirements
+                          {selectedOptionForDetails?.matchingOption?.resource_requirements
                             ?.aircraft ? (
                             Object.entries(
-                              recoveryOptionData.resource_requirements.aircraft,
-                            ).map(([key, value]) => (
+                              selectedOptionForDetails.matchingOption.resource_requirements.aircraft,
+                            ).map(([key, value]) => (</old_str>
                               <div key={key} className="flex justify-between">
                                 <span className="text-muted-foreground capitalize">
                                   {key.replace(/([A-Z])/g, " $1")}:
@@ -1617,10 +1617,10 @@ export function PendingSolutions() {
                           <span className="font-medium">Ground Resources</span>
                         </div>
                         <div className="space-y-2 text-sm">
-                          {recoveryOptionData?.resource_requirements?.ground ? (
+                          {selectedOptionForDetails?.matchingOption?.resource_requirements?.ground ? (
                             Object.entries(
-                              recoveryOptionData.resource_requirements.ground,
-                            ).map(([key, value]) => (
+                              selectedOptionForDetails.matchingOption.resource_requirements.ground,
+                            ).map(([key, value]) => (</old_str>
                               <div key={key} className="flex justify-between">
                                 <span className="text-muted-foreground capitalize">
                                   {key.replace(/([A-Z])/g, " $1")}:
@@ -1662,8 +1662,8 @@ export function PendingSolutions() {
                   <div>
                     <h4 className="font-medium mb-3">Operational Support</h4>
                     <div className="space-y-3">
-                      {recoveryOptionData?.resource_requirements?.personnel
-                        ? recoveryOptionData.resource_requirements.personnel.map(
+                      {selectedOptionForDetails?.matchingOption?.resource_requirements?.personnel
+                        ? selectedOptionForDetails.matchingOption.resource_requirements.personnel.map(</old_str>
                             (resource, index) => (
                               <div
                                 key={index}
@@ -1760,13 +1760,13 @@ export function PendingSolutions() {
                             "@@@@@@@@@@@@@@@@@@@",
                           );
                           const costBreakdown =
-                            recoveryOptionData?.cost_breakdown ||
-                            pendingSolutionData?.cost_analysis?.breakdown ||
+                            selectedOptionForDetails?.matchingOption?.cost_breakdown ||
+                            selectedOptionForDetails?.pending_recovery_solutions?.cost_analysis?.breakdown ||
                             selectedPlan.costBreakdown;
 
                           const costTotal =
-                            recoveryOptionData?.cost_breakdown?.total ||
-                            pendingSolutionData?.cost_analysis?.total;
+                            selectedOptionForDetails?.matchingOption?.cost_breakdown?.total ||
+                            selectedOptionForDetails?.pending_recovery_solutions?.cost_analysis?.total;</old_str>
 
                           if (
                             costBreakdown &&
@@ -3934,9 +3934,8 @@ export function PendingSolutions() {
                       const rotationData = 
                         selectedOptionForDetails?.matchingOption?.rotation_plan ||
                         selectedOptionForDetails?.rotationImpact ||
-                        recoveryOptionData?.rotation_plan ||
-                        pendingSolutionData?.rotation_impact ||
-                        {};
+                        selectedOptionForDetails?.pending_recovery_solutions?.rotation_impact ||
+                        {};</old_str></old_str></old_str>
 
                       const flightImpacts = rotationData?.nextSectors || rotationData?.impactedFlights || [];
                       const crewImpacts = rotationData?.crew || rotationData?.crewData || [];
