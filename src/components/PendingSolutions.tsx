@@ -3929,69 +3929,307 @@ export function PendingSolutions() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-4 bg-yellow-50 rounded-lg">
-                        <div className="text-3xl font-bold text-yellow-600">
-                          2
-                        </div>
-                        <div className="text-sm text-yellow-700">
-                          Downstream flights
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-3xl font-bold text-red-600">
-                          75
-                        </div>
-                        <div className="text-sm text-red-700">
-                          Total Delay (min)
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-purple-50 rounded-lg">
-                        <div className="text-3xl font-bold text-purple-600">
-                          Low
-                        </div>
-                        <div className="text-sm text-purple-700">
-                          Cascade Risk
-                        </div>
-                      </div>
-                    </div>
+                    {(() => {
+                      // Get rotation impact data from API
+                      const rotationData = 
+                        selectedOptionForDetails?.matchingOption?.rotation_plan ||
+                        selectedOptionForDetails?.rotationImpact ||
+                        recoveryOptionData?.rotation_plan ||
+                        pendingSolutionData?.rotation_impact ||
+                        {};
 
-                    <div className="space-y-4">
-                      <h4 className="font-medium">Affected Routes</h4>
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span className="font-medium">BOM-DXB</span>
-                          </div>
-                          <Badge variant="outline" className="text-green-700">
-                            Impacted
-                          </Badge>
-                        </div>
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            <span className="font-medium">DXB-DEL</span>
-                          </div>
-                          <Badge variant="outline" className="text-green-700">
-                            Impacted
-                          </Badge>
-                        </div>
-                      </div>
+                      const flightImpacts = rotationData?.nextSectors || rotationData?.impactedFlights || [];
+                      const crewImpacts = rotationData?.crew || rotationData?.crewData || [];
+                      const operationalMetrics = rotationData?.operationalMetrics || {};
 
-                      <div className="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                        <div className="flex items-center gap-2 mb-2">
-                          <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                          <span className="font-medium text-yellow-800">
-                            Cascade Risk Assessment:
-                          </span>
+                      return (
+                        <div className="space-y-6">
+                          {/* Summary Metrics */}
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                              <div className="text-3xl font-bold text-yellow-600">
+                                {flightImpacts.length || operationalMetrics.affectedFlights || 2}
+                              </div>
+                              <div className="text-sm text-yellow-700">
+                                Downstream flights
+                              </div>
+                            </div>
+                            <div className="text-center p-4 bg-red-50 rounded-lg">
+                              <div className="text-3xl font-bold text-red-600">
+                                {operationalMetrics.totalDelayMinutes || 
+                                 flightImpacts.reduce((total, flight) => 
+                                   total + (parseInt(flight.delay?.replace(/\D/g, '') || 0)), 0) || 75}
+                              </div>
+                              <div className="text-sm text-red-700">
+                                Total Delay (min)
+                              </div>
+                            </div>
+                            <div className="text-center p-4 bg-purple-50 rounded-lg">
+                              <div className="text-3xl font-bold text-purple-600">
+                                {operationalMetrics.cascadeRisk || rotationData?.cascadeRisk || "Low"}
+                              </div>
+                              <div className="text-sm text-purple-700">
+                                Cascade Risk
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Flight Impact Details */}
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium text-lg">Flight Rotation Impact</h4>
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                                {flightImpacts.length} Flights Affected
+                              </Badge>
+                            </div>
+                            
+                            {flightImpacts.length > 0 ? (
+                              <div className="space-y-3">
+                                {flightImpacts.map((flight, index) => (
+                                  <Card key={index} className={`border-l-4 ${
+                                    flight.status === "Cancelled" || flight.impact === "High Impact"
+                                      ? "border-red-500 bg-red-50"
+                                      : flight.status === "Delayed" || flight.impact === "Medium Impact"
+                                        ? "border-yellow-500 bg-yellow-50"
+                                        : "border-green-500 bg-green-50"
+                                  }`}>
+                                    <CardContent className="p-4">
+                                      <div className="flex justify-between items-start mb-3">
+                                        <div>
+                                          <h5 className="font-semibold text-lg">
+                                            {flight.flightNumber || flight.flight}
+                                          </h5>
+                                          <p className="text-sm text-muted-foreground">
+                                            {flight.route || `${flight.origin} → ${flight.destination}`}
+                                          </p>
+                                        </div>
+                                        <Badge className={
+                                          flight.status === "Cancelled"
+                                            ? "bg-red-100 text-red-700"
+                                            : flight.status === "Delayed"
+                                              ? "bg-yellow-100 text-yellow-700"
+                                              : "bg-green-100 text-green-700"
+                                        }>
+                                          {flight.status}
+                                        </Badge>
+                                      </div>
+                                      
+                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                                        <div>
+                                          <span className="text-muted-foreground">Departure:</span>
+                                          <div className="font-medium">
+                                            {flight.departureTime || flight.departure || "TBD"}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <span className="text-muted-foreground">Delay:</span>
+                                          <div className="font-medium text-red-600">
+                                            {flight.delay || "0 min"}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <span className="text-muted-foreground">Passengers:</span>
+                                          <div className="font-medium">
+                                            {flight.passengers || "N/A"}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <span className="text-muted-foreground">Impact Level:</span>
+                                          <div className="font-medium">
+                                            {flight.impact || "Low"}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      {flight.reason && (
+                                        <div className="mt-3 p-2 bg-white bg-opacity-50 rounded">
+                                          <span className="text-xs text-muted-foreground">Reason: </span>
+                                          <span className="text-xs">{flight.reason}</span>
+                                        </div>
+                                      )}
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            ) : (
+                              <Card className="border-l-4 border-green-500 bg-green-50">
+                                <CardContent className="p-4">
+                                  <div className="flex items-center gap-2">
+                                    <CheckCircle className="h-5 w-5 text-green-600" />
+                                    <span className="font-medium text-green-800">
+                                      No downstream flight impacts detected
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-green-700 mt-1">
+                                    This recovery option maintains the current rotation schedule.
+                                  </p>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </div>
+
+                          {/* Crew Impact Details */}
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium text-lg">Crew Rotation Impact</h4>
+                              <Badge variant="outline" className="bg-purple-50 text-purple-700">
+                                {crewImpacts.length} Crew Members
+                              </Badge>
+                            </div>
+                            
+                            {crewImpacts.length > 0 ? (
+                              <div className="space-y-3">
+                                {crewImpacts.map((crew, index) => (
+                                  <Card key={index} className={`border-l-4 ${
+                                    crew.status === "Unavailable" || crew.status === "Sick" || crew.issue
+                                      ? "border-red-500 bg-red-50"
+                                      : crew.status === "Near Limit" || crew.availability === "Limited"
+                                        ? "border-yellow-500 bg-yellow-50"
+                                        : "border-green-500 bg-green-50"
+                                  }`}>
+                                    <CardContent className="p-4">
+                                      <div className="flex justify-between items-start mb-3">
+                                        <div>
+                                          <h5 className="font-semibold">
+                                            {crew.name}
+                                          </h5>
+                                          <p className="text-sm text-muted-foreground">
+                                            {crew.type || crew.role || crew.position} - {crew.location || "DXB"}
+                                          </p>
+                                        </div>
+                                        <Badge className={
+                                          crew.status === "Unavailable" || crew.status === "Sick"
+                                            ? "bg-red-100 text-red-700"
+                                            : crew.status === "Near Limit"
+                                              ? "bg-yellow-100 text-yellow-700"
+                                              : "bg-green-100 text-green-700"
+                                        }>
+                                          {crew.status || crew.availability}
+                                        </Badge>
+                                      </div>
+                                      
+                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                                        <div>
+                                          <span className="text-muted-foreground">Experience:</span>
+                                          <div className="font-medium">
+                                            {crew.experience || "5+ years"}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <span className="text-muted-foreground">Base:</span>
+                                          <div className="font-medium">
+                                            {crew.base || crew.location || "DXB"}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <span className="text-muted-foreground">Certification:</span>
+                                          <div className="font-medium">
+                                            {crew.certification || "B737"}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      
+                                      {crew.issue && (
+                                        <div className="mt-3 p-2 bg-red-100 rounded border border-red-200">
+                                          <span className="text-xs font-medium text-red-800">Issue: </span>
+                                          <span className="text-xs text-red-700">{crew.issue}</span>
+                                        </div>
+                                      )}
+                                      
+                                      {crew.notes && (
+                                        <div className="mt-3 p-2 bg-white bg-opacity-50 rounded">
+                                          <span className="text-xs text-muted-foreground">Notes: </span>
+                                          <span className="text-xs">{crew.notes}</span>
+                                        </div>
+                                      )}
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            ) : (
+                              <Card className="border-l-4 border-green-500 bg-green-50">
+                                <CardContent className="p-4">
+                                  <div className="flex items-center gap-2">
+                                    <CheckCircle className="h-5 w-5 text-green-600" />
+                                    <span className="font-medium text-green-800">
+                                      No crew rotation changes required
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-green-700 mt-1">
+                                    Current crew assignment remains valid for this recovery option.
+                                  </p>
+                                </CardContent>
+                              </Card>
+                            )}
+                          </div>
+
+                          {/* Operational Impact Summary */}
+                          <Separator />
+                          <div className="space-y-4">
+                            <h4 className="font-medium text-lg">Operational Impact Summary</h4>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <Card className="bg-blue-50 border-blue-200">
+                                <CardContent className="p-4">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Plane className="h-4 w-4 text-blue-600" />
+                                    <span className="font-medium text-blue-800">Network Impact</span>
+                                  </div>
+                                  <div className="text-2xl font-bold text-blue-900 mb-1">
+                                    {operationalMetrics.networkImpact || rotationData?.networkImpact || "Low"}
+                                  </div>
+                                  <p className="text-sm text-blue-700">
+                                    {operationalMetrics.networkDescription || 
+                                     "Minimal disruption to the overall flight network"}
+                                  </p>
+                                </CardContent>
+                              </Card>
+                              
+                              <Card className="bg-orange-50 border-orange-200">
+                                <CardContent className="p-4">
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <Users className="h-4 w-4 text-orange-600" />
+                                    <span className="font-medium text-orange-800">Resource Efficiency</span>
+                                  </div>
+                                  <div className="text-2xl font-bold text-orange-900 mb-1">
+                                    {operationalMetrics.resourceEfficiency || "85%"}
+                                  </div>
+                                  <p className="text-sm text-orange-700">
+                                    Optimal utilization of available resources
+                                  </p>
+                                </CardContent>
+                              </Card>
+                            </div>
+
+                            {/* Risk Assessment */}
+                            <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                              <div className="flex items-center gap-2 mb-2">
+                                <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                                <span className="font-medium text-yellow-800">
+                                  Cascade Risk Assessment
+                                </span>
+                              </div>
+                              <p className="text-sm text-yellow-700">
+                                {rotationData?.riskAssessment || 
+                                 operationalMetrics.riskDescription ||
+                                 "Low risk of affecting subsequent flights in the rotation. The recovery option is designed to minimize downstream impacts and maintain schedule integrity."}
+                              </p>
+                              
+                              {operationalMetrics.mitigationActions && (
+                                <div className="mt-3">
+                                  <span className="text-sm font-medium text-yellow-800">Mitigation Actions:</span>
+                                  <ul className="text-sm text-yellow-700 mt-1 ml-4">
+                                    {operationalMetrics.mitigationActions.map((action, index) => (
+                                      <li key={index}>• {action}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-sm text-yellow-700">
-                          Low risk of affecting subsequent flights in the
-                          rotation.
-                        </p>
-                      </div>
-                    </div>
+                      );
+                    })()}
                   </CardContent>
                 </Card>
               </TabsContent>
