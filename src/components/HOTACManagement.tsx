@@ -93,6 +93,7 @@ export function HOTACManagement() {
   const [activeTab, setActiveTab] = useState("all-records");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [baseAirportFilter, setBaseAirportFilter] = useState("all");
   const [pairingTypeFilter, setPairingTypeFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
@@ -334,6 +335,15 @@ export function HOTACManagement() {
       );
     }
 
+    // Category filter
+    if (categoryFilter !== "all") {
+      if (categoryFilter === "disrupted") {
+        filtered = filtered.filter((record) => record.dateOfDisruption);
+      } else if (categoryFilter === "normal") {
+        filtered = filtered.filter((record) => !record.dateOfDisruption);
+      }
+    }
+
     // Base airport filter
     if (baseAirportFilter !== "all") {
       filtered = filtered.filter(
@@ -363,6 +373,7 @@ export function HOTACManagement() {
   }, [
     searchTerm,
     statusFilter,
+    categoryFilter,
     baseAirportFilter,
     pairingTypeFilter,
     dateFilter,
@@ -860,6 +871,23 @@ export function HOTACManagement() {
                   <SelectItem value="confirmed">Confirmed</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Category</label>
+              <Select
+                value={categoryFilter}
+                onValueChange={setCategoryFilter}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="disrupted">Disrupted</SelectItem>
+                  <SelectItem value="normal">Normal</SelectItem>
                 </SelectContent>
               </Select>
             </div>
