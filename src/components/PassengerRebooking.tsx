@@ -1342,6 +1342,41 @@ export function PassengerRebooking({ context, onClearContext }) {
         ...(Array.isArray(context?.flight?.crew) ? context.flight.crew : []),
         ...(Array.isArray(context?.crewData) ? context.crewData : []),
         ...(Array.isArray(crewData?.crew) ? crewData.crew : []),
+        // Add default crew data if no crew data is available
+        ...((!crewData?.crew || crewData.crew.length === 0) ? [
+          {
+            id: "CR001",
+            name: "Capt. Ahmed Al-Mansouri",
+            role: "Captain",
+            base: "DXB",
+            status: "Available",
+            contact: "+971-50-1234567",
+          },
+          {
+            id: "CR002",
+            name: "F/O Sarah Johnson",
+            role: "First Officer",
+            base: "DXB",
+            status: "Available",
+            contact: "+971-50-2345678",
+          },
+          {
+            id: "CR003",
+            name: "Fatima Al-Mansouri",
+            role: "Senior Cabin Crew",
+            base: "DXB",
+            status: "Available",
+            contact: "+971-50-3456789",
+          },
+          {
+            id: "CR004",
+            name: "Ahmed Hassan",
+            role: "Cabin Crew",
+            base: "DXB",
+            status: "Duty Violation",
+            contact: "+971-50-4567890",
+          },
+        ] : []),
       ];
 
       // Prepare crew list from selected members
@@ -1350,8 +1385,8 @@ export function PassengerRebooking({ context, onClearContext }) {
           (member) =>
             member.name === crewName ||
             member.employee_id === crewName ||
-            `${member.name} (${member.role || member.rank || "Crew"})` ===
-              crewName,
+            member.id === crewName ||
+            `${member.name} (${member.role || member.rank || "Crew"})` === crewName,
         );
 
         return {
@@ -3421,13 +3456,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 },
                               ]
                           ).map((crewMember, index) => {
-                            const memberIdentifier =
-                              crewMember.name ||
-                              crewMember.id ||
-                              `crew_${index}`;
-                            const isAssigned = Object.values(
-                              crewHotelAssignments,
-                            ).some((assignment) =>
+                            const memberIdentifier = crewMember.name || crewMember.id || `crew_${index}`;
+                            const isAssigned = Object.values(crewHotelAssignments).some((assignment) =>
                               assignment.crew_member.some(
                                 (cm) =>
                                   cm.name === memberIdentifier ||
@@ -3442,12 +3472,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                               >
                                 <TableCell>
                                   <Checkbox
-                                    checked={selectedCrewMembers.has(
-                                      memberIdentifier,
-                                    )}
-                                    onCheckedChange={() =>
-                                      handleCrewSelection(memberIdentifier)
-                                    }
+                                    checked={selectedCrewMembers.has(memberIdentifier)}
+                                    onCheckedChange={() => handleCrewSelection(memberIdentifier)}
                                     disabled={isAssigned}
                                   />
                                 </TableCell>
