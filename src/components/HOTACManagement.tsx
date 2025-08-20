@@ -840,19 +840,19 @@ export function HOTACManagement() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-flydubai-navy">
-            <Filter className="h-5 w-5" />
-            Search & Filter Records
-            <div className="flex items-end">
-              <Button
-                onClick={exportToCSV}
-                className="w-full bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export CSV
-              </Button>
-            </div>
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-flydubai-navy">
+              <Filter className="h-5 w-5" />
+              Search & Filter Records
+            </CardTitle>
+            <Button
+              onClick={exportToCSV}
+              className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export CSV
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
