@@ -843,6 +843,15 @@ export function HOTACManagement() {
           <CardTitle className="flex items-center gap-2 text-flydubai-navy">
             <Filter className="h-5 w-5" />
             Search & Filter Records
+            <div className="flex items-end">
+              <Button
+                onClick={exportToCSV}
+                className="w-full bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -877,10 +886,7 @@ export function HOTACManagement() {
 
             <div>
               <label className="text-sm font-medium mb-2 block">Category</label>
-              <Select
-                value={categoryFilter}
-                onValueChange={setCategoryFilter}
-              >
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -939,16 +945,6 @@ export function HOTACManagement() {
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
               />
-            </div>
-
-            <div className="flex items-end">
-              <Button
-                onClick={exportToCSV}
-                className="w-full bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export CSV
-              </Button>
             </div>
           </div>
 
