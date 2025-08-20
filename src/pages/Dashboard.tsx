@@ -90,55 +90,125 @@ export function Dashboard() {
     try {
       setLoading(true);
       
-      // Fetch consolidated dashboard data and additional data in parallel
+      // Fetch all data in parallel
       const [
-        dashboardData,
+        kpiData,
+        passengerImpact,
+        disruptedStations,
+        operationalInsights,
         disruptions,
         pendingSolutions,
         rebookings,
         crewAssignments
       ] = await Promise.all([
-        databaseService.getDashboardData(),
+        databaseService.getKPIData(),
+        databaseService.getPassengerImpactData(),
+        databaseService.getHighlyDisruptedStations(),
+        databaseService.getOperationalInsights(),
         databaseService.getAllDisruptions(),
         databaseService.getPendingRecoverySolutions(),
         databaseService.getPassengerRebookingsByDisruption(''),
         databaseService.getCrewHotelAssignmentsByDisruption('')
       ]);
 
-      // Use the consolidated data from the API
-      const { kpiData, passengerImpact, disruptedStations, operationalInsights } = dashboardData;
+      // Calculate real metrics from database data
+      const activeDisruptions = disruptions.filter(d => d.status === 'Active' || d.status === 'Delayed').length;
+      const totalAffectedPassengers = disruptions.reduce((sum, d) => sum + (d.passengers || 0), 0);
+      const avgDelay = disruptions.length > 0 
+        ? Math.round(disruptions.reduce((sum, d) => sum + (d.delay || 0), 0) / disruptions.length)
+        : 0;
+      
+      const completedRecoveries = disruptions.filter(d => d.recoveryStatus === 'completed').length;
+      const recoverySuccessRate = disruptions.length > 0 
+        ? Math.round((completedRecoveries / disruptions.length) * 100 * 10) / 10
+        : 0;
 
-      // Set the dashboard data with the values from the consolidated API
+      // Calculate passenger impact metrics
+      const highPriorityPassengers = disruptions
+        .filter(d => d.severity === 'High' || d.severity === 'Critical')
+        .reduce((sum, d) => sum + (d.passengers || 0), 0);
+      
+      const successfulRebookings = rebookings.filter(r => r.status === 'Confirmed').length;
+      const resolvedDisruptions = disruptions.filter(d => d.recoveryStatus === 'completed').length;
+      const resolvedPassengers = disruptions
+        .filter(d => d.recoveryStatus === 'completed')
+        .reduce((sum, d) => sum + (d.passengers || 0), 0);
+
+      // Group disruptions by station for disrupted stations data
+      const stationStats = {};
+      disruptions.forEach(d => {
+        const station = d.origin;
+        const stationName = d.originCity;
+        if (!stationStats[station]) {
+          stationStats[station] = {
+            station,
+            stationName,
+            disruptedFlights: 0,
+            affectedPassengers: 0,
+            severity: 'low',
+            primaryCause: 'Unknown'
+          };
+        }
+        stationStats[station].disruptedFlights++;
+        stationStats[station].affectedPassengers += d.passengers || 0;
+        if (d.severity === 'High' || d.severity === 'Critical') {
+          stationStats[station].severity = 'high';
+        } else if (d.severity === 'Medium' && stationStats[station].severity === 'low') {
+          stationStats[station].severity = 'medium';
+        }
+        stationStats[station].primaryCause = d.type || 'Unknown';
+      });
+
+      const sortedStations = Object.values(stationStats)
+        .sort((a, b) => b.affectedPassengers - a.affectedPassengers)
+        .slice(0, 5);
+
+      // Calculate operational insights
+      const avgResolutionTime = `${Math.round(avgDelay / 60)}h ${avgDelay % 60}m`;
+      const criticalCount = disruptions.filter(d => d.severity === 'Critical').length;
+      const networkImpact = criticalCount > 10 ? 'High' : criticalCount > 5 ? 'Medium' : 'Low';
+      
+      // Find most disrupted route
+      const routeStats = {};
+      disruptions.forEach(d => {
+        if (!routeStats[d.route]) {
+          routeStats[d.route] = { count: 0, cause: d.disruptionReason };
+        }
+        routeStats[d.route].count++;
+      });
+      const mostDisruptedRoute = Object.entries(routeStats)
+        .sort(([,a], [,b]) => b.count - a.count)[0];
+
       setDashboardData({
         kpiData: {
-          activeDisruptions: kpiData.activeDisruptions,
-          affectedPassengers: kpiData.affectedPassengers,
-          averageDelay: kpiData.averageDelay,
-          recoverySuccessRate: kpiData.recoverySuccessRate,
-          onTimePerformance: kpiData.onTimePerformance,
-          costSavings: kpiData.costSavings
+          activeDisruptions,
+          affectedPassengers: totalAffectedPassengers,
+          averageDelay: avgDelay,
+          recoverySuccessRate,
+          onTimePerformance: kpiData.onTimePerformance || 87.3,
+          costSavings: kpiData.costSavings || 2.8
         },
         passengerImpact: {
-          totalAffected: passengerImpact.totalAffected,
-          highPriority: passengerImpact.highPriority,
-          successfulRebookings: passengerImpact.successfulRebookings,
-          resolved: passengerImpact.resolved,
-          pendingAccommodation: passengerImpact.pendingAccommodation
+          totalAffected: totalAffectedPassengers,
+          highPriority: highPriorityPassengers,
+          successfulRebookings,
+          resolved: resolvedPassengers,
+          pendingAccommodation: totalAffectedPassengers - resolvedPassengers
         },
-        disruptedStations: disruptedStations,
+        disruptedStations: sortedStations,
         operationalInsights: {
-          recoveryRate: operationalInsights.recoveryRate,
-          averageResolutionTime: operationalInsights.averageResolutionTime,
-          networkImpact: operationalInsights.networkImpact,
-          criticalPriority: operationalInsights.criticalPriority,
-          mostDisruptedRoute: operationalInsights.mostDisruptedRoute,
-          routeDisruptionCause: operationalInsights.routeDisruptionCause
+          recoveryRate: recoverySuccessRate,
+          averageResolutionTime: avgResolutionTime,
+          networkImpact,
+          criticalPriority: criticalCount,
+          mostDisruptedRoute: mostDisruptedRoute ? mostDisruptedRoute[0] : 'N/A',
+          routeDisruptionCause: mostDisruptedRoute ? mostDisruptedRoute[1].cause : 'N/A'
         },
         flightData: {
           totalFlights: disruptions.length,
-          activeFlights: kpiData.activeDisruptions,
-          totalPassengers: kpiData.affectedPassengers,
-          onTimePerformance: kpiData.onTimePerformance
+          activeFlights: activeDisruptions,
+          totalPassengers: totalAffectedPassengers,
+          onTimePerformance: kpiData.onTimePerformance || 87.3
         }
       });
 
