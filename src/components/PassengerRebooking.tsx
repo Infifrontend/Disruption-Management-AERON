@@ -1481,10 +1481,6 @@ export function PassengerRebooking({ context, onClearContext }) {
     const impactArea = recoveryOption?.impact_area || [];
     const hasPassenger = impactArea.includes("passenger");
     const hasCrew = impactArea.includes("crew");
-    const showBothTabs = hasPassenger && hasCrew;
-    const showOnlyPassenger = hasPassenger && !hasCrew;
-    const showOnlyCrew = hasCrew && !hasPassenger;
-    const shouldShowBoth = showBothTabs || (!hasPassenger && !hasCrew);
 
     // Get all confirmed passengers (those who have been rebooked)
     const confirmedPassengers = passengers.filter((p) => {
@@ -1492,8 +1488,17 @@ export function PassengerRebooking({ context, onClearContext }) {
       return currentStatus === "Confirmed" && confirmedRebookings[p.id];
     });
 
-    // Validate based on impact area
-    if (hasPassenger && confirmedPassengers.length === 0) {
+    // Validate based on impact area - crew-only validation
+    if (hasCrew && !hasPassenger && Object.keys(crewHotelAssignments).length === 0) {
+      alertService.warning(
+        "Crew Assignment Required",
+        "Crew hotel assignments must be completed before sending for approval.",
+      );
+      return;
+    }
+
+    // Validate passenger-only scenarios
+    if (hasPassenger && !hasCrew && confirmedPassengers.length === 0) {
       alertService.warning(
         "No Passengers Processed",
         "At least one passenger must be rebooked and confirmed before sending for approval.",
@@ -1501,12 +1506,23 @@ export function PassengerRebooking({ context, onClearContext }) {
       return;
     }
 
-    if (hasCrew && Object.keys(crewHotelAssignments).length === 0) {
-      alertService.warning(
-        "Crew Assignment Required",
-        "Crew hotel assignments are required before sending for approval.",
-      );
-      return;
+    // Validate mixed scenarios (both passenger and crew)
+    if (hasPassenger && hasCrew) {
+      if (confirmedPassengers.length === 0) {
+        alertService.warning(
+          "No Passengers Processed",
+          "At least one passenger must be rebooked and confirmed before sending for approval.",
+        );
+        return;
+      }
+      
+      if (Object.keys(crewHotelAssignments).length === 0) {
+        alertService.warning(
+          "Crew Assignment Required",
+          "Crew hotel assignments are required before sending for approval.",
+        );
+        return;
+      }
     }
 
     try {
@@ -1623,13 +1639,24 @@ export function PassengerRebooking({ context, onClearContext }) {
 
         if (pendingSolutionSuccess) {
           let successMessage = "Services sent for approval successfully!\n";
-          if (hasPassenger) {
-            const uniquePnrs = new Set(confirmedPassengers.map((p) => p.pnr))
-              .size;
+          
+          if (hasPassenger && !hasCrew) {
+            // Passenger-only scenario
+            const uniquePnrs = new Set(confirmedPassengers.map((p) => p.pnr)).size;
+            successMessage += `${confirmedPassengers.length} passengers across ${uniquePnrs} PNR groups processed.`;
+          } else if (hasCrew && !hasPassenger) {
+            // Crew-only scenario
+            const totalCrewAssigned = Object.values(crewHotelAssignments)
+              .reduce((total, assignment) => total + assignment.crew_member.length, 0);
+            successMessage += `${totalCrewAssigned} crew members assigned to ${Object.keys(crewHotelAssignments).length} hotel(s).`;
+          } else if (hasPassenger && hasCrew) {
+            // Both scenarios
+            const uniquePnrs = new Set(confirmedPassengers.map((p) => p.pnr)).size;
+            const totalCrewAssigned = Object.values(crewHotelAssignments)
+              .reduce((total, assignment) => total + assignment.crew_member.length, 0);
             successMessage += `${confirmedPassengers.length} passengers across ${uniquePnrs} PNR groups processed.\n`;
+            successMessage += `${totalCrewAssigned} crew members assigned to ${Object.keys(crewHotelAssignments).length} hotel(s).`;
           }
-          if (hasCrew)
-            successMessage += `${Object.keys(crewHotelAssignments).length} crew hotel assignments completed.`;
 
           alertService.success("Submission Successful", successMessage, () => {
             // Clear selections after successful submission
@@ -1638,6 +1665,8 @@ export function PassengerRebooking({ context, onClearContext }) {
             setSelectedPnrGroup(null);
             setCrewHotelAssignments({});
             setPnrsForApproval(new Set());
+            setSelectedCrewMembers(new Set());
+            setSelectedHotelForCrew(null);
 
             // Navigate to Affected Flights page
             navigate("/disruption");
@@ -3724,10 +3753,51 @@ export function PassengerRebooking({ context, onClearContext }) {
                   Ready to Submit Recovery Option
                 </h3>
                 <p className="text-sm text-green-700">
-                  {activeTab === "passenger-service"
-                    ? "Passenger services have been reviewed. Submit for approval to proceed."
-                    : "Crew schedule impact has been assessed. Submit for approval to proceed."}
+                  {(() => {
+                    const impactArea = recoveryOption?.impact_area || [];
+                    const hasPassenger = impactArea.includes("passenger");
+                    const hasCrew = impactArea.includes("crew");
+                    
+                    if (hasPassenger && hasCrew) {
+                      return "Passenger and crew services have been reviewed. Submit for approval to proceed.";
+                    } else if (hasPassenger && !hasCrew) {
+                      return "Passenger services have been reviewed. Submit for approval to proceed.";
+                    } else if (hasCrew && !hasPassenger) {
+                      return "Crew assignments have been completed. Submit for approval to proceed.";
+                    } else {
+                      return activeTab === "passenger-service"
+                        ? "Passenger services have been reviewed. Submit for approval to proceed."
+                        : "Crew schedule impact has been assessed. Submit for approval to proceed.";
+                    }
+                  })()}
                 </p>
+                {(() => {
+                  const impactArea = recoveryOption?.impact_area || [];
+                  const hasCrew = impactArea.includes("crew");
+                  const hasPassenger = impactArea.includes("passenger");
+                  
+                  if (hasCrew && !hasPassenger && Object.keys(crewHotelAssignments).length === 0) {
+                    return (
+                      <p className="text-xs text-orange-600 mt-1">
+                        ⚠️ Complete crew hotel assignments before submitting
+                      </p>
+                    );
+                  } else if (hasPassenger && !hasCrew) {
+                    const confirmedPassengers = passengers.filter((p) => {
+                      const currentStatus = passengerRebookingStatus[p.id] || p.status;
+                      return currentStatus === "Confirmed" && confirmedRebookings[p.id];
+                    });
+                    
+                    if (confirmedPassengers.length === 0) {
+                      return (
+                        <p className="text-xs text-orange-600 mt-1">
+                          ⚠️ Complete passenger rebooking before submitting
+                        </p>
+                      );
+                    }
+                  }
+                  return null;
+                })()}
               </div>
               <Button
                 className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
