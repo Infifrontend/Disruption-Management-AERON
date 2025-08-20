@@ -31,13 +31,11 @@ class SettingsStorage {
   }
 
   private async initializeStorage() {
-    console.log('Initializing AERON Settings Storage...')
 
     // Check database connectivity
     this.isDatabaseConnected = await databaseService.healthCheck()
 
     if (this.isDatabaseConnected) {
-      console.log('✅ Database connected - Loading settings from PostgreSQL')
       await this.loadFromDatabase()
     } else {
       console.log('⚠️ Database unavailable - Using localStorage fallback')

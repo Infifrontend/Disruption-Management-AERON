@@ -535,6 +535,7 @@ export function PendingSolutions() {
       }
 
       // Also fetch the most up-to-date data from pending solutions API
+      console.log("testtt");
       const response = await fetch(
         `/api/pending-recovery-solutions/${plan.id}`,
         {
