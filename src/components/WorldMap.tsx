@@ -316,24 +316,24 @@ export function WorldMap() {
               onValueChange={setSelectedView}
               className="w-auto"
             >
-              <TabsList className="grid w-full grid-cols-3 bg-white border border-gray-200 shadow-sm">
+              <TabsList className="grid w-full grid-cols-3 bg-white border border-gray-200 shadow-sm pt-0">
                 <TabsTrigger
                   value="routes"
-                  className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center gap-1"
+                  className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center gap-1 pt-3"
                 >
                   <Navigation className="h-3 w-3" />
                   <span className="text-sm">Routes</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="flights"
-                  className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center gap-1"
+                  className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center gap-1 pt-3"
                 >
                   <Plane className="h-3 w-3" />
                   <span className="text-sm">Live Flights</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="status"
-                  className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center gap-1"
+                  className="data-[state=active]:bg-[#006496] data-[state=active]:text-white text-[#000000] flex items-center justify-center gap-1 pt-3"
                 >
                   <AlertTriangle className="h-3 w-3" />
                   <span className="text-sm">Disruptions</span>
