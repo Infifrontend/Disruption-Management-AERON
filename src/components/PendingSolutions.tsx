@@ -1576,7 +1576,14 @@ export function PendingSolutions() {
                             ?.aircraft ? (
                             Object.entries(
                               selectedOptionForDetails.matchingOption.resource_requirements.aircraft,
-                            ).map(([key, value]) => (</old_str>
+                            ).map(([key, value]) => (
+                              <div key={key} className="flex justify-between">
+                                <span className="text-muted-foreground capitalize">
+                                  {key.replace(/([A-Z])/g, " $1")}:
+                                </span>
+                                <span>{value}</span>
+                              </div>
+                            ))</old_str>
                               <div key={key} className="flex justify-between">
                                 <span className="text-muted-foreground capitalize">
                                   {key.replace(/([A-Z])/g, " $1")}:
