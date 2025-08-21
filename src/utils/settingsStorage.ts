@@ -408,5 +408,3 @@ export const useSettingsStorage = () => {
     retryDatabaseConnection: settingsStorage.retryDatabaseConnection.bind(settingsStorage)
   }
 }
-  }
-}
