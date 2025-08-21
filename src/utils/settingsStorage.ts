@@ -1,6 +1,9 @@
-
 // Settings storage utility with PostgreSQL database integration and localStorage fallback
 import { databaseService } from '../services/databaseService'
+// Removed unused import for backend switcher
+// import { getBackendType, getCurrentBackend } from './backendSwitcher';
+// Added new imports for backend switcher
+import { getApiUrl, getTimeout } from './backendSwitcher';
 
 export interface SettingsData {
   id: string
@@ -107,7 +110,7 @@ class SettingsStorage {
       { category: 'aircraftSelectionCriteria', key: 'passengerCapacity', value: 15, type: 'number' },
       { category: 'aircraftSelectionCriteria', key: 'availabilityWindow', value: 20, type: 'number' },
 
-      // Crew Assignment Criteria defaults  
+      // Crew Assignment Criteria defaults
       { category: 'crewAssignmentCriteria', key: 'dutyTimeRemaining', value: 30, type: 'number' },
       { category: 'crewAssignmentCriteria', key: 'qualifications', value: 25, type: 'number' },
       { category: 'crewAssignmentCriteria', key: 'baseLocation', value: 20, type: 'number' },
@@ -401,7 +404,8 @@ class SettingsStorage {
 }
 
 // Singleton instance
-export const settingsStorage = new SettingsStorage// Export the singleton instance for direct use
+export const settingsStorage = new SettingsStorage()
+// Export the singleton instance for direct use
 export default settingsStorage
 
 // Hook for React components

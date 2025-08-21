@@ -1,4 +1,3 @@
-
 // Database service for PostgreSQL operations
 import { SettingsData } from "../utils/settingsStorage";
 
@@ -148,44 +147,31 @@ class DatabaseService {
     }
 
     // Fallback to current behavior for backward compatibility
-    const backendType = this.detectBackendType();
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
 
     if (hostname === "localhost" || hostname === "0.0.0.0") {
       // Development environment
-      const port = this.getBackendPort(backendType);
+      const port = this.getBackendPort();
       return `http://0.0.0.0:${port}/api`;
     } else {
       // Replit production environment
-      return backendType === "python" ? `${protocol}//${hostname}/api` : "/api";
+      return "/api";
     }
   }
 
-  private detectBackendType(): "express" | "python" {
-    const envBackendType = import.meta.env.VITE_BACKEND_TYPE?.toLowerCase();
-    return envBackendType === "python" ? "python" : "express";
+  private getTimeout(): number {
+    return parseInt(import.meta.env.VITE_API_TIMEOUT || "5000", 10);
   }
 
-  private getTimeout(backendType: "express" | "python"): number {
-    if (backendType === "python") {
-      return parseInt(import.meta.env.VITE_PYTHON_TIMEOUT || "8000", 10);
-    }
-    return parseInt(import.meta.env.VITE_EXPRESS_TIMEOUT || "5000", 10);
-  }
-
-  private getBackendPort(type: "express" | "python"): number {
-    if (type === "python") {
-      return parseInt(import.meta.env.PYTHON_API_PORT || "8000", 10);
-    }
+  private getBackendPort(): number {
     return parseInt(import.meta.env.DATABASE_SERVER_PORT || "3001", 10);
   }
 
   // Helper method to format URLs correctly for the current backend
   private formatUrl(endpoint: string): string {
-    const backendType = this.detectBackendType();
-    const requiresTrailingSlash = backendType === "python";
-    
+    const requiresTrailingSlash = false; // Simplified: no backend switching
+
     if (requiresTrailingSlash) {
       const fullUrl = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
       return fullUrl.endsWith('/') ? fullUrl : `${fullUrl}/`;
@@ -525,7 +511,7 @@ class DatabaseService {
 
     try {
       const controller = new AbortController();
-      const timeout = this.getTimeout(this.detectBackendType());
+      const timeout = this.getTimeout();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       const response = await fetch(`${this.baseUrl}/health`, {
@@ -1053,7 +1039,7 @@ class DatabaseService {
 
       // Add timeout to prevent hanging requests
       const controller = new AbortController();
-      const timeout = Math.max(this.getTimeout(this.detectBackendType()), 10000); // Minimum 10 seconds for generation
+      const timeout = Math.max(this.getTimeout(), 10000); // Minimum 10 seconds for generation
       const timeoutId = setTimeout(() => {
         console.warn(`Recovery generation timeout after ${timeout}ms for ${disruptionId}`);
         controller.abort();
@@ -1385,7 +1371,7 @@ class DatabaseService {
   private async checkApiHealth(): Promise<boolean> {
     try {
       const controller = new AbortController();
-      const timeout = this.getTimeout(this.detectBackendType());
+      const timeout = this.getTimeout();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       const response = await fetch(`${this.baseUrl}/health`, {
