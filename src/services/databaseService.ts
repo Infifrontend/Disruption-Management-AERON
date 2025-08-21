@@ -135,27 +135,20 @@ class DatabaseService {
   private readonly CIRCUIT_BREAKER_TIMEOUT = 60000; // 1 minute
 
   constructor() {
-    // Get configuration from environment variables
-    const backendType = this.detectBackendType();
-    const timeout = this.getTimeout(backendType);
-    
-    // Build API URL based on environment and backend type
-    this.baseUrl = this.buildApiUrl(backendType);
+    // Get base URL from environment variables
+    this.baseUrl = this.getApiBaseUrl();
+    console.log(`Database service initialized with base URL:`, this.baseUrl);
+  }
 
-    // Ensure baseUrl is never undefined
-    if (!this.baseUrl || this.baseUrl === "undefined") {
-      this.baseUrl = "/api";
+  private getApiBaseUrl(): string {
+    // Try to get API URL from environment variables first
+    const envApiUrl = import.meta.env.VITE_API_URL;
+    if (envApiUrl) {
+      return envApiUrl.endsWith('/api') ? envApiUrl : `${envApiUrl}/api`;
     }
 
-    console.log(`Database service initialized with ${backendType.toUpperCase()} backend:`, this.baseUrl);
-  }
-
-  private detectBackendType(): "express" | "python" {
-    const envBackendType = import.meta.env.VITE_BACKEND_TYPE?.toLowerCase();
-    return envBackendType === "python" ? "python" : "express";
-  }
-
-  private buildApiUrl(backendType: "express" | "python"): string {
+    // Fallback to current behavior for backward compatibility
+    const backendType = this.detectBackendType();
     const hostname = window.location.hostname;
     const protocol = window.location.protocol;
 
@@ -167,6 +160,11 @@ class DatabaseService {
       // Replit production environment
       return backendType === "python" ? `${protocol}//${hostname}/api` : "/api";
     }
+  }
+
+  private detectBackendType(): "express" | "python" {
+    const envBackendType = import.meta.env.VITE_BACKEND_TYPE?.toLowerCase();
+    return envBackendType === "python" ? "python" : "express";
   }
 
   private getTimeout(backendType: "express" | "python"): number {
@@ -1757,10 +1755,7 @@ class DatabaseService {
 
   async getPendingRecoverySolutions(): Promise<any[]> {
     try {
-      // Ensure baseUrl is properly set before constructing URL
-      const baseUrl = this.baseUrl || "/api";
-      const url = `${baseUrl}/pending-recovery-solutions`;
-
+      const url = `${this.baseUrl}/pending-recovery-solutions`;
       console.log('Fetching pending solutions from URL:', url);
 
       const response = await fetch(url, {

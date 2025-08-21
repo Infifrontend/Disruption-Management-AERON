@@ -6,6 +6,13 @@ export const getBackendType = (): 'express' | 'python' => {
 }
 
 export const getApiUrl = (backendType?: 'express' | 'python'): string => {
+  // Try to get API URL from environment variables first
+  const envApiUrl = import.meta.env.VITE_API_URL;
+  if (envApiUrl) {
+    return envApiUrl.endsWith('/api') ? envApiUrl : `${envApiUrl}/api`;
+  }
+
+  // Fallback to current behavior for backward compatibility
   const type = backendType || getBackendType();
   const hostname = window.location.hostname;
   const protocol = window.location.protocol;
@@ -69,21 +76,26 @@ export const getBackendStatus = async () => {
     let recoveryHealthy = true;
     if (backend.isExpress) {
       try {
-        const recoveryPort = import.meta.env.RECOVERY_API_PORT || '3002';
-        const hostname = window.location.hostname;
-        const protocol = window.location.protocol;
+        // Try to get recovery URL from environment variables
+        let recoveryUrl = import.meta.env.VITE_RECOVERY_API_URL;
         
-        let recoveryUrl;
-        if (hostname === 'localhost' || hostname === '0.0.0.0') {
-          recoveryUrl = `http://0.0.0.0:${recoveryPort}/health`;
-        } else {
-          recoveryUrl = `${protocol}//${hostname}:${recoveryPort}/health`;
+        if (!recoveryUrl) {
+          // Fallback to legacy behavior
+          const recoveryPort = import.meta.env.RECOVERY_API_PORT || '3002';
+          const hostname = window.location.hostname;
+          const protocol = window.location.protocol;
+          
+          if (hostname === 'localhost' || hostname === '0.0.0.0') {
+            recoveryUrl = `http://0.0.0.0:${recoveryPort}`;
+          } else {
+            recoveryUrl = `${protocol}//${hostname}:${recoveryPort}`;
+          }
         }
 
         const recoveryController = new AbortController();
         const recoveryTimeoutId = setTimeout(() => recoveryController.abort(), 3000);
 
-        const recoveryResponse = await fetch(recoveryUrl, {
+        const recoveryResponse = await fetch(`${recoveryUrl}/health`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
           signal: recoveryController.signal,
