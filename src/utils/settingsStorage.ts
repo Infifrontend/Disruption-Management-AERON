@@ -1,3 +1,4 @@
+
 // Settings storage utility with PostgreSQL database integration and localStorage fallback
 import { databaseService } from '../services/databaseService'
 
@@ -31,7 +32,6 @@ class SettingsStorage {
   }
 
   private async initializeStorage() {
-
     // Check database connectivity
     this.isDatabaseConnected = await databaseService.healthCheck()
 
@@ -376,7 +376,18 @@ class SettingsStorage {
           settingsObject[key] = value;
         });
 
-        await databaseService.saveSettings(settingsObject)
+        // Since we don't have saveSettings method in the new databaseService,
+        // we'll use the individual saveSetting method for each setting
+        const settings = Array.from(this.storage.values());
+        for (const setting of settings) {
+          await databaseService.saveSetting(
+            setting.category,
+            setting.key,
+            setting.value,
+            setting.type,
+            setting.updatedBy
+          );
+        }
         console.log('Settings saved to database')
       } catch (error) {
         console.error('Failed to save settings to database:', error)

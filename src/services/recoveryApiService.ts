@@ -1,6 +1,4 @@
 
-import { backendConfig } from "./backendConfig";
-
 // Recovery Options API Client Service
 export interface RecoveryApiResponse<T = any> {
   success: boolean
@@ -87,13 +85,14 @@ class RecoveryApiService {
   private readonly HEALTH_CHECK_CACHE_DURATION = 60000 // 1 minute
 
   constructor() {
-    const config = backendConfig.getConfig()
+    const backendType = this.detectBackendType()
     const hostname = window.location.hostname
     const protocol = window.location.protocol
     
-    if (config.isPython) {
+    if (backendType === "python") {
       // For Python backend, use the main API URL
-      this.baseUrl = config.apiUrl.replace('/api', '')
+      const apiUrl = this.buildApiUrl(backendType)
+      this.baseUrl = apiUrl.replace('/api', '')
     } else {
       // For Express backend, use dedicated recovery port
       const recoveryPort = import.meta.env.RECOVERY_API_PORT || '3002'
@@ -106,7 +105,33 @@ class RecoveryApiService {
       }
     }
     
-    console.log(`Recovery API service initialized with ${config.type.toUpperCase()} backend:`, this.baseUrl)
+    console.log(`Recovery API service initialized with ${backendType.toUpperCase()} backend:`, this.baseUrl)
+  }
+
+  private detectBackendType(): "express" | "python" {
+    const envBackendType = import.meta.env.VITE_BACKEND_TYPE?.toLowerCase();
+    return envBackendType === "python" ? "python" : "express";
+  }
+
+  private buildApiUrl(backendType: "express" | "python"): string {
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+
+    if (hostname === "localhost" || hostname === "0.0.0.0") {
+      // Development environment
+      const port = this.getBackendPort(backendType);
+      return `http://0.0.0.0:${port}/api`;
+    } else {
+      // Replit production environment
+      return backendType === "python" ? `${protocol}//${hostname}/api` : "/api";
+    }
+  }
+
+  private getBackendPort(type: "express" | "python"): number {
+    if (type === "python") {
+      return parseInt(import.meta.env.PYTHON_API_PORT || "8000", 10);
+    }
+    return parseInt(import.meta.env.DATABASE_SERVER_PORT || "3001", 10);
   }
 
   private isCacheValid(): boolean {
