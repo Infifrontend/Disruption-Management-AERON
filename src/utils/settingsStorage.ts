@@ -1,9 +1,5 @@
 // Settings storage utility with PostgreSQL database integration and localStorage fallback
-import { databaseService } from '../services/databaseService'
-// Removed unused import for backend switcher
-// import { getBackendType, getCurrentBackend } from './backendSwitcher';
-// Added new imports for backend switcher
-import { getApiUrl, getTimeout } from './backendSwitcher';
+import { databaseService } from '../services/databaseService';
 
 export interface SettingsData {
   id: string
