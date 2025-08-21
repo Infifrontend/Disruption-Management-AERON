@@ -1,6 +1,6 @@
+
 // Database service for PostgreSQL operations
 import { SettingsData } from "../utils/settingsStorage";
-import { backendConfig } from "./backendConfig";
 
 export interface CustomRule {
   id: number;
@@ -123,9 +123,8 @@ export interface HotelBooking {
 
 class DatabaseService {
   private baseUrl: string;
-  private healthCheckCache: { status: boolean; timestamp: number } | null =
-    null;
-  private readonly HEALTH_CHECK_CACHE_DURATION = 120000; // 2 minutes instead of 30 seconds
+  private healthCheckCache: { status: boolean; timestamp: number } | null = null;
+  private readonly HEALTH_CHECK_CACHE_DURATION = 120000; // 2 minutes
   private isHealthChecking = false;
 
   // Circuit breaker implementation
@@ -136,35 +135,60 @@ class DatabaseService {
   private readonly CIRCUIT_BREAKER_TIMEOUT = 60000; // 1 minute
 
   constructor() {
-    // Use backend configuration to determine API URL
-    const config = backendConfig.getConfig();
-
-    if (config.isPython) {
-      // For Python backend, use the full URL
-      this.baseUrl = config.apiUrl || "/api";
-    } else {
-      // For Express backend, use relative path for Replit or localhost
-      const hostname = window.location.hostname;
-      if (hostname === "localhost") {
-        this.baseUrl = config.apiUrl || "http://localhost:3001/api";
-      } else {
-        // For Replit production, use relative path to avoid CORS issues
-        this.baseUrl = "/api";
-      }
-    }
+    // Get configuration from environment variables
+    const backendType = this.detectBackendType();
+    const timeout = this.getTimeout(backendType);
+    
+    // Build API URL based on environment and backend type
+    this.baseUrl = this.buildApiUrl(backendType);
 
     // Ensure baseUrl is never undefined
     if (!this.baseUrl || this.baseUrl === "undefined") {
       this.baseUrl = "/api";
     }
 
-    console.log(`Database service initialized with ${config.type.toUpperCase()} backend:`, this.baseUrl);
+    console.log(`Database service initialized with ${backendType.toUpperCase()} backend:`, this.baseUrl);
+  }
+
+  private detectBackendType(): "express" | "python" {
+    const envBackendType = import.meta.env.VITE_BACKEND_TYPE?.toLowerCase();
+    return envBackendType === "python" ? "python" : "express";
+  }
+
+  private buildApiUrl(backendType: "express" | "python"): string {
+    const hostname = window.location.hostname;
+    const protocol = window.location.protocol;
+
+    if (hostname === "localhost" || hostname === "0.0.0.0") {
+      // Development environment
+      const port = this.getBackendPort(backendType);
+      return `http://0.0.0.0:${port}/api`;
+    } else {
+      // Replit production environment
+      return backendType === "python" ? `${protocol}//${hostname}/api` : "/api";
+    }
+  }
+
+  private getTimeout(backendType: "express" | "python"): number {
+    if (backendType === "python") {
+      return parseInt(import.meta.env.VITE_PYTHON_TIMEOUT || "8000", 10);
+    }
+    return parseInt(import.meta.env.VITE_EXPRESS_TIMEOUT || "5000", 10);
+  }
+
+  private getBackendPort(type: "express" | "python"): number {
+    if (type === "python") {
+      return parseInt(import.meta.env.PYTHON_API_PORT || "8000", 10);
+    }
+    return parseInt(import.meta.env.DATABASE_SERVER_PORT || "3001", 10);
   }
 
   // Helper method to format URLs correctly for the current backend
   private formatUrl(endpoint: string): string {
-    const config = backendConfig.getConfig();
-    if (config.requiresTrailingSlash) {
+    const backendType = this.detectBackendType();
+    const requiresTrailingSlash = backendType === "python";
+    
+    if (requiresTrailingSlash) {
       const fullUrl = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
       return fullUrl.endsWith('/') ? fullUrl : `${fullUrl}/`;
     } else {
@@ -503,8 +527,7 @@ class DatabaseService {
 
     try {
       const controller = new AbortController();
-      const config = backendConfig.getConfig();
-      const timeout = config.timeout;
+      const timeout = this.getTimeout(this.detectBackendType());
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       const response = await fetch(`${this.baseUrl}/health`, {
@@ -731,7 +754,7 @@ class DatabaseService {
         disruption_reason: disruption.disruptionReason,
         categorization: disruption.categorization,
         category_id: disruption.categoryId,
-        category_code: disruption.categoryCode, // Include category_code in payload
+        category_code: disruption.categoryCode,
         crew_members: disruption.crewMembers || [],
       };
 
@@ -1032,8 +1055,7 @@ class DatabaseService {
 
       // Add timeout to prevent hanging requests
       const controller = new AbortController();
-      const config = backendConfig.getConfig();
-      const timeout = Math.max(config.timeout, 10000); // Minimum 10 seconds for generation
+      const timeout = Math.max(this.getTimeout(this.detectBackendType()), 10000); // Minimum 10 seconds for generation
       const timeoutId = setTimeout(() => {
         console.warn(`Recovery generation timeout after ${timeout}ms for ${disruptionId}`);
         controller.abort();
@@ -1350,7 +1372,6 @@ class DatabaseService {
     }
   }
 
-
   // Sync disruptions from external API - disabled to prevent unknown records
   async syncDisruptionsFromExternalAPI(): Promise<{ inserted: number; updated: number }> {
     try {
@@ -1366,8 +1387,7 @@ class DatabaseService {
   private async checkApiHealth(): Promise<boolean> {
     try {
       const controller = new AbortController();
-      const config = backendConfig.getConfig();
-      const timeout = config.timeout;
+      const timeout = this.getTimeout(this.detectBackendType());
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       const response = await fetch(`${this.baseUrl}/health`, {
@@ -1543,13 +1563,6 @@ class DatabaseService {
     }
   }
 
-  // Generate mock external API data for testing - disabled to prevent unknown records
-  private generateMockExternalData(): any[] {
-    // Return empty array to stop generating mock data that creates unknown records
-    console.log('Mock data generation disabled to prevent unknown records');
-    return [];
-  }
-
   // Past Recovery Logs
   async getPastRecoveryLogs(filters: any = {}): Promise<any[]> {
     try {
@@ -1584,191 +1597,6 @@ class DatabaseService {
       console.error('Failed to fetch past recovery logs:', error);
       return [];
     }
-  }
-
-  private getMockRecoveryLogs(): any[] {
-    return [
-      {
-        solution_id: 'SOL-2025-001',
-        disruption_id: '260',
-        flight_number: 'FZ215',
-        route: 'DXB → BOM',
-        aircraft: 'B737-800',
-        disruption_type: 'Weather',
-        disruption_reason: 'Engine overheating at DXB',
-        priority: 'High',
-        date_created: '2025-01-10T14:30:15Z',
-        date_executed: '2025-01-10T17:32:15Z',
-        date_completed: '2025-01-10T17:32:15Z',
-        duration: '3h 2m',
-        status: 'Successful',
-        affected_passengers: 197,
-        actual_cost: 125000,
-        estimated_cost: 130000,
-        cost_variance: -3.8,
-        otp_impact: 92.5,
-        solution_chosen: 'Option A',
-        total_options: 3,
-        executed_by: 'Sara Ahmed',
-        approved_by: 'Operations Manager',
-        passenger_satisfaction: 8.2,
-        rebooking_success: 94.1,
-        categorization: 'Weather',
-        cancellation_avoided: true,
-        potential_delay_minutes: 155,
-        actual_delay_minutes: 155,
-        delay_reduction_minutes: 0,
-        disruption_category: 'Weather',
-        recovery_efficiency: 95.0,
-        network_impact: 'None',
-        downstream_flights_affected: 0,
-        created_at: '2025-01-10T14:30:15Z'
-      },
-      {
-        solution_id: 'SOL-2025-002',
-        disruption_id: '259',
-        flight_number: 'FZ181',
-        route: 'DXB → COK',
-        aircraft: 'B737-800',
-        disruption_type: 'Crew',
-        disruption_reason: 'Captain duty time breach',
-        priority: 'Medium',
-        date_created: '2025-01-10T14:25:10Z',
-        date_executed: '2025-01-10T17:21:10Z',
-        date_completed: '2025-01-10T17:21:10Z',
-        duration: '2h 56m',
-        status: 'Successful',
-        affected_passengers: 189,
-        actual_cost: 89000,
-        estimated_cost: 92000,
-        cost_variance: -3.3,
-        otp_impact: 91.9,
-        solution_chosen: 'Option B',
-        total_options: 4,
-        executed_by: 'Ahmed Hassan',
-        approved_by: 'Crew Manager',
-        passenger_satisfaction: 8.8,
-        rebooking_success: 97.1,
-        categorization: 'Crew',
-        cancellation_avoided: true,
-        potential_delay_minutes: 210,
-        actual_delay_minutes: 69,
-        delay_reduction_minutes: 141,
-        disruption_category: 'Crew',
-        recovery_efficiency: 88.0,
-        network_impact: 'Low',
-        downstream_flights_affected: 1,
-        created_at: '2025-01-10T14:25:10Z'
-      },
-      {
-        solution_id: 'SOL-2025-003',
-        disruption_id: '258',
-        flight_number: 'FZ147',
-        route: 'BKT → DXB',
-        aircraft: 'B737 MAX 8',
-        disruption_type: 'AOG',
-        disruption_reason: 'Engine maintenance check required',
-        priority: 'Medium',
-        date_created: '2025-01-10T13:15:30Z',
-        date_executed: '2025-01-10T17:45:30Z',
-        date_completed: '2025-01-10T17:45:30Z',
-        duration: '4h 30m',
-        status: 'Successful',
-        affected_passengers: 165,
-        actual_cost: 145000,
-        estimated_cost: 148000,
-        cost_variance: -2.0,
-        otp_impact: 91.0,
-        solution_chosen: 'Option A',
-        total_options: 2,
-        executed_by: 'Fatima Al Zahra',
-        approved_by: 'Technical Manager',
-        passenger_satisfaction: 7.8,
-        rebooking_success: 89.2,
-        categorization: 'AOG',
-        cancellation_avoided: true,
-        potential_delay_minutes: 270,
-        actual_delay_minutes: 118,
-        delay_reduction_minutes: 152,
-        disruption_category: 'AOG',
-        recovery_efficiency: 92.0,
-        network_impact: 'Medium',
-        downstream_flights_affected: 2,
-        created_at: '2025-01-10T13:15:30Z'
-      },
-      {
-        solution_id: 'SOL-2025-004',
-        disruption_id: '257',
-        flight_number: 'FZ351',
-        route: 'CAI → SSL',
-        aircraft: 'B737-800',
-        disruption_type: 'Airport',
-        disruption_reason: 'DXB runway closure - emergency landing',
-        priority: 'Critical',
-        date_created: '2025-01-10T12:45:45Z',
-        date_executed: '2025-01-10T15:55:45Z',
-        date_completed: '2025-01-10T15:55:45Z',
-        duration: '3h 10m',
-        status: 'Successful',
-        affected_passengers: 178,
-        actual_cost: 98000,
-        estimated_cost: 105000,
-        cost_variance: -6.7,
-        otp_impact: 92.5,
-        solution_chosen: 'Option C',
-        total_options: 3,
-        executed_by: 'Omar Khalil',
-        approved_by: 'Operations Director',
-        passenger_satisfaction: 7.2,
-        rebooking_success: 86.1,
-        categorization: 'Airport',
-        cancellation_avoided: true,
-        potential_delay_minutes: 770,
-        actual_delay_minutes: 770,
-        delay_reduction_minutes: 0,
-        disruption_category: 'Airport',
-        recovery_efficiency: 92.5,
-        network_impact: 'High',
-        downstream_flights_affected: 5,
-        created_at: '2025-01-10T12:45:45Z'
-      },
-      {
-        solution_id: 'SOL-2025-005',
-        disruption_id: '256',
-        flight_number: 'FZ267',
-        route: 'KTM → BOM',
-        aircraft: 'B737-800',
-        disruption_type: 'Security',
-        disruption_reason: 'Security screening delay at BOM',
-        priority: 'High',
-        date_created: '2025-01-10T11:20:20Z',
-        date_executed: '2025-01-10T13:55:20Z',
-        date_completed: '2025-01-10T13:55:20Z',
-        duration: '2h 35m',
-        status: 'Successful',
-        affected_passengers: 162,
-        actual_cost: 67000,
-        estimated_cost: 71000,
-        cost_variance: -5.6,
-        otp_impact: 88.5,
-        solution_chosen: 'Option A',
-        total_options: 2,
-        executed_by: 'Rashid Abdullah',
-        approved_by: 'Security Manager',
-        passenger_satisfaction: 8.5,
-        rebooking_success: 97.0,
-        categorization: 'Security',
-        cancellation_avoided: true,
-        potential_delay_minutes: 305,
-        actual_delay_minutes: 305,
-        delay_reduction_minutes: 0,
-        disruption_category: 'Security',
-        recovery_efficiency: 88.5,
-        network_impact: 'Low',
-        downstream_flights_affected: 1,
-        created_at: '2025-01-10T11:20:20Z'
-      }
-    ];
   }
 
   // Passenger Rebookings
