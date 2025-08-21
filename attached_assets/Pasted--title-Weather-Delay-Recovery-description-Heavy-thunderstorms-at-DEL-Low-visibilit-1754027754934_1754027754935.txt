@@ -1,0 +1,211 @@
+ {
+    title: "Weather Delay Recovery",
+    description: "Heavy thunderstorms at DEL - Low visibility 800m",
+    icon: CloudRain,
+    priority: "MEDIUM",
+    estimatedTime: "2-4 hours",
+    steps: [
+      {
+        step: 1,
+        title: "Weather Trigger Received",
+        status: "completed",
+        timestamp: "12:30:00",
+        system: "Weather Monitoring",
+        details: "ATC holding all arrivals due to severe weather",
+        data: {
+          weatherType: "Thunderstorms + Low Visibility",
+          visibility: "800m (Required: 1200m)",
+          atcStatus: "All arrivals on hold",
+          forecast: "Improvement expected 16:00-17:00",
+        },
+      },
+      {
+        step: 2,
+        title: "Assess Impact on Operations",
+        status: "completed",
+        timestamp: "12:35:00",
+        system: "Operations Control",
+        details: "Holding time, EOBT, and curfew risk evaluation",
+        data: {
+          holdingTime: "2-4 hours estimated",
+          eobtImpact: "Departure delayed to 17:30",
+          curfewRisk: "None - within DEL operating hours",
+          fuelConsideration: "Additional 800kg required",
+        },
+      },
+      {
+        step: 3,
+        title: "Evaluate Recovery Actions",
+        status: "completed",
+        timestamp: "12:40:00",
+        system: "Recovery Engine",
+        details: "Multiple recovery options assessed",
+        data: {
+          delayOption: "Delay within legal/curfew limits",
+          swapOption: "No aircraft swap required",
+          rerouteOption: "Via PNQ possible with ground transport",
+          crewImpact: "Within FDP limits",
+        },
+      },
+      {
+        step: 4,
+        title: "Connecting Passenger Analysis",
+        status: "completed",
+        timestamp: "12:45:00",
+        system: "Passenger Services",
+        details: "Connection impacts and rebooking options",
+        data: {
+          connectingPax: "47 passengers with connections",
+          mctBreaches: "12 passengers - tight connections",
+          rebookingOptions: "EK/AI flights available",
+          accommodation: "Not required - same day arrival",
+        },
+      },
+      {
+        step: 5,
+        title: "Adjust Crew Patterns",
+        status: "completed",
+        timestamp: "12:50:00",
+        system: "Crew Management",
+        details: "Crew duty time and rest periods updated",
+        data: {
+          dutyAdjustment: "+3 hours within FDP limits",
+          restPeriod: "Maintained - no overnight impact",
+          crewNotification: "Updated via CrewApp",
+          checkoutTime: "Revised to 22:15 DEL",
+        },
+      },
+      {
+        step: 6,
+        title: "Calculate OTP Impact",
+        status: "completed",
+        timestamp: "12:55:00",
+        system: "Performance Analytics",
+        details: "On-time performance impact logged",
+        data: {
+          otpImpact: "Weather delay - excluded from OTP",
+          causeCode: "WX - Severe Weather DEL",
+          networkImpact: "Minimal - isolated incident",
+          costImpact: "AED 25,000 (fuel + handling)",
+        },
+      },
+    ],
+    options: [
+      {
+        id: "DELAY_WEATHER",
+        title: "Delay for Weather Clearance",
+        description: "Wait for weather improvement at DEL",
+        cost: "AED 25,000",
+        timeline: "2-3 hours",
+        confidence: 90,
+        impact: "Managed schedule delay",
+        status: "recommended",
+        rotationPlan: {
+          originalPlan: [
+            {
+              flight: "FZ445",
+              route: "DXB-DEL",
+              time: "15:30-19:15",
+              status: "affected",
+            },
+          ],
+          newPlan: [
+            {
+              flight: "FZ445",
+              route: "DXB-DEL",
+              time: "17:30-21:15",
+              status: "weather_delayed",
+            },
+          ],
+          advantages: [
+            "Weather forecast shows improvement",
+            "All connections protected",
+            "No aircraft swap required",
+            "Fuel sufficient for extended holding",
+          ],
+          considerations: [
+            "Dependent on weather improvement",
+            "Crew duty time monitoring",
+            "Passenger notification required",
+          ],
+        },
+      },
+      {
+        id: "REROUTE_PNQ",
+        title: "Reroute via Pune",
+        description: "Divert to PNQ with ground transport",
+        cost: "AED 45,000",
+        timeline: "4 hours total",
+        confidence: 75,
+        impact: "Extended travel time",
+        status: "caution",
+        rotationPlan: {
+          originalPlan: [
+            {
+              flight: "FZ445",
+              route: "DXB-DEL",
+              time: "15:30-19:15",
+              status: "affected",
+            },
+          ],
+          newPlan: [
+            {
+              flight: "FZ445",
+              route: "DXB-PNQ+Bus",
+              time: "15:30-20:30+2h bus",
+              status: "rerouted",
+            },
+          ],
+          advantages: [
+            "PNQ weather conditions good",
+            "Ground transport available",
+            "Passengers reach destination same day",
+          ],
+          considerations: [
+            "Additional 2.5-hour bus journey",
+            "Ground transport coordination",
+            "Passenger comfort during transfer",
+          ],
+        },
+      },
+      {
+        id: "CANCEL_WEATHER",
+        title: "Cancel Due to Weather",
+        description: "Cancel flight and rebook passengers",
+        cost: "AED 180,000",
+        timeline: "Immediate",
+        confidence: 60,
+        impact: "Complete sector cancellation",
+        status: "warning",
+        rotationPlan: {
+          originalPlan: [
+            {
+              flight: "FZ445",
+              route: "DXB-DEL",
+              time: "15:30-19:15",
+              status: "affected",
+            },
+          ],
+          newPlan: [
+            {
+              flight: "FZ445",
+              route: "CANCELLED",
+              time: "CANCELLED",
+              status: "cancelled",
+            },
+          ],
+          advantages: [
+            "Immediate resolution",
+            "Aircraft available for other routes",
+            "Weather exemption from compensation",
+          ],
+          considerations: [
+            "Complete revenue loss",
+            "Customer dissatisfaction",
+            "Rebooking complexity",
+          ],
+        },
+      },
+    ],
+  };
+};

@@ -1,0 +1,52 @@
+Bulk update failed: 
+syncDisruptionsFromExternalAPI @ databaseService.ts:1113
+await in syncDisruptionsFromExternalAPI
+fetchFlights @ DisruptionInput.tsx:219
+setInterval
+(anonymous) @ DisruptionInput.tsx:208
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=a172bcb4:16915
+invokePassiveEffectMountInDEV @ chunk-PJEEZAML.js?v=a172bcb4:18324
+invokeEffectsInDev @ chunk-PJEEZAML.js?v=a172bcb4:19701
+commitDoubleInvokeEffectsInDEV @ chunk-PJEEZAML.js?v=a172bcb4:19686
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=a172bcb4:19503
+flushPassiveEffects @ chunk-PJEEZAML.js?v=a172bcb4:19447
+(anonymous) @ chunk-PJEEZAML.js?v=a172bcb4:19328
+workLoop @ chunk-PJEEZAML.js?v=a172bcb4:197
+flushWork @ chunk-PJEEZAML.js?v=a172bcb4:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=a172bcb4:384Understand this error
+databaseService.ts:1127 Error syncing from external API: Error: Bulk update failed: 500 - 
+    at DatabaseService.syncDisruptionsFromExternalAPI (databaseService.ts:1114:15)
+    at async fetchFlights (DisruptionInput.tsx:219:26)
+syncDisruptionsFromExternalAPI @ databaseService.ts:1127
+await in syncDisruptionsFromExternalAPI
+fetchFlights @ DisruptionInput.tsx:219
+setInterval
+(anonymous) @ DisruptionInput.tsx:208
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=a172bcb4:16915
+invokePassiveEffectMountInDEV @ chunk-PJEEZAML.js?v=a172bcb4:18324
+invokeEffectsInDev @ chunk-PJEEZAML.js?v=a172bcb4:19701
+commitDoubleInvokeEffectsInDEV @ chunk-PJEEZAML.js?v=a172bcb4:19686
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=a172bcb4:19503
+flushPassiveEffects @ chunk-PJEEZAML.js?v=a172bcb4:19447
+(anonymous) @ chunk-PJEEZAML.js?v=a172bcb4:19328
+workLoop @ chunk-PJEEZAML.js?v=a172bcb4:197
+flushWork @ chunk-PJEEZAML.js?v=a172bcb4:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=a172bcb4:384Understand this error
+databaseService.ts:575  GET https://7c667753-a26a-4da1-8125-d0e750220a0f-00-2ndnr5knhfyg8.sisko.replit.dev/api/disruptions net::ERR_ABORTED 500 (Internal Server Error)
+getAllDisruptions @ databaseService.ts:575
+fetchFlights @ DisruptionInput.tsx:223
+setInterval
+(anonymous) @ DisruptionInput.tsx:208
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=a172bcb4:16915
+invokePassiveEffectMountInDEV @ chunk-PJEEZAML.js?v=a172bcb4:18324
+invokeEffectsInDev @ chunk-PJEEZAML.js?v=a172bcb4:19701
+commitDoubleInvokeEffectsInDEV @ chunk-PJEEZAML.js?v=a172bcb4:19686
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=a172bcb4:19503
+flushPassiveEffects @ chunk-PJEEZAML.js?v=a172bcb4:19447
+(anonymous) @ chunk-PJEEZAML.js?v=a172bcb4:19328
+workLoop @ chunk-PJEEZAML.js?v=a172bcb4:197
+flushWork @ chunk-PJEEZAML.js?v=a172bcb4:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=a172bcb4:384Understand this error
+databaseService.ts:617 Failed to fetch disruptions: Error: HTTP error! status: 500
+    at DatabaseService.getAllDisruptions (databaseService.ts:582:15)
+    at async fetchFlights (DisruptionInput.tsx:223:20)

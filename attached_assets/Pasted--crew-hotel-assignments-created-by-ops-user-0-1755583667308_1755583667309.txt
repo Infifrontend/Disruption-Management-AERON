@@ -1,0 +1,53 @@
+ "crew_hotel_assignments": [
+                    {
+                        "created_by": "ops_user_01",
+                        "hotel_name": "Dubai International Hotel",
+                        "total_cost": 1800,
+                        "crew_member": [
+                            {
+                                "base": "DXB",
+                                "name": "FO Sarah Johnson",
+                                "rank": "B737/MAX Type Rating",
+                                "employee_id": "C10163",
+                                "contact_number": "+971500391721"
+                            },
+                            {
+                                "base": "DXB",
+                                "name": "Capt. Ahmed Al-Mansouri",
+                                "rank": "B737 Type Rating",
+                                "employee_id": "C10914",
+                                "contact_number": "+971500706562"
+                            },
+                            {
+                                "base": "DXB",
+                                "name": "SSCC Lisa Martinez",
+                                "rank": "Senior Cabin Crew",
+                                "employee_id": "C10970",
+                                "contact_number": "+971501353831"
+                            },
+                            {
+                                "base": "DXB",
+                                "name": "CC Maria Santos",
+                                "rank": "Cabin Crew",
+                                "employee_id": "C10259",
+                                "contact_number": "+971505396903"
+                            }
+                        ],
+                        "room_number": "1937",
+                        "check_in_date": "2025-08-18T08:30:00.000Z",
+                        "disruption_id": 306,
+                        "check_out_date": "2025-08-19T04:30:00.000Z",
+                        "hotel_location": "0.5 km from DXB from Airport",
+                        "special_requests": "Standard crew accommodation",
+                        "assignment_status": "assigned",
+                        "booking_reference": "HOTAC-1755523592578",
+                        "transport_details": {
+                            "vendor": "City Crew Transport",
+                            "pickup_time": "2025-08-18T08:00:00.000Z",
+                            "dropoff_time": "2025-08-19T05:00:00.000Z",
+                            "vehicle_type": "Mini Van",
+                            "pickup_location": "DXB Terminal 3 Crew Gate",
+                            "dropoff_location": "Hotel Lobby"
+                        }
+                    }
+                ],

@@ -1,0 +1,92 @@
+Failed to save recovery option "Aircraft Swap - Immediate": syntax error at or near "crew_available"
+Values causing error: [
+  { index: 0, type: 'number', value: 310 },
+  { index: 1, type: 'string', value: 'Aircraft Swap - Immediate' },
+  {
+    index: 2,
+    type: 'string',
+    value: 'Replace with available standby aircraft'
+  },
+  { index: 3, type: 'string', value: 'AED 22,800' },
+  { index: 4, type: 'string', value: '1.5-2 hours' },
+  { index: 5, type: 'number', value: 88 },
+  { index: 6, type: 'string', value: 'Minimal passenger disruption' },
+  { index: 7, type: 'string', value: 'recommended' },
+  { index: 8, type: 'number', value: 1 },
+  {
+    index: 9,
+    type: 'object',
+    value: [
+      'Fastest resolution with minimal delay',
+      'Maintains schedule integrity',
+      'Low passenger compensation cost',
+      'Preserves network connectivity'
+    ]
+  },
+  {
+    index: 10,
+    type: 'object',
+    value: [
+      'Requires available spare aircraft',
+      'Crew briefing and familiarization needed',
+      'Gate coordination and positioning',
+      'Passenger transfer logistics'
+    ]
+  },
+  {
+    index: 11,
+    type: 'string',
+    value: '[{"title":"Replacement Aircraft","subtitle":"Available Aircraft (TBD)","availability":"Ready","statu...'
+  },
+  {
+    index: 12,
+    type: 'string',
+    value: '{"breakdown":[{"amount":"AED 15,000","category":"Delay Costs","percentage":66,"description":"Passeng...'
+  },
+  {
+    index: 13,
+    type: 'string',
+    value: '[{"step":"Decision Confirmation","status":"completed","details":"Management approval and resource co...'
+  },
+  {
+    index: 14,
+    type: 'string',
+    value: '[{"risk":"Aircraft Availability Conflict","risk_impact":"Low","mitigation_impact":"Medium","score":3...'
+  },
+  {
+    index: 15,
+    type: 'string',
+    value: '{"implementation":{"title":"Implementation","details":"Aircraft swap protocol with coordinated groun...'
+  },
+  {
+    index: 16,
+    type: 'string',
+    value: '{"costEfficiency":85,"timeEfficiency":90,"passengerSatisfaction":85,"recovery_analysis":"Aircraft Sw...'
+  },
+  {
+    index: 17,
+    type: 'string',
+    value: '{"aircraftOptions":[{"reg":"A6-FED","type":"B737-800 (189Y)","etops":{"status":"available","value":"...'
+  },
+  { index: 18, type: 'string', value: '["crew"]' },
+  {
+    index: 19,
+    type: 'string',
+    value: 'Aircraft issue recovery for FZ147: Technical disruption requiring aircraft substitution with minimal...'
+  },
+  {
+    index: 20,
+    type: 'string',
+    value: '[{"name":"Capt. James Walker","role":"Captain","type":"B737 Type Rating","status":"Available","issue...'
+  }
+]
+Error saving recovery option: error: syntax error at or near "crew_available"
+    at /home/runner/workspace/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+    at async file:///home/runner/workspace/server/start.js:1953:13 {
+  length: 105,
+  severity: 'ERROR',
+  code: '42601',
+  detail: undefined,
+  hint: undefined,
+  position: '1567',

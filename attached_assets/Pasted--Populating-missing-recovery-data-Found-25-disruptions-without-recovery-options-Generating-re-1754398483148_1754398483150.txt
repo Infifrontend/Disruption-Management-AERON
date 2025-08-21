@@ -1,0 +1,110 @@
+🚀 Populating missing recovery data...
+Found 25 disruptions without recovery options
+Generating recovery data for disruption 212 - FZ203
+Generating recovery options for flight FZ203, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 212: invalid input syntax for type json
+Generating recovery data for disruption 213 - FZ215
+Generating recovery options for flight FZ215, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 213: invalid input syntax for type json
+Generating recovery data for disruption 214 - FZ235
+Generating recovery options for flight FZ235, type: Airport
+Generated 1 options and 1 steps for disruption type: airport
+✅ Created 1 options and 1 steps for FZ235
+Generating recovery data for disruption 215 - FZ329
+Generating recovery options for flight FZ329, type: Technical
+Generated 3 options and 4 steps for disruption type: technical
+✅ Created 3 options and 4 steps for FZ329
+Generating recovery data for disruption 216 - FZ147
+Generating recovery options for flight FZ147, type: Technical
+Generated 3 options and 4 steps for disruption type: technical
+✅ Created 3 options and 4 steps for FZ147
+Generating recovery data for disruption 217 - FZ181
+Generating recovery options for flight FZ181, type: Crew
+Generated 2 options and 3 steps for disruption type: crew
+✅ Created 2 options and 3 steps for FZ181
+Generating recovery data for disruption 218 - FZ567
+Generating recovery options for flight FZ567, type: Technical
+Generated 3 options and 4 steps for disruption type: technical
+✅ Created 3 options and 4 steps for FZ567
+Generating recovery data for disruption 219 - FZ891
+Generating recovery options for flight FZ891, type: Airport
+Generated 1 options and 1 steps for disruption type: airport
+✅ Created 1 options and 1 steps for FZ891
+Generating recovery data for disruption 220 - FZ432
+Generating recovery options for flight FZ432, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 220: invalid input syntax for type json
+Generating recovery data for disruption 221 - FZ654
+Generating recovery options for flight FZ654, type: Technical
+Generated 3 options and 4 steps for disruption type: technical
+✅ Created 3 options and 4 steps for FZ654
+Generating recovery data for disruption 222 - FZ123
+Generating recovery options for flight FZ123, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 222: invalid input syntax for type json
+Generating recovery data for disruption 223 - FZ456
+Generating recovery options for flight FZ456, type: Technical
+Generated 3 options and 4 steps for disruption type: technical
+✅ Created 3 options and 4 steps for FZ456
+Generating recovery data for disruption 224 - FZ789
+Generating recovery options for flight FZ789, type: Crew
+Generated 2 options and 3 steps for disruption type: crew
+✅ Created 2 options and 3 steps for FZ789
+Generating recovery data for disruption 225 - FZ321
+Generating recovery options for flight FZ321, type: Airport
+Generated 1 options and 1 steps for disruption type: airport
+✅ Created 1 options and 1 steps for FZ321
+Generating recovery data for disruption 226 - FZ987
+Generating recovery options for flight FZ987, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 226: invalid input syntax for type json
+Generating recovery data for disruption 227 - AI-727
+Generating recovery options for flight AI-727, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 227: invalid input syntax for type json
+Generating recovery data for disruption 228 - FZ502
+Generating recovery options for flight FZ502, type: Crew
+Generated 2 options and 3 steps for disruption type: crew
+✅ Created 2 options and 3 steps for FZ502
+Generating recovery data for disruption 229 - FZ751
+Generating recovery options for flight FZ751, type: ATC
+Handling disruption type: atc, generating comprehensive options
+Generated 3 options and 5 steps for disruption type: atc
+❌ Error processing disruption 229: invalid input syntax for type json
+Generating recovery data for disruption 230 - FZ1244
+Generating recovery options for flight FZ1244, type: Crew
+Generated 2 options and 3 steps for disruption type: crew
+✅ Created 2 options and 3 steps for FZ1244
+Generating recovery data for disruption 231 - FZ368
+Generating recovery options for flight FZ368, type: ATC
+Handling disruption type: atc, generating comprehensive options
+Generated 3 options and 5 steps for disruption type: atc
+❌ Error processing disruption 231: invalid input syntax for type json
+Generating recovery data for disruption 232 - FZ901
+Generating recovery options for flight FZ901, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 232: invalid input syntax for type json
+Generating recovery data for disruption 233 - FZ1066
+Generating recovery options for flight FZ1066, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 233: invalid input syntax for type json
+Generating recovery data for disruption 234 - FZ445
+Generating recovery options for flight FZ445, type: Crew
+Generated 2 options and 3 steps for disruption type: crew
+✅ Created 2 options and 3 steps for FZ445
+Generating recovery data for disruption 235 - QR199
+Generating recovery options for flight QR199, type: Technical
+Generated 3 options and 4 steps for disruption type: technical
+✅ Created 3 options and 4 steps for QR199
+Generating recovery data for disruption 236 - IX-133
+Generating recovery options for flight IX-133, type: Weather
+Generated 3 options and 4 steps for disruption type: weather
+❌ Error processing disruption 236: invalid input syntax for type json
+✅ Recovery data population completed!
+📊 Summary:
+  - Total recovery options created: 31
+  - Total recovery steps created: 42
+  - Disruptions processed: 25
+✅ Script completed successfully

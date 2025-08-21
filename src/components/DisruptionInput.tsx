@@ -1,0 +1,2758 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { Input } from "./ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "./ui/pagination";
+import { Alert, AlertDescription } from "./ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
+import { Checkbox } from "./ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
+import {
+  AlertTriangle,
+  Plane,
+  Users,
+  Clock,
+  MapPin,
+  Filter,
+  Search,
+  ArrowRight,
+  RefreshCw,
+  Eye,
+  Zap,
+  TrendingUp,
+  CalendarDays,
+  Timer,
+  Plus,
+  Save,
+  X,
+  CheckCircle,
+  AlertCircle,
+  Trash2,
+  FileText,
+} from "lucide-react";
+import { databaseService, FlightDisruption } from "../services/databaseService";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "./ui/use-toast";
+import { Console } from "console";
+
+// Define interface for disruption categories
+interface DisruptionCategory {
+  id: string;
+  category_name: string;
+  category_code: string; // Added category_code
+  description: string;
+}
+
+// Transform database flight disruption to the expected format for this component
+const transformFlightData = (disruption: FlightDisruption) => {
+  // Ensure we have a valid scheduled departure time
+  const scheduledDeparture =
+    disruption.scheduledDeparture || new Date().toISOString();
+
+  // Calculate scheduled arrival with proper fallback
+  let scheduledArrival;
+  if (disruption.estimatedDeparture) {
+    scheduledArrival = disruption.estimatedDeparture;
+  } else {
+    scheduledArrival = addHours(scheduledDeparture, 3);
+  }
+
+  // Check if this is an incomplete record
+  const isIncomplete =
+    !disruption.flightNumber ||
+    disruption.flightNumber.includes("UNKNOWN-") ||
+    !disruption.scheduledDeparture ||
+    !disruption.origin ||
+    !disruption.destination ||
+    disruption.destination === "UNKNOWN";
+  console.log(disruption, "teststs");
+  return {
+    id: disruption.id,
+    flightNumber: disruption.flightNumber || "UNKNOWN",
+    origin: disruption.origin || "DXB",
+    destination: disruption.destination || "UNKNOWN",
+    originCity:
+      disruption.originCity || getLocationName(disruption.origin || "DXB"),
+    destinationCity:
+      disruption.destinationCity ||
+      getLocationName(disruption.destination || "UNKNOWN"),
+    scheduledDeparture: scheduledDeparture,
+    scheduledArrival: scheduledArrival,
+    currentStatus: disruption.status,
+    delay: disruption.delay || 0,
+    aircraft: disruption.aircraft || "Unknown",
+    gate: disruption.gate || `T2-A${Math.floor(Math.random() * 30) + 1}`, // Generate consistent gate
+    passengers: disruption.passengers || 0,
+    crew: disruption.crew || 6,
+    disruptionType: disruption.type
+      ? disruption.type.toLowerCase()
+      : "technical",
+    categorization: disruption?.categoryName,
+    disruptionReason:
+      disruption.disruptionReason ||
+      (isIncomplete
+        ? "⚠️ Incomplete information - some data may be missing"
+        : "Information not available"),
+    severity: disruption.severity
+      ? disruption.severity.toLowerCase()
+      : "medium",
+    impact: `Flight affected due to ${disruption.disruptionReason || "operational issues"}${isIncomplete ? " (Incomplete data)" : ""}`,
+    lastUpdate: getTimeAgo(
+      disruption.updatedAt || disruption.createdAt || new Date().toISOString(),
+    ),
+    priority: disruption.severity || "Medium",
+    connectionFlights: disruption.connectionFlights || 0,
+    vipPassengers:
+      Math.floor((disruption.passengers || 0) * 0.02) +
+      (disruption.passengers > 0 ? 1 : 0),
+    isIncomplete: isIncomplete, // Flag to identify incomplete records
+  };
+};
+
+// Helper function to get location names for display
+const getLocationName = (code: string) => {
+  const locations: { [key: string]: string } = {
+    DXB: "Dubai",
+    BOM: "Mumbai",
+    DEL: "Delhi",
+    KHI: "Karachi",
+    COK: "Kochi",
+    IST: "Istanbul",
+    AUH: "Abu Dhabi",
+    CMB: "Colombo",
+    BCN: "Barcelona",
+    PRG: "Prague",
+    SLL: "Salalah",
+  };
+  return locations[code] || code;
+};
+
+// Fetch disruption categories from database
+const fetchDisruptionCategories = async (): Promise<DisruptionCategory[]> => {
+  try {
+    const categories = await databaseService.getDisruptionCategories();
+    return categories || [];
+  } catch (error) {
+    console.error("Error fetching disruption categories:", error);
+    return []; // Return empty array if fetch fails
+  }
+};
+
+// Updated getCategorization to use fetched categories
+let disruptionCategories: DisruptionCategory[] = [];
+fetchDisruptionCategories().then((categories) => {
+  disruptionCategories = categories;
+});
+
+const getCategorization = (type: string): string => {
+  const categoryMap: { [key: string]: string } = {
+    Technical: "Aircraft issue (e.g., AOG)",
+    Weather: "ATC/weather delay",
+    Crew: "Crew issue (e.g., sick report, duty time breach)",
+    ATC: "ATC/weather delay",
+  };
+
+  // Check if the provided type maps to a known category name directly
+  if (categoryMap[type]) {
+    return categoryMap[type];
+  }
+
+  // Fallback to searching for a category that might match the type description or name
+  const foundCategory = disruptionCategories.find(
+    (cat) =>
+      cat.category_name.toLowerCase().includes(type.toLowerCase()) ||
+      cat.description.toLowerCase().includes(type.toLowerCase()),
+  );
+
+  return foundCategory
+    ? foundCategory.category_name
+    : categoryMap[type] || "Aircraft issue (e.g., AOG)";
+};
+
+const addHours = (dateString: string, hours: number) => {
+  try {
+    if (!dateString) {
+      // If no date provided, use current time plus hours
+      const date = new Date();
+      date.setHours(date.getHours() + hours);
+      return date.toISOString();
+    }
+
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      // If invalid date, use current time plus hours
+      console.warn(
+        `Invalid date string: ${dateString}, using current time + ${hours}h`,
+      );
+      const fallbackDate = new Date();
+      fallbackDate.setHours(fallbackDate.getHours() + hours);
+      return fallbackDate.toISOString();
+    }
+
+    date.setHours(date.getHours() + hours);
+    return date.toISOString();
+  } catch (error) {
+    console.error("Error in addHours:", error, "dateString:", dateString);
+    // Fallback to current time plus hours
+    const fallbackDate = new Date();
+    fallbackDate.setHours(fallbackDate.getHours() + hours);
+    return fallbackDate.toISOString();
+  }
+};
+
+const getTimeAgo = (dateString: string) => {
+  if (!dateString) return "Unknown";
+
+  const now = new Date();
+  const date = new Date(dateString);
+
+  if (isNaN(date.getTime())) {
+    return "Unknown";
+  }
+
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins} mins ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours} hours ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} days ago`;
+};
+
+export function DisruptionInput({
+  disruption,
+  onSelectFlight,
+  onNavigateToComparison,
+}: {
+  disruption?: any;
+  onSelectFlight?: (flight: any) => void;
+  onNavigateToComparison?: (flight: any, options?: any[]) => void;
+}) {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [selectedFlight, setSelectedFlight] = useState(null);
+  const [flights, setFlights] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    status: "all",
+    priority: "all",
+    origin: "all",
+    destination: "all",
+    hub: "all",
+    categorization: "all",
+    search: "",
+  });
+  const [sortBy, setSortBy] = useState("priority");
+  const [view, setView] = useState("table");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [newDisruption, setNewDisruption] = useState({
+    flightNumber: "",
+    origin: "",
+    destination: "",
+    scheduledDeparture: new Date()
+      .toLocaleString("sv-SE", { timeZone: "Asia/Kolkata" })
+      .slice(0, 16),
+    scheduledArrival: new Date(Date.now() + 2 * 60 * 60 * 1000)
+      .toLocaleString("sv-SE", { timeZone: "Asia/Kolkata" })
+      .slice(0, 16),
+    currentStatus: "Delayed",
+    delay: "",
+    aircraft: "",
+    gate: "",
+    passengers: "",
+    crew: 6,
+    disruptionType: "technical",
+    categorization:
+      disruptionCategories.length > 0
+        ? disruptionCategories[0]?.category_code
+        : "AIRCRAFT_ISSUE",
+    disruptionReason: "",
+    severity: "medium",
+    impact: "",
+    priority: "Medium",
+    connectionFlights: "",
+    vipPassengers: "",
+  });
+
+  // State for generating recovery options
+  const [isGeneratingOptions, setIsGeneratingOptions] = useState(false);
+  const [loadingRecovery, setLoadingRecovery] = useState({});
+
+  // Fetch flights from database
+  useEffect(() => {
+    fetchFlights();
+    // Changed interval to 3 minutes (180000 ms) as requested
+    const interval = setInterval(fetchFlights, 180000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const fetchFlights = async () => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      // First sync from external API to get latest data and prevent duplicates
+      console.log("Syncing from external API...");
+      const syncResult = await databaseService.syncDisruptionsFromExternalAPI();
+      console.log("External API sync result:", syncResult);
+
+      // Then fetch all current disruptions from database, filtering by recovery_status = 'assigned'
+      // Changed filter to 'assigned' as per the requirement
+      const data = await databaseService.getAllDisruptions("assigned");
+      // debugger;
+      // Process all data, including incomplete records with fallbacks
+      const processedData = data
+        .filter((disruption) => {
+          if (!disruption) return false;
+          // Only include disruptions with recovery_status = 'assigned' or null/undefined
+          // This filter ensures we only process assigned recovery status flights
+          const recoveryStatus =
+            disruption.recovery_status || disruption.recoveryStatus;
+          return recoveryStatus === "assigned";
+        })
+        .map((disruption) => {
+          // Provide defaults for missing required fields
+          console.log(disruption, "test");
+          return {
+            ...disruption,
+            flightNumber:
+              disruption.flight_number ||
+              disruption.flightNumber ||
+              `UNKNOWN-${Date.now()}`,
+            scheduledDeparture:
+              disruption.scheduledDeparture ||
+              disruption.scheduled_departure ||
+              new Date().toISOString(),
+            estimatedDeparture:
+              disruption.estimated_departure || disruption.estimatedDeparture,
+            origin: disruption.origin || "DXB",
+            destination: disruption.destination || "UNKNOWN",
+            originCity:
+              disruption.origin_city ||
+              disruption.originCity ||
+              disruption.origin ||
+              "Dubai",
+            destinationCity:
+              disruption.destination_city ||
+              disruption.destinationCity ||
+              disruption.destination ||
+              "Unknown",
+            status: disruption.status || "Unknown",
+            severity: disruption.severity || "Medium",
+            type: disruption.disruption_type || disruption.type || "Technical",
+            disruptionReason:
+              disruption.disruption_reason ||
+              disruption.disruptionReason ||
+              "Information not available",
+            passengers: disruption.passengers || 0,
+            crew: disruption.crew || 6,
+            delay: disruption.delay_minutes || disruption.delay || 0,
+            aircraft: disruption.aircraft || "Unknown",
+            connectionFlights:
+              disruption.connection_flights ||
+              disruption.connectionFlights ||
+              0,
+            recoveryStatus: disruption.recovery_status || "assigned",
+          };
+        });
+
+      const transformedFlights = processedData.map(transformFlightData);
+      setFlights(transformedFlights);
+
+      console.log(
+        "Fetched and transformed flights:",
+        transformedFlights.length,
+        "flights",
+      );
+
+      // Count incomplete records
+      const incompleteCount =
+        data.length -
+        processedData.filter(
+          (d) =>
+            d.flightNumber &&
+            d.flightNumber.indexOf("UNKNOWN-") === -1 &&
+            d.scheduledDeparture &&
+            d.origin &&
+            d.origin !== "DXB" &&
+            d.destination &&
+            d.destination !== "UNKNOWN",
+        ).length;
+
+      // Show sync results in success message if any data was synced
+      if (syncResult && (syncResult.inserted > 0 || syncResult.updated > 0)) {
+        let message = `✅ Data refreshed successfully! ${syncResult.inserted} new disruptions added, ${syncResult.updated} updated.`;
+        if (incompleteCount > 0) {
+          message += ` Note: ${incompleteCount} records had missing information and were displayed with defaults.`;
+        }
+        setSuccess(message);
+        setTimeout(() => setSuccess(null), 8000);
+      }
+
+      // Clear any previous errors if we have any data
+      if (transformedFlights.length === 0 && data.length === 0) {
+        setError(
+          "No flight disruptions found with assigned recovery status. Add new disruptions using the 'Add Disruption' button.",
+        );
+      } else if (incompleteCount > 0 && incompleteCount < data.length) {
+        setSuccess(
+          `⚠️ ${incompleteCount} disruptions had incomplete information but are shown with default values. All ${transformedFlights.length} disruptions are displayed.`,
+        );
+        setTimeout(() => setSuccess(null), 6000);
+      }
+    } catch (error) {
+      console.error("Error fetching flights:", error);
+
+      // Check if it's a connectivity issue
+      try {
+        const isHealthy = await databaseService.healthCheck();
+        if (!isHealthy) {
+          setError(
+            "🔄 Database connection is temporarily unavailable. You can still add new disruptions, and they will be synced when the connection is restored.",
+          );
+        } else {
+          setError(
+            "⚠️ Failed to load flight data. The database connection is working, but there may be data issues. You can still add new disruptions manually.",
+          );
+        }
+      } catch (healthError) {
+        setError(
+          "🔌 System connectivity issues detected. You can add new disruptions offline, and they will be synced when the connection is restored.",
+        );
+      }
+
+      // Try to load existing data from database as fallback
+      try {
+        const fallbackData =
+          await databaseService.getAllDisruptions("assigned");
+        if (fallbackData && fallbackData.length > 0) {
+          // Process all fallback data, even if incomplete
+          const processedFallbackData = fallbackData.map((disruption) => {
+            return {
+              ...disruption,
+              flightNumber:
+                disruption.flight_number ||
+                disruption.flightNumber ||
+                `FALLBACK-${Date.now()}`,
+              scheduledDeparture:
+                disruption.scheduled_departure ||
+                disruption.scheduledDeparture ||
+                new Date().toISOString(),
+              estimatedDeparture:
+                disruption.estimated_departure || disruption.estimatedDeparture,
+              origin: disruption.origin || "DXB",
+              destination: disruption.destination || "UNKNOWN",
+              originCity:
+                disruption.origin_city ||
+                disruption.originCity ||
+                disruption.origin ||
+                "Dubai",
+              destinationCity:
+                disruption.destination_city ||
+                disruption.destinationCity ||
+                disruption.destination ||
+                "Unknown",
+              status: disruption.status || "Unknown",
+              severity: disruption.severity || "Medium",
+              type:
+                disruption.disruption_type || disruption.type || "Technical",
+              disruptionReason:
+                disruption.disruption_reason ||
+                disruption.disruptionReason ||
+                "Cached data - may be incomplete",
+              passengers: disruption.passengers || 0,
+              crew: disruption.crew || 6,
+              delay: disruption.delay_minutes || disruption.delay || 0,
+              aircraft: disruption.aircraft || "Unknown",
+              connectionFlights:
+                disruption.connection_flights ||
+                disruption.connectionFlights ||
+                0,
+              recoveryStatus: disruption.recovery_status || "assigned",
+            };
+          });
+
+          const transformedFlights =
+            processedFallbackData.map(transformFlightData);
+          setFlights(transformedFlights);
+          console.log(
+            "Loaded fallback data:",
+            transformedFlights.length,
+            "flights",
+          );
+
+          if (transformedFlights.length > 0) {
+            setError(
+              "⚠️ Using cached flight data. Some information may be outdated or incomplete. Try refreshing when connection is restored.",
+            );
+          }
+        } else {
+          setFlights([]);
+        }
+      } catch (fallbackError) {
+        console.error("Fallback fetch also failed:", fallbackError);
+        setFlights([]);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Cancelled":
+        return "bg-red-100 text-red-700 border-red-200";
+      case "Delayed":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      case "Diverted":
+        return "bg-orange-100 text-orange-700 border-orange-200";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
+    }
+  };
+
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case "Critical":
+        return "bg-red-500 text-white";
+      case "High":
+        return "bg-orange-500 text-white";
+      case "Medium":
+        return "bg-yellow-500 text-white";
+      case "Low":
+        return "bg-blue-500 text-white";
+      default:
+        return "bg-gray-500 text-white";
+    }
+  };
+
+  const getSeverityColor = (severity) => {
+    switch (severity) {
+      case "high":
+        return "text-red-600";
+      case "medium":
+        return "text-yellow-600";
+      case "low":
+        return "text-blue-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
+  const getDisruptionIcon = (type) => {
+    switch (type) {
+      case "weather":
+        return "🌩️";
+      case "technical":
+        return "🔧";
+      case "crew":
+        return "👥";
+      case "air_traffic":
+        return "✈️";
+      case "airport":
+        return "🏗️";
+      case "rotation":
+        return "🔄";
+      default:
+        return "⚠️";
+    }
+  };
+
+  const getCategorizationColor = (categorization) => {
+    switch (categorization) {
+      case "Aircraft issue (e.g., AOG)":
+        return "bg-red-100 text-red-700 border-red-200";
+      case "Crew issue (e.g., sick report, duty time breach)":
+        return "bg-blue-100 text-blue-700 border-blue-200";
+      case "ATC/weather delay":
+        return "bg-orange-100 text-orange-700 border-orange-200";
+      case "Airport curfew/ramp congestion":
+        return "bg-purple-100 text-purple-700 border-purple-200";
+      case "Rotation misalignment or maintenance hold":
+        return "bg-yellow-100 text-yellow-700 border-yellow-200";
+      default:
+        return "bg-gray-100 text-gray-700 border-gray-200";
+    }
+  };
+
+  const formatTime = (dateString) => {
+    return new Date(dateString).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+      timeZone: "UTC",
+    });
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  // Filter flights based on current filters
+  const filteredFlights = flights.filter((flight) => {
+    // Status filter
+    if (filters.status !== "all" && flight.currentStatus !== filters.status)
+      return false;
+
+    // Priority filter
+    if (filters.priority !== "all" && flight.priority !== filters.priority)
+      return false;
+
+    // Origin filter
+    if (filters.origin !== "all" && flight.origin !== filters.origin)
+      return false;
+
+    // Destination filter
+    if (
+      filters.destination !== "all" &&
+      flight.destination !== filters.destination
+    )
+      return false;
+
+    // Hub filter - properly handle DWC and DXB flights
+    if (filters.hub !== "all") {
+      // Check if flight is related to the selected hub (either origin or destination)
+      const isRelatedToHub =
+        flight.origin === filters.hub || flight.destination === filters.hub;
+      if (!isRelatedToHub) return false;
+    }
+
+    // Categorization filter
+    if (
+      filters.categorization !== "all" &&
+      flight.categorization !== filters.categorization
+    )
+      return false;
+
+    // Search filter - check multiple fields
+    if (filters.search && filters.search.trim() !== "") {
+      const searchTerm = filters.search.toLowerCase().trim();
+      const searchableFields = [
+        flight.flightNumber || "",
+        flight.originCity || "",
+        flight.destinationCity || "",
+        flight.disruptionReason || "",
+        flight.aircraft || "",
+        flight.origin || "",
+        flight.destination || "",
+      ];
+
+      const matchFound = searchableFields.some((field) =>
+        field.toLowerCase().includes(searchTerm),
+      );
+
+      if (!matchFound) return false;
+    }
+
+    return true;
+  });
+
+  // Sort flights
+  const sortedFlights = [...filteredFlights].sort((a, b) => {
+    switch (sortBy) {
+      case "priority":
+        const priorityOrder = { Critical: 4, High: 3, Medium: 2, Low: 1 };
+        return priorityOrder[b.priority] - priorityOrder[a.priority];
+      case "departure":
+        return new Date(a.scheduledDeparture) - new Date(b.scheduledDeparture);
+      case "passengers":
+        return b.passengers - a.passengers;
+      case "delay":
+        return (b.delay || 0) - (a.delay || 0);
+      default:
+        return 0;
+    }
+  });
+
+  // Pagination logic
+  const totalPages = Math.ceil(sortedFlights.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedFlights = sortedFlights.slice(startIndex, endIndex);
+
+  // Reset current page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    filters.status,
+    filters.priority,
+    filters.origin,
+    filters.destination,
+    filters.hub,
+    filters.categorization,
+    filters.search,
+  ]);
+
+  const handleFlightSelection = (flight) => {
+    setSelectedFlight(flight);
+  };
+
+  // Fix Generate Recovery Option button to call API and navigate properly
+  const handleGenerateRecoveryOptions = async (flight) => {
+    console.log("Generating recovery options for:", flight);
+    setIsGeneratingOptions(true);
+
+    try {
+      // Call API to generate recovery options
+      const flightId = flight.id || flight.flightNumber;
+      console.log(
+        "Calling recovery options generation API for flight ID:",
+        flightId,
+      );
+
+      // Set loading for this specific flight
+      setLoadingRecovery((prev) => ({ ...prev, [flightId]: true }));
+
+      // Make API call to generate recovery options
+      const response = await fetch(
+        `/api/recovery-options/generate/${flightId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ forceRegenerate: false }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`API call failed: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Recovery options generation result:", result);
+
+      if (result.success && (result.optionsCount > 0 || result.exists)) {
+        // Show success message
+        toast({
+          title: "Recovery Options Generated",
+          description: `Generated ${result.optionsCount} recovery options for flight ${flight.flightNumber}`,
+          duration: 3000,
+        });
+
+        // Fetch the generated options
+        const optionsResponse = await fetch(
+          `/api/recovery-options/${flightId}`,
+        );
+        const options = optionsResponse.ok ? await optionsResponse.json() : [];
+
+        // Navigate to comparison view with the flight data and options
+        onNavigateToComparison(flight, options);
+      } else {
+        toast({
+          title: "No Options Generated",
+          description: "Unable to generate recovery options for this flight",
+          variant: "destructive",
+          duration: 3000,
+        });
+      }
+    } catch (error) {
+      console.error("Error generating recovery options:", error);
+      toast({
+        title: "Generation Failed",
+        description: "Failed to generate recovery options",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setIsGeneratingOptions(false);
+      setLoadingRecovery((prev) => ({
+        ...prev,
+        [flight.id || flight.flightNumber]: false,
+      }));
+    }
+  };
+
+  // Fix handleViewDetails to fetch and pass recovery options
+  const handleViewDetails = async (flight) => {
+    console.log("Viewing details for:", flight);
+    setLoadingRecovery((prev) => ({
+      ...prev,
+      [flight.id || flight.flightNumber]: true,
+    }));
+
+    try {
+      // Check if recovery options exist, if not generate them
+      const flightId = flight.id || flight.flightNumber;
+
+      // First try to fetch existing options
+      const optionsResponse = await fetch(`/api/recovery-options/${flightId}`);
+      let options = [];
+
+      if (optionsResponse.ok) {
+        options = await optionsResponse.json();
+      }
+
+      if (options.length === 0) {
+        // Generate options first
+        const generateResponse = await fetch(
+          `/api/recovery-options/generate/${flightId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ forceRegenerate: false }),
+          },
+        );
+
+        if (generateResponse.ok) {
+          const generateResult = await generateResponse.json();
+          if (generateResult.success) {
+            // Fetch the newly generated options
+            const newOptionsResponse = await fetch(
+              `/api/recovery-options/${flightId}`,
+            );
+            if (newOptionsResponse.ok) {
+              options = await newOptionsResponse.json();
+            }
+          }
+        }
+      }
+
+      // Navigate to comparison with options (even if empty)
+      if (onNavigateToComparison) {
+        onNavigateToComparison(flight, options);
+      } else {
+        // Fallback navigation
+        navigate(`/comparison?flightId=${flight.id || flight.flightNumber}`);
+      }
+    } catch (error) {
+      console.error("Error viewing details:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load flight details",
+        variant: "destructive",
+        duration: 3000,
+      });
+    } finally {
+      setLoadingRecovery((prev) => ({
+        ...prev,
+        [flight.id || flight.flightNumber]: false,
+      }));
+    }
+  };
+
+  const getSelectedFlightImpact = () => {
+    if (!selectedFlight) {
+      return {
+        flights: 0,
+        passengers: 0,
+        connections: 0,
+      };
+    }
+    return {
+      flights: 1,
+      passengers: selectedFlight.passengers,
+      connections: selectedFlight.connectionFlights,
+    };
+  };
+
+  const impact = getSelectedFlightImpact();
+
+  // Handle adding new disruption
+  const handleAddDisruption = async () => {
+    // Validate required fields
+    if (
+      !newDisruption.flightNumber ||
+      !newDisruption.origin ||
+      !newDisruption.destination ||
+      !newDisruption.passengers ||
+      !newDisruption.scheduledDeparture ||
+      !newDisruption.aircraft ||
+      !newDisruption.disruptionReason
+    ) {
+      alert(
+        "Please fill in all required fields: Flight Number, Origin, Destination, Aircraft, Scheduled Departure, Passengers, and Disruption Reason.",
+      );
+      return;
+    }
+
+    // Find the selected category details
+    const selectedCategory = disruptionCategories.find(
+      (cat) => cat.category_code === newDisruption.categorization,
+    );
+
+    const newFlightData = {
+      flightNumber: newDisruption.flightNumber,
+      route: `${newDisruption.origin} → ${newDisruption.destination}`,
+      origin: newDisruption.origin,
+      destination: newDisruption.destination,
+      originCity: getLocationName(newDisruption.origin),
+      destinationCity: getLocationName(newDisruption.destination),
+      gate: newDisruption.gate,
+      connectionFlights: newDisruption.connectionFlights
+        ? parseInt(newDisruption.connectionFlights.toString())
+        : 0,
+      vipPassengers: newDisruption.vipPassengers
+        ? parseInt(newDisruption.vipPassengers.toString())
+        : 0,
+      aircraft: newDisruption.aircraft,
+      scheduledDeparture: newDisruption.scheduledDeparture,
+      estimatedDeparture:
+        newDisruption.scheduledArrival ||
+        addHours(newDisruption.scheduledDeparture, 3),
+      delay: newDisruption.delay ? parseInt(newDisruption.delay.toString()) : 0,
+      passengers: parseInt(newDisruption.passengers.toString()),
+      crew: parseInt(newDisruption.crew.toString()),
+      severity: newDisruption.priority,
+      type:
+        newDisruption.disruptionType.charAt(0).toUpperCase() +
+        newDisruption.disruptionType.slice(1),
+      status: newDisruption.currentStatus,
+      disruptionReason: newDisruption.disruptionReason,
+      categorization:
+        selectedCategory?.category_name || newDisruption.categorization,
+      categoryId: selectedCategory?.id,
+      categoryCode:
+        selectedCategory?.category_code || newDisruption.categorization, // Send the correct category_code
+      crewMembers: newDisruption.crewMembers || [],
+    };
+
+    try {
+      console.log("Form data before submission:", {
+        connectionFlights: newDisruption.connectionFlights,
+        connectionFlightsType: typeof newDisruption.connectionFlights,
+        newFlightDataConnectionFlights: newFlightData.connectionFlights,
+      });
+
+      const result = await databaseService.saveDisruption(newFlightData);
+
+      // Check if the result indicates success
+      if (result && (result === true || result.success !== false)) {
+        // Clear any existing errors and show success
+        setError(null);
+        setSuccess("Disruption added successfully!");
+        setShowAlert(true);
+
+        // Clear the form
+        setNewDisruption({
+          flightNumber: "",
+          origin: "",
+          destination: "",
+          scheduledDeparture: new Date()
+            .toLocaleString("sv-SE", { timeZone: "Asia/Kolkata" })
+            .slice(0, 16),
+          scheduledArrival: new Date(Date.now() + 2 * 60 * 60 * 1000)
+            .toLocaleString("sv-SE", { timeZone: "Asia/Kolkata" })
+            .slice(0, 16),
+          currentStatus: "Delayed",
+          delay: "",
+          aircraft: "",
+          gate: "",
+          passengers: "",
+          crew: 6,
+          disruptionType: "technical",
+          categorization:
+            disruptionCategories.length > 0
+              ? disruptionCategories[0]?.category_code
+              : "AIRCRAFT_ISSUE",
+          disruptionReason: "",
+          severity: "medium",
+          impact: "",
+          priority: "Medium",
+          connectionFlights: "",
+          vipPassengers: "",
+        });
+
+        // Close the dialog
+        setIsAddDialogOpen(false);
+
+        // Refresh the flights list after a short delay
+        setTimeout(() => {
+          fetchFlights();
+        }, 3000);
+      } else {
+        setError(
+          "Failed to save disruption. Please check your data and try again.",
+        );
+        setShowAlert(true);
+      }
+    } catch (error) {
+      console.error("Error adding disruption:", error);
+      setError(
+        `❌ An error occurred while adding the disruption: ${error.message || "Unknown error"}. Please try again or contact support if the issue persists.`,
+      );
+      setShowAlert(true);
+    }
+  };
+
+  // Handle input changes for new disruption form
+  const handleInputChange = (field, value) => {
+    setNewDisruption((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  // Handle Generate Recovery Options - redirect to Comparison page
+  // const handleGenerateRecoveryOptions = () => {
+  //   if (!selectedFlight) return;
+
+  //   setIsGenerating(true);
+
+  //   // Navigate directly to comparison page with the selected flight
+  //   navigate(`/comparison?flightId=${selectedFlight.id}`);
+
+  //   // Reset generating state after navigation
+  //   setTimeout(() => {
+  //     setIsGenerating(false);
+  //   }, 500);
+  // };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p>Loading affected flights...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 pb-32">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-semibold">Affected Flights Overview</h2>
+          <p className="text-muted-foreground">
+            Select a single flight to generate AERON recovery options
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge
+            variant="outline"
+            className="bg-red-50 text-red-700 border-red-200"
+          >
+            {sortedFlights.length} Flights Affected
+          </Badge>
+          <Badge
+            variant="outline"
+            className="bg-orange-50 text-orange-700 border-orange-200"
+          >
+            {
+              sortedFlights.filter(
+                (f) => f.priority === "High" || f.priority === "Critical",
+              ).length
+            }{" "}
+            High Priority
+          </Badge>
+          {selectedFlight && (
+            <Badge
+              variant="outline"
+              className="bg-blue-50 text-blue-700 border-blue-200"
+            >
+              {selectedFlight.flightNumber} selected
+            </Badge>
+          )}
+          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Disruption
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-flydubai-navy">
+                  Add New Flight Disruption
+                </DialogTitle>
+              </DialogHeader>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+                {/* Flight Information */}
+                <div className="space-y-4">
+                  <h3 className="font-medium text-flydubai-navy">
+                    Flight Information
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="flightNumber">Flight Number*</Label>
+                      <Input
+                        id="flightNumber"
+                        placeholder="FZ123"
+                        value={newDisruption.flightNumber}
+                        onChange={(e) =>
+                          handleInputChange("flightNumber", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="aircraft">Aircraft Type*</Label>
+                      <Select
+                        value={newDisruption.aircraft}
+                        onValueChange={(value) =>
+                          handleInputChange("aircraft", value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select aircraft" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="B737-800">B737-800</SelectItem>
+                          <SelectItem value="B737 MAX 8">B737 MAX 8</SelectItem>
+                          <SelectItem value="B737-900ER">B737-900ER</SelectItem>
+                          <SelectItem value="A320">A320</SelectItem>
+                          <SelectItem value="A321">A321</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="origin">Origin*</Label>
+                      <Select
+                        value={newDisruption.origin}
+                        onValueChange={(value) =>
+                          handleInputChange("origin", value)
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select origin" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60 overflow-y-auto z-50">
+                          {[
+                            { code: "DXB", name: "Dubai", country: "UAE" },
+                            {
+                              code: "DWC",
+                              name: "Dubai World Central",
+                              country: "UAE",
+                            },
+                            { code: "SHJ", name: "Sharjah", country: "UAE" },
+                            { code: "AUH", name: "Abu Dhabi", country: "UAE" },
+                            { code: "FJR", name: "Fujairah", country: "UAE" },
+                            { code: "KWI", name: "Kuwait", country: "Kuwait" },
+                            { code: "MCT", name: "Muscat", country: "Oman" },
+                            { code: "SLL", name: "Salalah", country: "Oman" },
+                            {
+                              code: "KHI",
+                              name: "Karachi",
+                              country: "Pakistan",
+                            },
+                            { code: "BOM", name: "Mumbai", country: "India" },
+                            { code: "DEL", name: "Delhi", country: "India" },
+                            { code: "COK", name: "Kochi", country: "India" },
+                            {
+                              code: "CMB",
+                              name: "Colombo",
+                              country: "Sri Lanka",
+                            },
+                            {
+                              code: "IST",
+                              name: "Istanbul",
+                              country: "Turkey",
+                            },
+                            {
+                              code: "BCN",
+                              name: "Barcelona",
+                              country: "Spain",
+                            },
+                            {
+                              code: "PRG",
+                              name: "Prague",
+                              country: "Czech Republic",
+                            },
+                          ]
+                            .filter(
+                              (airport) =>
+                                airport.code !== newDisruption.destination,
+                            )
+                            .map((airport) => (
+                              <SelectItem
+                                key={airport.code}
+                                value={airport.code}
+                              >
+                                {airport.code} - {airport.name},{" "}
+                                {airport.country}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="destination">Destination*</Label>
+                      <Select
+                        value={newDisruption.destination}
+                        onValueChange={(value) =>
+                          handleInputChange("destination", value)
+                        }
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select destination" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-60 overflow-y-auto z-50">
+                          {[
+                            { code: "DXB", name: "Dubai", country: "UAE" },
+                            {
+                              code: "DWC",
+                              name: "Dubai World Central",
+                              country: "UAE",
+                            },
+                            { code: "SHJ", name: "Sharjah", country: "UAE" },
+                            { code: "AUH", name: "Abu Dhabi", country: "UAE" },
+                            { code: "FJR", name: "Fujairah", country: "UAE" },
+                            { code: "KWI", name: "Kuwait", country: "Kuwait" },
+                            { code: "MCT", name: "Muscat", country: "Oman" },
+                            { code: "SLL", name: "Salalah", country: "Oman" },
+                            {
+                              code: "KHI",
+                              name: "Karachi",
+                              country: "Pakistan",
+                            },
+                            { code: "BOM", name: "Mumbai", country: "India" },
+                            { code: "DEL", name: "Delhi", country: "India" },
+                            { code: "COK", name: "Kochi", country: "India" },
+                            {
+                              code: "CMB",
+                              name: "Colombo",
+                              country: "Sri Lanka",
+                            },
+                            {
+                              code: "IST",
+                              name: "Istanbul",
+                              country: "Turkey",
+                            },
+                            {
+                              code: "BCN",
+                              name: "Barcelona",
+                              country: "Spain",
+                            },
+                            {
+                              code: "PRG",
+                              name: "Prague",
+                              country: "Czech Republic",
+                            },
+                          ]
+                            .filter(
+                              (airport) =>
+                                airport.code !== newDisruption.origin,
+                            )
+                            .map((airport) => (
+                              <SelectItem
+                                key={airport.code}
+                                value={airport.code}
+                              >
+                                {airport.code} - {airport.name},{" "}
+                                {airport.country}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="scheduledDeparture">
+                        Scheduled Departure*
+                      </Label>
+                      <Input
+                        id="scheduledDeparture"
+                        type="datetime-local"
+                        value={newDisruption.scheduledDeparture}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "scheduledDeparture",
+                            e.target.value,
+                          )
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="scheduledArrival">
+                        Scheduled Arrival*
+                      </Label>
+                      <Input
+                        id="scheduledArrival"
+                        type="datetime-local"
+                        value={newDisruption.scheduledArrival}
+                        onChange={(e) =>
+                          handleInputChange("scheduledArrival", e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <Label htmlFor="gate">Gate</Label>
+                      <Input
+                        id="gate"
+                        placeholder="T2-B12"
+                        value={newDisruption.gate}
+                        onChange={(e) =>
+                          handleInputChange("gate", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="passengers">Passengers*</Label>
+                      <Input
+                        id="passengers"
+                        type="number"
+                        placeholder="189"
+                        value={newDisruption.passengers}
+                        onChange={(e) =>
+                          handleInputChange("passengers", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="crew">Crew</Label>
+                      <Input
+                        id="crew"
+                        type="number"
+                        value={newDisruption.crew}
+                        onChange={(e) =>
+                          handleInputChange("crew", e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+                {/* Disruption Details */}
+                <div className="space-y-4">
+                  <h3 className="font-medium text-flydubai-navy">
+                    Disruption Details
+                  </h3>
+
+                  <div>
+                    <Label htmlFor="currentStatus">Current Status*</Label>
+                    <Select
+                      value={newDisruption.currentStatus}
+                      onValueChange={(value) =>
+                        handleInputChange("currentStatus", value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Delayed">Delayed</SelectItem>
+                        <SelectItem value="Cancelled">Cancelled</SelectItem>
+                        <SelectItem value="Diverted">Diverted</SelectItem>
+                        <SelectItem value="On Hold">On Hold</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="delay">Delay (minutes)</Label>
+                      <Input
+                        id="delay"
+                        type="number"
+                        placeholder="120"
+                        value={newDisruption.delay}
+                        onChange={(e) =>
+                          handleInputChange("delay", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="priority">Priority*</Label>
+                      <Select
+                        value={newDisruption.priority}
+                        onValueChange={(value) =>
+                          handleInputChange("priority", value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Critical">Critical</SelectItem>
+                          <SelectItem value="High">High</SelectItem>
+                          <SelectItem value="Medium">Medium</SelectItem>
+                          <SelectItem value="Low">Low</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="categorization">
+                      Disruption Categorization*
+                    </Label>
+                    <Select
+                      value={newDisruption.categorization}
+                      onValueChange={(value) =>
+                        handleInputChange("categorization", value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {disruptionCategories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.category_code}>
+                            {cat.category_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="disruptionType">Disruption Type</Label>
+                      <Select
+                        value={newDisruption.disruptionType}
+                        onValueChange={(value) =>
+                          handleInputChange("disruptionType", value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="technical">Technical</SelectItem>
+                          <SelectItem value="weather">Weather</SelectItem>
+                          <SelectItem value="crew">Crew</SelectItem>
+                          <SelectItem value="airport">Airport</SelectItem>
+                          <SelectItem value="rotation">Rotation</SelectItem>
+                          <SelectItem value="air_traffic">
+                            Air Traffic
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label htmlFor="severity">Severity*</Label>
+                      <Select
+                        value={newDisruption.severity}
+                        onValueChange={(value) =>
+                          handleInputChange("severity", value)
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="high">High</SelectItem>
+                          <SelectItem value="medium">Medium</SelectItem>
+                          <SelectItem value="low">Low</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="disruptionReason">Disruption Reason*</Label>
+                    <Input
+                      id="disruptionReason"
+                      placeholder="Engine maintenance check required"
+                      value={newDisruption.disruptionReason}
+                      onChange={(e) =>
+                        handleInputChange("disruptionReason", e.target.value)
+                      }
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="impact">Impact Description</Label>
+                    <Textarea
+                      id="impact"
+                      placeholder="Brief description of the impact..."
+                      value={newDisruption.impact}
+                      onChange={(e) =>
+                        handleInputChange("impact", e.target.value)
+                      }
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label htmlFor="connectionFlights">
+                        Connection Flights
+                      </Label>
+                      <Input
+                        id="connectionFlights"
+                        type="number"
+                        min="0"
+                        placeholder="8"
+                        value={newDisruption.connectionFlights}
+                        onChange={(e) =>
+                          handleInputChange("connectionFlights", e.target.value)
+                        }
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="vipPassengers">VIP Passengers</Label>
+                      <Input
+                        id="vipPassengers"
+                        type="number"
+                        placeholder="4"
+                        value={newDisruption.vipPassengers}
+                        onChange={(e) =>
+                          handleInputChange("vipPassengers", e.target.value)
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAddDialogOpen(false)}
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleAddDisruption}
+                  className="bg-flydubai-orange hover:bg-orange-600 text-white"
+                  disabled={
+                    !newDisruption.flightNumber ||
+                    !newDisruption.origin ||
+                    !newDisruption.destination ||
+                    !newDisruption.passengers ||
+                    !newDisruption.scheduledDeparture ||
+                    !newDisruption.aircraft ||
+                    !newDisruption.disruptionReason
+                  }
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Add Disruption
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchFlights}
+            disabled={loading}
+          >
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+            />
+            {loading ? "Syncing from API..." : "Refresh Data"}
+          </Button>
+        </div>
+      </div>
+      {/* Context Alert */}
+      {disruption && (
+        <Alert className="border-orange-200 bg-orange-50">
+          <AlertTriangle className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-800">
+            <strong>Disruption Context:</strong> {disruption.title} at{" "}
+            {disruption.airport?.toUpperCase()} -{disruption.affectedFlights}{" "}
+            flights impacted. Last updated {disruption.lastUpdate}.
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card
+          className={
+            selectedFlight && selectedFlight.priority === "Critical"
+              ? "border-red-200 bg-red-50"
+              : ""
+          }
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <AlertTriangle className="h-5 w-5 text-red-600" />
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  Critical Flights
+                </p>
+                <p className="text-lg font-semibold text-red-600">
+                  {
+                    sortedFlights.filter((f) => f.priority === "Critical")
+                      .length
+                  }
+                </p>
+                {selectedFlight && selectedFlight.priority === "Critical" && (
+                  <p className="text-xs text-red-600">
+                    Selected flight is critical
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className={selectedFlight ? "border-blue-200 bg-blue-50" : ""}>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Users className="h-5 w-5 text-blue-600" />
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  {selectedFlight
+                    ? "Selected Flight Passengers"
+                    : "Total Passengers"}
+                </p>
+                <p className="text-lg font-semibold text-blue-600">
+                  {selectedFlight
+                    ? selectedFlight.passengers.toLocaleString()
+                    : sortedFlights
+                        .reduce((sum, f) => sum + f.passengers, 0)
+                        .toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className={selectedFlight ? "border-green-200 bg-green-50" : ""}>
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Plane className="h-5 w-5 text-green-600" />
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  {selectedFlight
+                    ? "Selected Flight Connections"
+                    : "Total Connections"}
+                </p>
+                <p className="text-lg font-semibold text-green-600">
+                  {selectedFlight
+                    ? selectedFlight.connectionFlights
+                    : sortedFlights.reduce(
+                        (sum, f) => sum + f.connectionFlights,
+                        0,
+                      )}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card
+          className={
+            selectedFlight && selectedFlight.delay
+              ? "border-purple-200 bg-purple-50"
+              : ""
+          }
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 text-purple-600" />
+              <div>
+                <p className="text-sm text-muted-foreground">
+                  {selectedFlight ? "Selected Flight Delay" : "Avg Delay"}
+                </p>
+                <p className="text-lg font-semibold text-purple-600">
+                  {selectedFlight
+                    ? selectedFlight.delay
+                      ? `${selectedFlight.delay}m`
+                      : "0m"
+                    : `${Math.round(
+                        sortedFlights
+                          .filter((f) => f.delay)
+                          .reduce((sum, f) => sum + f.delay, 0) /
+                          sortedFlights.filter((f) => f.delay).length || 0,
+                      )}m`}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Filters and Controls */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filter & Sort Flights
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* First Row - Search, Status, Priority, Origin */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Search</label>
+                <div className="relative">
+                  <Search className="h-4 w-4 absolute left-3 top-3 text-muted-foreground" />
+                  <Input
+                    placeholder="Flight, city, reason..."
+                    value={filters.search}
+                    onChange={(e) =>
+                      setFilters({ ...filters, search: e.target.value })
+                    }
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Status</label>
+                <Select
+                  value={filters.status}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, status: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="Delayed">Delayed</SelectItem>
+                    <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    <SelectItem value="Diverted">Diverted</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Priority
+                </label>
+                <Select
+                  value={filters.priority}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, priority: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All priorities" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Priorities</SelectItem>
+                    <SelectItem value="Critical">Critical</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Origin</label>
+                <Select
+                  value={filters.origin}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, origin: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All origins" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Origins</SelectItem>
+                    {Array.from(new Set(flights.map((f) => f.origin)))
+                      .sort()
+                      .map((origin) => (
+                        <SelectItem key={origin} value={origin}>
+                          {origin}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Second Row - Destination, Hub, Categorization, Sort By */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Destination
+                </label>
+                <Select
+                  value={filters.destination || "all"}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, destination: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All destinations" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Destinations</SelectItem>
+                    {Array.from(new Set(flights.map((f) => f.destination)))
+                      .sort()
+                      .map((destination) => (
+                        <SelectItem key={destination} value={destination}>
+                          {destination}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Hub</label>
+                <Select
+                  value={filters.hub || "all"}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, hub: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All hubs" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All hubs</SelectItem>
+                    <SelectItem value="DXB">DXB</SelectItem>
+                    <SelectItem value="DWC">DWC</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Categorization
+                </label>
+                <Select
+                  value={filters.categorization}
+                  onValueChange={(value) =>
+                    setFilters({ ...filters, categorization: value })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All categories">
+                      {filters.categorization !== "all" ? (
+                        <span
+                          className="truncate block max-w-[150px]"
+                          title={filters.categorization}
+                        >
+                          {filters.categorization}
+                        </span>
+                      ) : (
+                        "All Categories"
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent className="max-w-[300px]">
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {Array.from(new Set(flights.map((f) => f.categorization)))
+                      .sort()
+                      .map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          <div className="truncate max-w-[250px]" title={cat}>
+                            {cat}
+                          </div>
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">
+                  Sort By
+                </label>
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="priority">Priority</SelectItem>
+                    <SelectItem value="departure">Departure Time</SelectItem>
+                    <SelectItem value="passengers">Passenger Count</SelectItem>
+                    <SelectItem value="delay">Delay Duration</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between mt-4 pt-4 border-t">
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium">Items per page:</label>
+              <Select
+                value={itemsPerPage.toString()}
+                onValueChange={(value) => {
+                  setItemsPerPage(parseInt(value));
+                  setCurrentPage(1);
+                }}
+              >
+                <SelectTrigger className="w-20">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="5">5</SelectItem>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Showing {startIndex + 1}-
+              {Math.min(endIndex, sortedFlights.length)} of{" "}
+              {sortedFlights.length} flights
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Flight List with Tabs */}
+      <div className="relative flex-1 overflow-hidden">
+        <div
+          className={`h-full overflow-y-auto ${selectedFlight ? "pb-4" : ""}`}
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>
+                  Affected Flights ({sortedFlights.length} total)
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">
+                    Click a row to select flight
+                  </span>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="inbound" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 bg-gray-50 p-0.5 rounded border border-gray-200">
+                  <TabsTrigger
+                    value="inbound"
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
+                  >
+                    <Plane className="h-3.5 w-3.5 transform rotate-180" />
+                    <span className="text-xs">{`Inbound (${
+                      filters.hub === "all"
+                        ? sortedFlights.filter(
+                            (f) =>
+                              f.destination === "DXB" ||
+                              f.destination === "DWC",
+                          ).length
+                        : sortedFlights.filter(
+                            (f) => f.destination === filters.hub,
+                          ).length
+                    })`}</span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="outbound"
+                    className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
+                  >
+                    <Plane className="h-3.5 w-3.5" />
+                    <span className="text-xs">{`Outbound (${
+                      filters.hub === "all"
+                        ? sortedFlights.filter(
+                            (f) => f.origin === "DXB" || f.origin === "DWC",
+                          ).length
+                        : sortedFlights.filter((f) => f.origin === filters.hub)
+                            .length
+                    })`}</span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="inbound" className="space-y-4">
+                  {(() => {
+                    const inboundFlights =
+                      filters.hub === "all"
+                        ? sortedFlights.filter(
+                            (f) =>
+                              f.destination === "DXB" ||
+                              f.destination === "DWC",
+                          )
+                        : sortedFlights.filter(
+                            (f) => f.destination === filters.hub,
+                          );
+                    const startIdx = (currentPage - 1) * itemsPerPage;
+                    const endIdx = startIdx + itemsPerPage;
+                    const paginatedInboundFlights = inboundFlights.slice(
+                      startIdx,
+                      endIdx,
+                    );
+                    const inboundTotalPages = Math.ceil(
+                      inboundFlights.length / itemsPerPage,
+                    );
+
+                    return (
+                      <>
+                        <div className="overflow-x-auto">
+                          <Table className="min-w-full">
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Flight</TableHead>
+                                <TableHead>Route</TableHead>
+                                <TableHead>Departure</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Categorization</TableHead>
+                                <TableHead>Priority</TableHead>
+                                <TableHead>Passengers</TableHead>
+                                <TableHead>Impact</TableHead>
+                                <TableHead>Actions</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {paginatedInboundFlights.map((flight) => (
+                                <TableRow
+                                  key={flight.id}
+                                  className={`cursor-pointer hover:bg-blue-50 ${selectedFlight?.id === flight.id ? "bg-blue-100 border-blue-200" : ""}`}
+                                  onClick={() => handleFlightSelection(flight)}
+                                >
+                                  <TableCell>
+                                    <div className="space-y-1 max-w-[120px]">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-mono font-semibold truncate">
+                                          {flight.id &&
+                                          typeof flight.id === "string" &&
+                                          flight.id.startsWith("UNKNOWN-")
+                                            ? flight.flightNumber || "-"
+                                            : flight.flightNumber}
+                                        </span>
+                                        {flight.status === "Incomplete" &&
+                                          !(
+                                            flight.id &&
+                                            typeof flight.id === "string" &&
+                                            flight.id.startsWith("UNKNOWN-") &&
+                                            !flight.flightNumber
+                                          ) && (
+                                            <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-xs">
+                                              Incomplete
+                                            </Badge>
+                                          )}
+                                      </div>
+                                      <div
+                                        className="text-sm text-muted-foreground truncate"
+                                        title={flight.aircraft}
+                                      >
+                                        {flight.aircraft}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2 max-w-[140px]">
+                                      <span className="font-medium truncate">
+                                        {flight.origin}
+                                      </span>
+                                      <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                      <span className="font-medium truncate text-flydubai-blue">
+                                        {flight.destination}
+                                      </span>
+                                    </div>
+                                    <div
+                                      className="text-sm text-muted-foreground truncate max-w-[140px]"
+                                      title={`${flight.originCity} → ${flight.destinationCity}`}
+                                    >
+                                      {flight.originCity} →{" "}
+                                      {flight.destinationCity}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div>
+                                      <div className="font-medium">
+                                        {formatTime(flight.scheduledDeparture)}
+                                      </div>
+                                      <div className="text-sm text-muted-foreground">
+                                        {formatDate(flight.scheduledDeparture)}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      className={getStatusColor(
+                                        flight.currentStatus,
+                                      )}
+                                    >
+                                      {flight.currentStatus}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="space-y-1 max-w-[200px]">
+                                      <Badge
+                                        className={`${getCategorizationColor(
+                                          flight.categorization,
+                                        )} text-xs truncate block max-w-full`}
+                                        title={flight.categorization}
+                                      >
+                                        <span className="truncate">
+                                          {flight.categorization}
+                                        </span>
+                                      </Badge>
+                                      <div
+                                        className="text-sm text-muted-foreground truncate"
+                                        title={flight.disruptionReason}
+                                      >
+                                        {flight.disruptionReason}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      className={getPriorityColor(
+                                        flight.priority,
+                                      )}
+                                    >
+                                      {flight.priority}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div>
+                                      <div className="font-medium">
+                                        {flight.passengers}
+                                      </div>
+                                      <div className="text-sm text-muted-foreground">
+                                        {flight.connectionFlights > 0
+                                          ? `${flight.connectionFlights} connections`
+                                          : "Direct flight"}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-lg">
+                                        {getDisruptionIcon(
+                                          flight.disruptionType,
+                                        )}
+                                      </span>
+                                      <div>
+                                        <div
+                                          className={`text-sm font-medium ${getSeverityColor(flight.severity)}`}
+                                        >
+                                          {flight.severity} severity
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                          {flight.lastUpdate}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleViewDetails(flight);
+                                      }}
+                                      disabled={
+                                        loadingRecovery[
+                                          flight.id || flight.flightNumber
+                                        ]
+                                      }
+                                      className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                    >
+                                      {loadingRecovery[
+                                        flight.id || flight.flightNumber
+                                      ] ? (
+                                        <>
+                                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-flydubai-blue mr-1"></div>
+                                          Loading...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Eye className="h-3 w-3 mr-1" />
+                                          Generate Options
+                                        </>
+                                      )}
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+
+                        {/* Inbound Pagination */}
+                        {inboundFlights.length > itemsPerPage && (
+                          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+                            <div className="text-sm text-muted-foreground whitespace-nowrap">
+                              Page {currentPage} of {inboundTotalPages} (
+                              {inboundFlights.length} inbound flights)
+                            </div>
+                            <Pagination>
+                              <PaginationContent className="flex-wrap justify-center">
+                                <PaginationItem>
+                                  <PaginationPrevious
+                                    onClick={() =>
+                                      setCurrentPage(
+                                        Math.max(1, currentPage - 1),
+                                      )
+                                    }
+                                    className={
+                                      currentPage === 1
+                                        ? "pointer-events-none opacity-50"
+                                        : "cursor-pointer"
+                                    }
+                                  />
+                                </PaginationItem>
+
+                                {Array.from(
+                                  { length: Math.min(5, inboundTotalPages) },
+                                  (_, i) => {
+                                    let pageNum;
+                                    if (inboundTotalPages <= 5) {
+                                      pageNum = i + 1;
+                                    } else if (currentPage <= 3) {
+                                      pageNum = i + 1;
+                                    } else if (
+                                      currentPage >=
+                                      inboundTotalPages - 2
+                                    ) {
+                                      pageNum = inboundTotalPages - 4 + i;
+                                    } else {
+                                      pageNum = currentPage - 2 + i;
+                                    }
+
+                                    return (
+                                      <PaginationItem key={pageNum}>
+                                        <PaginationLink
+                                          onClick={() =>
+                                            setCurrentPage(pageNum)
+                                          }
+                                          isActive={currentPage === pageNum}
+                                          className="cursor-pointer"
+                                        >
+                                          {pageNum}
+                                        </PaginationLink>
+                                      </PaginationItem>
+                                    );
+                                  },
+                                )}
+
+                                {inboundTotalPages > 5 &&
+                                  currentPage < inboundTotalPages - 2 && (
+                                    <PaginationItem>
+                                      <PaginationEllipsis />
+                                    </PaginationItem>
+                                  )}
+
+                                <PaginationItem>
+                                  <PaginationNext
+                                    onClick={() =>
+                                      setCurrentPage(
+                                        Math.min(
+                                          inboundTotalPages,
+                                          currentPage + 1,
+                                        ),
+                                      )
+                                    }
+                                    className={
+                                      currentPage === inboundTotalPages
+                                        ? "pointer-events-none opacity-50"
+                                        : "cursor-pointer"
+                                    }
+                                  />
+                                </PaginationItem>
+                              </PaginationContent>
+                            </Pagination>
+                          </div>
+                        )}
+
+                        {/* No inbound flights state */}
+                        {inboundFlights.length === 0 &&
+                          filteredFlights.length > 0 && (
+                            <div className="text-center py-12">
+                              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <Plane className="h-8 w-8 text-gray-400 transform rotate-180" />
+                              </div>
+                              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                No inbound flights found
+                              </h3>
+                              <p className="text-gray-500 mb-4">
+                                No inbound flights to the selected hub(s) match
+                                your current filter criteria.
+                              </p>
+                            </div>
+                          )}
+                      </>
+                    );
+                  })()}
+                </TabsContent>
+
+                <TabsContent value="outbound" className="space-y-4">
+                  {(() => {
+                    const outboundFlights =
+                      filters.hub === "all"
+                        ? sortedFlights.filter(
+                            (f) => f.origin === "DXB" || f.origin === "DWC",
+                          )
+                        : sortedFlights.filter((f) => f.origin === filters.hub);
+                    const startIdx = (currentPage - 1) * itemsPerPage;
+                    const endIdx = startIdx + itemsPerPage;
+                    const paginatedOutboundFlights = outboundFlights.slice(
+                      startIdx,
+                      endIdx,
+                    );
+                    const outboundTotalPages = Math.ceil(
+                      outboundFlights.length / itemsPerPage,
+                    );
+
+                    return (
+                      <>
+                        <div className="overflow-x-auto">
+                          <Table className="min-w-full">
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Flight</TableHead>
+                                <TableHead>Route</TableHead>
+                                <TableHead>Departure</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Categorization</TableHead>
+                                <TableHead>Priority</TableHead>
+                                <TableHead>Passengers</TableHead>
+                                <TableHead>Impact</TableHead>
+                                <TableHead>Actions</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {paginatedOutboundFlights.map((flight) => (
+                                <TableRow
+                                  key={flight.id}
+                                  className={`cursor-pointer hover:bg-blue-50 ${selectedFlight?.id === flight.id ? "bg-blue-100 border-blue-200" : ""}`}
+                                  onClick={() => handleFlightSelection(flight)}
+                                >
+                                  <TableCell>
+                                    <div className="space-y-1 max-w-[120px]">
+                                      <div className="flex items-center gap-2">
+                                        <span className="font-mono font-semibold truncate">
+                                          {flight.id &&
+                                          typeof flight.id === "string" &&
+                                          flight.id.startsWith("UNKNOWN-")
+                                            ? flight.flightNumber || "-"
+                                            : flight.flightNumber}
+                                        </span>
+                                        {flight.status === "Incomplete" &&
+                                          !(
+                                            flight.id &&
+                                            typeof flight.id === "string" &&
+                                            flight.id.startsWith("UNKNOWN-") &&
+                                            !flight.flightNumber
+                                          ) && (
+                                            <Badge className="bg-orange-100 text-orange-800 border-orange-200 text-xs">
+                                              Incomplete
+                                            </Badge>
+                                          )}
+                                      </div>
+                                      <div
+                                        className="text-sm text-muted-foreground truncate"
+                                        title={flight.aircraft}
+                                      >
+                                        {flight.aircraft}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2 max-w-[140px]">
+                                      <span className="font-medium truncate text-flydubai-blue">
+                                        {flight.origin}
+                                      </span>
+                                      <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                      <span className="font-medium truncate">
+                                        {flight.destination}
+                                      </span>
+                                    </div>
+                                    <div
+                                      className="text-sm text-muted-foreground truncate max-w-[140px]"
+                                      title={`${flight.originCity} → ${flight.destinationCity}`}
+                                    >
+                                      {flight.originCity} →{" "}
+                                      {flight.destinationCity}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div>
+                                      <div className="font-medium">
+                                        {formatTime(flight.scheduledDeparture)}
+                                      </div>
+                                      <div className="text-sm text-muted-foreground">
+                                        {formatDate(flight.scheduledDeparture)}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      className={getStatusColor(
+                                        flight.currentStatus,
+                                      )}
+                                    >
+                                      {flight.currentStatus}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="space-y-1 max-w-[200px]">
+                                      <Badge
+                                        className={`${getCategorizationColor(
+                                          flight.categorization,
+                                        )} text-xs truncate block max-w-full`}
+                                        title={flight.categorization}
+                                      >
+                                        <span className="truncate">
+                                          {flight.categorization}
+                                        </span>
+                                      </Badge>
+                                      <div
+                                        className="text-sm text-muted-foreground truncate"
+                                        title={flight.disruptionReason}
+                                      >
+                                        {flight.disruptionReason}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      className={getPriorityColor(
+                                        flight.priority,
+                                      )}
+                                    >
+                                      {flight.priority}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div>
+                                      <div className="font-medium">
+                                        {flight.passengers}
+                                      </div>
+                                      <div className="text-sm text-muted-foreground">
+                                        {flight.connectionFlights > 0
+                                          ? `${flight.connectionFlights} connections`
+                                          : "Direct flight"}
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-lg">
+                                        {getDisruptionIcon(
+                                          flight.disruptionType,
+                                        )}
+                                      </span>
+                                      <div>
+                                        <div
+                                          className={`text-sm font-medium ${getSeverityColor(flight.severity)}`}
+                                        >
+                                          {flight.severity} severity
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                          {flight.lastUpdate}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleViewDetails(flight);
+                                      }}
+                                      disabled={
+                                        loadingRecovery[
+                                          flight.id || flight.flightNumber
+                                        ]
+                                      }
+                                      className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                    >
+                                      {loadingRecovery[
+                                        flight.id || flight.flightNumber
+                                      ] ? (
+                                        <>
+                                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-flydubai-blue mr-1"></div>
+                                          Loading...
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Eye className="h-3 w-3 mr-1" />
+                                          Options
+                                        </>
+                                      )}
+                                    </Button>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+
+                        {/* Outbound Pagination */}
+                        {outboundFlights.length > itemsPerPage && (
+                          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+                            <div className="text-sm text-muted-foreground whitespace-nowrap">
+                              Page {currentPage} of {outboundTotalPages} (
+                              {outboundFlights.length} outbound flights)
+                            </div>
+                            <Pagination>
+                              <PaginationContent className="flex-wrap justify-center">
+                                <PaginationItem>
+                                  <PaginationPrevious
+                                    onClick={() =>
+                                      setCurrentPage(
+                                        Math.max(1, currentPage - 1),
+                                      )
+                                    }
+                                    className={
+                                      currentPage === 1
+                                        ? "pointer-events-none opacity-50"
+                                        : "cursor-pointer"
+                                    }
+                                  />
+                                </PaginationItem>
+
+                                {Array.from(
+                                  { length: Math.min(5, outboundTotalPages) },
+                                  (_, i) => {
+                                    let pageNum;
+                                    if (outboundTotalPages <= 5) {
+                                      pageNum = i + 1;
+                                    } else if (currentPage <= 3) {
+                                      pageNum = i + 1;
+                                    } else if (
+                                      currentPage >=
+                                      outboundTotalPages - 2
+                                    ) {
+                                      pageNum = outboundTotalPages - 4 + i;
+                                    } else {
+                                      pageNum = currentPage - 2 + i;
+                                    }
+
+                                    return (
+                                      <PaginationItem key={pageNum}>
+                                        <PaginationLink
+                                          onClick={() =>
+                                            setCurrentPage(pageNum)
+                                          }
+                                          isActive={currentPage === pageNum}
+                                          className="cursor-pointer"
+                                        >
+                                          {pageNum}
+                                        </PaginationLink>
+                                      </PaginationItem>
+                                    );
+                                  },
+                                )}
+
+                                {outboundTotalPages > 5 &&
+                                  currentPage < outboundTotalPages - 2 && (
+                                    <PaginationItem>
+                                      <PaginationEllipsis />
+                                    </PaginationItem>
+                                  )}
+
+                                <PaginationItem>
+                                  <PaginationNext
+                                    onClick={() =>
+                                      setCurrentPage(
+                                        Math.min(
+                                          outboundTotalPages,
+                                          currentPage + 1,
+                                        ),
+                                      )
+                                    }
+                                    className={
+                                      currentPage === outboundTotalPages
+                                        ? "pointer-events-none opacity-50"
+                                        : "cursor-pointer"
+                                    }
+                                  />
+                                </PaginationItem>
+                              </PaginationContent>
+                            </Pagination>
+                          </div>
+                        )}
+
+                        {/* No outbound flights state */}
+                        {outboundFlights.length === 0 &&
+                          filteredFlights.length > 0 && (
+                            <div className="text-center py-12">
+                              <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <Plane className="h-8 w-8 text-gray-400" />
+                              </div>
+                              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                                No outbound flights found
+                              </h3>
+                              <p className="text-gray-500 mb-4">
+                                No outbound flights from the selected hub(s)
+                                match your current filter criteria.
+                              </p>
+                            </div>
+                          )}
+                      </>
+                    );
+                  })()}
+                </TabsContent>
+
+                {/* No flights match filters state */}
+                {flights.length > 0 &&
+                  filteredFlights.length === 0 &&
+                  !loading && (
+                    <div className="text-center py-12">
+                      <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                        <Filter className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">
+                        No flights match your filters
+                      </h3>
+                      <p className="text-gray-500 mb-4">
+                        Try adjusting your filter criteria to see more results.
+                      </p>
+                      <div className="flex justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() =>
+                            setFilters({
+                              status: "all",
+                              priority: "all",
+                              origin: "all",
+                              destination: "all",
+                              hub: "all",
+                              categorization: "all",
+                              search: "",
+                            })
+                          }
+                          className="flex items-center gap-2"
+                        >
+                          Clear Filters
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+              </Tabs>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Selected Flight Summary - Fixed at bottom with proper margin */}
+      {selectedFlight && (
+        <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-10 mt-4">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Plane className="h-4 w-4 text-flydubai-blue" />
+                <span className="font-medium text-sm">Selected Flight:</span>
+              </div>
+              <div className="text-sm">
+                <span className="font-semibold">
+                  {selectedFlight.flightNumber}
+                </span>
+                <span className="mx-2 text-gray-400">•</span>
+                <span>{selectedFlight.route}</span>
+                <span className="mx-2 text-gray-400">•</span>
+                <span>{selectedFlight.passengers} passengers</span>
+              </div>
+              <Badge
+                variant={
+                  selectedFlight.severity === "Critical"
+                    ? "destructive"
+                    : selectedFlight.severity === "High"
+                      ? "default"
+                      : "secondary"
+                }
+                className="text-xs"
+              >
+                {selectedFlight.severity}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedFlight(null)}
+                className="text-xs"
+              >
+                <X className="h-3 w-3 mr-1" />
+                Clear
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => handleGenerateRecoveryOptions(selectedFlight)}
+                disabled={!selectedFlight || isGeneratingOptions}
+                className="text-xs bg-flydubai-blue hover:bg-blue-700"
+              >
+                {isGeneratingOptions ? (
+                  <>
+                    <div className="animate-spin rounded-full h-3 w-3 border-2 border-white border-t-transparent mr-1"></div>
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="h-3 w-3 mr-1" />
+                    Generate Recovery Options
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success/Error Alert Dialog */}
+      <AlertDialog open={showAlert} onOpenChange={setShowAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{success ? "Success" : "Error"}</AlertDialogTitle>
+            <AlertDialogDescription>{success || error}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction
+              onClick={() => {
+                setShowAlert(false);
+                setSuccess(null);
+                setError(null);
+              }}
+            >
+              OK
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
