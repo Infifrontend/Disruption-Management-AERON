@@ -1,68 +1,38 @@
 
-// Simple environment variable helper for backend switching
-export const getBackendType = (): 'express' | 'python' => {
-  const envBackendType = import.meta.env.VITE_BACKEND_TYPE?.toLowerCase();
-  return envBackendType === "python" ? "python" : "express";
-}
-
-export const getApiUrl = (backendType?: 'express' | 'python'): string => {
-  // Try to get API URL from environment variables first
+// Simple API URL configuration
+export const getApiUrl = (): string => {
+  // Get API URL from environment variables
   const envApiUrl = import.meta.env.VITE_API_URL;
   if (envApiUrl) {
     return envApiUrl.endsWith('/api') ? envApiUrl : `${envApiUrl}/api`;
   }
 
-  // Fallback to current behavior for backward compatibility
-  const type = backendType || getBackendType();
+  // Fallback for local development
   const hostname = window.location.hostname;
   const protocol = window.location.protocol;
 
   if (hostname === "localhost" || hostname === "0.0.0.0") {
-    // Development environment
-    const port = getBackendPort(type);
+    // Development environment - use port from env or default
+    const port = import.meta.env.DATABASE_SERVER_PORT || "3001";
     return `http://0.0.0.0:${port}/api`;
   } else {
-    // Replit production environment
-    return type === "python" ? `${protocol}//${hostname}/api` : "/api";
+    // Production environment
+    return "/api";
   }
 }
 
-export const getBackendPort = (type: 'express' | 'python'): number => {
-  if (type === "python") {
-    return parseInt(import.meta.env.PYTHON_API_PORT || "8000", 10);
-  }
-  return parseInt(import.meta.env.DATABASE_SERVER_PORT || "3001", 10);
-}
-
-export const getTimeout = (backendType: 'express' | 'python'): number => {
-  if (backendType === "python") {
-    return parseInt(import.meta.env.VITE_PYTHON_TIMEOUT || "8000", 10);
-  }
+export const getTimeout = (): number => {
   return parseInt(import.meta.env.VITE_EXPRESS_TIMEOUT || "5000", 10);
 }
 
-export const getCurrentBackend = () => {
-  const type = getBackendType();
-  return {
-    type,
-    apiUrl: getApiUrl(type),
-    timeout: getTimeout(type),
-    port: getBackendPort(type),
-    isPython: type === "python",
-    isExpress: type === "express",
-    requiresTrailingSlash: type === "python",
-  };
-}
-
 export const getBackendStatus = async () => {
-  const backend = getCurrentBackend();
+  const apiUrl = getApiUrl();
   
   try {
-    // Test database service health by making a direct health check
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), backend.timeout);
+    const timeoutId = setTimeout(() => controller.abort(), getTimeout());
 
-    const response = await fetch(`${backend.apiUrl}/health`, {
+    const response = await fetch(`${apiUrl}/health`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
       signal: controller.signal,
@@ -70,57 +40,16 @@ export const getBackendStatus = async () => {
 
     clearTimeout(timeoutId);
     
-    const databaseHealthy = response.ok;
-
-    // For recovery API health (if using Express)
-    let recoveryHealthy = true;
-    if (backend.isExpress) {
-      try {
-        // Try to get recovery URL from environment variables
-        let recoveryUrl = import.meta.env.VITE_RECOVERY_API_URL;
-        
-        if (!recoveryUrl) {
-          // Fallback to legacy behavior
-          const recoveryPort = import.meta.env.RECOVERY_API_PORT || '3002';
-          const hostname = window.location.hostname;
-          const protocol = window.location.protocol;
-          
-          if (hostname === 'localhost' || hostname === '0.0.0.0') {
-            recoveryUrl = `http://0.0.0.0:${recoveryPort}`;
-          } else {
-            recoveryUrl = `${protocol}//${hostname}:${recoveryPort}`;
-          }
-        }
-
-        const recoveryController = new AbortController();
-        const recoveryTimeoutId = setTimeout(() => recoveryController.abort(), 3000);
-
-        const recoveryResponse = await fetch(`${recoveryUrl}/health`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' },
-          signal: recoveryController.signal,
-        });
-
-        clearTimeout(recoveryTimeoutId);
-        recoveryHealthy = recoveryResponse.ok;
-      } catch (error) {
-        console.warn('Recovery API health check failed:', error);
-        recoveryHealthy = false;
-      }
-    }
-    
     return {
-      backend: backend.type,
-      apiUrl: backend.apiUrl,
-      databaseHealthy,
-      recoveryHealthy,
-      overall: databaseHealthy && recoveryHealthy
+      apiUrl: apiUrl,
+      databaseHealthy: response.ok,
+      recoveryHealthy: true, // Not using separate recovery service
+      overall: response.ok
     }
   } catch (error) {
     console.error('Error checking backend status:', error)
     return {
-      backend: backend.type,
-      apiUrl: backend.apiUrl,
+      apiUrl: apiUrl,
       databaseHealthy: false,
       recoveryHealthy: false,
       overall: false
