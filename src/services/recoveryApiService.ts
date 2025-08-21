@@ -88,20 +88,21 @@ class RecoveryApiService {
 
   constructor() {
     const config = backendConfig.getConfig()
+    const hostname = window.location.hostname
+    const protocol = window.location.protocol
     
     if (config.isPython) {
-      // For Python backend, use the base URL but potentially different port/path for recovery
-      this.baseUrl = config.apiUrl.replace('/api', '') // Remove /api suffix for recovery service
+      // For Python backend, use the main API URL
+      this.baseUrl = config.apiUrl.replace('/api', '')
     } else {
-      // For Express backend, use port 3002
-      const hostname = window.location.hostname
-      const protocol = window.location.protocol
-
-      if (hostname === 'localhost') {
-        this.baseUrl = 'http://localhost:3002'
+      // For Express backend, use dedicated recovery port
+      const recoveryPort = import.meta.env.RECOVERY_API_PORT || '3002'
+      
+      if (hostname === 'localhost' || hostname === '0.0.0.0') {
+        this.baseUrl = `http://0.0.0.0:${recoveryPort}`
       } else {
-        // For Replit production, construct the correct URL
-        this.baseUrl = `${protocol}//${hostname.replace('-00-', '-00-').replace('.replit.dev', '.replit.dev')}:3002`
+        // For Replit production
+        this.baseUrl = `${protocol}//${hostname}:${recoveryPort}`
       }
     }
     

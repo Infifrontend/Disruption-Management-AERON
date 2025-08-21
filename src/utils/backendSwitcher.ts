@@ -24,7 +24,9 @@ export const switchBackend = (type: 'express' | 'python') => {
 
 export const getCurrentBackend = () => {
   return backendConfig.getConfig()
-}
+import { backendConfig } from '../services/backendConfig'
+import { databaseService } from '../services/databaseService'
+import { recoveryApiService } from '../services/recoveryApiService'
 
 export const getBackendStatus = async () => {
   const config = backendConfig.getConfig()
@@ -55,5 +57,7 @@ export const getBackendStatus = async () => {
       recoveryHealthy: false,
       overall: false
     }
+  }
+}
   }
 }

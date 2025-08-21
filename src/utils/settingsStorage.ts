@@ -390,7 +390,8 @@ class SettingsStorage {
 }
 
 // Singleton instance
-export const settingsStorage = new SettingsStorage()
+export const settingsStorage = new SettingsStorage// Export the singleton instance for direct use
+export default settingsStorage
 
 // Hook for React components
 export const useSettingsStorage = () => {
@@ -405,5 +406,7 @@ export const useSettingsStorage = () => {
     resetToDefaults: settingsStorage.resetToDefaults.bind(settingsStorage),
     getDatabaseStatus: settingsStorage.getDatabaseStatus.bind(settingsStorage),
     retryDatabaseConnection: settingsStorage.retryDatabaseConnection.bind(settingsStorage)
+  }
+}
   }
 }

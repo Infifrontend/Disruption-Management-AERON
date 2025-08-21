@@ -4,7 +4,8 @@ import pkg from "pg";
 const { Pool } = pkg;
 
 const app = express();
-const port = process.env.API_PORT || 3001;
+// Use environment variable for server port, falling back to PORT or 3001
+const port = process.env.DATABASE_SERVER_PORT || process.env.PORT || 3001;
 
 // Middleware - More permissive CORS configuration
 app.use(
@@ -58,6 +59,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // PostgreSQL connection with fallback and proper Neon handling
+// Use DATABASE_URL environment variable for the connection string
 let connectionString =
   process.env.DATABASE_URL || "postgresql://0.0.0.0:5432/aeron_settings";
 

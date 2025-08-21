@@ -1263,8 +1263,9 @@ class DatabaseService {
   // Analytics and KPIs
   async getKPIData() {
     try {
-      const response = await this.api('/kpi-data')
-      return response
+      const response = await fetch(`${this.baseUrl}/kpi-data`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
     } catch (error) {
       console.error('Error fetching KPI data:', error)
       return {
@@ -1280,8 +1281,9 @@ class DatabaseService {
 
   async getPassengerImpactData() {
     try {
-      const response = await this.api('/passenger-impact')
-      return response
+      const response = await fetch(`${this.baseUrl}/passenger-impact`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
     } catch (error) {
       console.error('Error fetching passenger impact data:', error)
       return {
@@ -1296,8 +1298,9 @@ class DatabaseService {
 
   async getHighlyDisruptedStations() {
     try {
-      const response = await this.api('/disrupted-stations')
-      return response
+      const response = await fetch(`${this.baseUrl}/disrupted-stations`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
     } catch (error) {
       console.error('Error fetching disrupted stations data:', error)
       return [
@@ -1331,8 +1334,9 @@ class DatabaseService {
 
   async getOperationalInsights() {
     try {
-      const response = await this.api('/operational-insights')
-      return response
+      const response = await fetch(`${this.baseUrl}/operational-insights`);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      return await response.json();
     } catch (error) {
       console.error('Error fetching operational insights:', error)
       return {
