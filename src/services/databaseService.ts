@@ -122,7 +122,8 @@ export interface HotelBooking {
 
 class DatabaseService {
   private baseUrl: string;
-  private healthCheckCache: { status: boolean; timestamp: number } | null = null;
+  private healthCheckCache: { status: boolean; timestamp: number } | null =
+    null;
   private readonly HEALTH_CHECK_CACHE_DURATION = 120000; // 2 minutes
   private isHealthChecking = false;
 
@@ -143,7 +144,7 @@ class DatabaseService {
     // Try to get API URL from environment variables first
     const envApiUrl = import.meta.env.VITE_API_URL;
     if (envApiUrl) {
-      return envApiUrl.endsWith('/api') ? envApiUrl : `${envApiUrl}/api`;
+      return envApiUrl.endsWith("/api") ? envApiUrl : "/api";
     }
 
     // Fallback to current behavior for backward compatibility
@@ -173,10 +174,10 @@ class DatabaseService {
     const requiresTrailingSlash = false; // Simplified: no backend switching
 
     if (requiresTrailingSlash) {
-      const fullUrl = `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
-      return fullUrl.endsWith('/') ? fullUrl : `${fullUrl}/`;
+      const fullUrl = `${this.baseUrl}/${endpoint.replace(/^\//, "")}`;
+      return fullUrl.endsWith("/") ? fullUrl : `${fullUrl}/`;
     } else {
-      return `${this.baseUrl}/${endpoint.replace(/^\//, '')}`;
+      return `${this.baseUrl}/${endpoint.replace(/^\//, "")}`;
     }
   }
 
@@ -529,7 +530,7 @@ class DatabaseService {
       if (response.ok) {
         try {
           const data = await response.json();
-          isHealthy = data.status === 'healthy' || response.status === 200;
+          isHealthy = data.status === "healthy" || response.status === 200;
         } catch (jsonError) {
           // If JSON parsing fails but response is ok, consider it healthy
           isHealthy = true;
@@ -545,7 +546,9 @@ class DatabaseService {
       if (isHealthy) {
         this.onDatabaseSuccess();
       } else {
-        console.warn(`Health check failed: ${response.status} ${response.statusText}`);
+        console.warn(
+          `Health check failed: ${response.status} ${response.statusText}`,
+        );
         this.onDatabaseFailure();
       }
 
@@ -572,27 +575,27 @@ class DatabaseService {
       const timeoutId = setTimeout(() => controller.abort(), this.getTimeout());
 
       const response = await fetch(`${this.baseUrl}/health`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
-      
+
       return {
         apiUrl: this.baseUrl,
         databaseHealthy: response.ok,
         recoveryHealthy: true, // Not using separate recovery service
-        overall: response.ok
-      }
+        overall: response.ok,
+      };
     } catch (error) {
-      console.error('Error checking backend status:', error)
+      console.error("Error checking backend status:", error);
       return {
         apiUrl: this.baseUrl,
         databaseHealthy: false,
         recoveryHealthy: false,
-        overall: false
-      }
+        overall: false,
+      };
     }
   }
 
@@ -646,84 +649,92 @@ class DatabaseService {
   }
 
   // Flight Disruptions
-  async getAllDisruptions(recoveryStatus: string = '', categoryCode: string = ''): Promise<FlightDisruption[]> {
+  async getAllDisruptions(
+    recoveryStatus: string = "",
+    categoryCode: string = "",
+  ): Promise<FlightDisruption[]> {
     try {
       // Build URL with query parameters
       let url = `${this.baseUrl}/disruptions`;
       const queryParams = new URLSearchParams();
 
       if (recoveryStatus) {
-        queryParams.append('recovery_status', recoveryStatus);
+        queryParams.append("recovery_status", recoveryStatus);
       }
 
       if (categoryCode) {
-        queryParams.append('category_code', categoryCode);
+        queryParams.append("category_code", categoryCode);
       }
 
       if (queryParams.toString()) {
         url += `?${queryParams.toString()}`;
       }
 
-      console.log('Fetching disruptions from:', url)
+      console.log("Fetching disruptions from:", url);
 
       // Check if API server is available first
-      const healthCheck = await this.checkApiHealth()
+      const healthCheck = await this.checkApiHealth();
       if (!healthCheck) {
-        console.warn('API server not available, returning empty array')
-        return []
+        console.warn("API server not available, returning empty array");
+        return [];
       }
 
-      const response = await fetch(url)
+      const response = await fetch(url);
 
       if (!response.ok) {
-        console.error(`HTTP error! status: ${response.status}`)
-        return []
+        console.error(`HTTP error! status: ${response.status}`);
+        return [];
       }
 
-      const data = await response.json()
-      console.log('Fetched disruptions:', data)
+      const data = await response.json();
+      console.log("Fetched disruptions:", data);
 
       // Transform database format to component format
-        const transformedFlights = data.map((flight) => {
-          // Handle unknown IDs by using flight_number as display value
-          const isUnknownId = flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-');
-          const displayFlightNumber = isUnknownId 
-            ? (flight.flight_number || '-')
-            : flight.flight_number;
+      const transformedFlights = data.map((flight) => {
+        // Handle unknown IDs by using flight_number as display value
+        const isUnknownId =
+          flight.id &&
+          typeof flight.id === "string" &&
+          flight.id.startsWith("UNKNOWN-");
+        const displayFlightNumber = isUnknownId
+          ? flight.flight_number || "-"
+          : flight.flight_number;
 
-          return {
-            id: flight.id,
-            flightNumber: displayFlightNumber,
-            route: flight.route,
-            origin: flight.origin,
-            destination: flight.destination,
-            originCity: flight.origin_city,
-            destinationCity: flight.destination_city,
-            aircraft: flight.aircraft,
-            scheduledDeparture: flight.scheduled_departure,
-            estimatedDeparture: flight.estimated_departure,
-            delay: flight.delay_minutes || 0,
-            passengers: flight.passengers || 0,
-            crew: flight.crew || 0,
-            connectionFlights: flight.connection_flights || 0,
-            severity: flight.severity || "Medium",
-            type: flight.disruption_type || "Unknown",
-            status: isUnknownId && !flight.flight_number ? "Unknown" : flight.status,
-            disruptionReason: flight.disruption_reason,
-            recoveryStatus: flight.recovery_status || 'none',
-            categorization: flight.categorization || flight.category_name || "Uncategorized",
-            categoryCode: flight.category_code,
-            categoryName: flight.category_name,
-            categoryDescription: flight.category_description,
-            createdAt: flight.created_at,
-            updatedAt: flight.updated_at,
-          };
-        });
+        return {
+          id: flight.id,
+          flightNumber: displayFlightNumber,
+          route: flight.route,
+          origin: flight.origin,
+          destination: flight.destination,
+          originCity: flight.origin_city,
+          destinationCity: flight.destination_city,
+          aircraft: flight.aircraft,
+          scheduledDeparture: flight.scheduled_departure,
+          estimatedDeparture: flight.estimated_departure,
+          delay: flight.delay_minutes || 0,
+          passengers: flight.passengers || 0,
+          crew: flight.crew || 0,
+          connectionFlights: flight.connection_flights || 0,
+          severity: flight.severity || "Medium",
+          type: flight.disruption_type || "Unknown",
+          status:
+            isUnknownId && !flight.flight_number ? "Unknown" : flight.status,
+          disruptionReason: flight.disruption_reason,
+          recoveryStatus: flight.recovery_status || "none",
+          categorization:
+            flight.categorization || flight.category_name || "Uncategorized",
+          categoryCode: flight.category_code,
+          categoryName: flight.category_name,
+          categoryDescription: flight.category_description,
+          createdAt: flight.created_at,
+          updatedAt: flight.updated_at,
+        };
+      });
 
-      return Array.isArray(transformedFlights) ? transformedFlights : []
+      return Array.isArray(transformedFlights) ? transformedFlights : [];
     } catch (error) {
-      console.error('Failed to fetch disruptions:', error)
-      return []
+      console.error("Failed to fetch disruptions:", error);
+      return [];
     }
   }
 
@@ -776,14 +787,14 @@ class DatabaseService {
       console.log("Transformed data for database:", dbData);
 
       // Use proper URL formatting for the current backend
-      const apiUrl = this.formatUrl('disruptions');
+      const apiUrl = this.formatUrl("disruptions");
       console.log("Using API URL:", apiUrl);
 
       const response = await fetch(apiUrl, {
         method: "POST",
-        headers: { 
+        headers: {
           "Content-Type": "application/json",
-          "Accept": "application/json"
+          Accept: "application/json",
         },
         body: JSON.stringify(dbData),
       });
@@ -803,7 +814,7 @@ class DatabaseService {
       console.error("Error details:", {
         name: error.name,
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
       });
       return false;
     }
@@ -922,11 +933,13 @@ class DatabaseService {
   // Detailed Recovery Options with Categorization
   async getDetailedRecoveryOptions(disruptionId: string): Promise<any[]> {
     try {
-      console.log(`Fetching detailed recovery options for disruption ${disruptionId}`);
+      console.log(
+        `Fetching detailed recovery options for disruption ${disruptionId}`,
+      );
 
       // Check circuit breaker
       if (!this.checkCircuitBreaker()) {
-        console.log('Circuit breaker open, returning empty array');
+        console.log("Circuit breaker open, returning empty array");
         return [];
       }
 
@@ -936,7 +949,9 @@ class DatabaseService {
 
       if (!response.ok) {
         if (response.status === 404) {
-          console.log(`No detailed recovery options found for disruption ${disruptionId}`);
+          console.log(
+            `No detailed recovery options found for disruption ${disruptionId}`,
+          );
           this.onDatabaseSuccess(); // 404 is not a failure
           return [];
         }
@@ -946,7 +961,9 @@ class DatabaseService {
       }
 
       const options = await response.json();
-      console.log(`Found ${options.length} detailed recovery options for disruption ${disruptionId}`);
+      console.log(
+        `Found ${options.length} detailed recovery options for disruption ${disruptionId}`,
+      );
       this.onDatabaseSuccess();
       return Array.isArray(options) ? options : [];
     } catch (error) {
@@ -959,7 +976,8 @@ class DatabaseService {
   async getDisruptionCategories(): Promise<any[]> {
     try {
       const response = await fetch(`${this.baseUrl}/disruption-categories`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
       return await response.json();
     } catch (error) {
       console.error("Error fetching disruption categories:", error);
@@ -969,11 +987,12 @@ class DatabaseService {
 
   async getRecoveryOptionTemplates(categoryId?: string): Promise<any[]> {
     try {
-      const url = categoryId 
+      const url = categoryId
         ? `${this.baseUrl}/recovery-option-templates?category_id=${categoryId}`
         : `${this.baseUrl}/recovery-option-templates`;
       const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
       return await response.json();
     } catch (error) {
       console.error("Error fetching recovery option templates:", error);
@@ -981,17 +1000,22 @@ class DatabaseService {
     }
   }
 
-  async getDetailedRecoverySteps(disruptionId: string, optionId?: string): Promise<any[]> {
+  async getDetailedRecoverySteps(
+    disruptionId: string,
+    optionId?: string,
+  ): Promise<any[]> {
     try {
-      console.log(`Fetching detailed recovery steps for disruption ${disruptionId}`);
+      console.log(
+        `Fetching detailed recovery steps for disruption ${disruptionId}`,
+      );
 
       // Check circuit breaker
       if (!this.checkCircuitBreaker()) {
-        console.log('Circuit breaker open, returning empty array');
+        console.log("Circuit breaker open, returning empty array");
         return [];
       }
 
-      const url = optionId 
+      const url = optionId
         ? `${this.baseUrl}/recovery-steps-detailed/${disruptionId}?option_id=${optionId}`
         : `${this.baseUrl}/recovery-steps-detailed/${disruptionId}`;
 
@@ -999,7 +1023,9 @@ class DatabaseService {
 
       if (!response.ok) {
         if (response.status === 404) {
-          console.log(`No detailed recovery steps found for disruption ${disruptionId}`);
+          console.log(
+            `No detailed recovery steps found for disruption ${disruptionId}`,
+          );
           this.onDatabaseSuccess(); // 404 is not a failure
           return [];
         }
@@ -1009,7 +1035,9 @@ class DatabaseService {
       }
 
       const steps = await response.json();
-      console.log(`Found ${steps.length} detailed recovery steps for disruption ${disruptionId}`);
+      console.log(
+        `Found ${steps.length} detailed recovery steps for disruption ${disruptionId}`,
+      );
       this.onDatabaseSuccess();
       return Array.isArray(steps) ? steps : [];
     } catch (error) {
@@ -1023,7 +1051,9 @@ class DatabaseService {
   async getRecoveryOptionsByCategory(categoryCode: string): Promise<any[]> {
     try {
       console.log(`Fetching recovery options for category: ${categoryCode}`);
-      const response = await fetch(`${this.baseUrl}/recovery-options/category/${categoryCode}`);
+      const response = await fetch(
+        `${this.baseUrl}/recovery-options/category/${categoryCode}`,
+      );
       if (!response.ok) {
         if (response.status === 404) {
           console.log(`No recovery options found for category ${categoryCode}`);
@@ -1032,7 +1062,9 @@ class DatabaseService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const options = await response.json();
-      console.log(`Found ${options.length} recovery options for category ${categoryCode}`);
+      console.log(
+        `Found ${options.length} recovery options for category ${categoryCode}`,
+      );
       return options;
     } catch (error) {
       console.error("Error fetching recovery options by category:", error);
@@ -1041,14 +1073,17 @@ class DatabaseService {
   }
 
   // Map disruption type to category code
-  async mapDisruptionToCategory(disruptionType: string, disruptionReason?: string): Promise<string | null> {
+  async mapDisruptionToCategory(
+    disruptionType: string,
+    disruptionReason?: string,
+  ): Promise<string | null> {
     try {
       const response = await fetch(`${this.baseUrl}/map-disruption-category`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          disruptionType, 
-          disruptionReason: disruptionReason || '' 
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          disruptionType,
+          disruptionReason: disruptionReason || "",
         }),
       });
       if (!response.ok) return null;
@@ -1063,7 +1098,7 @@ class DatabaseService {
   // Generate recovery options for a disruption
   async generateRecoveryOptions(
     disruptionId: string,
-    forceRegenerate: boolean = false
+    forceRegenerate: boolean = false,
   ): Promise<{ optionsCount: number; stepsCount: number }> {
     try {
       console.log(`Generating recovery options for disruption ${disruptionId}`);
@@ -1072,7 +1107,9 @@ class DatabaseService {
       const controller = new AbortController();
       const timeout = Math.max(this.getTimeout(), 10000); // Minimum 10 seconds for generation
       const timeoutId = setTimeout(() => {
-        console.warn(`Recovery generation timeout after ${timeout}ms for ${disruptionId}`);
+        console.warn(
+          `Recovery generation timeout after ${timeout}ms for ${disruptionId}`,
+        );
         controller.abort();
       }, timeout);
 
@@ -1304,15 +1341,15 @@ class DatabaseService {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.json();
     } catch (error) {
-      console.error('Error fetching KPI data:', error)
+      console.error("Error fetching KPI data:", error);
       return {
         activeDisruptions: 23,
         affectedPassengers: 4127,
         averageDelay: 45,
         recoverySuccessRate: 89.2,
         onTimePerformance: 87.3,
-        costSavings: 2.8
-      }
+        costSavings: 2.8,
+      };
     }
   }
 
@@ -1322,14 +1359,14 @@ class DatabaseService {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.json();
     } catch (error) {
-      console.error('Error fetching passenger impact data:', error)
+      console.error("Error fetching passenger impact data:", error);
       return {
         totalAffected: 4127,
         highPriority: 1238,
         successfulRebookings: 892,
         resolved: 2997,
-        pendingAccommodation: 1130
-      }
+        pendingAccommodation: 1130,
+      };
     }
   }
 
@@ -1339,33 +1376,33 @@ class DatabaseService {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.json();
     } catch (error) {
-      console.error('Error fetching disrupted stations data:', error)
+      console.error("Error fetching disrupted stations data:", error);
       return [
         {
-          station: 'DXB',
-          stationName: 'Dubai',
+          station: "DXB",
+          stationName: "Dubai",
           disruptedFlights: 12,
           affectedPassengers: 2847,
-          severity: 'high',
-          primaryCause: 'Weather'
+          severity: "high",
+          primaryCause: "Weather",
         },
         {
-          station: 'DEL',
-          stationName: 'Delhi', 
+          station: "DEL",
+          stationName: "Delhi",
           disruptedFlights: 7,
           affectedPassengers: 823,
-          severity: 'medium',
-          primaryCause: 'ATC Delays'
+          severity: "medium",
+          primaryCause: "ATC Delays",
         },
         {
-          station: 'BOM',
-          stationName: 'Mumbai',
+          station: "BOM",
+          stationName: "Mumbai",
           disruptedFlights: 4,
           affectedPassengers: 457,
-          severity: 'medium',
-          primaryCause: 'Aircraft Issue'
-        }
-      ]
+          severity: "medium",
+          primaryCause: "Aircraft Issue",
+        },
+      ];
     }
   }
 
@@ -1375,27 +1412,30 @@ class DatabaseService {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       return await response.json();
     } catch (error) {
-      console.error('Error fetching operational insights:', error)
+      console.error("Error fetching operational insights:", error);
       return {
         recoveryRate: 89.2,
-        averageResolutionTime: '2.4h',
-        networkImpact: 'Medium',
+        averageResolutionTime: "2.4h",
+        networkImpact: "Medium",
         criticalPriority: 5,
-        mostDisruptedRoute: 'DXB → DEL',
-        routeDisruptionCause: 'Weather delays'
-      }
+        mostDisruptedRoute: "DXB → DEL",
+        routeDisruptionCause: "Weather delays",
+      };
     }
   }
 
   // Sync disruptions from external API - disabled to prevent unknown records
-  async syncDisruptionsFromExternalAPI(): Promise<{ inserted: number; updated: number }> {
+  async syncDisruptionsFromExternalAPI(): Promise<{
+    inserted: number;
+    updated: number;
+  }> {
     try {
-      console.log('External API sync disabled to prevent unknown records')
+      console.log("External API sync disabled to prevent unknown records");
       // Return immediately without syncing to prevent creating unknown records
-      return { inserted: 0, updated: 0 }
+      return { inserted: 0, updated: 0 };
     } catch (error) {
-      console.error('Error in sync function:', error)
-      return { inserted: 0, updated: 0 }
+      console.error("Error in sync function:", error);
+      return { inserted: 0, updated: 0 };
     }
   }
 
@@ -1407,9 +1447,9 @@ class DatabaseService {
 
       const response = await fetch(`${this.baseUrl}/health`, {
         signal: controller.signal,
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
       });
 
@@ -1418,20 +1458,25 @@ class DatabaseService {
       if (response.ok) {
         try {
           const data = await response.json();
-          return data.status === 'healthy' || response.status === 200;
+          return data.status === "healthy" || response.status === 200;
         } catch (jsonError) {
           // If JSON parsing fails but response is ok, consider it healthy
           return true;
         }
       }
 
-      console.warn(`API health check failed: ${response.status} ${response.statusText}`);
+      console.warn(
+        `API health check failed: ${response.status} ${response.statusText}`,
+      );
       return false;
     } catch (error) {
-      if (error.name === 'AbortError') {
-        console.warn('API health check timed out');
+      if (error.name === "AbortError") {
+        console.warn("API health check timed out");
       } else {
-        console.warn('API health check failed:', error.message || 'Unknown error');
+        console.warn(
+          "API health check failed:",
+          error.message || "Unknown error",
+        );
       }
       return false;
     }
@@ -1467,7 +1512,9 @@ class DatabaseService {
   // Get detailed rotation plan data for a recovery option
   async getRotationPlanDetails(optionId: string): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/rotation-plan`);
+      const response = await fetch(
+        `${this.baseUrl}/recovery-option/${optionId}/rotation-plan`,
+      );
       if (!response.ok) {
         if (response.status === 404) {
           console.log(`No rotation plan found for option ${optionId}`);
@@ -1486,7 +1533,9 @@ class DatabaseService {
   // Get detailed cost analysis for a recovery option
   async getCostAnalysisDetails(optionId: string): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/cost-analysis`);
+      const response = await fetch(
+        `${this.baseUrl}/recovery-option/${optionId}/cost-analysis`,
+      );
       if (!response.ok) {
         if (response.status === 404) {
           console.log(`No cost analysis found for option ${optionId}`);
@@ -1505,7 +1554,9 @@ class DatabaseService {
   // Get detailed timeline for a recovery option
   async getTimelineDetails(optionId: string): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/timeline`);
+      const response = await fetch(
+        `${this.baseUrl}/recovery-option/${optionId}/timeline`,
+      );
       if (!response.ok) {
         if (response.status === 404) {
           console.log(`No timeline found for option ${optionId}`);
@@ -1524,7 +1575,9 @@ class DatabaseService {
   // Get detailed resources for a recovery option
   async getResourceDetails(optionId: string): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/resources`);
+      const response = await fetch(
+        `${this.baseUrl}/recovery-option/${optionId}/resources`,
+      );
       if (!response.ok) {
         if (response.status === 404) {
           console.log(`No resources found for option ${optionId}`);
@@ -1543,10 +1596,14 @@ class DatabaseService {
   // Get detailed technical specifications for a recovery option
   async getTechnicalDetails(optionId: string): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/recovery-option/${optionId}/technical`);
+      const response = await fetch(
+        `${this.baseUrl}/recovery-option/${optionId}/technical`,
+      );
       if (!response.ok) {
         if (response.status === 404) {
-          console.log(`No technical specifications found for option ${optionId}`);
+          console.log(
+            `No technical specifications found for option ${optionId}`,
+          );
           return null;
         }
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -1562,10 +1619,14 @@ class DatabaseService {
   // Get complete recovery option details with all tabs data
   async getRecoveryOptionDetails(optionId: string): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/recovery-option-details/${optionId}`);
+      const response = await fetch(
+        `${this.baseUrl}/recovery-option-details/${optionId}`,
+      );
       if (!response.ok) {
         if (response.status === 404) {
-          console.log(`No recovery option details found for option ${optionId}`);
+          console.log(
+            `No recovery option details found for option ${optionId}`,
+          );
           return null;
         }
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -1583,33 +1644,35 @@ class DatabaseService {
     try {
       // Build query parameters for filters
       const queryParams = new URLSearchParams();
-      if (filters.status && filters.status !== 'all') {
-        queryParams.append('status', filters.status);
+      if (filters.status && filters.status !== "all") {
+        queryParams.append("status", filters.status);
       }
-      if (filters.category && filters.category !== 'all') {
-        queryParams.append('category', filters.category);
+      if (filters.category && filters.category !== "all") {
+        queryParams.append("category", filters.category);
       }
-      if (filters.priority && filters.priority !== 'all') {
-        queryParams.append('priority', filters.priority);
+      if (filters.priority && filters.priority !== "all") {
+        queryParams.append("priority", filters.priority);
       }
-      if (filters.dateRange && filters.dateRange !== 'all') {
-        queryParams.append('dateRange', filters.dateRange);
+      if (filters.dateRange && filters.dateRange !== "all") {
+        queryParams.append("dateRange", filters.dateRange);
       }
 
-      const url = `${this.baseUrl}/past-recovery-logs${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-      console.log('Fetching past recovery logs from:', url);
+      const url = `${this.baseUrl}/past-recovery-logs${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+      console.log("Fetching past recovery logs from:", url);
 
       const response = await fetch(url);
       if (!response.ok) {
         console.warn(`Past recovery logs API returned ${response.status}`);
-        throw new Error(`Failed to fetch past recovery logs: ${response.status}`);
+        throw new Error(
+          `Failed to fetch past recovery logs: ${response.status}`,
+        );
       }
 
       const data = await response.json();
-      console.log('Fetched past recovery logs:', data.length, 'records');
+      console.log("Fetched past recovery logs:", data.length, "records");
       return Array.isArray(data) ? data : [];
     } catch (error) {
-      console.error('Failed to fetch past recovery logs:', error);
+      console.error("Failed to fetch past recovery logs:", error);
       return [];
     }
   }
@@ -1617,30 +1680,37 @@ class DatabaseService {
   // Passenger Rebookings
   async savePassengerRebookings(rebookings: any[]): Promise<boolean> {
     try {
-      console.log('Saving passenger rebookings:', rebookings);
+      console.log("Saving passenger rebookings:", rebookings);
       const response = await fetch(`${this.baseUrl}/passenger-rebookings`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rebookings })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rebookings }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Failed to save passenger rebookings:', response.status, errorText);
+        console.error(
+          "Failed to save passenger rebookings:",
+          response.status,
+          errorText,
+        );
         return false;
       }
 
       const result = await response.json();
-      console.log('Successfully saved passenger rebookings:', result);
+      console.log("Successfully saved passenger rebookings:", result);
       return true;
     } catch (error) {
-      console.error('Failed to save passenger rebookings:', error);
+      console.error("Failed to save passenger rebookings:", error);
       return false;
     }
   }
 
   // Legacy method for backward compatibility
-  async storeRebookedPassengers(passengersByPnr: any, disruptionFlightId: string): Promise<{ success: boolean }> {
+  async storeRebookedPassengers(
+    passengersByPnr: any,
+    disruptionFlightId: string,
+  ): Promise<{ success: boolean }> {
     try {
       const rebookingData = [];
 
@@ -1651,16 +1721,16 @@ class DatabaseService {
             pnr: pnr,
             passenger_id: passenger.id,
             passenger_name: passenger.name,
-            original_flight: passenger.originalFlight || 'N/A',
+            original_flight: passenger.originalFlight || "N/A",
             original_seat: passenger.seat,
-            rebooked_flight: passenger.rebookedFlight || 'TBD',
-            rebooked_cabin: passenger.rebookedCabin || 'Economy',
-            rebooked_seat: passenger.rebookedSeat || 'TBD',
+            rebooked_flight: passenger.rebookedFlight || "TBD",
+            rebooked_cabin: passenger.rebookedCabin || "Economy",
+            rebooked_seat: passenger.rebookedSeat || "TBD",
             additional_services: passenger.services || [],
-            status: 'Confirmed',
+            status: "Confirmed",
             total_passengers_in_pnr: passengers.length,
             rebooking_cost: 0,
-            notes: `Stored rebooking for disruption ${disruptionFlightId}`
+            notes: `Stored rebooking for disruption ${disruptionFlightId}`,
           });
         }
       }
@@ -1668,29 +1738,35 @@ class DatabaseService {
       const success = await this.savePassengerRebookings(rebookingData);
       return { success };
     } catch (error) {
-      console.error('Error in storeRebookedPassengers:', error);
+      console.error("Error in storeRebookedPassengers:", error);
       return { success: false };
     }
   }
 
-  async getPassengerRebookingsByDisruption(disruptionId: string): Promise<any[]> {
+  async getPassengerRebookingsByDisruption(
+    disruptionId: string,
+  ): Promise<any[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/passenger-rebookings/disruption/${disruptionId}`);
+      const response = await fetch(
+        `${this.baseUrl}/passenger-rebookings/disruption/${disruptionId}`,
+      );
       if (!response.ok) return [];
       return await response.json();
     } catch (error) {
-      console.error('Failed to fetch passenger rebookings:', error);
+      console.error("Failed to fetch passenger rebookings:", error);
       return [];
     }
   }
 
   async getPassengerRebookingsByPnr(pnr: string): Promise<any[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/passenger-rebookings/pnr/${pnr}`);
+      const response = await fetch(
+        `${this.baseUrl}/passenger-rebookings/pnr/${pnr}`,
+      );
       if (!response.ok) return [];
       return await response.json();
     } catch (error) {
-      console.error('Failed to fetch passenger rebookings by PNR:', error);
+      console.error("Failed to fetch passenger rebookings by PNR:", error);
       return [];
     }
   }
@@ -1709,63 +1785,76 @@ class DatabaseService {
         operational_complexity: solution.operational_complexity,
         resource_requirements: solution.resource_requirements,
         timeline_details: solution.timeline_details || solution.timeline,
-        approval_status: solution.approval_status || solution.status || 'pending',
-        created_by: solution.created_by || solution.submitted_by || 'system',
+        approval_status:
+          solution.approval_status || solution.status || "pending",
+        created_by: solution.created_by || solution.submitted_by || "system",
         notes: solution.notes,
         // Legacy fields for backward compatibility
         cost: solution.cost,
         timeline: solution.timeline,
         confidence: solution.confidence,
         impact: solution.impact,
-        status: solution.status || 'Pending',
+        status: solution.status || "Pending",
         full_details: solution.full_details,
         rotation_impact: solution.rotation_impact,
-        submitted_by: solution.submitted_by || 'system',
-        approval_required: solution.approval_required || true
+        submitted_by: solution.submitted_by || "system",
+        approval_required: solution.approval_required || true,
       };
 
       // Add optional passenger rebooking data if present
-      if (solution.passenger_rebooking && Array.isArray(solution.passenger_rebooking)) {
+      if (
+        solution.passenger_rebooking &&
+        Array.isArray(solution.passenger_rebooking)
+      ) {
         payload.passenger_rebooking = solution.passenger_rebooking;
       }
 
       // Add optional crew hotel assignments data if present
-      if (solution.crew_hotel_assignments && Array.isArray(solution.crew_hotel_assignments)) {
+      if (
+        solution.crew_hotel_assignments &&
+        Array.isArray(solution.crew_hotel_assignments)
+      ) {
         payload.crew_hotel_assignments = solution.crew_hotel_assignments;
       }
 
-      const response = await fetch(`${this.baseUrl}/pending-recovery-solutions`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const response = await fetch(
+        `${this.baseUrl}/pending-recovery-solutions`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
       return response.ok;
     } catch (error) {
-      console.error('Failed to add pending solution:', error);
+      console.error("Failed to add pending solution:", error);
       return false;
     }
   }
 
   async savePendingRecoverySolution(solution: any): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/pending-recovery-solutions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${this.baseUrl}/pending-recovery-solutions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(solution),
         },
-        body: JSON.stringify(solution),
-      });
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Failed to save pending recovery solution:', errorData);
+        console.error("Failed to save pending recovery solution:", errorData);
         return false;
       }
 
       const result = await response.json();
       return result.success;
     } catch (error) {
-      console.error('Error saving pending recovery solution:', error);
+      console.error("Error saving pending recovery solution:", error);
       return false;
     }
   }
@@ -1773,11 +1862,11 @@ class DatabaseService {
   async getPendingRecoverySolutions(): Promise<any[]> {
     try {
       const url = `${this.baseUrl}/pending-recovery-solutions`;
-      console.log('Fetching pending solutions from URL:', url);
+      console.log("Fetching pending solutions from URL:", url);
 
       const response = await fetch(url, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) {
@@ -1786,49 +1875,63 @@ class DatabaseService {
           // API endpoint might not exist yet, return empty array
           return [];
         }
-        throw new Error(`Failed to fetch pending solutions: ${response.status}`);
+        throw new Error(
+          `Failed to fetch pending solutions: ${response.status}`,
+        );
       }
 
       const data = await response.json();
 
       // Ensure we return an array
       if (!Array.isArray(data)) {
-        console.warn('Pending solutions response is not an array:', data);
+        console.warn("Pending solutions response is not an array:", data);
         return [];
       }
 
       return data;
     } catch (error) {
-      console.error('Failed to fetch pending recovery solutions:', error);
+      console.error("Failed to fetch pending recovery solutions:", error);
       // Return empty array to prevent UI crashes
       return [];
     }
   }
 
-  async updateFlightRecoveryStatus(flightId: string, status: string): Promise<boolean> {
+  async updateFlightRecoveryStatus(
+    flightId: string,
+    status: string,
+  ): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/flight-recovery-status/${flightId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ recovery_status: status })
-      });
+      const response = await fetch(
+        `${this.baseUrl}/flight-recovery-status/${flightId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ recovery_status: status }),
+        },
+      );
       return response.ok;
     } catch (error) {
-      console.error('Failed to update flight recovery status:', error);
+      console.error("Failed to update flight recovery status:", error);
       return false;
     }
   }
 
-  async updateFlightDisruptionStatus(disruptionId: string, status: string): Promise<boolean> {
+  async updateFlightDisruptionStatus(
+    disruptionId: string,
+    status: string,
+  ): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/disruptions/${disruptionId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: status })
-      });
+      const response = await fetch(
+        `${this.baseUrl}/disruptions/${disruptionId}/status`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: status }),
+        },
+      );
       return response.ok;
     } catch (error) {
-      console.error('Failed to update disruption status:', error);
+      console.error("Failed to update disruption status:", error);
       return false;
     }
   }
@@ -1836,49 +1939,63 @@ class DatabaseService {
   // Crew Hotel Assignments
   async saveCrewHotelAssignments(assignments: any[]): Promise<boolean> {
     try {
-      console.log('Saving crew hotel assignments:', assignments);
+      console.log("Saving crew hotel assignments:", assignments);
       const response = await fetch(`${this.baseUrl}/crew-hotel-assignments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assignments })
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ assignments }),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Failed to save crew hotel assignments:', response.status, errorText);
+        console.error(
+          "Failed to save crew hotel assignments:",
+          response.status,
+          errorText,
+        );
         return false;
       }
 
       const result = await response.json();
-      console.log('Successfully saved crew hotel assignments:', result);
+      console.log("Successfully saved crew hotel assignments:", result);
       return true;
     } catch (error) {
-      console.error('Failed to save crew hotel assignments:', error);
+      console.error("Failed to save crew hotel assignments:", error);
       return false;
     }
   }
 
-  async getCrewHotelAssignmentsByDisruption(disruptionId: string): Promise<any[]> {
+  async getCrewHotelAssignmentsByDisruption(
+    disruptionId: string,
+  ): Promise<any[]> {
     try {
-      const response = await fetch(`${this.baseUrl}/crew-hotel-assignments/disruption/${disruptionId}`);
+      const response = await fetch(
+        `${this.baseUrl}/crew-hotel-assignments/disruption/${disruptionId}`,
+      );
       if (!response.ok) return [];
       return await response.json();
     } catch (error) {
-      console.error('Failed to fetch crew hotel assignments:', error);
+      console.error("Failed to fetch crew hotel assignments:", error);
       return [];
     }
   }
 
-  async updateCrewHotelAssignmentStatus(assignmentId: string, status: string): Promise<boolean> {
+  async updateCrewHotelAssignmentStatus(
+    assignmentId: string,
+    status: string,
+  ): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/crew-hotel-assignments/${assignmentId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assignment_status: status })
-      });
+      const response = await fetch(
+        `${this.baseUrl}/crew-hotel-assignments/${assignmentId}/status`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ assignment_status: status }),
+        },
+      );
       return response.ok;
     } catch (error) {
-      console.error('Failed to update crew hotel assignment status:', error);
+      console.error("Failed to update crew hotel assignment status:", error);
       return false;
     }
   }
