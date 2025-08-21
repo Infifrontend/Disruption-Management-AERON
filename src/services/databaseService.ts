@@ -565,6 +565,37 @@ class DatabaseService {
     }
   }
 
+  // Backend status check method
+  async getBackendStatus() {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.getTimeout());
+
+      const response = await fetch(`${this.baseUrl}/health`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+      
+      return {
+        apiUrl: this.baseUrl,
+        databaseHealthy: response.ok,
+        recoveryHealthy: true, // Not using separate recovery service
+        overall: response.ok
+      }
+    } catch (error) {
+      console.error('Error checking backend status:', error)
+      return {
+        apiUrl: this.baseUrl,
+        databaseHealthy: false,
+        recoveryHealthy: false,
+        overall: false
+      }
+    }
+  }
+
   // Utility methods
   async resetToDefaults(): Promise<boolean> {
     try {
