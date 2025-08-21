@@ -85,6 +85,19 @@ class RecoveryApiService {
   private readonly HEALTH_CHECK_CACHE_DURATION = 60000 // 1 minute
 
   constructor() {
+    // Get base URL from environment variables
+    this.baseUrl = this.getApiBaseUrl()
+    console.log(`Recovery API service initialized with base URL:`, this.baseUrl)
+  }
+
+  private getApiBaseUrl(): string {
+    // Try to get recovery API URL from environment variables first
+    const envRecoveryUrl = import.meta.env.VITE_RECOVERY_API_URL;
+    if (envRecoveryUrl) {
+      return envRecoveryUrl;
+    }
+
+    // Fallback to current behavior for backward compatibility
     const backendType = this.detectBackendType()
     const hostname = window.location.hostname
     const protocol = window.location.protocol
@@ -92,20 +105,18 @@ class RecoveryApiService {
     if (backendType === "python") {
       // For Python backend, use the main API URL
       const apiUrl = this.buildApiUrl(backendType)
-      this.baseUrl = apiUrl.replace('/api', '')
+      return apiUrl.replace('/api', '')
     } else {
       // For Express backend, use dedicated recovery port
       const recoveryPort = import.meta.env.RECOVERY_API_PORT || '3002'
       
       if (hostname === 'localhost' || hostname === '0.0.0.0') {
-        this.baseUrl = `http://0.0.0.0:${recoveryPort}`
+        return `http://0.0.0.0:${recoveryPort}`
       } else {
         // For Replit production
-        this.baseUrl = `${protocol}//${hostname}:${recoveryPort}`
+        return `${protocol}//${hostname}:${recoveryPort}`
       }
     }
-    
-    console.log(`Recovery API service initialized with ${backendType.toUpperCase()} backend:`, this.baseUrl)
   }
 
   private detectBackendType(): "express" | "python" {
