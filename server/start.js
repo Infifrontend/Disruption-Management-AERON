@@ -7,50 +7,54 @@ const app = express();
 // Use environment variable for server port, falling back to PORT or 3001
 const port = process.env.DATABASE_SERVER_PORT || process.env.PORT || 3001;
 
-// Middleware - More permissive CORS configuration
+// CORS Configuration from environment variables
+const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(',') || ['localhost', 'replit.dev', 'sisko.replit.dev'];
+const allowCredentials = process.env.CORS_ALLOW_CREDENTIALS === 'true';
+const allowedMethods = process.env.CORS_ALLOWED_METHODS?.split(',') || ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
+const allowedHeaders = process.env.CORS_ALLOWED_HEADERS?.split(',') || [
+  'Content-Type',
+  'Authorization',
+  'Accept',
+  'Origin',
+  'X-Requested-With',
+];
+const optionsSuccessStatus = parseInt(process.env.CORS_OPTIONS_SUCCESS_STATUS) || 200;
+
+// Middleware - CORS configuration from environment variables
 app.use(
   cors({
     origin: function (origin, callback) {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
 
-      // Allow all localhost and replit.dev origins
-      if (
-        origin.includes("localhost") ||
-        origin.includes("replit.dev") ||
-        origin.includes("sisko.replit.dev")
-      ) {
+      // Check if origin matches any allowed origins
+      const isAllowed = allowedOrigins.some(allowedOrigin => 
+        origin.includes(allowedOrigin)
+      );
+
+      if (isAllowed) {
         return callback(null, true);
       }
 
       // Allow all other origins for now (can be restricted later)
       return callback(null, true);
     },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Accept",
-      "Origin",
-      "X-Requested-With",
-    ],
-    optionsSuccessStatus: 200,
+    credentials: allowCredentials,
+    methods: allowedMethods,
+    allowedHeaders: allowedHeaders,
+    optionsSuccessStatus: optionsSuccessStatus,
   }),
 );
 
 // Ensure CORS headers are set for all responses
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, Accept, Origin, X-Requested-With",
-  );
-  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", allowedMethods.join(", "));
+  res.header("Access-Control-Allow-Headers", allowedHeaders.join(", "));
+  res.header("Access-Control-Allow-Credentials", allowCredentials.toString());
 
   if (req.method === "OPTIONS") {
-    res.sendStatus(200);
+    res.sendStatus(optionsSuccessStatus);
   } else {
     next();
   }
