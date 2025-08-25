@@ -45,7 +45,7 @@ export default function App() {
 
   return (
     <AppProvider>
-      <Router>
+      <Router basename={import.meta.env.VITE_FRONTEND_BASE_URL || '/'}>
         <div className="min-h-screen bg-background">
           <Suspense fallback={<LoadingSpinner />}>
             <Layout>
