@@ -129,7 +129,7 @@ class DatabaseService {
 
   // Circuit breaker implementation
   private circuitBreakerOpen = false;
-  private circuitBreakerTimeout: NodeJS.Timeout | null = null;
+  private circuitBreakerTimeout: ReturnType<typeof setTimeout> | null = null;
   private failureCount = 0;
   private readonly MAX_FAILURES = 5;
   private readonly CIRCUIT_BREAKER_TIMEOUT = 60000; // 1 minute
@@ -149,7 +149,6 @@ class DatabaseService {
 
     // Fallback to current behavior for backward compatibility
     const hostname = window.location.hostname;
-    const protocol = window.location.protocol;
 
     if (hostname === "localhost" || hostname === "0.0.0.0") {
       // Development environment

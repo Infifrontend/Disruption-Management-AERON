@@ -1,5 +1,4 @@
 
-import React from 'react'
 import { useAppContext } from '../context/AppContext'
 import { SettingsPanel } from '../components/SettingsPanel'
 
