@@ -5,7 +5,7 @@ const { Pool } = pkg;
 
 const app = express();
 // Use environment variable for server port, falling back to PORT or 3001
-const port = process.env.DATABASE_SERVER_PORT || process.env.PORT || 3001;
+const port = process.env.BACKEND_PORT || 3001;
 
 // CORS Configuration from environment variables
 const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(',') || ['localhost', 'replit.dev', 'sisko.replit.dev'];
@@ -19,6 +19,7 @@ const allowedHeaders = process.env.CORS_ALLOWED_HEADERS?.split(',') || [
   'X-Requested-With',
 ];
 const optionsSuccessStatus = parseInt(process.env.CORS_OPTIONS_SUCCESS_STATUS) || 200;
+
 
 // Middleware - CORS configuration from environment variables
 app.use(
@@ -37,7 +38,7 @@ app.use(
       }
 
       // Allow all other origins for now (can be restricted later)
-      return callback(null, true);
+      return callback(null, false);
     },
     credentials: allowCredentials,
     methods: allowedMethods,
@@ -66,30 +67,6 @@ app.use(express.urlencoded({ extended: true }));
 // Use DATABASE_URL environment variable for the connection string
 let connectionString =
   process.env.DATABASE_URL || "postgresql://0.0.0.0:5432/aeron_settings";
-
-// Handle Neon database connection with proper endpoint parameter
-if (connectionString && connectionString.includes("neon.tech")) {
-  try {
-    const url = new URL(connectionString);
-    const endpointId = url.hostname.split(".")[0];
-
-    // Add endpoint parameter for Neon compatibility
-    const params = new URLSearchParams(url.search);
-    params.set("options", `endpoint=${endpointId}`);
-    params.set("sslmode", "require");
-
-    // Reconstruct URL with proper parameters
-    url.search = params.toString();
-    connectionString = url.toString();
-
-    console.log(
-      "🔧 Configured connection for Neon database with endpoint:",
-      endpointId,
-    );
-  } catch (error) {
-    console.error("⚠️ Error configuring Neon connection:", error.message);
-  }
-}
 
 const pool = new Pool({
   connectionString: connectionString,
@@ -896,7 +873,6 @@ app.get("/api/disruptions/", async (req, res) => {
       FROM flight_disruptions fd
       LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
     `;
-
     // Build WHERE conditions
     const conditions = [];
     const params = [];
