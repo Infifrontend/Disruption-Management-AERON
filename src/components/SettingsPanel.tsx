@@ -3801,21 +3801,24 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   Notification Channels
                 </h3>
 
-                {Object.entries({
-                  email: "Email Notifications",
-                  sms: "SMS Alerts",
-                  push: "Push Notifications",
-                  desktop: "Desktop Notifications",
-                }).map(([key, label]) => (
+              {Object.entries({
+                email: "Email Notifications",
+                sms: "SMS Alerts",
+                push: "Push Notifications",
+                desktop: "Desktop Notifications",
+              }).map(([key, label]) => {
+                return (
                   <div key={key} className="flex items-center justify-between">
                     <Label className="text-sm font-medium">{label}</Label>
                     <Switch
-                      checked={notificationSettings[key]}
-                      onCheckedChange={() => handleNotificationToggle(key)}
+                      // Cast notificationSettings to any for quick fix
+                      checked={(notificationSettings as any)[key]}
+                      onCheckedChange={() => handleNotificationToggle(key as NotificationKey)}
                       className="switch-flydubai"
                     />
                   </div>
-                ))}
+                );
+              })}
               </div>
 
               <Separator />
@@ -3829,16 +3832,20 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   recoveryAlerts: "Recovery Plan Alerts",
                   passengerUpdates: "Passenger Service Updates",
                   systemAlerts: "System Status Alerts",
-                }).map(([key, label]) => (
-                  <div key={key} className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">{label}</Label>
-                    <Switch
-                      checked={notificationSettings[key]}
-                      onCheckedChange={() => handleNotificationToggle(key)}
-                      className="switch-flydubai"
-                    />
-                  </div>
-                ))}
+                }).map(([key, label]) => {
+                  const typedKey = key as keyof typeof notificationSettings; 
+                  return (
+                    <div key={typedKey} className="flex items-center justify-between">
+                      <Label className="text-sm font-medium">{label}</Label>
+                      <Switch
+                        checked={notificationSettings[typedKey]}  
+                        onCheckedChange={() => handleNotificationToggle(typedKey)}
+                        className="switch-flydubai"
+                      />
+                    </div>
+                  );
+                })}
+
               </div>
             </CardContent>
           </Card>

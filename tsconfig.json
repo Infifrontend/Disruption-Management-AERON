@@ -19,7 +19,8 @@
     "paths": {
       "@/*": ["./*"],
       "@/components/*": ["./components/*"]
-    }
+    },
+    "types": ["vite/client"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["vite.config.ts", "node_modules"],

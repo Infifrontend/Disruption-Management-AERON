@@ -1,9 +1,6 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Alert, AlertDescription } from "./ui/alert";
 import {
   Select,
   SelectContent,
@@ -14,17 +11,9 @@ import {
 import {
   Globe,
   Plane,
-  MapPin,
   AlertTriangle,
-  CheckCircle,
-  Clock,
-  Zap,
   Navigation,
-  Radar,
-  Layers,
-  Filter,
   RefreshCw,
-  Info,
   ZoomIn,
   ZoomOut,
   RotateCcw,
@@ -33,7 +22,7 @@ import {
 export function WorldMap() {
   const [selectedView, setSelectedView] = useState("routes");
   const [isRealtime, setIsRealtime] = useState(true);
-  const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [_lastUpdate, setLastUpdate] = useState(new Date());
   const [zoomLevel, setZoomLevel] = useState(1);
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
@@ -46,7 +35,7 @@ export function WorldMap() {
 
   // Simulate real-time data updates
   useEffect(() => {
-    let intervalId;
+    let intervalId:any;
     if (isRealtime) {
       intervalId = setInterval(() => {
         // In a real app, this would fetch data from an API
@@ -70,14 +59,14 @@ export function WorldMap() {
   }, [isRealtime]);
 
   // Helper function to convert lat/lng to SVG coordinates
-  const latLngToXY = (lat, lng) => {
+  const latLngToXY = (lat:any, lng:any) => {
     const x = ((lng + 180) / 360) * 1000;
     const y = ((90 - lat) / 180) * 500;
     return { x, y };
   };
 
   // Helper function for status colors
-  const getStatusColor = (status) => {
+  const getStatusColor = (status :any) => {
     switch (status) {
       case "on-time":
         return "text-green-600";
@@ -475,7 +464,7 @@ export function WorldMap() {
                 {selectedView === "routes" && (
                   <g className="routes">
                     {/* Major routes from DXB hub */}
-                    {destinations.map((dest, index) => {
+                    {destinations.map((dest, _index) => {
                       const hubCoords = latLngToXY(hubs[0].lat, hubs[0].lng);
                       const destCoords = latLngToXY(dest.lat, dest.lng);
                       return (

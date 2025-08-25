@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import {
@@ -33,7 +32,6 @@ import {
   ClockIcon,
   CheckSquare,
   Users,
-  Calendar,
   Globe,
   TrendingUp,
   MapPin,
@@ -43,15 +41,15 @@ import {
 
 export function Dashboard() {
   const navigate = useNavigate();
-  const { filters, setFilters, screenSettings, setSelectedDisruption } =
+  const { filters, setFilters, screenSettings } =
     useAppContext();
 
   const enabledScreens = screenSettings.filter((screen) => screen.enabled);
 
-  const handleCreateRecoveryPlan = (disruption: any) => {
-    setSelectedDisruption(disruption);
-    navigate("/disruption");
-  };
+  // const handleCreateRecoveryPlan = (disruption: any) => {
+  //   setSelectedDisruption(disruption);
+  //   navigate("/disruption");
+  // };
 
   const navigateToScreen = (screenId: string) => {
     const screen = enabledScreens.find((s) => s.id === screenId);

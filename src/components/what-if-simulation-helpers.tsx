@@ -15,7 +15,7 @@ import {
   getWhatIfScenarios
 } from './recovery-option-helpers'
 
-export const calculateScenarioImpact = (baseOption, scenario, editedParams = {}) => {
+export const calculateScenarioImpact = (baseOption:any, scenario:any, editedParams = {}) => {
   const baseCost = parseInt((baseOption.cost || '50000').replace(/[^\d]/g, '') || '50000')
   const baseTimeMatch = (baseOption.timeline || '').match(/(\d+)/)
   const baseTime = baseTimeMatch ? parseInt(baseTimeMatch[1]) * 60 : 120 // Convert to minutes
@@ -42,7 +42,8 @@ export const calculateScenarioImpact = (baseOption, scenario, editedParams = {})
 
   // Apply parameter edits
   Object.keys(editedParams).forEach(param => {
-    const paramValue = editedParams[param]
+    
+    const paramValue = (editedParams as Record<string, any>)[param]
 
     // Apply parameter-specific adjustments
     if (param === 'Delay Duration' && paramValue !== 240) {
@@ -51,13 +52,13 @@ export const calculateScenarioImpact = (baseOption, scenario, editedParams = {})
       adjustedTime = paramValue
     }
     if (param === 'Hotel Category' || param === 'Accommodation Level') {
-      const multipliers = { 'Budget': 0.7, 'Standard': 1.0, 'Premium': 1.5 }
+      const multipliers: Record<string, number> = { Budget: 0.7, Standard: 1.0, Premium: 1.5 }
       adjustedCost = adjustedCost * (multipliers[paramValue] || 1.0)
     }
     if (param === 'Priority Level' || param === 'Implementation Priority') {
-      const multipliers = { 'Standard': 1.0, 'High': 1.2, 'Emergency': 1.5 }
+       const multipliers: Record<string, number> = { Standard: 1.0, High: 1.2, Emergency: 1.5 }
       adjustedCost = adjustedCost * (multipliers[paramValue] || 1.0)
-      const timeReductions = { 'Standard': 0, 'High': 10, 'Emergency': 20 }
+      const timeReductions: Record<string, number> = { Standard: 0, High: 10, Emergency: 20 }
       adjustedTime = adjustedTime - (timeReductions[paramValue] || 0)
     }
     if (param === 'Transfer Time Buffer' || param === 'Timeline Buffer') {
@@ -77,7 +78,7 @@ export const calculateScenarioImpact = (baseOption, scenario, editedParams = {})
   }
 }
 
-export const calculateImpact = (changes) => {
+export const calculateImpact = (changes:any) => {
   const baselineCost = 50000
   const baselineTime = 80 // minutes
 
@@ -121,7 +122,7 @@ export const calculateImpact = (changes) => {
 }
 
 // Generate recovery options with contextual details
-export const generateRecoveryOptionDetails = (option, flight) => {
+export const generateRecoveryOptionDetails = (option:any, flight:any) => {
   if (!option) {
     console.warn('No option provided to generateRecoveryOptionDetails')
     return {}
@@ -129,7 +130,7 @@ export const generateRecoveryOptionDetails = (option, flight) => {
 
   try {
     // Calculate total cost from option cost string or default
-    const extractCostFromString = (costString) => {
+    const extractCostFromString = (costString:any) => {
       if (!costString) return 0
       const matches = String(costString).match(/[\d,]+/)
       return matches ? parseInt(matches[0].replace(/,/g, '')) : 0

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import  { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
@@ -17,10 +17,7 @@ import {
   RefreshCw,
   FileText,
   MapPin,
-  Calendar,
   User,
-  Phone,
-  Mail,
   Plus,
   ChevronLeft,
   ChevronRight
@@ -89,18 +86,18 @@ export function AffectedFlightsList() {
     }
   }
 
-  const fetchPassengers = async (flightNumber: string) => {
-    setLoadingPassengers(true)
-    try {
-      const data = await databaseService.getPassengersByFlight(flightNumber)
-      setPassengers(data)
-    } catch (error) {
-      console.error('Error fetching passengers:', error)
-      setPassengers([])
-    } finally {
-      setLoadingPassengers(false)
-    }
-  }
+  // const fetchPassengers = async (flightNumber: string) => {
+  //   setLoadingPassengers(true)
+  //   try {
+  //     const data = await databaseService.getPassengersByFlight(flightNumber)
+  //     setPassengers(data)
+  //   } catch (error) {
+  //     console.error('Error fetching passengers:', error)
+  //     setPassengers([])
+  //   } finally {
+  //     setLoadingPassengers(false)
+  //   }
+  // }
 
   const handleFlightSelect = async (flight: FlightDisruption) => {
     setSelectedFlight(flight)
@@ -127,7 +124,7 @@ export function AffectedFlightsList() {
 
   const startIndex = (currentPage - 1) * FLIGHTS_PER_PAGE;
   const endIndex = startIndex + FLIGHTS_PER_PAGE;
-  const paginatedFlights = filteredFlights.slice(startIndex, endIndex);
+  // const paginatedFlights = filteredFlights.slice(startIndex, endIndex);
   const totalPages = Math.ceil(filteredFlights.length / FLIGHTS_PER_PAGE);
 
   const handlePageChange = (page: number) => {

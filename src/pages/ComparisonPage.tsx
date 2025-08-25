@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ComparisonMatrix } from '../components/ComparisonMatrix'
 import { useAppContext } from '../context/AppContext'
@@ -24,15 +24,15 @@ export function ComparisonPage() {
             const transformedFlight = {
               ...flight,
               id: flight.id || parseInt(flightId),
-              flightNumber: flight.flight_number || flight.flightNumber,
+              flightNumber: (flight as any).flight_number || flight.flightNumber,
               route: flight.route || `${flight.origin} → ${flight.destination}`,
-              scheduledDeparture: flight.scheduled_departure || flight.scheduledDeparture,
-              estimatedDeparture: flight.estimated_departure || flight.estimatedDeparture,
-              type: flight.disruption_type || flight.type,
-              disruptionReason: flight.disruption_reason || flight.disruptionReason,
+              scheduledDeparture: (flight as any).scheduled_departure || flight.scheduledDeparture,
+              estimatedDeparture: (flight as any).estimated_departure || flight.estimatedDeparture,
+              type: (flight as any).disruption_type || flight.type,
+              disruptionReason: (flight as any).disruption_reason || flight.disruptionReason,
               severity: flight.severity,
               status: flight.status,
-              categorization: flight.categorization || getCategorization(flight.disruption_type || flight.type || 'Technical'),
+              categorization: flight.categorization || getCategorization((flight as any).disruption_type || flight.type || 'Technical'),
               priority: flight.severity || 'Medium'
             }
             console.log('Flight loaded successfully:', transformedFlight.flightNumber)
@@ -49,17 +49,18 @@ export function ComparisonPage() {
     }
 
     // Helper function to get categorization
-    const getCategorization = (type) => {
-      const categoryMap = {
-        Technical: "Aircraft issue (e.g., AOG)",
-        Weather: "ATC/weather delay",
-        Crew: "Crew issue (e.g., sick report, duty time breach)",
-        ATC: "ATC/weather delay",
-        Airport: "Airport curfew/ramp congestion",
-        Rotation: "Rotation misalignment or maintenance hold"
-      }
-      return categoryMap[type] || "Aircraft issue (e.g., AOG)"
-    }
+   const getCategorization = (type: string) => {
+  const categoryMap: Record<string, string> = {
+    Technical: "Aircraft issue (e.g., AOG)",
+    Weather: "ATC/weather delay",
+    Crew: "Crew issue (e.g., sick report, duty time breach)",
+    ATC: "ATC/weather delay",
+    Airport: "Airport curfew/ramp congestion",
+    Rotation: "Rotation misalignment or maintenance hold"
+  };
+
+  return categoryMap[type] || "Aircraft issue (e.g., AOG)";
+};
 
     loadFlightFromUrl()
   }, [selectedFlight, setSelectedFlight])

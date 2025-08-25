@@ -16,7 +16,7 @@ class SettingsStorage {
   private storage = new Map<string, SettingsData>()
   private readonly STORAGE_KEY = 'aeron_settings_storage'
   private isDatabaseConnected = false
-  private saveTimeout: NodeJS.Timeout | null = null
+  private saveTimeout: ReturnType<typeof setTimeout> | null = null;
   private readonly SAVE_DEBOUNCE_MS = 1000 // 1 second debounce
 
   // Initialize with database connection check and defaults
