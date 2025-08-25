@@ -8,7 +8,6 @@ import { RecoveryOptions } from './pages/RecoveryOptions'
 import { ComparisonPage } from './pages/ComparisonPage'
 import { DetailedPlan } from './pages/DetailedPlan'
 import { PredictionDashboard } from './pages/PredictionDashboard'
-import { FlightDisruptionListPage } from './pages/FlightDisruptionListPage'
 import { PredictionAnalyticsPage } from './pages/PredictionAnalyticsPage'
 import { RiskAssessmentPage } from './pages/RiskAssessmentPage'
 import { PendingSolutionsPage } from './pages/PendingSolutionsPage'
@@ -58,7 +57,6 @@ export default function App() {
                 <Route path="/comparison" element={<ComparisonPage />} />
                 <Route path="/detailed" element={<DetailedPlan />} />
                 <Route path="/prediction-dashboard" element={<PredictionDashboard />} />
-                <Route path="/flight-disruption-list" element={<FlightDisruptionListPage />} />
                 <Route path="/prediction-analytics" element={<PredictionAnalyticsPage />} />
                 <Route path="/risk-assessment" element={<RiskAssessmentPage />} />
                 <Route path="/pending" element={<PendingSolutionsPage />} />
