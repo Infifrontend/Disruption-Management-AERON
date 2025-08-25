@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
@@ -14,10 +14,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { 
   UtensilsCrossed, 
   CreditCard, 
-  Clock, 
-  Users, 
   Send,
-  CheckCircle,
   AlertTriangle,
   Download,
   Receipt,
@@ -102,7 +99,7 @@ const issuedVouchers = [
   }
 ]
 
-export function VoucherManagement({ selectedPassengers, passengers }) {
+export function VoucherManagement({ selectedPassengers }: { selectedPassengers: any; passengers: any }) {
   const [selectedVoucherType, setSelectedVoucherType] = useState('meal')
   const [voucherAmount, setVoucherAmount] = useState(25)
   const [quantity, setQuantity] = useState(1)
@@ -110,7 +107,7 @@ export function VoucherManagement({ selectedPassengers, passengers }) {
   const [useCustomAmount, setUseCustomAmount] = useState(false)
   const [bulkIssue, setBulkIssue] = useState(false)
 
-  const selectedPassengerData = passengers.filter(p => selectedPassengers.includes(p.id))
+  // const selectedPassengerData = passengers.filter(p => selectedPassengers.includes(p.id))
   const selectedVoucherTypeData = voucherTypes.find(vt => vt.id === selectedVoucherType)
 
   const getTotalCost = () => {
@@ -128,7 +125,7 @@ export function VoucherManagement({ selectedPassengers, passengers }) {
     const recipientCount = bulkIssue ? selectedPassengers.length : 1
     const totalCost = getTotalCost()
 
-    alert(`Issuing ${quantity} ${selectedVoucherTypeData.name}(s) worth $${amount} each to ${recipientCount} passenger(s). Total cost: $${totalCost.toFixed(2)}`)
+    alert(`Issuing ${quantity} ${selectedVoucherTypeData?.name ?? 'Unknown'}(s) worth $${amount} each to ${recipientCount} passenger(s). Total cost: $${totalCost.toFixed(2)}`)
   }
 
   const handleBulkIssue = () => {
@@ -136,7 +133,7 @@ export function VoucherManagement({ selectedPassengers, passengers }) {
     handleIssueVouchers()
   }
 
-  const getVoucherStatusColor = (status) => {
+  const getVoucherStatusColor = (status:any) => {
     switch (status) {
       case 'Active': return 'bg-green-100 text-green-700'
       case 'Used': return 'bg-blue-100 text-blue-700'
@@ -197,12 +194,15 @@ export function VoucherManagement({ selectedPassengers, passengers }) {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="voucherType">Voucher Type</Label>
-                <Select value={selectedVoucherType} onValueChange={(value) => {
+                <Select
+                value={selectedVoucherType}
+                onValueChange={(value) => {
                   setSelectedVoucherType(value)
-                  const typeData = voucherTypes.find(vt => vt.id === value)
+                  const typeData = voucherTypes.find(vt => vt.id === value)!
                   setVoucherAmount(typeData.defaultAmount)
                   setUseCustomAmount(false)
-                }}>
+                }}
+>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -234,8 +234,8 @@ export function VoucherManagement({ selectedPassengers, passengers }) {
                     <Checkbox 
                       id="customAmount" 
                       checked={useCustomAmount}
-                      onCheckedChange={setUseCustomAmount}
-                    />
+                      onCheckedChange={(checked) => setUseCustomAmount(checked === true)}
+/>
                     <Label htmlFor="customAmount" className="text-sm">
                       Use custom amount
                     </Label>

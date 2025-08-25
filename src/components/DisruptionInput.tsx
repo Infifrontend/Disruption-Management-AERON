@@ -264,15 +264,16 @@ const getTimeAgo = (dateString: string) => {
   return `${diffDays} days ago`;
 };
 
+interface DisruptionInputProps {
+  disruption?: any;
+  onSelectFlight?: (flight: any) => void;
+  onNavigateToComparison?: (flight: any, options?: any[]) => void;
+}
 export function DisruptionInput({
   disruption,
   onSelectFlight,
   onNavigateToComparison,
-}: {
-  disruption?: any;
-  onSelectFlight?: (flight: any) => void;
-  onNavigateToComparison?: (flight: any, options?: any[]) => void;
-}) {
+}: DisruptionInputProps) {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedFlight, setSelectedFlight] = useState(null);
