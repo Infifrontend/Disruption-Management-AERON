@@ -554,7 +554,7 @@ class DatabaseService {
 
       return isHealthy;
     } catch (error) {
-      console.warn("Health check failed:", error.message || "Unknown error");
+      console.warn("Health check failed:", error || "Unknown error");
       this.onDatabaseFailure();
 
       // Cache the failure result with shorter duration
@@ -690,15 +690,12 @@ class DatabaseService {
       console.log("Fetched disruptions:", data);
 
       // Transform database format to component format
-      const transformedFlights = data.map((flight) => {
-        // Handle unknown IDs by using flight_number as display value
-        const isUnknownId =
-          flight.id &&
-          typeof flight.id === "string" &&
-          flight.id.startsWith("UNKNOWN-");
-        const displayFlightNumber = isUnknownId
-          ? flight.flight_number || "-"
-          : flight.flight_number;
+        const transformedFlights = data.map((flight:any) => {
+          // Handle unknown IDs by using flight_number as display value
+          const isUnknownId = flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-');
+          const displayFlightNumber = isUnknownId 
+            ? (flight.flight_number || '-')
+            : flight.flight_number;
 
         return {
           id: flight.id,
@@ -811,11 +808,6 @@ class DatabaseService {
       return true;
     } catch (error) {
       console.error("Failed to save disruption:", error);
-      console.error("Error details:", {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      });
       return false;
     }
   }
@@ -1147,7 +1139,7 @@ class DatabaseService {
         stepsCount: result.stepsCount || 0,
       };
     } catch (error) {
-      if (error.name === "AbortError") {
+     if (error instanceof Error) {
         console.error("Recovery options generation timed out");
         return { optionsCount: 0, stepsCount: 0 };
       }
@@ -1334,96 +1326,6 @@ class DatabaseService {
     }
   }
 
-  // Analytics and KPIs
-  async getKPIData() {
-    try {
-      const response = await fetch(`${this.baseUrl}/kpi-data`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching KPI data:", error);
-      return {
-        activeDisruptions: 23,
-        affectedPassengers: 4127,
-        averageDelay: 45,
-        recoverySuccessRate: 89.2,
-        onTimePerformance: 87.3,
-        costSavings: 2.8,
-      };
-    }
-  }
-
-  async getPassengerImpactData() {
-    try {
-      const response = await fetch(`${this.baseUrl}/passenger-impact`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching passenger impact data:", error);
-      return {
-        totalAffected: 4127,
-        highPriority: 1238,
-        successfulRebookings: 892,
-        resolved: 2997,
-        pendingAccommodation: 1130,
-      };
-    }
-  }
-
-  async getHighlyDisruptedStations() {
-    try {
-      const response = await fetch(`${this.baseUrl}/disrupted-stations`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching disrupted stations data:", error);
-      return [
-        {
-          station: "DXB",
-          stationName: "Dubai",
-          disruptedFlights: 12,
-          affectedPassengers: 2847,
-          severity: "high",
-          primaryCause: "Weather",
-        },
-        {
-          station: "DEL",
-          stationName: "Delhi",
-          disruptedFlights: 7,
-          affectedPassengers: 823,
-          severity: "medium",
-          primaryCause: "ATC Delays",
-        },
-        {
-          station: "BOM",
-          stationName: "Mumbai",
-          disruptedFlights: 4,
-          affectedPassengers: 457,
-          severity: "medium",
-          primaryCause: "Aircraft Issue",
-        },
-      ];
-    }
-  }
-
-  async getOperationalInsights() {
-    try {
-      const response = await fetch(`${this.baseUrl}/operational-insights`);
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      return await response.json();
-    } catch (error) {
-      console.error("Error fetching operational insights:", error);
-      return {
-        recoveryRate: 89.2,
-        averageResolutionTime: "2.4h",
-        networkImpact: "Medium",
-        criticalPriority: 5,
-        mostDisruptedRoute: "DXB → DEL",
-        routeDisruptionCause: "Weather delays",
-      };
-    }
-  }
-
   // Sync disruptions from external API - disabled to prevent unknown records
   async syncDisruptionsFromExternalAPI(): Promise<{
     inserted: number;
@@ -1470,13 +1372,10 @@ class DatabaseService {
       );
       return false;
     } catch (error) {
-      if (error.name === "AbortError") {
-        console.warn("API health check timed out");
+      if (error instanceof Error) {
+        console.warn('API health check timed out');
       } else {
-        console.warn(
-          "API health check failed:",
-          error.message || "Unknown error",
-        );
+        console.warn('API health check failed:', (error as Error).message || 'Unknown error');
       }
       return false;
     }
@@ -1639,6 +1538,13 @@ class DatabaseService {
     }
   }
 
+  // Generate mock external API data for testing - disabled to prevent unknown records
+  // private generateMockExternalData(): any[] {
+    // Return empty array to stop generating mock data that creates unknown records
+  //   console.log('Mock data generation disabled to prevent unknown records');
+  //   return [];
+  // }
+
   // Past Recovery Logs
   async getPastRecoveryLogs(filters: any = {}): Promise<any[]> {
     try {
@@ -1677,6 +1583,191 @@ class DatabaseService {
     }
   }
 
+  // private getMockRecoveryLogs(): any[] {
+  //   return [
+  //     {
+  //       solution_id: 'SOL-2025-001',
+  //       disruption_id: '260',
+  //       flight_number: 'FZ215',
+  //       route: 'DXB → BOM',
+  //       aircraft: 'B737-800',
+  //       disruption_type: 'Weather',
+  //       disruption_reason: 'Engine overheating at DXB',
+  //       priority: 'High',
+  //       date_created: '2025-01-10T14:30:15Z',
+  //       date_executed: '2025-01-10T17:32:15Z',
+  //       date_completed: '2025-01-10T17:32:15Z',
+  //       duration: '3h 2m',
+  //       status: 'Successful',
+  //       affected_passengers: 197,
+  //       actual_cost: 125000,
+  //       estimated_cost: 130000,
+  //       cost_variance: -3.8,
+  //       otp_impact: 92.5,
+  //       solution_chosen: 'Option A',
+  //       total_options: 3,
+  //       executed_by: 'Sara Ahmed',
+  //       approved_by: 'Operations Manager',
+  //       passenger_satisfaction: 8.2,
+  //       rebooking_success: 94.1,
+  //       categorization: 'Weather',
+  //       cancellation_avoided: true,
+  //       potential_delay_minutes: 155,
+  //       actual_delay_minutes: 155,
+  //       delay_reduction_minutes: 0,
+  //       disruption_category: 'Weather',
+  //       recovery_efficiency: 95.0,
+  //       network_impact: 'None',
+  //       downstream_flights_affected: 0,
+  //       created_at: '2025-01-10T14:30:15Z'
+  //     },
+  //     {
+  //       solution_id: 'SOL-2025-002',
+  //       disruption_id: '259',
+  //       flight_number: 'FZ181',
+  //       route: 'DXB → COK',
+  //       aircraft: 'B737-800',
+  //       disruption_type: 'Crew',
+  //       disruption_reason: 'Captain duty time breach',
+  //       priority: 'Medium',
+  //       date_created: '2025-01-10T14:25:10Z',
+  //       date_executed: '2025-01-10T17:21:10Z',
+  //       date_completed: '2025-01-10T17:21:10Z',
+  //       duration: '2h 56m',
+  //       status: 'Successful',
+  //       affected_passengers: 189,
+  //       actual_cost: 89000,
+  //       estimated_cost: 92000,
+  //       cost_variance: -3.3,
+  //       otp_impact: 91.9,
+  //       solution_chosen: 'Option B',
+  //       total_options: 4,
+  //       executed_by: 'Ahmed Hassan',
+  //       approved_by: 'Crew Manager',
+  //       passenger_satisfaction: 8.8,
+  //       rebooking_success: 97.1,
+  //       categorization: 'Crew',
+  //       cancellation_avoided: true,
+  //       potential_delay_minutes: 210,
+  //       actual_delay_minutes: 69,
+  //       delay_reduction_minutes: 141,
+  //       disruption_category: 'Crew',
+  //       recovery_efficiency: 88.0,
+  //       network_impact: 'Low',
+  //       downstream_flights_affected: 1,
+  //       created_at: '2025-01-10T14:25:10Z'
+  //     },
+  //     {
+  //       solution_id: 'SOL-2025-003',
+  //       disruption_id: '258',
+  //       flight_number: 'FZ147',
+  //       route: 'BKT → DXB',
+  //       aircraft: 'B737 MAX 8',
+  //       disruption_type: 'AOG',
+  //       disruption_reason: 'Engine maintenance check required',
+  //       priority: 'Medium',
+  //       date_created: '2025-01-10T13:15:30Z',
+  //       date_executed: '2025-01-10T17:45:30Z',
+  //       date_completed: '2025-01-10T17:45:30Z',
+  //       duration: '4h 30m',
+  //       status: 'Successful',
+  //       affected_passengers: 165,
+  //       actual_cost: 145000,
+  //       estimated_cost: 148000,
+  //       cost_variance: -2.0,
+  //       otp_impact: 91.0,
+  //       solution_chosen: 'Option A',
+  //       total_options: 2,
+  //       executed_by: 'Fatima Al Zahra',
+  //       approved_by: 'Technical Manager',
+  //       passenger_satisfaction: 7.8,
+  //       rebooking_success: 89.2,
+  //       categorization: 'AOG',
+  //       cancellation_avoided: true,
+  //       potential_delay_minutes: 270,
+  //       actual_delay_minutes: 118,
+  //       delay_reduction_minutes: 152,
+  //       disruption_category: 'AOG',
+  //       recovery_efficiency: 92.0,
+  //       network_impact: 'Medium',
+  //       downstream_flights_affected: 2,
+  //       created_at: '2025-01-10T13:15:30Z'
+  //     },
+  //     {
+  //       solution_id: 'SOL-2025-004',
+  //       disruption_id: '257',
+  //       flight_number: 'FZ351',
+  //       route: 'CAI → SSL',
+  //       aircraft: 'B737-800',
+  //       disruption_type: 'Airport',
+  //       disruption_reason: 'DXB runway closure - emergency landing',
+  //       priority: 'Critical',
+  //       date_created: '2025-01-10T12:45:45Z',
+  //       date_executed: '2025-01-10T15:55:45Z',
+  //       date_completed: '2025-01-10T15:55:45Z',
+  //       duration: '3h 10m',
+  //       status: 'Successful',
+  //       affected_passengers: 178,
+  //       actual_cost: 98000,
+  //       estimated_cost: 105000,
+  //       cost_variance: -6.7,
+  //       otp_impact: 92.5,
+  //       solution_chosen: 'Option C',
+  //       total_options: 3,
+  //       executed_by: 'Omar Khalil',
+  //       approved_by: 'Operations Director',
+  //       passenger_satisfaction: 7.2,
+  //       rebooking_success: 86.1,
+  //       categorization: 'Airport',
+  //       cancellation_avoided: true,
+  //       potential_delay_minutes: 770,
+  //       actual_delay_minutes: 770,
+  //       delay_reduction_minutes: 0,
+  //       disruption_category: 'Airport',
+  //       recovery_efficiency: 92.5,
+  //       network_impact: 'High',
+  //       downstream_flights_affected: 5,
+  //       created_at: '2025-01-10T12:45:45Z'
+  //     },
+  //     {
+  //       solution_id: 'SOL-2025-005',
+  //       disruption_id: '256',
+  //       flight_number: 'FZ267',
+  //       route: 'KTM → BOM',
+  //       aircraft: 'B737-800',
+  //       disruption_type: 'Security',
+  //       disruption_reason: 'Security screening delay at BOM',
+  //       priority: 'High',
+  //       date_created: '2025-01-10T11:20:20Z',
+  //       date_executed: '2025-01-10T13:55:20Z',
+  //       date_completed: '2025-01-10T13:55:20Z',
+  //       duration: '2h 35m',
+  //       status: 'Successful',
+  //       affected_passengers: 162,
+  //       actual_cost: 67000,
+  //       estimated_cost: 71000,
+  //       cost_variance: -5.6,
+  //       otp_impact: 88.5,
+  //       solution_chosen: 'Option A',
+  //       total_options: 2,
+  //       executed_by: 'Rashid Abdullah',
+  //       approved_by: 'Security Manager',
+  //       passenger_satisfaction: 8.5,
+  //       rebooking_success: 97.0,
+  //       categorization: 'Security',
+  //       cancellation_avoided: true,
+  //       potential_delay_minutes: 305,
+  //       actual_delay_minutes: 305,
+  //       delay_reduction_minutes: 0,
+  //       disruption_category: 'Security',
+  //       recovery_efficiency: 88.5,
+  //       network_impact: 'Low',
+  //       downstream_flights_affected: 1,
+  //       created_at: '2025-01-10T11:20:20Z'
+  //     }
+  //   ];
+  // }
+
   // Passenger Rebookings
   async savePassengerRebookings(rebookings: any[]): Promise<boolean> {
     try {
@@ -1714,8 +1805,8 @@ class DatabaseService {
     try {
       const rebookingData = [];
 
-      for (const [pnr, passengers] of Object.entries(passengersByPnr)) {
-        for (const passenger of passengers as any[]) {
+      for (const [pnr, passengers] of Object.entries(passengersByPnr) as [string, any[]][]) {
+        for (const passenger of passengers) {
           rebookingData.push({
             disruption_id: disruptionFlightId,
             pnr: pnr,
@@ -1797,8 +1888,10 @@ class DatabaseService {
         status: solution.status || "Pending",
         full_details: solution.full_details,
         rotation_impact: solution.rotation_impact,
-        submitted_by: solution.submitted_by || "system",
+        submitted_by: solution.submitted_by || 'system',
         approval_required: solution.approval_required || true,
+        passenger_rebooking:{},
+        crew_hotel_assignments:{}
       };
 
       // Add optional passenger rebooking data if present
