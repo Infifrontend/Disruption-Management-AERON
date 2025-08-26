@@ -1,0 +1,544 @@
+0,
+                                    ~~~~~~~~~~~~~
+
+src/components/DisruptionInput.tsx:519:28 - error TS2551: Property 'connection_flights' does not exist on type 'FlightDisruption'. Did you mean 'connectionFlights'?
+
+519                 disruption.connection_flights ||
+                               ~~~~~~~~~~~~~~~~~~
+
+  src/services/databaseService.ts:48:3
+    48   connectionFlights: number;
+         ~~~~~~~~~~~~~~~~~
+    'connectionFlights' is declared here.
+
+src/components/DisruptionInput.tsx:522:42 - error TS2551: Property 'recovery_status' does not exist on type 'FlightDisruption'. Did you mean 'recoveryStatus'?
+
+522               recoveryStatus: disruption.recovery_status || "assigned",
+                                             ~~~~~~~~~~~~~~~
+
+  src/services/databaseService.ts:53:3
+    53   recoveryStatus?: string;
+         ~~~~~~~~~~~~~~
+    'recoveryStatus' is declared here.
+
+src/components/DisruptionInput.tsx:711:16 - error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+
+711         return new Date(a.scheduledDeparture) - new Date(b.scheduledDeparture);
+                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/components/DisruptionInput.tsx:711:49 - error TS2363: The right-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+
+711         return new Date(a.scheduledDeparture) - new Date(b.scheduledDeparture);
+                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+src/components/DisruptionInput.tsx:784:11 - error TS2353: Object literal may only specify known properties, and 'duration' does not exist in type 'Toast2'.
+
+784           duration: 3000,
+              ~~~~~~~~
+
+src/components/DisruptionInput.tsx:799:11 - error TS2353: Object literal may only specify known properties, and 'variant' does not exist in type 'Toast2'.
+
+799           variant: "destructive",
+              ~~~~~~~
+
+src/components/DisruptionInput.tsx:808:9 - error TS2353: Object literal may only specify known properties, and 'variant' does not exist in type 'Toast2'.
+
+808         variant: "destructive",
+            ~~~~~~~
+
+src/components/DisruptionInput.tsx:879:9 - error TS2353: Object literal may only specify known properties, and 'variant' does not exist in type 'Toast2'.
+
+879         variant: "destructive",
+            ~~~~~~~
+
+src/components/DisruptionInput.tsx:963:34 - error TS2339: Property 'crewMembers' does not exist on type '{ flightNumber: string; origin: string; destination: string; scheduledDeparture: string; scheduledArrival: string; currentStatus: string; delay: string; aircraft: string; gate: string; passengers: string; ... 8 more ...; vipPassengers: string; }'.
+
+963       crewMembers: newDisruption.crewMembers || [],
+                                     ~~~~~~~~~~~
+
+src/components/DisruptionInput.tsx:976:48 - error TS2339: Property 'success' does not exist on type 'never'.
+
+976       if (result && (result === true || result.success !== false)) {
+                                                   ~~~~~~~
+
+src/components/FlightTrackingGantt.tsx:425:9 - error TS2552: Cannot find name 'setCurrentTime'. Did you mean 'currentTime'?
+
+425         setCurrentTime(new Date())
+            ~~~~~~~~~~~~~~
+
+  src/components/FlightTrackingGantt.tsx:412:10
+    412   const [currentTime] = useState(() => {
+                 ~~~~~~~~~~~
+    'currentTime' is declared here.
+
+src/components/FlightTrackingGantt.tsx:968:64 - error TS2552: Cannot find name 'setCurrentTime'. Did you mean 'currentTime'?
+
+968               <Button variant="ghost" size="sm" onClick={() => setCurrentTime(new Date())}>
+                                                                   ~~~~~~~~~~~~~~
+
+  src/components/FlightTrackingGantt.tsx:412:10
+    412   const [currentTime] = useState(() => {
+                 ~~~~~~~~~~~
+    'currentTime' is declared here.
+
+src/components/FuelOptimization.tsx:858:64 - error TS2339: Property 'toFixed' does not exist on type 'ValueType'.
+  Property 'toFixed' does not exist on type 'string'.
+
+858                       <Tooltip formatter={(value) => [`${value.toFixed(0)} gal`, 'Fuel per Flight']} />
+                                                                   ~~~~~~~
+
+src/components/FuelOptimization.tsx:873:65 - error TS2339: Property 'toFixed' does not exist on type 'ValueType'.
+  Property 'toFixed' does not exist on type 'string'.
+
+873                       <Tooltip formatter={(value) => [`$${value.toFixed(0)}`, 'Monthly Cost']} />
+                                                                    ~~~~~~~
+
+src/components/HOTACManagement.tsx:1385:34 - error TS2322: Type 'string' is not assignable to type 'number'.
+
+1385                       <TableCell colSpan="13" className="bg-gray-50 p-4">
+                                      ~~~~~~~
+
+  node_modules/@types/react/index.d.ts:3620:9
+    3620         colSpan?: number | undefined;
+                 ~~~~~~~
+    The expected type comes from property 'colSpan' which is declared here on type 'IntrinsicAttributes & ClassAttributes<HTMLTableDataCellElement> & TdHTMLAttributes<HTMLTableDataCellElement>'
+
+src/components/HotelBooking.tsx:255:21 - error TS2322: Type 'Dispatch<SetStateAction<boolean>>' is not assignable to type '(checked: CheckedState) => void'.
+  Types of parameters 'value' and 'checked' are incompatible.
+    Type 'CheckedState' is not assignable to type 'SetStateAction<boolean>'.
+      Type '"indeterminate"' is not assignable to type 'SetStateAction<boolean>'.
+
+255                     onCheckedChange={setIncludeTransfer}
+                        ~~~~~~~~~~~~~~~
+
+  node_modules/@radix-ui/react-checkbox/dist/index.d.mts:33:5
+    33     onCheckedChange?(checked: CheckedState): void;
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    The expected type comes from property 'onCheckedChange' which is declared here on type 'IntrinsicAttributes & Omit<CheckboxProps & RefAttributes<HTMLButtonElement>, "ref"> & RefAttributes<...>'
+
+src/components/HotelBooking.tsx:266:21 - error TS2322: Type 'Dispatch<SetStateAction<boolean>>' is not assignable to type '(checked: CheckedState) => void'.
+  Types of parameters 'value' and 'checked' are incompatible.
+    Type 'CheckedState' is not assignable to type 'SetStateAction<boolean>'.
+      Type '"indeterminate"' is not assignable to type 'SetStateAction<boolean>'.
+
+266                     onCheckedChange={setIncludeMeals}
+                        ~~~~~~~~~~~~~~~
+
+  node_modules/@radix-ui/react-checkbox/dist/index.d.mts:33:5
+    33     onCheckedChange?(checked: CheckedState): void;
+           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    The expected type comes from property 'onCheckedChange' which is declared here on type 'IntrinsicAttributes & Omit<CheckboxProps & RefAttributes<HTMLButtonElement>, "ref"> & RefAttributes<...>'
+
+src/components/KPIWidgets.tsx:3:8 - error TS2300: Duplicate identifier 'React'.
+
+3 import React, { useState, useEffect } from 'react'
+         ~~~~~
+
+src/components/KPIWidgets.tsx:3:17 - error TS2300: Duplicate identifier 'useState'.
+
+3 import React, { useState, useEffect } from 'react'
+                  ~~~~~~~~
+
+src/components/KPIWidgets.tsx:3:27 - error TS2300: Duplicate identifier 'useEffect'.
+
+3 import React, { useState, useEffect } from 'react'
+                            ~~~~~~~~~
+
+src/components/KPIWidgets.tsx:4:10 - error TS2300: Duplicate identifier 'Card'.
+
+4 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+           ~~~~
+
+src/components/KPIWidgets.tsx:4:16 - error TS2300: Duplicate identifier 'CardContent'.
+
+4 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+                 ~~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:4:29 - error TS2300: Duplicate identifier 'CardHeader'.
+
+4 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+                              ~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:4:41 - error TS2300: Duplicate identifier 'CardTitle'.
+
+4 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+                                          ~~~~~~~~~
+
+src/components/KPIWidgets.tsx:7:10 - error TS2300: Duplicate identifier 'TrendingUp'.
+
+7 import { TrendingUp, TrendingDown, Plane, Users, Clock, AlertTriangle, CheckCircle } from 'lucide-react'
+           ~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:7:22 - error TS2300: Duplicate identifier 'TrendingDown'.
+
+7 import { TrendingUp, TrendingDown, Plane, Users, Clock, AlertTriangle, CheckCircle } from 'lucide-react'
+                       ~~~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:7:36 - error TS2300: Duplicate identifier 'Plane'.
+
+7 import { TrendingUp, TrendingDown, Plane, Users, Clock, AlertTriangle, CheckCircle } from 'lucide-react'
+                                     ~~~~~
+
+src/components/KPIWidgets.tsx:7:43 - error TS2300: Duplicate identifier 'Users'.
+
+7 import { TrendingUp, TrendingDown, Plane, Users, Clock, AlertTriangle, CheckCircle } from 'lucide-react'
+                                            ~~~~~
+
+src/components/KPIWidgets.tsx:7:50 - error TS2300: Duplicate identifier 'Clock'.
+
+7 import { TrendingUp, TrendingDown, Plane, Users, Clock, AlertTriangle, CheckCircle } from 'lucide-react'
+                                                   ~~~~~
+
+src/components/KPIWidgets.tsx:7:57 - error TS2300: Duplicate identifier 'AlertTriangle'.
+
+7 import { TrendingUp, TrendingDown, Plane, Users, Clock, AlertTriangle, CheckCircle } from 'lucide-react'
+                                                          ~~~~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:7:72 - error TS2300: Duplicate identifier 'CheckCircle'.
+
+7 import { TrendingUp, TrendingDown, Plane, Users, Clock, AlertTriangle, CheckCircle } from 'lucide-react'
+                                                                         ~~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:8:10 - error TS2300: Duplicate identifier 'databaseService'.
+
+8 import { databaseService } from '@/services/database'
+           ~~~~~~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:8:33 - error TS2307: Cannot find module '@/services/database' or its corresponding type declarations.
+
+8 import { databaseService } from '@/services/database'
+                                  ~~~~~~~~~~~~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:165:8 - error TS2300: Duplicate identifier 'React'.
+
+165 import React, { useState, useEffect } from 'react'
+           ~~~~~
+
+src/components/KPIWidgets.tsx:165:17 - error TS2300: Duplicate identifier 'useState'.
+
+165 import React, { useState, useEffect } from 'react'
+                    ~~~~~~~~
+
+src/components/KPIWidgets.tsx:165:27 - error TS2300: Duplicate identifier 'useEffect'.
+
+165 import React, { useState, useEffect } from 'react'
+                              ~~~~~~~~~
+
+src/components/KPIWidgets.tsx:166:10 - error TS2300: Duplicate identifier 'Card'.
+
+166 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+             ~~~~
+
+src/components/KPIWidgets.tsx:166:16 - error TS2300: Duplicate identifier 'CardContent'.
+
+166 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+                   ~~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:166:29 - error TS2300: Duplicate identifier 'CardHeader'.
+
+166 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+                                ~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:166:41 - error TS2300: Duplicate identifier 'CardTitle'.
+
+166 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+                                            ~~~~~~~~~
+
+src/components/KPIWidgets.tsx:168:3 - error TS2300: Duplicate identifier 'TrendingUp'.
+
+168   TrendingUp,
+      ~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:169:3 - error TS2300: Duplicate identifier 'TrendingDown'.
+
+169   TrendingDown,
+      ~~~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:170:3 - error TS2300: Duplicate identifier 'Plane'.
+
+170   Plane,
+      ~~~~~
+
+src/components/KPIWidgets.tsx:171:3 - error TS2300: Duplicate identifier 'Users'.
+
+171   Users,
+      ~~~~~
+
+src/components/KPIWidgets.tsx:172:3 - error TS2300: Duplicate identifier 'Clock'.
+
+172   Clock,
+      ~~~~~
+
+src/components/KPIWidgets.tsx:173:3 - error TS2300: Duplicate identifier 'AlertTriangle'.
+
+173   AlertTriangle,
+      ~~~~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:174:3 - error TS2300: Duplicate identifier 'CheckCircle'.
+
+174   CheckCircle,
+      ~~~~~~~~~~~
+
+src/components/KPIWidgets.tsx:178:10 - error TS2300: Duplicate identifier 'databaseService'.
+
+178 import { databaseService } from '../services/databaseService'
+             ~~~~~~~~~~~~~~~
+
+src/components/PassengerLookup.tsx:422:82 - error TS2367: This comparison appears to be unintentional because the types 'string | true' and 'false' have no overlap.
+
+422       {Object.values(searchFilters).some(filter => filter && filter !== 'all' && filter !== false) && (
+                                                                                     ~~~~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:48:3 - error TS2305: Module '"lucide-react"' has no exported member 'Wheelchair'.
+
+48   Wheelchair,
+     ~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:55:3 - error TS2724: '"lucide-react"' has no exported member named 'FlightIcon'. Did you mean 'FishIcon'?
+
+55   FlightIcon as LucidePlane,
+     ~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:884:57 - error TS2339: Property 'filter' does not exist on type 'unknown'.
+
+884       const filteredGroupPassengers = passengersInGroup.filter((passenger) => {
+                                                            ~~~~~~
+
+src/components/PassengerRebooking.tsx:1183:37 - error TS2538: Type 'unknown' cannot be used as an index type.
+
+1183       passengers: filteredPnrGroups[pnr],
+                                         ~~~
+
+src/components/PassengerRebooking.tsx:1401:46 - error TS2339: Property 'split' does not exist on type 'unknown'.
+
+1401           name: crewMember?.name || crewName.split(" (")[0] || crewName,
+                                                  ~~~~~
+
+src/components/PassengerRebooking.tsx:1578:39 - error TS2339: Property 'crew_member' does not exist on type 'unknown'.
+
+1578               crew_member: assignment.crew_member,
+                                           ~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1579:38 - error TS2339: Property 'hotel_name' does not exist on type 'unknown'.
+
+1579               hotel_name: assignment.hotel_name,
+                                          ~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1580:42 - error TS2339: Property 'hotel_location' does not exist on type 'unknown'.
+
+1580               hotel_location: assignment.hotel_location,
+                                              ~~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1581:41 - error TS2339: Property 'check_in_date' does not exist on type 'unknown'.
+
+1581               check_in_date: assignment.check_in_date,
+                                             ~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1582:42 - error TS2339: Property 'check_out_date' does not exist on type 'unknown'.
+
+1582               check_out_date: assignment.check_out_date,
+                                              ~~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1583:39 - error TS2339: Property 'room_number' does not exist on type 'unknown'.
+
+1583               room_number: assignment.room_number,
+                                           ~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1584:44 - error TS2339: Property 'special_requests' does not exist on type 'unknown'.
+
+1584               special_requests: assignment.special_requests,
+                                                ~~~~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1585:45 - error TS2339: Property 'assignment_status' does not exist on type 'unknown'.
+
+1585               assignment_status: assignment.assignment_status,
+                                                 ~~~~~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1586:38 - error TS2339: Property 'total_cost' does not exist on type 'unknown'.
+
+1586               total_cost: assignment.total_cost,
+                                          ~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1587:45 - error TS2339: Property 'booking_reference' does not exist on type 'unknown'.
+
+1587               booking_reference: assignment.booking_reference,
+                                                 ~~~~~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1588:45 - error TS2339: Property 'transport_details' does not exist on type 'unknown'.
+
+1588               transport_details: assignment.transport_details,
+                                                 ~~~~~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1589:38 - error TS2339: Property 'created_by' does not exist on type 'unknown'.
+
+1589               created_by: assignment.created_by,
+                                          ~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1631:24 - error TS2339: Property 'passenger_rebooking' does not exist on type '{ disruption_id: any; option_id: any; option_title: any; estimated_cost: any; estimated_delay: any; passenger_impact: { affected: any; reaccommodated: any; compensated: number; missingConnections: any; }; ... 5 more ...; notes: string; }'.
+
+1631           solutionData.passenger_rebooking = passengerRebookingData;
+                            ~~~~~~~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1635:24 - error TS2339: Property 'crew_hotel_assignments' does not exist on type '{ disruption_id: any; option_id: any; option_title: any; estimated_cost: any; estimated_delay: any; passenger_impact: { affected: any; reaccommodated: any; compensated: number; missingConnections: any; }; ... 5 more ...; notes: string; }'.
+
+1635           solutionData.crew_hotel_assignments = crewHotelAssignmentsData;
+                            ~~~~~~~~~~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1650:65 - error TS2339: Property 'crew_member' does not exist on type 'unknown'.
+
+1650               .reduce((total, assignment) => total + assignment.crew_member.length, 0);
+                                                                     ~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1656:65 - error TS2339: Property 'crew_member' does not exist on type 'unknown'.
+
+1656               .reduce((total, assignment) => total + assignment.crew_member.length, 0);
+                                                                     ~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:1888:49 - error TS2538: Type 'unknown' cannot be used as an index type.
+
+1888       const groupPassengers = filteredPnrGroups[pnr];
+                                                     ~~~
+
+src/components/PassengerRebooking.tsx:2360:60 - error TS2339: Property 'length' does not exist on type 'unknown'.
+
+2360                                           {groupPassengers.length} passenger
+                                                                ~~~~~~
+
+src/components/PassengerRebooking.tsx:2361:60 - error TS2339: Property 'length' does not exist on type 'unknown'.
+
+2361                                           {groupPassengers.length > 1 ? "s" : ""}
+                                                                ~~~~~~
+
+src/components/PassengerRebooking.tsx:2419:54 - error TS2339: Property 'map' does not exist on type 'unknown'.
+
+2419                                     {groupPassengers.map((passenger) => (
+                                                          ~~~
+
+src/components/PassengerRebooking.tsx:2679:44 - error TS2339: Property 'crew_member' does not exist on type 'unknown'.
+
+2679                                 assignment.crew_member.some(
+                                                ~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:3200:58 - error TS2339: Property 'length' does not exist on type 'unknown'.
+
+3200                                         {groupPassengers.length} passenger
+                                                              ~~~~~~
+
+src/components/PassengerRebooking.tsx:3201:58 - error TS2339: Property 'length' does not exist on type 'unknown'.
+
+3201                                         {groupPassengers.length > 1 ? "s" : ""}
+                                                              ~~~~~~
+
+src/components/PassengerRebooking.tsx:3254:52 - error TS2339: Property 'map' does not exist on type 'unknown'.
+
+3254                                   {groupPassengers.map((passenger) => (
+                                                        ~~~
+
+src/components/PassengerRebooking.tsx:3498:42 - error TS2339: Property 'crew_member' does not exist on type 'unknown'.
+
+3498                               assignment.crew_member.some(
+                                              ~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:3709:51 - error TS2339: Property 'hotel_name' does not exist on type 'unknown'.
+
+3709                                       {assignment.hotel_name}
+                                                       ~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:3712:60 - error TS2339: Property 'booking_reference' does not exist on type 'unknown'.
+
+3712                                       Booking: {assignment.booking_reference}
+                                                                ~~~~~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:3716:49 - error TS2339: Property 'assignment_status' does not exist on type 'unknown'.
+
+3716                                     {assignment.assignment_status}
+                                                     ~~~~~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:3721:47 - error TS2339: Property 'crew_member' does not exist on type 'unknown'.
+
+3721                                   {assignment.crew_member
+                                                   ~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:3728:48 - error TS2339: Property 'check_in_date' does not exist on type 'unknown'.
+
+3728                                     assignment.check_in_date,
+                                                    ~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:3730:59 - error TS2339: Property 'total_cost' does not exist on type 'unknown'.
+
+3730                                   | Cost: AED {assignment.total_cost}
+                                                               ~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:81:25 - error TS2307: Cannot find module 'console' or its corresponding type declarations.
+
+81 import { Console } from "console";
+                           ~~~~~~~~~
+
+src/components/PendingSolutions.tsx:1597:39 - error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+
+1597                                 <span>{value}</span>
+                                           ~~~~~~~
+
+  node_modules/@types/react/index.d.ts:2398:9
+    2398         children?: ReactNode | undefined;
+                 ~~~~~~~~
+    The expected type comes from property 'children' which is declared here on type 'DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>'
+
+src/components/PendingSolutions.tsx:1643:39 - error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+
+1643                                 <span>{value}</span>
+                                           ~~~~~~~
+
+  node_modules/@types/react/index.d.ts:2398:9
+    2398         children?: ReactNode | undefined;
+                 ~~~~~~~~
+    The expected type comes from property 'children' which is declared here on type 'DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>'
+
+src/components/PendingSolutions.tsx:1872:62 - error TS2339: Property 'amount' does not exist on type 'object'.
+
+1872                                                 typeof value.amount === "number"
+                                                                  ~~~~~~
+
+src/components/PendingSolutions.tsx:1873:66 - error TS2339: Property 'amount' does not exist on type 'object'.
+
+1873                                                   ? `AED ${value.amount.toLocaleString()}`
+                                                                      ~~~~~~
+
+src/components/PendingSolutions.tsx:3090:62 - error TS2339: Property 'amount' does not exist on type 'object'.
+
+3090                                                 typeof value.amount === "number"
+                                                                  ~~~~~~
+
+src/components/PendingSolutions.tsx:3091:66 - error TS2339: Property 'amount' does not exist on type 'object'.
+
+3091                                                   ? `AED ${value.amount.toLocaleString()}`
+                                                                      ~~~~~~
+
+src/components/PendingSolutions.tsx:3125:47 - error TS2339: Property 'amount' does not exist on type 'object'.
+
+3125                                         value.amount
+                                                   ~~~~~~
+
+src/components/PendingSolutions.tsx:3126:51 - error TS2339: Property 'amount' does not exist on type 'object'.
+
+3126                                           ? value.amount
+                                                       ~~~~~~
+
+src/components/PendingSolutions.tsx:3839:49 - error TS2552: Cannot find name 'plan'. Did you mean 'plans'?
+
+3839                                                 plan.flightNumber}
+                                                     ~~~~
+
+  src/components/PendingSolutions.tsx:100:10
+    100   const [plans, setPlans] = useState([]);
+                 ~~~~~
+    'plans' is declared here.
+
+src/components/SettingsPanel.tsx:1162:7 - error TS2322: Type 'unknown' is not assignable to type 'number'.
+
+1162       baseWeights = baseParams.reduce((sum, val) => sum + val, 0);
+           ~~~~~~~~~~~
+
+src/components/SettingsPanel.tsx:1162:53 - error TS2365: Operator '+' cannot be applied to types 'unknown' and 'unknown'.
+
+1162       baseWeights = baseParams.reduce((sum, val) => sum + val, 0);
