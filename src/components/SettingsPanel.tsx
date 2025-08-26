@@ -1139,7 +1139,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   };
 
   const calculateTotalWeight = (category, section = null) => {
-    let baseWeights = 0;
+    let baseWeights  = 0;
     let customWeights = 0;
 
     if (section) {

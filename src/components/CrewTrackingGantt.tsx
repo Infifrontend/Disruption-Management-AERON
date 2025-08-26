@@ -268,12 +268,14 @@ export function CrewTrackingGantt({ recoveryOption, flight, onClose }) {
   }
 
   // Handle crew member editing
-  const handleCrewEdit = (crewId, field, value) => {
+  const handleCrewEdit = (crewId , field, value) => {
     const newPlan = { ...modifiedPlan }
-    if (!newPlan.crewChanges) newPlan.crewChanges = {}
-    if (!newPlan.crewChanges[crewId]) newPlan.crewChanges[crewId] = {}
+    if (!(newPlan as any).crewChanges) (newPlan as any).crewChanges = {}
+    if (!(newPlan as any).crewChanges[crewId]) {
+      (newPlan as any).crewChanges[crewId] = {};
+    }
 
-    newPlan.crewChanges[crewId][field] = value
+    (newPlan as any).crewChanges[crewId][field] = value
     setModifiedPlan(newPlan)
 
     // Calculate impact
