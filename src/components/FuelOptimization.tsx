@@ -855,7 +855,7 @@ function RouteOptimizationScreen({ route, onClose }) {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="month" />
                       <YAxis />
-                      <Tooltip formatter={(value) => [`${value.toFixed(0)} gal`, 'Fuel per Flight']} />
+                      <Tooltip formatter={(value) => [`${Number(value).toFixed(0)} gal`, 'Fuel per Flight']} />
                       <Line type="monotone" dataKey="fuel" stroke="#8884d8" strokeWidth={3} />
                     </LineChart>
                   </ResponsiveContainer>
@@ -870,7 +870,7 @@ function RouteOptimizationScreen({ route, onClose }) {
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="month" />
                       <YAxis />
-                      <Tooltip formatter={(value) => [`$${value.toFixed(0)}`, 'Monthly Cost']} />
+                      <Tooltip formatter={(value) => [`$${Number(value).toFixed(0)}`, 'Monthly Cost']} />
                       <Area type="monotone" dataKey="cost" stroke="#00C49F" fill="#00C49F" fillOpacity={0.3} />
                     </AreaChart>
                   </ResponsiveContainer>

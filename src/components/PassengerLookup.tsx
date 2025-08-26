@@ -419,7 +419,7 @@ export function PassengerLookup({
       </Card>
 
       {/* Filter Summary */}
-      {Object.values(searchFilters).some(filter => filter && filter !== 'all' && filter !== false) && (
+      {Object.values(searchFilters).some(filter => filter && filter !== 'all' && typeof filter === 'string') && (
         <Alert className="border-blue-200 bg-blue-50">
           <Filter className="h-4 w-4 text-blue-600" />
           <AlertDescription className="text-blue-800">
