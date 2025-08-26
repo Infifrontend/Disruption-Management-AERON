@@ -2310,7 +2310,9 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                 <div className="space-y-4">
                   {/* Replacement Aircraft */}
                   {(modifiedResources?.aircraft?.replacement ||
-                    planData.resources?.aircraft?.replacement) && (
+                    (planData.resources &&
+                      "aircraft" in planData.resources &&
+                      planData.resources?.aircraft?.replacement)) && (
                     <div className="p-4 border rounded-lg">
                       <h4 className="font-medium mb-3">Replacement Aircraft</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2323,7 +2325,10 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                               value={
                                 modifiedResources?.aircraft?.replacement
                                   ?.tail ||
-                                planData.resources?.aircraft?.replacement?.tail
+                                (planData.resources &&
+                                  "aircraft" in planData.resources &&
+                                  planData.resources?.aircraft?.replacement
+                                    ?.tail)
                               }
                               onValueChange={(value) => {
                                 const selectedAircraft = availableAircraft.find(
@@ -2377,15 +2382,19 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                               <Badge className="bg-flydubai-blue text-white">
                                 {modifiedResources?.aircraft?.replacement
                                   ?.tail ||
-                                  planData.resources?.aircraft?.replacement
-                                    ?.tail}
+                                  (planData.resources &&
+                                    "aircraft" in planData.resources &&
+                                    planData.resources?.aircraft?.replacement
+                                      ?.tail)}
                               </Badge>
                               <span className="text-sm text-muted-foreground">
                                 (
                                 {modifiedResources?.aircraft?.replacement
                                   ?.type ||
-                                  planData.resources?.aircraft?.replacement
-                                    ?.type}
+                                  (planData.resources &&
+                                    "aircraft" in planData.resources &&
+                                    planData.resources?.aircraft?.replacement
+                                      ?.type)}
                                 )
                               </span>
                             </div>
@@ -2401,8 +2410,10 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                             <div>
                               {modifiedResources?.aircraft?.replacement
                                 ?.status ||
-                                planData.resources?.aircraft?.replacement
-                                  ?.status}
+                                (planData.resources &&
+                                  "aircraft" in planData.resources &&
+                                  planData.resources?.aircraft?.replacement
+                                    ?.status)}
                             </div>
                           </div>
                           <div>
@@ -2412,8 +2423,10 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                             <div>
                               {modifiedResources?.aircraft?.replacement
                                 ?.location ||
-                                planData.resources?.aircraft?.replacement
-                                  ?.location}
+                                (planData.resources &&
+                                  "aircraft" in planData.resources &&
+                                  planData.resources?.aircraft?.replacement
+                                    ?.location)}
                             </div>
                           </div>
                         </div>
@@ -2423,7 +2436,9 @@ export function DetailedRecoveryPlan({ plan, flight }) {
 
                   {/* Assigned Aircraft */}
                   {(modifiedResources?.aircraft?.assigned ||
-                    planData.resources?.aircraft?.assigned) && (
+                    (planData.resources &&
+                      "aircraft" in planData.resources &&
+                      planData.resources?.aircraft?.assigned)) && (
                     <div className="p-4 border rounded-lg">
                       <h4 className="font-medium mb-3">Assigned Aircraft</h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2435,7 +2450,9 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                             <Select
                               value={
                                 modifiedResources?.aircraft?.assigned?.tail ||
-                                planData.resources?.aircraft?.assigned?.tail
+                                (planData.resources &&
+                                  "aircraft" in planData.resources &&
+                                  planData.resources?.aircraft?.assigned?.tail)
                               }
                               onValueChange={(value) => {
                                 const selectedAircraft = availableAircraft.find(
@@ -2484,12 +2501,18 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                             <div className="flex items-center gap-2">
                               <Badge className="bg-flydubai-blue text-white">
                                 {modifiedResources?.aircraft?.assigned?.tail ||
-                                  planData.resources?.aircraft?.assigned?.tail}
+                                  (planData.resources &&
+                                    "aircraft" in planData.resources &&
+                                    planData.resources?.aircraft?.assigned
+                                      ?.tail)}
                               </Badge>
                               <span className="text-sm text-muted-foreground">
                                 (
                                 {modifiedResources?.aircraft?.assigned?.type ||
-                                  planData.resources?.aircraft?.assigned?.type}
+                                  (planData.resources &&
+                                    "aircraft" in planData.resources &&
+                                    planData.resources?.aircraft?.assigned
+                                      ?.type)}
                                 )
                               </span>
                             </div>
@@ -2503,7 +2526,10 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                             </span>
                             <div>
                               {modifiedResources?.aircraft?.assigned?.status ||
-                                planData.resources?.aircraft?.assigned?.status}
+                                (planData.resources &&
+                                  "aircraft" in planData.resources &&
+                                  planData.resources?.aircraft?.assigned
+                                    ?.status)}
                             </div>
                           </div>
                           <div>
@@ -2513,8 +2539,10 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                             <div>
                               {modifiedResources?.aircraft?.assigned
                                 ?.location ||
-                                planData.resources?.aircraft?.assigned
-                                  ?.location}
+                                (planData.resources &&
+                                  "aircraft" in planData.resources &&
+                                  planData.resources?.aircraft?.assigned
+                                    ?.location)}
                             </div>
                           </div>
                         </div>
@@ -2540,8 +2568,12 @@ export function DetailedRecoveryPlan({ plan, flight }) {
                   {(
                     modifiedResources?.crew?.required ||
                     modifiedResources?.crew?.assigned ||
-                    planData.resources?.crew?.required ||
-                    planData.resources?.crew?.assigned ||
+                    (planData.resources &&
+                      "crew" in planData.resources &&
+                      planData.resources?.crew?.required) ||
+                    (planData.resources &&
+                      "crew" in planData.resources &&
+                      planData.resources?.crew?.assigned) ||
                     []
                   ).map((member, index) => (
                     <div key={index} className="p-4 border rounded-lg">

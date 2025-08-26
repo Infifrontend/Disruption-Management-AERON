@@ -367,40 +367,42 @@ export function DisruptionInput({
           return {
             ...disruption,
             flightNumber:
-              disruption.flight_number ||
+              (disruption as any).flight_number ||
               disruption.flightNumber ||
               `UNKNOWN-${Date.now()}`,
             scheduledDeparture:
+              (disruption as any).scheduled_departure ||
               disruption.scheduledDeparture ||
-              disruption.scheduled_departure ||
               new Date().toISOString(),
             estimatedDeparture:
-              disruption.estimated_departure || disruption.estimatedDeparture,
+              (disruption as any).estimated_departure ||
+              disruption.estimatedDeparture,
             origin: disruption.origin || "DXB",
             destination: disruption.destination || "UNKNOWN",
             originCity:
-              disruption.origin_city ||
+              (disruption as any).origin_city ||
               disruption.originCity ||
               disruption.origin ||
               "Dubai",
             destinationCity:
-              disruption.destination_city ||
+              (disruption as any).destination_city ||
               disruption.destinationCity ||
               disruption.destination ||
               "Unknown",
             status: disruption.status || "Unknown",
             severity: disruption.severity || "Medium",
-            type: disruption.disruption_type || disruption.type || "Technical",
+            type:
+              disruption.disruption_type || disruption.type || "Technical",
             disruptionReason:
-              disruption.disruption_reason ||
+              (disruption as any).disruption_reason ||
               disruption.disruptionReason ||
               "Information not available",
             passengers: disruption.passengers || 0,
             crew: disruption.crew || 6,
-            delay: disruption.delay_minutes || disruption.delay || 0,
+            delay: (disruption as any).delay_minutes || disruption.delay || 0,
             aircraft: disruption.aircraft || "Unknown",
             connectionFlights:
-              disruption.connection_flights ||
+              (disruption as any).connection_flights ||
               disruption.connectionFlights ||
               0,
             recoveryStatus: disruption.recoveryStatus || "assigned",
@@ -482,24 +484,25 @@ export function DisruptionInput({
             return {
               ...disruption,
               flightNumber:
-                disruption.flight_number ||
+                (disruption as any).flight_number ||
                 disruption.flightNumber ||
                 `FALLBACK-${Date.now()}`,
               scheduledDeparture:
-                disruption.scheduled_departure ||
+                (disruption as any).scheduled_departure ||
                 disruption.scheduledDeparture ||
                 new Date().toISOString(),
               estimatedDeparture:
-                disruption.estimated_departure || disruption.estimatedDeparture,
+                (disruption as any).estimated_departure ||
+                disruption.estimatedDeparture,
               origin: disruption.origin || "DXB",
               destination: disruption.destination || "UNKNOWN",
               originCity:
-                disruption.origin_city ||
+                (disruption as any).origin_city ||
                 disruption.originCity ||
                 disruption.origin ||
                 "Dubai",
               destinationCity:
-                disruption.destination_city ||
+                (disruption as any).destination_city ||
                 disruption.destinationCity ||
                 disruption.destination ||
                 "Unknown",
@@ -508,15 +511,15 @@ export function DisruptionInput({
               type:
                 disruption.disruption_type || disruption.type || "Technical",
               disruptionReason:
-                disruption.disruption_reason ||
+                (disruption as any).disruption_reason ||
                 disruption.disruptionReason ||
                 "Cached data - may be incomplete",
               passengers: disruption.passengers || 0,
               crew: disruption.crew || 6,
-              delay: disruption.delay_minutes || disruption.delay || 0,
+              delay: (disruption as any).delay_minutes || disruption.delay || 0,
               aircraft: disruption.aircraft || "Unknown",
               connectionFlights:
-                disruption.connection_flights ||
+                (disruption as any).connection_flights ||
                 disruption.connectionFlights ||
                 0,
               recoveryStatus: disruption.recoveryStatus || "assigned",
@@ -2047,11 +2050,7 @@ export function DisruptionInput({
                                     <div className="space-y-1 max-w-[120px]">
                                       <div className="flex items-center gap-2">
                                         <span className="font-mono font-semibold truncate">
-                                          {flight.id &&
-                                          typeof flight.id === "string" &&
-                                          flight.id.startsWith("UNKNOWN-")
-                                            ? flight.flightNumber || "-"
-                                            : flight.flightNumber}
+                                          {flight.flightNumber}
                                         </span>
                                         {flight.status === "Incomplete" &&
                                           !(
@@ -2359,11 +2358,7 @@ export function DisruptionInput({
                                     <div className="space-y-1 max-w-[120px]">
                                       <div className="flex items-center gap-2">
                                         <span className="font-mono font-semibold truncate">
-                                          {flight.id &&
-                                          typeof flight.id === "string" &&
-                                          flight.id.startsWith("UNKNOWN-")
-                                            ? flight.flightNumber || "-"
-                                            : flight.flightNumber}
+                                          {flight.flightNumber}
                                         </span>
                                         {flight.status === "Incomplete" &&
                                           !(
