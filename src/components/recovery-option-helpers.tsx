@@ -91,7 +91,7 @@ export const getCostBreakdown = (option) => {
 
   // Different cost breakdowns based on recovery option type
   if (optionId.includes('AIRCRAFT') || optionId.includes('SWAP')) {
-    const breakdown = [
+    const breakdown : any = [
       {
         category: "Aircraft Positioning",
         amount: `AED ${Math.floor(baseCost * 0.35).toLocaleString()}`,
@@ -120,7 +120,7 @@ export const getCostBreakdown = (option) => {
     breakdown.totalCost = baseCost
     return breakdown
   } else if (optionId.includes('CREW')) {
-    const breakdown = [
+    const breakdown : any = [
       {
         category: "Crew Positioning",
         amount: `AED ${Math.floor(baseCost * 0.40).toLocaleString()}`,
@@ -149,7 +149,7 @@ export const getCostBreakdown = (option) => {
     breakdown.totalCost = baseCost
     return breakdown
   } else if (optionId.includes('DELAY') || optionId.includes('WEATHER')) {
-    const breakdown = [
+    const breakdown : any = [
       {
         category: "Passenger Services",
         amount: `AED ${Math.floor(baseCost * 0.45).toLocaleString()}`,
@@ -178,7 +178,7 @@ export const getCostBreakdown = (option) => {
     breakdown.totalCost = baseCost
     return breakdown
   } else if (optionId.includes('CANCEL')) {
-    const breakdown = [
+    const breakdown : any = [
       {
         category: "Passenger Compensation",
         amount: `AED ${Math.floor(baseCost * 0.60).toLocaleString()}`,
@@ -208,7 +208,7 @@ export const getCostBreakdown = (option) => {
     return breakdown
   } else {
     // Default breakdown
-    const breakdown = [
+    const breakdown : any = [
       {
         category: "Operational Costs",
         amount: `AED ${Math.floor(baseCost * 0.50).toLocaleString()}`,
