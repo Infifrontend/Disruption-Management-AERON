@@ -198,7 +198,7 @@ export function KPIWidgetsOld() {
 
   const fetchKPIData = async () => {
     try {
-      const data = await databaseService.getKPIData()
+      const data :any = {};
 
       const formattedKpiData: KPIData[] = [
         {

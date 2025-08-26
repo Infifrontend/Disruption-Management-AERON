@@ -51,7 +51,7 @@ import {
   Copy,
   ExternalLink,
   TrendingDown,
-  FlightIcon as LucidePlane,
+  // FlightIcon as LucidePlane,
   Download,
   UserCheck,
   PhoneCall,
@@ -741,7 +741,8 @@ export function PassengerRebooking({ context, onClearContext }) {
       availability: "Available",
       image:
         "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=250&fit=crop",
-      description: "Elegant hotel with excellent conference facilities and dining options",
+      description:
+        "Elegant hotel with excellent conference facilities and dining options",
     },
     {
       id: "HTL-003",
@@ -880,19 +881,21 @@ export function PassengerRebooking({ context, onClearContext }) {
   const filteredPnrGroups = useMemo(() => {
     const filtered = {};
     Object.entries(passengersByPnr).forEach(([pnr, passengersInGroup]) => {
-      const filteredGroupPassengers = passengersInGroup.filter((passenger) => {
-        const matchesSearch =
-          passenger.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          passenger.pnr.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesPriority =
-          selectedPriority === "all-priorities" ||
-          passenger.priority === selectedPriority;
-        const matchesStatus =
-          selectedStatus === "all-statuses" ||
-          passenger.status === selectedStatus;
+      const filteredGroupPassengers = (passengersInGroup as any).filter(
+        (passenger) => {
+          const matchesSearch =
+            passenger.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            passenger.pnr.toLowerCase().includes(searchTerm.toLowerCase());
+          const matchesPriority =
+            selectedPriority === "all-priorities" ||
+            passenger.priority === selectedPriority;
+          const matchesStatus =
+            selectedStatus === "all-statuses" ||
+            passenger.status === selectedStatus;
 
-        return matchesSearch && matchesPriority && matchesStatus;
-      });
+          return matchesSearch && matchesPriority && matchesStatus;
+        },
+      );
 
       if (filteredGroupPassengers.length > 0) {
         filtered[pnr] = filteredGroupPassengers;
@@ -1179,7 +1182,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
     const selectedPnrGroups = Array.from(selectedPnrs).map((pnr) => ({
       pnr,
-      passengers: filteredPnrGroups[pnr],
+      passengers: filteredPnrGroups[pnr as any],
     }));
 
     setSelectedPnrGroup({
@@ -1302,8 +1305,6 @@ export function PassengerRebooking({ context, onClearContext }) {
     });
   };
 
-
-
   const handleConfirmCrewAssignment = async () => {
     try {
       console.log("handleConfirmCrewAssignment called");
@@ -1346,40 +1347,42 @@ export function PassengerRebooking({ context, onClearContext }) {
         ...(Array.isArray(context?.crewData) ? context.crewData : []),
         ...(Array.isArray(crewData?.crew) ? crewData.crew : []),
         // Add default crew data if no crew data is available
-        ...((!crewData?.crew || crewData.crew.length === 0) ? [
-          {
-            id: "CR001",
-            name: "Capt. Ahmed Al-Mansouri",
-            role: "Captain",
-            base: "DXB",
-            status: "Available",
-            contact: "+971-50-1234567",
-          },
-          {
-            id: "CR002",
-            name: "F/O Sarah Johnson",
-            role: "First Officer",
-            base: "DXB",
-            status: "Available",
-            contact: "+971-50-2345678",
-          },
-          {
-            id: "CR003",
-            name: "Fatima Al-Mansouri",
-            role: "Senior Cabin Crew",
-            base: "DXB",
-            status: "Available",
-            contact: "+971-50-3456789",
-          },
-          {
-            id: "CR004",
-            name: "Ahmed Hassan",
-            role: "Cabin Crew",
-            base: "DXB",
-            status: "Duty Violation",
-            contact: "+971-50-4567890",
-          },
-        ] : []),
+        ...(!crewData?.crew || crewData.crew.length === 0
+          ? [
+              {
+                id: "CR001",
+                name: "Capt. Ahmed Al-Mansouri",
+                role: "Captain",
+                base: "DXB",
+                status: "Available",
+                contact: "+971-50-1234567",
+              },
+              {
+                id: "CR002",
+                name: "F/O Sarah Johnson",
+                role: "First Officer",
+                base: "DXB",
+                status: "Available",
+                contact: "+971-50-2345678",
+              },
+              {
+                id: "CR003",
+                name: "Fatima Al-Mansouri",
+                role: "Senior Cabin Crew",
+                base: "DXB",
+                status: "Available",
+                contact: "+971-50-3456789",
+              },
+              {
+                id: "CR004",
+                name: "Ahmed Hassan",
+                role: "Cabin Crew",
+                base: "DXB",
+                status: "Duty Violation",
+                contact: "+971-50-4567890",
+              },
+            ]
+          : []),
       ];
 
       // Prepare crew list from selected members
@@ -1389,7 +1392,8 @@ export function PassengerRebooking({ context, onClearContext }) {
             member.name === crewName ||
             member.employee_id === crewName ||
             member.id === crewName ||
-            `${member.name} (${member.role || member.rank || "Crew"})` === crewName,
+            `${member.name} (${member.role || member.rank || "Crew"})` ===
+              crewName,
         );
 
         return {
@@ -1397,7 +1401,8 @@ export function PassengerRebooking({ context, onClearContext }) {
             crewMember?.employee_id ||
             crewMember?.id ||
             `EMP-${Math.random().toString(36).substr(2, 8)}`,
-          name: crewMember?.name || crewName.split(" (")[0] || crewName,
+          name:
+            crewMember?.name || (crewName as any).split(" (")[0] || crewName,
           rank:
             crewMember?.role ||
             crewMember?.rank ||
@@ -1413,7 +1418,10 @@ export function PassengerRebooking({ context, onClearContext }) {
 
       const assignment = {
         disruption_id:
-          selectedFlight?.id || context?.flight?.id || context?.disruption_id || "CREW_DISRUPTION",
+          selectedFlight?.id ||
+          context?.flight?.id ||
+          context?.disruption_id ||
+          "CREW_DISRUPTION",
         crew_member: crewList,
         hotel_name: selectedHotelForCrew.name,
         hotel_location: `${selectedHotelForCrew.distance} from Airport`,
@@ -1423,8 +1431,9 @@ export function PassengerRebooking({ context, onClearContext }) {
         special_requests: "Standard crew accommodation",
         assignment_status: "assigned",
         total_cost:
-          parseFloat(selectedHotelForCrew.pricePerNight.replace(/[^\d.]/g, "")) *
-          crewList.length,
+          parseFloat(
+            selectedHotelForCrew.pricePerNight.replace(/[^\d.]/g, ""),
+          ) * crewList.length,
         booking_reference: assignmentId,
         transport_details: {
           pickup_location: "DXB Terminal 3 Crew Gate",
@@ -1488,7 +1497,11 @@ export function PassengerRebooking({ context, onClearContext }) {
     });
 
     // Validate based on impact area - crew-only validation
-    if (hasCrew && !hasPassenger && Object.keys(crewHotelAssignments).length === 0) {
+    if (
+      hasCrew &&
+      !hasPassenger &&
+      Object.keys(crewHotelAssignments).length === 0
+    ) {
       alertService.warning(
         "Crew Assignment Required",
         "Crew hotel assignments must be completed before sending for approval.",
@@ -1574,18 +1587,18 @@ export function PassengerRebooking({ context, onClearContext }) {
           crewHotelAssignmentsData = Object.values(crewHotelAssignments).map(
             (assignment) => ({
               disruption_id: disruptionFlightId,
-              crew_member: assignment.crew_member,
-              hotel_name: assignment.hotel_name,
-              hotel_location: assignment.hotel_location,
-              check_in_date: assignment.check_in_date,
-              check_out_date: assignment.check_out_date,
-              room_number: assignment.room_number,
-              special_requests: assignment.special_requests,
-              assignment_status: assignment.assignment_status,
-              total_cost: assignment.total_cost,
-              booking_reference: assignment.booking_reference,
-              transport_details: assignment.transport_details,
-              created_by: assignment.created_by,
+              crew_member: (assignment as any).crew_member,
+              hotel_name: (assignment as any).hotel_name,
+              hotel_location: (assignment as any).hotel_location,
+              check_in_date: (assignment as any).check_in_date,
+              check_out_date: (assignment as any).check_out_date,
+              room_number: (assignment as any).room_number,
+              special_requests: (assignment as any).special_requests,
+              assignment_status: (assignment as any).assignment_status,
+              total_cost: (assignment as any).total_cost,
+              booking_reference: (assignment as any).booking_reference,
+              transport_details: (assignment as any).transport_details,
+              created_by: (assignment as any).created_by,
             }),
           );
         }
@@ -1627,11 +1640,12 @@ export function PassengerRebooking({ context, onClearContext }) {
 
         // Add optional data only if present
         if (passengerRebookingData.length > 0) {
-          solutionData.passenger_rebooking = passengerRebookingData;
+          (solutionData as any).passenger_rebooking = passengerRebookingData;
         }
 
         if (crewHotelAssignmentsData.length > 0) {
-          solutionData.crew_hotel_assignments = crewHotelAssignmentsData;
+          (solutionData as any).crew_hotel_assignments =
+            crewHotelAssignmentsData;
         }
         const pendingSolutionSuccess =
           await databaseService.addPendingSolution(solutionData);
@@ -1641,18 +1655,30 @@ export function PassengerRebooking({ context, onClearContext }) {
 
           if (hasPassenger && !hasCrew) {
             // Passenger-only scenario
-            const uniquePnrs = new Set(confirmedPassengers.map((p) => p.pnr)).size;
+            const uniquePnrs = new Set(confirmedPassengers.map((p) => p.pnr))
+              .size;
             successMessage += `${confirmedPassengers.length} passengers across ${uniquePnrs} PNR groups processed.`;
           } else if (hasCrew && !hasPassenger) {
             // Crew-only scenario
-            const totalCrewAssigned = Object.values(crewHotelAssignments)
-              .reduce((total, assignment) => total + assignment.crew_member.length, 0);
+            const totalCrewAssigned = Object.values(
+              crewHotelAssignments,
+            ).reduce(
+              (total, assignment) =>
+                total + (assignment as any).crew_member.length,
+              0,
+            );
             successMessage += `${totalCrewAssigned} crew members assigned to ${Object.keys(crewHotelAssignments).length} hotel(s).`;
           } else if (hasPassenger && hasCrew) {
             // Both scenarios
-            const uniquePnrs = new Set(confirmedPassengers.map((p) => p.pnr)).size;
-            const totalCrewAssigned = Object.values(crewHotelAssignments)
-              .reduce((total, assignment) => total + assignment.crew_member.length, 0);
+            const uniquePnrs = new Set(confirmedPassengers.map((p) => p.pnr))
+              .size;
+            const totalCrewAssigned = Object.values(
+              crewHotelAssignments,
+            ).reduce(
+              (total, assignment) =>
+                total + (assignment as any).crew_member.length,
+              0,
+            );
             successMessage += `${confirmedPassengers.length} passengers across ${uniquePnrs} PNR groups processed.\n`;
             successMessage += `${totalCrewAssigned} crew members assigned to ${Object.keys(crewHotelAssignments).length} hotel(s).`;
           }
@@ -1881,19 +1907,19 @@ export function PassengerRebooking({ context, onClearContext }) {
   );
 
   // Check if Send for Approval should be enabled - must have selections and all must be confirmed
-  const canSendForApproval =
-    selectedPnrs.size > 0 &&
-    Array.from(selectedPnrs).every((pnr) => {
-      const groupPassengers = filteredPnrGroups[pnr];
-      return (
-        groupPassengers &&
-        groupPassengers.every((p) => {
-          // Check both the updated status and the original status
-          const currentStatus = passengerRebookingStatus[p.id] || p.status;
-          return currentStatus === "Confirmed";
-        })
-      );
-    });
+  // const canSendForApproval =
+  //   selectedPnrs.size > 0 &&
+  //   Array.from(selectedPnrs).every((pnr) => {
+  //     const groupPassengers = filteredPnrGroups[pnr];
+  //     return (
+  //       groupPassengers &&
+  //       groupPassengers.every((p) => {
+
+  //         const currentStatus = passengerRebookingStatus[p.id] || p.status;
+  //         return currentStatus === "Confirmed";
+  //       })
+  //     );
+  //   });
 
   return (
     <div className="container mx-auto space-y-6">
@@ -2356,8 +2382,11 @@ export function PassengerRebooking({ context, onClearContext }) {
                                           variant="secondary"
                                           className="bg-blue-100 text-blue-800"
                                         >
-                                          {groupPassengers.length} passenger
-                                          {groupPassengers.length > 1 ? "s" : ""}
+                                          {(groupPassengers as any).length}{" "}
+                                          passenger
+                                          {(groupPassengers as any).length > 1
+                                            ? "s"
+                                            : ""}
                                         </Badge>
                                         {isPnrGroupConfirmed(
                                           groupPassengers,
@@ -2415,59 +2444,61 @@ export function PassengerRebooking({ context, onClearContext }) {
                               {expandedPnrs.has(pnr) && (
                                 <div className="p-4 border-t">
                                   <div className="grid gap-3">
-                                    {groupPassengers.map((passenger) => (
-                                      <div
-                                        key={passenger.id}
-                                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                                      >
-                                        <div className="flex items-center gap-4">
-                                          <div>
-                                            <div className="font-medium">
-                                              {passenger.name}
-                                            </div>
-                                            <div className="text-sm text-gray-500">
-                                              {passenger.contactInfo}
-                                            </div>
-                                          </div>
-                                          <Badge
-                                            className={getPriorityColor(
-                                              passenger.priority,
-                                            )}
-                                          >
-                                            {passenger.priority}
-                                          </Badge>
-                                          <Badge
-                                            className={getStatusColor(
-                                              passenger.status,
-                                            )}
-                                          >
-                                            {passenger.status}
-                                          </Badge>
-                                          <div className="text-sm text-gray-600">
-                                            Seat: {passenger.seat}
-                                          </div>
-                                          {passenger.specialRequirements && (
-                                            <Badge
-                                              variant="outline"
-                                              className="text-xs"
-                                            >
-                                              {passenger.specialRequirements}
-                                            </Badge>
-                                          )}
-                                        </div>
-                                        <Button
-                                          size="sm"
-                                          variant="outline"
-                                          onClick={() =>
-                                            handleRebookPassenger(passenger)
-                                          }
-                                          className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                    {(groupPassengers as any).map(
+                                      (passenger) => (
+                                        <div
+                                          key={passenger.id}
+                                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                                         >
-                                          <Eye className="h-3 w-3 mr-1" />
-                                          View
-                                        </Button>
-                                      </div>
-                                    ))}
+                                          <div className="flex items-center gap-4">
+                                            <div>
+                                              <div className="font-medium">
+                                                {passenger.name}
+                                              </div>
+                                              <div className="text-sm text-gray-500">
+                                                {passenger.contactInfo}
+                                              </div>
+                                            </div>
+                                            <Badge
+                                              className={getPriorityColor(
+                                                passenger.priority,
+                                              )}
+                                            >
+                                              {passenger.priority}
+                                            </Badge>
+                                            <Badge
+                                              className={getStatusColor(
+                                                passenger.status,
+                                              )}
+                                            >
+                                              {passenger.status}
+                                            </Badge>
+                                            <div className="text-sm text-gray-600">
+                                              Seat: {passenger.seat}
+                                            </div>
+                                            {passenger.specialRequirements && (
+                                              <Badge
+                                                variant="outline"
+                                                className="text-xs"
+                                              >
+                                                {passenger.specialRequirements}
+                                              </Badge>
+                                            )}
+                                          </div>
+                                          <Button
+                                            size="sm"
+                                            variant="outline"
+                                            onClick={() =>
+                                              handleRebookPassenger(passenger)
+                                            }
+                                            className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                          >
+                                            <Eye className="h-3 w-3 mr-1" />
+                                            View
+                                          </Button>
+                                        </div>
+                                      ),
+                                    )}
                                   </div>
                                 </div>
                               )}
@@ -2675,7 +2706,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                               const isAssigned = Object.values(
                                 crewHotelAssignments,
                               ).some((assignment) =>
-                                assignment.crew_member.some(
+                                (assignment as any).crew_member.some(
                                   (cm) =>
                                     cm.name === memberIdentifier ||
                                     cm.employee_id === memberIdentifier,
@@ -3172,10 +3203,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
                       {Object.entries(filteredPnrGroups).map(
                         ([pnr, groupPassengers]) => (
-                          <div
-                            key={pnr}
-                            className="border rounded-lg bg-white"
-                          >
+                          <div key={pnr} className="border rounded-lg bg-white">
                             <div className="p-4 border-b bg-gray-50">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -3199,8 +3227,11 @@ export function PassengerRebooking({ context, onClearContext }) {
                                         variant="secondary"
                                         className="bg-blue-100 text-blue-800"
                                       >
-                                        {groupPassengers.length} passenger
-                                        {groupPassengers.length > 1 ? "s" : ""}
+                                        {(groupPassengers as any).length}{" "}
+                                        passenger
+                                        {(groupPassengers as any).length > 1
+                                          ? "s"
+                                          : ""}
                                       </Badge>
                                       {isPnrGroupConfirmed(groupPassengers) && (
                                         <Badge className="bg-green-100 text-green-800 border-green-200">
@@ -3253,7 +3284,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                             {expandedPnrs.has(pnr) && (
                               <div className="p-4 border-t">
                                 <div className="grid gap-3">
-                                  {groupPassengers.map((passenger) => (
+                                  {(groupPassengers as any).map((passenger) => (
                                     <div
                                       key={passenger.id}
                                       className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
@@ -3363,9 +3394,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                             </TableCell>
                             <TableCell>
                               <Badge
-                                className={getPriorityColor(
-                                  passenger.priority,
-                                )}
+                                className={getPriorityColor(passenger.priority)}
                               >
                                 {passenger.priority}
                               </Badge>
@@ -3400,8 +3429,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Eye className="h-3 w-3 mr-1" />
                                   View
                                 </Button>
-                                {passenger.status ===
-                                  "Rebooking Required" && (
+                                {passenger.status === "Rebooking Required" && (
                                   <Button
                                     size="sm"
                                     className="btn-flydubai-primary text-xs"
@@ -3495,9 +3523,14 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 },
                               ]
                           ).map((crewMember, index) => {
-                            const memberIdentifier = crewMember.name || crewMember.id || `crew_${index}`;
-                            const isAssigned = Object.values(crewHotelAssignments).some((assignment) =>
-                              assignment.crew_member.some(
+                            const memberIdentifier =
+                              crewMember.name ||
+                              crewMember.id ||
+                              `crew_${index}`;
+                            const isAssigned = Object.values(
+                              crewHotelAssignments,
+                            ).some((assignment) =>
+                              (assignment as any).crew_member.some(
                                 (cm) =>
                                   cm.name === memberIdentifier ||
                                   cm.employee_id === memberIdentifier,
@@ -3511,8 +3544,12 @@ export function PassengerRebooking({ context, onClearContext }) {
                               >
                                 <TableCell>
                                   <Checkbox
-                                    checked={selectedCrewMembers.has(memberIdentifier)}
-                                    onCheckedChange={() => handleCrewSelection(memberIdentifier)}
+                                    checked={selectedCrewMembers.has(
+                                      memberIdentifier,
+                                    )}
+                                    onCheckedChange={() =>
+                                      handleCrewSelection(memberIdentifier)
+                                    }
                                     disabled={isAssigned}
                                   />
                                 </TableCell>
@@ -3712,28 +3749,29 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 <div className="flex items-start justify-between mb-2">
                                   <div>
                                     <div className="font-medium text-green-800">
-                                      {assignment.hotel_name}
+                                      {(assignment as any).hotel_name}
                                     </div>
                                     <div className="text-sm text-green-700">
-                                      Booking: {assignment.booking_reference}
+                                      Booking:{" "}
+                                      {(assignment as any).booking_reference}
                                     </div>
                                   </div>
                                   <Badge className="bg-green-100 text-green-700">
-                                    {assignment.assignment_status}
+                                    {(assignment as any).assignment_status}
                                   </Badge>
                                 </div>
                                 <div className="text-sm text-green-700">
                                   Crew:{" "}
-                                  {assignment.crew_member
+                                  {(assignment as any).crew_member
                                     .map((c) => c.name)
                                     .join(", ")}
                                 </div>
                                 <div className="text-sm text-green-600 mt-1">
                                   Check-in:{" "}
                                   {new Date(
-                                    assignment.check_in_date,
+                                    (assignment as any).check_in_date,
                                   ).toLocaleDateString()}{" "}
-                                  | Cost: AED {assignment.total_cost}
+                                  | Cost: AED {(assignment as any).total_cost}
                                 </div>
                               </div>
                             ),
@@ -3782,7 +3820,11 @@ export function PassengerRebooking({ context, onClearContext }) {
                   const hasCrew = impactArea.includes("crew");
                   const hasPassenger = impactArea.includes("passenger");
 
-                  if (hasCrew && !hasPassenger && Object.keys(crewHotelAssignments).length === 0) {
+                  if (
+                    hasCrew &&
+                    !hasPassenger &&
+                    Object.keys(crewHotelAssignments).length === 0
+                  ) {
                     return (
                       <p className="text-xs text-orange-600 mt-1">
                         ⚠️ Complete crew hotel assignments before submitting
@@ -3790,8 +3832,12 @@ export function PassengerRebooking({ context, onClearContext }) {
                     );
                   } else if (hasPassenger && !hasCrew) {
                     const confirmedPassengers = passengers.filter((p) => {
-                      const currentStatus = passengerRebookingStatus[p.id] || p.status;
-                      return currentStatus === "Confirmed" && confirmedRebookings[p.id];
+                      const currentStatus =
+                        passengerRebookingStatus[p.id] || p.status;
+                      return (
+                        currentStatus === "Confirmed" &&
+                        confirmedRebookings[p.id]
+                      );
                     });
 
                     if (confirmedPassengers.length === 0) {
