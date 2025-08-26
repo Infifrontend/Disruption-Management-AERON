@@ -96,6 +96,16 @@ import {
   ArrowDown,
 } from "lucide-react";
 
+// Define NotificationKey type for better type safety
+type NotificationKey =
+  | "email"
+  | "sms"
+  | "push"
+  | "desktop"
+  | "recoveryAlerts"
+  | "passengerUpdates"
+  | "systemAlerts";
+
 export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const [activeTab, setActiveTab] = useState("screens");
   const [isLoading, setIsLoading] = useState(true);
@@ -830,7 +840,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
   // Recovery Configuration Handlers
   const handleRecoveryConfigChange = (section, parameter, value) => {
-    const actualValue = value[0]; // Slider returns array
+    const actualValue = Array.isArray(value) ? value[0] : value;
     console.log(
       `Changing recovery config ${section}.${parameter} to ${actualValue}`,
     );
@@ -866,7 +876,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
   // Passenger Priority Configuration Handlers
   const handlePriorityConfigChange = (category, parameter, value) => {
-    const actualValue = value[0]; // Slider returns array
+    const actualValue = Array.isArray(value) ? value[0] : value;
     console.log(
       `Changing priority config ${category}.${parameter} to ${actualValue}`,
     );
@@ -1471,7 +1481,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                         </Badge>
                       </div>
                       <Slider
-                        value={[value]}
+                        value={Array.isArray(value) ? value : [Number(value) || 0]}
                         onValueChange={(newValue) =>
                           handlePriorityConfigChange(
                             "passengerPrioritization",
@@ -1554,7 +1564,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                         </Badge>
                       </div>
                       <Slider
-                        value={[value]}
+                        value={Array.isArray(value) ? value : [Number(value) || 0]}
                         onValueChange={(newValue) =>
                           handlePriorityConfigChange(
                             "flightPrioritization",
@@ -1565,7 +1575,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                         max={50}
                         min={0}
                         step={5}
-                        className="w-full slider-flydubai"
+                        className="w-full"
                       />
                     </div>
                   );
@@ -1629,11 +1639,11 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           <Badge
                             className={`${getWeightColor(value)} bg-transparent border`}
                           >
-                            {key === "baseScore" ? value : `+${value}`}
+                            {value}%
                           </Badge>
                         </div>
                         <Slider
-                          value={[value]}
+                          value={Array.isArray(value) ? value : [Number(value) || 0]}
                           onValueChange={(newValue) =>
                             handlePriorityConfigChange(
                               "flightScoring",
@@ -1708,7 +1718,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           </Badge>
                         </div>
                         <Slider
-                          value={[value]}
+                          value={Array.isArray(value) ? value : [Number(value) || 0]}
                           onValueChange={(newValue) =>
                             handlePriorityConfigChange(
                               "passengerScoring",
@@ -1786,9 +1796,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     </Badge>
                   </div>
                   <Slider
-                    value={[
-                      ruleConfiguration.operationalRules.maxDelayThreshold,
-                    ]}
+                    value={[ruleConfiguration.operationalRules.maxDelayThreshold]}
                     onValueChange={(value) =>
                       handleRuleConfigChange(
                         "operationalRules",
@@ -1813,9 +1821,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     </Badge>
                   </div>
                   <Slider
-                    value={[
-                      ruleConfiguration.operationalRules.minConnectionTime,
-                    ]}
+                    value={[ruleConfiguration.operationalRules.minConnectionTime]}
                     onValueChange={(value) =>
                       handleRuleConfigChange(
                         "operationalRules",
@@ -2630,7 +2636,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           </Badge>
                         </div>
                         <Slider
-                          value={[value]}
+                          value={Array.isArray(value) ? value : [Number(value) || 0]}
                           onValueChange={(newValue) =>
                             handleRecoveryConfigChange(
                               "recoveryOptionsRanking",
@@ -2753,7 +2759,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           </Badge>
                         </div>
                         <Slider
-                          value={[value]}
+                          value={Array.isArray(value) ? value : [Number(value) || 0]}
                           onValueChange={(newValue) =>
                             handleRecoveryConfigChange(
                               "aircraftSelectionCriteria",
@@ -2878,7 +2884,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           </Badge>
                         </div>
                         <Slider
-                          value={[value]}
+                          value={Array.isArray(value) ? value : [Number(value) || 0]}
                           onValueChange={(newValue) =>
                             handleRecoveryConfigChange(
                               "crewAssignmentCriteria",

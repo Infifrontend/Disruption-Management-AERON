@@ -2166,7 +2166,7 @@ export function RecoveryOptionsGenerator({
                               .replace(/^./, (str) => str.toUpperCase())}
                             :
                           </span>
-                          <span className="font-medium">{value}</span>
+                          <span className="font-medium">{String(value)}</span>
                         </div>
                       ))}
                     </div>
@@ -3048,7 +3048,7 @@ export function RecoveryOptionsGenerator({
                                   ))}
                                 </ul>
                               ) : (
-                                <p className="text-sm text-gray-700">{value}</p>
+                                <p className="text-sm text-gray-700">{String(value)}</p>
                               )}
                             </div>
                           ))}

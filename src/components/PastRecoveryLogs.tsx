@@ -942,7 +942,7 @@ export function PastRecoveryLogs() {
                       ([category, count]) => {
                         const percentage =
                           totalLogs > 0
-                            ? ((count / totalLogs) * 100).toFixed(1)
+                            ? (((count as number) / (totalLogs as number)) * 100).toFixed(1)
                             : 0;
                         return (
                           <div
