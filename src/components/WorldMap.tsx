@@ -464,7 +464,7 @@ export function WorldMap() {
                 {selectedView === "routes" && (
                   <g className="routes">
                     {/* Major routes from DXB hub */}
-                    {destinations.map((dest, _index) => {
+                    {destinations.map((dest) => {
                       const hubCoords = latLngToXY(hubs[0].lat, hubs[0].lng);
                       const destCoords = latLngToXY(dest.lat, dest.lng);
                       return (
