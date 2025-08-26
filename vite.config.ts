@@ -8,14 +8,28 @@ export default defineConfig(({ mode }) => {
     base: env.VITE_FRONTEND_BASE_URL || "/",
     plugins: [react()],
     build: {
+      target: 'es2015',
+      outDir: 'dist',
+      sourcemap: false,
+      minify: 'esbuild',
       rollupOptions: {
         onwarn(warning, warn) {
-          // Skip certain warnings during build
+          // Skip various warnings during build
           if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return;
           if (warning.code === 'CIRCULAR_DEPENDENCY') return;
+          if (warning.code === 'THIS_IS_UNDEFINED') return;
+          if (warning.code === 'EVAL') return;
+          if (warning.message.includes('Use of eval')) return;
+          if (warning.message.includes('Circular dependency')) return;
           warn(warning);
+        },
+        external: [],
+        output: {
+          manualChunks: undefined,
         }
-      }
+      },
+      chunkSizeWarningLimit: 1000,
+      emptyOutDir: true
     },
     resolve: {
       alias: {
