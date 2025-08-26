@@ -1,25 +1,45 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Button } from './ui/button'
-import { Badge } from './ui/badge'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select'
-import { Input } from './ui/input'
-import { Calendar } from './ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
-import { Progress } from './ui/progress'
-import { Separator } from './ui/separator'
-import { Alert, AlertDescription } from './ui/alert'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog'
-import { Textarea } from './ui/textarea'
-import { Label } from './ui/label'
-import { 
-  FileText, 
-  Download, 
-  Calendar as CalendarIcon, 
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "./ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import { Input } from "./ui/input";
+import { Calendar } from "./ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
+import { Progress } from "./ui/progress";
+import { Separator } from "./ui/separator";
+import { Alert, AlertDescription } from "./ui/alert";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog";
+import { Textarea } from "./ui/textarea";
+import { Label } from "./ui/label";
+import {
+  FileText,
+  Download,
+  Calendar as CalendarIcon,
   Filter,
   Clock,
   Users,
@@ -40,197 +60,209 @@ import {
   Sparkles,
   Send,
   X,
-  Loader2
-} from 'lucide-react'
-import { format } from 'date-fns'
+  Loader2,
+} from "lucide-react";
+import { format } from "date-fns";
 
 // Mock data for comprehensive reporting
 const solutionAnalytics = {
   totalDecisions: 148,
-  timeRange: 'Last 30 days',
+  timeRange: "Last 30 days",
   solutionAdoption: {
     optionA: { suggested: 45, opted: 38, adoptionRate: 84.4 },
     optionB: { suggested: 52, opted: 41, adoptionRate: 78.8 },
-    optionC: { suggested: 51, opted: 47, adoptionRate: 92.2 }
+    optionC: { suggested: 51, opted: 47, adoptionRate: 92.2 },
   },
   costSavings: {
     totalPotential: 2450000,
     actualRealized: 2180000,
-    savingsRate: 88.9
+    savingsRate: 88.9,
   },
   efficiencyMetrics: {
-    averageDecisionTime: '12.3 minutes',
+    averageDecisionTime: "12.3 minutes",
     automationRate: 67.2,
     overrideRate: 15.4,
-    successRate: 94.1
-  }
-}
+    successRate: 94.1,
+  },
+};
 
 const detailedReports = [
   {
-    id: 'RPT-2025-001',
-    title: 'Weekly Solution Comparison Analysis',
-    date: '2025-06-06',
-    type: 'Solution Comparison',
-    status: 'Generated',
-    size: '2.4 MB',
-    format: 'PDF',
-    description: 'Comprehensive analysis of recovery solutions with cost-benefit breakdown'
+    id: "RPT-2025-001",
+    title: "Weekly Solution Comparison Analysis",
+    date: "2025-06-06",
+    type: "Solution Comparison",
+    status: "Generated",
+    size: "2.4 MB",
+    format: "PDF",
+    description:
+      "Comprehensive analysis of recovery solutions with cost-benefit breakdown",
   },
   {
-    id: 'RPT-2025-002',
-    title: 'Cost Implication Trends - Q2 2025',
-    date: '2025-06-05',
-    type: 'Cost Analysis',
-    status: 'Scheduled',
-    size: '1.8 MB',
-    format: 'Excel',
-    description: 'Quarterly cost trends and budget impact analysis'
+    id: "RPT-2025-002",
+    title: "Cost Implication Trends - Q2 2025",
+    date: "2025-06-05",
+    type: "Cost Analysis",
+    status: "Scheduled",
+    size: "1.8 MB",
+    format: "Excel",
+    description: "Quarterly cost trends and budget impact analysis",
   },
   {
-    id: 'RPT-2025-003',
-    title: 'Decision Making Patterns Report',
-    date: '2025-06-04',
-    type: 'Decision Analytics',
-    status: 'Generated',
-    size: '3.1 MB',
-    format: 'PDF',
-    description: 'Analysis of decision-making trends and operational efficiency patterns'
-  }
-]
+    id: "RPT-2025-003",
+    title: "Decision Making Patterns Report",
+    date: "2025-06-04",
+    type: "Decision Analytics",
+    status: "Generated",
+    size: "3.1 MB",
+    format: "PDF",
+    description:
+      "Analysis of decision-making trends and operational efficiency patterns",
+  },
+];
 
 const costTrends = [
-  { period: 'Week 1', suggested: 245000, actual: 220000, savings: 25000 },
-  { period: 'Week 2', suggested: 312000, actual: 289000, savings: 23000 },
-  { period: 'Week 3', suggested: 198000, actual: 185000, savings: 13000 },
-  { period: 'Week 4', suggested: 267000, actual: 241000, savings: 26000 }
-]
+  { period: "Week 1", suggested: 245000, actual: 220000, savings: 25000 },
+  { period: "Week 2", suggested: 312000, actual: 289000, savings: 23000 },
+  { period: "Week 3", suggested: 198000, actual: 185000, savings: 13000 },
+  { period: "Week 4", suggested: 267000, actual: 241000, savings: 26000 },
+];
 
 const decisionPatterns = [
-  { 
-    pattern: 'Weather Disruptions', 
-    frequency: 34, 
-    avgCost: 45200, 
-    preferredSolution: 'Option A',
+  {
+    pattern: "Weather Disruptions",
+    frequency: 34,
+    avgCost: 45200,
+    preferredSolution: "Option A",
     successRate: 91.2,
-    trend: 'up'
+    trend: "up",
   },
-  { 
-    pattern: 'Crew Constraints', 
-    frequency: 28, 
-    avgCost: 38900, 
-    preferredSolution: 'Option B',
+  {
+    pattern: "Crew Constraints",
+    frequency: 28,
+    avgCost: 38900,
+    preferredSolution: "Option B",
     successRate: 87.5,
-    trend: 'stable'
+    trend: "stable",
   },
-  { 
-    pattern: 'Aircraft Technical', 
-    frequency: 22, 
-    avgCost: 52100, 
-    preferredSolution: 'Option C',
+  {
+    pattern: "Aircraft Technical",
+    frequency: 22,
+    avgCost: 52100,
+    preferredSolution: "Option C",
     successRate: 95.4,
-    trend: 'down'
+    trend: "down",
   },
-  { 
-    pattern: 'Airport Disruptions', 
-    frequency: 19, 
-    avgCost: 41700, 
-    preferredSolution: 'Option A',
+  {
+    pattern: "Airport Disruptions",
+    frequency: 19,
+    avgCost: 41700,
+    preferredSolution: "Option A",
     successRate: 89.3,
-    trend: 'up'
-  }
-]
+    trend: "up",
+  },
+];
 
 export function AuditReporting() {
-  const [selectedDate, setSelectedDate] = useState(new Date())
-  const [filterType, setFilterType] = useState('all')
-  const [activeTab, setActiveTab] = useState('dashboard')
-  const [exportFormat, setExportFormat] = useState('pdf')
-  const [showGenerateModal, setShowGenerateModal] = useState(false)
-  const [reportDescription, setReportDescription] = useState('')
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [generatedReports, setGeneratedReports] = useState(detailedReports)
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [filterType, setFilterType] = useState("all");
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [exportFormat, setExportFormat] = useState("pdf");
+  const [showGenerateModal, setShowGenerateModal] = useState(false);
+  const [reportDescription, setReportDescription] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatedReports, setGeneratedReports] = useState(detailedReports);
 
   const handleExportReport = (reportId, format) => {
     // Mock export functionality
-    alert(`Exporting report ${reportId} as ${format.toUpperCase()}`)
-  }
+    alert(`Exporting report ${reportId} as ${format.toUpperCase()}`);
+  };
 
   const handleBulkExport = () => {
-    alert(`Exporting analytics dashboard as ${exportFormat.toUpperCase()}`)
-  }
+    alert(`Exporting analytics dashboard as ${exportFormat.toUpperCase()}`);
+  };
 
   const handleGenerateReport = async () => {
-    if (!reportDescription.trim()) return
-    
-    setIsGenerating(true)
-    
+    if (!reportDescription.trim()) return;
+
+    setIsGenerating(true);
+
     // Simulate AI processing time
-    await new Promise(resolve => setTimeout(resolve, 3000))
-    
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
     // Generate a new report based on the description
     const newReport = {
-      id: `RPT-2025-${String(generatedReports.length + 1).padStart(3, '0')}`,
+      id: `RPT-2025-${String(generatedReports.length + 1).padStart(3, "0")}`,
       title: generateReportTitle(reportDescription),
-      date: new Date().toISOString().split('T')[0],
+      date: new Date().toISOString().split("T")[0],
       type: determineReportType(reportDescription),
-      status: 'Generated',
+      status: "Generated",
       size: `${(Math.random() * 3 + 0.5).toFixed(1)} MB`,
-      format: 'PDF',
+      format: "PDF",
       description: reportDescription.trim(),
-      generated: true
-    }
-    
-    setGeneratedReports(prev => [newReport, ...prev])
-    setReportDescription('')
-    setIsGenerating(false)
-    setShowGenerateModal(false)
-  }
+      generated: true,
+    };
+
+    setGeneratedReports((prev) => [newReport, ...prev]);
+    setReportDescription("");
+    setIsGenerating(false);
+    setShowGenerateModal(false);
+  };
 
   const generateReportTitle = (description) => {
     // Simple AI-like title generation based on keywords
-    const keywords = description.toLowerCase()
-    
-    if (keywords.includes('cost') && keywords.includes('analysis')) {
-      return 'AI-Generated Cost Analysis Report'
-    } else if (keywords.includes('passenger') && keywords.includes('satisfaction')) {
-      return 'Passenger Satisfaction Analysis Report'
-    } else if (keywords.includes('fuel') && keywords.includes('optimization')) {
-      return 'Fuel Optimization Performance Report'
-    } else if (keywords.includes('maintenance') && keywords.includes('schedule')) {
-      return 'Maintenance Scheduling Efficiency Report'
-    } else if (keywords.includes('delay') || keywords.includes('disruption')) {
-      return 'Delay Impact Analysis Report'
-    } else if (keywords.includes('crew') && keywords.includes('utilization')) {
-      return 'Crew Utilization Optimization Report'
-    } else if (keywords.includes('revenue') || keywords.includes('profit')) {
-      return 'Revenue Impact Analysis Report'
-    } else if (keywords.includes('seasonal') || keywords.includes('trend')) {
-      return 'Seasonal Trends Analysis Report'
+    const keywords = description.toLowerCase();
+
+    if (keywords.includes("cost") && keywords.includes("analysis")) {
+      return "AI-Generated Cost Analysis Report";
+    } else if (
+      keywords.includes("passenger") &&
+      keywords.includes("satisfaction")
+    ) {
+      return "Passenger Satisfaction Analysis Report";
+    } else if (keywords.includes("fuel") && keywords.includes("optimization")) {
+      return "Fuel Optimization Performance Report";
+    } else if (
+      keywords.includes("maintenance") &&
+      keywords.includes("schedule")
+    ) {
+      return "Maintenance Scheduling Efficiency Report";
+    } else if (keywords.includes("delay") || keywords.includes("disruption")) {
+      return "Delay Impact Analysis Report";
+    } else if (keywords.includes("crew") && keywords.includes("utilization")) {
+      return "Crew Utilization Optimization Report";
+    } else if (keywords.includes("revenue") || keywords.includes("profit")) {
+      return "Revenue Impact Analysis Report";
+    } else if (keywords.includes("seasonal") || keywords.includes("trend")) {
+      return "Seasonal Trends Analysis Report";
     } else {
-      return 'Custom Analysis Report'
+      return "Custom Analysis Report";
     }
-  }
+  };
 
   const determineReportType = (description) => {
-    const keywords = description.toLowerCase()
-    
-    if (keywords.includes('cost')) return 'Cost Analysis'
-    if (keywords.includes('passenger')) return 'Passenger Analytics'
-    if (keywords.includes('fuel')) return 'Fuel Analytics'
-    if (keywords.includes('maintenance')) return 'Maintenance Analytics'
-    if (keywords.includes('crew')) return 'Crew Analytics'
-    if (keywords.includes('revenue') || keywords.includes('profit')) return 'Financial Analysis'
-    
-    return 'Custom Analysis'
-  }
+    const keywords = description.toLowerCase();
+
+    if (keywords.includes("cost")) return "Cost Analysis";
+    if (keywords.includes("passenger")) return "Passenger Analytics";
+    if (keywords.includes("fuel")) return "Fuel Analytics";
+    if (keywords.includes("maintenance")) return "Maintenance Analytics";
+    if (keywords.includes("crew")) return "Crew Analytics";
+    if (keywords.includes("revenue") || keywords.includes("profit"))
+      return "Financial Analysis";
+
+    return "Custom Analysis";
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold">Reporting & Analytics</h2>
-          <p className="text-muted-foreground">Comprehensive insights into recovery decisions and operational efficiency</p>
+          <p className="text-muted-foreground">
+            Comprehensive insights into recovery decisions and operational
+            efficiency
+          </p>
         </div>
         <div className="flex gap-2">
           <Select value={exportFormat} onValueChange={setExportFormat}>
@@ -244,7 +276,10 @@ export function AuditReporting() {
               <SelectItem value="json">JSON</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={handleBulkExport} className="flex items-center gap-2 btn-flydubai-primary">
+          <Button
+            onClick={handleBulkExport}
+            className="flex items-center gap-2 btn-flydubai-primary"
+          >
             <Download className="h-4 w-4" />
             Export Dashboard
           </Button>
@@ -292,7 +327,7 @@ export function AuditReporting() {
         </TabsContent>
 
         <TabsContent value="reports">
-          <GeneratedReportsPanel 
+          <GeneratedReportsPanel
             reports={generatedReports}
             onExport={handleExportReport}
             onGenerateNew={() => setShowGenerateModal(true)}
@@ -309,21 +344,26 @@ export function AuditReporting() {
               Generate New Report with AI
             </DialogTitle>
             <DialogDescription>
-              Use AI to analyze your operational data and generate custom reports based on your specific requirements and business needs.
+              Use AI to analyze your operational data and generate custom
+              reports based on your specific requirements and business needs.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-6">
             <Alert className="border-purple-200 bg-purple-50">
               <Sparkles className="h-4 w-4 text-purple-600" />
               <AlertDescription className="text-purple-800">
-                <strong>AI-Powered Report Generation:</strong> Describe what kind of report you need and our AI will analyze your data to create a comprehensive report tailored to your requirements.
+                <strong>AI-Powered Report Generation:</strong> Describe what
+                kind of report you need and our AI will analyze your data to
+                create a comprehensive report tailored to your requirements.
               </AlertDescription>
             </Alert>
 
             <div className="space-y-4">
               <div>
-                <Label htmlFor="report-description">Describe your report requirements</Label>
+                <Label htmlFor="report-description">
+                  Describe your report requirements
+                </Label>
                 <Textarea
                   id="report-description"
                   placeholder="Example: Generate a cost analysis report comparing fuel optimization savings across different aircraft types for the last quarter, including seasonal trends and recommendations for winter operations..."
@@ -340,7 +380,11 @@ export function AuditReporting() {
                     variant="ghost"
                     size="sm"
                     className="justify-start h-auto p-2 text-left"
-                    onClick={() => setReportDescription("Analyze passenger satisfaction scores across different disruption types and recovery solutions, including recommendations to improve customer experience during operational challenges.")}
+                    onClick={() =>
+                      setReportDescription(
+                        "Analyze passenger satisfaction scores across different disruption types and recovery solutions, including recommendations to improve customer experience during operational challenges.",
+                      )
+                    }
                   >
                     📊 Passenger satisfaction during disruptions
                   </Button>
@@ -348,7 +392,11 @@ export function AuditReporting() {
                     variant="ghost"
                     size="sm"
                     className="justify-start h-auto p-2 text-left"
-                    onClick={() => setReportDescription("Generate a comprehensive cost analysis comparing actual recovery costs vs. predicted costs for the last 6 months, broken down by disruption type and solution choice.")}
+                    onClick={() =>
+                      setReportDescription(
+                        "Generate a comprehensive cost analysis comparing actual recovery costs vs. predicted costs for the last 6 months, broken down by disruption type and solution choice.",
+                      )
+                    }
                   >
                     💰 Recovery cost analysis
                   </Button>
@@ -356,7 +404,11 @@ export function AuditReporting() {
                     variant="ghost"
                     size="sm"
                     className="justify-start h-auto p-2 text-left"
-                    onClick={() => setReportDescription("Create a fuel optimization report showing savings achieved through AI-recommended route changes, including environmental impact and seasonal variations.")}
+                    onClick={() =>
+                      setReportDescription(
+                        "Create a fuel optimization report showing savings achieved through AI-recommended route changes, including environmental impact and seasonal variations.",
+                      )
+                    }
                   >
                     ⛽ Fuel optimization impact
                   </Button>
@@ -364,7 +416,11 @@ export function AuditReporting() {
                     variant="ghost"
                     size="sm"
                     className="justify-start h-auto p-2 text-left"
-                    onClick={() => setReportDescription("Analyze crew utilization efficiency and rest time compliance during irregular operations, with recommendations for improving crew scheduling resilience.")}
+                    onClick={() =>
+                      setReportDescription(
+                        "Analyze crew utilization efficiency and rest time compliance during irregular operations, with recommendations for improving crew scheduling resilience.",
+                      )
+                    }
                   >
                     👥 Crew utilization analysis
                   </Button>
@@ -373,14 +429,14 @@ export function AuditReporting() {
             </div>
 
             <div className="flex justify-end gap-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => setShowGenerateModal(false)}
                 disabled={isGenerating}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={handleGenerateReport}
                 disabled={!reportDescription.trim() || isGenerating}
                 className="min-w-[120px]"
@@ -402,7 +458,7 @@ export function AuditReporting() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
 
 function AnalyticsDashboard({ analytics }) {
@@ -417,7 +473,9 @@ function AnalyticsDashboard({ analytics }) {
               <h4 className="text-sm font-medium">Total Decisions</h4>
             </div>
             <p className="text-2xl font-semibold">{analytics.totalDecisions}</p>
-            <p className="text-xs text-muted-foreground">{analytics.timeRange}</p>
+            <p className="text-xs text-muted-foreground">
+              {analytics.timeRange}
+            </p>
           </CardContent>
         </Card>
 
@@ -441,8 +499,12 @@ function AnalyticsDashboard({ analytics }) {
               <DollarSign className="h-4 w-4 text-purple-600" />
               <h4 className="text-sm font-medium">Cost Savings</h4>
             </div>
-            <p className="text-2xl font-semibold">${(analytics.costSavings.actualRealized / 1000000).toFixed(1)}M</p>
-            <p className="text-xs text-muted-foreground">{analytics.costSavings.savingsRate}% of potential</p>
+            <p className="text-2xl font-semibold">
+              ${(analytics.costSavings.actualRealized / 1000000).toFixed(1)}M
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {analytics.costSavings.savingsRate}% of potential
+            </p>
           </CardContent>
         </Card>
 
@@ -452,7 +514,9 @@ function AnalyticsDashboard({ analytics }) {
               <Clock className="h-4 w-4 text-orange-600" />
               <h4 className="text-sm font-medium">Avg Decision Time</h4>
             </div>
-            <p className="text-2xl font-semibold">{analytics.efficiencyMetrics.averageDecisionTime}</p>
+            <p className="text-2xl font-semibold">
+              {analytics.efficiencyMetrics.averageDecisionTime}
+            </p>
             <div className="flex items-center gap-1 mt-1">
               <TrendingDown className="h-3 w-3 text-green-600" />
               <span className="text-xs text-green-600">-8% faster</span>
@@ -476,36 +540,43 @@ function AnalyticsDashboard({ analytics }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="font-medium capitalize">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                      {key.replace(/([A-Z])/g, " $1").trim()}
                     </span>
-                    <Badge className={
-                      data.adoptionRate >= 90 ? 'bg-green-100 text-green-700' :
-                      data.adoptionRate >= 80 ? 'bg-blue-100 text-blue-700' :
-                      'bg-orange-100 text-orange-700'
-                    }>
-                      {data.adoptionRate}% adoption
+                    <Badge
+                      className={
+                        (data as any).adoptionRate >= 90
+                          ? "bg-green-100 text-green-700"
+                          : (data as any).adoptionRate >= 80
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-orange-100 text-orange-700"
+                      }
+                    >
+                      {(data as any).adoptionRate}% adoption
                     </Badge>
                   </div>
                   <div className="text-right text-sm">
-                    <span className="font-medium">{data.opted}</span>
-                    <span className="text-muted-foreground"> of {data.suggested} suggested</span>
+                    <span className="font-medium">{(data as any).opted}</span>
+                    <span className="text-muted-foreground">
+                      {" "}
+                      of {(data as any).suggested} suggested
+                    </span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex justify-between text-xs">
-                    <span>Suggested ({data.suggested})</span>
-                    <span>Opted ({data.opted})</span>
+                    <span>Suggested ({(data as any).suggested})</span>
+                    <span>Opted ({(data as any).opted})</span>
                   </div>
                   <div className="relative">
                     <Progress value={100} className="h-6 bg-muted" />
-                    <div 
+                    <div
                       className="absolute top-0 left-0 h-6 bg-[#006496] rounded-sm transition-all"
-                      style={{ width: `${data.adoptionRate}%` }}
+                      style={{ width: `${(data as any).adoptionRate}%` }}
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <span className="text-xs font-medium text-white mix-blend-difference">
-                        {data.adoptionRate}% adopted
+                        {(data as any).adoptionRate}% adopted
                       </span>
                     </div>
                   </div>
@@ -526,24 +597,39 @@ function AnalyticsDashboard({ analytics }) {
             <div className="flex justify-between items-center">
               <span>Automation Rate</span>
               <div className="flex items-center gap-2">
-                <Progress value={analytics.efficiencyMetrics.automationRate} className="w-20 h-2" />
-                <span className="text-sm font-medium">{analytics.efficiencyMetrics.automationRate}%</span>
+                <Progress
+                  value={analytics.efficiencyMetrics.automationRate}
+                  className="w-20 h-2"
+                />
+                <span className="text-sm font-medium">
+                  {analytics.efficiencyMetrics.automationRate}%
+                </span>
               </div>
             </div>
-            
+
             <div className="flex justify-between items-center">
               <span>Override Rate</span>
               <div className="flex items-center gap-2">
-                <Progress value={analytics.efficiencyMetrics.overrideRate} className="w-20 h-2" />
-                <span className="text-sm font-medium">{analytics.efficiencyMetrics.overrideRate}%</span>
+                <Progress
+                  value={analytics.efficiencyMetrics.overrideRate}
+                  className="w-20 h-2"
+                />
+                <span className="text-sm font-medium">
+                  {analytics.efficiencyMetrics.overrideRate}%
+                </span>
               </div>
             </div>
-            
+
             <div className="flex justify-between items-center">
               <span>Success Rate</span>
               <div className="flex items-center gap-2">
-                <Progress value={analytics.efficiencyMetrics.successRate} className="w-20 h-2" />
-                <span className="text-sm font-medium">{analytics.efficiencyMetrics.successRate}%</span>
+                <Progress
+                  value={analytics.efficiencyMetrics.successRate}
+                  className="w-20 h-2"
+                />
+                <span className="text-sm font-medium">
+                  {analytics.efficiencyMetrics.successRate}%
+                </span>
               </div>
             </div>
           </CardContent>
@@ -574,7 +660,7 @@ function AnalyticsDashboard({ analytics }) {
         </Card>
       </div>
     </div>
-  )
+  );
 }
 
 function SolutionAnalysisPanel({ analytics }) {
@@ -589,8 +675,9 @@ function SolutionAnalysisPanel({ analytics }) {
             <Alert className="border-blue-200 bg-blue-50">
               <AlertTriangle className="h-4 w-4 text-blue-600" />
               <AlertDescription className="text-blue-800">
-                <strong>Key Insight:</strong> Option C shows highest adoption rate (92.2%) but represents premium cost solutions. 
-                Consider promoting Option A for cost-sensitive scenarios.
+                <strong>Key Insight:</strong> Option C shows highest adoption
+                rate (92.2%) but represents premium cost solutions. Consider
+                promoting Option A for cost-sensitive scenarios.
               </AlertDescription>
             </Alert>
 
@@ -599,32 +686,38 @@ function SolutionAnalysisPanel({ analytics }) {
                 <Card key={key}>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-base capitalize">
-                      {key.replace(/([A-Z])/g, ' $1').trim()}
+                      {key.replace(/([A-Z])/g, " $1").trim()}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="text-center">
-                      <div className="text-3xl font-semibold mb-1">{data.adoptionRate}%</div>
-                      <div className="text-sm text-muted-foreground">Adoption Rate</div>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Times Suggested</span>
-                        <span className="font-medium">{data.suggested}</span>
+                      <div className="text-3xl font-semibold mb-1">
+                        {(data as any).adoptionRate}%
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Times Opted</span>
-                        <span className="font-medium">{data.opted}</span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Rejection Rate</span>
-                        <span className="font-medium">{(100 - data.adoptionRate).toFixed(1)}%</span>
+                      <div className="text-sm text-muted-foreground">
+                        Adoption Rate
                       </div>
                     </div>
 
-                    <Progress value={data.adoptionRate} className="h-2" />
-                    
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Times Suggested</span>
+                        <span className="font-medium">{(data as any).suggested}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Times Opted</span>
+                        <span className="font-medium">{(data as any).opted}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span>Rejection Rate</span>
+                        <span className="font-medium">
+                          {(100 - (data as any).adoptionRate).toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
+
+                    <Progress value={(data as any).adoptionRate} className="h-2" />
+
                     <div className="pt-2">
                       <Button variant="outline" size="sm" className="w-full">
                         View Detailed Analysis
@@ -653,13 +746,19 @@ function SolutionAnalysisPanel({ analytics }) {
                   </TableHeader>
                   <TableBody>
                     <TableRow>
-                      <TableCell className="font-medium">Option A - Aircraft Swap</TableCell>
+                      <TableCell className="font-medium">
+                        Option A - Aircraft Swap
+                      </TableCell>
                       <TableCell>45</TableCell>
                       <TableCell>38</TableCell>
                       <TableCell>
-                        <Badge className="bg-blue-100 text-blue-700">84.4%</Badge>
+                        <Badge className="bg-blue-100 text-blue-700">
+                          84.4%
+                        </Badge>
                       </TableCell>
-                      <TableCell className="text-green-600">-$12K avg</TableCell>
+                      <TableCell className="text-green-600">
+                        -$12K avg
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Progress value={87} className="w-16 h-2" />
@@ -668,13 +767,19 @@ function SolutionAnalysisPanel({ analytics }) {
                       </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">Option B - Route Optimization</TableCell>
+                      <TableCell className="font-medium">
+                        Option B - Route Optimization
+                      </TableCell>
                       <TableCell>52</TableCell>
                       <TableCell>41</TableCell>
                       <TableCell>
-                        <Badge className="bg-orange-100 text-orange-700">78.8%</Badge>
+                        <Badge className="bg-orange-100 text-orange-700">
+                          78.8%
+                        </Badge>
                       </TableCell>
-                      <TableCell className="text-green-600">-$18K avg</TableCell>
+                      <TableCell className="text-green-600">
+                        -$18K avg
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Progress value={82} className="w-16 h-2" />
@@ -683,11 +788,15 @@ function SolutionAnalysisPanel({ analytics }) {
                       </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell className="font-medium">Option C - Premium Recovery</TableCell>
+                      <TableCell className="font-medium">
+                        Option C - Premium Recovery
+                      </TableCell>
                       <TableCell>51</TableCell>
                       <TableCell>47</TableCell>
                       <TableCell>
-                        <Badge className="bg-green-100 text-green-700">92.2%</Badge>
+                        <Badge className="bg-green-100 text-green-700">
+                          92.2%
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-red-600">+$8K avg</TableCell>
                       <TableCell>
@@ -705,13 +814,13 @@ function SolutionAnalysisPanel({ analytics }) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 function CostReportsPanel({ trends }) {
-  const totalSuggested = trends.reduce((sum, week) => sum + week.suggested, 0)
-  const totalActual = trends.reduce((sum, week) => sum + week.actual, 0)
-  const totalSavings = trends.reduce((sum, week) => sum + week.savings, 0)
+  const totalSuggested = trends.reduce((sum, week) => sum + week.suggested, 0);
+  const totalActual = trends.reduce((sum, week) => sum + week.actual, 0);
+  const totalSavings = trends.reduce((sum, week) => sum + week.savings, 0);
 
   return (
     <div className="space-y-6">
@@ -720,31 +829,45 @@ function CostReportsPanel({ trends }) {
         <Card>
           <CardContent className="p-4">
             <h4 className="text-sm font-medium mb-2">Suggested Costs</h4>
-            <p className="text-2xl font-semibold">${(totalSuggested / 1000).toFixed(0)}K</p>
-            <p className="text-xs text-muted-foreground">Total system suggestions</p>
+            <p className="text-2xl font-semibold">
+              ${(totalSuggested / 1000).toFixed(0)}K
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Total system suggestions
+            </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <h4 className="text-sm font-medium mb-2">Actual Costs</h4>
-            <p className="text-2xl font-semibold">${(totalActual / 1000).toFixed(0)}K</p>
-            <p className="text-xs text-muted-foreground">Total realized costs</p>
+            <p className="text-2xl font-semibold">
+              ${(totalActual / 1000).toFixed(0)}K
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Total realized costs
+            </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <h4 className="text-sm font-medium mb-2">Total Savings</h4>
-            <p className="text-2xl font-semibold text-green-600">${(totalSavings / 1000).toFixed(0)}K</p>
-            <p className="text-xs text-muted-foreground">{((totalSavings / totalSuggested) * 100).toFixed(1)}% reduction</p>
+            <p className="text-2xl font-semibold text-green-600">
+              ${(totalSavings / 1000).toFixed(0)}K
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {((totalSavings / totalSuggested) * 100).toFixed(1)}% reduction
+            </p>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardContent className="p-4">
             <h4 className="text-sm font-medium mb-2">Avg Savings/Week</h4>
-            <p className="text-2xl font-semibold text-green-600">${(totalSavings / trends.length / 1000).toFixed(0)}K</p>
+            <p className="text-2xl font-semibold text-green-600">
+              ${(totalSavings / trends.length / 1000).toFixed(0)}K
+            </p>
             <p className="text-xs text-muted-foreground">Weekly average</p>
           </CardContent>
         </Card>
@@ -769,7 +892,10 @@ function CostReportsPanel({ trends }) {
             </TableHeader>
             <TableBody>
               {trends.map((week, index) => {
-                const savingsRate = ((week.savings / week.suggested) * 100).toFixed(1)
+                const savingsRate = (
+                  (week.savings / week.suggested) *
+                  100
+                ).toFixed(1);
                 return (
                   <TableRow key={week.period}>
                     <TableCell className="font-medium">{week.period}</TableCell>
@@ -784,16 +910,18 @@ function CostReportsPanel({ trends }) {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      {index > 0 && trends[index].savings > trends[index - 1].savings ? (
+                      {index > 0 &&
+                      trends[index].savings > trends[index - 1].savings ? (
                         <TrendingUp className="h-4 w-4 text-green-600" />
-                      ) : index > 0 && trends[index].savings < trends[index - 1].savings ? (
+                      ) : index > 0 &&
+                        trends[index].savings < trends[index - 1].savings ? (
                         <TrendingDown className="h-4 w-4 text-red-600" />
                       ) : (
                         <div className="h-4 w-4" />
                       )}
                     </TableCell>
                   </TableRow>
-                )
+                );
               })}
             </TableBody>
           </Table>
@@ -811,23 +939,37 @@ function CostReportsPanel({ trends }) {
               <h4 className="font-medium">Cost Categories</h4>
               <div className="space-y-3">
                 {[
-                  { category: 'Crew Costs', amount: 285000, percentage: 32 },
-                  { category: 'Charter Flights', amount: 245000, percentage: 28 },
-                  { category: 'Passenger Services', amount: 156000, percentage: 18 },
-                  { category: 'Fuel Adjustments', amount: 134000, percentage: 15 },
-                  { category: 'Other Costs', amount: 62000, percentage: 7 }
+                  { category: "Crew Costs", amount: 285000, percentage: 32 },
+                  {
+                    category: "Charter Flights",
+                    amount: 245000,
+                    percentage: 28,
+                  },
+                  {
+                    category: "Passenger Services",
+                    amount: 156000,
+                    percentage: 18,
+                  },
+                  {
+                    category: "Fuel Adjustments",
+                    amount: 134000,
+                    percentage: 15,
+                  },
+                  { category: "Other Costs", amount: 62000, percentage: 7 },
                 ].map((item) => (
                   <div key={item.category} className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-sm">{item.category}</span>
-                      <span className="text-sm font-medium">${(item.amount / 1000).toFixed(0)}K ({item.percentage}%)</span>
+                      <span className="text-sm font-medium">
+                        ${(item.amount / 1000).toFixed(0)}K ({item.percentage}%)
+                      </span>
                     </div>
                     <Progress value={item.percentage} className="h-2" />
                   </div>
                 ))}
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <h4 className="font-medium">Export Options</h4>
               <div className="space-y-2">
@@ -849,7 +991,7 @@ function CostReportsPanel({ trends }) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 function DecisionTrendsPanel({ patterns }) {
@@ -874,7 +1016,9 @@ function DecisionTrendsPanel({ patterns }) {
             <TableBody>
               {patterns.map((pattern) => (
                 <TableRow key={pattern.pattern}>
-                  <TableCell className="font-medium">{pattern.pattern}</TableCell>
+                  <TableCell className="font-medium">
+                    {pattern.pattern}
+                  </TableCell>
                   <TableCell>
                     <Badge variant="outline">{pattern.frequency} cases</Badge>
                   </TableCell>
@@ -886,14 +1030,17 @@ function DecisionTrendsPanel({ patterns }) {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Progress value={pattern.successRate} className="w-16 h-2" />
+                      <Progress
+                        value={pattern.successRate}
+                        className="w-16 h-2"
+                      />
                       <span className="text-sm">{pattern.successRate}%</span>
                     </div>
                   </TableCell>
                   <TableCell>
-                    {pattern.trend === 'up' ? (
+                    {pattern.trend === "up" ? (
                       <TrendingUp className="h-4 w-4 text-green-600" />
-                    ) : pattern.trend === 'down' ? (
+                    ) : pattern.trend === "down" ? (
                       <TrendingDown className="h-4 w-4 text-red-600" />
                     ) : (
                       <div className="h-4 w-4 bg-gray-300 rounded-full" />
@@ -920,7 +1067,7 @@ function DecisionTrendsPanel({ patterns }) {
                 </div>
                 <Progress value={78} className="h-2" />
               </div>
-              
+
               <div>
                 <div className="flex justify-between mb-1">
                   <span className="text-sm">Solution Accuracy</span>
@@ -928,7 +1075,7 @@ function DecisionTrendsPanel({ patterns }) {
                 </div>
                 <Progress value={94.1} className="h-2" />
               </div>
-              
+
               <div>
                 <div className="flex justify-between mb-1">
                   <span className="text-sm">Cost Optimization</span>
@@ -949,17 +1096,18 @@ function DecisionTrendsPanel({ patterns }) {
               <Alert className="border-green-200 bg-green-50">
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <AlertDescription className="text-green-800">
-                  Weather disruptions show 91.2% success rate with Option A solutions
+                  Weather disruptions show 91.2% success rate with Option A
+                  solutions
                 </AlertDescription>
               </Alert>
-              
+
               <Alert className="border-blue-200 bg-blue-50">
                 <AlertTriangle className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-blue-800">
                   Technical issues trend toward premium solutions (Option C)
                 </AlertDescription>
               </Alert>
-              
+
               <Alert className="border-orange-200 bg-orange-50">
                 <AlertTriangle className="h-4 w-4 text-orange-600" />
                 <AlertDescription className="text-orange-800">
@@ -971,7 +1119,7 @@ function DecisionTrendsPanel({ patterns }) {
         </Card>
       </div>
     </div>
-  )
+  );
 }
 
 function GeneratedReportsPanel({ reports, onExport, onGenerateNew }) {
@@ -1002,18 +1150,24 @@ function GeneratedReportsPanel({ reports, onExport, onGenerateNew }) {
                             AI Generated
                           </Badge>
                         )}
-                        <Badge className={
-                          report.status === 'Generated' ? 'bg-green-100 text-green-700' :
-                          report.status === 'Scheduled' ? 'bg-blue-100 text-blue-700' :
-                          'bg-orange-100 text-orange-700'
-                        }>
+                        <Badge
+                          className={
+                            report.status === "Generated"
+                              ? "bg-green-100 text-green-700"
+                              : report.status === "Scheduled"
+                                ? "bg-blue-100 text-blue-700"
+                                : "bg-orange-100 text-orange-700"
+                          }
+                        >
                           {report.status}
                         </Badge>
                         <Badge variant="outline">{report.type}</Badge>
                       </div>
-                      
-                      <p className="text-sm text-muted-foreground mb-3">{report.description}</p>
-                      
+
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {report.description}
+                      </p>
+
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <span>ID: {report.id}</span>
                         <span>Date: {report.date}</span>
@@ -1021,12 +1175,12 @@ function GeneratedReportsPanel({ reports, onExport, onGenerateNew }) {
                         <span>Format: {report.format}</span>
                       </div>
                     </div>
-                    
+
                     <div className="flex gap-2 ml-4">
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         size="sm"
-                        onClick={() => onExport(report.id, 'pdf')}
+                        onClick={() => onExport(report.id, "pdf")}
                       >
                         <Download className="h-4 w-4" />
                       </Button>
@@ -1068,5 +1222,5 @@ function GeneratedReportsPanel({ reports, onExport, onGenerateNew }) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

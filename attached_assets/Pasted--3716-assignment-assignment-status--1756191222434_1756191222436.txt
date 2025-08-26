@@ -1,0 +1,386 @@
+
+3716                                     {assignment.assignment_status}
+                                                     ~~~~~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:3721:47 - error TS2339: Property 'crew_member' does not exist on type 'unknown'.
+
+3721                                   {assignment.crew_member
+                                                   ~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:3728:48 - error TS2339: Property 'check_in_date' does not exist on type 'unknown'.
+
+3728                                     assignment.check_in_date,
+                                                    ~~~~~~~~~~~~~
+
+src/components/PassengerRebooking.tsx:3730:59 - error TS2339: Property 'total_cost' does not exist on type 'unknown'.
+
+3730                                   | Cost: AED {assignment.total_cost}
+                                                               ~~~~~~~~~~
+
+src/components/PastRecoveryLogs.tsx:945:33 - error TS2362: The left-hand side of an arithmetic operation must be of type 'any', 'number', 'bigint' or an enum type.
+
+945                             ? ((count / totalLogs) * 100).toFixed(1)
+                                    ~~~~~
+
+src/components/PendingSolutions.tsx:81:25 - error TS2307: Cannot find module 'console' or its corresponding type declarations.
+
+81 import { Console } from "console";
+                           ~~~~~~~~~
+
+src/components/PendingSolutions.tsx:145:16 - error TS2339: Property 'id' does not exist on type 'unknown'.
+
+145           plan.id ||
+                   ~~
+
+src/components/PendingSolutions.tsx:146:57 - error TS2339: Property 'id' does not exist on type 'unknown'.
+
+146           `RP-${new Date().getFullYear()}-${String(plan.id || Math.floor(Math.random() * 1000)).padStart(3, "0")}`,
+                                                            ~~
+
+src/components/PendingSolutions.tsx:147:21 - error TS2339: Property 'option_title' does not exist on type 'unknown'.
+
+147         title: plan.option_title || plan.title || "Recovery Plan",
+                        ~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:147:42 - error TS2339: Property 'title' does not exist on type 'unknown'.
+
+147         title: plan.option_title || plan.title || "Recovery Plan",
+                                             ~~~~~
+
+src/components/PendingSolutions.tsx:148:28 - error TS2339: Property 'flight_number' does not exist on type 'unknown'.
+
+148         flightNumber: plan.flight_number || "N/A",
+                               ~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:149:21 - error TS2339: Property 'route' does not exist on type 'unknown'.
+
+149         route: plan.route || "N/A",
+                        ~~~~~
+
+src/components/PendingSolutions.tsx:150:24 - error TS2339: Property 'aircraft' does not exist on type 'unknown'.
+
+150         aircraft: plan.aircraft || "N/A",
+                           ~~~~~~~~
+
+src/components/PendingSolutions.tsx:151:27 - error TS2339: Property 'submitted_at' does not exist on type 'unknown'.
+
+151         submittedAt: plan.submitted_at || new Date().toISOString(),
+                              ~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:152:27 - error TS2339: Property 'submitted_by' does not exist on type 'unknown'.
+
+152         submittedBy: plan.submitted_by || "system",
+                              ~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:154:16 - error TS2339: Property 'operations_user' does not exist on type 'unknown'.
+
+154           plan.operations_user || plan.submitted_by || "AERON System",
+                   ~~~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:154:40 - error TS2339: Property 'submitted_by' does not exist on type 'unknown'.
+
+154           plan.operations_user || plan.submitted_by || "AERON System",
+                                           ~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:155:24 - error TS2339: Property 'severity' does not exist on type 'unknown'.
+
+155         priority: plan.severity || "Medium",
+                           ~~~~~~~~
+
+src/components/PendingSolutions.tsx:156:22 - error TS2339: Property 'status' does not exist on type 'unknown'.
+
+156         status: plan.status || "Pending Approval",
+                         ~~~~~~
+
+src/components/PendingSolutions.tsx:158:27 - error TS2339: Property 'estimated_cost' does not exist on type 'unknown'.
+
+158           if (typeof plan.estimated_cost === "string") {
+                              ~~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:160:20 - error TS2339: Property 'estimated_cost' does not exist on type 'unknown'.
+
+160               plan.estimated_cost.replace(/[^0-9]/g, ""),
+                       ~~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:164:27 - error TS2339: Property 'cost' does not exist on type 'unknown'.
+
+164           if (typeof plan.cost === "string") {
+                              ~~~~
+
+src/components/PendingSolutions.tsx:165:48 - error TS2339: Property 'cost' does not exist on type 'unknown'.
+
+165             const numericValue = parseInt(plan.cost.replace(/[^0-9]/g, ""));
+                                                   ~~~~
+
+src/components/PendingSolutions.tsx:168:23 - error TS2339: Property 'estimated_cost' does not exist on type 'unknown'.
+
+168           return plan.estimated_cost || plan.cost || 0;
+                          ~~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:168:46 - error TS2339: Property 'cost' does not exist on type 'unknown'.
+
+168           return plan.estimated_cost || plan.cost || 0;
+                                                 ~~~~
+
+src/components/PendingSolutions.tsx:171:16 - error TS2339: Property 'delay_minutes' does not exist on type 'unknown'.
+
+171           plan.delay_minutes ||
+                   ~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:172:25 - error TS2339: Property 'timeline' does not exist on type 'unknown'.
+
+172           parseInt(plan.timeline?.replace(/[^0-9]/g, "") || "0") ||
+                            ~~~~~~~~
+
+src/components/PendingSolutions.tsx:174:34 - error TS2339: Property 'passengers' does not exist on type 'unknown'.
+
+174         affectedPassengers: plan.passengers || plan.affected_passengers || 0,
+                                     ~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:174:53 - error TS2339: Property 'affected_passengers' does not exist on type 'unknown'.
+
+174         affectedPassengers: plan.passengers || plan.affected_passengers || 0,
+                                                        ~~~~~~~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:175:26 - error TS2339: Property 'confidence' does not exist on type 'unknown'.
+
+175         confidence: plan.confidence || 80,
+                             ~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:176:32 - error TS2339: Property 'disruption_reason' does not exist on type 'unknown'.
+
+176         disruptionReason: plan.disruption_reason || "N/A",
+                                   ~~~~~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:177:24 - error TS2339: Property 'timeline' does not exist on type 'unknown'.
+
+177         timeline: plan.timeline || "TBD",
+                           ~~~~~~~~
+
+src/components/PendingSolutions.tsx:178:32 - error TS2339: Property 'approval_required' does not exist on type 'unknown'.
+
+178         approvalRequired: plan.approval_required || "Operations Manager",
+                                   ~~~~~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:183:36 - error TS2339: Property 'confidence' does not exist on type 'unknown'.
+
+183           successProbability: plan.confidence || 80,
+                                       ~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:188:29 - error TS2339: Property 'full_details' does not exist on type 'unknown'.
+
+188         flightDetails: plan.full_details || {},
+                                ~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:190:16 - error TS2339: Property 'cost_analysis' does not exist on type 'unknown'.
+
+190           plan.cost_analysis?.breakdown ||
+                   ~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:191:16 - error TS2339: Property 'full_details' does not exist on type 'unknown'.
+
+191           plan.full_details?.costBreakdown ||
+                   ~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:194:16 - error TS2339: Property 'recovery_steps' does not exist on type 'unknown'.
+
+194           plan.recovery_steps || plan.full_details?.recoverySteps || [],
+                   ~~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:194:39 - error TS2339: Property 'full_details' does not exist on type 'unknown'.
+
+194           plan.recovery_steps || plan.full_details?.recoverySteps || [],
+                                          ~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:196:16 - error TS2339: Property 'crew_information' does not exist on type 'unknown'.
+
+196           plan.crew_information || plan.full_details?.assignedCrew || [],
+                   ~~~~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:196:41 - error TS2339: Property 'full_details' does not exist on type 'unknown'.
+
+196           plan.crew_information || plan.full_details?.assignedCrew || [],
+                                            ~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:197:36 - error TS2339: Property 'passenger_information' does not exist on type 'unknown'.
+
+197         passengerInformation: plan.passenger_information || [],
+                                       ~~~~~~~~~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:198:30 - error TS2339: Property 'operations_user' does not exist on type 'unknown'.
+
+198         operationsUser: plan.operations_user || "Operations Manager",
+                                 ~~~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:199:28 - error TS2339: Property 'cost_analysis' does not exist on type 'unknown'.
+
+199         costAnalysis: plan.cost_analysis || {},
+                               ~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:200:28 - error TS2339: Property 'disruption_id' does not exist on type 'unknown'.
+
+200         disruptionId: plan.disruption_id,
+                               ~~~~~~~~~~~~~
+
+src/components/PendingSolutions.tsx:201:24 - error TS2339: Property 'option_id' does not exist on type 'unknown'.
+
+201         optionId: plan.option_id,
+                           ~~~~~~~~~
+
+src/components/PendingSolutions.tsx:202:22 - error TS2339: Property 'impact' does not exist on type 'unknown'.
+
+202         impact: plan.impact || "Moderate", // Added for recovery options
+                         ~~~~~~
+
+src/components/PendingSolutions.tsx:1319:53 - error TS2339: Property 'length' does not exist on type 'unknown'.
+
+1319                                         {passengers.length} passenger
+                                                         ~~~~~~
+
+src/components/PendingSolutions.tsx:1320:53 - error TS2339: Property 'length' does not exist on type 'unknown'.
+
+1320                                         {passengers.length > 1 ? "s" : ""}
+                                                         ~~~~~~
+
+src/components/PendingSolutions.tsx:1329:47 - error TS2339: Property 'map' does not exist on type 'unknown'.
+
+1329                                   {passengers.map(
+                                                   ~~~
+
+src/components/PendingSolutions.tsx:1584:39 - error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+
+1584                                 <span>{value}</span>
+                                           ~~~~~~~
+
+  node_modules/@types/react/index.d.ts:2398:9
+    2398         children?: ReactNode | undefined;
+                 ~~~~~~~~
+    The expected type comes from property 'children' which is declared here on type 'DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>'
+
+src/components/PendingSolutions.tsx:1629:39 - error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+
+1629                                 <span>{value}</span>
+                                           ~~~~~~~
+
+  node_modules/@types/react/index.d.ts:2398:9
+    2398         children?: ReactNode | undefined;
+                 ~~~~~~~~
+    The expected type comes from property 'children' which is declared here on type 'DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>'
+
+src/components/PendingSolutions.tsx:1853:62 - error TS2339: Property 'amount' does not exist on type 'object'.
+
+1853                                                 typeof value.amount === "number"
+                                                                  ~~~~~~
+
+src/components/PendingSolutions.tsx:1854:66 - error TS2339: Property 'amount' does not exist on type 'object'.
+
+1854                                                   ? `AED ${value.amount.toLocaleString()}`
+                                                                      ~~~~~~
+
+src/components/PendingSolutions.tsx:3067:62 - error TS2339: Property 'amount' does not exist on type 'object'.
+
+3067                                                 typeof value.amount === "number"
+                                                                  ~~~~~~
+
+src/components/PendingSolutions.tsx:3068:66 - error TS2339: Property 'amount' does not exist on type 'object'.
+
+3068                                                   ? `AED ${value.amount.toLocaleString()}`
+                                                                      ~~~~~~
+
+src/components/PendingSolutions.tsx:3102:47 - error TS2339: Property 'amount' does not exist on type 'object'.
+
+3102                                         value.amount
+                                                   ~~~~~~
+
+src/components/PendingSolutions.tsx:3103:51 - error TS2339: Property 'amount' does not exist on type 'object'.
+
+3103                                           ? value.amount
+                                                       ~~~~~~
+
+src/components/PendingSolutions.tsx:3774:53 - error TS2339: Property 'length' does not exist on type 'unknown'.
+
+3774                                         {passengers.length} passenger
+                                                         ~~~~~~
+
+src/components/PendingSolutions.tsx:3775:53 - error TS2339: Property 'length' does not exist on type 'unknown'.
+
+3775                                         {passengers.length > 1 ? "s" : ""}
+                                                         ~~~~~~
+
+src/components/PendingSolutions.tsx:3784:47 - error TS2339: Property 'map' does not exist on type 'unknown'.
+
+3784                                   {passengers.map(
+                                                   ~~~
+
+src/components/PendingSolutions.tsx:3817:49 - error TS2552: Cannot find name 'plan'. Did you mean 'plans'?
+
+3817                                                 plan.flightNumber}
+                                                     ~~~~
+
+  src/components/PendingSolutions.tsx:100:10
+    100   const [plans, setPlans] = useState([]);
+                 ~~~~~
+    'plans' is declared here.
+
+src/components/RecoveryOptionsGenerator.tsx:2169:57 - error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+
+2169                           <span className="font-medium">{value}</span>
+                                                             ~~~~~~~
+
+  node_modules/@types/react/index.d.ts:2398:9
+    2398         children?: ReactNode | undefined;
+                 ~~~~~~~~
+    The expected type comes from property 'children' which is declared here on type 'DetailedHTMLProps<HTMLAttributes<HTMLSpanElement>, HTMLSpanElement>'
+
+src/components/RecoveryOptionsGenerator.tsx:3051:70 - error TS2322: Type 'unknown' is not assignable to type 'ReactNode'.
+
+3051                                 <p className="text-sm text-gray-700">{value}</p>
+                                                                          ~~~~~~~
+
+  node_modules/@types/react/index.d.ts:2398:9
+    2398         children?: ReactNode | undefined;
+                 ~~~~~~~~
+    The expected type comes from property 'children' which is declared here on type 'DetailedHTMLProps<HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement>'
+
+src/components/RulesAssistantChatbot.tsx:10:18 - error TS2305: Module '"./ui/avatar"' has no exported member 'AvatarContent'.
+
+10 import { Avatar, AvatarContent, AvatarFallback } from './ui/avatar'
+                    ~~~~~~~~~~~~~
+
+src/components/SettingsPanel.tsx:1152:7 - error TS2322: Type 'unknown' is not assignable to type 'number'.
+
+1152       baseWeights = baseParams.reduce((sum, val) => sum + val, 0);
+           ~~~~~~~~~~~
+
+src/components/SettingsPanel.tsx:1152:53 - error TS2365: Operator '+' cannot be applied to types 'unknown' and 'unknown'.
+
+1152       baseWeights = baseParams.reduce((sum, val) => sum + val, 0);
+                                                         ~~~~~~~~~
+
+src/components/SettingsPanel.tsx:2633:35 - error TS2322: Type 'number | any[]' is not assignable to type 'number'.
+  Type 'any[]' is not assignable to type 'number'.
+
+2633                           value={[value]}
+                                       ~~~~~
+
+src/components/SettingsPanel.tsx:2756:35 - error TS2322: Type 'number | any[]' is not assignable to type 'number'.
+  Type 'any[]' is not assignable to type 'number'.
+
+2756                           value={[value]}
+                                       ~~~~~
+
+src/components/SettingsPanel.tsx:2881:35 - error TS2322: Type 'number | any[]' is not assignable to type 'number'.
+  Type 'any[]' is not assignable to type 'number'.
+
+2881                           value={[value]}
+                                       ~~~~~
+
+src/components/SettingsPanel.tsx:3816:78 - error TS2552: Cannot find name 'NotificationKey'. Did you mean 'Notification'?
+
+3816                       onCheckedChange={() => handleNotificationToggle(key as NotificationKey)}
+                                                                                  ~~~~~~~~~~~~~~~
+
+  node_modules/typescript/lib/lib.dom.d.ts:17374:13
+    17374 declare var Notification: {
+                      ~~~~~~~~~~~~
+    'Notification' is declared here.
