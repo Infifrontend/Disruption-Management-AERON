@@ -7,6 +7,16 @@ export default defineConfig(({ mode }) => {
   return {
     base: env.VITE_FRONTEND_BASE_URL || "/",
     plugins: [react()],
+    build: {
+      rollupOptions: {
+        onwarn(warning, warn) {
+          // Skip certain warnings during build
+          if (warning.code === 'UNUSED_EXTERNAL_IMPORT') return;
+          if (warning.code === 'CIRCULAR_DEPENDENCY') return;
+          warn(warning);
+        }
+      }
+    },
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
