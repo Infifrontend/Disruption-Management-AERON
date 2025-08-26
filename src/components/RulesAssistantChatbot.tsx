@@ -7,7 +7,7 @@ import { Input } from './ui/input'
 import { Badge } from './ui/badge'
 import { Separator } from './ui/separator'
 import { ScrollArea } from './ui/scroll-area'
-import { Avatar, AvatarContent, AvatarFallback } from './ui/avatar'
+import { Avatar, AvatarFallback } from './ui/avatar'
 import { 
   Bot, 
   Send, 
