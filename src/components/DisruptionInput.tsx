@@ -76,7 +76,6 @@ import {
 import { databaseService, FlightDisruption } from "../services/databaseService";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
-import { Console } from "console";
 
 // Define interface for disruption categories
 interface DisruptionCategory {
@@ -124,7 +123,7 @@ const transformFlightData = (disruption: FlightDisruption) => {
     currentStatus: disruption.status,
     delay: disruption.delay || 0,
     aircraft: disruption.aircraft || "Unknown",
-    gate: disruption.gate || `T2-A${Math.floor(Math.random() * 30) + 1}`, // Generate consistent gate
+    gate: (disruption as any).gate || `T2-A${Math.floor(Math.random() * 30) + 1}`, // Generate consistent gate
     passengers: disruption.passengers || 0,
     crew: disruption.crew || 6,
     disruptionType: disruption.type
@@ -358,7 +357,7 @@ export function DisruptionInput({
           // Only include disruptions with recovery_status = 'assigned' or null/undefined
           // This filter ensures we only process assigned recovery status flights
           const recoveryStatus =
-            disruption.recoveryStatus || disruption.recovery_status;
+            disruption.recoveryStatus || (disruption as any).recovery_status;
           return recoveryStatus === "assigned";
         })
         .map((disruption) => {
@@ -391,8 +390,7 @@ export function DisruptionInput({
               "Unknown",
             status: disruption.status || "Unknown",
             severity: disruption.severity || "Medium",
-            type:
-              disruption.disruption_type || disruption.type || "Technical",
+            type: (disruption as any).disruption_type || disruption.type || "Technical",
             disruptionReason:
               (disruption as any).disruption_reason ||
               disruption.disruptionReason ||
@@ -509,7 +507,7 @@ export function DisruptionInput({
               status: disruption.status || "Unknown",
               severity: disruption.severity || "Medium",
               type:
-                disruption.disruption_type || disruption.type || "Technical",
+                (disruption as any).disruption_type || disruption.type || "Technical",
               disruptionReason:
                 (disruption as any).disruption_reason ||
                 disruption.disruptionReason ||
@@ -711,7 +709,7 @@ export function DisruptionInput({
         const priorityOrder = { Critical: 4, High: 3, Medium: 2, Low: 1 };
         return priorityOrder[b.priority] - priorityOrder[a.priority];
       case "departure":
-        return new Date(a.scheduledDeparture) - new Date(b.scheduledDeparture);
+        return new Date(a.scheduledDeparture).getTime() - new Date(b.scheduledDeparture).getTime();
       case "passengers":
         return b.passengers - a.passengers;
       case "delay":
@@ -798,7 +796,6 @@ export function DisruptionInput({
         toast({
           title: "No Options Generated",
           description: "Unable to generate recovery options for this flight",
-          variant: "destructive",
         });
       }
     } catch (error) {
@@ -806,7 +803,6 @@ export function DisruptionInput({
       toast({
         title: "Generation Failed",
         description: "Failed to generate recovery options",
-        variant: "destructive",
       });
     } finally {
       setIsGeneratingOptions(false);
@@ -876,7 +872,6 @@ export function DisruptionInput({
       toast({
         title: "Error",
         description: "Failed to load flight details",
-        variant: "destructive",
       });
     } finally {
       setLoadingRecovery((prev) => ({
@@ -959,7 +954,7 @@ export function DisruptionInput({
       categoryId: selectedCategory?.id,
       categoryCode:
         selectedCategory?.category_code || newDisruption.categorization, // Send the correct category_code
-      crewMembers: newDisruption.crewMembers || [],
+      crewMembers: (newDisruption as any).crewMembers || [],
     };
 
     try {
@@ -972,7 +967,7 @@ export function DisruptionInput({
       const result = await databaseService.saveDisruption(newFlightData);
 
       // Check if the result indicates success
-      if (result && (result === true || result.success !== false)) {
+      if (result && (result === true || (result as any).success !== false)) {
         // Clear any existing errors and show success
         setError(null);
         setSuccess("Disruption added successfully!");
