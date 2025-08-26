@@ -18,7 +18,6 @@ export * from "./ui/switch";
 
 // Main Components
 export { Layout } from "./Layout";
-export { KPIWidgets } from "./KPIWidgets";
 export { FlightTrackingGantt } from "./FlightTrackingGantt";
 export { DisruptionInput } from "./DisruptionInput";
 export { RecoveryOptionsGenerator } from "./RecoveryOptionsGenerator";
