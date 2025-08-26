@@ -1159,7 +1159,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     } else {
       // For passenger priority configuration
       const baseParams = Object.values(passengerPriorityConfig[category] || {});
-      baseWeights = baseParams.reduce((sum, val) => sum + val, 0);
+      baseWeights = baseParams.reduce((sum, val) => sum + Number(val), 0);
       customWeights = customParameters
         .filter((p) => p.category === category)
         .reduce((sum, p) => sum + p.weight, 0);

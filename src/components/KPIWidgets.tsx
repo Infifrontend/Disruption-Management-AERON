@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Progress } from './ui/progress'
 import { Badge } from './ui/badge'
 import { TrendingUp, TrendingDown, Plane, Users, Clock, AlertTriangle, CheckCircle } from 'lucide-react'
-import { databaseService } from '@/services/database'
+import { databaseService } from '../services/databaseService'
 
 const kpiData = [
   {
@@ -130,8 +130,8 @@ export function KPIWidgets() {
                     <span>Progress to Target</span>
                     <span>{kpi.current}% / {kpi.target}%</span>
                   </div>
-                  <Progress 
-                    value={(kpi.current / kpi.target) * 100} 
+                  <Progress
+                    value={(kpi.current / kpi.target) * 100}
                     className="h-2"
                   />
                 </div>
@@ -164,12 +164,12 @@ export function KPIWidgets() {
 }
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Plane, 
-  Users, 
-  Clock, 
+import {
+  TrendingUp,
+  TrendingDown,
+  Plane,
+  Users,
+  Clock,
   AlertTriangle,
   CheckCircle,
   DollarSign,

@@ -409,7 +409,7 @@ export function FlightTrackingGantt() {
     utilizationRange: [0, 100],
     gate: ''
   })
-  const [currentTime] = useState(() => {
+  const [currentTime, setCurrentTime] = useState(() => {
     const istTime = new Date().toLocaleString("en-US", {timeZone: "Asia/Kolkata"})
     return new Date(istTime)
   })
