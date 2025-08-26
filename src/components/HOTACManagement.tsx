@@ -1382,7 +1382,7 @@ export function HOTACManagement() {
                   {/* Expanded Row Details */}
                   {expandedRows.includes(record.id) && (
                     <TableRow>
-                      <TableCell colSpan="13" className="bg-gray-50 p-4">
+                      <TableCell colSpan={13} className="bg-gray-50 p-4">
                         <ExpandedRowDetails record={record} />
                       </TableCell>
                     </TableRow>

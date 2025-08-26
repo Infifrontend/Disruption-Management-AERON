@@ -252,7 +252,7 @@ export function HotelBooking({ selectedPassengers, passengers }) {
                   <Checkbox 
                     id="transfer" 
                     checked={includeTransfer}
-                    onCheckedChange={setIncludeTransfer}
+                    onCheckedChange={(checked) => setIncludeTransfer(checked === true)}
                   />
                   <Label htmlFor="transfer" className="text-sm">
                     Include airport transfer (complimentary with partner hotels)
@@ -263,7 +263,7 @@ export function HotelBooking({ selectedPassengers, passengers }) {
                   <Checkbox 
                     id="meals" 
                     checked={includeMeals}
-                    onCheckedChange={setIncludeMeals}
+                    onCheckedChange={(checked) => setIncludeMeals(checked === true)}
                   />
                   <Label htmlFor="meals" className="text-sm">
                     Include meal allowance (+$35/day per person)

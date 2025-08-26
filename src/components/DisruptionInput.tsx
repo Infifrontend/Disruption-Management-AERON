@@ -358,7 +358,7 @@ export function DisruptionInput({
           // Only include disruptions with recovery_status = 'assigned' or null/undefined
           // This filter ensures we only process assigned recovery status flights
           const recoveryStatus =
-            disruption.recovery_status || disruption.recoveryStatus;
+            disruption.recoveryStatus || disruption.recovery_status;
           return recoveryStatus === "assigned";
         })
         .map((disruption) => {
@@ -403,7 +403,7 @@ export function DisruptionInput({
               disruption.connection_flights ||
               disruption.connectionFlights ||
               0,
-            recoveryStatus: disruption.recovery_status || "assigned",
+            recoveryStatus: disruption.recoveryStatus || "assigned",
           };
         });
 
@@ -519,7 +519,7 @@ export function DisruptionInput({
                 disruption.connection_flights ||
                 disruption.connectionFlights ||
                 0,
-              recoveryStatus: disruption.recovery_status || "assigned",
+              recoveryStatus: disruption.recoveryStatus || "assigned",
             };
           });
 
@@ -781,7 +781,6 @@ export function DisruptionInput({
         toast({
           title: "Recovery Options Generated",
           description: `Generated ${result.optionsCount} recovery options for flight ${flight.flightNumber}`,
-          duration: 3000,
         });
 
         // Fetch the generated options
@@ -797,7 +796,6 @@ export function DisruptionInput({
           title: "No Options Generated",
           description: "Unable to generate recovery options for this flight",
           variant: "destructive",
-          duration: 3000,
         });
       }
     } catch (error) {
@@ -806,7 +804,6 @@ export function DisruptionInput({
         title: "Generation Failed",
         description: "Failed to generate recovery options",
         variant: "destructive",
-        duration: 3000,
       });
     } finally {
       setIsGeneratingOptions(false);
@@ -877,7 +874,6 @@ export function DisruptionInput({
         title: "Error",
         description: "Failed to load flight details",
         variant: "destructive",
-        duration: 3000,
       });
     } finally {
       setLoadingRecovery((prev) => ({
@@ -2391,7 +2387,7 @@ export function DisruptionInput({
                                   </TableCell>
                                   <TableCell>
                                     <div className="flex items-center gap-2 max-w-[140px]">
-                                      <span className="font-medium truncate text-flydubai-blue">
+                                      <span className="font-medium text-flydubai-blue">
                                         {flight.origin}
                                       </span>
                                       <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />

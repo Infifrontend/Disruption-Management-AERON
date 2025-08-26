@@ -45,7 +45,6 @@ import {
   Hotel,
   UtensilsCrossed,
   Car,
-  Wheelchair,
   Luggage,
   Coffee,
   Banknote,
@@ -1303,14 +1302,14 @@ export function PassengerRebooking({ context, onClearContext }) {
     });
   };
 
-  
+
 
   const handleConfirmCrewAssignment = async () => {
     try {
       console.log("handleConfirmCrewAssignment called");
       console.log("selectedCrewMembers:", selectedCrewMembers);
       console.log("selectedHotelForCrew:", selectedHotelForCrew);
-      
+
       if (selectedCrewMembers.size === 0) {
         console.log("No crew members selected");
         showAlert(
@@ -1515,7 +1514,7 @@ export function PassengerRebooking({ context, onClearContext }) {
         );
         return;
       }
-      
+
       if (Object.keys(crewHotelAssignments).length === 0) {
         alertService.warning(
           "Crew Assignment Required",
@@ -1639,7 +1638,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
         if (pendingSolutionSuccess) {
           let successMessage = "Services sent for approval successfully!\n";
-          
+
           if (hasPassenger && !hasCrew) {
             // Passenger-only scenario
             const uniquePnrs = new Set(confirmedPassengers.map((p) => p.pnr)).size;
@@ -2753,8 +2752,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                         <Card
                           key={hotel.id}
                           className={`hover:shadow-md transition-shadow cursor-pointer border-2 ${
-                            selectedHotelForCrew?.id === hotel.id 
-                              ? "border-flydubai-blue bg-blue-50" 
+                            selectedHotelForCrew?.id === hotel.id
+                              ? "border-flydubai-blue bg-blue-50"
                               : "hover:border-flydubai-blue"
                           }`}
                         >
@@ -3173,7 +3172,10 @@ export function PassengerRebooking({ context, onClearContext }) {
 
                       {Object.entries(filteredPnrGroups).map(
                         ([pnr, groupPassengers]) => (
-                          <div key={pnr} className="border rounded-lg bg-white">
+                          <div
+                            key={pnr}
+                            className="border rounded-lg bg-white"
+                          >
                             <div className="p-4 border-b bg-gray-50">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -3567,7 +3569,11 @@ export function PassengerRebooking({ context, onClearContext }) {
                     {availableHotels.slice(0, 4).map((hotel) => (
                       <Card
                         key={hotel.id}
-                        className="hover:shadow-md transition-shadow cursor-pointer border-2 hover:border-flydubai-blue"
+                        className={`hover:shadow-md transition-shadow cursor-pointer border-2 ${
+                          selectedHotelForCrew?.id === hotel.id
+                            ? "border-flydubai-blue bg-blue-50"
+                            : "hover:border-flydubai-blue"
+                        }`}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start gap-4">
@@ -3676,10 +3682,10 @@ export function PassengerRebooking({ context, onClearContext }) {
                           !selectedHotelForCrew
                         }
                       >
-                        {selectedCrewMembers.size === 0 
-                          ? "Select Crew Members" 
-                          : !selectedHotelForCrew 
-                            ? "Select Hotel" 
+                        {selectedCrewMembers.size === 0
+                          ? "Select Crew Members"
+                          : !selectedHotelForCrew
+                            ? "Select Hotel"
                             : `Confirm Assignment (${selectedCrewMembers.size} crew)`}
                       </Button>
                       <Button size="sm" variant="outline">
@@ -3757,7 +3763,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                     const impactArea = recoveryOption?.impact_area || [];
                     const hasPassenger = impactArea.includes("passenger");
                     const hasCrew = impactArea.includes("crew");
-                    
+
                     if (hasPassenger && hasCrew) {
                       return "Passenger and crew services have been reviewed. Submit for approval to proceed.";
                     } else if (hasPassenger && !hasCrew) {
@@ -3775,7 +3781,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                   const impactArea = recoveryOption?.impact_area || [];
                   const hasCrew = impactArea.includes("crew");
                   const hasPassenger = impactArea.includes("passenger");
-                  
+
                   if (hasCrew && !hasPassenger && Object.keys(crewHotelAssignments).length === 0) {
                     return (
                       <p className="text-xs text-orange-600 mt-1">
@@ -3787,7 +3793,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                       const currentStatus = passengerRebookingStatus[p.id] || p.status;
                       return currentStatus === "Confirmed" && confirmedRebookings[p.id];
                     });
-                    
+
                     if (confirmedPassengers.length === 0) {
                       return (
                         <p className="text-xs text-orange-600 mt-1">
@@ -4735,7 +4741,7 @@ export function PassengerRebooking({ context, onClearContext }) {
               </div>
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {availableHotels.map((hotel) => (
                   <Card
