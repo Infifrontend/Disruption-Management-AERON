@@ -10,7 +10,6 @@ export function PassengerServicesPage() {
   // Handle context from navigation state (when coming from Execute button)
   useEffect(() => {
     if (location.state && location.state.fromExecution) {
-      console.log("Received execution context from navigation:", location.state)
       setPassengerServicesContext(location.state)
     }
   }, [location.state, setPassengerServicesContext])

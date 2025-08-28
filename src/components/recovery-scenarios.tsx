@@ -650,7 +650,6 @@ export const getCrewIssueRecovery = (flight) => {
 
 // Weather Delay Recovery - 6-Step Process
 export const getWeatherDelayRecovery = () => {
-  console.log("test");
   return {
     title: "Weather Delay Recovery",
     description: "Heavy thunderstorms at DEL - Low visibility 800m",
@@ -1344,7 +1343,6 @@ export const getRotationMisalignmentRecovery = () => {
 
 // Main function to get scenario data based on categorization
 export const getScenarioData = (categorization) => {
-  console.log("categorization", categorization);
   switch (categorization) {
     case "Aircraft issue (e.g., AOG)":
       return getAircraftIssueRecovery();

@@ -49,7 +49,7 @@ const iconMap = {
   Settings,
 };
 
-const flydubaiLogo = `/public/flydubai_logo.png`;
+const flydubaiLogo = `./flydubai_logo.png`;
 
 interface LayoutProps {
   children: ReactNode;

@@ -120,19 +120,12 @@ export function ComparisonMatrix({
         try {
           let options = [];
           const flightId = selectedFlight.id.toString();
-
-          console.log(`Loading recovery options for flight ID: ${flightId}`);
-
           // Use the correct API endpoint: api/recovery-options/
           try {
             const response = await fetch(`/api/recovery-options/${flightId}`);
             if (response.ok) {
               options = await response.json();
-              console.log(`Found ${options.length} recovery options from API`);
             } else if (response.status === 404) {
-              console.log(
-                `No recovery options found for flight ${flightId}, generating...`,
-              );
               // Generate new options
               await databaseService.generateRecoveryOptions(flightId);
 
@@ -143,7 +136,6 @@ export function ComparisonMatrix({
               );
               if (retryResponse.ok) {
                 options = await retryResponse.json();
-                console.log(`Generated ${options.length} recovery options`);
               }
             } else {
               console.error(`API error: ${response.status}`);
@@ -157,25 +149,16 @@ export function ComparisonMatrix({
 
           // If still no options, try fallback methods
           if (options.length === 0) {
-            console.log("Trying fallback methods...");
-
             // Try by disruption type/category
             if (selectedFlight.categorization || selectedFlight.type) {
               const categoryCode =
                 selectedFlight.categorization || selectedFlight.type;
-              console.log(
-                `Loading recovery options for category: ${categoryCode}`,
-              );
               options =
                 await databaseService.getRecoveryOptionsByCategory(
                   categoryCode,
                 );
             }
           }
-
-          console.log(
-            `Final result: ${options.length} recovery options loaded`,
-          );
           setDynamicRecoveryOptions(options);
         } catch (error) {
           console.error("Error loading recovery options:", error);
@@ -184,7 +167,6 @@ export function ComparisonMatrix({
           setLoading(false);
         }
       } else {
-        console.log("No flight ID available for loading recovery options");
         setDynamicRecoveryOptions([]);
         setLoading(false);
       }
@@ -279,7 +261,6 @@ export function ComparisonMatrix({
   const flight = Array.isArray(selectedFlight)
     ? selectedFlight[0]
     : selectedFlight;
-  console.log(flight, "00000000000000000000");
   const getAircraftIssueRecovery = () => ({
     title: "Aircraft Issue Recovery Options",
     options: [
@@ -886,9 +867,6 @@ export function ComparisonMatrix({
       // Use the option data that already contains all the detailed information
       // The API response includes: resource_requirements, cost_breakdown, timeline_details,
       // risk_assessment, technical_specs which are all needed for the details popup
-
-      console.log("Using existing option data for details:", option);
-
       // The option already contains all the required data from /api/recovery-options/:disruptionId
       const enrichedDetails = {
         ...option,
@@ -918,9 +896,7 @@ export function ComparisonMatrix({
       setSelectedOptionDetails(option);
 
       // Use the rotation_plan data that's already included in the option from the API
-      console.log("Processing rotation plan data for option:", option.id);
-      console.log("Available rotation plan data:", option.rotation_plan);
-
+  
       let rotationPlan = option.rotation_plan;
 
       // Transform the API data to match the expected structure for the rotation dialog
@@ -1022,7 +998,6 @@ export function ComparisonMatrix({
           rotationPlan?.recommendation || rotationPlan?.recommendedOption || {},
       };
 
-      console.log("Enriched rotation plan for dialog:", enrichedRotationPlan);
       setRotationPlanDetails(enrichedRotationPlan);
       setShowRotationDialog(true);
     } catch (error) {
@@ -1112,12 +1087,7 @@ export function ComparisonMatrix({
           },
         };
 
-        console.log(
-          "Executing option with passenger context:",
-          passengerContext,
-        );
-
-        // Use the app context to set the passenger services context
+            // Use the app context to set the passenger services context
         // This ensures the data is available when the page loads
         if (typeof onSelectPlan === "function") {
           onSelectPlan(passengerContext);
@@ -1250,13 +1220,13 @@ export function ComparisonMatrix({
   // Helper function to generate available crew for specific role
   const generateAvailableCrewForRole = (targetRole, excludeName = null) => {
     const roleNormalized = targetRole.toLowerCase();
-
+    console.log(selectedOptionDetails,"selectedOptionDetails");
     // Define crew pools by role type
     const crewPools = {
       captain: [
         {
           id: "CREW_001",
-          name: "Capt. Mohammed Al-Zaabi",
+          name: "Capt. Mohammed Al-Zaabi test",
           rank: "Captain",
           role: targetRole,
           rating: "B737/A320 Type Rating",
@@ -4085,12 +4055,7 @@ export function ComparisonMatrix({
                                   isEdit: selectedCrewForSwap.isEditing,
                                 };
 
-                                console.log(
-                                  "Crew assignment updated:",
-                                  assignmentUpdate,
-                                );
-
-                                setShowCrewSwapDialog(false);
+                               setShowCrewSwapDialog(false);
                                 setSelectedCrewForSwap(null);
                               }}
                             >

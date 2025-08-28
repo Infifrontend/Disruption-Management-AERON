@@ -330,7 +330,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
   const loadSettingsFromDatabase = async () => {
     setIsLoading(true);
-    console.log("Loading settings from database...");
 
     try {
       // Initialize fresh state objects
@@ -418,11 +417,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
       // Load all settings from database
       const allSettings = settingsStore.getAllSettings();
-      console.log(
-        "Retrieved settings from database:",
-        allSettings.length,
-        "entries",
-      );
+      
 
       // Process settings by category
       allSettings.forEach((setting) => {
@@ -532,7 +527,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
               break;
 
             default:
-              console.log("Unknown setting category:", setting.category);
           }
         } catch (settingError) {
           console.error("Error processing setting:", setting, settingError);
@@ -540,20 +534,13 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       });
 
       // Update state with loaded settings
-      console.log("Updating component state with loaded settings...");
       setNlpSettings(newNlpSettings);
       setRuleConfiguration(newRuleConfig);
       setRecoveryConfiguration(newRecoveryConfig);
       setPassengerPriorityConfig(newPriorityConfig);
       setNotificationSettings(newNotificationSettings);
 
-      console.log("Settings loaded successfully:", {
-        nlp: newNlpSettings,
-        rules: newRuleConfig,
-        recovery: newRecoveryConfig,
-        priority: newPriorityConfig,
-        notifications: newNotificationSettings,
-      });
+
     } catch (error) {
       console.error("Failed to load settings from database:", error);
       setSaveStatus("error");
@@ -586,9 +573,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
   const handleNlpToggle = (setting) => {
     const newValue = !nlpSettings[setting];
-    console.log(
-      `Toggling NLP setting ${setting} from ${nlpSettings[setting]} to ${newValue}`,
-    );
+
 
     setNlpSettings((prev) => ({
       ...prev,
@@ -603,7 +588,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         "boolean",
         "user",
       );
-      console.log(`Successfully saved NLP setting ${setting} = ${newValue}`);
       showSaveStatus();
     } catch (error) {
       console.error(`Failed to save NLP setting ${setting}:`, error);
@@ -612,7 +596,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   };
 
   const handleNlpChange = (setting, value) => {
-    console.log(`Changing NLP setting ${setting} to ${value}`);
 
     setNlpSettings((prev) => ({
       ...prev,
@@ -627,19 +610,15 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         typeof value === "number" ? "number" : "string",
         "user",
       );
-      console.log(`Successfully saved NLP setting ${setting} = ${value}`);
       showSaveStatus();
     } catch (error) {
-      console.error(`Failed to save NLP setting ${setting}:`, error);
       setSaveStatus("error");
     }
   };
 
   const handleNotificationToggle = (setting) => {
     const newValue = !notificationSettings[setting];
-    console.log(
-      `Toggling notification setting ${setting} from ${notificationSettings[setting]} to ${newValue}`,
-    );
+    
 
     setNotificationSettings((prev) => ({
       ...prev,
@@ -654,9 +633,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         "boolean",
         "user",
       );
-      console.log(
-        `Successfully saved notification setting ${setting} = ${newValue}`,
-      );
+    
       showSaveStatus();
     } catch (error) {
       console.error(`Failed to save notification setting ${setting}:`, error);
@@ -667,9 +644,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   // Rule Configuration Handlers
   const handleRuleConfigChange = (category, parameter, value) => {
     const actualValue = Array.isArray(value) ? value[0] : value;
-    console.log(
-      `Changing rule config ${category}.${parameter} to ${actualValue}`,
-    );
+  
 
     setRuleConfiguration((prev) => ({
       ...prev,
@@ -687,9 +662,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         "number",
         "user",
       );
-      console.log(
-        `Successfully saved rule config ${category}.${parameter} = ${actualValue}`,
-      );
+     
       showSaveStatus();
     } catch (error) {
       console.error(
@@ -703,10 +676,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const handleRuleToggle = (category, parameter) => {
     const oldValue = ruleConfiguration[category][parameter];
     const newValue = !oldValue;
-    console.log(
-      `Toggling rule config ${category}.${parameter} from ${oldValue} to ${newValue}`,
-    );
-
+   
     setRuleConfiguration((prev) => ({
       ...prev,
       [category]: {
@@ -723,9 +693,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         "boolean",
         "user",
       );
-      console.log(
-        `Successfully saved rule config ${category}.${parameter} = ${newValue}`,
-      );
+      
       showSaveStatus();
     } catch (error) {
       console.error(
@@ -841,9 +809,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   // Recovery Configuration Handlers
   const handleRecoveryConfigChange = (section, parameter, value) => {
     const actualValue = Array.isArray(value) ? value[0] : value;
-    console.log(
-      `Changing recovery config ${section}.${parameter} to ${actualValue}`,
-    );
+   
 
     setRecoveryConfiguration((prev) => ({
       ...prev,
@@ -861,9 +827,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         "number",
         "user",
       );
-      console.log(
-        `Successfully saved recovery config ${section}.${parameter} = ${actualValue}`,
-      );
+  
       showSaveStatus();
     } catch (error) {
       console.error(
@@ -877,9 +841,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   // Passenger Priority Configuration Handlers
   const handlePriorityConfigChange = (category, parameter, value) => {
     const actualValue = Array.isArray(value) ? value[0] : value;
-    console.log(
-      `Changing priority config ${category}.${parameter} to ${actualValue}`,
-    );
+   
 
     setPassengerPriorityConfig((prev) => ({
       ...prev,
@@ -897,9 +859,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         "number",
         "user",
       );
-      console.log(
-        `Successfully saved priority config ${category}.${parameter} = ${actualValue}`,
-      );
+      
       showSaveStatus();
     } catch (error) {
       console.error(
@@ -961,11 +921,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       // Verify the setting was actually saved by checking database
       try {
         const allSettings = settingsStore.getAllSettings();
-        console.log(
-          "Current database contains",
-          allSettings.length,
-          "settings",
-        );
+       
       } catch (error) {
         console.error("Database verification failed:", error);
         setSaveStatus("error");

@@ -180,7 +180,6 @@ export function RecoveryOptionsGenerator({
   useEffect(() => {
     const fetchRecoveryOptions = async () => {
       if (!flight) {
-        console.log("No flight selected");
         setRecoveryOptions([]);
         setRecoverySteps([]);
         return;
@@ -196,14 +195,9 @@ export function RecoveryOptionsGenerator({
         activeRequests.delete(requestKey);
       }
 
-      console.log("Processing flight:", flight, "with ID:", flightId);
-      console.log(
-        "Flight categorization:",
-        flight.categorization || flight.disruptionReason,
-      );
+     
 
       if (!useDatabaseData) {
-        console.log("Database data disabled, using scenario data");
         setRecoveryOptions([]);
         setRecoverySteps([]);
         return;
@@ -217,10 +211,7 @@ export function RecoveryOptionsGenerator({
       setActiveRequests((prev) => new Map(prev.set(requestKey, controller)));
 
       try {
-        console.log(
-          `Fetching categorization-based recovery options for flight ID: ${flightId}`,
-        );
-
+       
         // Add timeout for the entire operation
         const timeoutPromise = new Promise((_, reject) => {
           setTimeout(() => reject(new Error("Request timeout")), 15000);
@@ -253,9 +244,7 @@ export function RecoveryOptionsGenerator({
         // First try to get detailed recovery options based on categorization
         try {
           options = await databaseService.getDetailedRecoveryOptions(flightId);
-          console.log(
-            `Found ${options.length} detailed categorization-based options`,
-          );
+          
         } catch (error) {
           console.warn(
             "Error fetching detailed recovery options:",
@@ -267,7 +256,6 @@ export function RecoveryOptionsGenerator({
         // Try to get detailed recovery steps
         try {
           steps = await databaseService.getDetailedRecoverySteps(flightId);
-          console.log(`Found ${steps.length} detailed steps`);
         } catch (error) {
           console.warn(
             "Error fetching detailed recovery steps:",
@@ -276,7 +264,6 @@ export function RecoveryOptionsGenerator({
           // Fallback to regular steps
           try {
             steps = await databaseService.getRecoverySteps(flightId);
-            console.log(`Found ${steps.length} fallback steps`);
           } catch (stepError) {
             console.warn(
               "Error fetching regular recovery steps:",
@@ -288,12 +275,9 @@ export function RecoveryOptionsGenerator({
 
         // If no detailed options exist, try to get standard options and generate if needed
         if (options.length === 0) {
-          console.log(
-            "No detailed recovery options found, trying standard options...",
-          );
+        
           try {
             options = await databaseService.getRecoveryOptions(flightId);
-            console.log(`Found ${options.length} standard options`);
           } catch (error) {
             console.warn(
               "Error fetching standard recovery options:",
@@ -304,13 +288,10 @@ export function RecoveryOptionsGenerator({
 
           // If still no options exist, try to generate them
           if (options.length === 0) {
-            console.log(
-              "No recovery options found, attempting to generate new ones...",
-            );
+            
             try {
               const result =
                 await databaseService.generateRecoveryOptions(flightId);
-              console.log("Generation result:", result);
 
               if (result.optionsCount > 0) {
                 // Wait a moment and fetch the newly generated options
@@ -339,13 +320,9 @@ export function RecoveryOptionsGenerator({
                   }
                 }
 
-                console.log(
-                  `After generation: ${options.length} options, ${steps.length} steps`,
-                );
+               
               } else {
-                console.log(
-                  "No options generated, falling back to scenario data",
-                );
+                
                 setUseDatabaseData(false);
                 return;
               }
@@ -1088,11 +1065,7 @@ export function RecoveryOptionsGenerator({
           data: step.step_data || step.data || {},
         }));
 
-        console.log(
-          "Setting transformed categorization-based options:",
-          transformedOptions,
-        );
-        console.log("Setting transformed steps:", transformedSteps);
+       
 
         setRecoveryOptions(transformedOptions);
         setRecoverySteps(transformedSteps);
@@ -1111,9 +1084,7 @@ export function RecoveryOptionsGenerator({
         setRecoveryOptions([]);
         setRecoverySteps([]);
         // Automatically fall back to scenario data on database errors
-        console.log(
-          "Automatically switching to scenario data due to database error",
-        );
+      
         setUseDatabaseData(false);
       } finally {
         if (!controller.signal.aborted) {
@@ -1246,7 +1217,6 @@ export function RecoveryOptionsGenerator({
   // Save edited recovery option
   const saveEditedOption = () => {
     // In a real implementation, this would save to backend
-    console.log("Saving edited recovery option:", editedOption);
     setIsEditMode(false);
     // You could trigger a refresh of the recovery options here
   };
@@ -1356,7 +1326,6 @@ export function RecoveryOptionsGenerator({
     };
 
     // In a real implementation, this would make an API call to add the pending solution
-    console.log("Added to pending solutions:", pendingEntry);
 
     // Simulate execution process
     setTimeout(() => {
@@ -1371,7 +1340,6 @@ export function RecoveryOptionsGenerator({
   };
 
   const handleViewRotationPlan = async (option) => {
-    console.log("Loading rotation plan data for option:", option.id);
     setLoadingRotationPlan(option.id);
 
     try {
@@ -1381,14 +1349,12 @@ export function RecoveryOptionsGenerator({
       );
 
       if (rotationPlanData) {
-        console.log("Loaded rotation plan from database:", rotationPlanData);
         // Use database data
         setSelectedRotationData({
           ...option,
           databaseRotationPlan: rotationPlanData,
         });
       } else {
-        console.log("No database rotation plan found, using generated data");
         // Fallback to generated data
         setSelectedRotationData(option);
       }
@@ -1779,7 +1745,6 @@ export function RecoveryOptionsGenerator({
   };
 
   const handleViewRecoveryOption = async (option) => {
-    console.log("Loading detailed recovery option data for:", option.id);
     setLoadingRecoveryOption(option.id);
 
     try {
@@ -1830,7 +1795,6 @@ export function RecoveryOptionsGenerator({
         };
       }
 
-      console.log("Loaded detailed option data:", detailedOption);
 
       setSelectedOptionForDetails(detailedOption);
       setEditedOption(detailedOption);
@@ -2258,7 +2222,7 @@ export function RecoveryOptionsGenerator({
                     const currentFlight = flight;
                     setTimeout(() => {
                       if (currentFlight?.id) {
-                        console.log("Retrying recovery options fetch...");
+                        
                       }
                     }, 100);
                   }}

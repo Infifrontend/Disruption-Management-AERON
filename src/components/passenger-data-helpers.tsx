@@ -572,7 +572,6 @@ export const generateAffectedPassengers = (flight, option) => {
   const basePassengerCount = pnrGroups.reduce((sum, group) => sum + group.passengers.length, 0)
   const cyclesNeeded = Math.ceil(totalPassengers / basePassengerCount)
   
-  console.log(`Generating passengers: total=${totalPassengers}, base=${basePassengerCount}, cycles needed=${cyclesNeeded}`)
 
   // Generate passengers using template groups
   for (let cycle = 0; cycle < cyclesNeeded && passengerCounter <= totalPassengers; cycle++) {
@@ -649,15 +648,12 @@ export const generateAffectedPassengers = (flight, option) => {
     })
   }
 
-  console.log(`Generated ${passengers.length} passengers for flight ${flight?.flightNumber || 'Unknown'} with ${totalPassengers} expected passengers`)
   
   // Log PNR distribution
   const pnrBreakdown = passengers.reduce((acc, p) => {
     acc[p.pnr] = (acc[p.pnr] || 0) + 1
     return acc
   }, {})
-  console.log('Final PNR breakdown:', pnrBreakdown)
-  console.log('PNR sizes:', Object.values(pnrBreakdown))
   console.log('Status breakdown:', passengers.reduce((acc, p) => {
     acc[p.status] = (acc[p.status] || 0) + 1
     return acc
