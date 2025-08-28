@@ -2681,7 +2681,7 @@ export function ComparisonMatrix({
                                               onClick={() => {
                                                 // Revert swap logic
                                                 if (selectedOptionDetails) {
-                                                  // Update both crew_availability and rotation_plan data
+                                                  // Update both crew_available and rotation_plan data
                                                   let updatedOptionDetails = { ...selectedOptionDetails };
 
                                                   if (updatedOptionDetails.crew_available) {
@@ -2840,1398 +2840,428 @@ export function ComparisonMatrix({
                   </Card>
                 </TabsContent>
 
-                <TabsContent value="costs" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <DollarSign className="h-4 w-4 text-flydubai-blue" />
-                        Cost Breakdown Analysis
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {selectedOptionDetails.cost_breakdown &&
-                      typeof selectedOptionDetails.cost_breakdown ===
-                        "object" &&
-                      selectedOptionDetails.cost_breakdown.total ? (
-                        <div className="space-y-4">
-                          {/* Total Cost Summary */}
-                          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                            <h4 className="font-semibold text-blue-800 mb-2">
-                              {selectedOptionDetails.cost_breakdown.total
-                                .title || "Total Cost Summary"}
-                            </h4>
-                            <div className="text-2xl font-bold text-blue-900">
-                              {selectedOptionDetails.cost_breakdown.total
-                                .amount || selectedOptionDetails.cost}
-                            </div>
-                            {selectedOptionDetails.cost_breakdown.total
-                              .description && (
-                              <p className="text-sm text-blue-700 mt-2">
-                                {
-                                  selectedOptionDetails.cost_breakdown.total
-                                    .description
-                                }
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Cost Breakdown Items */}
-                          {selectedOptionDetails.cost_breakdown.breakdown &&
-                            Array.isArray(
-                              selectedOptionDetails.cost_breakdown.breakdown,
-                            ) &&
-                            selectedOptionDetails.cost_breakdown.breakdown.map(
-                              (item, index) => (
-                                <div
-                                  key={index}
-                                  className="space-y-3 p-4 border rounded-lg"
-                                >
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-sm font-medium">
-                                      {item.category ||
-                                        `Cost Item ${index + 1}`}
-                                    </span>
-                                    <span className="font-semibold text-flydubai-orange">
-                                      {item.amount}
-                                    </span>
-                                  </div>
-                                  {item.percentage && (
-                                    <>
-                                      <div className="w-full bg-gray-200 rounded-full h-2">
-                                        <div
-                                          className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
-                                          style={{
-                                            width: `${item.percentage}%`,
-                                          }}
-                                        ></div>
-                                      </div>
-                                      <div className="flex justify-between items-center text-xs">
-                                        <span className="text-gray-600">
-                                          {item.percentage}% of total cost
-                                        </span>
-                                        <span className="text-blue-600">
-                                          {item.description || "Cost component"}
-                                        </span>
-                                      </div>
-                                    </>
-                                  )}
-                                  {item.description && !item.percentage && (
-                                    <p className="text-xs text-gray-600">
-                                      {item.description}
-                                    </p>
-                                  )}
-                                </div>
-                              ),
-                            )}
-                        </div>
-                      ) : selectedOptionDetails.cost_breakdown &&
-                        Array.isArray(selectedOptionDetails.cost_breakdown) &&
-                        selectedOptionDetails.cost_breakdown.length > 0 ? (
-                        <div className="space-y-4">
-                          {/* Fallback for old array format */}
-                          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                            <h4 className="font-semibold text-blue-800 mb-2">
-                              Total Cost Summary
-                            </h4>
-                            <div className="text-2xl font-bold text-blue-900">
-                              {selectedOptionDetails.cost ||
-                                `AED ${selectedOptionDetails.cost_breakdown
-                                  .reduce(
-                                    (total, item) =>
-                                      total +
-                                      (typeof item.amount === "string"
-                                        ? parseInt(
-                                            item.amount.replace(/[^0-9]/g, ""),
-                                          )
-                                        : item.amount),
-                                    0,
-                                  )
-                                  .toLocaleString()}`}
-                            </div>
-                          </div>
-
-                          {selectedOptionDetails.cost_breakdown.map(
-                            (item, index) => (
-                              <div
-                                key={index}
-                                className="space-y-3 p-4 border rounded-lg"
-                              >
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm font-medium">
-                                    {item.category ||
-                                      item.type ||
-                                      `Cost Item ${index + 1}`}
-                                  </span>
-                                  <span className="font-semibold text-flydubai-orange">
-                                    {typeof item.amount === "string"
-                                      ? item.amount
-                                      : `AED ${item.amount?.toLocaleString()}`}
-                                  </span>
-                                </div>
-                                {item.percentage && (
-                                  <>
-                                    <div className="w-full bg-gray-200 rounded-full h-2">
-                                      <div
-                                        className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
-                                        style={{ width: `${item.percentage}%` }}
-                                      ></div>
-                                    </div>
-                                    <div className="flex justify-between items-center text-xs">
-                                      <span className="text-gray-600">
-                                        {item.percentage}% of total cost
-                                      </span>
-                                      <span className="text-blue-600">
-                                        {item.description ||
-                                          item.details ||
-                                          "Cost component"}
-                                      </span>
-                                    </div>
-                                  </>
-                                )}
-                                {item.description && !item.percentage && (
-                                  <p className="text-xs text-gray-600">
-                                    {item.description}
-                                  </p>
-                                )}
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      ) : selectedOptionDetails.costBreakdown &&
-                        selectedOptionDetails.costBreakdown.length > 0 ? (
-                        <div className="space-y-4">
-                          {/* Fallback to costBreakdown */}
-                          {selectedOptionDetails.costBreakdown.map(
-                            (item, index) => (
-                              <div
-                                key={index}
-                                className="space-y-3 p-4 border rounded-lg"
-                              >
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm font-medium">
-                                    {item.category}
-                                  </span>
-                                  <span className="font-semibold text-flydubai-orange">
-                                    {item.amount}
-                                  </span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div
-                                    className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
-                                    style={{ width: `${item.percentage}%` }}
-                                  ></div>
-                                </div>
-                                <div className="flex justify-between items-center text-xs">
-                                  <span className="text-gray-600">
-                                    {item.percentage}% of total cost
-                                  </span>
-                                  <span className="text-blue-600">
-                                    {item.description}
-                                  </span>
-                                </div>
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 text-gray-500">
-                          <DollarSign className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>Detailed cost breakdown not available.</p>
-                          <p className="text-xs mt-1">
-                            Total estimated cost: {selectedOptionDetails.cost}
+                <TabsContent value="cost" className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                    <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+                      <CardContent className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <DollarSign className="h-5 w-5 text-red-600" />
+                          <p className="text-sm font-medium text-red-700">
+                            Total Estimated Cost
                           </p>
                         </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="timeline" className="space-y-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="text-sm flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-flydubai-blue" />
-                        Implementation Timeline
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {selectedOptionDetails.timelineDetails &&
-                      selectedOptionDetails.timelineDetails.length > 0 ? (
-                        <div className="space-y-4">
-                          {selectedOptionDetails.timelineDetails.map(
-                            (step, index) => (
-                              <div
-                                key={index}
-                                className="flex items-start gap-4 p-4 border rounded-lg"
-                              >
-                                <div className="flex flex-col items-center">
-                                  <div
-                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium ${
-                                      step.status === "completed"
-                                        ? "bg-green-100 text-green-800"
-                                        : step.status === "in-progress"
-                                          ? "bg-blue-100 text-blue-800"
-                                          : "bg-gray-100 text-gray-600"
-                                    }`}
-                                  >
-                                    {index + 1}
-                                  </div>
-                                  {index <
-                                    selectedOptionDetails.timelineDetails
-                                      .length -
-                                      1 && (
-                                    <div className="w-0.5 h-12 bg-gray-200 mt-2"></div>
-                                  )}
-                                </div>
-                                <div className="flex-1">
-                                  <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                      <h4 className="font-medium text-sm">
-                                        {step.step}
-                                      </h4>
-                                      <p className="text-sm text-gray-700">
-                                        {step.details}
-                                      </p>
-                                    </div>
-                                    <div className="text-right">
-                                      <Badge
-                                        variant="outline"
-                                        className="text-xs mb-1"
-                                      >
-                                        {step.duration}
-                                      </Badge>
-                                      <div className="text-xs text-gray-500">
-                                        {step.startTime} - {step.endTime}
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ),
-                          )}
-                        </div>
-                      ) : (
-                        <div className="text-center py-8 text-gray-500">
-                          <Clock className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                          <p>
-                            Timeline details will be generated when recovery
-                            plan is activated.
-                          </p>
-                          <p className="text-xs mt-1">
-                            Estimated duration: {selectedOptionDetails.timeline}
-                          </p>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </TabsContent>
-
-                <TabsContent value="resources-risks" className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm flex items-center gap-2">
-                          <Users className="h-4 w-4 text-flydubai-blue" />
-                          Resource Requirements
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {selectedOptionDetails.resourceRequirements &&
-                        selectedOptionDetails.resourceRequirements.length >
-                          0 ? (
-                          <div className="space-y-4">
-                            {selectedOptionDetails.resourceRequirements.map(
-                              (resource, index) => (
-                                <div
-                                  key={index}
-                                  className="p-3 border rounded-lg"
-                                >
-                                  <div className="flex justify-between items-start mb-2">
-                                    <div>
-                                      <h4 className="font-medium text-sm">
-                                        {resource.title || resource.type}
-                                      </h4>
-                                      <p className="text-xs text-gray-600">
-                                        {resource.subtitle || resource.resource}
-                                      </p>
-                                    </div>
-                                    <Badge
-                                      className={
-                                        resource.availability === "Available" ||
-                                        resource.availability === "Ready"
-                                          ? "bg-green-100 text-green-800"
-                                          : "bg-yellow-100 text-yellow-800"
-                                      }
-                                    >
-                                      {resource.availability}
-                                    </Badge>
-                                  </div>
-                                  <div className="text-xs text-gray-600">
-                                    <div>
-                                      <strong>Location:</strong>{" "}
-                                      {resource.location}
-                                    </div>
-                                    <div>
-                                      <strong>ETA:</strong> {resource.eta}
-                                    </div>
-                                  </div>
-                                </div>
-                              ),
-                            )}
-                          </div>
-                        ) : (
-                          <div className="text-center py-6 text-gray-500">
-                            <Users className="h-6 w-6 mx-auto mb-2 opacity-50" />
-                            <p className="text-xs">
-                              Standard resources allocated
-                            </p>
-                          </div>
-                        )}
+                        <p className="text-2xl font-bold text-red-800">
+                          {rotationPlanDetails?.operationalMetrics
+                            ?.estimatedCost ||
+                            selectedOptionDetails?.cost ||
+                            "$34,200"}
+                        </p>
+                        <p className="text-xs text-red-600 mt-1">
+                          {rotationPlanDetails?.costBreakdown?.operations
+                            ? "Including operations"
+                            : "Total recovery cost"}
+                        </p>
                       </CardContent>
                     </Card>
 
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-sm flex items-center gap-2">
-                          <AlertTriangle className="h-4 w-4 text-flydubai-blue" />
-                          Risk Assessment
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        {selectedOptionDetails.riskAssessment &&
-                        selectedOptionDetails.riskAssessment.length > 0 ? (
-                          <div className="space-y-4">
-                            {selectedOptionDetails.riskAssessment.map(
-                              (riskItem, index) => (
-                                <div
-                                  key={index}
-                                  className="p-3 border rounded-lg"
-                                >
-                                  <div className="flex justify-between items-start mb-2">
-                                    <h4 className="font-medium text-sm">
-                                      {riskItem.risk}
-                                    </h4>
-                                    <Badge
-                                      className={getRiskColor(
-                                        riskItem.riskImpact ||
-                                          riskItem.probability,
-                                      )}
-                                      variant="outline"
-                                    >
-                                      {riskItem.riskImpact ||
-                                        riskItem.probability}
-                                    </Badge>
-                                  </div>
-                                  <p className="text-xs text-gray-700">
-                                    <strong>Mitigation:</strong>{" "}
-                                    {riskItem.mitigation}
-                                  </p>
-                                  {riskItem.score && (
-                                    <p className="text-xs text-gray-600 mt-1">
-                                      Risk Score: {riskItem.score}/10
-                                    </p>
-                                  )}
-                                </div>
-                              ),
-                            )}
-                          </div>
-                        ) : (
-                          <div className="text-center py-6 text-gray-500">
-                            <AlertTriangle className="h-6 w-6 mx-auto mb-2 opacity-50" />
-                            <p className="text-xs">
-                              Standard risk procedures apply
-                            </p>
-                          </div>
-                        )}
+                    <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
+                      <CardContent className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <Activity className="h-5 w-5 text-yellow-600" />
+                          <p className="text-sm font-medium text-yellow-700">
+                            {rotationPlanDetails?.costBreakdown?.operations
+                              ? "Operations Cost"
+                              : "Delay Impact"}
+                          </p>
+                        </div>
+                        <p className="text-2xl font-bold text-yellow-800">
+                          {rotationPlanDetails?.costBreakdown?.operations
+                            ? `$${rotationPlanDetails.costBreakdown.operations.toLocaleString()}`
+                            : `${rotationPlanDetails?.operationalMetrics?.totalDelayMinutes || 60} min`}
+                        </p>
+                        <p className="text-xs text-yellow-600 mt-1">
+                          {rotationPlanDetails?.costBreakdown?.operations
+                            ? "Direct operations"
+                            : "Total delay time"}
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
+                      <CardContent className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <Users className="h-5 w-5 text-blue-600" />
+                          <p className="text-sm font-medium text-blue-700">
+                            {rotationPlanDetails?.costBreakdown?.crew
+                              ? "Crew Cost"
+                              : "Affected Passengers"}
+                          </p>
+                        </div>
+                        <p className="text-2xl font-bold text-blue-800">
+                          {rotationPlanDetails?.costBreakdown?.crew
+                            ? `$${rotationPlanDetails.costBreakdown.crew.toLocaleString()}`
+                            : rotationPlanDetails?.operationalMetrics
+                                ?.passengerImpact ||
+                              flight?.passengers ||
+                              0}
+                        </p>
+                        <p className="text-xs text-blue-600 mt-1">
+                          {rotationPlanDetails?.costBreakdown?.crew
+                            ? "Crew expenses"
+                            : "Total passengers"}
+                        </p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
+                      <CardContent className="p-4 text-center">
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <AlertTriangle className="h-5 w-5 text-orange-600" />
+                          <p className="text-sm font-medium text-orange-700">
+                            {rotationPlanDetails?.costBreakdown?.maintenance
+                              ? "Maintenance Cost"
+                              : "Network Impact"}
+                          </p>
+                        </div>
+                        <p className="text-2xl font-bold text-orange-800">
+                          {rotationPlanDetails?.costBreakdown?.maintenance
+                            ? `$${rotationPlanDetails.costBreakdown.maintenance.toLocaleString()}`
+                            : rotationPlanDetails?.operationalMetrics
+                                ?.affectedFlights || 0}
+                        </p>
+                        <p className="text-xs text-orange-600 mt-1">
+                          {rotationPlanDetails?.costBreakdown?.maintenance
+                            ? "Additional maintenance"
+                            : "Flights affected"}
+                        </p>
                       </CardContent>
                     </Card>
                   </div>
+
+                  <Card className="border-flydubai-blue bg-gradient-to-br from-blue-50 to-blue-100">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Star className="h-5 w-5 text-flydubai-blue" />
+                        Decision Support Panel - System Recommendation
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {rotationPlanDetails?.aircraftRotations?.find(
+                        (a) => a.recommended,
+                      ) ? (
+                        <div className="mb-4 p-4 bg-green-100 border border-green-200 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <CheckCircle className="h-5 w-5 text-green-600" />
+                            <p className="font-medium text-green-800">
+                              Recommended Option: Aircraft{" "}
+                              {
+                                rotationPlanDetails.aircraftRotations.find(
+                                  (a) => a.recommended,
+                                )?.aircraft
+                              }
+                            </p>
+                          </div>
+                          <p className="text-sm text-green-700">
+                            {selectedOptionDetails?.title} provides optimal
+                            balance across cost efficiency, delay minimization,
+                            and operational impact.{" "}
+                            {rotationPlanDetails.operationalMetrics
+                              ? `Expected impact: ${rotationPlanDetails.operationalMetrics.totalDelayMinutes} min delay, ${rotationPlanDetails.operationalMetrics.affectedFlights} flights affected.`
+                              : "Immediate availability with minimal network disruption."}
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="mb-4 p-4 bg-blue-100 border border-blue-200 rounded-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Info className="h-5 w-5 text-blue-600" />
+                            <p className="font-medium text-blue-800">
+                              Analysis for: {selectedOptionDetails?.title}
+                            </p>
+                          </div>
+                          <p className="text-sm text-blue-700">
+                            Review operational impact and resource requirements
+                            before implementation.
+                            {rotationPlanDetails?.operationalMetrics &&
+                              `Estimated cost: ${rotationPlanDetails.operationalMetrics.estimatedCost}, passengers affected: ${rotationPlanDetails.operationalMetrics.passengerImpact}.`}
+                          </p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 </TabsContent>
               </Tabs>
             </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
-      {/* Enhanced Rotation Plan Dialog - Full Implementation */}
-      <Dialog open={showRotationDialog} onOpenChange={setShowRotationDialog}>
-        <DialogContent className="max-w-[95vw] max-h-[95vh] flex flex-col">
-          <DialogHeader className="pb-4 flex-shrink-0">
-            <DialogTitle className="flex items-center gap-2 text-xl">
-              <Eye className="h-6 w-6 text-flydubai-blue" />
-              Rotation Impact -{" "}
-              {selectedOptionDetails?.title || "Recovery Option"}
-            </DialogTitle>
-            <div className="text-base text-muted-foreground">
-              Disruption Type:{" "}
-              {flight?.categorization ===
-              "Aircraft technical issue (e.g., AOG, maintenance)"
-                ? "AOG"
-                : flight?.categorization ===
-                    "Weather disruption (e.g., storms, fog)"
-                  ? "Weather"
-                  : flight?.categorization ===
-                      "Crew issue (e.g., sick report, duty time breach)"
-                    ? "Crew Issue"
-                    : flight?.categorization ===
-                        "Air traffic control restrictions"
-                      ? "ATC"
-                      : "Operational"}{" "}
-              | Date:{" "}
-              {new Date().toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric",
-              })}{" "}
-              | Original Aircraft: {flight?.aircraft}
+            <div className="flex justify-between items-center pt-4 border-t flex-shrink-0 mt-4">
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                  onClick={() => setShowRotationDialog(false)}
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  View All Alternate Options
+                </Button>
+              </div>
             </div>
-          </DialogHeader>
+          </DialogContent>
+        </Dialog>
 
-          <div className="flex-1 overflow-y-auto min-h-0 pr-2 -mr-2">
-            <Tabs defaultValue="rotation" className="w-full">
-              <TabsList
-                className={`grid w-full ${selectedOptionDetails?.impact_area?.includes("crew") ? "grid-cols-3" : "grid-cols-2"} mb-6`}
-              >
-                <TabsTrigger value="rotation">
-                  Rotation & Ops Impact
-                </TabsTrigger>
-                {selectedOptionDetails?.impact_area?.includes("crew") && (
-                  <TabsTrigger value="crew-impact">Crew Impact</TabsTrigger>
-                )}
-                <TabsTrigger value="cost">Cost & Delay Metrics</TabsTrigger>
-              </TabsList>
+        {/* Crew Swap Dialog */}
+        <Dialog open={showCrewSwapDialog} onOpenChange={setShowCrewSwapDialog}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <UserCheck className="h-5 w-5 text-flydubai-blue" />
+                Swap Crew Member - {selectedCrewForSwap?.type || selectedCrewForSwap?.role}
+              </DialogTitle>
+            </DialogHeader>
 
-              <TabsContent value="rotation" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Route className="h-5 w-5 text-flydubai-blue" />
-                        Impacted Flights -{" "}
-                        {selectedOptionDetails?.title || "Recovery Option"}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3">
-                        {rotationPlanDetails?.impactedFlights?.length > 0 ? (
-                          rotationPlanDetails.impactedFlights.map(
-                            (sector, index) => (
-                              <div
-                                key={index}
-                                className={`p-3 border-l-4 rounded-lg ${
-                                  sector.impact === "High Impact" ||
-                                  sector.status === "Cancelled"
-                                    ? "border-red-500 bg-red-50"
-                                    : sector.impact === "Medium Impact" ||
-                                        sector.status === "Delayed"
-                                      ? "border-yellow-500 bg-yellow-50"
-                                      : "border-green-500 bg-green-50"
-                                }`}
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex-1">
-                                    <p className="font-medium">
-                                      {sector.flight || sector.flightNumber}
-                                    </p>
-                                    <p className="text-sm text-gray-600">
-                                      Departure: {sector.departure}
-                                      {sector.delay &&
-                                        ` (Delayed by ${sector.delay})`}
-                                    </p>
-                                    {sector.passengers && (
-                                      <p className="text-xs text-gray-500">
-                                        Passengers: {sector.passengers}
-                                      </p>
-                                    )}
-                                    {sector.reason && (
-                                      <p className="text-xs text-gray-500 mt-1">
-                                        {sector.reason}
-                                      </p>
-                                    )}
-                                  </div>
-                                  <div className="flex flex-col gap-1">
-                                    {sector.impact && (
-                                      <Badge
-                                        className={
-                                          sector.impact === "High Impact"
-                                            ? "bg-red-100 text-red-700"
-                                            : sector.impact === "Medium Impact"
-                                              ? "bg-yellow-100 text-yellow-700"
-                                              : "bg-green-100 text-green-700"
-                                        }
-                                      >
-                                        {sector.impact}
-                                      </Badge>
-                                    )}
-                                    {sector.status && (
-                                      <Badge
-                                        variant="outline"
-                                        className={
-                                          sector.status === "Cancelled"
-                                            ? "border-red-300 text-red-700"
-                                            : sector.status === "Delayed"
-                                              ? "border-yellow-300 text-yellow-700"
-                                              : "border-green-300 text-green-700"
-                                        }
-                                      >
-                                        {sector.status}
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            ),
-                          )
-                        ) : (
-                          <div className="text-center py-4 text-gray-500">
-                            <Route className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                            <p>No downstream flight impacts identified</p>
-                            <p className="text-xs mt-1">
-                              This recovery option has minimal network
-                              disruption
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <MapPin className="h-5 w-5 text-flydubai-blue" />
-                        Operational Constraints
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium flex items-center gap-2">
-                            <Building className="h-4 w-4" />
-                            Gate Compatibility
-                          </label>
-                          <div className="mt-2 p-3 rounded-lg bg-green-50">
-                            <p className="text-sm flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              All gates compatible with aircraft type
-                            </p>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium flex items-center gap-2">
-                            <Calendar className="h-4 w-4" />
-                            Slot Capacity
-                          </label>
-                          <div className="mt-2 p-3 rounded-lg bg-yellow-50">
-                            <p className="text-sm flex items-center gap-2">
-                              <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                              Coordination required for new departure slot
-                            </p>
-                          </div>
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium flex items-center gap-2">
-                            <Users className="h-4 w-4" />
-                            Passenger Connections
-                          </label>
-                          <div className="mt-2 p-3 rounded-lg bg-green-50">
-                            <p className="text-sm flex items-center gap-2">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              No significant connection issues
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="crew-impact" className="space-y-4">
-                {selectedOptionDetails?.impact_area?.includes("crew") && (
-                  <div className="space-y-4">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Users className="h-5 w-5 text-flydubai-blue" />
-                          Violated Crew Details
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-6">
-                          {(rotationPlanDetails?.crew || [])
-                            .filter(
-                              (crew) =>
-                                crew.status === "Sick" ||
-                                crew.status === "Unavailable" ||
-                                crew.issue,
-                            )
-                            .map((violatedCrew, index) => (
-                              <div
-                                key={index}
-                                className="border rounded-lg p-4 bg-red-50 border-red-200"
-                              >
-                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                                  <div>
-                                    <span className="text-sm font-medium text-red-700">
-                                      Name:
-                                    </span>
-                                    <p className="text-red-900">
-                                      {violatedCrew.name}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-sm font-medium text-red-700">
-                                      Experience:
-                                    </span>
-                                    <p className="text-red-900">
-                                      {violatedCrew.experience || "8 years"}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-sm font-medium text-red-700">
-                                      Location:
-                                    </span>
-                                    <p className="text-red-900">
-                                      {violatedCrew.location || "DXB"}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-sm font-medium text-red-700">
-                                      Score:
-                                    </span>
-                                    <p className="text-red-900">
-                                      {violatedCrew.score || "85"}/100
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <span className="text-sm font-medium text-red-700">
-                                      Status:
-                                    </span>
-                                    <Badge className="bg-red-100 text-red-800 border-red-300">
-                                      {violatedCrew.status ||
-                                        violatedCrew.availability}
-                                    </Badge>
-                                  </div>
-                                </div>
-
-                                {/* Affected Pairing Information Accordion */}
-                                <div className="mt-4">
-                                  <h4 className="text-sm font-medium text-red-800 mb-3">
-                                    Affected Pairing Information
-                                  </h4>
-                                  <div className="space-y-2">
-                                    {/* High Priority Pairing */}
-                                    <div className="border border-red-300 rounded-lg">
-                                      <div
-                                        className="p-3 bg-red-100 cursor-pointer hover:bg-red-150 flex items-center justify-between"
-                                        onClick={() => {
-                                          const element =
-                                            document.getElementById(
-                                              `high-${index}`,
-                                            );
-                                          element.style.display =
-                                            element.style.display === "none"
-                                              ? "block"
-                                              : "none";
-                                        }}
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          <Badge className="bg-red-200 text-red-800 text-xs">
-                                            High Priority
-                                          </Badge>
-                                          <span className="text-sm font-medium text-red-800">
-                                            Critical Pairing Impact
-                                          </span>
-                                        </div>
-                                        <span className="text-red-600">▼</span>
-                                      </div>
-                                      <div
-                                        id={`high-${index}`}
-                                        className="p-3 border-t border-red-200 bg-white"
-                                        style={{ display: "none" }}
-                                      >
-                                        <div className="grid grid-cols-3 gap-4 text-sm">
-                                          <div>
-                                            <span className="font-medium text-gray-700">
-                                              Pairing Number:
-                                            </span>
-                                            <p className="text-gray-900">
-                                              FZ-P-001
-                                            </p>
-                                          </div>
-                                          <div>
-                                            <span className="font-medium text-gray-700">
-                                              Date:
-                                            </span>
-                                            <p className="text-gray-900">
-                                              {new Date().toLocaleDateString()}
-                                            </p>
-                                          </div>
-                                          <div>
-                                            <span className="font-medium text-gray-700">
-                                              Sector:
-                                            </span>
-                                            <p className="text-gray-900">
-                                              DXB → BOM → DXB
-                                            </p>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    {/* Medium Priority Pairing */}
-                                    <div className="border border-yellow-300 rounded-lg">
-                                      <div
-                                        className="p-3 bg-yellow-100 cursor-pointer hover:bg-yellow-150 flex items-center justify-between"
-                                        onClick={() => {
-                                          const element =
-                                            document.getElementById(
-                                              `medium-${index}`,
-                                            );
-                                          element.style.display =
-                                            element.style.display === "none"
-                                              ? "block"
-                                              : "none";
-                                        }}
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          <Badge className="bg-yellow-200 text-yellow-800 text-xs">
-                                            Medium Priority
-                                          </Badge>
-                                          <span className="text-sm font-medium text-yellow-800">
-                                            Moderate Pairing Impact
-                                          </span>
-                                        </div>
-                                        <span className="text-yellow-600">
-                                          ▼
-                                        </span>
-                                      </div>
-                                      <div
-                                        id={`medium-${index}`}
-                                        className="p-3 border-t border-yellow-200 bg-white"
-                                        style={{ display: "none" }}
-                                      >
-                                        <div className="grid grid-cols-3 gap-4 text-sm">
-                                          <div>
-                                            <span className="font-medium text-gray-700">
-                                              Pairing Number:
-                                            </span>
-                                            <p className="text-gray-900">
-                                              FZ-P-002
-                                            </p>
-                                          </div>
-                                          <div>
-                                            <span className="font-medium text-gray-700">
-                                              Date:
-                                            </span>
-                                            <p className="text-gray-900">
-                                              {new Date(
-                                                Date.now() +
-                                                  24 * 60 * 60 * 1000,
-                                              ).toLocaleDateString()}
-                                            </p>
-                                          </div>
-                                          <div>
-                                            <span className="font-medium text-gray-700">
-                                              Sector:
-                                            </span>
-                                            <p className="text-gray-900">
-                                              DXB → KWI → DXB
-                                            </p>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-
-                                    {/* Low Priority Pairing */}
-                                    <div className="border border-green-300 rounded-lg">
-                                      <div
-                                        className="p-3 bg-green-100 cursor-pointer hover:bg-green-150 flex items-center justify-between"
-                                        onClick={() => {
-                                          const element =
-                                            document.getElementById(
-                                              `low-${index}`,
-                                            );
-                                          element.style.display =
-                                            element.style.display === "none"
-                                              ? "block"
-                                              : "none";
-                                        }}
-                                      >
-                                        <div className="flex items-center gap-2">
-                                          <Badge className="bg-green-200 text-green-800 text-xs">
-                                            Low Priority
-                                          </Badge>
-                                          <span className="text-sm font-medium text-green-800">
-                                            Minor Pairing Impact
-                                          </span>
-                                        </div>
-                                        <span className="text-green-600">
-                                          ▼
-                                        </span>
-                                      </div>
-                                      <div
-                                        id={`low-${index}`}
-                                        className="p-3 border-t border-green-200 bg-white"
-                                        style={{ display: "none" }}
-                                      >
-                                        <div className="grid grid-cols-3 gap-4 text-sm">
-                                          <div>
-                                            <span className="font-medium text-gray-700">
-                                              Pairing Number:
-                                            </span>
-                                            <p className="text-gray-900">
-                                              FZ-P-003
-                                            </p>
-                                          </div>
-                                          <div>
-                                            <span className="font-medium text-gray-700">
-                                              Date:
-                                            </span>
-                                            <p className="text-gray-900">
-                                              {new Date(
-                                                Date.now() +
-                                                  48 * 60 * 60 * 1000,
-                                              ).toLocaleDateString()}
-                                            </p>
-                                          </div>
-                                          <div>
-                                            <span className="font-medium text-gray-700">
-                                              Sector:
-                                            </span>
-                                            <p className="text-gray-900">
-                                              DXB → MCT → DXB
-                                            </p>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-
-                          {/* Show message if no violated crew */}
-                          {!(rotationPlanDetails?.crew || []).some(
-                            (crew) =>
-                              crew.status === "Sick" ||
-                              crew.status === "Unavailable" ||
-                              crew.issue,
-                          ) && (
-                            <div className="text-center py-8 text-gray-500">
-                              <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                              <p>No crew violations identified</p>
-                              <p className="text-xs mt-1">
-                                All crew members are available and compliant
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="cost" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
-                    <CardContent className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <DollarSign className="h-5 w-5 text-red-600" />
-                        <p className="text-sm font-medium text-red-700">
-                          Total Estimated Cost
-                        </p>
-                      </div>
-                      <p className="text-2xl font-bold text-red-800">
-                        {rotationPlanDetails?.operationalMetrics
-                          ?.estimatedCost ||
-                          selectedOptionDetails?.cost ||
-                          "$34,200"}
-                      </p>
-                      <p className="text-xs text-red-600 mt-1">
-                        {rotationPlanDetails?.costBreakdown?.operations
-                          ? "Including operations"
-                          : "Total recovery cost"}
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200">
-                    <CardContent className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <Activity className="h-5 w-5 text-yellow-600" />
-                        <p className="text-sm font-medium text-yellow-700">
-                          {rotationPlanDetails?.costBreakdown?.operations
-                            ? "Operations Cost"
-                            : "Delay Impact"}
-                        </p>
-                      </div>
-                      <p className="text-2xl font-bold text-yellow-800">
-                        {rotationPlanDetails?.costBreakdown?.operations
-                          ? `$${rotationPlanDetails.costBreakdown.operations.toLocaleString()}`
-                          : `${rotationPlanDetails?.operationalMetrics?.totalDelayMinutes || 60} min`}
-                      </p>
-                      <p className="text-xs text-yellow-600 mt-1">
-                        {rotationPlanDetails?.costBreakdown?.operations
-                          ? "Direct operations"
-                          : "Total delay time"}
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
-                    <CardContent className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <Users className="h-5 w-5 text-blue-600" />
-                        <p className="text-sm font-medium text-blue-700">
-                          {rotationPlanDetails?.costBreakdown?.crew
-                            ? "Crew Cost"
-                            : "Affected Passengers"}
-                        </p>
-                      </div>
-                      <p className="text-2xl font-bold text-blue-800">
-                        {rotationPlanDetails?.costBreakdown?.crew
-                          ? `$${rotationPlanDetails.costBreakdown.crew.toLocaleString()}`
-                          : rotationPlanDetails?.operationalMetrics
-                              ?.passengerImpact ||
-                            flight?.passengers ||
-                            0}
-                      </p>
-                      <p className="text-xs text-blue-600 mt-1">
-                        {rotationPlanDetails?.costBreakdown?.crew
-                          ? "Crew expenses"
-                          : "Total passengers"}
-                      </p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-                    <CardContent className="p-4 text-center">
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <AlertTriangle className="h-5 w-5 text-orange-600" />
-                        <p className="text-sm font-medium text-orange-700">
-                          {rotationPlanDetails?.costBreakdown?.maintenance
-                            ? "Maintenance Cost"
-                            : "Network Impact"}
-                        </p>
-                      </div>
-                      <p className="text-2xl font-bold text-orange-800">
-                        {rotationPlanDetails?.costBreakdown?.maintenance
-                          ? `$${rotationPlanDetails.costBreakdown.maintenance.toLocaleString()}`
-                          : rotationPlanDetails?.operationalMetrics
-                              ?.affectedFlights || 0}
-                      </p>
-                      <p className="text-xs text-orange-600 mt-1">
-                        {rotationPlanDetails?.costBreakdown?.maintenance
-                          ? "Additional maintenance"
-                          : "Flights affected"}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <Card className="border-flydubai-blue bg-gradient-to-br from-blue-50 to-blue-100">
+            {selectedCrewForSwap && (
+              <div className="space-y-6">
+                {/* Current Assignment */}
+                <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Star className="h-5 w-5 text-flydubai-blue" />
-                      Decision Support Panel - System Recommendation
+                    <CardTitle className="text-sm">Assignment to Replace</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <span className="text-sm font-medium text-gray-600">Original Crew:</span>
+                        <div className="font-medium text-gray-900">
+                          {selectedCrewForSwap.name}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-600">Role:</span>
+                        <div className="font-medium text-gray-900">
+                          {selectedCrewForSwap.type || selectedCrewForSwap.role}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-600">Status:</span>
+                        <Badge className={
+                          selectedCrewForSwap.status === "Available" 
+                            ? "bg-green-100 text-green-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }>
+                          {selectedCrewForSwap.status}
+                        </Badge>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-600">Location:</span>
+                        <div className="font-medium text-gray-900">
+                          {selectedCrewForSwap.location || "N/A"}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Available Crew Options */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Available Crew Members ({selectedCrewForSwap.type || selectedCrewForSwap.role})
+                      <Badge variant="outline" className="ml-2">
+                        {availableCrewForSwap.length} matches found
+                      </Badge>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {rotationPlanDetails?.aircraftRotations?.find(
-                      (a) => a.recommended,
-                    ) ? (
-                      <div className="mb-4 p-4 bg-green-100 border border-green-200 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CheckCircle className="h-5 w-5 text-green-600" />
-                          <p className="font-medium text-green-800">
-                            Recommended Option: Aircraft{" "}
-                            {
-                              rotationPlanDetails.aircraftRotations.find(
-                                (a) => a.recommended,
-                              )?.aircraft
-                            }
-                          </p>
-                        </div>
-                        <p className="text-sm text-green-700">
-                          {selectedOptionDetails?.title} provides optimal
-                          balance across cost efficiency, delay minimization,
-                          and operational impact.{" "}
-                          {rotationPlanDetails.operationalMetrics
-                            ? `Expected impact: ${rotationPlanDetails.operationalMetrics.totalDelayMinutes} min delay, ${rotationPlanDetails.operationalMetrics.affectedFlights} flights affected.`
-                            : "Immediate availability with minimal network disruption."}
-                        </p>
+                    {availableCrewForSwap.length > 0 ? (
+                      <div className="space-y-3">
+                        {availableCrewForSwap.map((crew, index) => (
+                          <div
+                            key={crew.id}
+                            className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
+                          >
+                            <div className="flex-1">
+                              <div className="flex items-center gap-3">
+                                <div>
+                                  <h4 className="font-medium text-gray-900">{crew.name}</h4>
+                                  <p className="text-sm text-gray-600">{crew.rating}</p>
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-3 gap-4 mt-2 text-sm">
+                                <div>
+                                  <span className="text-gray-500">Experience:</span>
+                                  <span className="ml-1 font-medium">{crew.experience}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Location:</span>
+                                  <span className="ml-1 font-medium">{crew.location}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500">Score:</span>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-16 bg-gray-200 rounded-full h-2">
+                                      <div
+                                        className="bg-blue-500 h-2 rounded-full"
+                                        style={{ width: `${crew.score}%` }}
+                                      ></div>
+                                    </div>
+                                    <span className="text-xs font-medium">{crew.score}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              {crew.qualifications && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {crew.qualifications.slice(0, 3).map((qual, qIndex) => (
+                                    <Badge key={qIndex} variant="outline" className="text-xs">
+                                      {qual}
+                                    </Badge>
+                                  ))}
+                                  {crew.qualifications.length > 3 && (
+                                    <Badge variant="outline" className="text-xs">
+                                      +{crew.qualifications.length - 3}
+                                    </Badge>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                              <Badge className="bg-green-100 text-green-700">
+                                Available
+                              </Badge>
+                              <Button
+                                size="sm"
+                                className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
+                                onClick={() => {
+                                  // Update the selected option details with the new crew assignment
+                                  if (selectedOptionDetails && selectedCrewForSwap.originalIndex !== undefined) {
+                                    let updatedOptionDetails = { ...selectedOptionDetails };
+
+                                    // Initialize crew_available if not exists
+                                    if (!updatedOptionDetails.crew_available) {
+                                      updatedOptionDetails.crew_available = [];
+                                    }
+
+                                    // Ensure the array is long enough
+                                    while (updatedOptionDetails.crew_available.length <= selectedCrewForSwap.originalIndex) {
+                                      updatedOptionDetails.crew_available.push({});
+                                    }
+
+                                    // Update the crew assignment
+                                    updatedOptionDetails.crew_available[selectedCrewForSwap.originalIndex] = {
+                                      ...updatedOptionDetails.crew_available[selectedCrewForSwap.originalIndex],
+                                      assigned_crew: {
+                                        name: crew.name,
+                                        role: crew.role,
+                                        location: crew.location,
+                                        score: crew.score,
+                                        experience: crew.experience,
+                                        availability: crew.availability,
+                                        qualifications: crew.qualifications,
+                                      },
+                                      replacement: crew.name,
+                                      replacedCrew: selectedCrewForSwap.name,
+                                      assignedAt: new Date().toISOString(),
+                                    };
+
+                                    // Also update rotation_plan data
+                                    if (updatedOptionDetails.rotation_plan) {
+                                      const updatedCrew = [
+                                        ...(updatedOptionDetails.rotation_plan.crew ||
+                                          updatedOptionDetails.rotation_plan.crewData ||
+                                          []),
+                                      ];
+                                      if (updatedCrew[selectedCrewForSwap.originalIndex]) {
+                                        updatedCrew[selectedCrewForSwap.originalIndex] = {
+                                          ...updatedCrew[selectedCrewForSwap.originalIndex],
+                                          name: crew.name,
+                                          status: "Reassigned",
+                                          availability: "Reassigned",
+                                          replacedCrew: selectedCrewForSwap.name,
+                                          assignedAt: new Date().toISOString(),
+                                        };
+                                      }
+                                      updatedOptionDetails.rotation_plan = {
+                                        ...updatedOptionDetails.rotation_plan,
+                                        crew: updatedCrew,
+                                        crewData: updatedCrew,
+                                      };
+                                    }
+
+                                    setSelectedOptionDetails(updatedOptionDetails);
+                                  }
+                                  setShowCrewSwapDialog(false);
+                                }}
+                              >
+                                <UserCheck className="h-4 w-4 mr-2" />
+                                Assign
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     ) : (
-                      <div className="mb-4 p-4 bg-blue-100 border border-blue-200 rounded-lg">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Info className="h-5 w-5 text-blue-600" />
-                          <p className="font-medium text-blue-800">
-                            Analysis for: {selectedOptionDetails?.title}
-                          </p>
-                        </div>
-                        <p className="text-sm text-blue-700">
-                          Review operational impact and resource requirements
-                          before implementation.
-                          {rotationPlanDetails?.operationalMetrics &&
-                            `Estimated cost: ${rotationPlanDetails.operationalMetrics.estimatedCost}, passengers affected: ${rotationPlanDetails.operationalMetrics.passengerImpact}.`}
-                        </p>
+                      <div className="text-center py-8 text-gray-500">
+                        <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                        <p>No available crew members found for this role</p>
                       </div>
                     )}
                   </CardContent>
                 </Card>
-              </TabsContent>
-            </Tabs>
-          </div>
-
-          <div className="flex justify-between items-center pt-4 border-t flex-shrink-0 mt-4">
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                onClick={() => setShowRotationDialog(false)}
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                View All Alternate Options
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Crew Swap Dialog */}
-      <Dialog open={showCrewSwapDialog} onOpenChange={setShowCrewSwapDialog}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-flydubai-blue" />
-              Swap Crew Member
-              {selectedCrewForSwap &&
-                ` - ${selectedCrewForSwap.type || selectedCrewForSwap.role || selectedCrewForSwap.position}`}
-            </DialogTitle>
-            <div className="text-sm text-muted-foreground">
-              Role:{" "}
-              {selectedCrewForSwap?.type ||
-                selectedCrewForSwap?.role ||
-                selectedCrewForSwap?.position}
-              {selectedCrewForSwap?.isEditing && (
-                <Badge className="ml-2 bg-orange-100 text-orange-700 border-orange-300">
-                  Editing Assignment
-                </Badge>
-              )}
-            </div>
-          </DialogHeader>
-
-          {selectedCrewForSwap && (
-            <div className="space-y-6">
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="font-medium text-blue-800 mb-2">
-                  {selectedCrewForSwap.isEditing
-                    ? "Current Assignment"
-                    : "Assignment to Replace"}
-                </h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="text-blue-700">Original Crew:</span>
-                    <div className="font-medium">
-                      {selectedCrewForSwap.replacedCrew ||
-                        selectedCrewForSwap.name}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-blue-700">Role:</span>
-                    <div className="font-medium">
-                      {selectedCrewForSwap.type ||
-                        selectedCrewForSwap.role ||
-                        selectedCrewForSwap.position}
-                    </div>
-                  </div>
-                  <div>
-                    <span className="text-blue-700">Status:</span>
-                    <Badge
-                      className={
-                        selectedCrewForSwap.status === "Available"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }
-                    >
-                      {selectedCrewForSwap.status ||
-                        selectedCrewForSwap.availability}
-                    </Badge>
-                  </div>
-                  <div>
-                    <span className="text-blue-700">Location:</span>
-                    <div className="font-medium">
-                      {selectedCrewForSwap.location || "N/A"}
-                    </div>
-                  </div>
-                  {selectedCrewForSwap.experience && (
-                    <div>
-                      <span className="text-blue-700">Experience:</span>
-                      <div className="font-medium">
-                        {selectedCrewForSwap.experience}
-                      </div>
-                    </div>
-                  )}
-                  {selectedCrewForSwap.score && (
-                    <div>
-                      <span className="text-blue-700">Performance Score:</span>
-                      <div className="font-medium">
-                        {selectedCrewForSwap.score}/100
-                      </div>
-                    </div>
-                  )}
-                </div>
-                {selectedCrewForSwap.qualifications &&
-                  Array.isArray(selectedCrewForSwap.qualifications) && (
-                    <div className="mt-3">
-                      <span className="text-sm text-blue-700 font-medium">
-                        Qualifications:
-                      </span>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {selectedCrewForSwap.qualifications.map(
-                          (qual, qIndex) => (
-                            <Badge
-                              key={qIndex}
-                              variant="outline"
-                              className="text-xs bg-white"
-                            >
-                              {qual}
-                            </Badge>
-                          ),
-                        )}
-                      </div>
-                    </div>
-                  )}
               </div>
+            )}
+          </DialogContent>
+        </Dialog>
 
+        {/* Execute Confirmation Dialog */}
+        <Dialog
+          open={showExecuteConfirmDialog}
+          onOpenChange={setShowExecuteConfirmDialog}
+        >
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-flydubai-orange" />
+                Confirm Recovery Plan Execution
+              </DialogTitle>
+            </DialogHeader>
+
+            {optionToConfirm && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-gray-800 flex items-center gap-2">
-                    <UserCheck className="h-4 w-4" />
-                    Available Crew Members (
-                    {selectedCrewForSwap.type ||
-                      selectedCrewForSwap.role ||
-                      selectedCrewForSwap.position}
-                    )
-                  </h4>
-                  <Badge variant="outline" className="text-xs">
-                    {availableCrewForSwap.length} matches found
-                  </Badge>
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-800">
+                    {getConfirmationMessage(optionToConfirm.option)}
+                  </p>
                 </div>
 
-                {availableCrewForSwap.length > 0 ? (
-                  <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {availableCrewForSwap.map((crew, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex-1 grid grid-cols-5 gap-4">
-                          <div>
-                            <h5 className="font-medium text-gray-900">
-                              {crew.name}
-                            </h5>
-                            <p className="text-sm text-gray-600">
-                              {crew.role || crew.rank}
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-xs text-gray-500">
-                              Experience
-                            </span>
-                            <p className="text-sm font-medium text-gray-700">
-                              {crew.experience}
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-xs text-gray-500">
-                              Location
-                            </span>
-                            <p className="text-sm font-medium text-gray-700">
-                              {crew.location}
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-xs text-gray-500">Score</span>
-                            <div className="flex items-center gap-2 mt-1">
-                              <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                <div
-                                  className="bg-flydubai-blue h-2 rounded-full"
-                                  style={{ width: `${crew.score}%` }}
-                                ></div>
-                              </div>
-                              <span className="text-sm font-medium text-flydubai-blue">
-                                {crew.score}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="flex flex-col gap-1 mb-2">
-                              <Badge
-                                className={`text-xs w-fit ${
-                                  crew.availability === "Available"
-                                    ? "bg-green-100 text-green-700"
-                                    : "bg-yellow-100 text-yellow-700"
-                                }`}
-                              >
-                                {crew.availability}
-                              </Badge>
-                            </div>
-                            <Button
-                              size="sm"
-                              className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
-                              onClick={() => {
-                                // Update the crew assignment in the selected option details
-                                if (
-                                  selectedOptionDetails &&
-                                  selectedOptionDetails.rotation_plan
-                                ) {
-                                  const updatedCrew = [
-                                    ...(selectedOptionDetails.rotation_plan
-                                      .crew ||
-                                      selectedOptionDetails.rotation_plan
-                                        .crewData ||
-                                      []),
-                                  ];
-                                  const originalIndex =
-                                    selectedCrewForSwap.originalIndex;
-
-                                  // Update the crew member with swap information
-                                  updatedCrew[originalIndex] = {
-                                    ...updatedCrew[originalIndex],
-                                    name: crew.name,
-                                    experience: crew.experience,
-                                    location: crew.location,
-                                    score: crew.score,
-                                    qualifications: crew.qualifications,
-                                    replacedCrew:
-                                      selectedCrewForSwap.replacedCrew ||
-                                      selectedCrewForSwap.name,
-                                    assignedAt: new Date().toISOString(),
-                                    status: "Reassigned",
-                                    availability: "On Duty",
-                                  };
-
-                                  setSelectedOptionDetails({
-                                    ...selectedOptionDetails,
-                                    rotation_plan: {
-                                      ...selectedOptionDetails.rotation_plan,
-                                      crew: updatedCrew,
-                                      crewData: updatedCrew,
-                                    },
-                                  });
-                                }
-
-                                // Store the assignment update
-                                const assignmentUpdate = {
-                                  optionId: selectedOptionDetails?.id,
-                                  originalCrew: selectedCrewForSwap,
-                                  newCrew: crew,
-                                  timestamp: new Date().toISOString(),
-                                  reason: selectedCrewForSwap.isEditing
-                                    ? "Crew assignment edited via interface"
-                                    : "Manual crew swap via interface",
-                                  isEdit: selectedCrewForSwap.isEditing,
-                                };
-
-                                setShowCrewSwapDialog(false);
-                                setSelectedCrewForSwap(null);
-                              }}
-                            >
-                              <UserCheck className="h-4 w-4 mr-2" />
-                              {selectedCrewForSwap.isEditing
-                                ? "Update"
-                                : "Assign"}
-                            </Button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                    <p>No available crew found for this role</p>
-                    <p className="text-xs mt-1">
-                      All qualified crew members are currently assigned
-                    </p>
-                  </div>
-                )}
+                <div className="flex justify-end gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowExecuteConfirmDialog(false);
+                      setOptionToConfirm(null);
+                    }}
+                  >
+                    Close
+                  </Button>
+                  <Button
+                    onClick={confirmExecuteOption}
+                    className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
+                    disabled={executingOption === optionToConfirm?.option?.id}
+                  >
+                    {executingOption === optionToConfirm?.option?.id ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        OK
+                      </>
+                    )}
+                  </Button>
+                </div>
               </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowCrewSwapDialog(false);
-                    setSelectedCrewForSwap(null);
-                    setAvailableCrewForSwap([]);
-                  }}
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Execute Confirmation Dialog */}
-      <Dialog
-        open={showExecuteConfirmDialog}
-        onOpenChange={setShowExecuteConfirmDialog}
-      >
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-flydubai-orange" />
-              Confirm Recovery Plan Execution
-            </DialogTitle>
-          </DialogHeader>
-
-          {optionToConfirm && (
-            <div className="space-y-4">
-              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <p className="text-sm text-blue-800">
-                  {getConfirmationMessage(optionToConfirm.option)}
-                </p>
-              </div>
-
-              <div className="flex justify-end gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowExecuteConfirmDialog(false);
-                    setOptionToConfirm(null);
-                  }}
-                >
-                  Close
-                </Button>
-                <Button
-                  onClick={confirmExecuteOption}
-                  className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white"
-                  disabled={executingOption === optionToConfirm?.option?.id}
-                >
-                  {executingOption === optionToConfirm?.option?.id ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      OK
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
+            )}
+          </DialogContent>
+        </Dialog>
+      </div>
+    );
+  }
