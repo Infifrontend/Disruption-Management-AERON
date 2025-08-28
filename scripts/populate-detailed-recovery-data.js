@@ -32,7 +32,7 @@ function formatNeonConnectionString(connectionString) {
   }
 }
 
-let connectionString = process.env.DATABASE_URL || 'postgresql://0.0.0.0:5432/aeron_settings';
+let connectionString = process.env.DB_URL || 'postgresql://0.0.0.0:5432/aeron_settings';
 
 // Handle Neon database connection with proper endpoint parameter
 if (connectionString && connectionString.includes('neon.tech')) {
@@ -202,7 +202,7 @@ async function populateDetailedRecoveryData() {
     if (missingTables.length > 0) {
       console.log(`❌ Missing tables: ${missingTables.join(', ')}`);
       console.log('📝 Please run the recovery categorization schema first:');
-      console.log('   psql $DATABASE_URL -f database/recovery_categorization_schema.sql');
+      console.log('   psql $DB_URL -f database/recovery_categorization_schema.sql');
       await client.query('ROLLBACK');
       return;
     }

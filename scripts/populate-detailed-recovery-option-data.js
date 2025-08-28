@@ -3,7 +3,7 @@ const { Pool } = pkg;
 import 'dotenv/config';
 
 // Handle Neon database endpoint ID requirement
-let connectionString = process.env.DATABASE_URL;
+let connectionString = process.env.DB_URL;
 if (connectionString?.includes('neon.tech') && !connectionString.includes('options=endpoint')) {
   const url = new URL(connectionString);
   const endpointId = url.hostname.split('.')[0];
@@ -13,7 +13,7 @@ if (connectionString?.includes('neon.tech') && !connectionString.includes('optio
 
 const pool = new Pool({
   connectionString: connectionString,
-  ssl: process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('neon.tech')
+  ssl: process.env.NODE_ENV === 'production' || process.env.DB_URL?.includes('neon.tech')
     ? { rejectUnauthorized: false }
     : false
 });

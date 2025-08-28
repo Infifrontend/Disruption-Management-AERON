@@ -5,10 +5,10 @@ const { Pool } = pkg;
 // Database connection
 const pool = new Pool({
   connectionString:
-    process.env.DATABASE_URL || "postgresql://localhost:5432/aeron_settings",
+    process.env.DB_URL || "postgresql://localhost:5432/aeron_settings",
   ssl:
     process.env.NODE_ENV === "production" ||
-    process.env.DATABASE_URL?.includes('neon.tech')
+    process.env.DB_URL?.includes('neon.tech')
       ? { rejectUnauthorized: false }
       : false,
 });

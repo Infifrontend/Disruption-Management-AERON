@@ -64,9 +64,9 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // PostgreSQL connection with fallback and proper Neon handling
-// Use DATABASE_URL environment variable for the connection string
+// Use DB_URL environment variable for the connection string
 let connectionString =
-  process.env.DATABASE_URL || "postgresql://0.0.0.0:5432/aeron_settings";
+  process.env.DB_URL || "postgresql://0.0.0.0:5432/aeron_settings";
 
 const pool = new Pool({
   connectionString: connectionString,

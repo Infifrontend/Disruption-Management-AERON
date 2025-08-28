@@ -3,10 +3,10 @@ import { Pool } from 'pg'
 import { formatNeonConnectionString } from '../server/database-utils.js'
 
 async function fixConstraints() {
-  const connectionString = formatNeonConnectionString(process.env.DATABASE_URL)
+  const connectionString = formatNeonConnectionString(process.env.DB_URL)
   
   if (!connectionString) {
-    console.error('❌ DATABASE_URL environment variable is not set')
+    console.error('❌ DB_URL environment variable is not set')
     process.exit(1)
   }
 
@@ -121,7 +121,7 @@ import pkg from 'pg'
 const { Pool } = pkg
 
 // Database connection
-let connectionString = process.env.DATABASE_URL || 'postgresql://0.0.0.0:5432/aeron_settings'
+let connectionString = process.env.DB_URL || 'postgresql://0.0.0.0:5432/aeron_settings'
 
 if (connectionString && connectionString.includes('neon.tech')) {
   try {

@@ -3,7 +3,7 @@ import { Pool } from "pg";
 
 const pool = new Pool({
   connectionString:
-    process.env.DATABASE_URL || "postgresql://localhost:5432/aeron_settings",
+    process.env.DB_URL || "postgresql://localhost:5432/aeron_settings",
   ssl:
     process.env.NODE_ENV === "production"
       ? { rejectUnauthorized: false }

@@ -5,10 +5,10 @@ import { formatNeonConnectionString } from '../server/database-utils.js';
 async function runPsqlCommands() {
   try {
     // Get the properly formatted connection string
-    const connectionString = formatNeonConnectionString(process.env.DATABASE_URL);
+    const connectionString = formatNeonConnectionString(process.env.DB_URL);
     
     if (!connectionString) {
-      console.error('❌ DATABASE_URL environment variable is not set');
+      console.error('❌ DB_URL environment variable is not set');
       process.exit(1);
     }
 
