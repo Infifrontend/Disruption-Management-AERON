@@ -8,10 +8,10 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 async function initializeSchema() {
-  let connectionString = process.env.DATABASE_URL
+  let connectionString = process.env.DB_URL
 
   if (!connectionString) {
-    console.error('❌ DATABASE_URL environment variable is not set')
+    console.error('❌ DB_URL environment variable is not set')
     process.exit(1)
   }
 
@@ -84,7 +84,7 @@ async function initializeSchema() {
     
     if (error.message.includes('Endpoint ID')) {
       console.error('💡 Tip: This appears to be a Neon database connection issue.')
-      console.error('   The script should automatically handle this, but you may need to check your DATABASE_URL.')
+      console.error('   The script should automatically handle this, but you may need to check your DB_URL.')
     }
     
     process.exit(1)

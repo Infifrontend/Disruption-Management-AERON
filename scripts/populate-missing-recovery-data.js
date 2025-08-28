@@ -2,7 +2,7 @@
 import pkg from 'pg'
 const { Pool } = pkg
 
-const connectionString = process.env.DATABASE_URL || 'postgresql://0.0.0.0:5432/aeron_settings'
+const connectionString = process.env.DB_URL || 'postgresql://0.0.0.0:5432/aeron_settings'
 
 // Helper function to sanitize data for JSONB columns
 function sanitizeForJsonb(data) {
