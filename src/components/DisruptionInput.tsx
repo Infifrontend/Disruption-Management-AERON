@@ -107,7 +107,6 @@ const transformFlightData = (disruption: FlightDisruption) => {
     !disruption.origin ||
     !disruption.destination ||
     disruption.destination === "UNKNOWN";
-  console.log(disruption, "teststs");
   return {
     id: disruption.id,
     flightNumber: disruption.flightNumber || "UNKNOWN",
@@ -342,9 +341,7 @@ export function DisruptionInput({
       setLoading(true);
 
       // First sync from external API to get latest data and prevent duplicates
-      console.log("Syncing from external API...");
       const syncResult = await databaseService.syncDisruptionsFromExternalAPI();
-      console.log("External API sync result:", syncResult);
 
       // Then fetch all current disruptions from database, filtering by recovery_status = 'assigned'
       // Changed filter to 'assigned' as per the requirement
@@ -362,7 +359,6 @@ export function DisruptionInput({
         })
         .map((disruption) => {
           // Provide defaults for missing required fields
-          console.log(disruption, "test");
           return {
             ...disruption,
             flightNumber:
@@ -410,12 +406,7 @@ export function DisruptionInput({
       const transformedFlights = processedData.map(transformFlightData);
       setFlights(transformedFlights);
 
-      console.log(
-        "Fetched and transformed flights:",
-        transformedFlights.length,
-        "flights",
-      );
-
+     
       // Count incomplete records
       const incompleteCount =
         data.length -
@@ -527,12 +518,7 @@ export function DisruptionInput({
           const transformedFlights =
             processedFallbackData.map(transformFlightData);
           setFlights(transformedFlights);
-          console.log(
-            "Loaded fallback data:",
-            transformedFlights.length,
-            "flights",
-          );
-
+         
           if (transformedFlights.length > 0) {
             setError(
               "⚠️ Using cached flight data. Some information may be outdated or incomplete. Try refreshing when connection is restored.",
@@ -744,17 +730,12 @@ export function DisruptionInput({
 
   // Fix Generate Recovery Option button to call API and navigate properly
   const handleGenerateRecoveryOptions = async (flight) => {
-    console.log("Generating recovery options for:", flight);
     setIsGeneratingOptions(true);
 
     try {
       // Call API to generate recovery options
       const flightId = flight.id || flight.flightNumber;
-      console.log(
-        "Calling recovery options generation API for flight ID:",
-        flightId,
-      );
-
+   
       // Set loading for this specific flight
       setLoadingRecovery((prev) => ({ ...prev, [flightId]: true }));
 
@@ -775,7 +756,6 @@ export function DisruptionInput({
       }
 
       const result = await response.json();
-      console.log("Recovery options generation result:", result);
 
       if (result.success && (result.optionsCount > 0 || result.exists)) {
         // Show success message
@@ -815,7 +795,6 @@ export function DisruptionInput({
 
   // Fix handleViewDetails to fetch and pass recovery options
   const handleViewDetails = async (flight) => {
-    console.log("Viewing details for:", flight);
     setLoadingRecovery((prev) => ({
       ...prev,
       [flight.id || flight.flightNumber]: true,
@@ -958,13 +937,7 @@ export function DisruptionInput({
     };
 
     try {
-      console.log("Form data before submission:", {
-        connectionFlights: newDisruption.connectionFlights,
-        connectionFlightsType: typeof newDisruption.connectionFlights,
-        newFlightDataConnectionFlights: newFlightData.connectionFlights,
-      });
-
-      const result = await databaseService.saveDisruption(newFlightData);
+          const result = await databaseService.saveDisruption(newFlightData);
 
       // Check if the result indicates success
       if (result && (result === true || (result as any).success !== false)) {

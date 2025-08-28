@@ -17,7 +17,6 @@ export function ComparisonPage() {
       if (flightId && (!selectedFlight || selectedFlight.id !== parseInt(flightId))) {
         setLoading(true)
         try {
-          console.log(`Loading flight details for ID: ${flightId}`)
           const flight = await databaseService.getDisruption(flightId)
           if (flight) {
             // Transform the flight data to match the expected format
@@ -35,7 +34,6 @@ export function ComparisonPage() {
               categorization: flight.categorization || getCategorization((flight as any).disruption_type || flight.type || 'Technical'),
               priority: flight.severity || 'Medium'
             }
-            console.log('Flight loaded successfully:', transformedFlight.flightNumber)
             setSelectedFlight(transformedFlight)
           } else {
             console.warn(`No flight found for ID: ${flightId}`)
@@ -66,7 +64,6 @@ export function ComparisonPage() {
   }, [selectedFlight, setSelectedFlight])
 
   const handleSelectPlan = (plan: any) => {
-    console.log("Selected plan:", plan);
     // Set the passenger services context when a plan is selected for execution
     if (plan.fromExecution) {
       setPassengerServicesContext(plan);

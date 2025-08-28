@@ -692,7 +692,6 @@ export function HOTACManagement() {
   }, [filteredRecords, sortConfig]);
 
   const handleBulkAction = (action) => {
-    console.log(`Bulk action: ${action} for records:`, selectedRows);
   };
 
   const exportToCSV = () => {

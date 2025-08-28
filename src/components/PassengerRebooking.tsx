@@ -159,7 +159,6 @@ export function PassengerRebooking({ context, onClearContext }) {
   const selectedFlight = context?.selectedFlight || context?.flight;
   const recoveryOption = context?.recoveryOption;
   const fromExecution = context?.fromExecution;
-  console.log(selectedFlight);
 
   // State for generated passengers
   const [generatedPassengers, setGeneratedPassengers] = useState([]);
@@ -1307,12 +1306,8 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   const handleConfirmCrewAssignment = async () => {
     try {
-      console.log("handleConfirmCrewAssignment called");
-      console.log("selectedCrewMembers:", selectedCrewMembers);
-      console.log("selectedHotelForCrew:", selectedHotelForCrew);
 
       if (selectedCrewMembers.size === 0) {
-        console.log("No crew members selected");
         showAlert(
           "Selection Required",
           "Please select at least one crew member before confirming assignment.",
@@ -1322,7 +1317,6 @@ export function PassengerRebooking({ context, onClearContext }) {
       }
 
       if (!selectedHotelForCrew) {
-        console.log("No hotel selected");
         showAlert(
           "Hotel Selection Required",
           "Please select a hotel for crew accommodation before confirming assignment.",
@@ -1855,7 +1849,6 @@ export function PassengerRebooking({ context, onClearContext }) {
         },
       };
 
-      console.log("Loaded mock crew data:", recoveryOptionData.crewData);
 
       setCrewData({
         crew: recoveryOptionData.crewData,

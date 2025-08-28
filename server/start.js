@@ -1704,6 +1704,7 @@ app.get("/api/recovery-templates/:categoryId", async (req, res) => {
 
 // Generate and save recovery options for a disruption
 app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
+
   try {
     const { disruptionId } = req.params;
     console.log(
