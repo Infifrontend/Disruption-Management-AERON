@@ -3,7 +3,7 @@ import pkg from 'pg'
 const { Pool } = pkg
 
 // PostgreSQL connection
-let connectionString = process.env.DATABASE_URL || 'postgresql://0.0.0.0:5432/aeron_settings'
+let connectionString = process.env.DB_URL || 'postgresql://0.0.0.0:5432/aeron_settings'
 
 if (connectionString && connectionString.includes('neon.tech')) {
   try {

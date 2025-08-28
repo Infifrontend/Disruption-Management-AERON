@@ -5,8 +5,8 @@ import 'dotenv/config';
 import { readFileSync } from 'fs';
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('neon.tech')
+  connectionString: process.env.DB_URL,
+  ssl: process.env.NODE_ENV === 'production' || process.env.DB_URL?.includes('neon.tech')
     ? { rejectUnauthorized: false }
     : false
 });

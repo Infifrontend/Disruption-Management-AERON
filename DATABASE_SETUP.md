@@ -12,11 +12,11 @@ This document explains how to set up the PostgreSQL database for AERON settings 
    - Replit will automatically provision a PostgreSQL database for you
 
 2. **Initialize the Database:**
-   - The database URL will be automatically available as `DATABASE_URL` environment variable
+   - The database URL will be automatically available as `DB_URL` environment variable
    - Run the schema initialization:
    ```bash
    # Connect to your database and run the schema
-   psql $DATABASE_URL -f database/schema.sql
+   psql $DB_URL -f database/schema.sql
    ```
 
 3. **Start the Application:**
@@ -53,7 +53,7 @@ If you want to run PostgreSQL locally for development:
 
 4. **Set Environment Variable:**
    ```bash
-   export DATABASE_URL="postgresql://localhost:5432/aeron_settings"
+   export DB_URL="postgresql://localhost:5432/aeron_settings"
    ```
 
 ## Running the Application
@@ -134,10 +134,10 @@ The application continuously monitors database connectivity and provides:
 Regular backups are recommended:
 ```bash
 # Export all settings
-pg_dump $DATABASE_URL > aeron_settings_backup.sql
+pg_dump $DB_URL > aeron_settings_backup.sql
 
 # Restore from backup
-psql $DATABASE_URL < aeron_settings_backup.sql
+psql $DB_URL < aeron_settings_backup.sql
 ```
 
 ### Performance Monitoring
@@ -152,7 +152,7 @@ Monitor database performance with:
 ### Common Issues
 
 1. **Connection Failed:**
-   - Check DATABASE_URL environment variable
+   - Check DB_URL environment variable
    - Verify PostgreSQL service is running
    - Check network connectivity
 

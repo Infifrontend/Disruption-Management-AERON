@@ -2,10 +2,10 @@ version: "3.8"
 
 services:
   backend:
+    container_name: aeron-rm
     build:
       context: .
       dockerfile: Dockerfile
-    command: ["node", "--env-file=.env", "server/start.js"]
     ports:
       - "3001:3001"
     volumes:
@@ -17,20 +17,7 @@ services:
     environment:
       - NODE_ENV=development
       # Add other env vars as needed
-
-  frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: ["npm", "run", "dev"]
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
-      # Add other env vars as needed
+    command: sh -c "npm run build && node --env-file=.env server/start.js"
 
 networks:
   sharednet:
