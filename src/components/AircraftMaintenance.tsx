@@ -203,7 +203,6 @@ export function AircraftMaintenance() {
 
   const handleSubmitIncident = () => {
     // Logic to submit unscheduled maintenance report
-    console.log('Submitting incident:', incidentForm)
     setShowIncidentModal(false)
     setIncidentForm({
       tailNumber: '',

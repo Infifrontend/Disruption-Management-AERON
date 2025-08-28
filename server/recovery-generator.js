@@ -4380,9 +4380,7 @@ const generateCrewIssueRecovery = (flight) => {
 
   // Use embedded crew issues recovery data
   const crewIssuesRecoveryData = getCrewIssuesRecoveryData();
-  console.log(
-    `Using ${crewIssuesRecoveryData.length} crew issue recovery options from embedded data`,
-  );
+ 
 
   const options = crewIssuesRecoveryData.map((option, index) => ({
     id: `CREW_ISSUE_${index + 1}`,

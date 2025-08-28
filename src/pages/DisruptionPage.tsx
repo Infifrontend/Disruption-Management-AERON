@@ -7,7 +7,6 @@ export function DisruptionPage() {
   const { selectedDisruption, setSelectedFlight } = useAppContext()
 
   const handleNavigateToComparison = (flight:any, recoveryOptions?: any []) => {
-    console.log('Navigating to comparison with flight:', flight, 'and options:', recoveryOptions);
     setSelectedFlight(flight);
     // Store recovery options in context for comparison page
     if (recoveryOptions && recoveryOptions.length > 0) {

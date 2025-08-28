@@ -20,8 +20,6 @@ const pool = new Pool({
 
 async function addRecoveryConstraints() {
   try {
-    console.log('🔧 Adding unique constraints for recovery tables...');
-    
     // Add unique constraint for recovery_steps
     try {
       await pool.query(`

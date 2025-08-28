@@ -107,9 +107,7 @@ export function PendingSolutions() {
   const fetchPlans = async () => {
     setLoading(true);
     try {
-      console.log("Fetching pending recovery solutions from database...");
       const data = await databaseService.getPendingRecoverySolutions();
-      console.log("Fetched pending solutions:", data);
 
       if (!data || !Array.isArray(data)) {
         console.warn("Invalid data received:", data);
@@ -221,7 +219,6 @@ export function PendingSolutions() {
       // You could add a retry mechanism here
       setTimeout(() => {
         if (plans.length === 0) {
-          console.log("Retrying to fetch pending solutions...");
           // Could implement a retry mechanism
         }
       }, 5000);
@@ -393,7 +390,6 @@ export function PendingSolutions() {
 
   const handleApprove = async (planId) => {
     try {
-      console.log("Approving plan:", planId);
 
       // Find the plan to get the disruption ID
       const plan = plans.find((p) => p.id === planId);
@@ -433,7 +429,6 @@ export function PendingSolutions() {
         ),
       );
 
-      console.log("Plan approved successfully");
     } catch (error) {
       console.error("Failed to approve plan:", error);
       // Refresh data to ensure consistency even on error
@@ -443,7 +438,6 @@ export function PendingSolutions() {
 
   const handleReject = async (planId) => {
     try {
-      console.log("Rejecting plan:", planId);
 
       // Find the plan to get the disruption ID
       const plan = plans.find((p) => p.id === planId);
@@ -483,7 +477,6 @@ export function PendingSolutions() {
         ),
       );
 
-      console.log("Plan rejected successfully");
     } catch (error) {
       console.error("Failed to reject plan:", error);
       // Refresh data to ensure consistency even on error
@@ -515,7 +508,6 @@ export function PendingSolutions() {
     setLoadingDetails(plan.id);
 
     try {
-      console.log("Fetching detailed view for plan:", plan.id);
 
       // Fetch recovery options data for the disruption
       let recoveryOptionsData = null;
@@ -523,9 +515,7 @@ export function PendingSolutions() {
 
       // First try to get recovery options from the disruption
       if (plan.disruptionId) {
-        console.log(
-          `Fetching recovery options for disruption ${plan.disruptionId}`,
-        );
+        
         const recoveryResponse = await fetch(
           `/api/recovery-options/${plan.disruptionId}`,
           {
@@ -536,17 +526,12 @@ export function PendingSolutions() {
 
         if (recoveryResponse.ok) {
           recoveryOptionsData = await recoveryResponse.json();
-          console.log("Found recovery options data:", recoveryOptionsData);
         } else {
-          console.log(
-            "Recovery options fetch failed, status:",
-            recoveryResponse.status,
-          );
+         
         }
       }
 
       // Also fetch the most up-to-date data from pending solutions API
-      console.log("testtt");
       const response = await fetch(
         `/api/pending-recovery-solutions/${plan.id}`,
         {
@@ -557,10 +542,8 @@ export function PendingSolutions() {
 
       if (response.ok) {
         updatedPlan = await response.json();
-        console.log("Found updated plan data from API:", updatedPlan);
       } else {
         // Fallback to fetching all solutions and finding the one we need
-        console.log("Direct API call failed, fetching all solutions...");
         const allSolutions =
           await databaseService.getPendingRecoverySolutions();
         updatedPlan = allSolutions.find((s) => s.id === plan.id);
@@ -578,7 +561,6 @@ export function PendingSolutions() {
             (opt) =>
               opt.id === plan.optionId || opt.option_id === plan.optionId,
           );
-          console.log("Found matching recovery option:", matchingOption);
         }
 
         // Parse crew and passenger data from the matching option or find selected option
@@ -592,7 +574,6 @@ export function PendingSolutions() {
             (opt) =>
               opt.id === plan.optionId || opt.option_id === plan.optionId,
           );
-          console.log("Found selected option by optionId:", selectedOption);
         }
 
         if (selectedOption) {
@@ -730,16 +711,7 @@ export function PendingSolutions() {
           })(),
         };
 
-        console.log(
-          "Transformed plan with recovery options:",
-          transformedPlan.recoveryOptions?.length || 0,
-          "options, crew data:",
-          transformedPlan.hasCrewData,
-          "passenger data:",
-          transformedPlan.hasPassengerData,
-          "optionId for matching:",
-          transformedPlan.optionId,
-        );
+       
 
         // Debug log recovery options for matching
         if (transformedPlan.recoveryOptions) {
@@ -758,7 +730,6 @@ export function PendingSolutions() {
         }
         setSelectedPlan(transformedPlan);
       } else {
-        console.log("No updated data found, using current plan data");
         setSelectedPlan(plan);
       }
     } catch (error) {
@@ -771,10 +742,6 @@ export function PendingSolutions() {
   };
 
   const handleViewOptionDetails = (option, plan) => {
-    console.log(
-      "Viewing detailed option analysis for ++++++++++++++++++++++++++++++:",
-      option,
-    );
     // Create a detailed option object with all necessary data from API
     const detailedOption = {
       ...option,
@@ -810,7 +777,6 @@ export function PendingSolutions() {
       status: option.status || "available",
     };
 
-    console.log("Setting detailed option for view:", detailedOption);
     setSelectedOptionForDetails(detailedOption);
     setShowDetailedOptionAnalysis(true);
   };
@@ -833,7 +799,6 @@ export function PendingSolutions() {
 
   // Component for detailed recovery option view
   const DetailedRecoveryOptionView = ({ plan }) => {
-    console.log(plan, "hold");
     const [activeOptionTab, setActiveOptionTab] = useState("overview");
     const [pendingSolutionData, setPendingSolutionData] = useState(null);
     const [loadingPendingData, setLoadingPendingData] = useState(false);
@@ -868,7 +833,6 @@ export function PendingSolutions() {
             if (pendingResponse.ok) {
               const pendingData = await pendingResponse.json();
               setPendingSolutionData(pendingData);
-              console.log("Loaded pending solution data:", pendingData);
             }
           }
 
@@ -894,7 +858,7 @@ export function PendingSolutions() {
 
               if (matchingOption) {
                 setRecoveryOptionData(matchingOption);
-                console.log("Loaded recovery option data:", matchingOption);
+                
               }
             }
           }
@@ -924,7 +888,6 @@ export function PendingSolutions() {
       recoveryOptionData?.passenger_reaccommodation ||
       plan.passengerInformation ||
       [];
-    console.log(passengerData, "33333333333333333333333");
 
     const hasCrewData =
       crewData &&
@@ -936,7 +899,6 @@ export function PendingSolutions() {
       (Array.isArray(passengerData)
         ? passengerData.length > 0
         : Object.keys(passengerData).length > 0);
-    console.log(selectedPlan, "oooooo");
     return (
       <div className="space-y-6">
         <Tabs value={activeOptionTab} onValueChange={setActiveOptionTab}>
@@ -1772,10 +1734,6 @@ export function PendingSolutions() {
                     <Card className="p-4 bg-gray-50">
                       <div className="space-y-2 text-sm">
                         {(() => {
-                          console.log(
-                            recoveryOptionData,
-                            "@@@@@@@@@@@@@@@@@@@",
-                          );
                           const costBreakdown =
                             selectedOptionForDetails?.matchingOption
                               ?.cost_breakdown ||
@@ -3497,10 +3455,8 @@ export function PendingSolutions() {
                       const crewData =
                         selectedOptionForDetails?.pending_recovery_solutions
                           ?.full_details?.crew_hotel_assignments;
-                      console.log(crewData, "RRRR");
                       const hasCrewData =
                         crewData && Object.keys(crewData).length > 0;
-                      console.log(hasCrewData, "sssss");
                       if (!hasCrewData) {
                         return (
                           <div className="p-4 bg-green-50 rounded-lg border border-green-200">

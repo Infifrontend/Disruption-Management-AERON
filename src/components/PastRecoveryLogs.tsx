@@ -169,9 +169,7 @@ export function PastRecoveryLogs() {
       if (response.ok) {
         const data = await response.json();
         setKpiData(data);
-        console.log("Fetched KPI data from backend:", data);
       } else {
-        console.warn("KPI API returned error, calculating from logs");
         calculateKPIFromLogs();
       }
     } catch (error) {
@@ -232,7 +230,6 @@ export function PastRecoveryLogs() {
           ];
 
           setTrendData(data);
-          console.log("Fetched trend data from backend:", data);
         } else {
           console.warn("Empty trends data from API, using mock data");
           setTrendData(getMockTrendData());
