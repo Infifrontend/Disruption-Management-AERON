@@ -2359,7 +2359,7 @@ export function ComparisonMatrix({
                                     crewMember.replacedCrew &&
                                     crewMember.assignedAt;
                                   const assignedCrew =
-                                    selectedOptionDetails?.crew_available?.[index]?.assigned_crew;
+                                    selectedOptionDetails?.crew_availability?.[index]?.assigned_crew;
 
                                   return (
                                     <TableRow
@@ -2684,8 +2684,8 @@ export function ComparisonMatrix({
                                                   // Update both crew_availability and rotation_plan data
                                                   let updatedOptionDetails = { ...selectedOptionDetails };
 
-                                                  if (updatedOptionDetails.crew_available) {
-                                                    const updatedCrewAvailability = [...updatedOptionDetails.crew_available];
+                                                  if (updatedOptionDetails.crew_availability) {
+                                                    const updatedCrewAvailability = [...updatedOptionDetails.crew_availability];
                                                     updatedCrewAvailability[index] = {
                                                       ...updatedCrewAvailability[index],
                                                       assigned_crew: undefined,
@@ -2693,7 +2693,7 @@ export function ComparisonMatrix({
                                                       replacedCrew: undefined,
                                                       assignedAt: undefined,
                                                     };
-                                                    updatedOptionDetails.crew_available = updatedCrewAvailability;
+                                                    updatedOptionDetails.crew_availability = updatedCrewAvailability;
                                                   }
 
                                                   if (updatedOptionDetails.rotation_plan) {
@@ -2758,7 +2758,7 @@ export function ComparisonMatrix({
                                         crew.status !== "Unavailable" &&
                                         !crew.issue &&
                                         !crew.replacedCrew &&
-                                        !selectedOptionDetails?.crew_available?.[selectedOptionDetails.rotation_plan.crew.indexOf(crew)]?.assigned_crew,
+                                        !selectedOptionDetails?.crew_availability?.[selectedOptionDetails.rotation_plan.crew.indexOf(crew)]?.assigned_crew,
                                     ).length
                                   }
                                 </div>
