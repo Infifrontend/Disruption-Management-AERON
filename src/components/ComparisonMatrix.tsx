@@ -2218,6 +2218,9 @@ export function ComparisonMatrix({
                                     Assigned Crew
                                   </TableHead>
                                   <TableHead className="font-semibold text-flydubai-navy">
+                                    Replacement Crew
+                                  </TableHead>
+                                  <TableHead className="font-semibold text-flydubai-navy">
                                     Status
                                   </TableHead>
                                   <TableHead className="font-semibold text-flydubai-navy">
@@ -2389,6 +2392,110 @@ export function ComparisonMatrix({
                                             </p>
                                           </div>
                                         )}
+                                      </TableCell>
+
+                                      {/* Replacement Crew Column */}
+                                      <TableCell className="p-4">
+                                        {(() => {
+                                          // Get available crew for this role
+                                          const currentRole = crewMember.type || crewMember.role || crewMember.position;
+                                          const crewAvailable = selectedOptionDetails?.crew_available || [];
+                                          
+                                          // Filter crew by role and exclude current crew members
+                                          const existingCrewNames = (selectedOptionDetails?.rotation_plan?.crew || selectedOptionDetails?.rotation_plan?.crewData || [])
+                                            .map(c => c.name);
+                                          
+                                          const matchingReplacements = crewAvailable.filter(availableCrew => {
+                                            const availableRole = availableCrew.role || availableCrew.position;
+                                            const roleMatch = currentRole.toLowerCase().includes('captain') || currentRole.toLowerCase().includes('capt') 
+                                              ? availableRole === 'captain'
+                                              : currentRole.toLowerCase().includes('first officer') || currentRole.toLowerCase().includes('f/o') || currentRole.toLowerCase().includes('fo')
+                                              ? availableRole === 'first_officer'
+                                              : currentRole.toLowerCase().includes('cabin') || currentRole.toLowerCase().includes('flight attendant')
+                                              ? availableRole === 'cabin_crew'
+                                              : availableRole === 'captain'; // Default fallback
+                                            
+                                            return roleMatch && !existingCrewNames.includes(availableCrew.name);
+                                          }).slice(0, 2); // Show max 2 replacements to avoid crowding
+
+                                          if (matchingReplacements.length > 0) {
+                                            return (
+                                              <div className="space-y-2">
+                                                {matchingReplacements.map((replacement, replIndex) => (
+                                                  <div key={replIndex} className="p-2 bg-gray-50 rounded border">
+                                                    <div className="flex items-center justify-between">
+                                                      <div className="flex-1">
+                                                        <h6 className="text-sm font-medium text-gray-900">
+                                                          {replacement.name}
+                                                        </h6>
+                                                        <p className="text-xs text-gray-600">
+                                                          {replacement.role || replacement.position}
+                                                        </p>
+                                                        {replacement.experience_years && (
+                                                          <p className="text-xs text-gray-500">
+                                                            {replacement.experience_years} years exp.
+                                                          </p>
+                                                        )}
+                                                      </div>
+                                                      <div className="text-right">
+                                                        <Badge className="bg-green-100 text-green-700 border-green-300 text-xs">
+                                                          {replacement.status || 'Available'}
+                                                        </Badge>
+                                                        {replacement.score && (
+                                                          <div className="flex items-center gap-1 mt-1">
+                                                            <div className="w-8 bg-gray-200 rounded-full h-1">
+                                                              <div
+                                                                className="bg-green-500 h-1 rounded-full"
+                                                                style={{ width: `${replacement.score || 90}%` }}
+                                                              ></div>
+                                                            </div>
+                                                            <span className="text-xs text-gray-600">
+                                                              {replacement.score || 90}
+                                                            </span>
+                                                          </div>
+                                                        )}
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                ))}
+                                                {crewAvailable.filter(availableCrew => {
+                                                  const availableRole = availableCrew.role || availableCrew.position;
+                                                  const roleMatch = currentRole.toLowerCase().includes('captain') || currentRole.toLowerCase().includes('capt') 
+                                                    ? availableRole === 'captain'
+                                                    : currentRole.toLowerCase().includes('first officer') || currentRole.toLowerCase().includes('f/o') || currentRole.toLowerCase().includes('fo')
+                                                    ? availableRole === 'first_officer'
+                                                    : currentRole.toLowerCase().includes('cabin') || currentRole.toLowerCase().includes('flight attendant')
+                                                    ? availableRole === 'cabin_crew'
+                                                    : availableRole === 'captain';
+                                                  
+                                                  return roleMatch && !existingCrewNames.includes(availableCrew.name);
+                                                }).length > 2 && (
+                                                  <div className="text-xs text-gray-500 text-center">
+                                                    +{crewAvailable.filter(availableCrew => {
+                                                      const availableRole = availableCrew.role || availableCrew.position;
+                                                      const roleMatch = currentRole.toLowerCase().includes('captain') || currentRole.toLowerCase().includes('capt') 
+                                                        ? availableRole === 'captain'
+                                                        : currentRole.toLowerCase().includes('first officer') || currentRole.toLowerCase().includes('f/o') || currentRole.toLowerCase().includes('fo')
+                                                        ? availableRole === 'first_officer'
+                                                        : currentRole.toLowerCase().includes('cabin') || currentRole.toLowerCase().includes('flight attendant')
+                                                        ? availableRole === 'cabin_crew'
+                                                        : availableRole === 'captain';
+                                                      
+                                                      return roleMatch && !existingCrewNames.includes(availableCrew.name);
+                                                    }).length - 2} more available
+                                                  </div>
+                                                )}
+                                              </div>
+                                            );
+                                          } else {
+                                            return (
+                                              <div className="text-center py-2 text-gray-500">
+                                                <Users className="h-4 w-4 mx-auto mb-1 opacity-50" />
+                                                <p className="text-xs">No replacements available</p>
+                                              </div>
+                                            );
+                                          }
+                                        })()}
                                       </TableCell>
 
                                       {/* Status Column */}
