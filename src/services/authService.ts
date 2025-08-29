@@ -21,6 +21,8 @@ class AuthService {
 
   constructor() {
     this.baseUrl = import.meta.env.VITE_API_URL || '/api';
+    // Ensure baseUrl doesn't end with slash to prevent double slashes
+    this.baseUrl = this.baseUrl.replace(/\/$/, '');
   }
 
   async login(email: string, password: string): Promise<LoginResponse> {

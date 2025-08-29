@@ -49,8 +49,13 @@ app.use(
         return callback(null, true);
       }
 
+      // Allow all Replit domains and localhost for development
+      if (origin.includes('replit.dev') || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return callback(null, true);
+      }
+
       // Allow all other origins for now (can be restricted later)
-      return callback(null, false);
+      return callback(null, true);
     },
     credentials: allowCredentials,
     methods: allowedMethods,
@@ -61,13 +66,21 @@ app.use(
 
 // Ensure CORS headers are set for all responses
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.header("Access-Control-Allow-Methods", allowedMethods.join(", "));
-  res.header("Access-Control-Allow-Headers", allowedHeaders.join(", "));
-  res.header("Access-Control-Allow-Credentials", allowCredentials.toString());
+  const origin = req.headers.origin;
+  
+  // Set appropriate origin header
+  if (origin && (origin.includes('replit.dev') || origin.includes('localhost') || origin.includes('127.0.0.1'))) {
+    res.header("Access-Control-Allow-Origin", origin);
+  } else {
+    res.header("Access-Control-Allow-Origin", "*");
+  }
+  
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type,Authorization,Accept,Origin,X-Requested-With");
+  res.header("Access-Control-Allow-Credentials", "true");
 
   if (req.method === "OPTIONS") {
-    res.sendStatus(optionsSuccessStatus);
+    res.sendStatus(200);
   } else {
     next();
   }
