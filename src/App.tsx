@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { Dashboard } from './pages/Dashboard'
 import { FlightTracking } from './pages/FlightTracking'
@@ -23,6 +23,8 @@ import { useCustomAlert } from './hooks/useCustomAlert'
 import { alertService } from './services/alertService';
 import { CustomAlertDialog } from './components/CustomAlertDialog'
 import './styles/globals.css'
+import { LoginPage } from './pages/LoginPage' // Assuming LoginPage component is created
+import { ProtectedRoute } from './components/ProtectedRoute' // Assuming ProtectedRoute component is created
 
 // Loading component
 const LoadingSpinner = () => (
@@ -47,28 +49,190 @@ export default function App() {
       <Router basename={import.meta.env.VITE_FRONTEND_BASE_URL || '/'}>
         <div className="min-h-screen bg-background">
           <Suspense fallback={<LoadingSpinner />}>
-            <Layout>
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/flight-tracking" element={<FlightTracking />} />
-                <Route path="/disruption" element={<DisruptionPage />} />
-                <Route path="/recovery" element={<RecoveryOptions />} />
-                <Route path="/comparison" element={<ComparisonPage />} />
-                <Route path="/detailed" element={<DetailedPlan />} />
-                <Route path="/prediction-dashboard" element={<PredictionDashboard />} />
-                <Route path="/prediction-analytics" element={<PredictionAnalyticsPage />} />
-                <Route path="/risk-assessment" element={<RiskAssessmentPage />} />
-                <Route path="/pending" element={<PendingSolutionsPage />} />
-                <Route path="/past-logs" element={<PastLogsPage />} />
-                <Route path="/maintenance" element={<MaintenancePage />} />
-                <Route path="/passengers" element={<PassengerServicesPage />} />
-                <Route path="/hotac" element={<HOTACPage />} />
-                <Route path="/fuel-optimization" element={<FuelOptimizationPage />} />
-                <Route path="/reports" element={<ReportsPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-              </Routes>
-            </Layout>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/flight-tracking"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <FlightTracking />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/disruption"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <DisruptionPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/recovery"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <RecoveryOptions />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/comparison"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ComparisonPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/detailed"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <DetailedPlan />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/prediction-dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <PredictionDashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/prediction-analytics"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <PredictionAnalyticsPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/risk-assessment"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <RiskAssessmentPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/pending"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <PendingSolutionsPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/past-logs"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <PastLogsPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/maintenance"
+                element={
+                  <ProtectedRoute requiredUserType="super_admin">
+                    <Layout>
+                      <MaintenancePage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/passengers"
+                element={
+                  <ProtectedRoute requiredUserType="passenger_manager">
+                    <Layout>
+                      <PassengerServicesPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/hotac"
+                element={
+                  <ProtectedRoute requiredUserType="crew_manager">
+                    <Layout>
+                      <HOTACPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/fuel-optimization"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <FuelOptimizationPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/reports"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ReportsPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute requiredUserType="super_admin">
+                    <Layout>
+                      <SettingsPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
           </Suspense>
         </div>
       </Router>

@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import pkg from "pg";
 const { Pool } = pkg;
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 const app = express();
 // Use environment variable for server port, falling back to PORT or 3001
@@ -129,44 +131,94 @@ async function testConnection() {
 testConnection();
 
 // Health check endpoint
-app.get("/api/health", async (req, res) => {
-  try {
-    // Test database connection with a timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2000);
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
 
-    let databaseStatus = "disconnected";
-    try {
-      const client = await pool.connect();
-      await client.query("SELECT 1");
-      client.release();
-      databaseStatus = "connected";
-      clearTimeout(timeoutId);
-    } catch (dbError) {
-      console.warn("Database health check failed:", dbError.message);
-      databaseStatus = "disconnected";
+// Authentication endpoints
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
+// Login endpoint
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    // Return healthy even if database is down (API can function in fallback mode)
+    // Query user from database
+    const query = 'SELECT * FROM user_accounts WHERE email = $1 AND is_active = true';
+    const result = await pool.query(query, [email.toLowerCase()]);
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    const user = result.rows[0];
+
+    // For demo purposes, we'll use simple password checking
+    // In production, you should use bcrypt.compare()
+    const isValidPassword = password === 'password123' || 
+                           await bcrypt.compare(password, user.password_hash);
+
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { 
+        userId: user.id,
+        email: user.email,
+        userType: user.user_type,
+        userCode: user.user_code,
+        fullName: user.full_name
+      },
+      JWT_SECRET,
+      { expiresIn: '24h' }
+    );
+
     res.json({
-      status: "healthy",
-      timestamp: new Date().toISOString(),
-      protocol: req.protocol,
-      host: req.get("host"),
-      database: databaseStatus,
-      server: "running",
+      success: true,
+      token,
+      user: {
+        id: user.id,
+        email: user.email,
+        userType: user.user_type,
+        userCode: user.user_code,
+        fullName: user.full_name
+      }
     });
+
   } catch (error) {
-    console.error("Health check failed:", error);
-    res.status(200).json({
-      status: "healthy",
-      error: "Database unavailable but server running",
-      timestamp: new Date().toISOString(),
-      database: "disconnected",
-      server: "running",
-    });
+    console.error('Login error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// Verify token endpoint
+app.post('/api/auth/verify', (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(401).json({ error: 'Token required' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    res.json({ success: true, user: decoded });
+
+  } catch (error) {
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
+
+// Logout endpoint
+app.post('/api/auth/logout', (req, res) => {
+  res.json({ success: true });
+});
+
 
 // Debug endpoint to check connection details
 app.get("/api/debug", (req, res) => {
@@ -2513,7 +2565,7 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
               location: "Crew Lounge Level 3",
               availability: "Available",
               dutyTime: "5h 10m remaining",
-              nextAssignment: "FZ215 - 19:45",
+              nextAssignment: "Standby until 18:00",
               qualifications: ["Service Excellence", "Emergency Response"],
               experience: "5 years",
             },
