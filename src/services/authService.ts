@@ -24,8 +24,8 @@ class AuthService {
     if (currentDomain === 'localhost' || currentDomain === '127.0.0.1') {
       this.baseUrl = 'http://localhost:3001/api';
     } else {
-      // For Replit production environment
-      this.baseUrl = `https://${currentDomain}:3001/api`;
+      // For Replit production environment - use workspace prefix
+      this.baseUrl = `https://workspace.${currentDomain}:3001/api`;
     }
     
     // Override with environment variable if provided

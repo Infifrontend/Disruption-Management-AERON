@@ -135,11 +135,23 @@ class DatabaseService {
   private readonly CIRCUIT_BREAKER_TIMEOUT = 60000; // 1 minute
 
   constructor() {
-    // Get base URL from environment variables
-    // this.baseUrl = this.getApiBaseUrl();
-    this.baseUrl = this.getApiBaseUrl();
+    // Use the same API URL configuration as authService
+    const currentDomain = window.location.hostname;
+    if (currentDomain === 'localhost' || currentDomain === '127.0.0.1') {
+      this.baseUrl = 'http://localhost:3001/api';
+    } else {
+      // For Replit production environment - use workspace prefix
+      this.baseUrl = `https://workspace.${currentDomain}:3001/api`;
+    }
 
-    console.log(`Database service initialized with base URL:`, this.baseUrl);
+    // Override with environment variable if provided
+    if (import.meta.env.VITE_API_URL) {
+      this.baseUrl = import.meta.env.VITE_API_URL;
+    }
+
+    // Ensure baseUrl doesn't end with slash to prevent double slashes
+    this.baseUrl = this.baseUrl.replace(/\/$/, '');
+    console.log('Database service initialized with base URL:', this.baseUrl);
   }
 
   private getApiBaseUrl(): string {
