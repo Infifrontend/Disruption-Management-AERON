@@ -19,18 +19,18 @@ class AuthService {
   private userKey = 'aeron_user_data';
 
   constructor() {
-    // Use the current domain with port 3001 for API calls
-    const currentDomain = window.location.hostname;
-    if (currentDomain === 'localhost' || currentDomain === '127.0.0.1') {
-      this.baseUrl = 'http://localhost:3001/api';
-    } else {
-      // For Replit production environment
-      this.baseUrl = `https://${currentDomain}:3001/api`;
-    }
-    
-    // Override with environment variable if provided
+    // Always use the environment variable first
     if (import.meta.env.VITE_API_URL) {
       this.baseUrl = import.meta.env.VITE_API_URL;
+    } else {
+      // Fallback to current domain logic only if VITE_API_URL is not set
+      const currentDomain = window.location.hostname;
+      if (currentDomain === 'localhost' || currentDomain === '127.0.0.1') {
+        this.baseUrl = 'http://localhost:3001/api';
+      } else {
+        // For Replit production environment
+        this.baseUrl = `https://${currentDomain}:3001/api`;
+      }
     }
     
     // Ensure baseUrl doesn't end with slash to prevent double slashes
