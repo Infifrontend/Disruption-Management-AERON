@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, ReactNode } from 'react'
+import { User } from '../services/authService'
 
 interface AppContextType {
   selectedDisruption: any;
@@ -11,8 +12,19 @@ interface AppContextType {
   setPassengerServicesContext: (context: any) => void;
   filters: any;
   setFilters: (filters: any) => void;
-  screenSettings: any[];
-  setScreenSettings: (settings: any[]) => void;
+  screenSettings: screenSettings[];
+  setScreenSettings: (settings: screenSettings[]) => void;
+  currentUser: User | null
+  setCurrentUser: (user: User | null) => void
+}
+
+type screenSettings = {
+  id: string;
+  name: string;
+  icon: string;
+  category: string;
+  enabled: boolean;
+  required: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -20,9 +32,9 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedDisruption, setSelectedDisruption] = useState(null);
   const [selectedFlight, setSelectedFlight] = useState(null);
-  const [selectedRecoveryPlan, setSelectedRecoveryPlan] = useState(null);
-  const [passengerServicesContext, setPassengerServicesContext] =
-    useState(null);
+  const [selectedRecoveryPlan, setSelectedRecoveryPlan] = useState<any | null>(null)
+  const [passengerServicesContext, setPassengerServicesContext] = useState<any | null>(null)
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [filters, setFilters] = useState({
     flightNumber: "",
     station: "",
@@ -30,7 +42,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     dateTime: "",
   });
 
-  const [screenSettings, setScreenSettings] = useState([
+  const [screenSettings, setScreenSettings] = useState<screenSettings[]>([
     {
       id: "dashboard",
       name: "Dashboard",
@@ -192,6 +204,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setFilters,
         screenSettings,
         setScreenSettings,
+        currentUser,
+        setCurrentUser,
       }}
     >
       {children}

@@ -4,6 +4,7 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useAppContext } from "../context/AppContext";
 import { databaseService } from "../services/databaseService";
+import { authService } from "../services/authService";
 import {
   TrendingUp,
   Calendar,
@@ -56,9 +57,9 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const location = useLocation();
   const navigate = useNavigate();
-  const { screenSettings } = useAppContext();
+  const location = useLocation();
+  const { screenSettings, filters, setFilters, currentUser, setCurrentUser } = useAppContext();
   const [sidebarOpen] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -68,6 +69,12 @@ export function Layout({ children }: LayoutProps) {
     activeFlights: 0,
     totalPassengers: 0,
   });
+
+  const handleLogout = async () => {
+    await authService.logout();
+    setCurrentUser(null);
+    navigate('/login');
+  };
 
   const enabledScreens = screenSettings.filter((screen) => screen.enabled);
 
@@ -383,15 +390,32 @@ export function Layout({ children }: LayoutProps) {
                 </p>
               </div>
 
-              {/* {quickStats && (
-              <div className={`flex items-center gap-3 px-4 py-2 bg-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-50 rounded-lg border border-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-200`}>
-                {React.createElement(quickStats.icon, { className: `h-4 w-4 text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-600` })}
-                <div className="text-xs">
-                  <p className={`font-medium text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-700`}>{quickStats.title}</p>
-                  <p className={`text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-600`}>{quickStats.subtitle}</p>
+              {quickStats && (
+                <div className={`flex items-center gap-3 px-4 py-2 bg-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-50 rounded-lg border border-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-200`}>
+                  {React.createElement(quickStats.icon, { className: `h-4 w-4 text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-600` })}
+                  <div className="text-xs">
+                    <p className={`font-medium text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-700`}>{quickStats.title}</p>
+                    <p className={`text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-600`}>{quickStats.subtitle}</p>
+                  </div>
                 </div>
-              </div>
-            )} */}
+              )}
+
+              {currentUser && (
+                <div className="flex items-center gap-3 border-l pl-4">
+                  <div className="text-right">
+                    <p className="text-sm font-medium text-flydubai-navy">{currentUser.fullName}</p>
+                    <p className="text-xs text-gray-500">{currentUser.userCode} | {currentUser.userType.replace('_', ' ').toUpperCase()}</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleLogout}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    Logout
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}
