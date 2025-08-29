@@ -1,4 +1,3 @@
-
 export interface User {
   id: number;
   email: string;
@@ -20,18 +19,29 @@ class AuthService {
   private userKey = 'aeron_user_data';
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_API_URL || '/api';
+    this.baseUrl = import.meta.env.VITE_API_URL || 'https://workspace.8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev:3001/api';
+    // Ensure baseUrl doesn't end with slash to prevent double slashes
+    this.baseUrl = this.baseUrl.replace(/\/$/, '');
+    console.log('AuthService initialized with baseUrl:', this.baseUrl);
   }
 
   async login(email: string, password: string): Promise<LoginResponse> {
     try {
-      const response = await fetch(`${this.baseUrl}auth/login`, {
+      const loginUrl = `${this.baseUrl}/auth/login`;
+      console.log('Attempting login to:', loginUrl);
+
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
       });
+
+      if (!response.ok) {
+        console.error('HTTP error:', response.status, response.statusText);
+        return { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
+      }
 
       const data = await response.json();
 
@@ -43,7 +53,7 @@ class AuthService {
       return data;
     } catch (error) {
       console.error('Login error:', error);
-      return { success: false, error: 'Network error' };
+      return { success: false, error: `Network error: ${error.message}` };
     }
   }
 
@@ -76,7 +86,7 @@ class AuthService {
       });
 
       const data = await response.json();
-      
+
       if (data.success && data.user) {
         this.setUser(data.user);
         return data.user;
@@ -120,12 +130,12 @@ class AuthService {
   hasPermission(requiredUserType?: string): boolean {
     const user = this.getUser();
     if (!user) return false;
-    
+
     if (!requiredUserType) return true;
-    
+
     // Super admin has access to everything
     if (user.userType === 'super_admin') return true;
-    
+
     return user.userType === requiredUserType;
   }
 }
