@@ -154,50 +154,17 @@ class DatabaseService {
     console.log('Database service initialized with base URL:', this.baseUrl);
   }
 
-  private getApiBaseUrl(): string {
-    // Try to get API URL from environment variables first
-    console.log(import.meta.env.VITE_API_URL, "teststst");
-    const envApiUrl = import.meta.env.VITE_API_URL;
-    if (envApiUrl) {
-      console.log(
-        "Using API URL from environment variables:",
-        envApiUrl.endsWith("/api") ? envApiUrl : "/api",
-      );
-      return envApiUrl.endsWith("/api") ? envApiUrl : "/api";
-    }
-
-    // Fallback to current behavior for backward compatibility
-    const hostname = window.location.hostname;
-
-    if (hostname === "localhost" || hostname === "0.0.0.0") {
-      // Development environment
-      const port = this.getBackendPort();
-      return `http://0.0.0.0:${port}/api`;
-    } else {
-      // Replit production environment
-      return "/api";
-    }
-  }
+  
 
   private getTimeout(): number {
     return parseInt(import.meta.env.VITE_API_TIMEOUT || "5000", 10);
   }
 
-  private getBackendPort(): number {
-    console.log(import.meta.env.DATABASE_SERVER_PORT, "import port ");
-    return parseInt(import.meta.env.DATABASE_SERVER_PORT || "3001", 10);
-  }
+  
 
   // Helper method to format URLs correctly for the current backend
   private formatUrl(endpoint: string): string {
-    const requiresTrailingSlash = false; // Simplified: no backend switching
-
-    if (requiresTrailingSlash) {
-      const fullUrl = `${this.baseUrl}/${endpoint.replace(/^\//, "")}`;
-      return fullUrl.endsWith("/") ? fullUrl : `${fullUrl}/`;
-    } else {
-      return `${this.baseUrl}/${endpoint.replace(/^\//, "")}`;
-    }
+    return `${this.baseUrl}/${endpoint.replace(/^\//, "")}`;
   }
 
   private checkCircuitBreaker(): boolean {
