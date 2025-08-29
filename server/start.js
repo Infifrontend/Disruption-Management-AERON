@@ -8,18 +8,28 @@ const app = express();
 const port = process.env.BACKEND_PORT || 3001;
 
 // CORS Configuration from environment variables
-const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(',') || ['localhost', 'replit.dev', 'sisko.replit.dev'];
-const allowCredentials = process.env.CORS_ALLOW_CREDENTIALS === 'true';
-const allowedMethods = process.env.CORS_ALLOWED_METHODS?.split(',') || ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'];
-const allowedHeaders = process.env.CORS_ALLOWED_HEADERS?.split(',') || [
-  'Content-Type',
-  'Authorization',
-  'Accept',
-  'Origin',
-  'X-Requested-With',
+const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(",") || [
+  "localhost",
+  "replit.dev",
+  "sisko.replit.dev",
 ];
-const optionsSuccessStatus = parseInt(process.env.CORS_OPTIONS_SUCCESS_STATUS) || 200;
-
+const allowCredentials = process.env.CORS_ALLOW_CREDENTIALS === "true";
+const allowedMethods = process.env.CORS_ALLOWED_METHODS?.split(",") || [
+  "GET",
+  "POST",
+  "PUT",
+  "DELETE",
+  "OPTIONS",
+];
+const allowedHeaders = process.env.CORS_ALLOWED_HEADERS?.split(",") || [
+  "Content-Type",
+  "Authorization",
+  "Accept",
+  "Origin",
+  "X-Requested-With",
+];
+const optionsSuccessStatus =
+  parseInt(process.env.CORS_OPTIONS_SUCCESS_STATUS) || 200;
 
 // Middleware - CORS configuration from environment variables
 app.use(
@@ -29,8 +39,8 @@ app.use(
       if (!origin) return callback(null, true);
 
       // Check if origin matches any allowed origins
-      const isAllowed = allowedOrigins.some(allowedOrigin => 
-        origin.includes(allowedOrigin)
+      const isAllowed = allowedOrigins.some((allowedOrigin) =>
+        origin.includes(allowedOrigin),
       );
 
       if (isAllowed) {
@@ -65,6 +75,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // PostgreSQL connection with fallback and proper Neon handling
 // Use DB_URL environment variable for the connection string
+console.log(process.env.DB_URL, "DB_URL");
 let connectionString =
   process.env.DB_URL || "postgresql://0.0.0.0:5432/aeron_settings";
 
@@ -1704,7 +1715,6 @@ app.get("/api/recovery-templates/:categoryId", async (req, res) => {
 
 // Generate and save recovery options for a disruption
 app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
-
   try {
     const { disruptionId } = req.params;
     console.log(
