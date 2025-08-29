@@ -27,6 +27,7 @@ class AuthService {
 
   async login(email: string, password: string): Promise<LoginResponse> {
     try {
+      console.log('Logging in with email:', this.baseUrl);
       const loginUrl = `${this.baseUrl}/auth/login`;
       console.log('Attempting login to:', loginUrl);
 
