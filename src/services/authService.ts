@@ -20,10 +20,7 @@ class AuthService {
   private userKey = 'aeron_user_data';
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_API_URL || 'https://workspace.8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev:3001/api';
-    // Ensure baseUrl doesn't end with slash to prevent double slashes
-    this.baseUrl = this.baseUrl.replace(/\/$/, '');
-    console.log('AuthService initialized with baseUrl:', this.baseUrl);
+    this.baseUrl = import.meta.env.VITE_API_URL || '/api';
   }
 
   async login(email: string, password: string): Promise<LoginResponse> {

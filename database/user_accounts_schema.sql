@@ -12,11 +12,11 @@ CREATE TABLE IF NOT EXISTS user_accounts (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Insert default users (using proper bcrypt hash for 'password123')
+-- Insert default users
 INSERT INTO user_accounts (email, password_hash, user_type, user_code, full_name) VALUES
-('admin@flydubai.com', '$2b$10$rQ8KgzLQCZZ9QrQ8KgzLQeOBQZF8Qz5Z8Qz5Z8Qz5Z8Qz5Z8Qz5Ze', 'super_admin', 'SA001', 'Super Administrator'),
-('passenger@flydubai.com', '$2b$10$rQ8KgzLQCZZ9QrQ8KgzLQeOBQZF8Qz5Z8Qz5Z8Qz5Z8Qz5Z8Qz5Ze', 'passenger_manager', 'PM001', 'Passenger Manager'),
-('crew@flydubai.com', '$2b$10$rQ8KgzLQCZZ9QrQ8KgzLQeOBQZF8Qz5Z8Qz5Z8Qz5Z8Qz5Z8Qz5Ze', 'crew_manager', 'CM001', 'Crew Manager')
+('admin@flydubai.com', '$2b$10$rQ8KgzLQCZZ9QrQ8KgzLQ.', 'super_admin', 'SA001', 'Super Administrator'),
+('passenger@flydubai.com', '$2b$10$rQ8KgzLQCZZ9QrQ8KgzLQ.', 'passenger_manager', 'PM001', 'Passenger Manager'),
+('crew@flydubai.com', '$2b$10$rQ8KgzLQCZZ9QrQ8KgzLQ.', 'crew_manager', 'CM001', 'Crew Manager')
 ON CONFLICT (email) DO NOTHING;
 
 -- Create index for faster lookups
