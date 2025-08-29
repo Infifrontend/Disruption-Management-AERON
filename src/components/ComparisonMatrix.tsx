@@ -2358,10 +2358,71 @@ export function ComparisonMatrix({
                                                 Replacement Required
                                               </span>
                                             </div>
-                                            <p className="text-xs text-gray-500">
-                                              System will suggest best available
-                                              crew
-                                            </p>
+                                            {/* Display replacement crew for violated crew members */}
+                                            {(() => {
+                                              const currentRole = crewMember.type || crewMember.role || crewMember.position;
+                                              const availableCrew = selectedOptionDetails?.crew_available || [];
+                                              
+                                              // Filter replacement crew by role and exclude duplicates
+                                              const matchingReplacementCrew = availableCrew.filter((replacementCrew) => {
+                                                const replacementRole = replacementCrew.role;
+                                                const currentCrewNames = (selectedOptionDetails.rotation_plan?.crew || selectedOptionDetails.rotation_plan?.crewData || [])
+                                                  .map(c => c.name);
+                                                
+                                                // Check if roles match and crew is not already in current/assigned crew
+                                                return replacementRole === currentRole && 
+                                                       !currentCrewNames.includes(replacementCrew.name);
+                                              });
+
+                                              if (matchingReplacementCrew.length > 0) {
+                                                // Show the first matching replacement crew member
+                                                const replacementCrew = matchingReplacementCrew[0];
+                                                return (
+                                                  <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                      <UserCheck className="h-3 w-3 text-green-600" />
+                                                      <span className="text-xs text-green-700 font-medium">
+                                                        Replacement Available
+                                                      </span>
+                                                    </div>
+                                                    <div className="text-xs">
+                                                      <p className="font-medium text-green-800">
+                                                        {replacementCrew.name}
+                                                      </p>
+                                                      <p className="text-green-700">
+                                                        {replacementCrew.role}
+                                                      </p>
+                                                      {replacementCrew.experience_years && (
+                                                        <p className="text-green-600">
+                                                          Experience: {replacementCrew.experience_years} years
+                                                        </p>
+                                                      )}
+                                                      {replacementCrew.location && (
+                                                        <p className="text-green-600">
+                                                          Location: {replacementCrew.location}
+                                                        </p>
+                                                      )}
+                                                      <div className="flex items-center gap-1 mt-1">
+                                                        <Badge className="bg-green-100 text-green-700 text-xs">
+                                                          {replacementCrew.status}
+                                                        </Badge>
+                                                        {matchingReplacementCrew.length > 1 && (
+                                                          <Badge variant="outline" className="text-xs">
+                                                            +{matchingReplacementCrew.length - 1} more
+                                                          </Badge>
+                                                        )}
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                );
+                                              } else {
+                                                return (
+                                                  <p className="text-xs text-gray-500 mt-1">
+                                                    No replacement crew available for {currentRole}
+                                                  </p>
+                                                );
+                                              }
+                                            })()}
                                           </div>
                                         ) : (
                                           <div className="space-y-2">
