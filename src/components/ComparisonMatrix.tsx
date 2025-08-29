@@ -1222,9 +1222,15 @@ export function ComparisonMatrix({
     const crewPools :any ={};
     const roleNormalized = targetRole.toLowerCase();
     console.log(selectedOptionDetails,"selectedOptionDetails");   
-    crewPools.captain = selectedOptionDetails.crew_available.filter((crew: any) => crew.role === "captain");
-    crewPools.first_officer = selectedOptionDetails.crew_available.filter((crew: any) => crew.role === "first_officer");
-    crewPools.cabin_crew = selectedOptionDetails.crew_available.filter((crew: any) => crew.role === "cabin_crew");
+    
+    // Ensure crew_available is an array before filtering
+    const availableCrewList = Array.isArray(selectedOptionDetails?.crew_available) 
+      ? selectedOptionDetails.crew_available 
+      : [];
+    
+    crewPools.captain = availableCrewList.filter((crew: any) => crew?.role === "captain");
+    crewPools.first_officer = availableCrewList.filter((crew: any) => crew?.role === "first_officer");
+    crewPools.cabin_crew = availableCrewList.filter((crew: any) => crew?.role === "cabin_crew");
     // Determine which pool to use based on role
     let availableCrew = [];
 
@@ -2361,16 +2367,19 @@ export function ComparisonMatrix({
                                             {/* Display replacement crew for violated crew members */}
                                             {(() => {
                                               const currentRole = crewMember.type || crewMember.role || crewMember.position;
-                                              const availableCrew = selectedOptionDetails?.crew_available || [];
+                                              const availableCrew = Array.isArray(selectedOptionDetails?.crew_available) 
+                                                ? selectedOptionDetails.crew_available 
+                                                : [];
                                               
                                               // Filter replacement crew by role and exclude duplicates
                                               const matchingReplacementCrew = availableCrew.filter((replacementCrew) => {
-                                                const replacementRole = replacementCrew.role;
-                                                const currentCrewNames = (selectedOptionDetails.rotation_plan?.crew || selectedOptionDetails.rotation_plan?.crewData || [])
-                                                  .map(c => c.name);
+                                                const replacementRole = replacementCrew?.role;
+                                                const currentCrewNames = (selectedOptionDetails?.rotation_plan?.crew || selectedOptionDetails?.rotation_plan?.crewData || [])
+                                                  .map(c => c?.name).filter(Boolean);
                                                 
                                                 // Check if roles match and crew is not already in current/assigned crew
                                                 return replacementRole === currentRole && 
+                                                       replacementCrew?.name &&
                                                        !currentCrewNames.includes(replacementCrew.name);
                                               });
 
