@@ -19,7 +19,20 @@ class AuthService {
   private userKey = 'aeron_user_data';
 
   constructor() {
-    this.baseUrl = import.meta.env.VITE_API_URL || 'https://workspace.8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev:3001/api';
+    // Use the current domain with port 3001 for API calls
+    const currentDomain = window.location.hostname;
+    if (currentDomain === 'localhost' || currentDomain === '127.0.0.1') {
+      this.baseUrl = 'http://localhost:3001/api';
+    } else {
+      // For Replit production environment
+      this.baseUrl = `https://${currentDomain}:3001/api`;
+    }
+    
+    // Override with environment variable if provided
+    if (import.meta.env.VITE_API_URL) {
+      this.baseUrl = import.meta.env.VITE_API_URL;
+    }
+    
     // Ensure baseUrl doesn't end with slash to prevent double slashes
     this.baseUrl = this.baseUrl.replace(/\/$/, '');
     console.log('AuthService initialized with baseUrl:', this.baseUrl);
