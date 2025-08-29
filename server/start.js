@@ -2505,167 +2505,154 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
       );
 
       if (result.rows.length === 0) {
-        console.log(
-          `No rotation plan found for option ${optionId}, generating sample data`,
-        );
-
-        // Generate sample crew data for the rotation plan
-        const sampleRotationPlan = {
-          aircraftOptions: [
-            {
-              reg: "A6-FED",
-              type: "B737-800 (189Y)",
-              etops: { status: "available", value: "180min" },
-              cabinMatch: { status: "exact", value: "Exact" },
-              availability: "Available Now",
-              assigned: { status: "none", value: "None" },
-              turnaround: "45 min",
-              maintenance: { status: "current", value: "Current" },
-              recommended: true,
-            },
-          ],
-          crewData: [
-            {
-              name: "Captain Mohammed Al-Zaabi",
-              type: "Captain",
-              status: "Available",
-              location: "Dubai Airport Hotel",
-              availability: "Available",
-              dutyTime: "2h 15m remaining",
-              nextAssignment: "FZ892 - 16:30",
-              qualifications: ["B737-800", "B737-MAX8"],
-              experience: "15 years",
-            },
-            {
-              name: "F/O Sarah Rahman",
-              type: "First Officer",
-              status: "On Duty",
-              location: "Crew Rest Area Terminal 2",
-              availability: "Available",
-              dutyTime: "4h 30m remaining",
-              nextAssignment: "Available for assignment",
-              qualifications: ["B737-800", "B737-MAX8"],
-              experience: "8 years",
-            },
-            {
-              name: "Fatima Al-Mansouri",
-              type: "Senior Flight Attendant",
-              status: "Available",
-              location: "Crew Lounge Level 3",
-              availability: "Available",
-              dutyTime: "3h 45m remaining",
-              nextAssignment: "Standby until 18:00",
-              qualifications: ["Safety Instructor", "First Aid"],
-              experience: "12 years",
-            },
-            {
-              name: "Ahmed Hassan",
-              type: "Flight Attendant",
-              status: "Available",
-              location: "Crew Lounge Level 3",
-              availability: "Available",
-              dutyTime: "5h 10m remaining",
-              nextAssignment: "Standby until 18:00",
-              qualifications: ["Service Excellence", "Emergency Response"],
-              experience: "5 years",
-            },
-            {
-              name: "Amira Khalil",
-              type: "Flight Attendant",
-              status: "Available",
-              location: "Crew Lounge Level 3",
-              availability: "Available",
-              dutyTime: "4h 20m remaining",
-              nextAssignment: "Available for assignment",
-              qualifications: ["Multi-lingual", "Medical Training"],
-              experience: "3 years",
-            },
-            {
-              name: "Omar Abdullah",
-              type: "Flight Attendant",
-              status: "Available",
-              location: "Crew Lounge Level 3",
-              availability: "Available",
-              dutyTime: "6h 00m remaining",
-              nextAssignment: "Standby until 20:00",
-              qualifications: ["Customer Service", "Security"],
-              experience: "7 years",
-            },
-          ],
-          nextSectors: [
-            {
-              flight: "FZ892",
-              route: "DXB → BOM",
-              departure: "16:30",
-              aircraft: "A6-FED",
-              status: "On Schedule",
-            },
-          ],
-          operationalConstraints: {
-            gateCompatibility: {
-              status: "compatible",
-              details: "Gate A24 suitable for B737-800",
-            },
-            slotCapacity: {
-              status: "available",
-              details: "Slot confirmed for departure window",
-            },
-            curfewViolation: {
-              status: "compliant",
-              details: "Departure within curfew hours",
-            },
-            passengerConnections: {
-              status: "manageable",
-              details: "12 connecting passengers, 90min connection time",
-            },
-          },
-          costBreakdown: {
-            delayCost: 15000,
-            fuelEfficiency: "Standard consumption",
-            hotelTransport: 0,
-            eu261Risk: "Low",
-          },
-          recommendation: {
-            aircraft: "A6-FED",
-            reason: "Optimal crew availability and aircraft readiness",
-          },
-        };
-
-        return res.json({
-          success: true,
-          rotationPlan: sampleRotationPlan,
+        return res.status(404).json({
+          error: "Rotation plan not found for this option",
+          optionId: optionId,
         });
       }
 
-      // Return the rotation_plan JSON field
-      const rotationPlan = result.rows[0].rotation_plan || {};
-
-      res.json({
-        success: true,
-        rotationPlan: {
-          aircraftOptions: rotationPlan.aircraftOptions || [],
-          crewData: rotationPlan.crewData || [],
-          nextSectors: rotationPlan.nextSectors || [],
-          operationalConstraints: rotationPlan.operationalConstraints || {},
-          costBreakdown: rotationPlan.costBreakdown || {},
-          recommendation: rotationPlan.recommendation || {},
+      // Generate sample crew data for the rotation plan
+      const sampleRotationPlan = {
+        aircraftOptions: [
+          {
+            reg: "A6-FED",
+            type: "B737-800 (189Y)",
+            etops: { status: "available", value: "180min" },
+            cabinMatch: { status: "exact", value: "Exact" },
+            availability: "Available Now",
+            assigned: { status: "none", value: "None" },
+            turnaround: "45 min",
+            maintenance: { status: "current", value: "Current" },
+            recommended: true,
+          },
+        ],
+        crewData: [
+          {
+            name: "Captain Mohammed Al-Zaabi",
+            type: "Captain",
+            status: "Available",
+            location: "Dubai Airport Hotel",
+            availability: "Available",
+            dutyTime: "2h 15m remaining",
+            nextAssignment: "FZ892 - 16:30",
+            qualifications: ["B737-800", "B737-MAX8"],
+            experience: "15 years",
+          },
+          {
+            name: "F/O Sarah Rahman",
+            type: "First Officer",
+            status: "On Duty",
+            location: "Crew Rest Area Terminal 2",
+            availability: "Available",
+            dutyTime: "4h 30m remaining",
+            nextAssignment: "Available for assignment",
+            qualifications: ["B737-800", "B737-MAX8"],
+            experience: "8 years",
+          },
+          {
+            name: "Fatima Al-Mansouri",
+            type: "Senior Flight Attendant",
+            status: "Available",
+            location: "Crew Lounge Level 3",
+            availability: "Available",
+            dutyTime: "3h 45m remaining",
+            nextAssignment: "Standby until 18:00",
+            qualifications: ["Safety Instructor", "First Aid"],
+            experience: "12 years",
+          },
+          {
+            name: "Ahmed Hassan",
+            type: "Flight Attendant",
+            status: "Available",
+            location: "Crew Lounge Level 3",
+            availability: "Available",
+            dutyTime: "5h 10m remaining",
+            nextAssignment: "Standby until 18:00",
+            qualifications: ["Service Excellence", "Emergency Response"],
+            experience: "5 years",
+          },
+          {
+            name: "Amira Khalil",
+            type: "Flight Attendant",
+            status: "Available",
+            location: "Crew Lounge Level 3",
+            availability: "Available",
+            dutyTime: "4h 20m remaining",
+            nextAssignment: "Available for assignment",
+            qualifications: ["Multi-lingual", "Medical Training"],
+            experience: "3 years",
+          },
+          {
+            name: "Omar Abdullah",
+            type: "Flight Attendant",
+            status: "Available",
+            location: "Crew Lounge Level 3",
+            availability: "Available",
+            dutyTime: "6h 00m remaining",
+            nextAssignment: "Standby until 20:00",
+            qualifications: ["Customer Service", "Security"],
+            experience: "7 years",
+          },
+        ],
+        nextSectors: [
+          {
+            flight: "FZ892",
+            route: "DXB → BOM",
+            departure: "16:30",
+            aircraft: "A6-FED",
+            status: "On Schedule",
+          },
+        ],
+        operationalConstraints: {
+          gateCompatibility: {
+            status: "compatible",
+            details: "Gate A24 suitable for B737-800",
+          },
+          slotCapacity: {
+            status: "available",
+            details: "Slot confirmed for departure window",
+          },
+          curfewViolation: {
+            status: "compliant",
+            details: "Departure within curfew hours",
+          },
+          passengerConnections: {
+            status: "manageable",
+            details: "12 connecting passengers, 90min connection time",
+          },
         },
-      });
-    } else {
-      const rotationPlan = result.rows[0];
-
-      res.json({
-        success: true,
-        rotationPlan: {
-          aircraftOptions: rotationPlan.aircraft_options || [],
-          crewData: rotationPlan.crew_data || [],
-          nextSectors: rotationPlan.next_sectors || [],
-          operationalConstraints: rotationPlan.operational_constraints || {},
-          costBreakdown: rotationPlan.cost_breakdown || {},
-          recommendation: rotationPlan.recommendation || {},
+        costBreakdown: {
+          delayCost: 15000,
+          fuelEfficiency: "Standard consumption",
+          hotelTransport: 0,
+          eu261Risk: "Low",
         },
+        recommendation: {
+          aircraft: "A6-FED",
+          reason: "Optimal crew availability and aircraft readiness",
+        },
+      };
+
+      return res.json({
+        success: true,
+        rotationPlan: sampleRotationPlan,
       });
     }
+
+    // Return the rotation_plan JSON field
+    const rotationPlan = result.rows[0].rotation_plan || {};
+
+    res.json({
+      success: true,
+      rotationPlan: {
+        aircraftOptions: rotationPlan.aircraftOptions || [],
+        crewData: rotationPlan.crewData || [],
+        nextSectors: rotationPlan.nextSectors || [],
+        operationalConstraints: rotationPlan.operationalConstraints || {},
+        costBreakdown: rotationPlan.costBreakdown || {},
+        recommendation: rotationPlan.recommendation || {},
+      },
+    });
   } catch (error) {
     console.error("Error fetching rotation plan:", error);
     res.status(500).json({
