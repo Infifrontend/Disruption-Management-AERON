@@ -136,14 +136,21 @@ class DatabaseService {
 
   constructor() {
     // Get base URL from environment variables
+    // this.baseUrl = this.getApiBaseUrl();
     this.baseUrl = this.getApiBaseUrl();
+
     console.log(`Database service initialized with base URL:`, this.baseUrl);
   }
 
   private getApiBaseUrl(): string {
     // Try to get API URL from environment variables first
+    console.log(import.meta.env.VITE_API_URL, "teststst");
     const envApiUrl = import.meta.env.VITE_API_URL;
     if (envApiUrl) {
+      console.log(
+        "Using API URL from environment variables:",
+        envApiUrl.endsWith("/api") ? envApiUrl : "/api",
+      );
       return envApiUrl.endsWith("/api") ? envApiUrl : "/api";
     }
 
@@ -165,6 +172,7 @@ class DatabaseService {
   }
 
   private getBackendPort(): number {
+    console.log(import.meta.env.DATABASE_SERVER_PORT, "import port ");
     return parseInt(import.meta.env.DATABASE_SERVER_PORT || "3001", 10);
   }
 
@@ -689,12 +697,15 @@ class DatabaseService {
       console.log("Fetched disruptions:", data);
 
       // Transform database format to component format
-        const transformedFlights = data.map((flight:any) => {
-          // Handle unknown IDs by using flight_number as display value
-          const isUnknownId = flight.id && typeof flight.id === 'string' && flight.id.startsWith('UNKNOWN-');
-          const displayFlightNumber = isUnknownId 
-            ? (flight.flight_number || '-')
-            : flight.flight_number;
+      const transformedFlights = data.map((flight: any) => {
+        // Handle unknown IDs by using flight_number as display value
+        const isUnknownId =
+          flight.id &&
+          typeof flight.id === "string" &&
+          flight.id.startsWith("UNKNOWN-");
+        const displayFlightNumber = isUnknownId
+          ? flight.flight_number || "-"
+          : flight.flight_number;
 
         return {
           id: flight.id,
@@ -1138,7 +1149,7 @@ class DatabaseService {
         stepsCount: result.stepsCount || 0,
       };
     } catch (error) {
-     if (error instanceof Error) {
+      if (error instanceof Error) {
         console.error("Recovery options generation timed out");
         return { optionsCount: 0, stepsCount: 0 };
       }
@@ -1372,9 +1383,12 @@ class DatabaseService {
       return false;
     } catch (error) {
       if (error instanceof Error) {
-        console.warn('API health check timed out');
+        console.warn("API health check timed out");
       } else {
-        console.warn('API health check failed:', (error as Error).message || 'Unknown error');
+        console.warn(
+          "API health check failed:",
+          (error as Error).message || "Unknown error",
+        );
       }
       return false;
     }
@@ -1539,7 +1553,7 @@ class DatabaseService {
 
   // Generate mock external API data for testing - disabled to prevent unknown records
   // private generateMockExternalData(): any[] {
-    // Return empty array to stop generating mock data that creates unknown records
+  // Return empty array to stop generating mock data that creates unknown records
   //   console.log('Mock data generation disabled to prevent unknown records');
   //   return [];
   // }
@@ -1804,7 +1818,10 @@ class DatabaseService {
     try {
       const rebookingData = [];
 
-      for (const [pnr, passengers] of Object.entries(passengersByPnr) as [string, any[]][]) {
+      for (const [pnr, passengers] of Object.entries(passengersByPnr) as [
+        string,
+        any[],
+      ][]) {
         for (const passenger of passengers) {
           rebookingData.push({
             disruption_id: disruptionFlightId,
@@ -1887,10 +1904,10 @@ class DatabaseService {
         status: solution.status || "Pending",
         full_details: solution.full_details,
         rotation_impact: solution.rotation_impact,
-        submitted_by: solution.submitted_by || 'system',
+        submitted_by: solution.submitted_by || "system",
         approval_required: solution.approval_required || true,
-        passenger_rebooking:{},
-        crew_hotel_assignments:{}
+        passenger_rebooking: {},
+        crew_hotel_assignments: {},
       };
 
       // Add optional passenger rebooking data if present

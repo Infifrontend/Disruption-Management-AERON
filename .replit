@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web"]
+modules = [ "web", "nodejs-24"]
 run = "npm run dev"
 
 [nix]
@@ -27,7 +27,7 @@ mode = "parallel"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node server/start.js"
+args = "node --env-file=.env server/start.js"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -61,3 +61,6 @@ externalPort = 3002
 [[ports]]
 localPort = 5003
 externalPort = 3003
+
+[agent]
+expertMode = true
