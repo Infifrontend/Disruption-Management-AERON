@@ -1,0 +1,102 @@
+Uncaught Error: Objects are not valid as a React child (found: object with keys {code, name}). If you meant to render a collection of children, use an array instead.
+    at throwOnInvalidObjectType (chunk-PJEEZAML.js?v=082351ac:9934:17)
+    at reconcileChildFibers2 (chunk-PJEEZAML.js?v=082351ac:10564:15)
+    at reconcileChildren (chunk-PJEEZAML.js?v=082351ac:14290:37)
+    at updateHostComponent (chunk-PJEEZAML.js?v=082351ac:14807:11)
+    at beginWork (chunk-PJEEZAML.js?v=082351ac:15935:22)
+    at HTMLUnknownElement.callCallback2 (chunk-PJEEZAML.js?v=082351ac:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-PJEEZAML.js?v=082351ac:3699:24)
+    at invokeGuardedCallback (chunk-PJEEZAML.js?v=082351ac:3733:39)
+    at beginWork$1 (chunk-PJEEZAML.js?v=082351ac:19765:15)
+    at performUnitOfWork (chunk-PJEEZAML.js?v=082351ac:19198:20)
+throwOnInvalidObjectType @ chunk-PJEEZAML.js?v=082351ac:9934
+reconcileChildFibers2 @ chunk-PJEEZAML.js?v=082351ac:10564
+reconcileChildren @ chunk-PJEEZAML.js?v=082351ac:14290
+updateHostComponent @ chunk-PJEEZAML.js?v=082351ac:14807
+beginWork @ chunk-PJEEZAML.js?v=082351ac:15935
+callCallback2 @ chunk-PJEEZAML.js?v=082351ac:3674
+invokeGuardedCallbackDev @ chunk-PJEEZAML.js?v=082351ac:3699
+invokeGuardedCallback @ chunk-PJEEZAML.js?v=082351ac:3733
+beginWork$1 @ chunk-PJEEZAML.js?v=082351ac:19765
+performUnitOfWork @ chunk-PJEEZAML.js?v=082351ac:19198
+workLoopSync @ chunk-PJEEZAML.js?v=082351ac:19137
+renderRootSync @ chunk-PJEEZAML.js?v=082351ac:19116
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=082351ac:18874
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=082351ac:9119
+(anonymous) @ chunk-PJEEZAML.js?v=082351ac:18627Understand this error
+chunk-PJEEZAML.js?v=082351ac:9934 Uncaught Error: Objects are not valid as a React child (found: object with keys {code, name}). If you meant to render a collection of children, use an array instead.
+    at throwOnInvalidObjectType (chunk-PJEEZAML.js?v=082351ac:9934:17)
+    at reconcileChildFibers2 (chunk-PJEEZAML.js?v=082351ac:10564:15)
+    at reconcileChildren (chunk-PJEEZAML.js?v=082351ac:14290:37)
+    at updateHostComponent (chunk-PJEEZAML.js?v=082351ac:14807:11)
+    at beginWork (chunk-PJEEZAML.js?v=082351ac:15935:22)
+    at HTMLUnknownElement.callCallback2 (chunk-PJEEZAML.js?v=082351ac:3674:22)
+    at Object.invokeGuardedCallbackDev (chunk-PJEEZAML.js?v=082351ac:3699:24)
+    at invokeGuardedCallback (chunk-PJEEZAML.js?v=082351ac:3733:39)
+    at beginWork$1 (chunk-PJEEZAML.js?v=082351ac:19765:15)
+    at performUnitOfWork (chunk-PJEEZAML.js?v=082351ac:19198:20)
+throwOnInvalidObjectType @ chunk-PJEEZAML.js?v=082351ac:9934
+reconcileChildFibers2 @ chunk-PJEEZAML.js?v=082351ac:10564
+reconcileChildren @ chunk-PJEEZAML.js?v=082351ac:14290
+updateHostComponent @ chunk-PJEEZAML.js?v=082351ac:14807
+beginWork @ chunk-PJEEZAML.js?v=082351ac:15935
+callCallback2 @ chunk-PJEEZAML.js?v=082351ac:3674
+invokeGuardedCallbackDev @ chunk-PJEEZAML.js?v=082351ac:3699
+invokeGuardedCallback @ chunk-PJEEZAML.js?v=082351ac:3733
+beginWork$1 @ chunk-PJEEZAML.js?v=082351ac:19765
+performUnitOfWork @ chunk-PJEEZAML.js?v=082351ac:19198
+workLoopSync @ chunk-PJEEZAML.js?v=082351ac:19137
+renderRootSync @ chunk-PJEEZAML.js?v=082351ac:19116
+recoverFromConcurrentError @ chunk-PJEEZAML.js?v=082351ac:18736
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=082351ac:18879
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=082351ac:9119
+(anonymous) @ chunk-PJEEZAML.js?v=082351ac:18627Understand this error
+chunk-PJEEZAML.js?v=082351ac:14032 The above error occurred in the <span> component:
+
+    at span
+    at Badge (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/components/ui/badge.tsx:37:3)
+    at div
+    at div
+    at div
+    at div
+    at div
+    at https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-HMLLSKRK.js?v=082351ac:43:13
+    at https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-P3KBWUZE.js?v=082351ac:61:7
+    at https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-TLMPZXCM.js?v=082351ac:79:13
+    at https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-TLMPZXCM.js?v=082351ac:56:13
+    at https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-HMLLSKRK.js?v=082351ac:43:13
+    at https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-3OOTLFWS.js?v=082351ac:29:5
+    at https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-4FQFL66F.js?v=082351ac:236:13
+    at https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-4FQFL66F.js?v=082351ac:159:58
+    at Presence (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-6V6LWBG5.js?v=082351ac:24:11)
+    at https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-4FQFL66F.js?v=082351ac:150:64
+    at https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-TLMPZXCM.js?v=082351ac:79:13
+    at https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-TLMPZXCM.js?v=082351ac:56:13
+    at https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-HMLLSKRK.js?v=082351ac:43:13
+    at https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-P3KBWUZE.js?v=082351ac:258:22
+    at Presence (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-6V6LWBG5.js?v=082351ac:24:11)
+    at Provider (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-QNBT3DDS.js?v=082351ac:38:15)
+    at DialogPortal (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-4FQFL66F.js?v=082351ac:112:11)
+    at _c3 (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/components/ui/dialog.tsx:50:12)
+    at Provider (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-QNBT3DDS.js?v=082351ac:38:15)
+    at Dialog (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/chunk-4FQFL66F.js?v=082351ac:52:5)
+    at div
+    at ComparisonMatrix (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/components/ComparisonMatrix.tsx?t=1756705161248:66:3)
+    at ComparisonPage (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/pages/ComparisonPage.tsx?t=1756702852377:25:20)
+    at div
+    at div
+    at div
+    at div
+    at Layout (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/components/Layout.tsx:68:26)
+    at ProtectedRoute (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/components/ProtectedRoute.tsx:22:34)
+    at RenderedRoute (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=082351ac:5525:26)
+    at Routes (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=082351ac:6261:3)
+    at Suspense
+    at div
+    at Router (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=082351ac:6204:13)
+    at BrowserRouter (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=082351ac:9273:3)
+    at AppProvider (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/context/AppContext.tsx:20:31)
+    at App (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/App.tsx?t=1756702852377:68:77)
+    at ErrorBoundary (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/main.tsx?t=1756702852377:10:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
