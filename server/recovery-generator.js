@@ -6,169 +6,133 @@ const availableDummyCrew = [
     name: "Capt. James Walker",
     role_code: "CAPT",
     role: "Captain",
-    qualifications: [
-      {
-        code: "B737",
-        name: "Boeing 737",
-      },
-    ],
+    qualifications: [{ code: "B737", name: "Boeing 737" }],
     status: "available",
     issue: null,
     experience_years: 18,
+    base: "LHR",
+    languages: ["English"],
   },
   {
     name: "Capt. Ravi Sharma",
     role_code: "CAPT",
     role: "Captain",
-    qualifications: [
-      {
-        code: "B737",
-        name: "Boeing 737",
-      },
-    ],
+    qualifications: [{ code: "B737", name: "Boeing 737" }],
     status: "available",
     issue: null,
     experience_years: 15,
+    base: "DEL",
+    languages: ["English", "Hindi"],
   },
   {
     name: "Capt. Elena Petrova",
     role_code: "CAPT",
     role: "Captain",
-    qualifications: [
-      {
-        code: "B737",
-        name: "Boeing 737",
-      },
-    ],
+    qualifications: [{ code: "B737", name: "Boeing 737" }],
     status: "available",
     issue: null,
     experience_years: 13,
+    base: "DME",
+    languages: ["Russian", "English"],
   },
   {
     name: "FO Michael Adams",
     role_code: "FO",
     role: "First officer",
-    qualifications: [
-      {
-        code: "B737M",
-        name: "Boeing 737 MAX",
-      },
-    ],
+    qualifications: [{ code: "B737M", name: "Boeing 737 MAX" }],
     status: "available",
     issue: null,
     experience_years: 8,
+    base: "JFK",
+    languages: ["English", "Spanish"],
   },
   {
     name: "FO Hannah Lee",
     role_code: "FO",
     role: "First officer",
-    qualifications: [
-      {
-        code: "B737M",
-        name: "Boeing 737 MAX",
-      },
-    ],
+    qualifications: [{ code: "B737M", name: "Boeing 737 MAX" }],
     status: "available",
     issue: null,
     experience_years: 6,
+    base: "ICN",
+    languages: ["Korean", "English"],
   },
   {
     name: "FO Ahmed Nasser",
     role_code: "FO",
     role: "First officer",
-    qualifications: [
-      {
-        code: "B737M",
-        name: "Boeing 737 MAX",
-      },
-    ],
+    qualifications: [{ code: "B737M", name: "Boeing 737 MAX" }],
     status: "available",
     issue: null,
     experience_years: 7,
+    base: "DXB",
+    languages: ["Arabic", "English"],
   },
   {
     name: "SSCC Grace Thompson",
     role_code: "SCC",
     role: "Senior cabin crew",
-    qualifications: [
-      {
-        code: "SCC",
-        name: "Senior Cabin Crew",
-      },
-    ],
+    qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
     status: "available",
     issue: null,
     experience_years: 12,
+    base: "LHR",
+    languages: ["English", "French"],
   },
   {
     name: "SSCC Pedro Alvarez",
     role_code: "SCC",
     role: "Senior cabin crew",
-    qualifications: [
-      {
-        code: "SCC",
-        name: "Senior Cabin Crew",
-      },
-    ],
+    qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
     status: "available",
     issue: null,
     experience_years: 10,
+    base: "MAD",
+    languages: ["Spanish", "English"],
   },
   {
     name: "SSCC Fatima Noor",
     role_code: "SCC",
     role: "Senior cabin crew",
-    qualifications: [
-      {
-        code: "SCC",
-        name: "Senior Cabin Crew",
-      },
-    ],
+    qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
     status: "available",
     issue: null,
     experience_years: 9,
+    base: "DXB",
+    languages: ["Arabic", "Urdu", "English"],
   },
   {
     name: "CC Laura Bennett",
     role_code: "CC",
     role: "Cabin crew",
-    qualifications: [
-      {
-        code: "CC",
-        name: "Cabin Crew",
-      },
-    ],
+    qualifications: [{ code: "CC", name: "Cabin Crew" }],
     status: "available",
     issue: null,
     experience_years: 5,
+    base: "SYD",
+    languages: ["English"],
   },
   {
     name: "CC Samuel Osei",
     role_code: "CC",
     role: "Cabin crew",
-    qualifications: [
-      {
-        code: "CC",
-        name: "Cabin Crew",
-      },
-    ],
+    qualifications: [{ code: "CC", name: "Cabin Crew" }],
     status: "available",
     issue: null,
     experience_years: 4,
+    base: "ACC",
+    languages: ["English", "Twi"],
   },
   {
     name: "CC Yuki Tanaka",
     role_code: "CC",
     role: "Cabin crew",
-    qualifications: [
-      {
-        code: "CC",
-        name: "Cabin Crew",
-      },
-    ],
+    qualifications: [{ code: "CC", name: "Cabin Crew" }],
     status: "available",
     issue: null,
     experience_years: 3,
+    base: "HND",
+    languages: ["Japanese", "English"],
   },
 ];
 
@@ -487,6 +451,7 @@ const getAircraftIssuesRecoveryData = () => {
             issue: "Crew exceeded allowed maximum duty hours under regulations",
             experience_years: 15,
             base: "DXB",
+            languages: ["Arabic", "English"],
           },
           {
             name: "FO Sarah Johnson",
@@ -499,6 +464,7 @@ const getAircraftIssuesRecoveryData = () => {
             issue: null,
             experience_years: 7,
             base: "LHR",
+            languages: ["English", "French"],
           },
           {
             name: "SSCC Lisa Martinez",
@@ -509,6 +475,7 @@ const getAircraftIssuesRecoveryData = () => {
             issue: null,
             experience_years: 12,
             base: "JFK",
+            languages: ["English", "Spanish"],
           },
           {
             name: "CC Maria Santos",
@@ -519,6 +486,7 @@ const getAircraftIssuesRecoveryData = () => {
             issue: null,
             experience_years: 4,
             base: "MAD",
+            languages: ["Spanish", "English"],
           },
         ],
         crew_constraint: {
@@ -606,7 +574,7 @@ const getAircraftIssuesRecoveryData = () => {
       updated_at: "2025-08-09T08:02:00.000Z",
     },
     {
-      id: `DELAY_REPAIR_${"002"}`,
+      id: "DELAY_REPAIR_002",
       title: "Delay for Repair Completion",
       description: "Wait for hydraulics system repair",
       cost: "AED 48,960",
@@ -902,6 +870,7 @@ const getAircraftIssuesRecoveryData = () => {
             issue: null,
             experience_years: 16,
             base: "DXB",
+            languages: ["Arabic", "English"],
           },
           {
             name: "FO Sarah Johnson",
@@ -912,6 +881,7 @@ const getAircraftIssuesRecoveryData = () => {
             issue: null,
             experience_years: 6,
             base: "LHR",
+            languages: ["English", "French"],
           },
           {
             name: "SSCC Lisa Martinez",
@@ -922,6 +892,7 @@ const getAircraftIssuesRecoveryData = () => {
             issue: null,
             experience_years: 11,
             base: "JFK",
+            languages: ["English", "Spanish"],
           },
           {
             name: "CC Maria Santos",
@@ -932,6 +903,7 @@ const getAircraftIssuesRecoveryData = () => {
             issue: null,
             experience_years: 4,
             base: "MAD",
+            languages: ["Spanish", "English"],
           },
         ],
         crew_constraint: {
@@ -1019,7 +991,7 @@ const getAircraftIssuesRecoveryData = () => {
       updated_at: "2025-08-09T08:02:00.000Z",
     },
     {
-      id: `CANCEL_REBOOK_${"003"}`,
+      id: "CANCEL_REBOOK_003",
       title: "Cancel and Rebook",
       description: "Cancel and rebook on partner airlines",
       cost: "AED 141,440",
@@ -1252,41 +1224,65 @@ const getAircraftIssuesRecoveryData = () => {
             name: "Capt. Ahmed Al-Mansouri",
             role_code: "CAPT",
             role: "Captain",
-            qualifications: [{ code: "B737", name: "B737 Type Rating" }],
+            qualifications: [
+              {
+                code: "B737",
+                name: "B737 Type Rating",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 17,
             base: "DXB",
+            languages: ["English", "Arabic"],
           },
           {
             name: "FO Sarah Johnson",
             role_code: "FO",
             role: "First Officer",
-            qualifications: [{ code: "B737M", name: "B737/MAX Type Rating" }],
+            qualifications: [
+              {
+                code: "B737M",
+                name: "B737/MAX Type Rating",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 7,
             base: "LHR",
+            languages: ["English", "French"],
           },
           {
             name: "SSCC Lisa Martinez",
             role_code: "SCC",
             role: "Senior Cabin Crew",
-            qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
+            qualifications: [
+              {
+                code: "SCC",
+                name: "Senior Cabin Crew",
+              },
+            ],
             status: "Roster Violation",
             issue: "Assigned duty breaks rostering or regulatory rules",
             experience_years: 12,
             base: "JFK",
+            languages: ["English", "Spanish"],
           },
           {
             name: "CC Maria Santos",
             role_code: "CC",
             role: "Cabin Crew",
-            qualifications: [{ code: "CC", name: "Cabin Crew" }],
+            qualifications: [
+              {
+                code: "CC",
+                name: "Cabin Crew",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 4,
             base: "MAD",
+            languages: ["English", "Spanish", "Portuguese"],
           },
         ],
         crew_constraint: {
@@ -1639,41 +1635,73 @@ const getCrewIssuesRecoveryData = () => {
             name: "Capt. Ahmed Al-Mansouri",
             role_code: "CAPT",
             role: "Captain",
-            qualifications: [{ code: "B737", name: "B737 Type Rating" }],
+            qualifications: [
+              {
+                code: "B737",
+                name: "B737 Type Rating",
+              },
+            ],
             status: "Duty Time Exceeded",
             issue: "Exceeded maximum allowable duty hours under regulations",
             experience_years: 18,
             base: "DXB",
+            languages: ["English", "Arabic"],
           },
           {
             name: "FO Sarah Johnson",
             role_code: "FO",
             role: "First Officer",
-            qualifications: [{ code: "B737M", name: "B737/MAX Type Rating" }],
+            qualifications: [
+              {
+                code: "B737M",
+                name: "B737 MAX Type Rating",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 7,
             base: "LHR",
+            languages: ["English", "French"],
           },
           {
             name: "SSCC Lisa Martinez",
             role_code: "SCC",
             role: "Senior Cabin Crew",
-            qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
+            qualifications: [
+              {
+                code: "SCC",
+                name: "Senior Cabin Crew Certification",
+              },
+              {
+                code: "SEP",
+                name: "Safety & Emergency Procedures",
+              },
+            ],
             status: "Rest Violation",
             issue: "Insufficient mandatory rest period before next duty",
             experience_years: 11,
             base: "JFK",
+            languages: ["English", "Spanish"],
           },
           {
             name: "CC Maria Santos",
             role_code: "CC",
             role: "Cabin Crew",
-            qualifications: [{ code: "CC", name: "Cabin Crew" }],
+            qualifications: [
+              {
+                code: "CC",
+                name: "Cabin Crew Certification",
+              },
+              {
+                code: "MEDFA",
+                name: "Medical First Aid",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 5,
             base: "MAD",
+            languages: ["English", "Spanish", "Portuguese"],
           },
         ],
         crew_constraint: {
@@ -2017,41 +2045,109 @@ const getCrewIssuesRecoveryData = () => {
             name: "Capt. Ahmed Al-Mansouri",
             role_code: "CAPT",
             role: "Captain",
-            qualifications: [{ code: "B737", name: "B737 Type Rating" }],
+            qualifications: [
+              {
+                code: "B737",
+                name: "B737 Type Rating",
+              },
+            ],
             status: "Duty Time Exceeded",
             issue: "Exceeded maximum allowable duty hours under regulations",
             experience_years: 18,
             base: "DXB",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "AR",
+                name: "Arabic",
+              },
+            ],
           },
           {
             name: "FO Sarah Johnson",
             role_code: "FO",
             role: "First Officer",
-            qualifications: [{ code: "B737M", name: "B737/MAX Type Rating" }],
+            qualifications: [
+              {
+                code: "B737M",
+                name: "B737/MAX Type Rating",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 7,
             base: "LHR",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "FR",
+                name: "French",
+              },
+            ],
           },
           {
             name: "SSCC Lisa Martinez",
             role_code: "SCC",
             role: "Senior Cabin Crew",
-            qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
+            qualifications: [
+              {
+                code: "SCC",
+                name: "Senior Cabin Crew Certification",
+              },
+              {
+                code: "SEP",
+                name: "Safety & Emergency Procedures",
+              },
+            ],
             status: "Rest Violation",
             issue: "Insufficient mandatory rest period before next duty",
             experience_years: 12,
             base: "JFK",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "ES",
+                name: "Spanish",
+              },
+            ],
           },
           {
             name: "CC Maria Santos",
             role_code: "CC",
             role: "Cabin Crew",
-            qualifications: [{ code: "CC", name: "Cabin Crew" }],
+            qualifications: [
+              {
+                code: "CC",
+                name: "Cabin Crew Certification",
+              },
+              {
+                code: "MEDFA",
+                name: "Medical First Aid",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 5,
             base: "MAD",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "PT",
+                name: "Portuguese",
+              },
+            ],
           },
         ],
         crew_constraint: {
@@ -2383,41 +2479,109 @@ const getCrewIssuesRecoveryData = () => {
             name: "Capt. Ahmed Al-Mansouri",
             role_code: "CAPT",
             role: "Captain",
-            qualifications: [{ code: "B737", name: "B737 Type Rating" }],
+            qualifications: [
+              {
+                code: "B737",
+                name: "B737 Type Rating",
+              },
+            ],
             status: "Fatigue Risk",
             issue: "Replacement required due to fatigue limits",
             experience_years: 18,
             base: "DXB",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "AR",
+                name: "Arabic",
+              },
+            ],
           },
           {
             name: "FO Sarah Johnson",
             role_code: "FO",
             role: "First Officer",
-            qualifications: [{ code: "B737M", name: "B737/MAX Type Rating" }],
+            qualifications: [
+              {
+                code: "B737M",
+                name: "B737/MAX Type Rating",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 7,
             base: "LHR",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "FR",
+                name: "French",
+              },
+            ],
           },
           {
             name: "SSCC Lisa Martinez",
             role_code: "SCC",
             role: "Senior Cabin Crew",
-            qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
+            qualifications: [
+              {
+                code: "SCC",
+                name: "Senior Cabin Crew Certification",
+              },
+              {
+                code: "SEP",
+                name: "Safety & Emergency Procedures",
+              },
+            ],
             status: "Approaching Duty Limit",
             issue: "Crew nearing maximum allowed duty period",
             experience_years: 12,
             base: "JFK",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "ES",
+                name: "Spanish",
+              },
+            ],
           },
           {
             name: "CC Maria Santos",
             role_code: "CC",
             role: "Cabin Crew",
-            qualifications: [{ code: "CC", name: "Cabin Crew" }],
+            qualifications: [
+              {
+                code: "CC",
+                name: "Cabin Crew Certification",
+              },
+              {
+                code: "MEDFA",
+                name: "Medical First Aid",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 5,
             base: "MAD",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "PT",
+                name: "Portuguese",
+              },
+            ],
           },
         ],
         crew_constraint: {
@@ -2757,41 +2921,101 @@ const getWeatherIssuesRecoveryData = () => {
             name: "Capt. Ahmed Al-Mansouri",
             role_code: "CAPT",
             role: "Captain",
-            qualifications: [{ code: "B737", name: "B737 Type Rating" }],
+            qualifications: [
+              {
+                code: "B737",
+                name: "B737 Type Rating",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 18,
             base: "DXB",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "AR",
+                name: "Arabic",
+              },
+            ],
           },
           {
             name: "FO Sarah Johnson",
             role_code: "FO",
             role: "First Officer",
-            qualifications: [{ code: "B737M", name: "B737/MAX Type Rating" }],
+            qualifications: [
+              {
+                code: "B737M",
+                name: "B737/MAX Type Rating",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 7,
             base: "LHR",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "FR",
+                name: "French",
+              },
+            ],
           },
           {
             name: "SSCC Lisa Martinez",
             role_code: "SCC",
             role: "Senior Cabin Crew",
-            qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
+            qualifications: [
+              {
+                code: "SCC",
+                name: "Senior Cabin Crew",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 12,
             base: "JFK",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "ES",
+                name: "Spanish",
+              },
+            ],
           },
           {
             name: "CC Maria Santos",
             role_code: "CC",
             role: "Cabin Crew",
-            qualifications: [{ code: "CC", name: "Cabin Crew" }],
+            qualifications: [
+              {
+                code: "CC",
+                name: "Cabin Crew",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 5,
             base: "MAD",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "PT",
+                name: "Portuguese",
+              },
+            ],
           },
         ],
         crew_constraint: {
@@ -3119,41 +3343,117 @@ const getWeatherIssuesRecoveryData = () => {
             name: "Capt. Ahmed Al-Mansouri",
             role_code: "CAPT",
             role: "Captain",
-            qualifications: [{ code: "B737", name: "B737 Type Rating" }],
+            qualifications: [
+              {
+                code: "B737",
+                name: "B737 Type Rating",
+              },
+              {
+                code: "CRM",
+                name: "Crew Resource Management",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 18,
             base: "DXB",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "AR",
+                name: "Arabic",
+              },
+            ],
           },
           {
             name: "FO Sarah Johnson",
             role_code: "FO",
             role: "First Officer",
-            qualifications: [{ code: "B737M", name: "B737/MAX Type Rating" }],
+            qualifications: [
+              {
+                code: "B737M",
+                name: "B737/MAX Type Rating",
+              },
+              {
+                code: "ATPL",
+                name: "Airline Transport Pilot License",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 7,
             base: "LHR",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "FR",
+                name: "French",
+              },
+            ],
           },
           {
             name: "SSCC Lisa Martinez",
             role_code: "SCC",
             role: "Senior Cabin Crew",
-            qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
+            qualifications: [
+              {
+                code: "SCC",
+                name: "Senior Cabin Crew Certification",
+              },
+              {
+                code: "MEDFA",
+                name: "Medical First Aid",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 12,
             base: "JFK",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "ES",
+                name: "Spanish",
+              },
+            ],
           },
           {
             name: "CC Maria Santos",
             role_code: "CC",
             role: "Cabin Crew",
-            qualifications: [{ code: "CC", name: "Cabin Crew" }],
+            qualifications: [
+              {
+                code: "CC",
+                name: "Cabin Crew Certification",
+              },
+              {
+                code: "MEDFA",
+                name: "Medical First Aid",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 5,
             base: "MAD",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "PT",
+                name: "Portuguese",
+              },
+            ],
           },
         ],
         crew_constraint: {
@@ -3479,41 +3779,117 @@ const getWeatherIssuesRecoveryData = () => {
             name: "Capt. Ahmed Al-Mansouri",
             role_code: "CAPT",
             role: "Captain",
-            qualifications: [{ code: "B737", name: "B737 Type Rating" }],
+            qualifications: [
+              {
+                code: "B737",
+                name: "B737 Type Rating",
+              },
+              {
+                code: "CRM",
+                name: "Crew Resource Management",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 18,
             base: "DXB",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "AR",
+                name: "Arabic",
+              },
+            ],
           },
           {
             name: "FO Sarah Johnson",
             role_code: "FO",
             role: "First Officer",
-            qualifications: [{ code: "B737M", name: "B737/MAX Type Rating" }],
+            qualifications: [
+              {
+                code: "B737M",
+                name: "B737/MAX Type Rating",
+              },
+              {
+                code: "ATPL",
+                name: "Airline Transport Pilot License",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 7,
             base: "LHR",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "FR",
+                name: "French",
+              },
+            ],
           },
           {
             name: "SSCC Lisa Martinez",
             role_code: "SCC",
             role: "Senior Cabin Crew",
-            qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
+            qualifications: [
+              {
+                code: "SCC",
+                name: "Senior Cabin Crew Certification",
+              },
+              {
+                code: "MEDFA",
+                name: "Medical First Aid",
+              },
+            ],
             status: "Duty time exceeded",
             issue: "Duty time limit exceeded",
             experience_years: 12,
             base: "JFK",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "ES",
+                name: "Spanish",
+              },
+            ],
           },
           {
             name: "CC Maria Santos",
             role_code: "CC",
             role: "Cabin Crew",
-            qualifications: [{ code: "CC", name: "Cabin Crew" }],
+            qualifications: [
+              {
+                code: "CC",
+                name: "Cabin Crew Certification",
+              },
+              {
+                code: "MEDFA",
+                name: "Medical First Aid",
+              },
+            ],
             status: "Available",
             issue: null,
             experience_years: 5,
             base: "MAD",
+            languages: [
+              {
+                code: "EN",
+                name: "English",
+              },
+              {
+                code: "PT",
+                name: "Portuguese",
+              },
+            ],
           },
         ],
         crew_constraint: {
