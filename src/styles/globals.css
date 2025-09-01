@@ -115,10 +115,10 @@
 }
 
 .input-flydubai:focus {
-  border-color: #0066CC;
+  border-color: var(--airline-primary);
   outline: 2px solid transparent;
   outline-offset: 2px;
-  box-shadow: 0 0 0 2px #0066CC;
+  box-shadow: 0 0 0 2px var(--airline-primary);
 }
 
 .select-flydubai {
@@ -126,10 +126,10 @@
 }
 
 .select-flydubai:focus {
-  border-color: #0066CC;
+  border-color: var(--airline-primary);
   outline: 2px solid transparent;
   outline-offset: 2px;
-  box-shadow: 0 0 0 2px #0066CC;
+  box-shadow: 0 0 0 2px var(--airline-primary);
 }
 
 /* Responsive logo styles */
@@ -231,7 +231,7 @@
 
 /* Enhanced slider styles with better visibility */
 .slider-flydubai [data-radix-range] {
-  background-color: #0066CC !important;
+  background-color: var(--airline-primary) !important;
   height: 6px !important;
   border-radius: 3px !important;
 }
@@ -246,7 +246,7 @@
 .slider-flydubai [data-radix-thumb] {
   width: 20px !important;
   height: 20px !important;
-  border: 2px solid #0066CC !important;
+  border: 2px solid var(--airline-primary) !important;
   background-color: white !important;
   border-radius: 50% !important;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
@@ -254,14 +254,14 @@
 }
 
 .slider-flydubai [data-radix-thumb]:hover {
-  border-color: #001f3f !important;
-  box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1) !important;
+  border-color: var(--airline-navy) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--airline-primary) 10%, transparent) !important;
   transform: scale(1.1) !important;
 }
 
 .slider-flydubai [data-radix-thumb]:focus {
   outline: none !important;
-  box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.2) !important;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--airline-primary) 20%, transparent) !important;
 }
 
 /* Disabled slider styles */
@@ -289,7 +289,7 @@
 
 /* Enhanced switch styles for better visibility */
 .switch-flydubai [data-state="checked"] {
-  background-color: #0066CC !important;
+  background-color: var(--airline-primary) !important;
 }
 
 .switch-flydubai [data-state="unchecked"] {
@@ -307,7 +307,7 @@
 }
 
 .switch-flydubai:focus-visible {
-  outline: 2px solid #0066CC !important;
+  outline: 2px solid var(--airline-primary) !important;
   outline-offset: 2px !important;
 }
 
