@@ -2391,14 +2391,14 @@ export function ComparisonMatrix({
                                               ) {
                                                 const autoAssignedCrew = matchingReplacementCrew[0];
                                                 
-                                                // Update crew member with auto-assignment
-                                                React.useEffect(() => {
-                                                  if (selectedOptionDetails && selectedOptionDetails.rotation_plan) {
-                                                    const updatedCrew = [
-                                                      ...(selectedOptionDetails.rotation_plan.crew ||
-                                                        selectedOptionDetails.rotation_plan.crewData ||
-                                                        []),
-                                                    ];
+                                                // Auto-assign crew member immediately without useEffect
+                                                if (selectedOptionDetails && selectedOptionDetails.rotation_plan) {
+                                                  const updatedCrew = [
+                                                    ...(selectedOptionDetails.rotation_plan.crew ||
+                                                      selectedOptionDetails.rotation_plan.crewData ||
+                                                      []),
+                                                  ];
+                                                  if (!updatedCrew[index].autoAssignedReplacement) {
                                                     updatedCrew[index] = {
                                                       ...updatedCrew[index],
                                                       autoAssignedReplacement: autoAssignedCrew,
@@ -2407,16 +2407,19 @@ export function ComparisonMatrix({
                                                       assignedAt: new Date().toISOString(),
                                                       isAutoAssigned: true,
                                                     };
-                                                    setSelectedOptionDetails({
-                                                      ...selectedOptionDetails,
-                                                      rotation_plan: {
-                                                        ...selectedOptionDetails.rotation_plan,
-                                                        crew: updatedCrew,
-                                                        crewData: updatedCrew,
-                                                      },
-                                                    });
+                                                    // Delay the update to avoid render cycle issues
+                                                    setTimeout(() => {
+                                                      setSelectedOptionDetails({
+                                                        ...selectedOptionDetails,
+                                                        rotation_plan: {
+                                                          ...selectedOptionDetails.rotation_plan,
+                                                          crew: updatedCrew,
+                                                          crewData: updatedCrew,
+                                                        },
+                                                      });
+                                                    }, 0);
                                                   }
-                                                }, []);
+                                                }
                                               }
 
                                               // Display assigned replacement crew
