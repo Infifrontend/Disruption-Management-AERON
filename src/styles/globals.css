@@ -29,15 +29,6 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-    /* Airline-specific dynamic colors - will be injected by JavaScript */
-    --airline-primary: #0066CC;
-    --airline-secondary: #ff8200;
-    --airline-navy: #001f3f;
-    --airline-links: #0066CC;
-    --airline-accent: #e6f3ff;
-    --airline-success: #22c55e;
-    --airline-warning: #f59e0b;
-    --airline-error: #ef4444;
   }
 
   .dark {
@@ -120,27 +111,25 @@
 }
 
 .input-flydubai {
-  border-color: #e5e7eb;
-  border-width: 1px;
+  border-color: rgb(191 219 254);
 }
 
 .input-flydubai:focus {
   border-color: var(--airline-primary);
   outline: 2px solid transparent;
   outline-offset: 2px;
-  box-shadow: 0 0 0 1px var(--airline-primary);
+  box-shadow: 0 0 0 2px var(--airline-primary);
 }
 
 .select-flydubai {
-  border-color: #e5e7eb;
-  border-width: 1px;
+  border-color: rgb(191 219 254);
 }
 
 .select-flydubai:focus {
   border-color: var(--airline-primary);
   outline: 2px solid transparent;
   outline-offset: 2px;
-  box-shadow: 0 0 0 1px var(--airline-primary);
+  box-shadow: 0 0 0 2px var(--airline-primary);
 }
 
 /* Responsive logo styles */
@@ -521,7 +510,7 @@ body {
 .btn-flydubai-primary:disabled {
   background-color: #94a3b8;
   border-color: #94a3b8;
-  color: #f1f59;
+  color: #f1f5f9;
   cursor: not-allowed;
 }
 
@@ -568,28 +557,6 @@ body {
   background-color: #f0fdf4;
   color: #16a34a;
   border: 1px solid #bbf7d0;
-}
-
-/* Lighter border utilities */
-.border-light {
-  border-width: 0.5px !important;
-  border-color: #e5e7eb !important;
-}
-
-.border-lighter {
-  border-width: 0.5px !important;
-  border-color: #f3f4f6 !important;
-}
-
-/* Global input and border styles */
-input, select, textarea {
-  border-color: #e5e7eb !important;
-  border-width: 1px !important;
-}
-
-input:focus, select:focus, textarea:focus {
-  border-color: var(--airline-primary) !important;
-  box-shadow: 0 0 0 1px var(--airline-primary) !important;
 }
 
 /* Custom utilities */

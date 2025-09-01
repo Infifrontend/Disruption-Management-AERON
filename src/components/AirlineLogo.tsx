@@ -18,14 +18,10 @@ export function AirlineLogo({
   const { airlineConfig } = useAirlineTheme();
   
   const logoAlt = alt || `${airlineConfig.displayName} Logo`;
-  const logoSrc = airlineConfig.logo;
-  
-  // Create fallback logo path
-  const fallbackLogo = '/flydubai_logo.png';
   
   return (
     <img
-      src={logoSrc}
+      src={airlineConfig.logo}
       alt={logoAlt}
       className={className}
       width={width}
@@ -35,27 +31,9 @@ export function AirlineLogo({
         maxWidth: width ? `${width}px` : undefined,
       }}
       onError={(e) => {
-        console.warn(`Failed to load logo for ${airlineConfig.code}: ${logoSrc}`);
-        const target = e.target as HTMLImageElement;
-        
-        // Try the fallback if not already tried
-        if (target.src !== window.location.origin + fallbackLogo) {
-          target.src = fallbackLogo;
-        } else {
-          // If even the fallback fails, create a text-based logo
-          target.style.display = 'none';
-          
-          // Create a fallback div with airline code
-          const fallbackDiv = document.createElement('div');
-          fallbackDiv.className = 'flex items-center justify-center bg-airline-primary text-white font-bold rounded px-3 py-1';
-          fallbackDiv.style.fontSize = '14px';
-          fallbackDiv.textContent = airlineConfig.code;
-          
-          // Replace the img with the fallback div
-          if (target.parentNode) {
-            target.parentNode.insertBefore(fallbackDiv, target);
-          }
-        }
+        // Fallback to a default logo if airline-specific logo fails to load
+        console.warn(`Failed to load logo for ${airlineConfig.code}, falling back to default`);
+        (e.target as HTMLImageElement).src = '/flydubai_logo.png';
       }}
     />
   );
