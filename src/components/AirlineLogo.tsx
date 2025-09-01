@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAirlineTheme } from '../hooks/useAirlineTheme';
 
@@ -16,9 +15,9 @@ export function AirlineLogo({
   alt 
 }: AirlineLogoProps) {
   const { airlineConfig } = useAirlineTheme();
-  
+
   const logoAlt = alt || `${airlineConfig.displayName} Logo`;
-  
+
   return (
     <img
       src={airlineConfig.logo}
@@ -31,9 +30,21 @@ export function AirlineLogo({
         maxWidth: width ? `${width}px` : undefined,
       }}
       onError={(e) => {
-        // Fallback to a default logo if airline-specific logo fails to load
-        console.warn(`Failed to load logo for ${airlineConfig.code}, falling back to default`);
-        (e.target as HTMLImageElement).src = '/flydubai_logo.png';
+        console.warn(`Failed to load logo for ${airlineConfig.code}, trying fallback`);
+        const target = e.target as HTMLImageElement;
+
+        // Try different fallback strategies
+        if (!target.src.includes('flydubai_logo.png')) {
+          target.src = '/flydubai_logo.png';
+        } else if (!target.src.includes('airlines/FZ/logo.png')) {
+          target.src = '/airlines/FZ/logo.png';
+        } else {
+          // Create a text-based fallback
+          const parent = target.parentElement;
+          if (parent) {
+            parent.innerHTML = `<div class="text-white font-bold text-lg">${airlineConfig.displayName}</div>`;
+          }
+        }
       }}
     />
   );

@@ -49,6 +49,11 @@ export default {
         'airline-navy': 'var(--airline-navy)',
         'airline-links': 'var(--airline-links)',
         
+        // Consistent border colors
+        'input-border': '#e5e7eb',
+        'light-border': '#e5e7eb',
+        'airline-links': 'var(--airline-links)',
+        
         // Legacy Flydubai colors (mapped to dynamic variables for backward compatibility)
         'flydubai-blue': 'var(--airline-primary)',
         'flydubai-orange': 'var(--airline-secondary)',

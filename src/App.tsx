@@ -46,9 +46,13 @@ export default function App() {
     alertService.setShowAlertCallback(showAlert);
   }, [showAlert]);
 
-  // Update document title based on airline
+  // Update document title based on airline and inject theme
   React.useEffect(() => {
     document.title = `${airlineConfig.displayName} AERON - Airline Recovery Operations Network`;
+    // Force theme injection to ensure variables are set
+    import('./config/airlineConfig').then(({ injectAirlineTheme }) => {
+      injectAirlineTheme();
+    });
   }, [airlineConfig]);
 
   return (

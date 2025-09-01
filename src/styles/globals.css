@@ -580,6 +580,32 @@ body {
   @apply bg-green-100 text-green-800 border-green-200;
 }
 
+/* Input styling */
+input, textarea, select {
+  border-color: #e5e7eb !important;
+  border-width: 0.5px !important;
+}
+
+/* Override any existing input border styles */
+.border-input {
+  border-color: #e5e7eb !important;
+  border-width: 0.5px !important;
+}
+
+/* Ensure all form inputs use the light border */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+textarea,
+select {
+  border-color: #e5e7eb !important;
+  border-width: 0.5px !important;
+}
+
 /* Dialog scrolling styles */
 .dialog-scrollable {
   scrollbar-width: thin;
