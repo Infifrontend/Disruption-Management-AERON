@@ -66,7 +66,11 @@ export function ComparisonPage() {
   const handleSelectPlan = (plan: any) => {
     // Set the passenger services context when a plan is selected for execution
     if (plan.fromExecution) {
-      setPassengerServicesContext(plan);
+      setPassengerServicesContext({
+        ...plan,
+        // Include any existing reassigned crew data
+        reassignedCrewInfo: plan.reassignedCrewInfo || null
+      });
     }
     setSelectedRecoveryPlan(plan)
     navigate('/comparison') // Changed to navigate to comparison page itself

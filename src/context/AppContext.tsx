@@ -10,6 +10,8 @@ interface AppContextType {
   setSelectedRecoveryPlan: (plan: any) => void;
   passengerServicesContext: any;
   setPassengerServicesContext: (context: any) => void;
+  reassignedCrewData: any;
+  setReassignedCrewData: (data: any) => void;
   filters: any;
   setFilters: (filters: any) => void;
   screenSettings: screenSettings[];
@@ -34,6 +36,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [selectedFlight, setSelectedFlight] = useState(null);
   const [selectedRecoveryPlan, setSelectedRecoveryPlan] = useState<any | null>(null)
   const [passengerServicesContext, setPassengerServicesContext] = useState<any | null>(null)
+  const [reassignedCrewData, setReassignedCrewData] = useState<any | null>(null)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [filters, setFilters] = useState({
     flightNumber: "",
@@ -200,6 +203,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setSelectedRecoveryPlan,
         passengerServicesContext,
         setPassengerServicesContext,
+        reassignedCrewData,
+        setReassignedCrewData,
         filters,
         setFilters,
         screenSettings,
