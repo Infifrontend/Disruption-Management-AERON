@@ -896,7 +896,7 @@ export function ComparisonMatrix({
       setSelectedOptionDetails(option);
 
       // Use the rotation_plan data that's already included in the option from the API
-  
+
       let rotationPlan = option.rotation_plan;
 
       // Transform the API data to match the expected structure for the rotation dialog
@@ -960,12 +960,15 @@ export function ComparisonMatrix({
         // Crew data from API - handle both crewData and crew arrays
         crew:
           (rotationPlan?.crewData || rotationPlan?.crew || [])?.map((crew) => ({
-            name: crew.name,
-            type: crew.type || crew.role || crew.position,
-            status: crew.status || crew.availability,
-            issue: crew.issue,
-            location: crew.location,
-            availability: crew.availability || crew.status,
+            name: crew?.name,
+            qualifications: crew?.qualifications,
+            role: crew?.role,
+            role_code: crew?.role_code,
+            status: crew?.status,
+            issue: crew?.issue,
+            experience_years: crew?.experience_years,
+            // languages: crew?.languages,
+            // base: crew?.base,
           })) || [],
 
         // Operational metrics calculated from API data
@@ -1087,7 +1090,7 @@ export function ComparisonMatrix({
           },
         };
 
-            // Use the app context to set the passenger services context
+        // Use the app context to set the passenger services context
         // This ensures the data is available when the page loads
         if (typeof onSelectPlan === "function") {
           onSelectPlan(passengerContext);
@@ -1218,46 +1221,63 @@ export function ComparisonMatrix({
   };
 
   // Helper function to generate available crew for specific role
-  const generateAvailableCrewForRole = (targetRole, excludeName = null) => {
-    const crewPools :any ={};
+  const generateAvailableCrewForRole = (
+    targetRole: any,
+    excludeName = null,
+  ) => {
+    console.log("excludeName ", excludeName);
+    // const crewPools :any ={};
     const roleNormalized = targetRole.toLowerCase();
-    console.log(selectedOptionDetails,"selectedOptionDetails");   
-    
+    console.log(selectedOptionDetails, "selectedOptionDetails");
+
     // Ensure crew_available is an array before filtering
-    const availableCrewList = Array.isArray(selectedOptionDetails?.crew_available) 
-      ? selectedOptionDetails.crew_available 
+    const availableCrewList = Array.isArray(
+      selectedOptionDetails?.crew_available,
+    )
+      ? selectedOptionDetails.crew_available
       : [];
-    
-    crewPools.captain = availableCrewList.filter((crew: any) => crew?.role === "captain");
-    crewPools.first_officer = availableCrewList.filter((crew: any) => crew?.role === "first_officer");
-    crewPools.cabin_crew = availableCrewList.filter((crew: any) => crew?.role === "cabin_crew");
-    // Determine which pool to use based on role
-    let availableCrew = [];
 
-    if (roleNormalized.includes("captain") || roleNormalized.includes("capt")) {
-      availableCrew = crewPools.captain;
-    } else if (
-      roleNormalized.includes("first officer") ||
-      roleNormalized.includes("f/o") ||
-      roleNormalized.includes("fo")
-    ) {
-      availableCrew = crewPools.first_officer;
-    } else if (
-      roleNormalized.includes("flight attendant") ||
-      roleNormalized.includes("cabin") ||
-      roleNormalized.includes("fa")
-    ) {
-      availableCrew = crewPools.cabin_crew;
-    } else {
-      // Default to captain pool if role is unclear
-      availableCrew = crewPools.captain;
-    }
+    // Group all crew by role
+    const crewPools = Object.groupBy(
+      availableCrewList,
+      (crew: any) => crew?.role_code,
+    );
+    console.log(crewPools, "crewPools");
+    // Normalize role mapping
+    let availableCrew: any[] = [];
 
+    console.log(roleNormalized, "normalized");
+    // if (roleNormalized.includes("captain") || roleNormalized.includes("capt")) {
+    //   availableCrew = crewPools["captain"] ?? [];
+    // } else if (
+    //   roleNormalized.includes("first officer") ||
+    //   roleNormalized.includes("f/o") ||
+    //   roleNormalized.includes("fo")
+    // ) {
+    //   availableCrew = crewPools["first_officer"] ?? [];
+    // } else if (
+    //   roleNormalized.includes("flight attendant") ||
+    //   roleNormalized.includes("cabincrew") ||
+    //   roleNormalized.includes("fa")
+    // ) {
+    //   availableCrew = crewPools["cabin_crew"] ?? [];
+    // } else if (
+    //   roleNormalized.includes("senior cabin") ||
+    //   roleNormalized.includes("senior") ||
+    //   roleNormalized.includes("sc")
+    // ) {
+    //   availableCrew = crewPools["senior_cabin_crew"] ?? [];
+    // } else {
+    //   // Default to captain pool if role is unclear
+    //   availableCrew = crewPools["captain"] ?? [];
+    // }
+    availableCrew = crewPools[targetRole] ? crewPools[targetRole] : [];
+    console.log(availableCrew, "availableCrew");
     // Filter out the current crew member if editing
     if (excludeName) {
       availableCrew = availableCrew.filter((crew) => crew.name !== excludeName);
     }
-
+    console.log(availableCrew, "availableCrew");
     return availableCrew;
   };
 
@@ -2268,9 +2288,7 @@ export function ComparisonMatrix({
                                                   : crewMember.name}
                                               </h5>
                                               <p className="text-sm text-gray-600">
-                                                {crewMember.type ||
-                                                  crewMember.role ||
-                                                  crewMember.position}
+                                                {crewMember.role}
                                               </p>
                                               {crewMember.location && (
                                                 <p className="text-xs text-gray-500">
@@ -2301,9 +2319,7 @@ export function ComparisonMatrix({
                                               </Badge>
                                             </div>
                                             <p className="text-sm text-blue-600">
-                                              {crewMember.type ||
-                                                crewMember.role ||
-                                                crewMember.position}
+                                              {crewMember.role}
                                             </p>
                                             {crewMember.experience && (
                                               <p className="text-xs text-blue-600">
@@ -2366,26 +2382,51 @@ export function ComparisonMatrix({
                                             </div>
                                             {/* Display replacement crew for violated crew members */}
                                             {(() => {
-                                              const currentRole = crewMember.type || crewMember.role || crewMember.position;
-                                              const availableCrew = Array.isArray(selectedOptionDetails?.crew_available) 
-                                                ? selectedOptionDetails.crew_available 
-                                                : [];
-                                              
-                                              // Filter replacement crew by role and exclude duplicates
-                                              const matchingReplacementCrew = availableCrew.filter((replacementCrew) => {
-                                                const replacementRole = replacementCrew?.role;
-                                                const currentCrewNames = (selectedOptionDetails?.rotation_plan?.crew || selectedOptionDetails?.rotation_plan?.crewData || [])
-                                                  .map(c => c?.name).filter(Boolean);
-                                                
-                                                // Check if roles match and crew is not already in current/assigned crew
-                                                return replacementRole === currentRole && 
-                                                       replacementCrew?.name &&
-                                                       !currentCrewNames.includes(replacementCrew.name);
-                                              });
+                                              const currentRole =
+                                                crewMember.role_code;
+                                              const availableCrew =
+                                                Array.isArray(
+                                                  selectedOptionDetails?.crew_available,
+                                                )
+                                                  ? selectedOptionDetails.crew_available
+                                                  : [];
 
-                                              if (matchingReplacementCrew.length > 0) {
+                                              // Filter replacement crew by role and exclude duplicates
+                                              const matchingReplacementCrew =
+                                                availableCrew.filter(
+                                                  (replacementCrew) => {
+                                                    const replacementRole =
+                                                      replacementCrew?.role_code;
+                                                    const currentCrewNames = (
+                                                      selectedOptionDetails
+                                                        ?.rotation_plan?.crew ||
+                                                      selectedOptionDetails
+                                                        ?.rotation_plan
+                                                        ?.crewData ||
+                                                      []
+                                                    )
+                                                      .map((c) => c?.name)
+                                                      .filter(Boolean);
+
+                                                    // Check if roles match and crew is not already in current/assigned crew
+                                                    return (
+                                                      replacementRole ===
+                                                        currentRole &&
+                                                      replacementCrew?.name &&
+                                                      !currentCrewNames.includes(
+                                                        replacementCrew.name,
+                                                      )
+                                                    );
+                                                  },
+                                                );
+
+                                              if (
+                                                matchingReplacementCrew.length >
+                                                0
+                                              ) {
                                                 // Show the first matching replacement crew member
-                                                const replacementCrew = matchingReplacementCrew[0];
+                                                const replacementCrew =
+                                                  matchingReplacementCrew[0];
                                                 return (
                                                   <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
                                                     <div className="flex items-center gap-2 mb-1">
@@ -2403,23 +2444,39 @@ export function ComparisonMatrix({
                                                       </p>
                                                       {replacementCrew.experience_years && (
                                                         <p className="text-green-600">
-                                                          Experience: {replacementCrew.experience_years} years
+                                                          Experience:{" "}
+                                                          {
+                                                            replacementCrew.experience_years
+                                                          }{" "}
+                                                          years
                                                         </p>
                                                       )}
                                                       {replacementCrew.location && (
                                                         <p className="text-green-600">
-                                                          Location: {replacementCrew.location}
+                                                          Location:{" "}
+                                                          {
+                                                            replacementCrew?.location
+                                                          }
                                                         </p>
                                                       )}
                                                       <div className="flex items-center gap-1 mt-1">
                                                         <Badge className="bg-green-100 text-green-700 text-xs">
-                                                          {replacementCrew.status}
+                                                          {
+                                                            replacementCrew?.status
+                                                          }
                                                         </Badge>
-                                                        {matchingReplacementCrew.length > 1 && (
-                                                          <Badge variant="outline" className="text-xs">
-                                                            +{matchingReplacementCrew.length - 1} more
+                                                        {/* {matchingReplacementCrew.length >
+                                                          1 && (
+                                                          <Badge
+                                                            variant="outline"
+                                                            className="text-xs"
+                                                          >
+                                                            +
+                                                            {matchingReplacementCrew.length -
+                                                              1}{" "}
+                                                            more
                                                           </Badge>
-                                                        )}
+                                                        )} */}
                                                       </div>
                                                     </div>
                                                   </div>
@@ -2427,7 +2484,8 @@ export function ComparisonMatrix({
                                               } else {
                                                 return (
                                                   <p className="text-xs text-gray-500 mt-1">
-                                                    No replacement crew available for {currentRole}
+                                                    No replacement crew
+                                                    available for {currentRole}
                                                   </p>
                                                 );
                                               }
@@ -2441,9 +2499,7 @@ export function ComparisonMatrix({
                                                   {crewMember.name}
                                                 </h5>
                                                 <p className="text-sm text-gray-600">
-                                                  {crewMember.type ||
-                                                    crewMember.role ||
-                                                    crewMember.position}
+                                                  {crewMember.role}
                                                 </p>
                                                 {crewMember.location && (
                                                   <p className="text-xs text-gray-500">
@@ -2527,9 +2583,7 @@ export function ComparisonMatrix({
                                                 isEditing: hasBeenSwapped,
                                               });
                                               const currentRole =
-                                                crewMember.type ||
-                                                crewMember.role ||
-                                                crewMember.position;
+                                                crewMember.role_code;
                                               const filteredCrew =
                                                 generateAvailableCrewForRole(
                                                   currentRole,
@@ -3781,10 +3835,7 @@ export function ComparisonMatrix({
                 ` - ${selectedCrewForSwap.type || selectedCrewForSwap.role || selectedCrewForSwap.position}`}
             </DialogTitle>
             <div className="text-sm text-muted-foreground">
-              Role:{" "}
-              {selectedCrewForSwap?.type ||
-                selectedCrewForSwap?.role ||
-                selectedCrewForSwap?.position}
+              Role: {selectedCrewForSwap?.role}
               {selectedCrewForSwap?.isEditing && (
                 <Badge className="ml-2 bg-orange-100 text-orange-700 border-orange-300">
                   Editing Assignment
@@ -3812,9 +3863,7 @@ export function ComparisonMatrix({
                   <div>
                     <span className="text-blue-700">Role:</span>
                     <div className="font-medium">
-                      {selectedCrewForSwap.type ||
-                        selectedCrewForSwap.role ||
-                        selectedCrewForSwap.position}
+                      {selectedCrewForSwap.role}
                     </div>
                   </div>
                   <div>
@@ -3880,11 +3929,7 @@ export function ComparisonMatrix({
                 <div className="flex items-center justify-between">
                   <h4 className="font-medium text-gray-800 flex items-center gap-2">
                     <UserCheck className="h-4 w-4" />
-                    Available Crew Members (
-                    {selectedCrewForSwap.type ||
-                      selectedCrewForSwap.role ||
-                      selectedCrewForSwap.position}
-                    )
+                    Available Crew Members ({selectedCrewForSwap.role})
                   </h4>
                   <Badge variant="outline" className="text-xs">
                     {availableCrewForSwap.length} matches found
@@ -3920,7 +3965,7 @@ export function ComparisonMatrix({
                               Location
                             </span>
                             <p className="text-sm font-medium text-gray-700">
-                              {crew.location  || "-" }
+                              {crew.location || "-"}
                             </p>
                           </div>
                           <div>
@@ -3929,7 +3974,7 @@ export function ComparisonMatrix({
                               <div className="flex-1 bg-gray-200 rounded-full h-2">
                                 <div
                                   className="bg-flydubai-blue h-2 rounded-full"
-                                  style={{ width: `${crew.score || 90 }%` }}
+                                  style={{ width: `${crew.score || 90}%` }}
                                 ></div>
                               </div>
                               <span className="text-sm font-medium text-flydubai-blue">
@@ -4006,7 +4051,7 @@ export function ComparisonMatrix({
                                   isEdit: selectedCrewForSwap.isEditing,
                                 };
 
-                               setShowCrewSwapDialog(false);
+                                setShowCrewSwapDialog(false);
                                 setSelectedCrewForSwap(null);
                               }}
                             >

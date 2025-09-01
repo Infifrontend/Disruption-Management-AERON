@@ -122,7 +122,8 @@ const transformFlightData = (disruption: FlightDisruption) => {
     currentStatus: disruption.status,
     delay: disruption.delay || 0,
     aircraft: disruption.aircraft || "Unknown",
-    gate: (disruption as any).gate || `T2-A${Math.floor(Math.random() * 30) + 1}`, // Generate consistent gate
+    gate:
+      (disruption as any).gate || `T2-A${Math.floor(Math.random() * 30) + 1}`, // Generate consistent gate
     passengers: disruption.passengers || 0,
     crew: disruption.crew || 6,
     disruptionType: disruption.type
@@ -386,7 +387,10 @@ export function DisruptionInput({
               "Unknown",
             status: disruption.status || "Unknown",
             severity: disruption.severity || "Medium",
-            type: (disruption as any).disruption_type || disruption.type || "Technical",
+            type:
+              (disruption as any).disruption_type ||
+              disruption.type ||
+              "Technical",
             disruptionReason:
               (disruption as any).disruption_reason ||
               disruption.disruptionReason ||
@@ -406,7 +410,6 @@ export function DisruptionInput({
       const transformedFlights = processedData.map(transformFlightData);
       setFlights(transformedFlights);
 
-     
       // Count incomplete records
       const incompleteCount =
         data.length -
@@ -498,7 +501,9 @@ export function DisruptionInput({
               status: disruption.status || "Unknown",
               severity: disruption.severity || "Medium",
               type:
-                (disruption as any).disruption_type || disruption.type || "Technical",
+                (disruption as any).disruption_type ||
+                disruption.type ||
+                "Technical",
               disruptionReason:
                 (disruption as any).disruption_reason ||
                 disruption.disruptionReason ||
@@ -518,7 +523,7 @@ export function DisruptionInput({
           const transformedFlights =
             processedFallbackData.map(transformFlightData);
           setFlights(transformedFlights);
-         
+
           if (transformedFlights.length > 0) {
             setError(
               "⚠️ Using cached flight data. Some information may be outdated or incomplete. Try refreshing when connection is restored.",
@@ -695,7 +700,10 @@ export function DisruptionInput({
         const priorityOrder = { Critical: 4, High: 3, Medium: 2, Low: 1 };
         return priorityOrder[b.priority] - priorityOrder[a.priority];
       case "departure":
-        return new Date(a.scheduledDeparture).getTime() - new Date(b.scheduledDeparture).getTime();
+        return (
+          new Date(a.scheduledDeparture).getTime() -
+          new Date(b.scheduledDeparture).getTime()
+        );
       case "passengers":
         return b.passengers - a.passengers;
       case "delay":
@@ -735,7 +743,7 @@ export function DisruptionInput({
     try {
       // Call API to generate recovery options
       const flightId = flight.id || flight.flightNumber;
-   
+
       // Set loading for this specific flight
       setLoadingRecovery((prev) => ({ ...prev, [flightId]: true }));
 
@@ -937,7 +945,7 @@ export function DisruptionInput({
     };
 
     try {
-          const result = await databaseService.saveDisruption(newFlightData);
+      const result = await databaseService.saveDisruption(newFlightData);
 
       // Check if the result indicates success
       if (result && (result === true || (result as any).success !== false)) {
@@ -2470,7 +2478,7 @@ export function DisruptionInput({
                                       ) : (
                                         <>
                                           <Eye className="h-3 w-3 mr-1" />
-                                          Options
+                                          Generate Options
                                         </>
                                       )}
                                     </Button>
