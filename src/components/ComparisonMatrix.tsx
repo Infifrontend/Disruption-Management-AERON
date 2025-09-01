@@ -3102,9 +3102,6 @@ export function ComparisonMatrix({
               </div>
             </div>
           </div>
-        )}
-      </DialogContent>
-    </Dialog>
         </DialogContent>
       </Dialog>
 
