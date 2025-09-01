@@ -1,4 +1,3 @@
-
 {
   "FZ": {
     "code": "FZ",
@@ -25,7 +24,7 @@
       "popoverForeground": "#1a1a1a",
       "muted": "#f1f5f9",
       "mutedForeground": "#64748b",
-      "border": "#f1f3f4",
+      "border": "#e5e7eb",
       "input": "#ffffff",
       "ring": "#0066CC"
     }
@@ -55,7 +54,7 @@
       "popoverForeground": "#1a1a1a",
       "muted": "#f8f9fa",
       "mutedForeground": "#64748b",
-      "border": "#f1f3f4",
+      "border": "#e5e7eb",
       "input": "#ffffff",
       "ring": "#8e2157"
     }
