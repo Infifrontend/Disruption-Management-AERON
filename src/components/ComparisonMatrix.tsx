@@ -1225,7 +1225,7 @@ export function ComparisonMatrix({
     targetRole: any,
     excludeName = null,
   ) => {
-    console.log("excludeName ", excludeName);
+    console.log("excludeName ", targetRole, excludeName);
     // const crewPools :any ={};
     const roleNormalized = targetRole.toLowerCase();
     console.log(selectedOptionDetails, "selectedOptionDetails");
@@ -2293,14 +2293,14 @@ export function ComparisonMatrix({
                                               {crewMember.location && (
                                                 <p className="text-xs text-gray-500">
                                                   Location:{" "}
-                                                  {crewMember.location}
+                                                  {crewMember?.location}
                                                 </p>
                                               )}
                                             </div>
                                           </div>
-                                          {isAffected && crewMember.issue && (
+                                          {isAffected && crewMember?.issue && (
                                             <div className="text-xs text-red-700 font-medium">
-                                              Issue: {crewMember.issue}
+                                              Issue: {crewMember?.issue}
                                             </div>
                                           )}
                                         </div>
@@ -2312,19 +2312,19 @@ export function ComparisonMatrix({
                                           <div className="space-y-2">
                                             <div className="flex items-center gap-2">
                                               <h5 className="font-medium text-blue-900">
-                                                {crewMember.name}
+                                                {crewMember?.name}
                                               </h5>
                                               <Badge className="bg-orange-100 text-orange-700 border-orange-300 text-xs">
                                                 Changed
                                               </Badge>
                                             </div>
                                             <p className="text-sm text-blue-600">
-                                              {crewMember.role}
+                                              {crewMember?.role}
                                             </p>
                                             {crewMember.experience && (
                                               <p className="text-xs text-blue-600">
                                                 Experience:{" "}
-                                                {crewMember.experience}
+                                                {crewMember?.experience}
                                               </p>
                                             )}
                                             {crewMember.score && (
@@ -2333,16 +2333,16 @@ export function ComparisonMatrix({
                                                   <div
                                                     className="bg-blue-500 h-2 rounded-full"
                                                     style={{
-                                                      width: `${crewMember.score}%`,
+                                                      width: `${crewMember?.score}%`,
                                                     }}
                                                   ></div>
                                                 </div>
                                                 <span className="text-xs font-medium text-blue-600">
-                                                  {crewMember.score}
+                                                  {crewMember?.score}
                                                 </span>
                                               </div>
                                             )}
-                                            {crewMember.qualifications &&
+                                            {/* {crewMember.qualifications &&
                                               Array.isArray(
                                                 crewMember.qualifications,
                                               ) && (
@@ -2370,7 +2370,7 @@ export function ComparisonMatrix({
                                                     </Badge>
                                                   )}
                                                 </div>
-                                              )}
+                                              )} */}
                                           </div>
                                         ) : isAffected ? (
                                           <div className="space-y-2">
@@ -2383,12 +2383,12 @@ export function ComparisonMatrix({
                                             {/* Display replacement crew for violated crew members */}
                                             {(() => {
                                               const currentRole =
-                                                crewMember.role_code;
+                                                crewMember?.role_code;
                                               const availableCrew =
                                                 Array.isArray(
                                                   selectedOptionDetails?.crew_available,
                                                 )
-                                                  ? selectedOptionDetails.crew_available
+                                                  ? selectedOptionDetails?.crew_available
                                                   : [];
 
                                               // Filter replacement crew by role and exclude duplicates
@@ -2414,7 +2414,7 @@ export function ComparisonMatrix({
                                                         currentRole &&
                                                       replacementCrew?.name &&
                                                       !currentCrewNames.includes(
-                                                        replacementCrew.name,
+                                                        replacementCrew?.name,
                                                       )
                                                     );
                                                   },
@@ -2440,13 +2440,13 @@ export function ComparisonMatrix({
                                                         {replacementCrew.name}
                                                       </p>
                                                       <p className="text-green-700">
-                                                        {replacementCrew.role}
+                                                        {replacementCrew?.role}
                                                       </p>
-                                                      {replacementCrew.experience_years && (
+                                                      {replacementCrew?.experience_years && (
                                                         <p className="text-green-600">
                                                           Experience:{" "}
                                                           {
-                                                            replacementCrew.experience_years
+                                                            replacementCrew?.experience_years
                                                           }{" "}
                                                           years
                                                         </p>
@@ -2496,15 +2496,15 @@ export function ComparisonMatrix({
                                             <div className="flex items-center gap-3">
                                               <div className="flex-1">
                                                 <h5 className="font-medium text-gray-900">
-                                                  {crewMember.name}
+                                                  {crewMember?.name}
                                                 </h5>
                                                 <p className="text-sm text-gray-600">
                                                   {crewMember.role}
                                                 </p>
-                                                {crewMember.location && (
+                                                {crewMember?.location && (
                                                   <p className="text-xs text-gray-500">
                                                     Location:{" "}
-                                                    {crewMember.location}
+                                                    {crewMember?.location}
                                                   </p>
                                                 )}
                                               </div>
@@ -2522,35 +2522,35 @@ export function ComparisonMatrix({
                                         <div className="space-y-2">
                                           <Badge
                                             className={`px-3 py-1 ${
-                                              (crewMember.status ||
-                                                crewMember.availability) ===
+                                              (crewMember?.status ||
+                                                crewMember?.availability) ===
                                               "Available"
                                                 ? "bg-green-100 text-green-700 border-green-300"
-                                                : (crewMember.status ||
-                                                      crewMember.availability) ===
+                                                : (crewMember?.status ||
+                                                      crewMember?.availability) ===
                                                       "Sick" ||
-                                                    (crewMember.status ||
-                                                      crewMember.availability) ===
+                                                    (crewMember?.status ||
+                                                      crewMember?.availability) ===
                                                       "Unavailable"
                                                   ? "bg-red-100 text-red-700 border-red-300"
-                                                  : (crewMember.status ||
-                                                        crewMember.availability) ===
+                                                  : (crewMember?.status ||
+                                                        crewMember?.availability) ===
                                                         "On Duty" ||
-                                                      (crewMember.status ||
-                                                        crewMember.availability) ===
+                                                      (crewMember?.status ||
+                                                        crewMember?.availability) ===
                                                         "Reassigned"
                                                     ? "bg-yellow-100 text-yellow-700 border-yellow-300"
                                                     : "bg-gray-100 text-gray-700 border-gray-300"
                                             }`}
                                           >
                                             {crewMember.status ||
-                                              crewMember.availability}
+                                              crewMember?.availability}
                                           </Badge>
                                           {hasBeenSwapped && (
                                             <p className="text-xs text-gray-500">
                                               Swapped at:{" "}
                                               {new Date(
-                                                crewMember.assignedAt,
+                                                crewMember?.assignedAt,
                                               ).toLocaleTimeString()}
                                             </p>
                                           )}
@@ -2583,11 +2583,11 @@ export function ComparisonMatrix({
                                                 isEditing: hasBeenSwapped,
                                               });
                                               const currentRole =
-                                                crewMember.role_code;
+                                                crewMember?.role_code;
                                               const filteredCrew =
                                                 generateAvailableCrewForRole(
                                                   currentRole,
-                                                  crewMember.name,
+                                                  crewMember?.name,
                                                 );
                                               setAvailableCrewForSwap(
                                                 filteredCrew,
@@ -2616,7 +2616,7 @@ export function ComparisonMatrix({
                                                 // Revert swap logic
                                                 if (
                                                   selectedOptionDetails &&
-                                                  selectedOptionDetails.rotation_plan
+                                                  selectedOptionDetails?.rotation_plan
                                                 ) {
                                                   const updatedCrew = [
                                                     ...(selectedOptionDetails
@@ -2678,10 +2678,10 @@ export function ComparisonMatrix({
                                       []
                                     ).filter(
                                       (crew) =>
-                                        crew.status !== "Sick" &&
-                                        crew.status !== "Unavailable" &&
-                                        !crew.issue &&
-                                        !crew.replacedCrew,
+                                        crew?.status !== "Sick" &&
+                                        crew?.status !== "Unavailable" &&
+                                        !crew?.issue &&
+                                        !crew?.replacedCrew,
                                     ).length
                                   }
                                 </div>
@@ -2737,9 +2737,9 @@ export function ComparisonMatrix({
                                       []
                                     ).filter(
                                       (crew) =>
-                                        crew.status === "Sick" ||
-                                        crew.status === "Unavailable" ||
-                                        crew.issue,
+                                        crew?.status === "Sick" ||
+                                        crew?.status === "Unavailable" ||
+                                        crew?.issue,
                                     ).length
                                   }
                                 </div>
@@ -3832,7 +3832,7 @@ export function ComparisonMatrix({
               <Users className="h-5 w-5 text-flydubai-blue" />
               Swap Crew Member
               {selectedCrewForSwap &&
-                ` - ${selectedCrewForSwap.type || selectedCrewForSwap.role || selectedCrewForSwap.position}`}
+                ` - ${selectedCrewForSwap.type || selectedCrewForSwap.role || selectedCrewForSwap?.position}`}
             </DialogTitle>
             <div className="text-sm text-muted-foreground">
               Role: {selectedCrewForSwap?.role}
@@ -3902,7 +3902,7 @@ export function ComparisonMatrix({
                     </div>
                   )}
                 </div>
-                {selectedCrewForSwap.qualifications &&
+                {/* {selectedCrewForSwap.qualifications &&
                   Array.isArray(selectedCrewForSwap.qualifications) && (
                     <div className="mt-3">
                       <span className="text-sm text-blue-700 font-medium">
@@ -3916,13 +3916,13 @@ export function ComparisonMatrix({
                               variant="outline"
                               className="text-xs bg-white"
                             >
-                              {qual}
+                              {qual.name}
                             </Badge>
                           ),
                         )}
                       </div>
                     </div>
-                  )}
+                  )} */}
               </div>
 
               <div className="space-y-4">
@@ -3946,10 +3946,10 @@ export function ComparisonMatrix({
                         <div className="flex-1 grid grid-cols-5 gap-4">
                           <div>
                             <h5 className="font-medium text-gray-900">
-                              {crew.name}
+                              {crew?.name}
                             </h5>
                             <p className="text-sm text-gray-600">
-                              {crew.role || crew.rank}
+                              {crew?.role}
                             </p>
                           </div>
                           <div>
@@ -3957,7 +3957,7 @@ export function ComparisonMatrix({
                               Experience
                             </span>
                             <p className="text-sm font-medium text-gray-700">
-                              {crew.experience_years}
+                              {crew?.experience_years}
                             </p>
                           </div>
                           <div>
@@ -3965,7 +3965,7 @@ export function ComparisonMatrix({
                               Location
                             </span>
                             <p className="text-sm font-medium text-gray-700">
-                              {crew.location || "-"}
+                              {crew?.location || "-"}
                             </p>
                           </div>
                           <div>
@@ -3974,11 +3974,11 @@ export function ComparisonMatrix({
                               <div className="flex-1 bg-gray-200 rounded-full h-2">
                                 <div
                                   className="bg-flydubai-blue h-2 rounded-full"
-                                  style={{ width: `${crew.score || 90}%` }}
+                                  style={{ width: `${crew?.score || 90}%` }}
                                 ></div>
                               </div>
                               <span className="text-sm font-medium text-flydubai-blue">
-                                {crew.score || 90}
+                                {crew?.score || 90}
                               </span>
                             </div>
                           </div>
@@ -3986,12 +3986,12 @@ export function ComparisonMatrix({
                             <div className="flex flex-col gap-1 mb-2">
                               <Badge
                                 className={`text-xs w-fit ${
-                                  crew.availability === "Available"
+                                  crew?.availability === "Available"
                                     ? "bg-green-100 text-green-700"
                                     : "bg-yellow-100 text-yellow-700"
                                 }`}
                               >
-                                {crew.status}
+                                {crew?.status}
                               </Badge>
                             </div>
                             <Button
@@ -4012,14 +4012,15 @@ export function ComparisonMatrix({
                                   ];
                                   const originalIndex =
                                     selectedCrewForSwap.originalIndex;
+                                  console.log(originalIndex);
 
                                   // Update the crew member with swap information
                                   updatedCrew[originalIndex] = {
                                     ...updatedCrew[originalIndex],
                                     name: crew.name,
-                                    experience: crew.experience,
-                                    location: crew.location,
-                                    score: crew.score,
+                                    experience_years: crew.experience_years,
+                                    // location: crew.location,
+                                    // score: crew.score,
                                     qualifications: crew.qualifications,
                                     replacedCrew:
                                       selectedCrewForSwap.replacedCrew ||
@@ -4028,6 +4029,10 @@ export function ComparisonMatrix({
                                     status: "Reassigned",
                                     availability: "On Duty",
                                   };
+                                  console.log(
+                                    updatedCrew[originalIndex],
+                                    "Crew map ",
+                                  );
 
                                   setSelectedOptionDetails({
                                     ...selectedOptionDetails,
@@ -4037,6 +4042,7 @@ export function ComparisonMatrix({
                                       crewData: updatedCrew,
                                     },
                                   });
+                                  console.log(selectedOptionDetails, "test11");
                                 }
 
                                 // Store the assignment update
