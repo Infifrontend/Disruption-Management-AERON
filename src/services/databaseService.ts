@@ -2087,6 +2087,96 @@ class DatabaseService {
       return false;
     }
   }
+
+  // Reassigned Data Management
+  async saveReassignedData(
+    optionId: string,
+    reassignedData: any,
+  ): Promise<boolean> {
+    try {
+      console.log("Saving reassigned data for option:", optionId, reassignedData);
+      const response = await fetch(
+        `${this.baseUrl}/recovery-option/${optionId}/reassigned-data`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(reassignedData),
+        },
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(
+          "Failed to save reassigned data:",
+          response.status,
+          errorText,
+        );
+        return false;
+      }
+
+      const result = await response.json();
+      console.log("Successfully saved reassigned data:", result);
+      return true;
+    } catch (error) {
+      console.error("Failed to save reassigned data:", error);
+      return false;
+    }
+  }
+
+  async getReassignedData(optionId: string): Promise<any> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/recovery-option/${optionId}/reassigned-data`,
+      );
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log(`No reassigned data found for option ${optionId}`);
+          return {};
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error fetching reassigned data:", error);
+      return {};
+    }
+  }
+
+  async updateReassignedData(
+    optionId: string,
+    dataType: string,
+    data: any,
+  ): Promise<boolean> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/recovery-option/${optionId}/reassigned-data/${dataType}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        },
+      );
+      return response.ok;
+    } catch (error) {
+      console.error("Failed to update reassigned data:", error);
+      return false;
+    }
+  }
+
+  async deleteReassignedData(optionId: string): Promise<boolean> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/recovery-option/${optionId}/reassigned-data`,
+        {
+          method: "DELETE",
+        },
+      );
+      return response.ok;
+    } catch (error) {
+      console.error("Failed to delete reassigned data:", error);
+      return false;
+    }
+  }
 }
 
 // Singleton instance
