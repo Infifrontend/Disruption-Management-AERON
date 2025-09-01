@@ -31,16 +31,15 @@ export function AirlineLogo({
         maxWidth: width ? `${width}px` : undefined,
       }}
       onError={(e) => {
-        // Fallback logic based on airline
-        console.warn(`Failed to load logo for ${airlineConfig.code}, falling back to default`);
+        console.warn(`Failed to load logo for ${airlineConfig.code}, trying fallback`);
         const target = e.target as HTMLImageElement;
         
-        if (airlineConfig.code === 'QR') {
-          // For Qatar Airways, we'll use a data URL with the uploaded logo content
-          // For now, fallback to flydubai logo until QR logo is properly uploaded
+        // Try the public folder fallback first
+        if (target.src !== '/flydubai_logo.png') {
           target.src = '/flydubai_logo.png';
         } else {
-          target.src = '/flydubai_logo.png';
+          // If even the fallback fails, hide the image
+          target.style.display = 'none';
         }
       }}
     />

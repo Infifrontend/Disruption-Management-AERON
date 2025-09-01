@@ -568,6 +568,15 @@ body {
   border: 1px solid #bbf7d0;
 }
 
+/* Lighter border utilities */
+.border-light {
+  border-width: 0.5px !important;
+}
+
+.border-lighter {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
 /* Custom utilities */
 .btn-flydubai-primary {
   @apply bg-flydubai-orange hover:bg-orange-600 text-white border-none;
