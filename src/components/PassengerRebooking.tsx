@@ -179,6 +179,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   const [crewHotelAssignments, setCrewHotelAssignments] = useState({});
   const [selectedCrewMembers, setSelectedCrewMembers] = useState(new Set());
   const [selectedHotelForCrew, setSelectedHotelForCrew] = useState(null);
+  const [selectedCrewForHotel, setSelectedCrewForHotel] = useState([]);
 
   // State to track PNRs that were selected for approval (prevents auto-clearing)
   const [pnrsForApproval, setPnrsForApproval] = useState(new Set());
@@ -2656,8 +2657,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5 text-flydubai-blue" />
-                      Crew Assignment Status
+                      <UserCheck className="h-5 w-5 text-flydubai-blue" />
+                      Crew Schedule Information
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -2675,112 +2676,91 @@ export function PassengerRebooking({ context, onClearContext }) {
                               <TableHead>Name</TableHead>
                               <TableHead>Rank</TableHead>
                               <TableHead>Status</TableHead>
-                              {/* <TableHead>Location</TableHead> */}
-                              {/* <TableHead>Duty Time Remaining</TableHead> */}
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {(crewData?.crew && crewData.crew.length > 0
-                              ? crewData.crew
-                              : [
-                                  {
-                                    id: "CR001",
-                                    name: "Capt. Ahmed Al-Mansouri",
-                                    role: "Captain",
-                                    base: "DXB",
-                                    status: "Available",
-                                    contact: "+971-50-1234567",
-                                    issue: null,
-                                  },
-                                  {
-                                    id: "CR002",
-                                    name: "F/O Sarah Johnson",
-                                    role: "First Officer",
-                                    base: "DXB",
-                                    status: "Available",
-                                    contact: "+971-50-2345678",
-                                    issue: null,
-                                  },
-                                  {
-                                    id: "CR003",
-                                    name: "Fatima Al-Mansouri",
-                                    role: "Senior Cabin Crew",
-                                    base: "DXB",
-                                    status: "Available",
-                                    contact: "+971-50-3456789",
-                                    issue: null,
-                                  },
-                                  {
-                                    id: "CR004",
-                                    name: "Ahmed Hassan",
-                                    role: "Cabin Crew",
-                                    base: "DXB",
-                                    status: "Duty Violation",
-                                    contact: "+971-50-4567890",
-                                    issue:
-                                      "Duty time exceeded - requires rest period",
-                                  },
-                                ]
-                            ).map((crewMember, index) => {
-                              const memberIdentifier =
-                                crewMember.name ||
-                                crewMember.id ||
-                                `crew_${index}`;
-                              const isAssigned = Object.values(
-                                crewHotelAssignments,
-                              ).some((assignment) =>
-                                (assignment as any).crew_member.some(
-                                  (cm) =>
-                                    cm.name === memberIdentifier ||
-                                    cm.employee_id === memberIdentifier,
-                                ),
-                              );
+                            {(() => {
+                              // Get violated crew from reassigned crew data in app context
+                              const { reassignedCrewData } = useAppContext();
+                              let violatedCrewList = [];
 
-                              return (
-                                <TableRow
-                                  key={crewMember.id || index}
-                                  className={isAssigned ? "bg-green-50" : ""}
-                                >
+                              if (reassignedCrewData?.reassignedCrew?.length > 0) {
+                                // Filter for violated crew (those who had issues and were replaced)
+                                violatedCrewList = reassignedCrewData.reassignedCrew
+                                  .filter(crew => crew.replacedCrew && (crew.issue || crew.status === 'Sick' || crew.status === 'Unavailable'))
+                                  .map(crew => ({
+                                    name: crew.replacedCrew,
+                                    rank: crew.role,
+                                    status: crew.issue ? 'Duty Violation' : crew.status,
+                                    issue: crew.issue
+                                  }));
+                              }
+
+                              // If no violated crew from context, check if there's crew data from the context
+                              if (violatedCrewList.length === 0 && context?.recoveryOption?.fullDetails?.rotationPlan?.crew) {
+                                violatedCrewList = context.recoveryOption.fullDetails.rotationPlan.crew
+                                  .filter(crew => crew.status === 'Sick' || crew.status === 'Unavailable' || crew.issue)
+                                  .map(crew => ({
+                                    name: crew.name,
+                                    rank: crew.role,
+                                    status: crew.issue ? 'Duty Violation' : crew.status,
+                                    issue: crew.issue
+                                  }));
+                              }
+
+                              // If still no data, fall back to mock data for demonstration
+                              if (violatedCrewList.length === 0) {
+                                violatedCrewList = [
+                                  {
+                                    name: "No violated crew data found",
+                                    rank: "-",
+                                    status: "No Data",
+                                    issue: null
+                                  }
+                                ];
+                              }
+
+                              return violatedCrewList.map((crew, index) => (
+                                <TableRow key={index}>
                                   <TableCell>
-                                    <Checkbox
-                                      checked={selectedCrewMembers.has(
-                                        memberIdentifier,
-                                      )}
-                                      onCheckedChange={() =>
-                                        handleCrewSelection(memberIdentifier)
-                                      }
-                                      disabled={isAssigned}
+                                    <input
+                                      type="checkbox"
+                                      className="h-4 w-4 text-flydubai-blue focus:ring-flydubai-blue border-gray-300 rounded"
+                                      disabled={crew.status === "No Data"}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setSelectedCrewForHotel(prev => [...prev, crew]);
+                                        } else {
+                                          setSelectedCrewForHotel(prev => prev.filter(c => c.name !== crew.name));
+                                        }
+                                      }}
                                     />
                                   </TableCell>
-                                  <TableCell className="font-medium">
-                                    {crewMember.name || "Crew Member"}
-                                    {isAssigned && (
-                                      <Badge className="ml-2 bg-green-100 text-green-700">
-                                        Assigned
-                                      </Badge>
-                                    )}
-                                  </TableCell>
-                                  <TableCell>
-                                    {crewMember.role || "Crew"}
-                                  </TableCell>
+                                  <TableCell className="font-medium">{crew.name}</TableCell>
+                                  <TableCell>{crew.rank}</TableCell>
                                   <TableCell>
                                     <Badge
                                       className={
-                                        crewMember.status === "Available"
-                                          ? "bg-green-100 text-green-700 border-green-200"
-                                          : crewMember.status === "On Duty"
-                                            ? "bg-yellow-100 text-yellow-700 border-yellow-200"
-                                            : "bg-red-100 text-red-700 border-red-200"
+                                        crew.status === 'Available'
+                                          ? 'bg-green-100 text-green-800 border-green-300'
+                                          : crew.status === 'Duty Violation'
+                                            ? 'bg-red-100 text-red-800 border-red-300'
+                                            : crew.status === 'No Data'
+                                              ? 'bg-gray-100 text-gray-800 border-gray-300'
+                                              : 'bg-yellow-100 text-yellow-800 border-yellow-300'
                                       }
                                     >
-                                      {crewMember.status === "Duty Violation"
-                                        ? "Duty Violation"
-                                        : crewMember.status}
+                                      {crew.status}
                                     </Badge>
+                                    {crew.issue && (
+                                      <div className="text-xs text-red-600 mt-1">
+                                        {crew.issue}
+                                      </div>
+                                    )}
                                   </TableCell>
                                 </TableRow>
-                              );
-                            })}
+                              ));
+                            })()}
                           </TableBody>
                         </Table>
                       </div>
@@ -3259,7 +3239,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                                           ? "s"
                                           : ""}
                                       </Badge>
-                                      {isPnrGroupConfirmed(groupPassengers) && (
+                                      {isPnrGroupConfirmed(
+                                        groupPassengers,
+                                      ) && (
                                         <Badge className="bg-green-100 text-green-800 border-green-200">
                                           <CheckCircle className="h-3 w-3 mr-1" />
                                           Confirmed
@@ -3292,7 +3274,10 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Button
                                     size="sm"
                                     onClick={() =>
-                                      handleRebookPnrGroup(pnr, groupPassengers)
+                                      handleRebookPnrGroup(
+                                        pnr,
+                                        groupPassengers,
+                                      )
                                     }
                                     disabled={isPnrGroupConfirmed(
                                       groupPassengers,
@@ -3637,8 +3622,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                         <Badge
                                           className={
                                             crewMember.isAutoAssigned
-                                              ? "bg-blue-100 text-blue-700 border-blue-300"
-                                              : "bg-orange-100 text-orange-700 border-orange-300"
+                                              ? "bg-blue-100 text-blue-700"
+                                              : "bg-orange-100 text-orange-700"
                                           }
                                         >
                                           {crewMember.isAutoAssigned
@@ -3712,7 +3697,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                       }
                                     >
                                       {crewMember.isAutoAssigned
-                                        ? "Auto"
+                                        ? "Auto-Assigned"
                                         : "Manual"}
                                     </Badge>
                                   </div>
