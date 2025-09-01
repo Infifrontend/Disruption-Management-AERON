@@ -43,11 +43,17 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Add custom Flydubai colors
-        'flydubai-blue': '#0066CC',
-        'flydubai-orange': '#ff8200',
-        'flydubai-navy': '#001f3f',
-        'flydubai-progress-blue': '#006496',
+        // Dynamic airline colors (CSS variables)
+        'airline-primary': 'var(--airline-primary)',
+        'airline-secondary': 'var(--airline-secondary)',
+        'airline-navy': 'var(--airline-navy)',
+        'airline-links': 'var(--airline-links)',
+        
+        // Legacy Flydubai colors (mapped to dynamic variables for backward compatibility)
+        'flydubai-blue': 'var(--airline-primary)',
+        'flydubai-orange': 'var(--airline-secondary)',
+        'flydubai-navy': 'var(--airline-navy)',
+        'flydubai-progress-blue': 'var(--airline-primary)',
         'flydubai-progress-bg': '#f0fbff',
       },
       borderRadius: {

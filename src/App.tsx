@@ -25,6 +25,7 @@ import { CustomAlertDialog } from './components/CustomAlertDialog'
 import './styles/globals.css'
 import { LoginPage } from './pages/LoginPage' // Assuming LoginPage component is created
 import { ProtectedRoute } from './components/ProtectedRoute' // Assuming ProtectedRoute component is created
+import { useAirlineTheme } from './hooks/useAirlineTheme'
 
 // Loading component
 const LoadingSpinner = () => (
@@ -38,11 +39,17 @@ const LoadingSpinner = () => (
 
 export default function App() {
   const { alertState, showAlert, hideAlert, handleConfirm, handleCancel } = useCustomAlert();
+  const { airlineConfig } = useAirlineTheme();
 
   // Initialize alert service
   React.useEffect(() => {
     alertService.setShowAlertCallback(showAlert);
   }, [showAlert]);
+
+  // Update document title based on airline
+  React.useEffect(() => {
+    document.title = `${airlineConfig.displayName} AERON - Airline Recovery Operations Network`;
+  }, [airlineConfig]);
 
   return (
     <AppProvider>
