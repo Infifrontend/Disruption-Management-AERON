@@ -48,6 +48,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { databaseService } from "../services/databaseService";
 import { useNavigate } from "react-router-dom";
 import { alertService } from "../services/alertService";
+import { useAppContext } from "../context/AppContext";
 
 interface ComparisonMatrixProps {
   selectedFlight: any;
@@ -63,6 +64,7 @@ export function ComparisonMatrix({
   onSelectPlan,
 }: ComparisonMatrixProps) {
   const navigate = useNavigate();
+  const { setReassignedCrewData } = useAppContext();
   const [loading, setLoading] = useState(false);
 
   // State for reassigned data, keyed by option ID
@@ -4253,14 +4255,33 @@ export function ComparisonMatrix({
                                     "Crew map ",
                                   );
 
-                                  setSelectedOptionDetails({
+                                  const updatedOptionDetails = {
                                     ...selectedOptionDetails,
                                     rotation_plan: {
                                       ...selectedOptionDetails.rotation_plan,
                                       crew: updatedCrew,
                                       crewData: updatedCrew,
                                     },
-                                  });
+                                  };
+                                  
+                                  setSelectedOptionDetails(updatedOptionDetails);
+                                  
+                                  // Capture reassigned crew data for Service Page
+                                  const reassignedCrew = updatedCrew.filter(crewMember => 
+                                    crewMember.replacedCrew && crewMember.assignedAt
+                                  );
+                                  
+                                  if (reassignedCrew.length > 0) {
+                                    setReassignedCrewData({
+                                      flightId: selectedFlight?.id,
+                                      optionId: selectedOptionDetails?.id,
+                                      optionTitle: selectedOptionDetails?.title,
+                                      reassignedCrew: reassignedCrew,
+                                      timestamp: new Date().toISOString(),
+                                      totalReassignments: reassignedCrew.length
+                                    });
+                                  }
+                                  
                                   console.log(selectedOptionDetails, "test11");
                                 }
 
