@@ -105,7 +105,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("passenger-service");
-  const [crewData, setCrewData] = useState(null);
+  const [crewData, setCrewData] = useState(null); // This is intended for the hook's local state, not the context value.
   const [loading, setLoading] = useState(false);
 
   // Custom alert state
@@ -181,7 +181,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   const [pnrsForApproval, setPnrsForApproval] = useState(new Set());
 
   // Extract crew data from context with reassignment information
-  const crewData = useMemo(() => {
+  const crewData = useMemo(() => { // This 'crewData' is the local state managed by useState hook.
     // Check if we have rotation plan data with crew information
     if (context?.recoveryOption?.rotation_plan?.crew || context?.recoveryOption?.rotation_plan?.crewData) {
       const allCrew = context.recoveryOption.rotation_plan.crew || context.recoveryOption.rotation_plan.crewData || [];
@@ -252,6 +252,9 @@ export function PassengerRebooking({ context, onClearContext }) {
       ]
     };
   }, [context]);
+
+  // This `contextCrewData` is the actual context value being used in the crew schedule tab.
+  const contextCrewData = context?.recoveryOption?.crewData || context?.crewData;
 
   // Enhanced default passenger data with PNR grouping
   const defaultPassengers = [
@@ -961,8 +964,7 @@ export function PassengerRebooking({ context, onClearContext }) {
             selectedPriority === "all-priorities" ||
             passenger.priority === selectedPriority;
           const matchesStatus =
-            selectedStatus === "all-statuses" ||
-            passenger.status === selectedStatus;
+            selectedStatus === "all-statuses" || passenger.status === selectedStatus;
 
           return matchesSearch && matchesPriority && matchesStatus;
         },
@@ -1364,18 +1366,6 @@ export function PassengerRebooking({ context, onClearContext }) {
   };
 
   // Logic to handle crew assignment confirmation
-  const handleCrewSelection = (memberIdentifier) => {
-    setSelectedCrewMembers((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(memberIdentifier)) {
-        newSet.delete(memberIdentifier);
-      } else {
-        newSet.add(memberIdentifier);
-      }
-      return newSet;
-    });
-  };
-
   const handleConfirmCrewAssignment = async () => {
     try {
 
@@ -1672,7 +1662,8 @@ export function PassengerRebooking({ context, onClearContext }) {
         // Build unified payload for addPendingSolution
         const solutionData = {
           disruption_id: disruptionFlightId,
-          option_id: recoveryOption?.id || `SERVICES_${Date.now()}`,
+          option_id:
+            recoveryOption?.id || `SERVICES_${Date.now()}`,
           option_title:
             recoveryOption?.title || "Comprehensive Services Recovery",
           estimated_cost:
@@ -1807,7 +1798,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
     // Filter crew data to show only reassigned crew
     return (
-      crewData?.crew
+      crewData?.crew // This refers to the local state 'crewData'
         ? crewData.crew.filter((crew) => {
             // Show reassigned crew OR if no reassignment is made, show all crew
             // The logic here might need refinement based on the exact requirement:
@@ -1944,14 +1935,14 @@ export function PassengerRebooking({ context, onClearContext }) {
       };
 
 
-      setCrewData({
+      setCrewData({ // Setting the local state
         crew: recoveryOptionData.crewData,
         crewConstraints: recoveryOptionData.crewConstraints || {},
         operationalConstraints: recoveryOptionData.operationalConstraints || {},
       });
     } catch (error) {
       console.error("Error loading crew data:", error);
-      setCrewData({
+      setCrewData({ // Setting the local state
         crew: [],
         crewConstraints: {},
         operationalConstraints: {},
@@ -2428,9 +2419,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                               )}
                             />
                             <span className="font-medium text-gray-700">
-                              Select All (
-                              {Object.keys(filteredPnrGroups).length} PNR
-                              groups)
+                              Select All ({Object.keys(filteredPnrGroups).length}{" "}
+                              PNR groups)
                             </span>
                             {selectedPnrs.size > 0 && (
                               <Badge variant="outline" className="ml-auto">
@@ -2744,7 +2734,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {crewData?.crew ? (
+                            {contextCrewData?.crew ? ( // Corrected: using contextCrewData here
                               displayCrew.map((crew, index) => (
                                 <TableRow key={index} className={crew.isReassigned || crew.assignedAt ? "bg-blue-50" : ""}>
                                   <TableCell>
@@ -3285,7 +3275,10 @@ export function PassengerRebooking({ context, onClearContext }) {
 
                       {Object.entries(filteredPnrGroups).map(
                         ([pnr, groupPassengers]) => (
-                          <div key={pnr} className="border rounded-lg bg-white">
+                          <div
+                            key={pnr}
+                            className="border rounded-lg bg-white"
+                          >
                             <div className="p-4 border-b bg-gray-50">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -3315,7 +3308,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                                           ? "s"
                                           : ""}
                                       </Badge>
-                                      {isPnrGroupConfirmed(groupPassengers) && (
+                                      {isPnrGroupConfirmed(
+                                        groupPassengers,
+                                      ) && (
                                         <Badge className="bg-green-100 text-green-800 border-green-200">
                                           <CheckCircle className="h-3 w-3 mr-1" />
                                           Confirmed
@@ -3348,7 +3343,10 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Button
                                     size="sm"
                                     onClick={() =>
-                                      handleRebookPnrGroup(pnr, groupPassengers)
+                                      handleRebookPnrGroup(
+                                        pnr,
+                                        groupPassengers,
+                                      )
                                     }
                                     disabled={isPnrGroupConfirmed(
                                       groupPassengers,
@@ -3566,7 +3564,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {crewData?.crew ? (
+                          {contextCrewData?.crew ? ( // Corrected: using contextCrewData here
                             displayCrew.map((crew, index) => (
                               <TableRow key={index} className={crew.isReassigned || crew.assignedAt ? "bg-blue-50" : ""}>
                                 <TableCell>
@@ -3764,8 +3762,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                     </h4>
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="text-sm text-gray-600 mb-2">
-                        Selected crew members will be assigned to chosen hotels
-                        automatically based on:
+                        Selected crew members will be assigned to chosen
+                        hotels automatically based on:
                       </div>
                       <ul className="text-xs text-gray-500 space-y-1 ml-4">
                         <li>• Crew rank and seniority</li>
@@ -3943,8 +3941,7 @@ export function PassengerRebooking({ context, onClearContext }) {
               {selectedPnrGroup
                 ? selectedPnrs.size > 1
                   ? `Bulk Rebooking - ${selectedPnrs.size} PNR Groups (${
-                      Object.values(filteredPnrGroups)
-                        .filter(([pnr]) => selectedPnrs.has(pnr))
+                      Object.values(filteredPnrGroups).filter(([pnr]) => selectedPnrs.has(pnr))
                         .flat().length
                     } passengers)`
                   : `Group Rebooking - PNR ${selectedPnrGroup.pnr} (${selectedPnrGroup.passengers.length} passengers)`
