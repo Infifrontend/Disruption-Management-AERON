@@ -2516,46 +2516,81 @@ export function ComparisonMatrix({
                                       {/* Status Column */}
                                       <TableCell className="p-4">
                                         <div className="space-y-2">
-                                          <Badge
-                                            className={`px-3 py-1 ${
-                                              (crewMember?.status ||
-                                                crewMember?.availability) ===
-                                              "Available"
-                                                ? "bg-green-100 text-green-700 border-green-300"
-                                                : (crewMember?.status ||
-                                                      crewMember?.availability) ===
-                                                      "Sick" ||
-                                                    (crewMember?.status ||
-                                                      crewMember?.availability) ===
-                                                      "Unavailable"
-                                                  ? "bg-red-100 text-red-700 border-red-300"
-                                                  : (crewMember?.status ||
-                                                        crewMember?.availability) ===
-                                                        "On Duty" ||
-                                                      (crewMember?.status ||
-                                                        crewMember?.availability) ===
-                                                        "Reassigned"
-                                                    ? "bg-yellow-100 text-yellow-700 border-yellow-300"
-                                                    : "bg-gray-100 text-gray-700 border-gray-300"
-                                            }`}
-                                          >
-                                            {crewMember.status ||
-                                              crewMember?.availability}
-                                          </Badge>
-                                          {hasBeenSwapped && (
-                                            <p className="text-xs text-gray-500">
-                                              Swapped at:{" "}
-                                              {new Date(
-                                                crewMember?.assignedAt,
-                                              ).toLocaleTimeString()}
-                                            </p>
-                                          )}
-                                          {isAffected && (
-                                            <div className="flex items-center gap-1">
-                                              <AlertTriangle className="h-3 w-3 text-red-500" />
-                                              <span className="text-xs text-red-600">
-                                                Needs Attention
-                                              </span>
+                                          {hasBeenSwapped || crewMember.isAutoAssigned ? (
+                                            <div className="space-y-2">
+                                              {/* Previous crew status (if there was an issue) */}
+                                              {crewMember.replacedCrew && (
+                                                <div className="p-2 bg-red-50 border border-red-200 rounded">
+                                                  <div className="text-xs text-red-700 font-medium mb-1">
+                                                    Previous: {crewMember.replacedCrew}
+                                                  </div>
+                                                  <Badge className="bg-red-100 text-red-700 border-red-300 text-xs">
+                                                    {crewMember.issue ? "Issue Reported" : "Unavailable"}
+                                                  </Badge>
+                                                  {crewMember.issue && (
+                                                    <div className="text-xs text-red-600 mt-1">
+                                                      {crewMember.issue}
+                                                    </div>
+                                                  )}
+                                                </div>
+                                              )}
+                                              
+                                              {/* Current assigned crew status */}
+                                              <div className="p-2 bg-green-50 border border-green-200 rounded">
+                                                <div className="text-xs text-green-700 font-medium mb-1">
+                                                  Current: {crewMember.name}
+                                                </div>
+                                                <Badge className="bg-green-100 text-green-700 border-green-300 text-xs">
+                                                  {crewMember.isAutoAssigned ? "Auto-Assigned" : "Reassigned"}
+                                                </Badge>
+                                                <div className="text-xs text-green-600 mt-1">
+                                                  Assigned at: {new Date(crewMember.assignedAt).toLocaleTimeString()}
+                                                </div>
+                                              </div>
+                                            </div>
+                                          ) : (
+                                            <div className="space-y-2">
+                                              <Badge
+                                                className={`px-3 py-1 ${
+                                                  (crewMember?.status ||
+                                                    crewMember?.availability) ===
+                                                  "Available"
+                                                    ? "bg-green-100 text-green-700 border-green-300"
+                                                    : (crewMember?.status ||
+                                                          crewMember?.availability) ===
+                                                          "Sick" ||
+                                                        (crewMember?.status ||
+                                                          crewMember?.availability) ===
+                                                          "Unavailable"
+                                                      ? "bg-red-100 text-red-700 border-red-300"
+                                                      : (crewMember?.status ||
+                                                            crewMember?.availability) ===
+                                                            "On Duty" ||
+                                                          (crewMember?.status ||
+                                                            crewMember?.availability) ===
+                                                            "Reassigned"
+                                                        ? "bg-yellow-100 text-yellow-700 border-yellow-300"
+                                                        : "bg-gray-100 text-gray-700 border-gray-300"
+                                                }`}
+                                              >
+                                                {crewMember.status ||
+                                                  crewMember?.availability}
+                                              </Badge>
+                                              
+                                              {isAffected && (
+                                                <div className="flex items-center gap-1">
+                                                  <AlertTriangle className="h-3 w-3 text-red-500" />
+                                                  <span className="text-xs text-red-600">
+                                                    Needs Attention
+                                                  </span>
+                                                </div>
+                                              )}
+                                              
+                                              {crewMember.issue && (
+                                                <div className="text-xs text-red-600 bg-red-50 p-1 rounded border">
+                                                  {crewMember.issue}
+                                                </div>
+                                              )}
                                             </div>
                                           )}
                                         </div>
