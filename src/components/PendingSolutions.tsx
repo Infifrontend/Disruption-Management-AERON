@@ -515,7 +515,7 @@ export function PendingSolutions() {
 
       // First try to get recovery options from the disruption
       if (plan.disruptionId) {
-        
+
         const recoveryResponse = await fetch(
           `/api/recovery-options/${plan.disruptionId}`,
           {
@@ -527,7 +527,7 @@ export function PendingSolutions() {
         if (recoveryResponse.ok) {
           recoveryOptionsData = await recoveryResponse.json();
         } else {
-         
+
         }
       }
 
@@ -711,7 +711,7 @@ export function PendingSolutions() {
           })(),
         };
 
-       
+
 
         // Debug log recovery options for matching
         if (transformedPlan.recoveryOptions) {
@@ -858,7 +858,7 @@ export function PendingSolutions() {
 
               if (matchingOption) {
                 setRecoveryOptionData(matchingOption);
-                
+
               }
             }
           }
@@ -1251,17 +1251,33 @@ export function PendingSolutions() {
                       </h4>
                       <div className="space-y-4 max-h-64 overflow-y-auto">
                         {(() => {
-                          // Group passengers by PNR
-                          const currentPassengerData =
+                          const rawPassengerData =
                             selectedOptionForDetails?.pending_recovery_solutions
                               ?.full_details?.passenger_rebooking ||
                             selectedOptionForDetails?.pending_recovery_solutions
                               ?.passenger_rebooking ||
                             [];
 
-                          const groupedByPnr = currentPassengerData.reduce(
+                          // Ensure currentPassengerData is always an array
+                          const currentPassengerData = Array.isArray(rawPassengerData) 
+                            ? rawPassengerData 
+                            : [];
+
+                          if (
+                            !currentPassengerData ||
+                            currentPassengerData.length === 0
+                          ) {
+                            return (
+                              <div className="text-center py-8 text-gray-500">
+                                No passenger rebooking data available
+                              </div>
+                            );
+                          }
+
+                          // Group passengers by PNR
+                          const passengersByPnr = currentPassengerData.reduce(
                             (acc, passenger) => {
-                              const pnr = passenger.pnr || "UNKNOWN";
+                              const pnr = passenger.pnr || "Unknown";
                               if (!acc[pnr]) {
                                 acc[pnr] = [];
                               }
@@ -1271,7 +1287,7 @@ export function PendingSolutions() {
                             {},
                           );
 
-                          return Object.entries(groupedByPnr)
+                          return Object.entries(passengersByPnr)
                             .slice(0, 8)
                             .map(([pnr, passengers], groupIndex) => (
                               <Card
@@ -1404,16 +1420,16 @@ export function PendingSolutions() {
                             ));
                         })()}
                         {(() => {
-                          const currentPassengerData =
+                          const rawPassengerData =
                             selectedOptionForDetails?.pending_recovery_solutions
                               ?.full_details?.passenger_rebooking ||
                             selectedOptionForDetails?.pending_recovery_solutions
                               ?.passenger_rebooking ||
                             [];
 
-                          const groupCount = Array.isArray(currentPassengerData)
+                          const groupCount = Array.isArray(rawPassengerData)
                             ? Object.keys(
-                                currentPassengerData.reduce(
+                                rawPassengerData.reduce(
                                   (acc, passenger) => {
                                     const pnr = passenger.pnr || "UNKNOWN";
                                     if (!acc[pnr]) acc[pnr] = [];
@@ -1433,85 +1449,6 @@ export function PendingSolutions() {
                             )
                           );
                         })()}
-                      </div>
-                    </div>
-
-                    {/* Additional Services Summary */}
-                    <Separator />
-                    <div>
-                      <h4 className="font-medium mb-3">
-                        Additional Services Provided
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="p-3 border rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <UtensilsCrossed className="h-4 w-4 text-green-600" />
-                            <span className="font-medium">Meal Vouchers</span>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {Array.isArray(passengerData)
-                              ? passengerData.filter((p) =>
-                                  p.additional_services?.includes(
-                                    "meal_voucher",
-                                  ),
-                                ).length
-                              : 0}{" "}
-                            passengers provided meal vouchers
-                          </div>
-                        </div>
-                        <div className="p-3 border rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Hotel className="h-4 w-4 text-blue-600" />
-                            <span className="font-medium">
-                              Hotel Accommodation
-                            </span>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {Array.isArray(passengerData)
-                              ? passengerData.filter((p) =>
-                                  p.additional_services?.includes(
-                                    "accommodation",
-                                  ),
-                                ).length
-                              : 0}{" "}
-                            passengers provided hotel accommodation
-                          </div>
-                        </div>
-                        <div className="p-3 border rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Car className="h-4 w-4 text-purple-600" />
-                            <span className="font-medium">
-                              Ground Transport
-                            </span>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {Array.isArray(passengerData)
-                              ? passengerData.filter((p) =>
-                                  p.additional_services?.includes("transport"),
-                                ).length
-                              : 0}{" "}
-                            passengers provided ground transport
-                          </div>
-                        </div>
-                        <div className="p-3 border rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <DollarSign className="h-4 w-4 text-red-600" />
-                            <span className="font-medium">
-                              Total Rebooking Cost
-                            </span>
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            AED{" "}
-                            {Array.isArray(passengerData)
-                              ? passengerData
-                                  .reduce(
-                                    (sum, p) => sum + (p.rebooking_cost || 0),
-                                    0,
-                                  )
-                                  .toLocaleString()
-                              : "0"}
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -1753,6 +1690,7 @@ export function PendingSolutions() {
                           ) {
                             return (
                               <div className="space-y-4">
+                                {/* Display total if available */}
                                 {costTotal && (
                                   <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                                     <div className="flex justify-between items-center">
@@ -1772,6 +1710,7 @@ export function PendingSolutions() {
                                   </div>
                                 )}
 
+                                {/* Display breakdown items */}
                                 <div className="space-y-3">
                                   <h4 className="font-medium text-gray-900">
                                     Cost Breakdown:
@@ -1847,9 +1786,38 @@ export function PendingSolutions() {
                                 </div>
                               </div>
                             );
+                          } else if (
+                            selectedPlan.costBreakdown &&
+                            Object.keys(selectedPlan.costBreakdown).length > 0
+                          ) {
+                            // Fallback to old format
+                            return (
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                {Object.entries(selectedPlan.costBreakdown).map(
+                                  ([key, value]) => (
+                                    <div key={key}>
+                                      <span className="text-gray-600 capitalize">
+                                        {key.replace(/([A-Z])/g, " $1")}:
+                                      </span>
+                                      <div className="font-medium">
+                                        {typeof value === "object" &&
+                                        value &&
+                                        (value as any).amount
+                                          ? (value as any).amount
+                                          : typeof value === "number"
+                                            ? `AED ${value.toLocaleString()}`
+                                            : typeof value === "string" &&
+                                                !value.includes("[object")
+                                              ? value
+                                              : `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
+                                      </div>
+                                    </div>
+                                  ),
+                                )}
+                              </div>
+                            );
                           } else {
-                            const estimatedCost =
-                              selectedPlan.estimatedCost || 50000;
+                            // Default breakdown when no data available
                             return (
                               <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
@@ -1857,7 +1825,11 @@ export function PendingSolutions() {
                                     Direct Costs:
                                   </span>
                                   <div className="font-medium">
-                                    AED {(estimatedCost * 0.6).toLocaleString()}
+                                    AED{" "}
+                                    {(
+                                      (selectedPlan.estimatedCost || 50000) *
+                                      0.6
+                                    ).toLocaleString()}
                                   </div>
                                 </div>
                                 <div>
@@ -1865,7 +1837,11 @@ export function PendingSolutions() {
                                     Indirect Costs:
                                   </span>
                                   <div className="font-medium">
-                                    AED {(estimatedCost * 0.4).toLocaleString()}
+                                    AED{" "}
+                                    {(
+                                      (selectedPlan.estimatedCost || 50000) *
+                                      0.4
+                                    ).toLocaleString()}
                                   </div>
                                 </div>
                                 <div>
@@ -1873,7 +1849,11 @@ export function PendingSolutions() {
                                     Passenger Compensation:
                                   </span>
                                   <div className="font-medium">
-                                    AED {(estimatedCost * 0.3).toLocaleString()}
+                                    AED{" "}
+                                    {(
+                                      (selectedPlan.estimatedCost || 50000) *
+                                      0.3
+                                    ).toLocaleString()}
                                   </div>
                                 </div>
                                 <div>
@@ -1881,7 +1861,11 @@ export function PendingSolutions() {
                                     Operational Costs:
                                   </span>
                                   <div className="font-medium">
-                                    AED {(estimatedCost * 0.7).toLocaleString()}
+                                    AED{" "}
+                                    {(
+                                      (selectedPlan.estimatedCost || 50000) *
+                                      0.7
+                                    ).toLocaleString()}
                                   </div>
                                 </div>
                               </div>
@@ -2883,17 +2867,13 @@ export function PendingSolutions() {
                             <div className="space-y-2">
                               <div className="flex justify-between">
                                 <span className="text-sm">Meal Vouchers:</span>
-                                <span className="font-medium">
-                                  0 passengers
-                                </span>
+                                <span className="font-medium">0 passengers</span>
                               </div>
                               <div className="flex justify-between">
                                 <span className="text-sm">
                                   Hotel Accommodation:
                                 </span>
-                                <span className="font-medium">
-                                  0 passengers
-                                </span>
+                                <span className="font-medium">0 passengers</span>
                               </div>
                             </div>
                           </div>
@@ -3620,8 +3600,9 @@ export function PendingSolutions() {
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
                         <div className="text-3xl font-bold text-blue-600">
                           {
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.full_details?.passenger_impact?.affected
+                            selectedOptionForDetails
+                              ?.pending_recovery_solutions?.full_details
+                              ?.passenger_impact?.affected
                           }
                         </div>
                         <div className="text-sm text-blue-700">
@@ -3631,8 +3612,9 @@ export function PendingSolutions() {
                       <div className="text-center p-4 bg-green-50 rounded-lg">
                         <div className="text-3xl font-bold text-green-600">
                           {
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.full_details?.passenger_impact?.reaccommodated
+                            selectedOptionForDetails
+                              ?.pending_recovery_solutions?.full_details
+                              ?.passenger_impact?.reaccommodated
                           }
                         </div>
                         <div className="text-sm text-green-700">
@@ -3712,17 +3694,33 @@ export function PendingSolutions() {
                       </h4>
                       <div className="space-y-4 max-h-64 overflow-y-auto">
                         {(() => {
-                          // Group passengers by PNR
-                          const currentPassengerData =
+                          const rawPassengerData =
                             selectedOptionForDetails?.pending_recovery_solutions
                               ?.full_details?.passenger_rebooking ||
                             selectedOptionForDetails?.pending_recovery_solutions
                               ?.passenger_rebooking ||
                             [];
 
-                          const groupedByPnr = currentPassengerData.reduce(
+                          // Ensure currentPassengerData is always an array
+                          const currentPassengerData = Array.isArray(rawPassengerData) 
+                            ? rawPassengerData 
+                            : [];
+
+                          if (
+                            !currentPassengerData ||
+                            currentPassengerData.length === 0
+                          ) {
+                            return (
+                              <div className="text-center py-8 text-gray-500">
+                                No passenger rebooking data available
+                              </div>
+                            );
+                          }
+
+                          // Group passengers by PNR
+                          const passengersByPnr = currentPassengerData.reduce(
                             (acc, passenger) => {
-                              const pnr = passenger.pnr || "UNKNOWN";
+                              const pnr = passenger.pnr || "Unknown";
                               if (!acc[pnr]) {
                                 acc[pnr] = [];
                               }
@@ -3732,7 +3730,7 @@ export function PendingSolutions() {
                             {},
                           );
 
-                          return Object.entries(groupedByPnr)
+                          return Object.entries(passengersByPnr)
                             .slice(0, 8)
                             .map(([pnr, passengers], groupIndex) => (
                               <Card
@@ -3865,16 +3863,16 @@ export function PendingSolutions() {
                             ));
                         })()}
                         {(() => {
-                          const currentPassengerData =
+                          const rawPassengerData =
                             selectedOptionForDetails?.pending_recovery_solutions
                               ?.full_details?.passenger_rebooking ||
                             selectedOptionForDetails?.pending_recovery_solutions
                               ?.passenger_rebooking ||
                             [];
 
-                          const groupCount = Array.isArray(currentPassengerData)
+                          const groupCount = Array.isArray(rawPassengerData)
                             ? Object.keys(
-                                currentPassengerData.reduce(
+                                rawPassengerData.reduce(
                                   (acc, passenger) => {
                                     const pnr = passenger.pnr || "UNKNOWN";
                                     if (!acc[pnr]) acc[pnr] = [];
