@@ -25,7 +25,7 @@
       "muted": "#f1f5f9",
       "mutedForeground": "#64748b",
       "border": "#e5e7eb",
-      "input": "#ffffff",
+      "input": "#e5e7eb",
       "ring": "#0066CC"
     }
   },
@@ -55,7 +55,7 @@
       "muted": "#f8f9fa",
       "mutedForeground": "#64748b",
       "border": "#e5e7eb",
-      "input": "#ffffff",
+      "input": "#e5e7eb",
       "ring": "#8e2157"
     }
   }

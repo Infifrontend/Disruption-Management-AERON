@@ -36,7 +36,14 @@ export const airlineConfigs: Record<string, AirlineTheme> = airlineThemesData as
 
 export function getAirlineConfig(): AirlineTheme {
   const airlineCode = import.meta.env.VITE_AIRLINE_CODE || 'FZ';
-  return airlineConfigs[airlineCode] || airlineConfigs.FZ;
+  const config = airlineConfigs[airlineCode] || airlineConfigs.FZ;
+  
+  // Ensure logo path is absolute
+  if (config.logo && !config.logo.startsWith('http') && !config.logo.startsWith('/')) {
+    config.logo = '/' + config.logo;
+  }
+  
+  return config;
 }
 
 export function getCurrentAirlineColors() {
@@ -73,8 +80,8 @@ export function injectAirlineTheme() {
   root.style.setProperty('--ring', config.theme.ring);
   
   // Make borders lighter for better visual hierarchy
-  root.style.setProperty('--border-light', 'rgba(0, 0, 0, 0.1)');
-  root.style.setProperty('--border-lighter', 'rgba(0, 0, 0, 0.05)');
+  root.style.setProperty('--border-light', '#e5e7eb');
+  root.style.setProperty('--border-lighter', '#f3f4f6');
   
   // Update favicon
   const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
