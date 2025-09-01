@@ -899,6 +899,17 @@ export function ComparisonMatrix({
 
       let rotationPlan = option.rotation_plan;
 
+      // Fetch reassigned data if available
+      let optionReassignedData = {};
+      try {
+        const reassignedResponse = await fetch(`/api/recovery-option/${option.id}/reassigned-data`);
+        if (reassignedResponse.ok) {
+          optionReassignedData = await reassignedResponse.json();
+        }
+      } catch (error) {
+        console.warn("Could not fetch reassigned data for option:", option.id, error);
+      }
+
       // Transform the API data to match the expected structure for the rotation dialog
       const enrichedRotationPlan = {
         // Aircraft options from API (aircraftOptions array)
@@ -918,6 +929,8 @@ export function ComparisonMatrix({
           recommended:
             aircraft.recommended || aircraft.optionScore?.overall === "92%",
           optionScore: aircraft.optionScore,
+          // Add reassigned aircraft information
+          reassigned: selectedAircraftFlight !== null && selectedAircraftFlight !== 0,
         })) || [
           {
             reg: selectedFlight?.aircraft || "A6-FDB",
@@ -931,11 +944,12 @@ export function ComparisonMatrix({
             turnaroundTime: "45 min",
             maintenance: { status: "current" },
             recommended: true,
+            reassigned: false,
           },
         ],
 
-        // Impacted flights from API (nextSectors array)
-        impactedFlights: rotationPlan?.nextSectors?.map((sector) => ({
+        // Impacted flights from API (nextSectors array) - include reassigned flight data
+        impactedFlights: (optionReassignedData.flights || rotationPlan?.nextSectors || [])?.map((sector) => ({
           flight: sector.flight || sector.flightNumber,
           flightNumber: sector.flight || sector.flightNumber,
           departure: sector.departure || sector.departureTime,
@@ -944,6 +958,9 @@ export function ComparisonMatrix({
           status: sector.status,
           impact: sector.impact,
           reason: sector.reason,
+          reassigned: sector.reassigned || false,
+          originalDeparture: sector.originalDeparture,
+          newDeparture: sector.newDeparture,
         })) || [
           {
             flight: "FZ446",
@@ -954,10 +971,11 @@ export function ComparisonMatrix({
             status: "Delayed",
             impact: "Medium Impact",
             reason: "Aircraft swap delay",
+            reassigned: false,
           },
         ],
 
-        // Crew data from API - handle both crewData and crew arrays
+        // Crew data from API - handle both crewData and crew arrays, include reassigned crew info
         crew:
           (rotationPlan?.crewData || rotationPlan?.crew || [])?.map((crew) => ({
             name: crew?.name,
@@ -967,9 +985,17 @@ export function ComparisonMatrix({
             status: crew?.status,
             issue: crew?.issue,
             experience_years: crew?.experience_years,
+            // Add reassigned crew information
+            originalName: crew?.replacedCrew,
+            isReassigned: !!crew?.replacedCrew || !!crew?.autoAssignedReplacement,
+            reassignedAt: crew?.assignedAt,
+            isAutoAssigned: crew?.isAutoAssigned,
             // languages: crew?.languages,
             // base: crew?.base,
           })) || [],
+
+        // Include reassigned crew summary
+        reassignedCrewSummary: optionReassignedData.crew || [],
 
         // Operational metrics calculated from API data
         operationalMetrics: {
@@ -1025,6 +1051,7 @@ export function ComparisonMatrix({
             turnaroundTime: "45 min",
             maintenance: { status: "current" },
             recommended: true,
+            reassigned: false,
           },
         ],
         impactedFlights: [],
@@ -2390,7 +2417,7 @@ export function ComparisonMatrix({
                                                 matchingReplacementCrew.length > 0
                                               ) {
                                                 const autoAssignedCrew = matchingReplacementCrew[0];
-                                                
+
                                                 // Auto-assign crew member immediately without useEffect
                                                 if (selectedOptionDetails && selectedOptionDetails.rotation_plan) {
                                                   const updatedCrew = [
@@ -2423,9 +2450,9 @@ export function ComparisonMatrix({
                                               }
 
                                               // Display assigned replacement crew
-                                              const assignedReplacement = crewMember.autoAssignedReplacement || 
-                                                (crewMember.name !== crewMember.replacedCrew ? 
-                                                  matchingReplacementCrew.find(crew => crew.name === crewMember.name) : 
+                                              const assignedReplacement = crewMember.autoAssignedReplacement ||
+                                                (crewMember.name !== crewMember.replacedCrew ?
+                                                  matchingReplacementCrew.find(crew => crew.name === crewMember.name) :
                                                   null);
 
                                               if (assignedReplacement || matchingReplacementCrew.length > 0) {
@@ -2534,7 +2561,7 @@ export function ComparisonMatrix({
                                                   )}
                                                 </div>
                                               )}
-                                              
+
                                               {/* Current assigned crew status */}
                                               <div className="p-2 bg-green-50 border border-green-200 rounded">
                                                 <div className="text-xs text-green-700 font-medium mb-1">
@@ -2576,7 +2603,7 @@ export function ComparisonMatrix({
                                                 {crewMember.status ||
                                                   crewMember?.availability}
                                               </Badge>
-                                              
+
                                               {isAffected && (
                                                 <div className="flex items-center gap-1">
                                                   <AlertTriangle className="h-3 w-3 text-red-500" />
@@ -2585,7 +2612,7 @@ export function ComparisonMatrix({
                                                   </span>
                                                 </div>
                                               )}
-                                              
+
                                               {crewMember.issue && (
                                                 <div className="text-xs text-red-600 bg-red-50 p-1 rounded border">
                                                   {crewMember.issue}
@@ -3877,7 +3904,7 @@ export function ComparisonMatrix({
             </DialogTitle>
             <div className="text-sm text-muted-foreground">
               Role: {selectedCrewForSwap?.role}
-              {selectedCrewForSwap?.isEditing && (
+              {selectedCrewForSwap && selectedCrewForSwap.isEditing && (
                 <Badge className="ml-2 bg-orange-100 text-orange-700 border-orange-300">
                   Editing Assignment
                 </Badge>
@@ -3898,7 +3925,7 @@ export function ComparisonMatrix({
                     </Badge>
                   )}
                 </h4>
-                
+
                 {selectedCrewForSwap.isAutoAssigned && (
                   <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
                     <h5 className="text-sm font-medium text-yellow-800 mb-2">Original Crew (Violated)</h5>
@@ -3914,11 +3941,11 @@ export function ComparisonMatrix({
                     </div>
                   </div>
                 )}
-                
+
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="text-blue-700">
-                      {selectedCrewForSwap.isAutoAssigned ? "Assigned Crew:" : "Original Crew:"}
+                      {selectedCrewForSwap.isEditing ? "Current Crew:" : "Crew to Replace:"}
                     </span>
                     <div className="font-medium">
                       {selectedCrewForSwap.name}
@@ -4094,7 +4121,7 @@ export function ComparisonMatrix({
                                     qualifications: crew.qualifications,
                                     replacedCrew:
                                       selectedCrewForSwap.replacedCrew ||
-                                      (selectedCrewForSwap.isAutoAssigned ? 
+                                      (selectedCrewForSwap.isAutoAssigned ?
                                         selectedCrewForSwap.replacedCrew :
                                         selectedCrewForSwap.name),
                                     assignedAt: new Date().toISOString(),
