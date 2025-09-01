@@ -1879,6 +1879,7 @@ export function PassengerRebooking({ context, onClearContext }) {
         },
       };
 
+
       setCrewData({
         crew: recoveryOptionData.crewData,
         crewConstraints: recoveryOptionData.crewConstraints || {},
@@ -2655,7 +2656,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <UserCheck className="h-5 w-5 text-flydubai-blue" />
+                      <Users className="h-5 w-5 text-flydubai-blue" />
                       Crew Assignment Status
                     </CardTitle>
                   </CardHeader>
@@ -2674,118 +2675,112 @@ export function PassengerRebooking({ context, onClearContext }) {
                               <TableHead>Name</TableHead>
                               <TableHead>Rank</TableHead>
                               <TableHead>Status</TableHead>
-                              <TableHead>Issue</TableHead>
-                              <TableHead>Contact</TableHead>
+                              {/* <TableHead>Location</TableHead> */}
+                              {/* <TableHead>Duty Time Remaining</TableHead> */}
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {(() => {
-                              // Get violated crew from reassigned crew data
-                              const violatedCrew = reassignedCrewData?.violatedCrew || [];
+                            {(crewData?.crew && crewData.crew.length > 0
+                              ? crewData.crew
+                              : [
+                                  {
+                                    id: "CR001",
+                                    name: "Capt. Ahmed Al-Mansouri",
+                                    role: "Captain",
+                                    base: "DXB",
+                                    status: "Available",
+                                    contact: "+971-50-1234567",
+                                    issue: null,
+                                  },
+                                  {
+                                    id: "CR002",
+                                    name: "F/O Sarah Johnson",
+                                    role: "First Officer",
+                                    base: "DXB",
+                                    status: "Available",
+                                    contact: "+971-50-2345678",
+                                    issue: null,
+                                  },
+                                  {
+                                    id: "CR003",
+                                    name: "Fatima Al-Mansouri",
+                                    role: "Senior Cabin Crew",
+                                    base: "DXB",
+                                    status: "Available",
+                                    contact: "+971-50-3456789",
+                                    issue: null,
+                                  },
+                                  {
+                                    id: "CR004",
+                                    name: "Ahmed Hassan",
+                                    role: "Cabin Crew",
+                                    base: "DXB",
+                                    status: "Duty Violation",
+                                    contact: "+971-50-4567890",
+                                    issue:
+                                      "Duty time exceeded - requires rest period",
+                                  },
+                                ]
+                            ).map((crewMember, index) => {
+                              const memberIdentifier =
+                                crewMember.name ||
+                                crewMember.id ||
+                                `crew_${index}`;
+                              const isAssigned = Object.values(
+                                crewHotelAssignments,
+                              ).some((assignment) =>
+                                (assignment as any).crew_member.some(
+                                  (cm) =>
+                                    cm.name === memberIdentifier ||
+                                    cm.employee_id === memberIdentifier,
+                                ),
+                              );
 
-                              // If no violated crew data, show message
-                              if (violatedCrew.length === 0) {
-                                return (
-                                  <TableRow>
-                                    <TableCell colSpan={6} className="text-center py-8">
-                                      <div className="flex flex-col items-center gap-2">
-                                        <UserX className="h-8 w-8 text-gray-400" />
-                                        <div className="text-sm text-gray-500">
-                                          No violated crew members requiring hotel accommodation
-                                        </div>
-                                        <div className="text-xs text-gray-400">
-                                          All crew members are available for duty
-                                        </div>
-                                      </div>
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              }
-
-                              // Show violated crew data
-                              return violatedCrew.map((crewMember, index) => {
-                                const memberIdentifier =
-                                  crewMember.name ||
-                                  crewMember.id ||
-                                  `crew_${index}`;
-                                const isAssigned = Object.values(
-                                  crewHotelAssignments,
-                                ).some((assignment) =>
-                                  (assignment as any).crew_member.some(
-                                    (cm) =>
-                                      cm.name === memberIdentifier ||
-                                      cm.id === memberIdentifier,
-                                  ),
-                                );
-
-                                return (
-                                  <TableRow
-                                    key={crewMember.id || index}
-                                    className={
-                                      isAssigned ? "bg-green-50" : "hover:bg-gray-50"
-                                    }
-                                  >
-                                    <TableCell>
-                                      <Checkbox
-                                        checked={selectedCrewMembers.has(
-                                          memberIdentifier,
-                                        )}
-                                        onCheckedChange={(checked) => {
-                                          if (checked) {
-                                            setSelectedCrewMembers((prev) => [
-                                              ...prev,
-                                              memberIdentifier,
-                                            ]);
-                                          } else {
-                                            setSelectedCrewMembers((prev) =>
-                                              prev.filter(
-                                                (id) => id !== memberIdentifier,
-                                              ),
-                                            );
-                                          }
-                                        }}
-                                        disabled={isAssigned}
-                                      />
-                                    </TableCell>
-                                    <TableCell className="font-medium">
-                                      {crewMember.name}
-                                    </TableCell>
-                                    <TableCell>{crewMember.role || crewMember.rank}</TableCell>
-                                    <TableCell>
-                                      {crewMember.status === "Available" ? (
-                                        <Badge className="bg-green-100 text-green-700">
-                                          Available
-                                        </Badge>
-                                      ) : crewMember.status === "Duty Violation" ? (
-                                        <Badge className="bg-red-100 text-red-700">
-                                          Duty Violation
-                                        </Badge>
-                                      ) : (
-                                        <Badge className="bg-yellow-100 text-yellow-700">
-                                          {crewMember.status}
-                                        </Badge>
+                              return (
+                                <TableRow
+                                  key={crewMember.id || index}
+                                  className={isAssigned ? "bg-green-50" : ""}
+                                >
+                                  <TableCell>
+                                    <Checkbox
+                                      checked={selectedCrewMembers.has(
+                                        memberIdentifier,
                                       )}
-                                    </TableCell>
-                                    <TableCell>
-                                      {crewMember.issue || crewMember.violation ? (
-                                        <div className="text-sm text-red-600">
-                                          {crewMember.issue || crewMember.violation}
-                                        </div>
-                                      ) : (
-                                        <div className="text-sm text-gray-500">
-                                          No issues
-                                        </div>
-                                      )}
-                                    </TableCell>
-                                    <TableCell>
-                                      <div className="text-sm">
-                                        {crewMember.contact || crewMember.phone || "N/A"}
-                                      </div>
-                                    </TableCell>
-                                  </TableRow>
-                                );
-                              });
-                            })()}
+                                      onCheckedChange={() =>
+                                        handleCrewSelection(memberIdentifier)
+                                      }
+                                      disabled={isAssigned}
+                                    />
+                                  </TableCell>
+                                  <TableCell className="font-medium">
+                                    {crewMember.name || "Crew Member"}
+                                    {isAssigned && (
+                                      <Badge className="ml-2 bg-green-100 text-green-700">
+                                        Assigned
+                                      </Badge>
+                                    )}
+                                  </TableCell>
+                                  <TableCell>
+                                    {crewMember.role || "Crew"}
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      className={
+                                        crewMember.status === "Available"
+                                          ? "bg-green-100 text-green-700 border-green-200"
+                                          : crewMember.status === "On Duty"
+                                            ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                            : "bg-red-100 text-red-700 border-red-200"
+                                      }
+                                    >
+                                      {crewMember.status === "Duty Violation"
+                                        ? "Duty Violation"
+                                        : crewMember.status}
+                                    </Badge>
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            })}
                           </TableBody>
                         </Table>
                       </div>
@@ -3642,8 +3637,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                         <Badge
                                           className={
                                             crewMember.isAutoAssigned
-                                              ? "bg-blue-100 text-blue-700"
-                                              : "bg-orange-100 text-orange-700"
+                                              ? "bg-blue-100 text-blue-700 border-blue-300"
+                                              : "bg-orange-100 text-orange-700 border-orange-300"
                                           }
                                         >
                                           {crewMember.isAutoAssigned
