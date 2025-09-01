@@ -72,14 +72,27 @@ export function injectAirlineTheme() {
   root.style.setProperty('--input', config.theme.input);
   root.style.setProperty('--ring', config.theme.ring);
   
+  // Make borders lighter for better visual hierarchy
+  root.style.setProperty('--border-light', 'rgba(0, 0, 0, 0.1)');
+  root.style.setProperty('--border-lighter', 'rgba(0, 0, 0, 0.05)');
+  
   // Update favicon
   const favicon = document.querySelector('link[rel="icon"]') as HTMLLinkElement;
   if (favicon) {
     favicon.href = config.favicon;
+  } else {
+    // Create favicon if it doesn't exist
+    const newFavicon = document.createElement('link');
+    newFavicon.rel = 'icon';
+    newFavicon.href = config.favicon;
+    document.head.appendChild(newFavicon);
   }
   
   // Update document title
   document.title = `${config.displayName} AERON - Airline Recovery Operations Network`;
+  
+  // Force re-render by updating a CSS class
+  document.body.className = `${document.body.className} airline-${config.code.toLowerCase()}`;
 }
 
 // Helper function to get all available airline codes
