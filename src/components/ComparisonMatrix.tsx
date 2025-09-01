@@ -1135,6 +1135,8 @@ export function ComparisonMatrix({
               rotationPlan: option.rotation_plan || {},
             },
           },
+          // Include reassigned data from the current state
+          reassignedData: reassignedData[option.id] || {},
           fromExecution: true, // Flag to indicate this came from execution
           executionContext: {
             comparisonData: comparisonOptions,
@@ -2484,6 +2486,9 @@ export function ComparisonMatrix({
                                                           crewData: updatedCrew,
                                                         },
                                                       });
+                                                      
+                                                      // Update reassigned data state for this option
+                                                      updateReassignedData(selectedOptionDetails.id, 'crew', updatedCrew);
                                                     }, 0);
                                                   }
                                                 }
@@ -2813,6 +2818,12 @@ export function ComparisonMatrix({
                                                       crewData: updatedCrew,
                                                     },
                                                   });
+                                                  
+                                                  // Update reassigned data state for this option
+                                                  updateReassignedData(selectedOptionDetails.id, 'crew', updatedCrew);
+                                                  
+                                                  // Update reassigned data state for this option
+                                                  updateReassignedData(selectedOptionDetails.id, 'crew', updatedCrew);
                                                 }
                                               }}
                                             >
