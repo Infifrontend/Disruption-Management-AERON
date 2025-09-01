@@ -1,0 +1,71 @@
+
+{
+  "FZ": {
+    "code": "FZ",
+    "name": "flydubai",
+    "displayName": "flydubai",
+    "colors": {
+      "primary": "#0066CC",
+      "secondary": "#ff8200",
+      "navy": "#001f3f",
+      "links": "#0066CC"
+    },
+    "logo": "/airlines/FZ/logo.png",
+    "favicon": "/airlines/FZ/favicon.ico",
+    "theme": {
+      "background": "#ffffff",
+      "foreground": "#0a0a0a",
+      "card": "#ffffff",
+      "cardForeground": "#0a0a0a",
+      "popover": "#ffffff",
+      "popoverForeground": "#0a0a0a",
+      "primary": "#0066CC",
+      "primaryForeground": "#f8fafc",
+      "secondary": "#f1f5f9",
+      "secondaryForeground": "#0f172a",
+      "muted": "#f1f5f9",
+      "mutedForeground": "#64748b",
+      "accent": "#f1f5f9",
+      "accentForeground": "#0f172a",
+      "destructive": "#ef4444",
+      "destructiveForeground": "#f8fafc",
+      "border": "#e5e7eb",
+      "input": "#ffffff",
+      "ring": "#0066CC"
+    }
+  },
+  "QR": {
+    "code": "QR",
+    "name": "qatar-airways",
+    "displayName": "Qatar Airways",
+    "colors": {
+      "primary": "#8e2157",
+      "secondary": "#120c80",
+      "navy": "#2c1810",
+      "links": "#4a525d"
+    },
+    "logo": "/airlines/QR/logo.png",
+    "favicon": "/airlines/QR/favicon.ico",
+    "theme": {
+      "background": "#ffffff",
+      "foreground": "#1a1a1a",
+      "card": "#ffffff",
+      "cardForeground": "#1a1a1a",
+      "popover": "#ffffff",
+      "popoverForeground": "#1a1a1a",
+      "primary": "#8e2157",
+      "primaryForeground": "#ffffff",
+      "secondary": "#f8f9fa",
+      "secondaryForeground": "#1a1a1a",
+      "muted": "#f8f9fa",
+      "mutedForeground": "#64748b",
+      "accent": "#f8f9fa",
+      "accentForeground": "#1a1a1a",
+      "destructive": "#ef4444",
+      "destructiveForeground": "#ffffff",
+      "border": "#e5e7eb",
+      "input": "#ffffff",
+      "ring": "#8e2157"
+    }
+  }
+}

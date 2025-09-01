@@ -5,6 +5,8 @@ import { Badge } from "./ui/badge";
 import { useAppContext } from "../context/AppContext";
 import { databaseService } from "../services/databaseService";
 import { authService } from "../services/authService";
+import { AirlineLogo } from "./AirlineLogo";
+import { useAirlineTheme } from "../hooks/useAirlineTheme";
 import {
   TrendingUp,
   Calendar,
@@ -50,8 +52,6 @@ const iconMap = {
   Settings,
 };
 
-const flydubaiLogo = `./flydubai_logo.png`;
-
 interface LayoutProps {
   children: ReactNode;
 }
@@ -61,6 +61,7 @@ export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const { screenSettings, filters, setFilters, currentUser, setCurrentUser } =
     useAppContext();
+  const { airlineConfig } = useAirlineTheme();
   const [sidebarOpen] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -269,9 +270,8 @@ export function Layout({ children }: LayoutProps) {
         {/* Sidebar Header */}
         <div className="p-4 border-b border-blue-700 min-h-[120px] flex items-center justify-center">
           <div className="flex flex-col items-center gap-2 w-full">
-            <img
-              src={flydubaiLogo}
-              alt="Flydubai"
+            <AirlineLogo 
+              width={sidebarOpen ? 100 : 80}
               className={`responsive-logo ${sidebarOpen ? "h-8 w-auto" : "h-6 w-auto"}`}
             />
             {sidebarOpen && (
@@ -368,7 +368,7 @@ export function Layout({ children }: LayoutProps) {
           {sidebarOpen && (
             <div className="pt-2 border-t border-blue-700">
               <p className="text-xs text-blue-200">
-                Powered by Flydubai × AERON Partnership
+                Powered by {airlineConfig.displayName} × AERON Partnership
               </p>
             </div>
           )}
@@ -386,7 +386,7 @@ export function Layout({ children }: LayoutProps) {
                   {currentScreen?.name || "Dashboard"}
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  Flydubai AERON - AI-powered recovery and operational
+                  {airlineConfig.displayName} AERON - AI-powered recovery and operational
                   excellence
                 </p>
               </div>
@@ -434,47 +434,4 @@ export function Layout({ children }: LayoutProps) {
     </div>
   );
 }
-import React, { useEffect } from 'react';
-import { useAirlineTheme } from '../hooks/useAirlineTheme';
-import { injectAirlineTheme } from '../config/airlineConfig';
-import { AirlineLogo } from './AirlineLogo';
-import { AirlineHeader } from './DynamicAirlineComponents';
 
-// ... existing Layout component code would be updated to use:
-// - AirlineLogo instead of hardcoded logo
-// - airline-primary, airline-secondary classes instead of flydubai-specific ones
-// - Dynamic airline name in headers and titles
-
-export function Layout({ children }: { children: React.ReactNode }) {
-  const { airlineConfig } = useAirlineTheme();
-
-  useEffect(() => {
-    // Ensure theme is injected when Layout mounts
-    injectAirlineTheme();
-  }, []);
-
-  // ... rest of Layout component implementation
-  // This would need to be implemented based on your existing Layout component
-  // Replace all hardcoded "flydubai" references with airlineConfig.displayName
-  // Replace all flydubai-blue, flydubai-orange classes with airline-primary, airline-secondary
-  
-  return (
-    <div className="min-h-screen bg-background">
-      {/* Header with dynamic airline branding */}
-      <header className="border-b border-airline-primary/20 bg-white">
-        <div className="px-6 py-4">
-          <AirlineHeader>
-            <h1 className="text-xl font-semibold text-airline-navy">
-              {airlineConfig.displayName} AERON
-            </h1>
-          </AirlineHeader>
-        </div>
-      </header>
-      
-      {/* Main content */}
-      <main className="flex-1">
-        {children}
-      </main>
-    </div>
-  );
-}
