@@ -744,8 +744,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       availability: "Available",
       image:
         "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=250&fit=crop",
-      description:
-        "Elegant hotel with excellent conference facilities and dining options",
+      description: "Elegant hotel with excellent conference facilities and dining options",
     },
     {
       id: "HTL-003",
@@ -2366,9 +2365,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                               )}
                             />
                             <span className="font-medium text-gray-700">
-                              Select All (
-                              {Object.keys(filteredPnrGroups).length} PNR
-                              groups)
+                              Select All ({Object.keys(filteredPnrGroups).length}{" "}
+                              PNR groups)
                             </span>
                             {selectedPnrs.size > 0 && (
                               <Badge variant="outline" className="ml-auto">
@@ -2753,11 +2751,21 @@ export function PassengerRebooking({ context, onClearContext }) {
                                       disabled={crew.status === "No Data"}
                                       onChange={(e) => {
                                         if (e.target.checked) {
+                                          setSelectedCrewMembers((prev) => {
+                                            const newSet = new Set(prev);
+                                            newSet.add(crew.name);
+                                            return newSet;
+                                          });
                                           setSelectedCrewForHotel((prev) => [
                                             ...prev,
                                             crew,
                                           ]);
                                         } else {
+                                          setSelectedCrewMembers((prev) => {
+                                            const newSet = new Set(prev);
+                                            newSet.delete(crew.name);
+                                            return newSet;
+                                          });
                                           setSelectedCrewForHotel((prev) =>
                                             prev.filter(
                                               (c) => c.name !== crew.name,
@@ -2823,6 +2831,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                               ? "border-flydubai-blue bg-blue-50"
                               : "hover:border-flydubai-blue"
                           }`}
+                          onClick={() => setSelectedHotelForCrew(hotel)}
                         >
                           <CardContent className="p-4">
                             <div className="flex items-start gap-4">
@@ -2879,7 +2888,10 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 </p>
 
                                 <div className="flex items-center gap-2">
-                                  <Checkbox />
+                                  <Checkbox
+                                    checked={selectedHotelForCrew?.id === hotel.id}
+                                    onChange={() => setSelectedHotelForCrew(hotel)}
+                                  />
                                   <span className="text-xs font-medium">
                                     Select for crew
                                   </span>
@@ -3320,7 +3332,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                                           ? "s"
                                           : ""}
                                       </Badge>
-                                      {isPnrGroupConfirmed(groupPassengers) && (
+                                      {isPnrGroupConfirmed(
+                                        groupPassengers,
+                                      ) && (
                                         <Badge className="bg-green-100 text-green-800 border-green-200">
                                           <CheckCircle className="h-3 w-3 mr-1" />
                                           Confirmed
@@ -3353,7 +3367,10 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Button
                                     size="sm"
                                     onClick={() =>
-                                      handleRebookPnrGroup(pnr, groupPassengers)
+                                      handleRebookPnrGroup(
+                                        pnr,
+                                        groupPassengers,
+                                      )
                                     }
                                     disabled={isPnrGroupConfirmed(
                                       groupPassengers,
@@ -3481,7 +3498,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                             </TableCell>
                             <TableCell>
                               <Badge
-                                className={getPriorityColor(passenger.priority)}
+                                className={getPriorityColor(
+                                  passenger.priority,
+                                )}
                               >
                                 {passenger.priority}
                               </Badge>
@@ -3598,8 +3617,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                             // If no violated crew from context, check if there's crew data from the context
                             if (
                               violatedCrewList.length === 0 &&
-                              context?.recoveryOption?.fullDetails?.rotationPlan
-                                ?.crew
+                              context?.recoveryOption?.fullDetails
+                                ?.rotationPlan?.crew
                             ) {
                               violatedCrewList =
                                 context.recoveryOption.fullDetails.rotationPlan.crew
@@ -3640,11 +3659,21 @@ export function PassengerRebooking({ context, onClearContext }) {
                                     disabled={crew.status === "No Data"}
                                     onChange={(e) => {
                                       if (e.target.checked) {
+                                        setSelectedCrewMembers((prev) => {
+                                          const newSet = new Set(prev);
+                                          newSet.add(crew.name);
+                                          return newSet;
+                                        });
                                         setSelectedCrewForHotel((prev) => [
                                           ...prev,
                                           crew,
                                         ]);
                                       } else {
+                                        setSelectedCrewMembers((prev) => {
+                                          const newSet = new Set(prev);
+                                          newSet.delete(crew.name);
+                                          return newSet;
+                                        });
                                         setSelectedCrewForHotel((prev) =>
                                           prev.filter(
                                             (c) => c.name !== crew.name,
@@ -3710,6 +3739,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                             ? "border-flydubai-blue bg-blue-50"
                             : "hover:border-flydubai-blue"
                         }`}
+                        onClick={() => setSelectedHotelForCrew(hotel)}
                       >
                         <CardContent className="p-4">
                           <div className="flex items-start gap-4">
@@ -3766,7 +3796,10 @@ export function PassengerRebooking({ context, onClearContext }) {
                               </p>
 
                               <div className="flex items-center gap-2">
-                                <Checkbox />
+                                <Checkbox
+                                  checked={selectedHotelForCrew?.id === hotel.id}
+                                  onChange={() => setSelectedHotelForCrew(hotel)}
+                                />
                                 <span className="text-xs font-medium">
                                   Select for crew
                                 </span>
@@ -3796,7 +3829,6 @@ export function PassengerRebooking({ context, onClearContext }) {
                         <li>• Company policies</li>
                       </ul>
                     </div>
-
                     <div className="mt-4 flex gap-2">
                       <Button
                         size="sm"
@@ -4853,7 +4885,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                 ` (Group of ${selectedPnrGroup.passengers.length})`}
             </DialogTitle>
             <DialogDescription>
-              Select hotel accommodation for passenger PNR:{" "}
+              Book hotel accommodation for passenger PNR:{" "}
               {selectedPassenger?.pnr}
             </DialogDescription>
           </DialogHeader>
