@@ -103,7 +103,7 @@ import { CustomAlertDialog } from "./CustomAlertDialog";
 
 export function PassengerRebooking({ context, onClearContext }) {
   const location = useLocation();
-  const useNavigate = useNavigate();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("passenger-service");
   const [localCrewData, setLocalCrewData] = useState(null); // Renamed from crewData to avoid conflict
   const [loading, setLoading] = useState(false);
