@@ -2342,45 +2342,9 @@ export function ComparisonMatrix({
                                                 </span>
                                               </div>
                                             )}
-                                            {/* {crewMember.qualifications &&
-                                              Array.isArray(
-                                                crewMember.qualifications,
-                                              ) && (
-                                                <div className="flex flex-wrap gap-1">
-                                                  {crewMember.qualifications
-                                                    .slice(0, 2)
-                                                    .map((qual, qIndex) => (
-                                                      <Badge
-                                                        key={qIndex}
-                                                        variant="outline"
-                                                        className="text-xs"
-                                                      >
-                                                        {qual}
-                                                      </Badge>
-                                                    ))}
-                                                  {crewMember.qualifications
-                                                    .length > 2 && (
-                                                    <Badge
-                                                      variant="outline"
-                                                      className="text-xs"
-                                                    >
-                                                      +
-                                                      {crewMember.qualifications
-                                                        .length - 2}
-                                                    </Badge>
-                                                  )}
-                                                </div>
-                                              )} */}
                                           </div>
                                         ) : isAffected ? (
                                           <div className="space-y-2">
-                                            <div className="flex items-center gap-1">
-                                              <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                                              <span className="text-sm text-yellow-700 font-medium">
-                                                Replacement Required
-                                              </span>
-                                            </div>
-                                            {/* Display replacement crew for violated crew members */}
                                             {(() => {
                                               const currentRole =
                                                 crewMember?.role_code;
@@ -2420,73 +2384,102 @@ export function ComparisonMatrix({
                                                   },
                                                 );
 
+                                              // Auto-assign first available crew if not already assigned
                                               if (
-                                                matchingReplacementCrew.length >
-                                                0
+                                                !crewMember.autoAssignedReplacement &&
+                                                matchingReplacementCrew.length > 0
                                               ) {
-                                                // Show the first matching replacement crew member
-                                                const replacementCrew =
-                                                  matchingReplacementCrew[0];
+                                                const autoAssignedCrew = matchingReplacementCrew[0];
+                                                
+                                                // Update crew member with auto-assignment
+                                                React.useEffect(() => {
+                                                  if (selectedOptionDetails && selectedOptionDetails.rotation_plan) {
+                                                    const updatedCrew = [
+                                                      ...(selectedOptionDetails.rotation_plan.crew ||
+                                                        selectedOptionDetails.rotation_plan.crewData ||
+                                                        []),
+                                                    ];
+                                                    updatedCrew[index] = {
+                                                      ...updatedCrew[index],
+                                                      autoAssignedReplacement: autoAssignedCrew,
+                                                      replacedCrew: crewMember.name,
+                                                      name: autoAssignedCrew.name,
+                                                      assignedAt: new Date().toISOString(),
+                                                      isAutoAssigned: true,
+                                                    };
+                                                    setSelectedOptionDetails({
+                                                      ...selectedOptionDetails,
+                                                      rotation_plan: {
+                                                        ...selectedOptionDetails.rotation_plan,
+                                                        crew: updatedCrew,
+                                                        crewData: updatedCrew,
+                                                      },
+                                                    });
+                                                  }
+                                                }, []);
+                                              }
+
+                                              // Display assigned replacement crew
+                                              const assignedReplacement = crewMember.autoAssignedReplacement || 
+                                                (crewMember.name !== crewMember.replacedCrew ? 
+                                                  matchingReplacementCrew.find(crew => crew.name === crewMember.name) : 
+                                                  null);
+
+                                              if (assignedReplacement || matchingReplacementCrew.length > 0) {
+                                                const displayCrew = assignedReplacement || matchingReplacementCrew[0];
                                                 return (
-                                                  <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                      <UserCheck className="h-3 w-3 text-green-600" />
-                                                      <span className="text-xs text-green-700 font-medium">
-                                                        Replacement Available
+                                                  <div>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                      <UserCheck className="h-4 w-4 text-green-600" />
+                                                      <span className="text-sm text-green-700 font-medium">
+                                                        {assignedReplacement ? "Assigned Replacement" : "Auto-Assigned"}
                                                       </span>
-                                                    </div>
-                                                    <div className="text-xs">
-                                                      <p className="font-medium text-green-800">
-                                                        {replacementCrew.name}
-                                                      </p>
-                                                      <p className="text-green-700">
-                                                        {replacementCrew?.role}
-                                                      </p>
-                                                      {replacementCrew?.experience_years && (
-                                                        <p className="text-green-600">
-                                                          Experience:{" "}
-                                                          {
-                                                            replacementCrew?.experience_years
-                                                          }{" "}
-                                                          years
-                                                        </p>
-                                                      )}
-                                                      {replacementCrew.location && (
-                                                        <p className="text-green-600">
-                                                          Location:{" "}
-                                                          {
-                                                            replacementCrew?.location
-                                                          }
-                                                        </p>
-                                                      )}
-                                                      <div className="flex items-center gap-1 mt-1">
-                                                        <Badge className="bg-green-100 text-green-700 text-xs">
-                                                          {
-                                                            replacementCrew?.status
-                                                          }
+                                                      {crewMember.isAutoAssigned && (
+                                                        <Badge className="bg-blue-100 text-blue-700 border-blue-300 text-xs">
+                                                          Auto
                                                         </Badge>
-                                                        {/* {matchingReplacementCrew.length >
-                                                          1 && (
-                                                          <Badge
-                                                            variant="outline"
-                                                            className="text-xs"
-                                                          >
-                                                            +
-                                                            {matchingReplacementCrew.length -
-                                                              1}{" "}
-                                                            more
+                                                      )}
+                                                    </div>
+                                                    <div className="p-3 bg-green-50 border border-green-200 rounded">
+                                                      <div className="text-sm">
+                                                        <h5 className="font-medium text-green-800 mb-1">
+                                                          {displayCrew.name}
+                                                        </h5>
+                                                        <p className="text-green-700 text-xs mb-1">
+                                                          {displayCrew?.role}
+                                                        </p>
+                                                        {displayCrew?.experience_years && (
+                                                          <p className="text-green-600 text-xs">
+                                                            Experience: {displayCrew?.experience_years} years
+                                                          </p>
+                                                        )}
+                                                        {displayCrew.location && (
+                                                          <p className="text-green-600 text-xs">
+                                                            Location: {displayCrew?.location}
+                                                          </p>
+                                                        )}
+                                                        <div className="flex items-center gap-2 mt-2">
+                                                          <Badge className="bg-green-100 text-green-700 text-xs">
+                                                            {displayCrew?.status}
                                                           </Badge>
-                                                        )} */}
+                                                          {matchingReplacementCrew.length > 1 && (
+                                                            <Badge variant="outline" className="text-xs">
+                                                              +{matchingReplacementCrew.length - 1} more available
+                                                            </Badge>
+                                                          )}
+                                                        </div>
                                                       </div>
                                                     </div>
                                                   </div>
                                                 );
                                               } else {
                                                 return (
-                                                  <p className="text-xs text-gray-500 mt-1">
-                                                    No replacement crew
-                                                    available for {currentRole}
-                                                  </p>
+                                                  <div className="flex items-center gap-1">
+                                                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                                                    <span className="text-sm text-red-700 font-medium">
+                                                      No replacement available for {currentRole}
+                                                    </span>
+                                                  </div>
                                                 );
                                               }
                                             })()}
@@ -2572,15 +2565,18 @@ export function ComparisonMatrix({
                                             variant="outline"
                                             size="sm"
                                             className={`${
-                                              hasBeenSwapped
+                                              hasBeenSwapped || crewMember.isAutoAssigned
                                                 ? "border-flydubai-orange text-flydubai-orange hover:bg-orange-50"
-                                                : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                                : isAffected
+                                                  ? "border-green-500 text-green-700 hover:bg-green-50"
+                                                  : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                                             }`}
                                             onClick={() => {
                                               setSelectedCrewForSwap({
                                                 ...crewMember,
                                                 originalIndex: index,
-                                                isEditing: hasBeenSwapped,
+                                                isEditing: hasBeenSwapped || crewMember.isAutoAssigned,
+                                                isAutoAssigned: crewMember.isAutoAssigned,
                                               });
                                               const currentRole =
                                                 crewMember?.role_code;
@@ -2595,10 +2591,15 @@ export function ComparisonMatrix({
                                               setShowCrewSwapDialog(true);
                                             }}
                                           >
-                                            {hasBeenSwapped ? (
+                                            {hasBeenSwapped || crewMember.isAutoAssigned ? (
                                               <>
                                                 <Settings className="h-4 w-4 mr-2" />
-                                                Edit
+                                                {crewMember.isAutoAssigned ? "Change" : "Edit"}
+                                              </>
+                                            ) : isAffected ? (
+                                              <>
+                                                <UserCheck className="h-4 w-4 mr-2" />
+                                                Assign
                                               </>
                                             ) : (
                                               <>
@@ -2607,7 +2608,7 @@ export function ComparisonMatrix({
                                               </>
                                             )}
                                           </Button>
-                                          {hasBeenSwapped && (
+                                          {(hasBeenSwapped || crewMember.isAutoAssigned) && (
                                             <Button
                                               variant="outline"
                                               size="sm"
@@ -2628,11 +2629,13 @@ export function ComparisonMatrix({
                                                   ];
                                                   updatedCrew[index] = {
                                                     ...updatedCrew[index],
-                                                    name: crewMember.replacedCrew,
-                                                    status: "Available",
-                                                    availability: "Available",
+                                                    name: crewMember.replacedCrew || crewMember.name,
+                                                    status: crewMember.status === "Sick" || crewMember.status === "Unavailable" ? crewMember.status : "Available",
+                                                    availability: crewMember.status === "Sick" || crewMember.status === "Unavailable" ? crewMember.status : "Available",
                                                     replacedCrew: undefined,
                                                     assignedAt: undefined,
+                                                    autoAssignedReplacement: undefined,
+                                                    isAutoAssigned: undefined,
                                                   };
                                                   setSelectedOptionDetails({
                                                     ...selectedOptionDetails,
@@ -3847,17 +3850,40 @@ export function ComparisonMatrix({
           {selectedCrewForSwap && (
             <div className="space-y-6">
               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                <h4 className="font-medium text-blue-800 mb-2">
+                <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
                   {selectedCrewForSwap.isEditing
                     ? "Current Assignment"
                     : "Assignment to Replace"}
+                  {selectedCrewForSwap.isAutoAssigned && (
+                    <Badge className="bg-blue-100 text-blue-700 border-blue-300 text-xs">
+                      Auto-Assigned
+                    </Badge>
+                  )}
                 </h4>
+                
+                {selectedCrewForSwap.isAutoAssigned && (
+                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                    <h5 className="text-sm font-medium text-yellow-800 mb-2">Original Crew (Violated)</h5>
+                    <div className="grid grid-cols-2 gap-3 text-xs">
+                      <div>
+                        <span className="text-yellow-700">Name:</span>
+                        <div className="font-medium">{selectedCrewForSwap.replacedCrew}</div>
+                      </div>
+                      <div>
+                        <span className="text-yellow-700">Issue:</span>
+                        <div className="font-medium text-red-600">{selectedCrewForSwap.issue || "Duty violation"}</div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <span className="text-blue-700">Original Crew:</span>
+                    <span className="text-blue-700">
+                      {selectedCrewForSwap.isAutoAssigned ? "Assigned Crew:" : "Original Crew:"}
+                    </span>
                     <div className="font-medium">
-                      {selectedCrewForSwap.replacedCrew ||
-                        selectedCrewForSwap.name}
+                      {selectedCrewForSwap.name}
                     </div>
                   </div>
                   <div>
@@ -3870,7 +3896,7 @@ export function ComparisonMatrix({
                     <span className="text-blue-700">Status:</span>
                     <Badge
                       className={
-                        selectedCrewForSwap.status === "Available"
+                        selectedCrewForSwap.status === "Available" || selectedCrewForSwap.status === "Reassigned"
                           ? "bg-green-100 text-green-700"
                           : "bg-red-100 text-red-700"
                       }
@@ -3898,6 +3924,14 @@ export function ComparisonMatrix({
                       <span className="text-blue-700">Performance Score:</span>
                       <div className="font-medium">
                         {selectedCrewForSwap.score}/100
+                      </div>
+                    </div>
+                  )}
+                  {selectedCrewForSwap.isAutoAssigned && selectedCrewForSwap.assignedAt && (
+                    <div className="col-span-2">
+                      <span className="text-blue-700">Auto-assigned at:</span>
+                      <div className="font-medium text-xs">
+                        {new Date(selectedCrewForSwap.assignedAt).toLocaleString()}
                       </div>
                     </div>
                   )}
@@ -4019,15 +4053,17 @@ export function ComparisonMatrix({
                                     ...updatedCrew[originalIndex],
                                     name: crew.name,
                                     experience_years: crew.experience_years,
-                                    // location: crew.location,
-                                    // score: crew.score,
                                     qualifications: crew.qualifications,
                                     replacedCrew:
                                       selectedCrewForSwap.replacedCrew ||
-                                      selectedCrewForSwap.name,
+                                      (selectedCrewForSwap.isAutoAssigned ? 
+                                        selectedCrewForSwap.replacedCrew :
+                                        selectedCrewForSwap.name),
                                     assignedAt: new Date().toISOString(),
                                     status: "Reassigned",
                                     availability: "On Duty",
+                                    isAutoAssigned: false, // Manual assignment overrides auto-assignment
+                                    autoAssignedReplacement: undefined,
                                   };
                                   console.log(
                                     updatedCrew[originalIndex],
