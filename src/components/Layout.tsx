@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
@@ -6,9 +5,6 @@ import { Badge } from "./ui/badge";
 import { useAppContext } from "../context/AppContext";
 import { databaseService } from "../services/databaseService";
 import { authService } from "../services/authService";
-import { useAirlineTheme } from '../hooks/useAirlineTheme';
-import { injectAirlineTheme } from '../config/airlineConfig';
-import { AirlineLogo } from './AirlineLogo';
 import {
   TrendingUp,
   Calendar,
@@ -54,6 +50,8 @@ const iconMap = {
   Settings,
 };
 
+const flydubaiLogo = `./flydubai_logo.png`;
+
 interface LayoutProps {
   children: ReactNode;
 }
@@ -72,13 +70,6 @@ export function Layout({ children }: LayoutProps) {
     activeFlights: 0,
     totalPassengers: 0,
   });
-
-  const { airlineConfig } = useAirlineTheme();
-
-  useEffect(() => {
-    // Ensure theme is injected when Layout mounts
-    injectAirlineTheme();
-  }, []);
 
   const handleLogout = async () => {
     await authService.logout();
@@ -119,7 +110,7 @@ export function Layout({ children }: LayoutProps) {
       try {
         const disruptions = await databaseService.getAllDisruptions();
 
-        if (!isMounted) return;
+        if (!isMounted) return; // Prevent state update if component unmounted
 
         const totalAffected = disruptions.length;
         const highPriority = disruptions.filter(
@@ -142,6 +133,7 @@ export function Layout({ children }: LayoutProps) {
       } catch (error) {
         if (isMounted) {
           console.error("Failed to fetch flight statistics:", error);
+          // Set default values on error
           setFlightStats({
             totalAffected: 0,
             highPriority: 0,
@@ -153,6 +145,7 @@ export function Layout({ children }: LayoutProps) {
     };
 
     fetchFlightStats();
+    // Refresh stats every 30 seconds for real-time updates
     const interval = setInterval(fetchFlightStats, 30000);
 
     return () => {
@@ -163,6 +156,7 @@ export function Layout({ children }: LayoutProps) {
 
   // Format date and time in IST (Indian Standard Time)
   const formatDateTime = (date: Date) => {
+    // Convert to IST
     const istDate = new Date(
       date.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
     );
@@ -187,12 +181,12 @@ export function Layout({ children }: LayoutProps) {
   const { dateStr, timeStr } = formatDateTime(currentDateTime);
 
   const categories = {
-    main: { name: "Main", color: "text-airline-primary" },
-    operations: { name: "Operations", color: "text-airline-primary" },
-    prediction: { name: "Prediction", color: "text-airline-navy" },
-    monitoring: { name: "Monitoring", color: "text-airline-navy" },
-    services: { name: "Services", color: "text-airline-primary" },
-    analytics: { name: "Analytics", color: "text-airline-navy" },
+    main: { name: "Main", color: "text-flydubai-blue" },
+    operations: { name: "Operations", color: "text-flydubai-blue" },
+    prediction: { name: "Prediction", color: "text-flydubai-navy" },
+    monitoring: { name: "Monitoring", color: "text-flydubai-navy" },
+    services: { name: "Services", color: "text-flydubai-blue" },
+    analytics: { name: "Analytics", color: "text-flydubai-navy" },
     system: { name: "System", color: "text-gray-600" },
   };
 
@@ -205,56 +199,56 @@ export function Layout({ children }: LayoutProps) {
           icon: BarChart3,
           title: `${(((flightStats.totalAffected - flightStats.highPriority) / Math.max(flightStats.totalAffected, 1)) * 100).toFixed(1)}% Solution Adoption`,
           subtitle: `${flightStats.totalAffected} Total Disruptions`,
-          color: "airline-primary",
+          color: "flydubai-blue",
         };
       case "/flight-tracking":
         return {
           icon: Calendar,
           title: `${flightStats.activeFlights} Aircraft Active`,
           subtitle: `${flightStats.totalAffected} Flights Tracked`,
-          color: "airline-primary",
+          color: "flydubai-blue",
         };
       case "/disruption":
         return {
           icon: AlertTriangle,
           title: `${flightStats.totalAffected} Flights Affected`,
           subtitle: `${flightStats.highPriority} High Priority`,
-          color: "airline-secondary",
+          color: "flydubai-orange",
         };
       case "/recovery":
         return {
           icon: Plane,
           title: `${Math.min(flightStats.totalAffected * 3, 12)} Options Available`,
           subtitle: `${Math.ceil(flightStats.totalAffected * 0.3)} Recommended`,
-          color: "airline-primary",
+          color: "flydubai-blue",
         };
       case "/prediction-dashboard":
         return {
           icon: Brain,
           title: `${flightStats.totalAffected + Math.floor(flightStats.totalAffected * 0.2)} Disruptions Predicted`,
           subtitle: `${(85 + Math.random() * 10).toFixed(1)}% Accuracy Rate`,
-          color: "airline-navy",
+          color: "flydubai-navy",
         };
       case "/passengers":
         return {
           icon: UserCheck,
           title: `${flightStats.totalPassengers.toLocaleString()} Passengers Affected`,
           subtitle: `${flightStats.totalAffected} Flights`,
-          color: "airline-primary",
+          color: "flydubai-blue",
         };
       case "/pending":
         return {
           icon: ClockIcon,
           title: `${flightStats.highPriority + Math.floor(flightStats.totalAffected * 0.1)} Solutions Pending`,
           subtitle: `${flightStats.highPriority} High Priority`,
-          color: "airline-secondary",
+          color: "flydubai-orange",
         };
       case "/hotac":
         return {
           icon: Hotel,
           title: `${flightStats.totalAffected * 2} HOTAC Records`,
           subtitle: `${Math.floor(flightStats.totalAffected * 0.8)} Confirmed`,
-          color: "airline-primary",
+          color: "flydubai-blue",
         };
       default:
         return null;
@@ -271,15 +265,19 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="h-screen bg-background flex overflow-hidden">
       {/* Sidebar */}
-      <div className="w-52 min-w-[15rem] max-w-[15rem] bg-airline-primary text-white border-r border-airline-primary/70 flex flex-col flex-shrink-0 overflow-hidden">
+      <div className="w-52 min-w-[15rem] max-w-[15rem] bg-flydubai-blue text-white border-r border-blue-700 flex flex-col flex-shrink-0 overflow-hidden">
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-airline-primary/70 min-h-[120px] flex items-center justify-center">
+        <div className="p-4 border-b border-blue-700 min-h-[120px] flex items-center justify-center">
           <div className="flex flex-col items-center gap-2 w-full">
-            <AirlineLogo className="responsive-logo h-8 w-auto" />
+            <img
+              src={flydubaiLogo}
+              alt="Flydubai"
+              className={`responsive-logo ${sidebarOpen ? "h-8 w-auto" : "h-6 w-auto"}`}
+            />
             {sidebarOpen && (
               <div className="text-center">
                 <h1 className="text-base font-semibold text-white">AERON</h1>
-                <p className="text-xs text-white/70 leading-tight">
+                <p className="text-xs text-blue-200 leading-tight">
                   Adaptive Engine for Recovery &<br />
                   Operational Navigation
                 </p>
@@ -300,7 +298,7 @@ export function Layout({ children }: LayoutProps) {
               <div key={categoryKey} className="mb-6">
                 {sidebarOpen && (
                   <div className="px-4 mb-2">
-                    <h3 className="text-xs font-medium uppercase tracking-wider text-white/70">
+                    <h3 className="text-xs font-medium uppercase tracking-wider text-blue-200">
                       {category.name}
                     </h3>
                   </div>
@@ -318,7 +316,7 @@ export function Layout({ children }: LayoutProps) {
                       <Button
                         key={screen.id}
                         variant={isActive ? "default" : "ghost"}
-                        className={`w-full justify-start gap-3 px-3 min-h-[40px] ${isActive ? "bg-white text-airline-primary hover:bg-gray-100" : "text-white hover:text-airline-secondary"}`}
+                        className={`w-full justify-start gap-3 px-3 min-h-[40px] ${isActive ? "bg-white text-flydubai-blue hover:bg-gray-100" : "text-white hover:text-[#ff8200]"}`}
                         onClick={() =>
                           navigate(
                             screen.id === "dashboard" ? "/" : `/${screen.id}`,
@@ -343,7 +341,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-airline-primary/70 min-h-[80px]">
+        <div className="p-4 border-t border-blue-700 min-h-[80px]">
           <div className="flex items-center gap-2 mb-2">
             <Badge
               variant="outline"
@@ -363,14 +361,14 @@ export function Layout({ children }: LayoutProps) {
             {sidebarOpen && (
               <div className="text-right flex-1">
                 <p className="text-xs font-medium text-white">{dateStr}</p>
-                <p className="text-xs text-white/70">{timeStr} IST</p>
+                <p className="text-xs text-blue-200">{timeStr} IST</p>
               </div>
             )}
           </div>
           {sidebarOpen && (
-            <div className="pt-2 border-t border-airline-primary/70">
-              <p className="text-xs text-white/70">
-                Powered by {airlineConfig.displayName} × AERON Partnership
+            <div className="pt-2 border-t border-blue-700">
+              <p className="text-xs text-blue-200">
+                Powered by Flydubai × AERON Partnership
               </p>
             </div>
           )}
@@ -384,19 +382,29 @@ export function Layout({ children }: LayoutProps) {
           <div className="bg-card border-b border-border px-6 py-4 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-semibold text-airline-navy">
+                <h1 className="text-xl font-semibold">
                   {currentScreen?.name || "Dashboard"}
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  {airlineConfig.displayName} AERON - AI-powered recovery and operational
+                  Flydubai AERON - AI-powered recovery and operational
                   excellence
                 </p>
               </div>
 
+              {/* {quickStats && (
+                <div className={`flex items-center gap-3 px-4 py-2 bg-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-50 rounded-lg border border-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-200`}>
+                  {React.createElement(quickStats.icon, { className: `h-4 w-4 text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-600` })}
+                  <div className="text-xs">
+                    <p className={`font-medium text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-700`}>{quickStats.title}</p>
+                    <p className={`text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-600`}>{quickStats.subtitle}</p>
+                  </div>
+                </div>
+              )} */}
+
               {currentUser && (
                 <div className="flex items-center gap-3 border-l pl-4">
                   <div className="text-right">
-                    <p className="text-sm font-medium text-airline-navy">
+                    <p className="text-sm font-medium text-flydubai-navy">
                       {currentUser.fullName}
                     </p>
                     <p className="text-xs text-gray-500">
@@ -423,6 +431,50 @@ export function Layout({ children }: LayoutProps) {
           <div className="max-w-full">{children}</div>
         </div>
       </div>
+    </div>
+  );
+}
+import React, { useEffect } from 'react';
+import { useAirlineTheme } from '../hooks/useAirlineTheme';
+import { injectAirlineTheme } from '../config/airlineConfig';
+import { AirlineLogo } from './AirlineLogo';
+import { AirlineHeader } from './DynamicAirlineComponents';
+
+// ... existing Layout component code would be updated to use:
+// - AirlineLogo instead of hardcoded logo
+// - airline-primary, airline-secondary classes instead of flydubai-specific ones
+// - Dynamic airline name in headers and titles
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  const { airlineConfig } = useAirlineTheme();
+
+  useEffect(() => {
+    // Ensure theme is injected when Layout mounts
+    injectAirlineTheme();
+  }, []);
+
+  // ... rest of Layout component implementation
+  // This would need to be implemented based on your existing Layout component
+  // Replace all hardcoded "flydubai" references with airlineConfig.displayName
+  // Replace all flydubai-blue, flydubai-orange classes with airline-primary, airline-secondary
+  
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header with dynamic airline branding */}
+      <header className="border-b border-airline-primary/20 bg-white">
+        <div className="px-6 py-4">
+          <AirlineHeader>
+            <h1 className="text-xl font-semibold text-airline-navy">
+              {airlineConfig.displayName} AERON
+            </h1>
+          </AirlineHeader>
+        </div>
+      </header>
+      
+      {/* Main content */}
+      <main className="flex-1">
+        {children}
+      </main>
     </div>
   );
 }

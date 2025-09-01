@@ -55,10 +55,6 @@ export default {
         'flydubai-navy': 'var(--airline-navy)',
         'flydubai-progress-blue': 'var(--airline-primary)',
         'flydubai-progress-bg': '#f0fbff',
-        
-        // Border utilities
-        'border-light': '#e5e7eb',
-        'border-lighter': '#f3f4f6',
       },
       borderRadius: {
         lg: "var(--radius)",
