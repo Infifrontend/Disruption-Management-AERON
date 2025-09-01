@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react'
 import { User } from '../services/authService'
+import { getAirlineConfig, type AirlineTheme } from '../config/airlineConfig'
 
 interface AppContextType {
   selectedDisruption: any;
@@ -18,6 +19,7 @@ interface AppContextType {
   setScreenSettings: (settings: screenSettings[]) => void;
   currentUser: User | null
   setCurrentUser: (user: User | null) => void
+  airlineConfig: AirlineTheme;
 }
 
 type screenSettings = {
@@ -38,6 +40,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [passengerServicesContext, setPassengerServicesContext] = useState<any | null>(null)
   const [reassignedCrewData, setReassignedCrewData] = useState<any | null>(null)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
+  const airlineConfig = getAirlineConfig()
   const [filters, setFilters] = useState({
     flightNumber: "",
     station: "",
@@ -211,6 +214,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setScreenSettings,
         currentUser,
         setCurrentUser,
+        airlineConfig,
       }}
     >
       {children}

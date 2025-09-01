@@ -434,3 +434,47 @@ export function Layout({ children }: LayoutProps) {
     </div>
   );
 }
+import React, { useEffect } from 'react';
+import { useAirlineTheme } from '../hooks/useAirlineTheme';
+import { injectAirlineTheme } from '../config/airlineConfig';
+import { AirlineLogo } from './AirlineLogo';
+import { AirlineHeader } from './DynamicAirlineComponents';
+
+// ... existing Layout component code would be updated to use:
+// - AirlineLogo instead of hardcoded logo
+// - airline-primary, airline-secondary classes instead of flydubai-specific ones
+// - Dynamic airline name in headers and titles
+
+export function Layout({ children }: { children: React.ReactNode }) {
+  const { airlineConfig } = useAirlineTheme();
+
+  useEffect(() => {
+    // Ensure theme is injected when Layout mounts
+    injectAirlineTheme();
+  }, []);
+
+  // ... rest of Layout component implementation
+  // This would need to be implemented based on your existing Layout component
+  // Replace all hardcoded "flydubai" references with airlineConfig.displayName
+  // Replace all flydubai-blue, flydubai-orange classes with airline-primary, airline-secondary
+  
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Header with dynamic airline branding */}
+      <header className="border-b border-airline-primary/20 bg-white">
+        <div className="px-6 py-4">
+          <AirlineHeader>
+            <h1 className="text-xl font-semibold text-airline-navy">
+              {airlineConfig.displayName} AERON
+            </h1>
+          </AirlineHeader>
+        </div>
+      </header>
+      
+      {/* Main content */}
+      <main className="flex-1">
+        {children}
+      </main>
+    </div>
+  );
+}
