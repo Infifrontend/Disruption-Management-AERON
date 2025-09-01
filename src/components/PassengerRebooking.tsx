@@ -75,6 +75,7 @@ import {
   RefreshCw,
   Target,
   X,
+  UserX,
   Wifi,
   Waves,
   Dumbbell,
