@@ -1,0 +1,33 @@
+The above error occurred in the <PendingSolutions> component:
+
+    at PendingSolutions (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/components/PendingSolutions.tsx:76:37)
+    at PendingSolutionsPage
+    at div
+    at div
+    at div
+    at div
+    at Layout (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/components/Layout.tsx:68:26)
+    at ProtectedRoute (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/components/ProtectedRoute.tsx:22:34)
+    at RenderedRoute (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=082351ac:5525:26)
+    at Routes (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=082351ac:6261:3)
+    at Suspense
+    at div
+    at Router (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=082351ac:6204:13)
+    at BrowserRouter (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=082351ac:9273:3)
+    at AppProvider (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/context/AppContext.tsx:20:31)
+    at App (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/App.tsx:68:77)
+    at ErrorBoundary (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/main.tsx:10:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+logCapturedError @ node_modules/.vite/d…js?v=082351ac:14032Understand this error
+ Application Error: TypeError: currentPassengerData.reduce is not a function
+    at src/components/PendingSolutions.tsx:6083:69
+    at PendingSolutions (src/components/PendingSolutions.tsx:6328:27)
+    at renderWithHooks (node_modules/.vite/deps/chunk-PJEEZAML.js?v=082351ac:11548:26)
+    at updateFunctionComponent (node_modules/.vite/deps/chunk-PJEEZAML.js?v=082351ac:14582:28)
+    at beginWork (node_modules/.vite/deps/chunk-PJEEZAML.js?v=082351ac:15924:22)
+    at beginWork$1 (node_modules/.vite/deps/chunk-PJEEZAML.js?v=082351ac:19753:22)
+    at performUnitOfWork (node_modules/.vite/deps/chunk-PJEEZAML.js?v=082351ac:19198:20)
+    at workLoopSync (node_modules/.vite/deps/chunk-PJEEZAML.js?v=082351ac:19137:13)
+    at renderRootSync (node_modules/.vite/deps/chunk-PJEEZAML.js?v=082351ac:19116:15)
+    at recoverFromConcurrentError (node_modules/.vite/deps/chunk-PJEEZAML.js?v=082351ac:18736:28) Object
