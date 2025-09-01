@@ -65,6 +65,21 @@ export function ComparisonMatrix({
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  // State for reassigned data, keyed by option ID
+  const [reassignedData, setReassignedData] = useState({});
+
+  // Function to update reassigned data state
+  const updateReassignedData = (optionId, type, data) => {
+    setReassignedData(prevData => ({
+      ...prevData,
+      [optionId]: {
+        ...(prevData[optionId] || {}),
+        [type]: data,
+      },
+    }));
+  };
+
+
   // Function to check if option requires execution based on impact_area
   const requiresExecution = (option) => {
     // Check if impact_area contains 'passenger' or 'crew'
@@ -2922,7 +2937,7 @@ export function ComparisonMatrix({
                 <TabsContent value="costs" className="space-y-4">
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-sm flex items-center gap-2">
+                      <CardTitle className="flex items-center gap-2">
                         <DollarSign className="h-4 w-4 text-flydubai-blue" />
                         Cost Breakdown Analysis
                       </CardTitle>
@@ -3355,7 +3370,7 @@ export function ComparisonMatrix({
                     : flight?.categorization ===
                         "Air traffic control restrictions"
                       ? "ATC"
-                      : "Operational"}{" "}
+                      : "Operational"}
               | Date:{" "}
               {new Date().toLocaleDateString("en-GB", {
                 day: "2-digit",
@@ -4217,17 +4232,20 @@ export function ComparisonMatrix({
                                   updatedCrew[originalIndex] = {
                                     ...updatedCrew[originalIndex],
                                     name: crew.name,
-                                    experience_years: crew.experience_years,
+                                    role: crew.role,
                                     qualifications: crew.qualifications,
+                                    experience: crew.experience,
+                                    score: crew.score,
+                                    location: crew.location,
+                                    status: "Reassigned",
+                                    availability: "Reassigned",
                                     replacedCrew:
                                       selectedCrewForSwap.replacedCrew ||
                                       (selectedCrewForSwap.isAutoAssigned
                                         ? selectedCrewForSwap.replacedCrew
                                         : selectedCrewForSwap.name),
                                     assignedAt: new Date().toISOString(),
-                                    status: "Reassigned",
-                                    availability: "On Duty",
-                                    isAutoAssigned: false, // Manual assignment overrides auto-assignment
+                                    isAutoAssigned: false, // Manual assignment
                                     autoAssignedReplacement: undefined,
                                   };
                                   console.log(
