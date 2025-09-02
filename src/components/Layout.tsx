@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
@@ -6,9 +5,9 @@ import { Badge } from "./ui/badge";
 import { useAppContext } from "../context/AppContext";
 import { databaseService } from "../services/databaseService";
 import { authService } from "../services/authService";
-import { useAirlineTheme } from '../hooks/useAirlineTheme';
-import { injectAirlineTheme } from '../config/airlineConfig';
-import { AirlineLogo } from './AirlineLogo';
+import { useAirlineTheme } from "../hooks/useAirlineTheme";
+import { injectAirlineTheme } from "../config/airlineConfig";
+import { AirlineLogo } from "./AirlineLogo";
 import {
   TrendingUp,
   Calendar,
@@ -271,9 +270,9 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="h-screen bg-background flex overflow-hidden">
       {/* Sidebar */}
-      <div className="w-52 min-w-[15rem] max-w-[15rem] bg-airline-primary text-white border-r border-airline-primary/70 flex flex-col flex-shrink-0 overflow-hidden">
+      <div className="w-52 min-w-[15rem] max-w-[15rem] bg-airline-primary text-white border-r border-airline-primary flex flex-col flex-shrink-0 overflow-hidden">
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-airline-primary/70 min-h-[120px] flex items-center justify-center">
+        <div className="p-4 border-b border-airline-primary min-h-[120px] flex items-center justify-center">
           <div className="flex flex-col items-center gap-2 w-full">
             <AirlineLogo className="responsive-logo h-8 w-auto" />
             {sidebarOpen && (
@@ -343,7 +342,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-airline-primary/70 min-h-[80px]">
+        <div className="p-4 border-t border-airline-primary min-h-[80px]">
           <div className="flex items-center gap-2 mb-2">
             <Badge
               variant="outline"
@@ -368,7 +367,7 @@ export function Layout({ children }: LayoutProps) {
             )}
           </div>
           {sidebarOpen && (
-            <div className="pt-2 border-t border-airline-primary/70">
+            <div className="pt-2 border-t border-airline-primary">
               <p className="text-xs text-white/70">
                 Powered by {airlineConfig.displayName} × AERON Partnership
               </p>
@@ -388,8 +387,8 @@ export function Layout({ children }: LayoutProps) {
                   {currentScreen?.name || "Dashboard"}
                 </h1>
                 <p className="text-sm text-muted-foreground">
-                  {airlineConfig.displayName} AERON - AI-powered recovery and operational
-                  excellence
+                  {airlineConfig.displayName} AERON - AI-powered recovery and
+                  operational excellence
                 </p>
               </div>
 
