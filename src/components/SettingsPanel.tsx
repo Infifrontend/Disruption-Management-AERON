@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
 import {
   useSettingsStorage,
   SettingsFieldConfig,
@@ -99,7 +99,11 @@ import {
   Square,
   ArrowUp,
   ArrowDown,
+  Loader2,
+  XCircle,
 } from "lucide-react";
+import { useAppContext } from "../context/AppContext";
+import { databaseService } from "../services/databaseService";
 
 // Define NotificationKey type for better type safety
 type NotificationKey =
@@ -111,12 +115,30 @@ type NotificationKey =
   | "passengerUpdates"
   | "systemAlerts";
 
-export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
+// Define Screen type
+type Screen = {
+  id: string;
+  name: string;
+  category: string;
+  enabled: boolean;
+  required: boolean;
+  icon: React.ElementType;
+};
+
+// Define a placeholder for updateScreenSetting function if it's not defined elsewhere
+// In a real scenario, this would be passed as a prop or imported
+const updateScreenSetting = (screenId: string, enabled: boolean) => {
+  console.log(`Screen ${screenId} toggled to ${enabled}`);
+  // Implement actual state update logic here
+};
+
+
+export default function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.Element {
   console.log(screenSettings, "tesssttttttt");
   const [activeTab, setActiveTab] = useState("screens");
   const [isLoading, setIsLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<
-    "idle" | "saving" | "saved" | "error"
+    "idle" | "saving" | "saved" | "error" | "success"
   >("idle");
   const [isDatabaseConnected, setIsDatabaseConnected] = useState(false);
   const settingsStore = useSettingsStorage();
@@ -957,6 +979,29 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     system: { name: "System", color: "text-gray-600" },
   };
 
+  const updateScreenSetting = (screenId: string, enabled: boolean) => {
+    const updatedSettings = screenSettings.map((screen: Screen) => {
+      if (screen.id === screenId && !screen.required) {
+        return { ...screen, enabled: enabled };
+      }
+      return screen;
+    });
+    onScreenSettingsChange(updatedSettings);
+  };
+
+  const updateSystemSetting = (categoryKey: string, settingKey: string, value: any) => {
+    setRawTabSettings((prev) => ({
+      ...prev,
+      system: {
+        ...prev.system,
+        [categoryKey]: prev.system[categoryKey].map((setting) =>
+          setting.key === settingKey ? { ...setting, value: value } : setting
+        ),
+      },
+    }));
+  };
+
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -1044,84 +1089,69 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
         {/* Screen Settings */}
         <TabsContent value="screens" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Eye className="h-5 w-5 text-flydubai-blue" />
-                    Screen Visibility Configuration
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Control which screens are available in the AERON interface.
-                    Required screens cannot be disabled.
-                  </p>
-                </div>
-                <Button
-                  onClick={saveScreenSettings}
-                  className="btn-flydubai-primary"
-                  disabled={isLoading || saveStatus === "saving"}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {saveStatus === "saving"
-                    ? "Saving..."
-                    : "Save Screen Settings"}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {Object.entries(categories).map(([categoryKey, category]) => {
-                const categoryScreens = screenSettings.filter(
-                  (screen) => screen.category === categoryKey,
-                );
-
-                if (categoryScreens.length === 0) return null;
-
-                return (
-                  <div key={categoryKey} className="mb-6">
-                    <h3
-                      className={`text-sm font-semibold mb-3 ${category.color}`}
-                    >
-                      {category.name}
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {categoryScreens.map((screen) => {
-                        console.log(screen, "testttt");
-                        const Icon = screen.icon;
-                        return (
-                          <div
-                            key={screen.id}
-                            className="flex items-center justify-between p-3 border rounded-lg"
-                          >
-                            <div className="flex items-center gap-3">
-                              <Icon className="h-4 w-4 text-muted-foreground" />
-                              <div>
-                                <p className="font-medium">{screen.name}</p>
-                                {screen.required && (
-                                  <Badge variant="outline" className="text-xs">
-                                    Required
-                                  </Badge>
-                                )}
-                              </div>
-                            </div>
-                            <Switch
-                              checked={screen.enabled}
-                              onCheckedChange={() =>
-                                handleScreenToggle(screen.id)
-                              }
-                              disabled={screen.required}
-                              className="switch-flydubai"
-                            />
-                          </div>
-                        );
-                      })}
+            <Card>
+              <CardHeader>
+                <CardTitle>Screen Visibility Settings</CardTitle>
+                <CardDescription>
+                  Configure which screens are visible in the navigation menu
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {screenSettings.length > 0 ? (
+                  screenSettings.map((screen) => (
+                    <div key={screen.id} className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor={`screen-${screen.id}`} className="text-base">
+                          {screen.name}
+                        </Label>
+                        <div className="text-sm text-muted-foreground">
+                          Category: {screen.category}
+                          {screen.required && " (Required)"}
+                        </div>
+                      </div>
+                      <Switch
+                        id={`screen-${screen.id}`}
+                        checked={screen.enabled}
+                        onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                        disabled={screen.required}
+                      />
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground">
+                    No screen settings available
                   </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-        </TabsContent>
+                )}
+
+                <div className="flex justify-end pt-4">
+                  <Button 
+                    onClick={saveScreenSettings}
+                    disabled={saveStatus === "saving"}
+                    className="min-w-[120px]"
+                  >
+                    {saveStatus === "saving" ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : saveStatus === "success" ? (
+                      <>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Saved
+                      </>
+                    ) : saveStatus === "error" ? (
+                      <>
+                        <XCircle className="mr-2 h-4 w-4" />
+                        Error
+                      </>
+                    ) : (
+                      "Save Screen Settings"
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
         {/* Passenger Priority Configuration */}
         <TabsContent value="passenger-priority" className="space-y-6">
@@ -1495,81 +1525,89 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
         {/* System Settings */}
         <TabsContent value="system" className="space-y-6">
-          <Card className="border-flydubai-blue bg-blue-50">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-flydubai-blue">
-                    <Settings2 className="h-5 w-5" />
-                    System Configuration
-                  </CardTitle>
-                  <p className="text-sm text-blue-700">
-                    Configure system-wide settings, performance parameters, and
-                    maintenance options.
-                  </p>
-                </div>
-                <Button
-                  onClick={saveSystemSettings}
-                  className="btn-flydubai-primary"
-                  disabled={isLoading || saveStatus === "saving"}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {saveStatus === "saving"
-                    ? "Saving..."
-                    : "Save System Settings"}
-                </Button>
-              </div>
-            </CardHeader>
-          </Card>
-
-          {/* Dynamically render system settings if available */}
-          {rawTabSettings?.system &&
-          Object.keys(rawTabSettings.system).length > 0 ? (
-            <div className="grid grid-cols-1 gap-6">
-              {Object.entries(rawTabSettings.system).map(
-                ([categoryKey, categorySettings]) => (
-                  <DynamicSettingsRenderer
-                    key={categoryKey}
-                    categoryData={
-                      Array.isArray(categorySettings) ? categorySettings : []
-                    }
-                    categoryName={categoryKey}
-                    categoryTitle={
-                      categoryKey.charAt(0).toUpperCase() +
-                      categoryKey.slice(1).replace(/([A-Z])/g, " $1")
-                    }
-                    categoryDescription={`Configure ${categoryKey} settings`}
-                    icon={Settings2}
-                    values={{}} // You can maintain separate state for system settings if needed
-                    onChange={(key, value) => {
-                      // Handle system settings changes
-                      console.log(`System setting changed: ${key} = ${value}`);
-                    }}
-                    onToggle={(key) => {
-                      // Handle system setting toggles
-                      console.log(`System setting toggled: ${key}`);
-                    }}
-                    onSave={saveSystemSettings}
-                    saveStatus={saveStatus}
-                    fieldConfigurations={fieldConfigurations[categoryKey] || {}}
-                  />
-                ),
-              )}
-            </div>
-          ) : (
             <Card>
-              <CardContent className="text-center py-8">
-                <Settings2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  No System Settings
-                </h3>
-                <p className="text-gray-500">
-                  No system settings are currently configured in the database.
-                </p>
+              <CardHeader>
+                <CardTitle>System Configuration</CardTitle>
+                <CardDescription>
+                  Advanced system settings and configurations
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {rawTabSettings?.system && Object.keys(rawTabSettings.system).length > 0 ? (
+                  Object.entries(rawTabSettings.system).map(([categoryKey, categorySettings]) => (
+                    <div key={categoryKey} className="space-y-4">
+                      <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        {categoryKey.replace(/([A-Z])/g, ' $1').trim()}
+                      </h4>
+                      <div className="grid gap-4">
+                        {Array.isArray(categorySettings) && categorySettings.map((setting) => (
+                          <div key={`${categoryKey}-${setting.key}`} className="space-y-2">
+                            <Label htmlFor={`${categoryKey}-${setting.key}`}>
+                              {setting.label || setting.key}
+                            </Label>
+                            {setting.type === 'boolean' ? (
+                              <Switch
+                                id={`${categoryKey}-${setting.key}`}
+                                checked={setting.value}
+                                onCheckedChange={(value) => updateSystemSetting(categoryKey, setting.key, value)}
+                              />
+                            ) : setting.type === 'number' ? (
+                              <Input
+                                id={`${categoryKey}-${setting.key}`}
+                                type="number"
+                                value={setting.value}
+                                onChange={(e) => updateSystemSetting(categoryKey, setting.key, Number(e.target.value))}
+                              />
+                            ) : (
+                              <Input
+                                id={`${categoryKey}-${setting.key}`}
+                                type="text"
+                                value={setting.value}
+                                onChange={(e) => updateSystemSetting(categoryKey, setting.key, e.target.value)}
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <Separator />
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No system settings available</p>
+                    <p className="text-sm mt-2">System settings will appear here when loaded from the database</p>
+                  </div>
+                )}
+
+                <div className="flex justify-end pt-4">
+                  <Button 
+                    onClick={saveSystemSettings}
+                    disabled={saveStatus === "saving"}
+                    className="min-w-[120px]"
+                  >
+                    {saveStatus === "saving" ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : saveStatus === "success" ? (
+                      <>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Saved
+                      </>
+                    ) : saveStatus === "error" ? (
+                      <>
+                        <XCircle className="mr-2 h-4 w-4" />
+                        Error
+                      </>
+                    ) : (
+                      "Save System Settings"
+                    )}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
-          )}
-        </TabsContent>
+          </TabsContent>
 
         {/* Enhanced Rule Configuration */}
         <TabsContent value="rules" className="space-y-6">
@@ -3513,122 +3551,92 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           </div>
         </TabsContent>
 
-        {/* System Settings */}
+        {/* System Settings Tab - Re-added with correct rendering */}
         <TabsContent value="system" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <Settings className="h-5 w-5 text-flydubai-blue" />
-                    System Configuration
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    General system settings and preferences.
-                  </p>
-                </div>
-                {/* <Button
-                  onClick={saveSystemSettings}
-                  className="btn-flydubai-primary"
-                  disabled={isLoading || saveStatus === "saving"}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {saveStatus === "saving"
-                    ? "Saving..."
-                    : "Save System Settings"}
-                </Button> */}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-flydubai-navy">
-                    Regional Settings
-                  </h3>
-
-                  <div>
-                    <Label className="text-sm font-medium">Time Zone</Label>
-                    <Select defaultValue="indian-standard">
-                      <SelectTrigger className="w-full mt-2">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="indian-standard">
-                          Indian Standard Time (IST)
-                        </SelectItem>
-                        <SelectItem value="gulf-standard">
-                          Gulf Standard Time (GST)
-                        </SelectItem>
-                        <SelectItem value="utc">
-                          Coordinated Universal Time (UTC)
-                        </SelectItem>
-                        <SelectItem value="local">Local System Time</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label className="text-sm font-medium">
-                      Currency Display
-                    </Label>
-                    <Select defaultValue="aed">
-                      <SelectTrigger className="w-full mt-2">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="aed">AED (Dirham)</SelectItem>
-                        <SelectItem value="usd">USD (US Dollar)</SelectItem>
-                        <SelectItem value="eur">EUR (Euro)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-flydubai-navy">
-                    Performance Settings
-                  </h3>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-sm font-medium">
-                        High Performance Mode
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        Enhanced processing for critical operations
-                      </p>
+            <Card>
+              <CardHeader>
+                <CardTitle>System Configuration</CardTitle>
+                <CardDescription>
+                  Advanced system settings and configurations
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {rawTabSettings?.system && Object.keys(rawTabSettings.system).length > 0 ? (
+                  Object.entries(rawTabSettings.system).map(([categoryKey, categorySettings]) => (
+                    <div key={categoryKey} className="space-y-4">
+                      <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+                        {categoryKey.replace(/([A-Z])/g, ' $1').trim()}
+                      </h4>
+                      <div className="grid gap-4">
+                        {Array.isArray(categorySettings) && categorySettings.map((setting) => (
+                          <div key={`${categoryKey}-${setting.key}`} className="space-y-2">
+                            <Label htmlFor={`${categoryKey}-${setting.key}`}>
+                              {setting.label || setting.key}
+                            </Label>
+                            {setting.type === 'boolean' ? (
+                              <Switch
+                                id={`${categoryKey}-${setting.key}`}
+                                checked={setting.value}
+                                onCheckedChange={(value) => updateSystemSetting(categoryKey, setting.key, value)}
+                              />
+                            ) : setting.type === 'number' ? (
+                              <Input
+                                id={`${categoryKey}-${setting.key}`}
+                                type="number"
+                                value={setting.value}
+                                onChange={(e) => updateSystemSetting(categoryKey, setting.key, Number(e.target.value))}
+                              />
+                            ) : (
+                              <Input
+                                id={`${categoryKey}-${setting.key}`}
+                                type="text"
+                                value={setting.value}
+                                onChange={(e) => updateSystemSetting(categoryKey, setting.key, e.target.value)}
+                              />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                      <Separator />
                     </div>
-                    <Switch checked={false} className="switch-flydubai" />
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <p>No system settings available</p>
+                    <p className="text-sm mt-2">System settings will appear here when loaded from the database</p>
                   </div>
+                )}
 
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-sm font-medium">
-                        Auto-Save Settings
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        Automatically save configuration changes
-                      </p>
-                    </div>
-                    <Switch checked={true} className="switch-flydubai" />
-                  </div>
+                <div className="flex justify-end pt-4">
+                  <Button 
+                    onClick={saveSystemSettings}
+                    disabled={saveStatus === "saving"}
+                    className="min-w-[120px]"
+                  >
+                    {saveStatus === "saving" ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : saveStatus === "success" ? (
+                      <>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Saved
+                      </>
+                    ) : saveStatus === "error" ? (
+                      <>
+                        <XCircle className="mr-2 h-4 w-4" />
+                        Error
+                      </>
+                    ) : (
+                      "Save System Settings"
+                    )}
+                  </Button>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-          {/* Save Button at Bottom */}
-          <div className="flex justify-end pt-4">
-            <Button
-              onClick={saveSystemSettings}
-              className="btn-flydubai-primary"
-              disabled={isLoading || saveStatus === "saving"}
-            >
-              <Save className="h-4 w-4 mr-2" />
-              {saveStatus === "saving" ? "Saving..." : "Save System Settings"}
-            </Button>
-          </div>
-        </TabsContent>
       </Tabs>
     </div>
   );
