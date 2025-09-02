@@ -328,6 +328,244 @@ app.delete("/api/settings/:category/:key", async (req, res) => {
   }
 });
 
+// Screen settings endpoints
+app.get("/api/screen-settings", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM screen_settings ORDER BY category, screen_name"
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching screen settings:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/screen-settings", async (req, res) => {
+  try {
+    const { screen_id, screen_name, category, enabled, required, updated_by } = req.body;
+    
+    const result = await pool.query(
+      `INSERT INTO screen_settings (screen_id, screen_name, category, enabled, required, updated_by)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (screen_id)
+       DO UPDATE SET
+         screen_name = EXCLUDED.screen_name,
+         category = EXCLUDED.category,
+         enabled = EXCLUDED.enabled,
+         required = EXCLUDED.required,
+         updated_by = EXCLUDED.updated_by,
+         updated_at = CURRENT_TIMESTAMP
+       RETURNING *`,
+      [screen_id, screen_name, category, enabled, required, updated_by || 'system']
+    );
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error saving screen setting:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put("/api/screen-settings/:screen_id", async (req, res) => {
+  try {
+    const { screen_id } = req.params;
+    const { enabled, updated_by } = req.body;
+    
+    const result = await pool.query(
+      `UPDATE screen_settings 
+       SET enabled = $1, updated_by = $2, updated_at = CURRENT_TIMESTAMP
+       WHERE screen_id = $3 RETURNING *`,
+      [enabled, updated_by || 'system', screen_id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Screen setting not found" });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error updating screen setting:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Custom rules endpoints
+app.get("/api/custom-rules", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM custom_rules ORDER BY priority, created_at"
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching custom rules:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/custom-rules", async (req, res) => {
+  try {
+    const {
+      rule_id, name, description, category, type, priority,
+      overridable, conditions, actions, status, created_by
+    } = req.body;
+    
+    const result = await pool.query(
+      `INSERT INTO custom_rules 
+       (rule_id, name, description, category, type, priority, overridable, conditions, actions, status, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      [rule_id, name, description, category, type, priority, overridable, conditions, actions, status, created_by]
+    );
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error saving custom rule:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.put("/api/custom-rules/:rule_id", async (req, res) => {
+  try {
+    const { rule_id } = req.params;
+    const updates = req.body;
+    
+    const setClause = Object.keys(updates)
+      .map((key, index) => `${key} = $${index + 2}`)
+      .join(', ');
+    
+    const values = [rule_id, ...Object.values(updates)];
+    
+    const result = await pool.query(
+      `UPDATE custom_rules SET ${setClause}, updated_at = CURRENT_TIMESTAMP
+       WHERE rule_id = $1 RETURNING *`,
+      values
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Custom rule not found" });
+    }
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error updating custom rule:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete("/api/custom-rules/:rule_id", async (req, res) => {
+  try {
+    const { rule_id } = req.params;
+    const result = await pool.query(
+      "DELETE FROM custom_rules WHERE rule_id = $1 RETURNING *",
+      [rule_id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Custom rule not found" });
+    }
+    
+    res.json({ message: "Custom rule deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting custom rule:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Custom parameters endpoints
+app.get("/api/custom-parameters", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM custom_parameters WHERE is_active = true ORDER BY category, name"
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching custom parameters:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/api/custom-parameters", async (req, res) => {
+  try {
+    const { parameter_id, name, category, weight, description, created_by } = req.body;
+    
+    const result = await pool.query(
+      `INSERT INTO custom_parameters (parameter_id, name, category, weight, description, created_by)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [parameter_id, name, category, weight, description, created_by]
+    );
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error saving custom parameter:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete("/api/custom-parameters/:parameter_id", async (req, res) => {
+  try {
+    const { parameter_id } = req.params;
+    const result = await pool.query(
+      "UPDATE custom_parameters SET is_active = false WHERE parameter_id = $1 RETURNING *",
+      [parameter_id]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Custom parameter not found" });
+    }
+    
+    res.json({ message: "Custom parameter deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting custom parameter:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Batch save settings endpoint for tab-wise saves
+app.post("/api/settings/batch", async (req, res) => {
+  try {
+    const { settings, updated_by } = req.body;
+    
+    if (!Array.isArray(settings)) {
+      return res.status(400).json({ error: "Settings must be an array" });
+    }
+    
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+      
+      const results = [];
+      for (const setting of settings) {
+        const { category, key, value, type } = setting;
+        const result = await client.query(
+          `INSERT INTO settings (category, key, value, type, updated_by)
+           VALUES ($1, $2, $3, $4, $5)
+           ON CONFLICT (category, key)
+           DO UPDATE SET
+             value = EXCLUDED.value,
+             type = EXCLUDED.type,
+             updated_by = EXCLUDED.updated_by,
+             updated_at = CURRENT_TIMESTAMP
+           RETURNING *`,
+          [category, key, JSON.stringify(value), type, updated_by || 'system']
+        );
+        results.push(result.rows[0]);
+      }
+      
+      await client.query('COMMIT');
+      res.json({ success: true, saved_settings: results.length });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error("Error batch saving settings:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Bulk update disruptions from external API
 app.post("/api/disruptions/bulk-update", async (req, res) => {
   try {

@@ -397,6 +397,92 @@ class SettingsStorage {
   async saveToDatabase(): Promise<void> {
     this.debouncedSaveToDatabase()
   }
+
+  // Batch save for tab-wise operations
+  async batchSaveByCategory(
+    category: string,
+    userId: string = "system"
+  ): Promise<boolean> {
+    try {
+      const categorySettings = Array.from(this.storage.values()).filter(
+        setting => setting.category === category
+      );
+
+      if (categorySettings.length === 0) {
+        console.log(`No settings found for category: ${category}`);
+        return true;
+      }
+
+      if (this.isDatabaseConnected) {
+        const settingsArray = categorySettings.map(setting => ({
+          category: setting.category,
+          key: setting.key,
+          value: setting.value,
+          type: setting.type
+        }));
+
+        const success = await databaseService.batchSaveSettings(settingsArray, userId);
+        if (success) {
+          console.log(`Batch saved ${settingsArray.length} settings for category: ${category}`);
+          return true;
+        } else {
+          console.warn(`Batch save failed for category: ${category}, falling back to localStorage`);
+          this.isDatabaseConnected = false;
+        }
+      }
+
+      // Fallback to localStorage
+      this.saveToLocalStorage();
+      return true;
+    } catch (error) {
+      console.error(`Failed to batch save category ${category}:`, error);
+      return false;
+    }
+  }
+
+  // Batch save multiple categories
+  async batchSaveMultipleCategories(
+    categories: string[],
+    userId: string = "system"
+  ): Promise<boolean> {
+    try {
+      const allSettings = categories.flatMap(category => 
+        Array.from(this.storage.values()).filter(
+          setting => setting.category === category
+        )
+      );
+
+      if (allSettings.length === 0) {
+        console.log(`No settings found for categories: ${categories.join(', ')}`);
+        return true;
+      }
+
+      if (this.isDatabaseConnected) {
+        const settingsArray = allSettings.map(setting => ({
+          category: setting.category,
+          key: setting.key,
+          value: setting.value,
+          type: setting.type
+        }));
+
+        const success = await databaseService.batchSaveSettings(settingsArray, userId);
+        if (success) {
+          console.log(`Batch saved ${settingsArray.length} settings for categories: ${categories.join(', ')}`);
+          return true;
+        } else {
+          console.warn(`Batch save failed for categories: ${categories.join(', ')}, falling back to localStorage`);
+          this.isDatabaseConnected = false;
+        }
+      }
+
+      // Fallback to localStorage
+      this.saveToLocalStorage();
+      return true;
+    } catch (error) {
+      console.error(`Failed to batch save categories ${categories.join(', ')}:`, error);
+      return false;
+    }
+  }
 }
 
 // Singleton instance
@@ -416,6 +502,8 @@ export const useSettingsStorage = () => {
     importSettings: settingsStorage.importSettings.bind(settingsStorage),
     resetToDefaults: settingsStorage.resetToDefaults.bind(settingsStorage),
     getDatabaseStatus: settingsStorage.getDatabaseStatus.bind(settingsStorage),
-    retryDatabaseConnection: settingsStorage.retryDatabaseConnection.bind(settingsStorage)
+    retryDatabaseConnection: settingsStorage.retryDatabaseConnection.bind(settingsStorage),
+    batchSaveByCategory: settingsStorage.batchSaveByCategory.bind(settingsStorage),
+    batchSaveMultipleCategories: settingsStorage.batchSaveMultipleCategories.bind(settingsStorage)
   }
 }
