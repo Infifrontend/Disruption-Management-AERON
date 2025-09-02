@@ -1,6 +1,5 @@
-
-import React from 'react';
-import { useAirlineTheme } from '../hooks/useAirlineTheme';
+import React from "react";
+import { useAirlineTheme } from "../hooks/useAirlineTheme";
 
 interface AirlineLogoProps {
   className?: string;
@@ -9,16 +8,16 @@ interface AirlineLogoProps {
   alt?: string;
 }
 
-export function AirlineLogo({ 
-  className = "responsive-logo", 
-  width, 
-  height, 
-  alt 
+export function AirlineLogo({
+  className = "responsive-logo",
+  width,
+  height,
+  alt,
 }: AirlineLogoProps) {
   const { airlineConfig } = useAirlineTheme();
-  
+
   const logoAlt = alt || `${airlineConfig.displayName} Logo`;
-  
+  // console.log(airlineConfig.logo, "tetets");
   return (
     <img
       src={airlineConfig.logo}
@@ -31,15 +30,17 @@ export function AirlineLogo({
         maxWidth: width ? `${width}px` : undefined,
       }}
       onError={(e) => {
-        console.warn(`Failed to load logo for ${airlineConfig.code}, trying fallback`);
+        console.warn(
+          `Failed to load logo for ${airlineConfig.code}, trying fallback`,
+        );
         const target = e.target as HTMLImageElement;
-        
+        console.log(target.src);
         // Try the public folder fallback first
-        if (target.src !== '/flydubai_logo.png') {
-          target.src = '/flydubai_logo.png';
+        if (target.src !== "/logo.png") {
+          target.src = "public" + airlineConfig.logo;
         } else {
           // If even the fallback fails, hide the image
-          target.style.display = 'none';
+          target.style.display = "none";
         }
       }}
     />
