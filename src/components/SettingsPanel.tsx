@@ -819,7 +819,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     try {
       // Collect all passenger priority settings for batch save
       const settingsToSave = [];
-      
+
       for (const [category, settings] of Object.entries(passengerPriorityConfig)) {
         for (const [key, value] of Object.entries(settings)) {
           settingsToSave.push({
@@ -3421,118 +3421,25 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 gap-3">
-                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded">
-                        <FileText className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">
-                            Flexible Operations Manual 2024.pdf
-                          </p>
-                          <Badge className="bg-green-100 text-green-800 text-xs">
-                            Processed
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Operations • Emergency procedures and protocols
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Updated: 1 day ago • Size: 2.3 MB
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-orange-100 rounded">
-                        <FileText className="h-4 w-4 text-orange-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">
-                            Emergency Response Procedures.docx
-                          </p>
-                          <Badge className="bg-orange-100 text-orange-800 text-xs">
-                            Processing
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Emergency • Response procedures and escalation
-                          protocols
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Updated: 3 hours ago • Size: 1.8 MB
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-gray-100 rounded">
-                        <FileText className="h-4 w-4 text-gray-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">
-                            Weather Decision Guidelines.pdf
-                          </p>
-                          <Badge className="bg-gray-100 text-gray-800 text-xs">
-                            Pending
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Weather • Decision making guidelines and protocols
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Updated: 1 week ago • Size: 950 KB
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
+              {isDatabaseConnected ? (
+                <div className="text-center py-8 text-gray-500">
+                  <FileText className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <p>No documents uploaded yet</p>
+                  <p className="text-sm">
+                    Click "Upload Document" to add operational knowledge
+                  </p>
                 </div>
-              </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-orange-600 mb-4">
+                    <AlertCircle className="h-12 w-12 mx-auto" />
+                  </div>
+                  <p className="text-orange-800 font-medium">Database Unavailable</p>
+                  <p className="text-sm text-orange-600">
+                    Document repository requires database connection
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
 
