@@ -663,6 +663,35 @@ class DatabaseService {
     }
   }
 
+  async batchSaveScreenSettings(
+    screenSettings: any[],
+    userId: string = "system"
+  ): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/screen-settings/batch`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          screenSettings,
+          updated_by: userId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log(`Batch saved ${screenSettings.length} screen settings to database`);
+      return true;
+    } catch (error) {
+      console.error("Failed to batch save screen settings:", error);
+      return false;
+    }
+  }
+
   // Batch save settings for tab-wise operations
   async batchSaveSettings(
     settings: Array<{

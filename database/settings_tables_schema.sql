@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS screen_settings (
     category VARCHAR(50) NOT NULL,
     enabled BOOLEAN DEFAULT true,
     required BOOLEAN DEFAULT false,
+    icon VARCHAR(50) DEFAULT 'Settings',
     updated_by VARCHAR(100) DEFAULT 'system',
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -82,22 +83,23 @@ CREATE INDEX IF NOT EXISTS idx_custom_parameters_category ON custom_parameters(c
 CREATE INDEX IF NOT EXISTS idx_settings_audit_setting_id ON settings_audit(setting_id);
 
 -- Insert default screen settings if not exists
-INSERT INTO screen_settings (screen_id, screen_name, category, enabled, required) VALUES
-    ('dashboard', 'Dashboard', 'main', true, true),
-    ('disruption-input', 'Disruption Input', 'operations', true, true),
-    ('recovery-options', 'Recovery Options', 'operations', true, true),
-    ('detailed-plan', 'Detailed Recovery Plan', 'operations', true, false),
-    ('flight-tracking', 'Flight Tracking', 'monitoring', true, false),
-    ('prediction-analytics', 'Prediction Analytics', 'prediction', true, false),
-    ('prediction-dashboard', 'Prediction Dashboard', 'prediction', true, false),
-    ('passenger-services', 'Passenger Services', 'services', true, false),
-    ('hotac-management', 'HOTAC Management', 'services', true, false),
-    ('fuel-optimization', 'Fuel Optimization', 'analytics', true, false),
-    ('aircraft-maintenance', 'Aircraft Maintenance', 'operations', true, false),
-    ('comparison-matrix', 'Comparison Matrix', 'analytics', true, false),
-    ('past-recovery-logs', 'Past Recovery Logs', 'analytics', true, false),
-    ('pending-solutions', 'Pending Solutions', 'operations', true, false),
-    ('risk-assessment', 'Risk Assessment', 'analytics', true, false),
-    ('reports', 'Reports & Analytics', 'system', true, false),
-    ('settings', 'Settings', 'system', true, true)
+INSERT INTO screen_settings (screen_id, screen_name, category, enabled, required, icon) VALUES
+    ('dashboard', 'Dashboard', 'main', true, true, 'TrendingUp'),
+    ('flight-tracking', 'Flight Tracking Gantt', 'operations', false, false, 'Calendar'),
+    ('disruption', 'Affected Flights', 'operations', true, false, 'AlertTriangle'),
+    ('recovery', 'Recovery Options', 'operations', false, false, 'Plane'),
+    ('comparison', 'Recovery Options', 'operations', true, false, 'FileText'),
+    ('detailed', 'Recovery Plan', 'operations', false, false, 'Users'),
+    ('prediction-dashboard', 'Prediction Dashboard', 'prediction', false, false, 'Brain'),
+    ('flight-disruption-list', 'Flight Disruption List', 'prediction', false, false, 'Target'),
+    ('prediction-analytics', 'Prediction Analytics', 'prediction', false, false, 'Activity'),
+    ('risk-assessment', 'Risk Assessment', 'prediction', false, false, 'Shield'),
+    ('pending', 'Pending Solutions', 'monitoring', true, false, 'ClockIcon'),
+    ('past-logs', 'Past Recovery Logs', 'monitoring', true, false, 'CheckSquare'),
+    ('maintenance', 'Aircraft Maintenance', 'monitoring', true, false, 'Wrench'),
+    ('passengers', 'Services', 'services', false, false, 'UserCheck'),
+    ('hotac', 'HOTAC Management', 'services', true, false, 'Hotel'),
+    ('fuel-optimization', 'Fuel Optimization', 'analytics', false, false, 'Fuel'),
+    ('reports', 'Reports & Analytics', 'analytics', false, false, 'BarChart3'),
+    ('settings', 'Settings', 'system', true, true, 'Settings')
 ON CONFLICT (screen_id) DO NOTHING;

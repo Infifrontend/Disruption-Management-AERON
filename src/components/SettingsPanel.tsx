@@ -569,28 +569,12 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const saveScreenSettings = async () => {
     setSaveStatus("saving");
     try {
-      // Convert screen settings to settings format for batch save\
       console.log(screenSettings, "Screen");
 
-      const settingsToSave = screenSettings.map((screen) => ({
-        category: screen.category,
-        key: screen.id,
-        value: screen.enabled,
-        type: "boolean" as const,
-        icon: screen.icon,
-        id: screen.id,
-        required: screen.required,
-      }));
-
-      const success = await settingsStore.saveSettingsFromState(
-        {
-          screenSettings: screenSettings.reduce((acc, screen) => {
-            acc[screen.id] = screen.enabled;
-            return acc;
-          }, {}),
-        },
-        { screenSettings: "screenSettings" },
-        "user",
+      // Use the dedicated screen settings batch save API
+      const success = await databaseService.batchSaveScreenSettings(
+        screenSettings,
+        "user"
       );
 
       if (success) {
