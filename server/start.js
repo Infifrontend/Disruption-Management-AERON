@@ -256,7 +256,7 @@ app.get("/api/settings/tabs", async (req, res) => {
     const result = await pool.query(
       "SELECT * FROM settings WHERE is_active = true ORDER BY category, key",
     );
-    
+
     // Field configurations for display labels
     const fieldLabels = {
       // Passenger Prioritization
@@ -265,14 +265,14 @@ app.get("/api/settings/tabs", async (req, res) => {
       specialNeeds: "Special Requirements",
       groupSize: "Family/Group Bookings",
       connectionRisk: "Missed Connection Risk",
-      
+
       // Flight Prioritization
       airlinePreference: "Airline Preference (flydubai)",
       onTimePerformance: "On-Time Performance History",
       aircraftType: "Aircraft Type & Amenities",
       departureTime: "Preferred Departure Times",
       connectionBuffer: "Connection Buffer Time",
-      
+
       // Flight Scoring
       baseScore: "Base Score (Starting Point)",
       priorityBonus: "VIP/Premium Passenger Bonus",
@@ -280,61 +280,61 @@ app.get("/api/settings/tabs", async (req, res) => {
       specialReqBonus: "Special Requirements Bonus",
       loyaltyBonus: "Loyalty Tier Bonus",
       groupBonus: "Group Booking Bonus",
-      
+
       // Passenger Scoring
       vipWeight: "VIP Status Impact",
       loyaltyWeight: "Loyalty Program Tier",
       specialNeedsWeight: "Special Assistance Requirements",
       revenueWeight: "Ticket Revenue/Class Value",
-      
+
       // Operational Rules
       maxDelayThreshold: "Max Delay Threshold",
       minConnectionTime: "Min Connection Time",
       maxOverbooking: "Max Overbooking",
       priorityRebookingTime: "Priority Rebooking Time",
       hotacTriggerDelay: "HOTAC Trigger Delay",
-      
+
       // Recovery Constraints
       maxAircraftSwaps: "Max Aircraft Swaps",
       crewDutyTimeLimits: "Crew Duty Time Limits",
       maintenanceSlotProtection: "Maintenance Slot Protection",
       slotCoordinationRequired: "Slot Coordination Required",
       curfewCompliance: "Curfew Compliance",
-      
+
       // Automation Settings
       autoApproveThreshold: "Auto-Approve Threshold",
       requireManagerApproval: "Require Manager Approval",
       enablePredictiveActions: "Enable Predictive Actions",
       autoNotifyPassengers: "Auto-Notify Passengers",
       autoBookHotac: "Auto-Book HOTAC",
-      
+
       // Recovery Options Ranking
       costWeight: "Cost Impact",
       timeWeight: "Time to Resolution",
       passengerImpactWeight: "Passenger Impact",
       operationalComplexityWeight: "Operational Complexity",
       reputationWeight: "Brand Reputation Impact",
-      
+
       // Aircraft Selection Criteria
       maintenanceStatus: "Maintenance Status",
       fuelEfficiency: "Fuel Efficiency",
       routeSuitability: "Route Suitability",
       passengerCapacity: "Passenger Capacity",
       availabilityWindow: "Availability Window",
-      
+
       // Crew Assignment Criteria
       dutyTimeRemaining: "Duty Time Remaining",
       qualifications: "Qualifications & Certifications",
       baseLocation: "Base Location",
       restRequirements: "Rest Requirements",
       languageSkills: "Language Skills",
-      
+
       // NLP Settings
       enabled: "Enable NLP",
       language: "Primary Language",
       confidence: "Confidence Threshold",
       autoApply: "Auto-Apply Recommendations",
-      
+
       // Notification Settings
       email: "Email Notifications",
       sms: "SMS Alerts",
@@ -360,7 +360,7 @@ app.get("/api/settings/tabs", async (req, res) => {
     result.rows.forEach(setting => {
       const category = setting.category;
       const key = setting.key;
-      
+
       // Create full setting object with label
       const fullSetting = {
         id: setting.id,
@@ -382,28 +382,44 @@ app.get("/api/settings/tabs", async (req, res) => {
           tabSettings.passengerPriority[category] = [];
         }
         tabSettings.passengerPriority[category].push(fullSetting);
-      } else if (['operationalRules', 'recoveryConstraints', 'automationSettings'].includes(category)) {
+      }
+      // Rules categories  
+      else if (['operationalRules', 'recoveryConstraints', 'automationSettings'].includes(category)) {
         if (!tabSettings.rules[category]) {
           tabSettings.rules[category] = [];
         }
         tabSettings.rules[category].push(fullSetting);
-      } else if (['recoveryOptionsRanking', 'aircraftSelectionCriteria', 'crewAssignmentCriteria'].includes(category)) {
+      }
+      // Recovery Options categories
+      else if (['recoveryOptionsRanking', 'aircraftSelectionCriteria', 'crewAssignmentCriteria'].includes(category)) {
         if (!tabSettings.recoveryOptions[category]) {
           tabSettings.recoveryOptions[category] = [];
         }
         tabSettings.recoveryOptions[category].push(fullSetting);
-      } else if (category === 'nlpSettings') {
+      }
+      // NLP Settings
+      else if (category === 'nlpSettings') {
         if (!tabSettings.nlp[category]) {
           tabSettings.nlp[category] = [];
         }
         tabSettings.nlp[category].push(fullSetting);
-      } else if (category === 'notificationSettings') {
+      }
+      // Notification Settings
+      else if (category === 'notificationSettings') {
         if (!tabSettings.notifications[category]) {
           tabSettings.notifications[category] = [];
         }
         tabSettings.notifications[category].push(fullSetting);
-      } else {
-        // System and other settings
+      }
+      // Screen Settings - handle separately if needed
+      else if (category === 'screenSettings') {
+        if (!tabSettings.screens[category]) {
+          tabSettings.screens[category] = [];
+        }
+        tabSettings.screens[category].push(fullSetting);
+      }
+      // System Settings - catch remaining categories
+      else {
         if (!tabSettings.system[category]) {
           tabSettings.system[category] = [];
         }
@@ -415,7 +431,7 @@ app.get("/api/settings/tabs", async (req, res) => {
     const screenResult = await pool.query(
       "SELECT * FROM screen_settings ORDER BY category, screen_name"
     );
-    
+
     const screensByCategory = {};
     screenResult.rows.forEach(screen => {
       if (!screensByCategory[screen.category]) {
@@ -431,7 +447,7 @@ app.get("/api/settings/tabs", async (req, res) => {
         updated_by: screen.updated_by
       });
     });
-    
+
     tabSettings.screens = screensByCategory;
 
     res.json(tabSettings);
@@ -543,7 +559,7 @@ app.get("/api/screen-settings", async (req, res) => {
 app.post("/api/screen-settings", async (req, res) => {
   try {
     const { screen_id, screen_name, category, enabled, required, updated_by } = req.body;
-    
+
     const result = await pool.query(
       `INSERT INTO screen_settings (screen_id, screen_name, category, enabled, required, updated_by)
        VALUES ($1, $2, $3, $4, $5, $6)
@@ -558,7 +574,7 @@ app.post("/api/screen-settings", async (req, res) => {
        RETURNING *`,
       [screen_id, screen_name, category, enabled, required, updated_by || 'system']
     );
-    
+
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error saving screen setting:", error);
@@ -570,18 +586,18 @@ app.put("/api/screen-settings/:screen_id", async (req, res) => {
   try {
     const { screen_id } = req.params;
     const { enabled, updated_by } = req.body;
-    
+
     const result = await pool.query(
       `UPDATE screen_settings 
        SET enabled = $1, updated_by = $2, updated_at = CURRENT_TIMESTAMP
        WHERE screen_id = $3 RETURNING *`,
       [enabled, updated_by || 'system', screen_id]
     );
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Screen setting not found" });
     }
-    
+
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error updating screen setting:", error);
@@ -608,14 +624,14 @@ app.post("/api/custom-rules", async (req, res) => {
       rule_id, name, description, category, type, priority,
       overridable, conditions, actions, status, created_by
     } = req.body;
-    
+
     const result = await pool.query(
       `INSERT INTO custom_rules 
        (rule_id, name, description, category, type, priority, overridable, conditions, actions, status, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
       [rule_id, name, description, category, type, priority, overridable, conditions, actions, status, created_by]
     );
-    
+
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error saving custom rule:", error);
@@ -627,23 +643,23 @@ app.put("/api/custom-rules/:rule_id", async (req, res) => {
   try {
     const { rule_id } = req.params;
     const updates = req.body;
-    
+
     const setClause = Object.keys(updates)
       .map((key, index) => `${key} = $${index + 2}`)
       .join(', ');
-    
+
     const values = [rule_id, ...Object.values(updates)];
-    
+
     const result = await pool.query(
       `UPDATE custom_rules SET ${setClause}, updated_at = CURRENT_TIMESTAMP
        WHERE rule_id = $1 RETURNING *`,
       values
     );
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Custom rule not found" });
     }
-    
+
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error updating custom rule:", error);
@@ -658,11 +674,11 @@ app.delete("/api/custom-rules/:rule_id", async (req, res) => {
       "DELETE FROM custom_rules WHERE rule_id = $1 RETURNING *",
       [rule_id]
     );
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Custom rule not found" });
     }
-    
+
     res.json({ message: "Custom rule deleted successfully" });
   } catch (error) {
     console.error("Error deleting custom rule:", error);
@@ -686,13 +702,13 @@ app.get("/api/custom-parameters", async (req, res) => {
 app.post("/api/custom-parameters", async (req, res) => {
   try {
     const { parameter_id, name, category, weight, description, created_by } = req.body;
-    
+
     const result = await pool.query(
       `INSERT INTO custom_parameters (parameter_id, name, category, weight, description, created_by)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
       [parameter_id, name, category, weight, description, created_by]
     );
-    
+
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error saving custom parameter:", error);
@@ -707,11 +723,11 @@ app.delete("/api/custom-parameters/:parameter_id", async (req, res) => {
       "UPDATE custom_parameters SET is_active = false WHERE parameter_id = $1 RETURNING *",
       [parameter_id]
     );
-    
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Custom parameter not found" });
     }
-    
+
     res.json({ message: "Custom parameter deleted successfully" });
   } catch (error) {
     console.error("Error deleting custom parameter:", error);
@@ -723,16 +739,16 @@ app.delete("/api/custom-parameters/:parameter_id", async (req, res) => {
 app.post("/api/settings/batch", async (req, res) => {
   try {
     const { settings, updated_by } = req.body;
-    
+
     if (!Array.isArray(settings)) {
       return res.status(400).json({ error: "Settings must be an array" });
     }
-    
+
     const client = await pool.connect();
-    
+
     try {
       await client.query('BEGIN');
-      
+
       const results = [];
       for (const setting of settings) {
         const { category, key, value, type } = setting;
@@ -750,7 +766,7 @@ app.post("/api/settings/batch", async (req, res) => {
         );
         results.push(result.rows[0]);
       }
-      
+
       await client.query('COMMIT');
       res.json({ success: true, saved_settings: results.length });
     } catch (error) {
@@ -2239,7 +2255,7 @@ app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
       SELECT fd.*, dc.category_code, dc.category_name
       FROM flight_disruptions fd
       LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
-      WHERE fd.id = $1::integer
+      WHERE fd.id = $1
     `,
       [numericDisruptionId],
     );
@@ -3940,115 +3956,6 @@ app.get("/api/pending-recovery-solutions", async (req, res) => {
   } catch (error) {
     console.error("Error fetching pending recovery solutions:", error);
     res.status(500).json({ error: "Internal server error" });
-  }
-});
-
-// Update flight recovery status
-app.put("/api/flight-recovery-status/:flightId", async (req, res) => {
-  try {
-    const { flightId } = req.params;
-    const { recovery_status } = req.body;
-
-    const result = await pool.query(
-      `UPDATE flight_disruptions
-       SET recovery_status = $1, updated_at = CURRENT_TIMESTAMP
-       WHERE id = $2
-       RETURNING *`,
-      [recovery_status, flightId],
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({
-        error: "Flight not found",
-        flightId: flightId,
-      });
-    }
-
-    res.json({
-      success: true,
-      message: "Flight recovery status updated successfully",
-      flight: result.rows[0],
-    });
-  } catch (error) {
-    console.error("Error updating flight recovery status:", error);
-    res.status(500).json({
-      error: "Internal server error",
-      details: error.message,
-    });
-  }
-});
-
-// Get individual pending recovery solution
-app.get("/api/pending-recovery-solutions/:solutionId", async (req, res) => {
-  try {
-    const { solutionId } = req.params;
-
-    const result = await pool.query(
-      `
-      SELECT
-        prs.*,
-        fd.flight_number, fd.route, fd.origin, fd.destination, fd.aircraft,
-        fd.passengers, fd.crew, fd.severity, fd.disruption_reason,
-        fd.scheduled_departure, fd.estimated_departure, fd.delay_minutes
-      FROM pending_recovery_solutions prs
-      LEFT JOIN flight_disruptions fd ON prs.disruption_id = fd.id
-      WHERE prs.id = $1
-    `,
-      [solutionId],
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Pending solution not found" });
-    }
-
-    // Get additional details for the solution
-    const solution = result.rows[0];
-
-    // Get recovery steps
-    const stepsResult = await pool.query(
-      `
-      SELECT * FROM recovery_steps
-      WHERE disruption_id = $1
-      ORDER BY step_number ASC
-    `,
-      [solution.disruption_id],
-    );
-
-    // Get crew information
-    const crewResult = await pool.query(
-      `
-      SELECT cm.* FROM crew_members cm
-      JOIN crew_disruption_mapping cdm ON cm.id = cdm.crew_member_id
-      WHERE cdm.disruption_id = $1
-    `,
-      [solution.disruption_id],
-    );
-
-    // Get passenger information
-    const passengerResult = await pool.query(
-      `
-      SELECT * FROM passengers
-      WHERE flight_number = $1
-      LIMIT 10
-    `,
-      [solution.flight_number],
-    );
-
-    // Enhanced solution with additional data
-    const enhancedSolution = {
-      ...solution,
-      recovery_steps: stepsResult.rows,
-      crew_information: crewResult.rows,
-      passenger_information: passengerResult.rows,
-      operations_user: solution.submitted_by || "Operations Manager",
-    };
-
-    res.json(enhancedSolution);
-  } catch (error) {
-    console.error("Error fetching pending solution:", error);
-    res.status(500).json({
-      error: "Internal server error",
-    });
   }
 });
 

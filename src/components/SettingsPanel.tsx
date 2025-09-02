@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useSettingsStorage, SettingsFieldConfig } from "../utils/settingsStorage";
 import { SettingField } from "./SettingField";
+import { DynamicSettingsRenderer } from "./DynamicSettingsRenderer";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
@@ -116,6 +117,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const [isDatabaseConnected, setIsDatabaseConnected] = useState(false);
   const settingsStore = useSettingsStorage();
   const [fieldConfigurations, setFieldConfigurations] = useState<Record<string, SettingsFieldConfig[]>>({});
+  const [rawTabSettings, setRawTabSettings] = useState<any>({});
 
   // Database-backed state
   const [nlpSettings, setNlpSettings] = useState({
@@ -339,6 +341,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       // Load tab-wise organized settings from the database
       const tabSettings = await settingsStore.getTabSettings();
       console.log("Loaded tab-wise settings:", tabSettings);
+      
+      // Store raw settings for dynamic rendering
+      setRawTabSettings(tabSettings);
 
       // Helper function to convert array of settings to key-value object
       const convertArrayToObject = (settingsArray) => {
@@ -350,51 +355,66 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         return obj;
       };
 
-      // Initialize with defaults and then override with database values
-      let newNlpSettings = {
+      // Dynamic loading from database with fallback to defaults
+      const loadCategorySettings = (tabData, categoryKey, defaults) => {
+        if (tabData && tabData[categoryKey] && Array.isArray(tabData[categoryKey])) {
+          return {
+            ...defaults,
+            ...convertArrayToObject(tabData[categoryKey])
+          };
+        }
+        return defaults;
+      };
+
+      // Load NLP Settings
+      const nlpDefaults = {
         enabled: true,
         language: "english",
         confidence: 85,
-        autoApply: false,
-        ...convertArrayToObject(tabSettings.nlp?.nlpSettings)
+        autoApply: false
       };
+      const newNlpSettings = loadCategorySettings(tabSettings.nlp, 'nlpSettings', nlpDefaults);
 
-      let newRuleConfig = {
+      // Load Rule Configuration
+      const ruleDefaults = {
         operationalRules: {
           maxDelayThreshold: 180,
           minConnectionTime: 45,
           maxOverbooking: 105,
           priorityRebookingTime: 15,
-          hotacTriggerDelay: 240,
-          ...convertArrayToObject(tabSettings.rules?.operationalRules)
+          hotacTriggerDelay: 240
         },
         recoveryConstraints: {
           maxAircraftSwaps: 3,
           crewDutyTimeLimits: true,
           maintenanceSlotProtection: true,
           slotCoordinationRequired: false,
-          curfewCompliance: true,
-          ...convertArrayToObject(tabSettings.rules?.recoveryConstraints)
+          curfewCompliance: true
         },
         automationSettings: {
           autoApproveThreshold: 95,
           requireManagerApproval: false,
           enablePredictiveActions: true,
           autoNotifyPassengers: true,
-          autoBookHotac: false,
-          ...convertArrayToObject(tabSettings.rules?.automationSettings)
-        },
+          autoBookHotac: false
+        }
       };
 
-      let newRecoveryConfig = {
+      const newRuleConfig = {
+        operationalRules: loadCategorySettings(tabSettings.rules, 'operationalRules', ruleDefaults.operationalRules),
+        recoveryConstraints: loadCategorySettings(tabSettings.rules, 'recoveryConstraints', ruleDefaults.recoveryConstraints),
+        automationSettings: loadCategorySettings(tabSettings.rules, 'automationSettings', ruleDefaults.automationSettings)
+      };
+
+      // Load Recovery Options Configuration
+      const recoveryDefaults = {
         recoveryOptionsRanking: {
           costWeight: 30,
           timeWeight: 25,
           passengerImpactWeight: 20,
           operationalComplexityWeight: 15,
           reputationWeight: 10,
-          customParameters: [],
-          ...convertArrayToObject(tabSettings.recoveryOptions?.recoveryOptionsRanking)
+          customParameters: []
         },
         aircraftSelectionCriteria: {
           maintenanceStatus: 25,
@@ -402,8 +422,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           routeSuitability: 20,
           passengerCapacity: 15,
           availabilityWindow: 20,
-          customParameters: [],
-          ...convertArrayToObject(tabSettings.recoveryOptions?.aircraftSelectionCriteria)
+          customParameters: []
         },
         crewAssignmentCriteria: {
           dutyTimeRemaining: 30,
@@ -411,27 +430,31 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           baseLocation: 20,
           restRequirements: 15,
           languageSkills: 10,
-          customParameters: [],
-          ...convertArrayToObject(tabSettings.recoveryOptions?.crewAssignmentCriteria)
-        },
+          customParameters: []
+        }
       };
 
-      let newPriorityConfig = {
+      const newRecoveryConfig = {
+        recoveryOptionsRanking: loadCategorySettings(tabSettings.recoveryOptions, 'recoveryOptionsRanking', recoveryDefaults.recoveryOptionsRanking),
+        aircraftSelectionCriteria: loadCategorySettings(tabSettings.recoveryOptions, 'aircraftSelectionCriteria', recoveryDefaults.aircraftSelectionCriteria),
+        crewAssignmentCriteria: loadCategorySettings(tabSettings.recoveryOptions, 'crewAssignmentCriteria', recoveryDefaults.crewAssignmentCriteria)
+      };
+
+      // Load Passenger Priority Configuration
+      const priorityDefaults = {
         passengerPrioritization: {
           loyaltyTier: 25,
           ticketClass: 20,
           specialNeeds: 30,
           groupSize: 15,
-          connectionRisk: 10,
-          ...convertArrayToObject(tabSettings.passengerPriority?.passengerPrioritization)
+          connectionRisk: 10
         },
         flightPrioritization: {
           airlinePreference: 20,
           onTimePerformance: 25,
           aircraftType: 15,
           departureTime: 20,
-          connectionBuffer: 20,
-          ...convertArrayToObject(tabSettings.passengerPriority?.flightPrioritization)
+          connectionBuffer: 20
         },
         flightScoring: {
           baseScore: 70,
@@ -439,28 +462,34 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           airlineBonus: 10,
           specialReqBonus: 8,
           loyaltyBonus: 8,
-          groupBonus: 5,
-          ...convertArrayToObject(tabSettings.passengerPriority?.flightScoring)
+          groupBonus: 5
         },
         passengerScoring: {
           vipWeight: 40,
           loyaltyWeight: 25,
           specialNeedsWeight: 20,
-          revenueWeight: 15,
-          ...convertArrayToObject(tabSettings.passengerPriority?.passengerScoring)
-        },
+          revenueWeight: 15
+        }
       };
 
-      let newNotificationSettings = {
+      const newPriorityConfig = {
+        passengerPrioritization: loadCategorySettings(tabSettings.passengerPriority, 'passengerPrioritization', priorityDefaults.passengerPrioritization),
+        flightPrioritization: loadCategorySettings(tabSettings.passengerPriority, 'flightPrioritization', priorityDefaults.flightPrioritization),
+        flightScoring: loadCategorySettings(tabSettings.passengerPriority, 'flightScoring', priorityDefaults.flightScoring),
+        passengerScoring: loadCategorySettings(tabSettings.passengerPriority, 'passengerScoring', priorityDefaults.passengerScoring)
+      };
+
+      // Load Notification Settings
+      const notificationDefaults = {
         email: true,
         sms: false,
         push: true,
         desktop: true,
         recoveryAlerts: true,
         passengerUpdates: true,
-        systemAlerts: false,
-        ...convertArrayToObject(tabSettings.notifications?.notificationSettings)
+        systemAlerts: false
       };
+      const newNotificationSettings = loadCategorySettings(tabSettings.notifications, 'notificationSettings', notificationDefaults);
 
       // Update state with loaded settings
       setNlpSettings(newNlpSettings);
@@ -470,6 +499,11 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       setNotificationSettings(newNotificationSettings);
 
       console.log("Settings loaded successfully from database");
+      console.log("NLP Settings:", newNlpSettings);
+      console.log("Rule Configuration:", newRuleConfig);
+      console.log("Recovery Configuration:", newRecoveryConfig);
+      console.log("Priority Configuration:", newPriorityConfig);
+      console.log("Notification Settings:", newNotificationSettings);
     } catch (error) {
       console.error("Failed to load settings from database:", error);
       setSaveStatus("error");
@@ -1671,6 +1705,69 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        {/* System Settings */}
+        <TabsContent value="system" className="space-y-6">
+          <Card className="border-flydubai-blue bg-blue-50">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-flydubai-blue">
+                    <Settings2 className="h-5 w-5" />
+                    System Configuration
+                  </CardTitle>
+                  <p className="text-sm text-blue-700">
+                    Configure system-wide settings, performance parameters, and maintenance options.
+                  </p>
+                </div>
+                <Button
+                  onClick={saveSystemSettings}
+                  className="btn-flydubai-primary"
+                  disabled={isLoading || saveStatus === "saving"}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saveStatus === "saving" ? "Saving..." : "Save System Settings"}
+                </Button>
+              </div>
+            </CardHeader>
+          </Card>
+
+          {/* Dynamically render system settings if available */}
+          {rawTabSettings.system && Object.keys(rawTabSettings.system).length > 0 ? (
+            <div className="grid grid-cols-1 gap-6">
+              {Object.entries(rawTabSettings.system).map(([categoryKey, categorySettings]) => (
+                <DynamicSettingsRenderer
+                  key={categoryKey}
+                  categoryData={categorySettings as any[]}
+                  categoryName={categoryKey}
+                  categoryTitle={categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1).replace(/([A-Z])/g, ' $1')}
+                  categoryDescription={`Configure ${categoryKey} settings`}
+                  icon={Settings2}
+                  values={{}} // You can maintain separate state for system settings if needed
+                  onChange={(key, value) => {
+                    // Handle system settings changes
+                    console.log(`System setting changed: ${key} = ${value}`);
+                  }}
+                  onToggle={(key) => {
+                    // Handle system setting toggles
+                    console.log(`System setting toggled: ${key}`);
+                  }}
+                  onSave={saveSystemSettings}
+                  saveStatus={saveStatus}
+                  fieldConfigurations={fieldConfigurations[categoryKey] || {}}
+                />
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="text-center py-8">
+                <Settings2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No System Settings</h3>
+                <p className="text-gray-500">No system settings are currently configured in the database.</p>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         {/* Enhanced Rule Configuration */}
