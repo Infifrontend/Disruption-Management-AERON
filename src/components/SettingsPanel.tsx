@@ -1120,13 +1120,11 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   passengerPriorityConfig.passengerPrioritization,
                 ).map(([key, value]) => {
                   const Icon = getParameterIcon(key);
-                  const labels = {
-                    loyaltyTier: "Loyalty Tier Status",
-                    ticketClass: "Ticket Class (Business/Economy)",
-                    specialNeeds: "Special Requirements",
-                    groupSize: "Family/Group Bookings",
-                    connectionRisk: "Missed Connection Risk",
-                  };
+                  // Get label from API response data
+                  const settingData = rawTabSettings?.passengerPriority?.passengerPrioritization?.find(
+                    (setting) => setting.key === key
+                  );
+                  const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
 
                   return (
                     <div key={key} className="space-y-2">
@@ -1134,7 +1132,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                         <div className="flex items-center gap-2">
                           <Icon className="h-4 w-4 text-flydubai-blue" />
                           <Label className="text-sm font-medium">
-                            {labels[key]}
+                            {label}
                           </Label>
                         </div>
                         <Badge
@@ -1205,13 +1203,11 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   passengerPriorityConfig.flightPrioritization,
                 ).map(([key, value]) => {
                   const Icon = getParameterIcon(key);
-                  const labels = {
-                    airlinePreference: "Airline Preference (flydubai)",
-                    onTimePerformance: "On-Time Performance History",
-                    aircraftType: "Aircraft Type & Amenities",
-                    departureTime: "Preferred Departure Times",
-                    connectionBuffer: "Connection Buffer Time",
-                  };
+                  // Get label from API response data
+                  const settingData = rawTabSettings?.passengerPriority?.flightPrioritization?.find(
+                    (setting) => setting.key === key
+                  );
+                  const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
 
                   return (
                     <div key={key} className="space-y-2">
@@ -1219,7 +1215,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                         <div className="flex items-center gap-2">
                           <Icon className="h-4 w-4 text-flydubai-blue" />
                           <Label className="text-sm font-medium">
-                            {labels[key]}
+                            {label}
                           </Label>
                         </div>
                         <Badge
@@ -1283,14 +1279,11 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 {Object.entries(passengerPriorityConfig.flightScoring).map(
                   ([key, value]) => {
                     const Icon = getParameterIcon(key);
-                    const labels = {
-                      baseScore: "Base Score (Starting Point)",
-                      priorityBonus: "VIP/Premium Passenger Bonus",
-                      airlineBonus: "flydubai Flight Bonus",
-                      specialReqBonus: "Special Requirements Bonus",
-                      loyaltyBonus: "Loyalty Tier Bonus",
-                      groupBonus: "Group Booking Bonus",
-                    };
+                    // Get label from API response data
+                    const settingData = rawTabSettings?.passengerPriority?.flightScoring?.find(
+                      (setting) => setting.key === key
+                    );
+                    const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
 
                     const maxValue = key === "baseScore" ? 100 : 20;
 
@@ -1300,7 +1293,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           <div className="flex items-center gap-2">
                             <Icon className="h-4 w-4 text-flydubai-blue" />
                             <Label className="text-sm font-medium">
-                              {labels[key]}
+                              {label}
                             </Label>
                           </div>
                           <Badge
@@ -1364,12 +1357,11 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 {Object.entries(passengerPriorityConfig.passengerScoring).map(
                   ([key, value]) => {
                     const Icon = getParameterIcon(key);
-                    const labels = {
-                      vipWeight: "VIP Status Impact",
-                      loyaltyWeight: "Loyalty Program Tier",
-                      specialNeedsWeight: "Special Assistance Requirements",
-                      revenueWeight: "Ticket Revenue/Class Value",
-                    };
+                    // Get label from API response data
+                    const settingData = rawTabSettings?.passengerPriority?.passengerScoring?.find(
+                      (setting) => setting.key === key
+                    );
+                    const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
 
                     return (
                       <div key={key} className="space-y-2">
@@ -1377,7 +1369,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           <div className="flex items-center gap-2">
                             <Icon className="h-4 w-4 text-flydubai-blue" />
                             <Label className="text-sm font-medium">
-                              {labels[key]}
+                              {label}
                             </Label>
                           </div>
                           <Badge
@@ -2121,13 +2113,11 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   .filter(([key]) => key !== "customParameters")
                   .map(([key, value]) => {
                     const Icon = getParameterIcon(key);
-                    const labels = {
-                      costWeight: "Cost Impact",
-                      timeWeight: "Time to Resolution",
-                      passengerImpactWeight: "Passenger Impact",
-                      operationalComplexityWeight: "Operational Complexity",
-                      reputationWeight: "Brand Reputation Impact",
-                    };
+                    // Get label from API response data
+                    const settingData = rawTabSettings?.recoveryOptions?.recoveryOptionsRanking?.find(
+                      (setting) => setting.key === key
+                    );
+                    const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
 
                     return (
                       <div key={key} className="space-y-2">
@@ -2135,7 +2125,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           <div className="flex items-center gap-2">
                             <Icon className="h-4 w-4 text-flydubai-blue" />
                             <Label className="text-sm font-medium">
-                              {labels[key]}
+                              {label}
                             </Label>
                           </div>
                           <Badge
@@ -2246,13 +2236,11 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   .filter(([key]) => key !== "customParameters")
                   .map(([key, value]) => {
                     const Icon = getParameterIcon(key);
-                    const labels = {
-                      maintenanceStatus: "Maintenance Status",
-                      fuelEfficiency: "Fuel Efficiency",
-                      routeSuitability: "Route Suitability",
-                      passengerCapacity: "Passenger Capacity",
-                      availabilityWindow: "Availability Window",
-                    };
+                    // Get label from API response data
+                    const settingData = rawTabSettings?.recoveryOptions?.aircraftSelectionCriteria?.find(
+                      (setting) => setting.key === key
+                    );
+                    const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
 
                     return (
                       <div key={key} className="space-y-2">
@@ -2260,7 +2248,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           <div className="flex items-center gap-2">
                             <Icon className="h-4 w-4 text-flydubai-blue" />
                             <Label className="text-sm font-medium">
-                              {labels[key]}
+                              {label}
                             </Label>
                           </div>
                           <Badge
@@ -2373,13 +2361,11 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   .filter(([key]) => key !== "customParameters")
                   .map(([key, value]) => {
                     const Icon = getParameterIcon(key);
-                    const labels = {
-                      dutyTimeRemaining: "Duty Time Remaining",
-                      qualifications: "Qualifications & Certifications",
-                      baseLocation: "Base Location",
-                      restRequirements: "Rest Requirements",
-                      languageSkills: "Language Skills",
-                    };
+                    // Get label from API response data
+                    const settingData = rawTabSettings?.recoveryOptions?.crewAssignmentCriteria?.find(
+                      (setting) => setting.key === key
+                    );
+                    const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
 
                     return (
                       <div key={key} className="space-y-2">
@@ -2387,7 +2373,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           <div className="flex items-center gap-2">
                             <Icon className="h-4 w-4 text-flydubai-blue" />
                             <Label className="text-sm font-medium">
-                              {labels[key]}
+                              {label}
                             </Label>
                           </div>
                           <Badge
