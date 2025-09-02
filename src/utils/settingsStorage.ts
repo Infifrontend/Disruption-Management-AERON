@@ -283,6 +283,25 @@ class SettingsStorage {
     return Array.from(this.storage.values()).filter(setting => setting.category === category)
   }
 
+  async getAllSettings(): Promise<SettingsData[]> {
+    // Try database first if connected
+    if (this.isDatabaseConnected) {
+      try {
+        const settings = await databaseService.getAllSettings()
+        if (settings.length > 0) {
+          settings.forEach(setting => {
+            this.storage.set(setting.id, setting)
+          })
+          return settings
+        }
+      } catch (error) {
+        console.warn('Database read failed, using local storage')
+      }
+    }
+
+    return Array.from(this.storage.values())
+  }
+
   // Get tab-wise settings
   async getTabSettings(): Promise<any> {
     try {
