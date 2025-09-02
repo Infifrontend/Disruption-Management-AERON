@@ -257,6 +257,94 @@ app.get("/api/settings/tabs", async (req, res) => {
       "SELECT * FROM settings WHERE is_active = true ORDER BY category, key",
     );
     
+    // Field configurations for display labels
+    const fieldLabels = {
+      // Passenger Prioritization
+      loyaltyTier: "Loyalty Tier Status",
+      ticketClass: "Ticket Class (Business/Economy)",
+      specialNeeds: "Special Requirements",
+      groupSize: "Family/Group Bookings",
+      connectionRisk: "Missed Connection Risk",
+      
+      // Flight Prioritization
+      airlinePreference: "Airline Preference (flydubai)",
+      onTimePerformance: "On-Time Performance History",
+      aircraftType: "Aircraft Type & Amenities",
+      departureTime: "Preferred Departure Times",
+      connectionBuffer: "Connection Buffer Time",
+      
+      // Flight Scoring
+      baseScore: "Base Score (Starting Point)",
+      priorityBonus: "VIP/Premium Passenger Bonus",
+      airlineBonus: "flydubai Flight Bonus",
+      specialReqBonus: "Special Requirements Bonus",
+      loyaltyBonus: "Loyalty Tier Bonus",
+      groupBonus: "Group Booking Bonus",
+      
+      // Passenger Scoring
+      vipWeight: "VIP Status Impact",
+      loyaltyWeight: "Loyalty Program Tier",
+      specialNeedsWeight: "Special Assistance Requirements",
+      revenueWeight: "Ticket Revenue/Class Value",
+      
+      // Operational Rules
+      maxDelayThreshold: "Max Delay Threshold",
+      minConnectionTime: "Min Connection Time",
+      maxOverbooking: "Max Overbooking",
+      priorityRebookingTime: "Priority Rebooking Time",
+      hotacTriggerDelay: "HOTAC Trigger Delay",
+      
+      // Recovery Constraints
+      maxAircraftSwaps: "Max Aircraft Swaps",
+      crewDutyTimeLimits: "Crew Duty Time Limits",
+      maintenanceSlotProtection: "Maintenance Slot Protection",
+      slotCoordinationRequired: "Slot Coordination Required",
+      curfewCompliance: "Curfew Compliance",
+      
+      // Automation Settings
+      autoApproveThreshold: "Auto-Approve Threshold",
+      requireManagerApproval: "Require Manager Approval",
+      enablePredictiveActions: "Enable Predictive Actions",
+      autoNotifyPassengers: "Auto-Notify Passengers",
+      autoBookHotac: "Auto-Book HOTAC",
+      
+      // Recovery Options Ranking
+      costWeight: "Cost Impact",
+      timeWeight: "Time to Resolution",
+      passengerImpactWeight: "Passenger Impact",
+      operationalComplexityWeight: "Operational Complexity",
+      reputationWeight: "Brand Reputation Impact",
+      
+      // Aircraft Selection Criteria
+      maintenanceStatus: "Maintenance Status",
+      fuelEfficiency: "Fuel Efficiency",
+      routeSuitability: "Route Suitability",
+      passengerCapacity: "Passenger Capacity",
+      availabilityWindow: "Availability Window",
+      
+      // Crew Assignment Criteria
+      dutyTimeRemaining: "Duty Time Remaining",
+      qualifications: "Qualifications & Certifications",
+      baseLocation: "Base Location",
+      restRequirements: "Rest Requirements",
+      languageSkills: "Language Skills",
+      
+      // NLP Settings
+      enabled: "Enable NLP",
+      language: "Primary Language",
+      confidence: "Confidence Threshold",
+      autoApply: "Auto-Apply Recommendations",
+      
+      // Notification Settings
+      email: "Email Notifications",
+      sms: "SMS Alerts",
+      push: "Push Notifications",
+      desktop: "Desktop Notifications",
+      recoveryAlerts: "Recovery Plan Alerts",
+      passengerUpdates: "Passenger Service Updates",
+      systemAlerts: "System Status Alerts"
+    };
+
     // Organize settings by tab categories
     const tabSettings = {
       screens: {},
@@ -268,38 +356,58 @@ app.get("/api/settings/tabs", async (req, res) => {
       system: {}
     };
 
-    // Group settings by tab categories
+    // Group settings by tab categories with full setting details
     result.rows.forEach(setting => {
       const category = setting.category;
       const key = setting.key;
-      const value = setting.value;
+      
+      // Create full setting object with label
+      const fullSetting = {
+        id: setting.id,
+        category: setting.category,
+        key: setting.key,
+        value: setting.value,
+        type: setting.type,
+        description: setting.description || `Weight percentage for ${key} in ${category}`,
+        created_at: setting.created_at,
+        updated_at: setting.updated_at,
+        label: fieldLabels[key] || key.charAt(0).toUpperCase() + key.slice(1),
+        updated_by: setting.updated_by,
+        is_active: setting.is_active
+      };
 
       // Map database categories to tab categories
       if (['passengerPrioritization', 'flightPrioritization', 'flightScoring', 'passengerScoring'].includes(category)) {
         if (!tabSettings.passengerPriority[category]) {
-          tabSettings.passengerPriority[category] = {};
+          tabSettings.passengerPriority[category] = [];
         }
-        tabSettings.passengerPriority[category][key] = value;
+        tabSettings.passengerPriority[category].push(fullSetting);
       } else if (['operationalRules', 'recoveryConstraints', 'automationSettings'].includes(category)) {
         if (!tabSettings.rules[category]) {
-          tabSettings.rules[category] = {};
+          tabSettings.rules[category] = [];
         }
-        tabSettings.rules[category][key] = value;
+        tabSettings.rules[category].push(fullSetting);
       } else if (['recoveryOptionsRanking', 'aircraftSelectionCriteria', 'crewAssignmentCriteria'].includes(category)) {
         if (!tabSettings.recoveryOptions[category]) {
-          tabSettings.recoveryOptions[category] = {};
+          tabSettings.recoveryOptions[category] = [];
         }
-        tabSettings.recoveryOptions[category][key] = value;
+        tabSettings.recoveryOptions[category].push(fullSetting);
       } else if (category === 'nlpSettings') {
-        tabSettings.nlp[key] = value;
+        if (!tabSettings.nlp[category]) {
+          tabSettings.nlp[category] = [];
+        }
+        tabSettings.nlp[category].push(fullSetting);
       } else if (category === 'notificationSettings') {
-        tabSettings.notifications[key] = value;
+        if (!tabSettings.notifications[category]) {
+          tabSettings.notifications[category] = [];
+        }
+        tabSettings.notifications[category].push(fullSetting);
       } else {
         // System and other settings
         if (!tabSettings.system[category]) {
-          tabSettings.system[category] = {};
+          tabSettings.system[category] = [];
         }
-        tabSettings.system[category][key] = value;
+        tabSettings.system[category].push(fullSetting);
       }
     });
 
@@ -318,7 +426,9 @@ app.get("/api/settings/tabs", async (req, res) => {
         name: screen.screen_name,
         enabled: screen.enabled,
         required: screen.required,
-        category: screen.category
+        category: screen.category,
+        updated_at: screen.updated_at,
+        updated_by: screen.updated_by
       });
     });
     

@@ -306,7 +306,7 @@ class SettingsStorage {
       if (this.isDatabaseConnected) {
         return await databaseService.getTabSettings()
       } else {
-        // Organize local storage settings by tabs
+        // Organize local storage settings by tabs - convert to array format for consistency
         const allSettings = Array.from(this.storage.values())
         const tabSettings = {
           screens: {},
@@ -322,23 +322,29 @@ class SettingsStorage {
           const category = setting.category
           if (['passengerPrioritization', 'flightPrioritization', 'flightScoring', 'passengerScoring'].includes(category)) {
             if (!tabSettings.passengerPriority[category]) {
-              tabSettings.passengerPriority[category] = {}
+              tabSettings.passengerPriority[category] = []
             }
-            tabSettings.passengerPriority[category][setting.key] = setting.value
+            tabSettings.passengerPriority[category].push(setting)
           } else if (['operationalRules', 'recoveryConstraints', 'automationSettings'].includes(category)) {
             if (!tabSettings.rules[category]) {
-              tabSettings.rules[category] = {}
+              tabSettings.rules[category] = []
             }
-            tabSettings.rules[category][setting.key] = setting.value
+            tabSettings.rules[category].push(setting)
           } else if (['recoveryOptionsRanking', 'aircraftSelectionCriteria', 'crewAssignmentCriteria'].includes(category)) {
             if (!tabSettings.recoveryOptions[category]) {
-              tabSettings.recoveryOptions[category] = {}
+              tabSettings.recoveryOptions[category] = []
             }
-            tabSettings.recoveryOptions[category][setting.key] = setting.value
+            tabSettings.recoveryOptions[category].push(setting)
           } else if (category === 'nlpSettings') {
-            tabSettings.nlp[setting.key] = setting.value
+            if (!tabSettings.nlp[category]) {
+              tabSettings.nlp[category] = []
+            }
+            tabSettings.nlp[category].push(setting)
           } else if (category === 'notificationSettings') {
-            tabSettings.notifications[setting.key] = setting.value
+            if (!tabSettings.notifications[category]) {
+              tabSettings.notifications[category] = []
+            }
+            tabSettings.notifications[category].push(setting)
           }
         })
 
