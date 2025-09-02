@@ -418,7 +418,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       // Load all settings from database using await
       const allSettings = await settingsStore.getAllSettings();
 
-
       // Process settings by category
       allSettings.forEach((setting) => {
         try {
@@ -539,8 +538,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       setRecoveryConfiguration(newRecoveryConfig);
       setPassengerPriorityConfig(newPriorityConfig);
       setNotificationSettings(newNotificationSettings);
-
-
     } catch (error) {
       console.error("Failed to load settings from database:", error);
       setSaveStatus("error");
@@ -574,7 +571,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const handleNlpToggle = (setting) => {
     const newValue = !nlpSettings[setting];
 
-
     setNlpSettings((prev) => ({
       ...prev,
       [setting]: newValue,
@@ -596,7 +592,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   };
 
   const handleNlpChange = (setting, value) => {
-
     setNlpSettings((prev) => ({
       ...prev,
       [setting]: value,
@@ -618,7 +613,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
   const handleNotificationToggle = (setting) => {
     const newValue = !notificationSettings[setting];
-
 
     setNotificationSettings((prev) => ({
       ...prev,
@@ -644,7 +638,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   // Rule Configuration Handlers
   const handleRuleConfigChange = (category, parameter, value) => {
     const actualValue = Array.isArray(value) ? value[0] : value;
-
 
     setRuleConfiguration((prev) => ({
       ...prev,
@@ -810,7 +803,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const handleRecoveryConfigChange = (section, parameter, value) => {
     const actualValue = Array.isArray(value) ? value[0] : value;
 
-
     setRecoveryConfiguration((prev) => ({
       ...prev,
       [section]: {
@@ -841,7 +833,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   // Passenger Priority Configuration Handlers
   const handlePriorityConfigChange = (category, parameter, value) => {
     const actualValue = Array.isArray(value) ? value[0] : value;
-
 
     setPassengerPriorityConfig((prev) => ({
       ...prev,
@@ -921,7 +912,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       // Verify the setting was actually saved by checking database
       try {
         const allSettings = settingsStore.getAllSettings();
-
       } catch (error) {
         console.error("Database verification failed:", error);
         setSaveStatus("error");
@@ -950,7 +940,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     setSaveStatus("saving");
     try {
       // Save passenger priority configuration
-      for (const [category, settings] of Object.entries(passengerPriorityConfig)) {
+      for (const [category, settings] of Object.entries(
+        passengerPriorityConfig,
+      )) {
         for (const [key, value] of Object.entries(settings)) {
           await settingsStore.saveSetting(category, key, value, "number");
         }
@@ -993,7 +985,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     setSaveStatus("saving");
     try {
       // Save recovery configuration
-      for (const [category, settings] of Object.entries(recoveryConfiguration)) {
+      for (const [category, settings] of Object.entries(
+        recoveryConfiguration,
+      )) {
         if (
           typeof settings === "object" &&
           settings !== null &&
@@ -1191,8 +1185,8 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   };
 
   const calculateTotalWeight = (category, section = null) => {
-    let baseWeights :any  = 0;
-    let customWeights :any = 0;
+    let baseWeights: any = 0;
+    let customWeights: any = 0;
 
     if (section) {
       // For recovery configuration sections
@@ -1211,7 +1205,10 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     } else {
       // For passenger priority configuration
       const baseParams = Object.values(passengerPriorityConfig[category] || {});
-      baseWeights = baseParams.reduce((sum:number, val) => sum + Number(val), 0);
+      baseWeights = baseParams.reduce(
+        (sum: number, val) => sum + Number(val),
+        0,
+      );
       customWeights = customParameters
         .filter((p) => p.category === category)
         .reduce((sum, p) => sum + p.weight, 0);
@@ -1417,7 +1414,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   disabled={isLoading || saveStatus === "saving"}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {saveStatus === "saving" ? "Saving..." : "Save Screen Settings"}
+                  {saveStatus === "saving"
+                    ? "Saving..."
+                    : "Save Screen Settings"}
                 </Button>
               </div>
             </CardHeader>
@@ -1487,8 +1486,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   </CardTitle>
                   <p className="text-sm text-blue-700">
                     Configure how passengers are prioritized and how flights are
-                    scored for different passenger types. These settings directly
-                    impact the rebooking algorithms and recovery decision-making.
+                    scored for different passenger types. These settings
+                    directly impact the rebooking algorithms and recovery
+                    decision-making.
                   </p>
                 </div>
                 <Button
@@ -1497,7 +1497,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   disabled={isLoading || saveStatus === "saving"}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {saveStatus === "saving" ? "Saving..." : "Save Priority Settings"}
+                  {saveStatus === "saving"
+                    ? "Saving..."
+                    : "Save Priority Settings"}
                 </Button>
               </div>
             </CardHeader>
@@ -1557,7 +1559,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                         </Badge>
                       </div>
                       <Slider
-                        value={Array.isArray(value) ? value : [Number(value) || 0]}
+                        value={
+                          Array.isArray(value) ? value : [Number(value) || 0]
+                        }
                         onValueChange={(newValue) =>
                           handlePriorityConfigChange(
                             "passengerPrioritization",
@@ -1640,7 +1644,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                         </Badge>
                       </div>
                       <Slider
-                        value={Array.isArray(value) ? value : [Number(value) || 0]}
+                        value={
+                          Array.isArray(value) ? value : [Number(value) || 0]
+                        }
                         onValueChange={(newValue) =>
                           handlePriorityConfigChange(
                             "flightPrioritization",
@@ -1719,7 +1725,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           </Badge>
                         </div>
                         <Slider
-                          value={Array.isArray(value) ? value : [Number(value) || 0]}
+                          value={
+                            Array.isArray(value) ? value : [Number(value) || 0]
+                          }
                           onValueChange={(newValue) =>
                             handlePriorityConfigChange(
                               "flightScoring",
@@ -1794,7 +1802,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           </Badge>
                         </div>
                         <Slider
-                          value={Array.isArray(value) ? value : [Number(value) || 0]}
+                          value={
+                            Array.isArray(value) ? value : [Number(value) || 0]
+                          }
                           onValueChange={(newValue) =>
                             handlePriorityConfigChange(
                               "passengerScoring",
@@ -1844,19 +1854,19 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     Rule Configuration
                   </CardTitle>
                   <p className="text-sm text-blue-700">
-                    Configure operational rules, constraints, automation settings,
-                    and custom business rules that govern AERON's decision-making
-                    process.
+                    Configure operational rules, constraints, automation
+                    settings, and custom business rules that govern AERON's
+                    decision-making process.
                   </p>
                 </div>
-                <Button
+                {/* <Button
                   onClick={saveRuleSettings}
                   className="btn-flydubai-primary"
                   disabled={isLoading || saveStatus === "saving"}
                 >
                   <Save className="h-4 w-4 mr-2" />
                   {saveStatus === "saving" ? "Saving..." : "Save Rule Settings"}
-                </Button>
+                </Button> */}
               </div>
             </CardHeader>
           </Card>
@@ -1884,7 +1894,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     </Badge>
                   </div>
                   <Slider
-                    value={[ruleConfiguration.operationalRules.maxDelayThreshold]}
+                    value={[
+                      ruleConfiguration.operationalRules.maxDelayThreshold,
+                    ]}
                     onValueChange={(value) =>
                       handleRuleConfigChange(
                         "operationalRules",
@@ -1909,7 +1921,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     </Badge>
                   </div>
                   <Slider
-                    value={[ruleConfiguration.operationalRules.minConnectionTime]}
+                    value={[
+                      ruleConfiguration.operationalRules.minConnectionTime,
+                    ]}
                     onValueChange={(value) =>
                       handleRuleConfigChange(
                         "operationalRules",
@@ -2694,14 +2708,14 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     decision-making.
                   </p>
                 </div>
-                <Button
+                {/* <Button
                   onClick={saveRecoverySettings}
                   className="btn-flydubai-primary"
                   disabled={isLoading || saveStatus === "saving"}
                 >
                   <Save className="h-4 w-4 mr-2" />
                   {saveStatus === "saving" ? "Saving..." : "Save Recovery Settings"}
-                </Button>
+                </Button> */}
               </div>
             </CardHeader>
           </Card>
@@ -2748,7 +2762,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           </Badge>
                         </div>
                         <Slider
-                          value={Array.isArray(value) ? value : [Number(value) || 0]}
+                          value={
+                            Array.isArray(value) ? value : [Number(value) || 0]
+                          }
                           onValueChange={(newValue) =>
                             handleRecoveryConfigChange(
                               "recoveryOptionsRanking",
@@ -2871,7 +2887,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           </Badge>
                         </div>
                         <Slider
-                          value={Array.isArray(value) ? value : [Number(value) || 0]}
+                          value={
+                            Array.isArray(value) ? value : [Number(value) || 0]
+                          }
                           onValueChange={(newValue) =>
                             handleRecoveryConfigChange(
                               "aircraftSelectionCriteria",
@@ -2996,7 +3014,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                           </Badge>
                         </div>
                         <Slider
-                          value={Array.isArray(value) ? value : [Number(value) || 0]}
+                          value={
+                            Array.isArray(value) ? value : [Number(value) || 0]
+                          }
                           onValueChange={(newValue) =>
                             handleRecoveryConfigChange(
                               "crewAssignmentCriteria",
@@ -3337,20 +3357,20 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     Natural Language & Knowledge Repository
                   </CardTitle>
                   <p className="text-sm text-blue-700">
-                    Configure natural language processing and manage the knowledge
-                    repository that enhances recovery step recommendations. Upload
-                    documents and add manual entries to improve AERON's
-                    decision-making capabilities.
+                    Configure natural language processing and manage the
+                    knowledge repository that enhances recovery step
+                    recommendations. Upload documents and add manual entries to
+                    improve AERON's decision-making capabilities.
                   </p>
                 </div>
-                <Button
+                {/* <Button
                   onClick={saveNlpSettings}
                   className="btn-flydubai-primary"
                   disabled={isLoading || saveStatus === "saving"}
                 >
                   <Save className="h-4 w-4 mr-2" />
                   {saveStatus === "saving" ? "Saving..." : "Save NLP Settings"}
-                </Button>
+                </Button> */}
               </div>
             </CardHeader>
             <CardContent>
@@ -3951,14 +3971,16 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     Configure how and when you receive notifications from AERON.
                   </p>
                 </div>
-                <Button
+                {/* <Button
                   onClick={saveNotificationSettings}
                   className="btn-flydubai-primary"
                   disabled={isLoading || saveStatus === "saving"}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {saveStatus === "saving" ? "Saving..." : "Save Notification Settings"}
-                </Button>
+                  {saveStatus === "saving"
+                    ? "Saving..."
+                    : "Save Notification Settings"}
+                </Button> */}
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -3967,24 +3989,29 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   Notification Channels
                 </h3>
 
-              {Object.entries({
-                email: "Email Notifications",
-                sms: "SMS Alerts",
-                push: "Push Notifications",
-                desktop: "Desktop Notifications",
-              }).map(([key, label]) => {
-                return (
-                  <div key={key} className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">{label}</Label>
-                    <Switch
-                      // Cast notificationSettings to any for quick fix
-                      checked={(notificationSettings as any)[key]}
-                      onCheckedChange={() => handleNotificationToggle(key as NotificationKey)}
-                      className="switch-flydubai"
-                    />
-                  </div>
-                );
-              })}
+                {Object.entries({
+                  email: "Email Notifications",
+                  sms: "SMS Alerts",
+                  push: "Push Notifications",
+                  desktop: "Desktop Notifications",
+                }).map(([key, label]) => {
+                  return (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between"
+                    >
+                      <Label className="text-sm font-medium">{label}</Label>
+                      <Switch
+                        // Cast notificationSettings to any for quick fix
+                        checked={(notificationSettings as any)[key]}
+                        onCheckedChange={() =>
+                          handleNotificationToggle(key as NotificationKey)
+                        }
+                        className="switch-flydubai"
+                      />
+                    </div>
+                  );
+                })}
               </div>
 
               <Separator />
@@ -4001,17 +4028,21 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 }).map(([key, label]) => {
                   const typedKey = key as keyof typeof notificationSettings;
                   return (
-                    <div key={typedKey} className="flex items-center justify-between">
+                    <div
+                      key={typedKey}
+                      className="flex items-center justify-between"
+                    >
                       <Label className="text-sm font-medium">{label}</Label>
                       <Switch
                         checked={notificationSettings[typedKey]}
-                        onCheckedChange={() => handleNotificationToggle(typedKey)}
+                        onCheckedChange={() =>
+                          handleNotificationToggle(typedKey)
+                        }
                         className="switch-flydubai"
                       />
                     </div>
                   );
                 })}
-
               </div>
             </CardContent>
           </Card>
@@ -4024,7 +4055,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
               disabled={isLoading || saveStatus === "saving"}
             >
               <Save className="h-4 w-4 mr-2" />
-              {saveStatus === "saving" ? "Saving..." : "Save Notification Settings"}
+              {saveStatus === "saving"
+                ? "Saving..."
+                : "Save Notification Settings"}
             </Button>
           </div>
         </TabsContent>
@@ -4043,14 +4076,16 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     General system settings and preferences.
                   </p>
                 </div>
-                <Button
+                {/* <Button
                   onClick={saveSystemSettings}
                   className="btn-flydubai-primary"
                   disabled={isLoading || saveStatus === "saving"}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {saveStatus === "saving" ? "Saving..." : "Save System Settings"}
-                </Button>
+                  {saveStatus === "saving"
+                    ? "Saving..."
+                    : "Save System Settings"}
+                </Button> */}
               </div>
             </CardHeader>
             <CardContent className="space-y-6">
