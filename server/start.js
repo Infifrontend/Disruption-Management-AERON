@@ -583,7 +583,18 @@ app.get("/api/screen-settings", async (req, res) => {
     const result = await pool.query(
       "SELECT * FROM screen_settings ORDER BY category, screen_name",
     );
-    res.json(result.rows);
+    
+    // Transform to match the expected format for screenSettings state
+    const transformedScreens = result.rows.map(screen => ({
+      id: screen.screen_id,
+      name: screen.screen_name,
+      icon: screen.icon || "Settings", // Default icon if not set
+      category: screen.category,
+      enabled: screen.enabled,
+      required: screen.required
+    }));
+    
+    res.json(transformedScreens);
   } catch (error) {
     console.error("Error fetching screen settings:", error);
     res.status(500).json({ error: error.message });
@@ -643,6 +654,54 @@ app.put("/api/screen-settings/:screen_id", async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error updating screen setting:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Batch update screen settings
+app.post("/api/screen-settings/batch", async (req, res) => {
+  try {
+    const { screenSettings, updated_by } = req.body;
+    
+    if (!Array.isArray(screenSettings)) {
+      return res.status(400).json({ error: "screenSettings must be an array" });
+    }
+
+    const updatePromises = screenSettings.map(screen => {
+      return pool.query(
+        `INSERT INTO screen_settings (screen_id, screen_name, category, enabled, required, icon, updated_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
+         ON CONFLICT (screen_id)
+         DO UPDATE SET
+           screen_name = EXCLUDED.screen_name,
+           category = EXCLUDED.category,
+           enabled = EXCLUDED.enabled,
+           required = EXCLUDED.required,
+           icon = EXCLUDED.icon,
+           updated_by = EXCLUDED.updated_by,
+           updated_at = CURRENT_TIMESTAMP
+         RETURNING *`,
+        [
+          screen.id,
+          screen.name,
+          screen.category,
+          screen.enabled,
+          screen.required,
+          screen.icon || "Settings",
+          updated_by || "system"
+        ]
+      );
+    });
+
+    const results = await Promise.all(updatePromises);
+    const updatedScreens = results.map(result => result.rows[0]);
+    
+    res.json({ 
+      message: `Updated ${updatedScreens.length} screen settings`,
+      screens: updatedScreens
+    });
+  } catch (error) {
+    console.error("Error batch updating screen settings:", error);
     res.status(500).json({ error: error.message });
   }
 });

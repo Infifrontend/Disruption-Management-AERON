@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { User } from '../services/authService'
 import { getAirlineConfig, type AirlineTheme } from '../config/airlineConfig'
+import { databaseService } from '../services/databaseService'
 
 interface AppContextType {
   selectedDisruption: any;
@@ -48,152 +49,62 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     dateTime: "",
   });
 
-  const [screenSettings, setScreenSettings] = useState<screenSettings[]>([
-    {
-      id: "dashboard",
-      name: "Dashboard",
-      icon: "TrendingUp",
-      category: "main",
-      enabled: true,
-      required: true,
-    },
-    {
-      id: "flight-tracking",
-      name: "Flight Tracking Gantt",
-      icon: "Calendar",
-      category: "operations",
-      enabled: false,
-      required: false,
-    },
-    {
-      id: "disruption",
-      name: "Affected Flights",
-      icon: "AlertTriangle",
-      category: "operations",
-      enabled: true,
-      required: false,
-    },
-    {
-      id: "recovery",
-      name: "Recovery Options",
-      icon: "Plane",
-      category: "operations",
-      enabled: false,
-      required: false,
-    },
-    {
-      id: "comparison",
-      name: "Recovery Options",
-      icon: "FileText",
-      category: "operations",
-      enabled: true,
-      required: false,
-    },
-    {
-      id: "detailed",
-      name: "Recovery Plan",
-      icon: "Users",
-      category: "operations",
-      enabled: false,
-      required: false,
-    },
-    {
-      id: "prediction-dashboard",
-      name: "Prediction Dashboard",
-      icon: "Brain",
-      category: "prediction",
-      enabled: false,
-      required: false,
-    },
-    {
-      id: "flight-disruption-list",
-      name: "Flight Disruption List",
-      icon: "Target",
-      category: "prediction",
-      enabled: false,
-      required: false,
-    },
-    {
-      id: "prediction-analytics",
-      name: "Prediction Analytics",
-      icon: "Activity",
-      category: "prediction",
-      enabled: false,
-      required: false,
-    },
-    {
-      id: "risk-assessment",
-      name: "Risk Assessment",
-      icon: "Shield",
-      category: "prediction",
-      enabled: false,
-      required: false,
-    },
-    {
-      id: "pending",
-      name: "Pending Solutions",
-      icon: "ClockIcon",
-      category: "monitoring",
-      enabled: true,
-      required: false,
-    },
-    {
-      id: "past-logs",
-      name: "Past Recovery Logs",
-      icon: "CheckSquare",
-      category: "monitoring",
-      enabled: true,
-      required: false,
-    },
-    {
-      id: "maintenance",
-      name: "Aircraft Maintenance",
-      icon: "Wrench",
-      category: "monitoring",
-      enabled: true,
-      required: false,
-    },
-    {
-      id: "passengers",
-      name: "Services",
-      icon: "UserCheck",
-      category: "services",
-      enabled: false,
-      required: false,
-    },
-    {
-      id: "hotac",
-      name: "HOTAC Management",
-      icon: "Hotel",
-      category: "services",
-      enabled: true,
-      required: false,
-    },
-    {
-      id: "fuel-optimization",
-      name: "Fuel Optimization",
-      icon: "Fuel",
-      category: "analytics",
-      enabled: false,
-      required: false,
-    },
-    {
-      id: "reports",
-      name: "Reports & Analytics",
-      icon: "BarChart3",
-      category: "analytics",
-      enabled: false,
-      required: false,
-    },
-    {
-      id: "settings",
-      name: "Settings",
-      icon: "Settings",
-      category: "system",
-      enabled: true,
-      required: true,
-    },
-  ]);
+  const [screenSettings, setScreenSettings] = useState<screenSettings[]>([]);
+
+  // Load screen settings from API on component mount
+  useEffect(() => {
+    const loadScreenSettings = async () => {
+      try {
+        const settings = await databaseService.getScreenSettings();
+        if (settings && settings.length > 0) {
+          setScreenSettings(settings);
+        } else {
+          // Fallback to default settings if API fails
+          setScreenSettings([
+            {
+              id: "dashboard",
+              name: "Dashboard",
+              icon: "TrendingUp",
+              category: "main",
+              enabled: true,
+              required: true,
+            },
+            {
+              id: "settings",
+              name: "Settings",
+              icon: "Settings",
+              category: "system",
+              enabled: true,
+              required: true,
+            },
+          ]);
+        }
+      } catch (error) {
+        console.error("Failed to load screen settings:", error);
+        // Use minimal fallback settings
+        setScreenSettings([
+          {
+            id: "dashboard",
+            name: "Dashboard",
+            icon: "TrendingUp",
+            category: "main",
+            enabled: true,
+            required: true,
+          },
+          {
+            id: "settings",
+            name: "Settings",
+            icon: "Settings",
+            category: "system",
+            enabled: true,
+            required: true,
+          },
+        ]);
+      }
+    };
+
+    loadScreenSettings();
+  }, []);
 
   return (
     <AppContext.Provider
