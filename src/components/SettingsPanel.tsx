@@ -1121,7 +1121,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 ).map(([key, value]) => {
                   const Icon = getParameterIcon(key);
                   const labels = {
-                    loyaltyTier: "Loyalty Tier Status 234",
+                    loyaltyTier: "Loyalty Tier Status",
                     ticketClass: "Ticket Class (Business/Economy)",
                     specialNeeds: "Special Requirements",
                     groupSize: "Family/Group Bookings",
