@@ -415,8 +415,8 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       };
       let newNotificationSettings = { ...notificationSettings };
 
-      // Load all settings from database
-      const allSettings = settingsStore.getAllSettings();
+      // Load all settings from database using await
+      const allSettings = await settingsStore.getAllSettings();
       
 
       // Process settings by category
@@ -931,12 +931,97 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     setTimeout(() => setSaveStatus("idle"), 2500);
   };
 
-  const handleSaveAllSettings = async () => {
+  // Tab-wise save functions
+  const saveScreenSettings = async () => {
     setSaveStatus("saving");
     try {
-      // Save all current settings to database
-      Object.entries(nlpSettings).forEach(([key, value]) => {
-        settingsStore.saveSetting(
+      // Screen settings are handled by parent component
+      // We just need to show success status
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (error) {
+      console.error("Failed to save screen settings:", error);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    }
+  };
+
+  const savePassengerPrioritySettings = async () => {
+    setSaveStatus("saving");
+    try {
+      // Save passenger priority configuration
+      for (const [category, settings] of Object.entries(passengerPriorityConfig)) {
+        for (const [key, value] of Object.entries(settings)) {
+          await settingsStore.saveSetting(category, key, value, "number");
+        }
+      }
+
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (error) {
+      console.error("Failed to save passenger priority settings:", error);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    }
+  };
+
+  const saveRuleSettings = async () => {
+    setSaveStatus("saving");
+    try {
+      // Save rule configuration
+      for (const [category, settings] of Object.entries(ruleConfiguration)) {
+        for (const [key, value] of Object.entries(settings)) {
+          await settingsStore.saveSetting(
+            category,
+            key,
+            value,
+            typeof value === "boolean" ? "boolean" : "number",
+          );
+        }
+      }
+
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (error) {
+      console.error("Failed to save rule settings:", error);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    }
+  };
+
+  const saveRecoverySettings = async () => {
+    setSaveStatus("saving");
+    try {
+      // Save recovery configuration
+      for (const [category, settings] of Object.entries(recoveryConfiguration)) {
+        if (
+          typeof settings === "object" &&
+          settings !== null &&
+          !Array.isArray(settings)
+        ) {
+          for (const [key, value] of Object.entries(settings)) {
+            if (key !== "customParameters") {
+              await settingsStore.saveSetting(category, key, value, "number");
+            }
+          }
+        }
+      }
+
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (error) {
+      console.error("Failed to save recovery settings:", error);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    }
+  };
+
+  const saveNlpSettings = async () => {
+    setSaveStatus("saving");
+    try {
+      // Save NLP settings
+      for (const [key, value] of Object.entries(nlpSettings)) {
+        await settingsStore.saveSetting(
           "nlpSettings",
           key,
           value,
@@ -946,57 +1031,68 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
               ? "number"
               : "string",
         );
-      });
+      }
 
-      Object.entries(notificationSettings).forEach(([key, value]) => {
-        settingsStore.saveSetting(
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (error) {
+      console.error("Failed to save NLP settings:", error);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    }
+  };
+
+  const saveNotificationSettings = async () => {
+    setSaveStatus("saving");
+    try {
+      // Save notification settings
+      for (const [key, value] of Object.entries(notificationSettings)) {
+        await settingsStore.saveSetting(
           "notificationSettings",
           key,
           value,
           "boolean",
         );
-      });
-
-      // Save rule configuration
-      Object.entries(ruleConfiguration).forEach(([category, settings]) => {
-        Object.entries(settings).forEach(([key, value]) => {
-          settingsStore.saveSetting(
-            category,
-            key,
-            value,
-            typeof value === "boolean" ? "boolean" : "number",
-          );
-        });
-      });
-
-      // Save recovery configuration
-      Object.entries(recoveryConfiguration).forEach(([category, settings]) => {
-        if (
-          typeof settings === "object" &&
-          settings !== null &&
-          !Array.isArray(settings)
-        ) {
-          Object.entries(settings).forEach(([key, value]) => {
-            if (key !== "customParameters") {
-              settingsStore.saveSetting(category, key, value, "number");
-            }
-          });
-        }
-      });
-
-      // Save passenger priority configuration
-      Object.entries(passengerPriorityConfig).forEach(
-        ([category, settings]) => {
-          Object.entries(settings).forEach(([key, value]) => {
-            settingsStore.saveSetting(category, key, value, "number");
-          });
-        },
-      );
+      }
 
       setSaveStatus("saved");
       setTimeout(() => setSaveStatus("idle"), 2000);
     } catch (error) {
-      console.error("Failed to save settings:", error);
+      console.error("Failed to save notification settings:", error);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    }
+  };
+
+  const saveSystemSettings = async () => {
+    setSaveStatus("saving");
+    try {
+      // System settings would be saved here
+      // Currently no system settings are persisted to database
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (error) {
+      console.error("Failed to save system settings:", error);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    }
+  };
+
+  const handleSaveAllSettings = async () => {
+    setSaveStatus("saving");
+    try {
+      // Save all settings
+      await savePassengerPrioritySettings();
+      await saveRuleSettings();
+      await saveRecoverySettings();
+      await saveNlpSettings();
+      await saveNotificationSettings();
+      await saveSystemSettings();
+
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (error) {
+      console.error("Failed to save all settings:", error);
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 3000);
     }
@@ -1304,14 +1400,26 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         <TabsContent value="screens" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Eye className="h-5 w-5 text-flydubai-blue" />
-                Screen Visibility Configuration
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Control which screens are available in the AERON interface.
-                Required screens cannot be disabled.
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Eye className="h-5 w-5 text-flydubai-blue" />
+                    Screen Visibility Configuration
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Control which screens are available in the AERON interface.
+                    Required screens cannot be disabled.
+                  </p>
+                </div>
+                <Button
+                  onClick={saveScreenSettings}
+                  className="btn-flydubai-primary"
+                  disabled={isLoading || saveStatus === "saving"}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saveStatus === "saving" ? "Saving..." : "Save Screen Settings"}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {Object.entries(categories).map(([categoryKey, category]) => {
@@ -1371,15 +1479,27 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           {/* Overview Card */}
           <Card className="border-flydubai-blue bg-blue-50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-flydubai-blue">
-                <UserCheck className="h-5 w-5" />
-                Passenger Priority Configuration
-              </CardTitle>
-              <p className="text-sm text-blue-700">
-                Configure how passengers are prioritized and how flights are
-                scored for different passenger types. These settings directly
-                impact the rebooking algorithms and recovery decision-making.
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-flydubai-blue">
+                    <UserCheck className="h-5 w-5" />
+                    Passenger Priority Configuration
+                  </CardTitle>
+                  <p className="text-sm text-blue-700">
+                    Configure how passengers are prioritized and how flights are
+                    scored for different passenger types. These settings directly
+                    impact the rebooking algorithms and recovery decision-making.
+                  </p>
+                </div>
+                <Button
+                  onClick={savePassengerPrioritySettings}
+                  className="btn-flydubai-primary"
+                  disabled={isLoading || saveStatus === "saving"}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saveStatus === "saving" ? "Saving..." : "Save Priority Settings"}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Alert className="border-blue-200 bg-blue-50">
@@ -1717,15 +1837,27 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         <TabsContent value="rules" className="space-y-6">
           <Card className="border-flydubai-blue bg-blue-50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-flydubai-blue">
-                <FileText className="h-5 w-5" />
-                Rule Configuration
-              </CardTitle>
-              <p className="text-sm text-blue-700">
-                Configure operational rules, constraints, automation settings,
-                and custom business rules that govern AERON's decision-making
-                process.
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-flydubai-blue">
+                    <FileText className="h-5 w-5" />
+                    Rule Configuration
+                  </CardTitle>
+                  <p className="text-sm text-blue-700">
+                    Configure operational rules, constraints, automation settings,
+                    and custom business rules that govern AERON's decision-making
+                    process.
+                  </p>
+                </div>
+                <Button
+                  onClick={saveRuleSettings}
+                  className="btn-flydubai-primary"
+                  disabled={isLoading || saveStatus === "saving"}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saveStatus === "saving" ? "Saving..." : "Save Rule Settings"}
+                </Button>
+              </div>
             </CardHeader>
           </Card>
 
@@ -2537,16 +2669,28 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         <TabsContent value="recovery-options" className="space-y-6">
           <Card className="border-flydubai-blue bg-blue-50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-flydubai-blue">
-                <BarChart3 className="h-5 w-5" />
-                Recovery Operations Configuration
-              </CardTitle>
-              <p className="text-sm text-blue-700">
-                Configure weightage criteria for recovery options ranking,
-                aircraft selection, and crew assignment during disruptions.
-                These settings work together to optimize recovery
-                decision-making.
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-flydubai-blue">
+                    <BarChart3 className="h-5 w-5" />
+                    Recovery Operations Configuration
+                  </CardTitle>
+                  <p className="text-sm text-blue-700">
+                    Configure weightage criteria for recovery options ranking,
+                    aircraft selection, and crew assignment during disruptions.
+                    These settings work together to optimize recovery
+                    decision-making.
+                  </p>
+                </div>
+                <Button
+                  onClick={saveRecoverySettings}
+                  className="btn-flydubai-primary"
+                  disabled={isLoading || saveStatus === "saving"}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saveStatus === "saving" ? "Saving..." : "Save Recovery Settings"}
+                </Button>
+              </div>
             </CardHeader>
           </Card>
 
@@ -3162,16 +3306,28 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           {/* Header Section - Natural Language & Knowledge Repository Combined */}
           <Card className="border-flydubai-blue bg-blue-50">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-flydubai-blue">
-                <Brain className="h-5 w-5" />
-                Natural Language & Knowledge Repository
-              </CardTitle>
-              <p className="text-sm text-blue-700">
-                Configure natural language processing and manage the knowledge
-                repository that enhances recovery step recommendations. Upload
-                documents and add manual entries to improve AERON's
-                decision-making capabilities.
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2 text-flydubai-blue">
+                    <Brain className="h-5 w-5" />
+                    Natural Language & Knowledge Repository
+                  </CardTitle>
+                  <p className="text-sm text-blue-700">
+                    Configure natural language processing and manage the knowledge
+                    repository that enhances recovery step recommendations. Upload
+                    documents and add manual entries to improve AERON's
+                    decision-making capabilities.
+                  </p>
+                </div>
+                <Button
+                  onClick={saveNlpSettings}
+                  className="btn-flydubai-primary"
+                  disabled={isLoading || saveStatus === "saving"}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saveStatus === "saving" ? "Saving..." : "Save NLP Settings"}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <Alert className="border-blue-200 bg-blue-50">
@@ -3749,13 +3905,25 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         <TabsContent value="notifications" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5 text-flydubai-blue" />
-                Notification Preferences
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Configure how and when you receive notifications from AERON.
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Bell className="h-5 w-5 text-flydubai-blue" />
+                    Notification Preferences
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Configure how and when you receive notifications from AERON.
+                  </p>
+                </div>
+                <Button
+                  onClick={saveNotificationSettings}
+                  className="btn-flydubai-primary"
+                  disabled={isLoading || saveStatus === "saving"}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saveStatus === "saving" ? "Saving..." : "Save Notification Settings"}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
@@ -3817,13 +3985,25 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         <TabsContent value="system" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-flydubai-blue" />
-                System Configuration
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                General system settings and preferences.
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Settings className="h-5 w-5 text-flydubai-blue" />
+                    System Configuration
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    General system settings and preferences.
+                  </p>
+                </div>
+                <Button
+                  onClick={saveSystemSettings}
+                  className="btn-flydubai-primary"
+                  disabled={isLoading || saveStatus === "saving"}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {saveStatus === "saving" ? "Saving..." : "Save System Settings"}
+                </Button>
+              </div>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

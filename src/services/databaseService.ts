@@ -603,6 +603,79 @@ class DatabaseService {
     }
   }
 
+  // Screen settings operations
+  async getScreenSettings(): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/screen-settings`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Failed to fetch screen settings:", error);
+      return [];
+    }
+  }
+
+  async saveScreenSetting(
+    screenId: string,
+    enabled: boolean,
+    userId: string = "system"
+  ): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/screen-settings/${screenId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          enabled,
+          updated_by: userId,
+        }),
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error(`Failed to save screen setting ${screenId}:`, error);
+      return false;
+    }
+  }
+
+  // Batch save settings for tab-wise operations
+  async batchSaveSettings(
+    settings: Array<{
+      category: string;
+      key: string;
+      value: any;
+      type: SettingsData["type"];
+    }>,
+    userId: string = "system"
+  ): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/settings/batch`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          settings,
+          updated_by: userId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log(`Batch saved ${result.saved_settings} settings to database`);
+      return true;
+    } catch (error) {
+      console.error("Failed to batch save settings:", error);
+      return false;
+    }
+  }
+
   async exportSettings(): Promise<string> {
     try {
       const settings = await this.getAllSettings();
