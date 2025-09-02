@@ -568,9 +568,31 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const saveScreenSettings = async () => {
     setSaveStatus("saving");
     try {
-      // Screen settings are handled by parent component
-      // We just need to show success status
-      showSaveStatus();
+      // Convert screen settings to settings format for batch save
+      const settingsToSave = screenSettings.map(screen => ({
+        category: 'screenSettings',
+        key: screen.id,
+        value: screen.enabled,
+        type: 'boolean' as const
+      }));
+
+      const success = await settingsStore.saveSettingsFromState(
+        { screenSettings: screenSettings.reduce((acc, screen) => {
+          acc[screen.id] = screen.enabled;
+          return acc;
+        }, {}) },
+        { screenSettings: 'screenSettings' },
+        'user'
+      );
+
+      if (success) {
+        showSaveStatus();
+        // Notify parent component about the changes
+        onScreenSettingsChange(screenSettings);
+      } else {
+        setSaveStatus("error");
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      }
     } catch (error) {
       console.error("Failed to save screen settings:", error);
       setSaveStatus("error");
@@ -724,9 +746,56 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const saveSystemSettings = async () => {
     setSaveStatus("saving");
     try {
-      // System settings would be saved here
-      // Currently no system settings are persisted to database
-      showSaveStatus();
+      // Convert system settings from rawTabSettings to settings format for batch save
+      const settingsToSave = [];
+      
+      if (rawTabSettings?.system) {
+        Object.entries(rawTabSettings.system).forEach(([categoryKey, categorySettings]) => {
+          if (Array.isArray(categorySettings)) {
+            categorySettings.forEach(setting => {
+              settingsToSave.push({
+                category: categoryKey,
+                key: setting.key,
+                value: setting.value,
+                type: setting.type || 'string'
+              });
+            });
+          }
+        });
+      }
+
+      if (settingsToSave.length > 0) {
+        // Create a state object for system settings
+        const systemState = {};
+        settingsToSave.forEach(setting => {
+          if (!systemState[setting.category]) {
+            systemState[setting.category] = {};
+          }
+          systemState[setting.category][setting.key] = setting.value;
+        });
+
+        // Create category mapping
+        const categoryMapping = {};
+        Object.keys(systemState).forEach(category => {
+          categoryMapping[category] = category;
+        });
+
+        const success = await settingsStore.saveSettingsFromState(
+          systemState,
+          categoryMapping,
+          'user'
+        );
+
+        if (success) {
+          showSaveStatus();
+        } else {
+          setSaveStatus("error");
+          setTimeout(() => setSaveStatus("idle"), 3000);
+        }
+      } else {
+        // No system settings to save, just show success
+        showSaveStatus();
+      }
     } catch (error) {
       console.error("Failed to save system settings:", error);
       setSaveStatus("error");
