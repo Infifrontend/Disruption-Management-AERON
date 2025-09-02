@@ -342,7 +342,7 @@ app.get("/api/settings/tabs", async (req, res) => {
       desktop: "Desktop Notifications",
       recoveryAlerts: "Recovery Plan Alerts",
       passengerUpdates: "Passenger Service Updates",
-      systemAlerts: "System Status Alerts"
+      systemAlerts: "System Status Alerts",
     };
 
     // Organize settings by tab categories
@@ -353,11 +353,11 @@ app.get("/api/settings/tabs", async (req, res) => {
       recoveryOptions: {},
       nlp: {},
       notifications: {},
-      system: {}
+      system: {},
     };
 
     // Group settings by tab categories with full setting details
-    result.rows.forEach(setting => {
+    result.rows.forEach((setting) => {
       const category = setting.category;
       const key = setting.key;
 
@@ -368,51 +368,85 @@ app.get("/api/settings/tabs", async (req, res) => {
         key: setting.key,
         value: setting.value,
         type: setting.type,
-        description: setting.description || `Weight percentage for ${key} in ${category}`,
+        description:
+          setting.description || `Weight percentage for ${key} in ${category}`,
         created_at: setting.created_at,
         updated_at: setting.updated_at,
         label: fieldLabels[key] || key.charAt(0).toUpperCase() + key.slice(1),
         updated_by: setting.updated_by,
-        is_active: setting.is_active
+        is_active: setting.is_active,
+        required: setting?.required,
+        icon: setting?.icon,
       };
 
       // Map database categories to tab categories
-      if (['passengerPrioritization', 'flightPrioritization', 'flightScoring', 'passengerScoring'].includes(category)) {
+      if (
+        [
+          "passengerPrioritization",
+          "flightPrioritization",
+          "flightScoring",
+          "passengerScoring",
+        ].includes(category)
+      ) {
         if (!tabSettings.passengerPriority[category]) {
           tabSettings.passengerPriority[category] = [];
         }
         tabSettings.passengerPriority[category].push(fullSetting);
       }
-      // Rules categories  
-      else if (['operationalRules', 'recoveryConstraints', 'automationSettings'].includes(category)) {
+      // Rules categories
+      else if (
+        [
+          "operationalRules",
+          "recoveryConstraints",
+          "automationSettings",
+        ].includes(category)
+      ) {
         if (!tabSettings.rules[category]) {
           tabSettings.rules[category] = [];
         }
         tabSettings.rules[category].push(fullSetting);
       }
       // Recovery Options categories
-      else if (['recoveryOptionsRanking', 'aircraftSelectionCriteria', 'crewAssignmentCriteria'].includes(category)) {
+      else if (
+        [
+          "recoveryOptionsRanking",
+          "aircraftSelectionCriteria",
+          "crewAssignmentCriteria",
+        ].includes(category)
+      ) {
         if (!tabSettings.recoveryOptions[category]) {
           tabSettings.recoveryOptions[category] = [];
         }
         tabSettings.recoveryOptions[category].push(fullSetting);
       }
       // NLP Settings
-      else if (category === 'nlpSettings') {
+      else if (category === "nlpSettings") {
         if (!tabSettings.nlp[category]) {
           tabSettings.nlp[category] = [];
         }
         tabSettings.nlp[category].push(fullSetting);
       }
       // Notification Settings
-      else if (category === 'notificationSettings') {
+        
+      else if (category === "notificationSettings") {
         if (!tabSettings.notifications[category]) {
           tabSettings.notifications[category] = [];
         }
         tabSettings.notifications[category].push(fullSetting);
       }
       // Screen Settings - handle separately if needed
-      else if (category === 'screenSettings') {
+        
+      else if (
+        [
+          "main",
+          "operations",
+          "prediction",
+          "monitoring",
+          "services",
+          "analytics",  
+          "system"
+        ].includes(category)
+      ) {
         if (!tabSettings.screens[category]) {
           tabSettings.screens[category] = [];
         }
@@ -428,27 +462,27 @@ app.get("/api/settings/tabs", async (req, res) => {
     });
 
     // Get screen settings separately
-    const screenResult = await pool.query(
-      "SELECT * FROM screen_settings ORDER BY category, screen_name"
-    );
+    // const screenResult = await pool.query(
+    //   "SELECT * FROM screen_settings ORDER BY category, screen_name",
+    // );
 
-    const screensByCategory = {};
-    screenResult.rows.forEach(screen => {
-      if (!screensByCategory[screen.category]) {
-        screensByCategory[screen.category] = [];
-      }
-      screensByCategory[screen.category].push({
-        id: screen.screen_id,
-        name: screen.screen_name,
-        enabled: screen.enabled,
-        required: screen.required,
-        category: screen.category,
-        updated_at: screen.updated_at,
-        updated_by: screen.updated_by
-      });
-    });
+    // const screensByCategory = {};
+    // screenResult.rows.forEach((screen) => {
+    //   if (!screensByCategory[screen.category]) {
+    //     screensByCategory[screen.category] = [];
+    //   }
+    //   screensByCategory[screen.category].push({
+    //     id: screen.screen_id,
+    //     name: screen.screen_name,
+    //     enabled: screen.enabled,
+    //     required: screen.required,
+    //     category: screen.category,
+    //     updated_at: screen.updated_at,
+    //     updated_by: screen.updated_by,
+    //   });
+    // });
 
-    tabSettings.screens = screensByCategory;
+    // tabSettings.screens = screensByCategory;
 
     res.json(tabSettings);
   } catch (error) {
@@ -460,7 +494,7 @@ app.get("/api/settings/tabs", async (req, res) => {
       recoveryOptions: {},
       nlp: {},
       notifications: {},
-      system: {}
+      system: {},
     });
   }
 });
@@ -547,7 +581,7 @@ app.delete("/api/settings/:category/:key", async (req, res) => {
 app.get("/api/screen-settings", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM screen_settings ORDER BY category, screen_name"
+      "SELECT * FROM screen_settings ORDER BY category, screen_name",
     );
     res.json(result.rows);
   } catch (error) {
@@ -558,7 +592,8 @@ app.get("/api/screen-settings", async (req, res) => {
 
 app.post("/api/screen-settings", async (req, res) => {
   try {
-    const { screen_id, screen_name, category, enabled, required, updated_by } = req.body;
+    const { screen_id, screen_name, category, enabled, required, updated_by } =
+      req.body;
 
     const result = await pool.query(
       `INSERT INTO screen_settings (screen_id, screen_name, category, enabled, required, updated_by)
@@ -572,7 +607,14 @@ app.post("/api/screen-settings", async (req, res) => {
          updated_by = EXCLUDED.updated_by,
          updated_at = CURRENT_TIMESTAMP
        RETURNING *`,
-      [screen_id, screen_name, category, enabled, required, updated_by || 'system']
+      [
+        screen_id,
+        screen_name,
+        category,
+        enabled,
+        required,
+        updated_by || "system",
+      ],
     );
 
     res.json(result.rows[0]);
@@ -591,7 +633,7 @@ app.put("/api/screen-settings/:screen_id", async (req, res) => {
       `UPDATE screen_settings 
        SET enabled = $1, updated_by = $2, updated_at = CURRENT_TIMESTAMP
        WHERE screen_id = $3 RETURNING *`,
-      [enabled, updated_by || 'system', screen_id]
+      [enabled, updated_by || "system", screen_id],
     );
 
     if (result.rows.length === 0) {
@@ -609,7 +651,7 @@ app.put("/api/screen-settings/:screen_id", async (req, res) => {
 app.get("/api/custom-rules", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM custom_rules ORDER BY priority, created_at"
+      "SELECT * FROM custom_rules ORDER BY priority, created_at",
     );
     res.json(result.rows);
   } catch (error) {
@@ -621,15 +663,36 @@ app.get("/api/custom-rules", async (req, res) => {
 app.post("/api/custom-rules", async (req, res) => {
   try {
     const {
-      rule_id, name, description, category, type, priority,
-      overridable, conditions, actions, status, created_by
+      rule_id,
+      name,
+      description,
+      category,
+      type,
+      priority,
+      overridable,
+      conditions,
+      actions,
+      status,
+      created_by,
     } = req.body;
 
     const result = await pool.query(
       `INSERT INTO custom_rules 
        (rule_id, name, description, category, type, priority, overridable, conditions, actions, status, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
-      [rule_id, name, description, category, type, priority, overridable, conditions, actions, status, created_by]
+      [
+        rule_id,
+        name,
+        description,
+        category,
+        type,
+        priority,
+        overridable,
+        conditions,
+        actions,
+        status,
+        created_by,
+      ],
     );
 
     res.json(result.rows[0]);
@@ -646,14 +709,14 @@ app.put("/api/custom-rules/:rule_id", async (req, res) => {
 
     const setClause = Object.keys(updates)
       .map((key, index) => `${key} = $${index + 2}`)
-      .join(', ');
+      .join(", ");
 
     const values = [rule_id, ...Object.values(updates)];
 
     const result = await pool.query(
       `UPDATE custom_rules SET ${setClause}, updated_at = CURRENT_TIMESTAMP
        WHERE rule_id = $1 RETURNING *`,
-      values
+      values,
     );
 
     if (result.rows.length === 0) {
@@ -672,7 +735,7 @@ app.delete("/api/custom-rules/:rule_id", async (req, res) => {
     const { rule_id } = req.params;
     const result = await pool.query(
       "DELETE FROM custom_rules WHERE rule_id = $1 RETURNING *",
-      [rule_id]
+      [rule_id],
     );
 
     if (result.rows.length === 0) {
@@ -690,7 +753,7 @@ app.delete("/api/custom-rules/:rule_id", async (req, res) => {
 app.get("/api/custom-parameters", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM custom_parameters WHERE is_active = true ORDER BY category, name"
+      "SELECT * FROM custom_parameters WHERE is_active = true ORDER BY category, name",
     );
     res.json(result.rows);
   } catch (error) {
@@ -701,12 +764,13 @@ app.get("/api/custom-parameters", async (req, res) => {
 
 app.post("/api/custom-parameters", async (req, res) => {
   try {
-    const { parameter_id, name, category, weight, description, created_by } = req.body;
+    const { parameter_id, name, category, weight, description, created_by } =
+      req.body;
 
     const result = await pool.query(
       `INSERT INTO custom_parameters (parameter_id, name, category, weight, description, created_by)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [parameter_id, name, category, weight, description, created_by]
+      [parameter_id, name, category, weight, description, created_by],
     );
 
     res.json(result.rows[0]);
@@ -721,7 +785,7 @@ app.delete("/api/custom-parameters/:parameter_id", async (req, res) => {
     const { parameter_id } = req.params;
     const result = await pool.query(
       "UPDATE custom_parameters SET is_active = false WHERE parameter_id = $1 RETURNING *",
-      [parameter_id]
+      [parameter_id],
     );
 
     if (result.rows.length === 0) {
@@ -747,7 +811,7 @@ app.post("/api/settings/batch", async (req, res) => {
     const client = await pool.connect();
 
     try {
-      await client.query('BEGIN');
+      await client.query("BEGIN");
 
       const results = [];
       for (const setting of settings) {
@@ -762,15 +826,15 @@ app.post("/api/settings/batch", async (req, res) => {
              updated_by = EXCLUDED.updated_by,
              updated_at = CURRENT_TIMESTAMP
            RETURNING *`,
-          [category, key, JSON.stringify(value), type, updated_by || 'system']
+          [category, key, JSON.stringify(value), type, updated_by || "system"],
         );
         results.push(result.rows[0]);
       }
 
-      await client.query('COMMIT');
+      await client.query("COMMIT");
       res.json({ success: true, saved_settings: results.length });
     } catch (error) {
-      await client.query('ROLLBACK');
+      await client.query("ROLLBACK");
       throw error;
     } finally {
       client.release();
