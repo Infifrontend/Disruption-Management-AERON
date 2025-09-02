@@ -2,7 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { useSettingsStorage, SettingsFieldConfig } from "../utils/settingsStorage";
+import {
+  useSettingsStorage,
+  SettingsFieldConfig,
+} from "../utils/settingsStorage";
 import { SettingField } from "./SettingField";
 import { DynamicSettingsRenderer } from "./DynamicSettingsRenderer";
 import { Button } from "./ui/button";
@@ -116,7 +119,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   >("idle");
   const [isDatabaseConnected, setIsDatabaseConnected] = useState(false);
   const settingsStore = useSettingsStorage();
-  const [fieldConfigurations, setFieldConfigurations] = useState<Record<string, SettingsFieldConfig[]>>({});
+  const [fieldConfigurations, setFieldConfigurations] = useState<
+    Record<string, SettingsFieldConfig[]>
+  >({});
   const [rawTabSettings, setRawTabSettings] = useState<any>({});
 
   // Database-backed state - initialized empty and populated from API
@@ -152,6 +157,8 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     aircraftSelectionCriteria: {},
     crewAssignmentCriteria: {},
   });
+
+  console.log(recoveryConfiguration, "ssssssssssssssssssssss");
 
   // Passenger Priority Configuration State - initialized empty and populated from API
   const [passengerPriorityConfig, setPassengerPriorityConfig] = useState({
@@ -189,7 +196,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       // Load tab-wise organized settings from the database
       const tabSettings = await settingsStore.getTabSettings();
       console.log("Loaded tab-wise settings:", tabSettings);
-      
+
       // Store raw settings for dynamic rendering
       setRawTabSettings(tabSettings);
 
@@ -197,7 +204,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       const convertArrayToObject = (settingsArray) => {
         if (!Array.isArray(settingsArray)) return {};
         const obj = {};
-        settingsArray.forEach(setting => {
+        settingsArray.forEach((setting) => {
           obj[setting.key] = setting.value;
         });
         return obj;
@@ -205,39 +212,79 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
       // Helper function to load category settings from tab data
       const loadCategorySettings = (tabData, categoryKey) => {
-        if (tabData && tabData[categoryKey] && Array.isArray(tabData[categoryKey])) {
+        if (
+          tabData &&
+          tabData[categoryKey] &&
+          Array.isArray(tabData[categoryKey])
+        ) {
           return convertArrayToObject(tabData[categoryKey]);
         }
         return {};
       };
 
       // Load NLP Settings from nlp tab
-      const newNlpSettings = loadCategorySettings(tabSettings.nlp, 'nlpSettings');
+      const newNlpSettings = loadCategorySettings(
+        tabSettings.nlp,
+        "nlpSettings",
+      );
 
       // Load Rule Configuration from rules tab
       const newRuleConfig = {
-        operationalRules: loadCategorySettings(tabSettings.rules, 'operationalRules'),
-        recoveryConstraints: loadCategorySettings(tabSettings.rules, 'recoveryConstraints'),
-        automationSettings: loadCategorySettings(tabSettings.rules, 'automationSettings')
+        operationalRules: loadCategorySettings(
+          tabSettings.rules,
+          "operationalRules",
+        ),
+        recoveryConstraints: loadCategorySettings(
+          tabSettings.rules,
+          "recoveryConstraints",
+        ),
+        automationSettings: loadCategorySettings(
+          tabSettings.rules,
+          "automationSettings",
+        ),
       };
 
       // Load Recovery Options Configuration from recoveryOptions tab
       const newRecoveryConfig = {
-        recoveryOptionsRanking: loadCategorySettings(tabSettings.recoveryOptions, 'recoveryOptionsRanking'),
-        aircraftSelectionCriteria: loadCategorySettings(tabSettings.recoveryOptions, 'aircraftSelectionCriteria'),
-        crewAssignmentCriteria: loadCategorySettings(tabSettings.recoveryOptions, 'crewAssignmentCriteria')
+        recoveryOptionsRanking: loadCategorySettings(
+          tabSettings.recoveryOptions,
+          "recoveryOptionsRanking",
+        ),
+        aircraftSelectionCriteria: loadCategorySettings(
+          tabSettings.recoveryOptions,
+          "aircraftSelectionCriteria",
+        ),
+        crewAssignmentCriteria: loadCategorySettings(
+          tabSettings.recoveryOptions,
+          "crewAssignmentCriteria",
+        ),
       };
 
       // Load Passenger Priority Configuration from passengerPriority tab
       const newPriorityConfig = {
-        passengerPrioritization: loadCategorySettings(tabSettings.passengerPriority, 'passengerPrioritization'),
-        flightPrioritization: loadCategorySettings(tabSettings.passengerPriority, 'flightPrioritization'),
-        flightScoring: loadCategorySettings(tabSettings.passengerPriority, 'flightScoring'),
-        passengerScoring: loadCategorySettings(tabSettings.passengerPriority, 'passengerScoring')
+        passengerPrioritization: loadCategorySettings(
+          tabSettings.passengerPriority,
+          "passengerPrioritization",
+        ),
+        flightPrioritization: loadCategorySettings(
+          tabSettings.passengerPriority,
+          "flightPrioritization",
+        ),
+        flightScoring: loadCategorySettings(
+          tabSettings.passengerPriority,
+          "flightScoring",
+        ),
+        passengerScoring: loadCategorySettings(
+          tabSettings.passengerPriority,
+          "passengerScoring",
+        ),
       };
 
       // Load Notification Settings from notifications tab
-      const newNotificationSettings = loadCategorySettings(tabSettings.notifications, 'notificationSettings');
+      const newNotificationSettings = loadCategorySettings(
+        tabSettings.notifications,
+        "notificationSettings",
+      );
 
       // Update state with loaded settings
       setNlpSettings(newNlpSettings);
@@ -524,16 +571,16 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     setSaveStatus("saving");
     try {
       const categoryMapping = {
-        passengerPrioritization: 'passengerPrioritization',
-        flightPrioritization: 'flightPrioritization',
-        flightScoring: 'flightScoring',
-        passengerScoring: 'passengerScoring'
+        passengerPrioritization: "passengerPrioritization",
+        flightPrioritization: "flightPrioritization",
+        flightScoring: "flightScoring",
+        passengerScoring: "passengerScoring",
       };
 
       const success = await settingsStore.saveSettingsFromState(
         passengerPriorityConfig,
         categoryMapping,
-        "user"
+        "user",
       );
 
       if (success) {
@@ -553,15 +600,15 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     setSaveStatus("saving");
     try {
       const categoryMapping = {
-        operationalRules: 'operationalRules',
-        recoveryConstraints: 'recoveryConstraints',
-        automationSettings: 'automationSettings'
+        operationalRules: "operationalRules",
+        recoveryConstraints: "recoveryConstraints",
+        automationSettings: "automationSettings",
       };
 
       const success = await settingsStore.saveSettingsFromState(
         ruleConfiguration,
         categoryMapping,
-        "user"
+        "user",
       );
 
       if (success) {
@@ -581,15 +628,15 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     setSaveStatus("saving");
     try {
       const categoryMapping = {
-        recoveryOptionsRanking: 'recoveryOptionsRanking',
-        aircraftSelectionCriteria: 'aircraftSelectionCriteria',
-        crewAssignmentCriteria: 'crewAssignmentCriteria'
+        recoveryOptionsRanking: "recoveryOptionsRanking",
+        aircraftSelectionCriteria: "aircraftSelectionCriteria",
+        crewAssignmentCriteria: "crewAssignmentCriteria",
       };
 
       const success = await settingsStore.saveSettingsFromState(
         recoveryConfiguration,
         categoryMapping,
-        "user"
+        "user",
       );
 
       if (success) {
@@ -609,7 +656,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     setSaveStatus("saving");
     try {
       const categoryMapping = {
-        nlpSettings: 'nlpSettings'
+        nlpSettings: "nlpSettings",
       };
 
       // Create a wrapper object for the nlpSettings
@@ -618,7 +665,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       const success = await settingsStore.saveSettingsFromState(
         stateWrapper,
         categoryMapping,
-        "user"
+        "user",
       );
 
       if (success) {
@@ -638,7 +685,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     setSaveStatus("saving");
     try {
       const categoryMapping = {
-        notificationSettings: 'notificationSettings'
+        notificationSettings: "notificationSettings",
       };
 
       // Create a wrapper object for the notificationSettings
@@ -647,7 +694,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       const success = await settingsStore.saveSettingsFromState(
         stateWrapper,
         categoryMapping,
-        "user"
+        "user",
       );
 
       if (success) {
@@ -717,6 +764,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     if (section) {
       // For recovery configuration sections
       const data = recoveryConfiguration[section];
+      console.log(recoveryConfiguration);
       if (data) {
         const baseParams = Object.keys(data).filter(
           (key) => key !== "customParameters",
@@ -1380,7 +1428,8 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     System Configuration
                   </CardTitle>
                   <p className="text-sm text-blue-700">
-                    Configure system-wide settings, performance parameters, and maintenance options.
+                    Configure system-wide settings, performance parameters, and
+                    maintenance options.
                   </p>
                 </div>
                 <Button
@@ -1389,44 +1438,58 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   disabled={isLoading || saveStatus === "saving"}
                 >
                   <Save className="h-4 w-4 mr-2" />
-                  {saveStatus === "saving" ? "Saving..." : "Save System Settings"}
+                  {saveStatus === "saving"
+                    ? "Saving..."
+                    : "Save System Settings"}
                 </Button>
               </div>
             </CardHeader>
           </Card>
 
           {/* Dynamically render system settings if available */}
-          {rawTabSettings?.system && Object.keys(rawTabSettings.system).length > 0 ? (
+          {rawTabSettings?.system &&
+          Object.keys(rawTabSettings.system).length > 0 ? (
             <div className="grid grid-cols-1 gap-6">
-              {Object.entries(rawTabSettings.system).map(([categoryKey, categorySettings]) => (
-                <DynamicSettingsRenderer
-                  key={categoryKey}
-                  categoryData={Array.isArray(categorySettings) ? categorySettings : []}
-                  categoryName={categoryKey}
-                  categoryTitle={categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1).replace(/([A-Z])/g, ' $1')}
-                  categoryDescription={`Configure ${categoryKey} settings`}
-                  icon={Settings2}
-                  values={{}} // You can maintain separate state for system settings if needed
-                  onChange={(key, value) => {
-                    // Handle system settings changes
-                    console.log(`System setting changed: ${key} = ${value}`);
-                  }}
-                  onToggle={(key) => {
-                    // Handle system setting toggles
-                    console.log(`System setting toggled: ${key}`);
-                  }}
-                  onSave={saveSystemSettings}
-                  saveStatus={saveStatus}
-                  fieldConfigurations={fieldConfigurations[categoryKey] || {}}
-                />
-              ))}
+              {Object.entries(rawTabSettings.system).map(
+                ([categoryKey, categorySettings]) => (
+                  <DynamicSettingsRenderer
+                    key={categoryKey}
+                    categoryData={
+                      Array.isArray(categorySettings) ? categorySettings : []
+                    }
+                    categoryName={categoryKey}
+                    categoryTitle={
+                      categoryKey.charAt(0).toUpperCase() +
+                      categoryKey.slice(1).replace(/([A-Z])/g, " $1")
+                    }
+                    categoryDescription={`Configure ${categoryKey} settings`}
+                    icon={Settings2}
+                    values={{}} // You can maintain separate state for system settings if needed
+                    onChange={(key, value) => {
+                      // Handle system settings changes
+                      console.log(`System setting changed: ${key} = ${value}`);
+                    }}
+                    onToggle={(key) => {
+                      // Handle system setting toggles
+                      console.log(`System setting toggled: ${key}`);
+                    }}
+                    onSave={saveSystemSettings}
+                    saveStatus={saveStatus}
+                    fieldConfigurations={fieldConfigurations[categoryKey] || {}}
+                  />
+                ),
+              )}
             </div>
           ) : (
             <Card>
               <CardContent className="text-center py-8">
                 <Settings2 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No System Settings</h3>
-                <p className="text-gray-500">No system settings are currently configured in the database.</p>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  No System Settings
+                </h3>
+                <p className="text-gray-500">
+                  No system settings are currently configured in the database.
+                </p>
               </CardContent>
             </Card>
           )}
@@ -1501,19 +1564,27 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {fieldConfigurations?.recoveryConstraints?.map((fieldConfig) => (
-                  <SettingField
-                    key={fieldConfig.key}
-                    config={fieldConfig}
-                    value={ruleConfiguration.recoveryConstraints[fieldConfig.key]}
-                    onChange={(key, value) =>
-                      handleRuleConfigChange("recoveryConstraints", key, value)
-                    }
-                    onToggle={(key) =>
-                      handleRuleToggle("recoveryConstraints", key)
-                    }
-                  />
-                ))}
+                {fieldConfigurations?.recoveryConstraints?.map(
+                  (fieldConfig) => (
+                    <SettingField
+                      key={fieldConfig.key}
+                      config={fieldConfig}
+                      value={
+                        ruleConfiguration.recoveryConstraints[fieldConfig.key]
+                      }
+                      onChange={(key, value) =>
+                        handleRuleConfigChange(
+                          "recoveryConstraints",
+                          key,
+                          value,
+                        )
+                      }
+                      onToggle={(key) =>
+                        handleRuleToggle("recoveryConstraints", key)
+                      }
+                    />
+                  ),
+                )}
               </CardContent>
             </Card>
 
@@ -1533,7 +1604,9 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   <SettingField
                     key={fieldConfig.key}
                     config={fieldConfig}
-                    value={ruleConfiguration.automationSettings[fieldConfig.key]}
+                    value={
+                      ruleConfiguration.automationSettings[fieldConfig.key]
+                    }
                     onChange={(key, value) =>
                       handleRuleConfigChange("automationSettings", key, value)
                     }
