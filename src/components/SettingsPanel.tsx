@@ -1396,12 +1396,12 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           </Card>
 
           {/* Dynamically render system settings if available */}
-          {rawTabSettings.system && Object.keys(rawTabSettings.system).length > 0 ? (
+          {rawTabSettings?.system && Object.keys(rawTabSettings.system).length > 0 ? (
             <div className="grid grid-cols-1 gap-6">
               {Object.entries(rawTabSettings.system).map(([categoryKey, categorySettings]) => (
                 <DynamicSettingsRenderer
                   key={categoryKey}
-                  categoryData={categorySettings as any[]}
+                  categoryData={Array.isArray(categorySettings) ? categorySettings : []}
                   categoryName={categoryKey}
                   categoryTitle={categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1).replace(/([A-Z])/g, ' $1')}
                   categoryDescription={`Configure ${categoryKey} settings`}
@@ -1473,7 +1473,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {fieldConfigurations.operationalRules?.map((fieldConfig) => (
+                {fieldConfigurations?.operationalRules?.map((fieldConfig) => (
                   <SettingField
                     key={fieldConfig.key}
                     config={fieldConfig}
@@ -1501,7 +1501,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {fieldConfigurations.recoveryConstraints?.map((fieldConfig) => (
+                {fieldConfigurations?.recoveryConstraints?.map((fieldConfig) => (
                   <SettingField
                     key={fieldConfig.key}
                     config={fieldConfig}
@@ -1529,7 +1529,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {fieldConfigurations.automationSettings?.map((fieldConfig) => (
+                {fieldConfigurations?.automationSettings?.map((fieldConfig) => (
                   <SettingField
                     key={fieldConfig.key}
                     config={fieldConfig}
