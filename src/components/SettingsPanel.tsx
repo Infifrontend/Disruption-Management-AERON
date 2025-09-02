@@ -133,7 +133,7 @@ const updateScreenSetting = (screenId: string, enabled: boolean) => {
 };
 
 
-export default function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.Element {
+export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.Element {
   console.log(screenSettings, "tesssttttttt");
   const [activeTab, setActiveTab] = useState("screens");
   const [isLoading, setIsLoading] = useState(true);
