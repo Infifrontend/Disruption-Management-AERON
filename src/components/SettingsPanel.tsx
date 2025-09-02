@@ -332,8 +332,19 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     setIsLoading(true);
 
     try {
-      // Initialize fresh state objects
-      let newNlpSettings = { ...nlpSettings };
+      // Load tab-wise organized settings from the database
+      const tabSettings = await settingsStore.getTabSettings();
+      console.log("Loaded tab-wise settings:", tabSettings);
+
+      // Initialize with defaults and then override with database values
+      let newNlpSettings = {
+        enabled: true,
+        language: "english",
+        confidence: 85,
+        autoApply: false,
+        ...tabSettings.nlp
+      };
+
       let newRuleConfig = {
         operationalRules: {
           maxDelayThreshold: 180,
@@ -341,6 +352,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           maxOverbooking: 105,
           priorityRebookingTime: 15,
           hotacTriggerDelay: 240,
+          ...tabSettings.rules?.operationalRules
         },
         recoveryConstraints: {
           maxAircraftSwaps: 3,
@@ -348,6 +360,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           maintenanceSlotProtection: true,
           slotCoordinationRequired: false,
           curfewCompliance: true,
+          ...tabSettings.rules?.recoveryConstraints
         },
         automationSettings: {
           autoApproveThreshold: 95,
@@ -355,8 +368,10 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           enablePredictiveActions: true,
           autoNotifyPassengers: true,
           autoBookHotac: false,
+          ...tabSettings.rules?.automationSettings
         },
       };
+
       let newRecoveryConfig = {
         recoveryOptionsRanking: {
           costWeight: 30,
@@ -365,6 +380,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           operationalComplexityWeight: 15,
           reputationWeight: 10,
           customParameters: [],
+          ...tabSettings.recoveryOptions?.recoveryOptionsRanking
         },
         aircraftSelectionCriteria: {
           maintenanceStatus: 25,
@@ -373,6 +389,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           passengerCapacity: 15,
           availabilityWindow: 20,
           customParameters: [],
+          ...tabSettings.recoveryOptions?.aircraftSelectionCriteria
         },
         crewAssignmentCriteria: {
           dutyTimeRemaining: 30,
@@ -381,8 +398,10 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           restRequirements: 15,
           languageSkills: 10,
           customParameters: [],
+          ...tabSettings.recoveryOptions?.crewAssignmentCriteria
         },
       };
+
       let newPriorityConfig = {
         passengerPrioritization: {
           loyaltyTier: 25,
@@ -390,6 +409,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           specialNeeds: 30,
           groupSize: 15,
           connectionRisk: 10,
+          ...tabSettings.passengerPriority?.passengerPrioritization
         },
         flightPrioritization: {
           airlinePreference: 20,
@@ -397,6 +417,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           aircraftType: 15,
           departureTime: 20,
           connectionBuffer: 20,
+          ...tabSettings.passengerPriority?.flightPrioritization
         },
         flightScoring: {
           baseScore: 70,
@@ -405,132 +426,27 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           specialReqBonus: 8,
           loyaltyBonus: 8,
           groupBonus: 5,
+          ...tabSettings.passengerPriority?.flightScoring
         },
         passengerScoring: {
           vipWeight: 40,
           loyaltyWeight: 25,
           specialNeedsWeight: 20,
           revenueWeight: 15,
+          ...tabSettings.passengerPriority?.passengerScoring
         },
       };
-      let newNotificationSettings = { ...notificationSettings };
 
-      // Load all settings from database using await
-      const allSettings = await settingsStore.getAllSettings();
-
-      // Process settings by category
-      allSettings.forEach((setting) => {
-        try {
-          switch (setting.category) {
-            case "nlpSettings":
-              if (newNlpSettings.hasOwnProperty(setting.key)) {
-                newNlpSettings[setting.key] = setting.value;
-              }
-              break;
-
-            case "operationalRules":
-              if (newRuleConfig.operationalRules.hasOwnProperty(setting.key)) {
-                newRuleConfig.operationalRules[setting.key] = setting.value;
-              }
-              break;
-
-            case "recoveryConstraints":
-              if (
-                newRuleConfig.recoveryConstraints.hasOwnProperty(setting.key)
-              ) {
-                newRuleConfig.recoveryConstraints[setting.key] = setting.value;
-              }
-              break;
-
-            case "automationSettings":
-              if (
-                newRuleConfig.automationSettings.hasOwnProperty(setting.key)
-              ) {
-                newRuleConfig.automationSettings[setting.key] = setting.value;
-              }
-              break;
-
-            case "recoveryOptionsRanking":
-              if (
-                newRecoveryConfig.recoveryOptionsRanking.hasOwnProperty(
-                  setting.key,
-                )
-              ) {
-                newRecoveryConfig.recoveryOptionsRanking[setting.key] =
-                  setting.value;
-              }
-              break;
-
-            case "aircraftSelectionCriteria":
-              if (
-                newRecoveryConfig.aircraftSelectionCriteria.hasOwnProperty(
-                  setting.key,
-                )
-              ) {
-                newRecoveryConfig.aircraftSelectionCriteria[setting.key] =
-                  setting.value;
-              }
-              break;
-
-            case "crewAssignmentCriteria":
-              if (
-                newRecoveryConfig.crewAssignmentCriteria.hasOwnProperty(
-                  setting.key,
-                )
-              ) {
-                newRecoveryConfig.crewAssignmentCriteria[setting.key] =
-                  setting.value;
-              }
-              break;
-
-            case "passengerPrioritization":
-              if (
-                newPriorityConfig.passengerPrioritization.hasOwnProperty(
-                  setting.key,
-                )
-              ) {
-                newPriorityConfig.passengerPrioritization[setting.key] =
-                  setting.value;
-              }
-              break;
-
-            case "flightPrioritization":
-              if (
-                newPriorityConfig.flightPrioritization.hasOwnProperty(
-                  setting.key,
-                )
-              ) {
-                newPriorityConfig.flightPrioritization[setting.key] =
-                  setting.value;
-              }
-              break;
-
-            case "flightScoring":
-              if (newPriorityConfig.flightScoring.hasOwnProperty(setting.key)) {
-                newPriorityConfig.flightScoring[setting.key] = setting.value;
-              }
-              break;
-
-            case "passengerScoring":
-              if (
-                newPriorityConfig.passengerScoring.hasOwnProperty(setting.key)
-              ) {
-                newPriorityConfig.passengerScoring[setting.key] = setting.value;
-              }
-              break;
-
-            case "notificationSettings":
-              if (newNotificationSettings.hasOwnProperty(setting.key)) {
-                newNotificationSettings[setting.key] = setting.value;
-              }
-              break;
-
-            default:
-          }
-        } catch (settingError) {
-          console.error("Error processing setting:", setting, settingError);
-        }
-      });
+      let newNotificationSettings = {
+        email: true,
+        sms: false,
+        push: true,
+        desktop: true,
+        recoveryAlerts: true,
+        passengerUpdates: true,
+        systemAlerts: false,
+        ...tabSettings.notifications
+      };
 
       // Update state with loaded settings
       setNlpSettings(newNlpSettings);
@@ -538,6 +454,8 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       setRecoveryConfiguration(newRecoveryConfig);
       setPassengerPriorityConfig(newPriorityConfig);
       setNotificationSettings(newNotificationSettings);
+
+      console.log("Settings loaded successfully from database");
     } catch (error) {
       console.error("Failed to load settings from database:", error);
       setSaveStatus("error");
@@ -817,22 +735,16 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const savePassengerPrioritySettings = async () => {
     setSaveStatus("saving");
     try {
-      // Collect all passenger priority settings for batch save
-      const settingsToSave = [];
-      
-      for (const [category, settings] of Object.entries(passengerPriorityConfig)) {
-        for (const [key, value] of Object.entries(settings)) {
-          settingsToSave.push({
-            category,
-            key,
-            value,
-            type: "number"
-          });
-        }
-      }
+      const categoryMapping = {
+        passengerPrioritization: 'passengerPrioritization',
+        flightPrioritization: 'flightPrioritization',
+        flightScoring: 'flightScoring',
+        passengerScoring: 'passengerScoring'
+      };
 
-      const success = await settingsStore.batchSaveMultipleCategories(
-        ["passengerPrioritization", "flightPrioritization", "flightScoring", "passengerScoring"],
+      const success = await settingsStore.saveSettingsFromState(
+        passengerPriorityConfig,
+        categoryMapping,
         "user"
       );
 
@@ -852,8 +764,15 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const saveRuleSettings = async () => {
     setSaveStatus("saving");
     try {
-      const success = await settingsStore.batchSaveMultipleCategories(
-        ["operationalRules", "recoveryConstraints", "automationSettings"],
+      const categoryMapping = {
+        operationalRules: 'operationalRules',
+        recoveryConstraints: 'recoveryConstraints',
+        automationSettings: 'automationSettings'
+      };
+
+      const success = await settingsStore.saveSettingsFromState(
+        ruleConfiguration,
+        categoryMapping,
         "user"
       );
 
@@ -873,8 +792,15 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const saveRecoverySettings = async () => {
     setSaveStatus("saving");
     try {
-      const success = await settingsStore.batchSaveMultipleCategories(
-        ["recoveryOptionsRanking", "aircraftSelectionCriteria", "crewAssignmentCriteria"],
+      const categoryMapping = {
+        recoveryOptionsRanking: 'recoveryOptionsRanking',
+        aircraftSelectionCriteria: 'aircraftSelectionCriteria',
+        crewAssignmentCriteria: 'crewAssignmentCriteria'
+      };
+
+      const success = await settingsStore.saveSettingsFromState(
+        recoveryConfiguration,
+        categoryMapping,
         "user"
       );
 
@@ -894,7 +820,18 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const saveNlpSettings = async () => {
     setSaveStatus("saving");
     try {
-      const success = await settingsStore.batchSaveByCategory("nlpSettings", "user");
+      const categoryMapping = {
+        nlpSettings: 'nlpSettings'
+      };
+
+      // Create a wrapper object for the nlpSettings
+      const stateWrapper = { nlpSettings };
+
+      const success = await settingsStore.saveSettingsFromState(
+        stateWrapper,
+        categoryMapping,
+        "user"
+      );
 
       if (success) {
         showSaveStatus();
@@ -912,7 +849,18 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const saveNotificationSettings = async () => {
     setSaveStatus("saving");
     try {
-      const success = await settingsStore.batchSaveByCategory("notificationSettings", "user");
+      const categoryMapping = {
+        notificationSettings: 'notificationSettings'
+      };
+
+      // Create a wrapper object for the notificationSettings
+      const stateWrapper = { notificationSettings };
+
+      const success = await settingsStore.saveSettingsFromState(
+        stateWrapper,
+        categoryMapping,
+        "user"
+      );
 
       if (success) {
         showSaveStatus();
