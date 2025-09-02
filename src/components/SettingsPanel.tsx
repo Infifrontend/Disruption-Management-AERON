@@ -260,6 +260,17 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         ),
       };
 
+      // Add empty customParameters arrays if they don't exist
+      if (!newRecoveryConfig.recoveryOptionsRanking.customParameters) {
+        newRecoveryConfig.recoveryOptionsRanking.customParameters = [];
+      }
+      if (!newRecoveryConfig.aircraftSelectionCriteria.customParameters) {
+        newRecoveryConfig.aircraftSelectionCriteria.customParameters = [];
+      }
+      if (!newRecoveryConfig.crewAssignmentCriteria.customParameters) {
+        newRecoveryConfig.crewAssignmentCriteria.customParameters = [];
+      }
+
       // Load Passenger Priority Configuration from passengerPriority tab
       const newPriorityConfig = {
         passengerPrioritization: loadCategorySettings(
