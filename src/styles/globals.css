@@ -29,6 +29,15 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
+    /* Airline-specific dynamic colors - will be injected by JavaScript */
+    --airline-primary: #0066CC;
+    --airline-secondary: #ff8200;
+    --airline-navy: #001f3f;
+    --airline-links: #0066CC;
+    --airline-accent: #e6f3ff;
+    --airline-success: #22c55e;
+    --airline-warning: #f59e0b;
+    --airline-error: #ef4444;
   }
 
   .dark {
@@ -510,7 +519,7 @@ body {
 .btn-flydubai-primary:disabled {
   background-color: #94a3b8;
   border-color: #94a3b8;
-  color: #f1f5f9;
+  color: #f1f59;
   cursor: not-allowed;
 }
 
@@ -559,6 +568,15 @@ body {
   border: 1px solid #bbf7d0;
 }
 
+/* Lighter border utilities */
+.border-light {
+  border-width: 0.5px !important;
+}
+
+.border-lighter {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
 /* Custom utilities */
 .btn-flydubai-primary {
   @apply bg-flydubai-orange hover:bg-orange-600 text-white border-none;
@@ -578,32 +596,6 @@ body {
 
 .priority-low {
   @apply bg-green-100 text-green-800 border-green-200;
-}
-
-/* Input styling */
-input, textarea, select {
-  border-color: #e5e7eb !important;
-  border-width: 0.5px !important;
-}
-
-/* Override any existing input border styles */
-.border-input {
-  border-color: #e5e7eb !important;
-  border-width: 0.5px !important;
-}
-
-/* Ensure all form inputs use the light border */
-input[type="text"],
-input[type="email"],
-input[type="password"],
-input[type="number"],
-input[type="tel"],
-input[type="url"],
-input[type="search"],
-textarea,
-select {
-  border-color: #e5e7eb !important;
-  border-width: 0.5px !important;
 }
 
 /* Dialog scrolling styles */
