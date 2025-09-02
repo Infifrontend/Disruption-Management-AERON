@@ -575,20 +575,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       ...prev,
       [setting]: newValue,
     }));
-
-    try {
-      settingsStore.saveSetting(
-        "nlpSettings",
-        setting,
-        newValue,
-        "boolean",
-        "user",
-      );
-      showSaveStatus();
-    } catch (error) {
-      console.error(`Failed to save NLP setting ${setting}:`, error);
-      setSaveStatus("error");
-    }
   };
 
   const handleNlpChange = (setting, value) => {
@@ -596,19 +582,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       ...prev,
       [setting]: value,
     }));
-
-    try {
-      settingsStore.saveSetting(
-        "nlpSettings",
-        setting,
-        value,
-        typeof value === "number" ? "number" : "string",
-        "user",
-      );
-      showSaveStatus();
-    } catch (error) {
-      setSaveStatus("error");
-    }
   };
 
   const handleNotificationToggle = (setting) => {
@@ -618,21 +591,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       ...prev,
       [setting]: newValue,
     }));
-
-    try {
-      settingsStore.saveSetting(
-        "notificationSettings",
-        setting,
-        newValue,
-        "boolean",
-        "user",
-      );
-
-      showSaveStatus();
-    } catch (error) {
-      console.error(`Failed to save notification setting ${setting}:`, error);
-      setSaveStatus("error");
-    }
   };
 
   // Rule Configuration Handlers
@@ -646,24 +604,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         [parameter]: actualValue,
       },
     }));
-
-    try {
-      settingsStore.saveSetting(
-        category,
-        parameter,
-        actualValue,
-        "number",
-        "user",
-      );
-
-      showSaveStatus();
-    } catch (error) {
-      console.error(
-        `Failed to save rule config ${category}.${parameter}:`,
-        error,
-      );
-      setSaveStatus("error");
-    }
   };
 
   const handleRuleToggle = (category, parameter) => {
@@ -677,24 +617,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         [parameter]: newValue,
       },
     }));
-
-    try {
-      settingsStore.saveSetting(
-        category,
-        parameter,
-        newValue,
-        "boolean",
-        "user",
-      );
-
-      showSaveStatus();
-    } catch (error) {
-      console.error(
-        `Failed to save rule config ${category}.${parameter}:`,
-        error,
-      );
-      setSaveStatus("error");
-    }
   };
 
   // Custom Rules Handlers
@@ -810,24 +732,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         [parameter]: actualValue,
       },
     }));
-
-    try {
-      settingsStore.saveSetting(
-        section,
-        parameter,
-        actualValue,
-        "number",
-        "user",
-      );
-
-      showSaveStatus();
-    } catch (error) {
-      console.error(
-        `Failed to save recovery config ${section}.${parameter}:`,
-        error,
-      );
-      setSaveStatus("error");
-    }
   };
 
   // Passenger Priority Configuration Handlers
@@ -841,24 +745,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         [parameter]: actualValue,
       },
     }));
-
-    try {
-      settingsStore.saveSetting(
-        category,
-        parameter,
-        actualValue,
-        "number",
-        "user",
-      );
-
-      showSaveStatus();
-    } catch (error) {
-      console.error(
-        `Failed to save priority config ${category}.${parameter}:`,
-        error,
-      );
-      setSaveStatus("error");
-    }
   };
 
   const handleAddCustomParameter = () => {
@@ -909,13 +795,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     // Add slight delay to show saving status
     setTimeout(() => {
       setSaveStatus("saved");
-      // Verify the setting was actually saved by checking database
-      try {
-        const allSettings = settingsStore.getAllSettings();
-      } catch (error) {
-        console.error("Database verification failed:", error);
-        setSaveStatus("error");
-      }
     }, 300);
 
     setTimeout(() => setSaveStatus("idle"), 2500);
@@ -927,8 +806,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     try {
       // Screen settings are handled by parent component
       // We just need to show success status
-      setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 2000);
+      showSaveStatus();
     } catch (error) {
       console.error("Failed to save screen settings:", error);
       setSaveStatus("error");
@@ -939,17 +817,31 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const savePassengerPrioritySettings = async () => {
     setSaveStatus("saving");
     try {
-      // Save passenger priority configuration
-      for (const [category, settings] of Object.entries(
-        passengerPriorityConfig,
-      )) {
+      // Collect all passenger priority settings for batch save
+      const settingsToSave = [];
+      
+      for (const [category, settings] of Object.entries(passengerPriorityConfig)) {
         for (const [key, value] of Object.entries(settings)) {
-          await settingsStore.saveSetting(category, key, value, "number");
+          settingsToSave.push({
+            category,
+            key,
+            value,
+            type: "number"
+          });
         }
       }
 
-      setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 2000);
+      const success = await settingsStore.batchSaveMultipleCategories(
+        ["passengerPrioritization", "flightPrioritization", "flightScoring", "passengerScoring"],
+        "user"
+      );
+
+      if (success) {
+        showSaveStatus();
+      } else {
+        setSaveStatus("error");
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      }
     } catch (error) {
       console.error("Failed to save passenger priority settings:", error);
       setSaveStatus("error");
@@ -960,20 +852,17 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const saveRuleSettings = async () => {
     setSaveStatus("saving");
     try {
-      // Save rule configuration
-      for (const [category, settings] of Object.entries(ruleConfiguration)) {
-        for (const [key, value] of Object.entries(settings)) {
-          await settingsStore.saveSetting(
-            category,
-            key,
-            value,
-            typeof value === "boolean" ? "boolean" : "number",
-          );
-        }
-      }
+      const success = await settingsStore.batchSaveMultipleCategories(
+        ["operationalRules", "recoveryConstraints", "automationSettings"],
+        "user"
+      );
 
-      setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 2000);
+      if (success) {
+        showSaveStatus();
+      } else {
+        setSaveStatus("error");
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      }
     } catch (error) {
       console.error("Failed to save rule settings:", error);
       setSaveStatus("error");
@@ -984,25 +873,17 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const saveRecoverySettings = async () => {
     setSaveStatus("saving");
     try {
-      // Save recovery configuration
-      for (const [category, settings] of Object.entries(
-        recoveryConfiguration,
-      )) {
-        if (
-          typeof settings === "object" &&
-          settings !== null &&
-          !Array.isArray(settings)
-        ) {
-          for (const [key, value] of Object.entries(settings)) {
-            if (key !== "customParameters") {
-              await settingsStore.saveSetting(category, key, value, "number");
-            }
-          }
-        }
-      }
+      const success = await settingsStore.batchSaveMultipleCategories(
+        ["recoveryOptionsRanking", "aircraftSelectionCriteria", "crewAssignmentCriteria"],
+        "user"
+      );
 
-      setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 2000);
+      if (success) {
+        showSaveStatus();
+      } else {
+        setSaveStatus("error");
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      }
     } catch (error) {
       console.error("Failed to save recovery settings:", error);
       setSaveStatus("error");
@@ -1013,22 +894,14 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const saveNlpSettings = async () => {
     setSaveStatus("saving");
     try {
-      // Save NLP settings
-      for (const [key, value] of Object.entries(nlpSettings)) {
-        await settingsStore.saveSetting(
-          "nlpSettings",
-          key,
-          value,
-          typeof value === "boolean"
-            ? "boolean"
-            : typeof value === "number"
-              ? "number"
-              : "string",
-        );
-      }
+      const success = await settingsStore.batchSaveByCategory("nlpSettings", "user");
 
-      setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 2000);
+      if (success) {
+        showSaveStatus();
+      } else {
+        setSaveStatus("error");
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      }
     } catch (error) {
       console.error("Failed to save NLP settings:", error);
       setSaveStatus("error");
@@ -1039,18 +912,14 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const saveNotificationSettings = async () => {
     setSaveStatus("saving");
     try {
-      // Save notification settings
-      for (const [key, value] of Object.entries(notificationSettings)) {
-        await settingsStore.saveSetting(
-          "notificationSettings",
-          key,
-          value,
-          "boolean",
-        );
-      }
+      const success = await settingsStore.batchSaveByCategory("notificationSettings", "user");
 
-      setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 2000);
+      if (success) {
+        showSaveStatus();
+      } else {
+        setSaveStatus("error");
+        setTimeout(() => setSaveStatus("idle"), 3000);
+      }
     } catch (error) {
       console.error("Failed to save notification settings:", error);
       setSaveStatus("error");
@@ -1063,8 +932,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     try {
       // System settings would be saved here
       // Currently no system settings are persisted to database
-      setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 2000);
+      showSaveStatus();
     } catch (error) {
       console.error("Failed to save system settings:", error);
       setSaveStatus("error");

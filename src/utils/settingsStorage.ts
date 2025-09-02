@@ -471,6 +471,16 @@ class SettingsStorage {
         return true;
       }
 
+      // Update timestamps for all settings in this category
+      categorySettings.forEach(setting => {
+        setting.updatedAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+        setting.updatedBy = userId;
+        this.storage.set(setting.id, setting);
+      });
+
+      // Save to localStorage first
+      this.saveToLocalStorage();
+
       if (this.isDatabaseConnected) {
         const settingsArray = categorySettings.map(setting => ({
           category: setting.category,
@@ -484,13 +494,11 @@ class SettingsStorage {
           console.log(`Batch saved ${settingsArray.length} settings for category: ${category}`);
           return true;
         } else {
-          console.warn(`Batch save failed for category: ${category}, falling back to localStorage`);
+          console.warn(`Batch save failed for category: ${category}, using localStorage only`);
           this.isDatabaseConnected = false;
         }
       }
 
-      // Fallback to localStorage
-      this.saveToLocalStorage();
       return true;
     } catch (error) {
       console.error(`Failed to batch save category ${category}:`, error);
@@ -515,6 +523,16 @@ class SettingsStorage {
         return true;
       }
 
+      // Update timestamps for all settings in these categories
+      allSettings.forEach(setting => {
+        setting.updatedAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+        setting.updatedBy = userId;
+        this.storage.set(setting.id, setting);
+      });
+
+      // Save to localStorage first
+      this.saveToLocalStorage();
+
       if (this.isDatabaseConnected) {
         const settingsArray = allSettings.map(setting => ({
           category: setting.category,
@@ -528,13 +546,11 @@ class SettingsStorage {
           console.log(`Batch saved ${settingsArray.length} settings for categories: ${categories.join(', ')}`);
           return true;
         } else {
-          console.warn(`Batch save failed for categories: ${categories.join(', ')}, falling back to localStorage`);
+          console.warn(`Batch save failed for categories: ${categories.join(', ')}, using localStorage only`);
           this.isDatabaseConnected = false;
         }
       }
 
-      // Fallback to localStorage
-      this.saveToLocalStorage();
       return true;
     } catch (error) {
       console.error(`Failed to batch save categories ${categories.join(', ')}:`, error);
