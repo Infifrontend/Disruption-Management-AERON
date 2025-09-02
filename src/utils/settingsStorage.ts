@@ -7,8 +7,22 @@ export interface SettingsData {
   key: string
   value: any
   type: 'boolean' | 'number' | 'string' | 'object'
+  displayLabel?: string
+  description?: string
   updatedAt: string
   updatedBy: string
+}
+
+export interface SettingsFieldConfig {
+  key: string
+  displayLabel: string
+  description?: string
+  type: 'boolean' | 'number' | 'string' | 'slider' | 'select'
+  min?: number
+  max?: number
+  step?: number
+  options?: { value: string | number, label: string }[]
+  unit?: string
 }
 
 // Settings storage with PostgreSQL database and localStorage fallback
@@ -555,6 +569,579 @@ class SettingsStorage {
     if (typeof value === 'string') return 'string'
     return 'object'
   }
+
+  // Get field configurations for dynamic rendering
+  getFieldConfigurations(): Record<string, SettingsFieldConfig[]> {
+    return {
+      operationalRules: [
+        {
+          key: 'maxDelayThreshold',
+          displayLabel: 'Max Delay Threshold',
+          description: 'Maximum acceptable delay before triggering recovery actions',
+          type: 'slider',
+          min: 60,
+          max: 360,
+          step: 15,
+          unit: 'minutes'
+        },
+        {
+          key: 'minConnectionTime',
+          displayLabel: 'Min Connection Time',
+          description: 'Minimum time required between connecting flights',
+          type: 'slider',
+          min: 30,
+          max: 120,
+          step: 5,
+          unit: 'minutes'
+        },
+        {
+          key: 'maxOverbooking',
+          displayLabel: 'Max Overbooking',
+          description: 'Maximum overbooking percentage allowed',
+          type: 'slider',
+          min: 100,
+          max: 120,
+          step: 1,
+          unit: '%'
+        },
+        {
+          key: 'priorityRebookingTime',
+          displayLabel: 'Priority Rebooking Time',
+          description: 'Time limit for priority passenger rebooking',
+          type: 'slider',
+          min: 5,
+          max: 60,
+          step: 5,
+          unit: 'minutes'
+        },
+        {
+          key: 'hotacTriggerDelay',
+          displayLabel: 'HOTAC Trigger Delay',
+          description: 'Delay threshold for automatic hotel accommodation',
+          type: 'slider',
+          min: 120,
+          max: 480,
+          step: 30,
+          unit: 'minutes'
+        }
+      ],
+      recoveryConstraints: [
+        {
+          key: 'maxAircraftSwaps',
+          displayLabel: 'Max Aircraft Swaps',
+          description: 'Maximum number of aircraft swaps allowed',
+          type: 'slider',
+          min: 1,
+          max: 10,
+          step: 1
+        },
+        {
+          key: 'crewDutyTimeLimits',
+          displayLabel: 'Crew Duty Time Limits',
+          description: 'Enforce regulatory crew duty time limits',
+          type: 'boolean'
+        },
+        {
+          key: 'maintenanceSlotProtection',
+          displayLabel: 'Maintenance Slot Protection',
+          description: 'Protect scheduled maintenance slots',
+          type: 'boolean'
+        },
+        {
+          key: 'slotCoordinationRequired',
+          displayLabel: 'Slot Coordination Required',
+          description: 'Require slot coordination for changes',
+          type: 'boolean'
+        },
+        {
+          key: 'curfewCompliance',
+          displayLabel: 'Curfew Compliance',
+          description: 'Ensure compliance with airport curfews',
+          type: 'boolean'
+        }
+      ],
+      automationSettings: [
+        {
+          key: 'autoApproveThreshold',
+          displayLabel: 'Auto-Approve Threshold',
+          description: 'Confidence threshold for automatic approval',
+          type: 'slider',
+          min: 80,
+          max: 100,
+          step: 1,
+          unit: '%'
+        },
+        {
+          key: 'requireManagerApproval',
+          displayLabel: 'Require Manager Approval',
+          description: 'Require manager approval for recovery actions',
+          type: 'boolean'
+        },
+        {
+          key: 'enablePredictiveActions',
+          displayLabel: 'Enable Predictive Actions',
+          description: 'Enable AI-powered predictive recovery actions',
+          type: 'boolean'
+        },
+        {
+          key: 'autoNotifyPassengers',
+          displayLabel: 'Auto-Notify Passengers',
+          description: 'Automatically notify passengers of changes',
+          type: 'boolean'
+        },
+        {
+          key: 'autoBookHotac',
+          displayLabel: 'Auto-Book HOTAC',
+          description: 'Automatically book hotel accommodation',
+          type: 'boolean'
+        }
+      ],
+      passengerPrioritization: [
+        {
+          key: 'loyaltyTier',
+          displayLabel: 'Loyalty Tier Status',
+          description: 'Weight for loyalty status (Platinum, Gold, etc.)',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'ticketClass',
+          displayLabel: 'Ticket Class (Business/Economy)',
+          description: 'Weight for cabin class',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'specialNeeds',
+          displayLabel: 'Special Requirements',
+          description: 'Weight for special requirements (wheelchair, medical, etc.)',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'groupSize',
+          displayLabel: 'Family/Group Bookings',
+          description: 'Weight for family/group bookings',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'connectionRisk',
+          displayLabel: 'Missed Connection Risk',
+          description: 'Weight for missed connection risk',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        }
+      ],
+      flightPrioritization: [
+        {
+          key: 'airlinePreference',
+          displayLabel: 'Airline Preference (flydubai)',
+          description: 'Weight for flydubai vs partner airlines',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'onTimePerformance',
+          displayLabel: 'On-Time Performance History',
+          description: 'Weight for historical on-time performance',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'aircraftType',
+          displayLabel: 'Aircraft Type & Amenities',
+          description: 'Weight for aircraft comfort/amenities',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'departureTime',
+          displayLabel: 'Preferred Departure Times',
+          description: 'Weight for preferred departure times',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'connectionBuffer',
+          displayLabel: 'Connection Buffer Time',
+          description: 'Weight for adequate connection time',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        }
+      ],
+      flightScoring: [
+        {
+          key: 'baseScore',
+          displayLabel: 'Base Score (Starting Point)',
+          description: 'Starting score for all flights',
+          type: 'slider',
+          min: 50,
+          max: 100,
+          step: 1,
+          unit: '%'
+        },
+        {
+          key: 'priorityBonus',
+          displayLabel: 'VIP/Premium Passenger Bonus',
+          description: 'Bonus points for VIP/Premium passengers',
+          type: 'slider',
+          min: 0,
+          max: 20,
+          step: 1,
+          unit: '%'
+        },
+        {
+          key: 'airlineBonus',
+          displayLabel: 'flydubai Flight Bonus',
+          description: 'Bonus points for flydubai flights',
+          type: 'slider',
+          min: 0,
+          max: 20,
+          step: 1,
+          unit: '%'
+        },
+        {
+          key: 'specialReqBonus',
+          displayLabel: 'Special Requirements Bonus',
+          description: 'Bonus for accommodating special requirements',
+          type: 'slider',
+          min: 0,
+          max: 20,
+          step: 1,
+          unit: '%'
+        },
+        {
+          key: 'loyaltyBonus',
+          displayLabel: 'Loyalty Tier Bonus',
+          description: 'Bonus based on loyalty tier',
+          type: 'slider',
+          min: 0,
+          max: 20,
+          step: 1,
+          unit: '%'
+        },
+        {
+          key: 'groupBonus',
+          displayLabel: 'Group Booking Bonus',
+          description: 'Bonus for keeping groups together',
+          type: 'slider',
+          min: 0,
+          max: 20,
+          step: 1,
+          unit: '%'
+        }
+      ],
+      passengerScoring: [
+        {
+          key: 'vipWeight',
+          displayLabel: 'VIP Status Impact',
+          description: 'Weight for VIP status impact',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'loyaltyWeight',
+          displayLabel: 'Loyalty Program Tier',
+          description: 'Weight for loyalty program tier',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'specialNeedsWeight',
+          displayLabel: 'Special Assistance Requirements',
+          description: 'Weight for special assistance requirements',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'revenueWeight',
+          displayLabel: 'Ticket Revenue/Class Value',
+          description: 'Weight for ticket revenue/class value',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        }
+      ],
+      recoveryOptionsRanking: [
+        {
+          key: 'costWeight',
+          displayLabel: 'Cost Impact',
+          description: 'Weight for cost considerations',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'timeWeight',
+          displayLabel: 'Time to Resolution',
+          description: 'Weight for time to resolution',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'passengerImpactWeight',
+          displayLabel: 'Passenger Impact',
+          description: 'Weight for passenger impact considerations',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'operationalComplexityWeight',
+          displayLabel: 'Operational Complexity',
+          description: 'Weight for operational complexity',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'reputationWeight',
+          displayLabel: 'Brand Reputation Impact',
+          description: 'Weight for brand reputation impact',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        }
+      ],
+      aircraftSelectionCriteria: [
+        {
+          key: 'maintenanceStatus',
+          displayLabel: 'Maintenance Status',
+          description: 'Weight for aircraft maintenance status',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'fuelEfficiency',
+          displayLabel: 'Fuel Efficiency',
+          description: 'Weight for fuel efficiency considerations',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'routeSuitability',
+          displayLabel: 'Route Suitability',
+          description: 'Weight for route suitability',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'passengerCapacity',
+          displayLabel: 'Passenger Capacity',
+          description: 'Weight for passenger capacity',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'availabilityWindow',
+          displayLabel: 'Availability Window',
+          description: 'Weight for availability window',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        }
+      ],
+      crewAssignmentCriteria: [
+        {
+          key: 'dutyTimeRemaining',
+          displayLabel: 'Duty Time Remaining',
+          description: 'Weight for remaining duty time',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'qualifications',
+          displayLabel: 'Qualifications & Certifications',
+          description: 'Weight for qualifications and certifications',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'baseLocation',
+          displayLabel: 'Base Location',
+          description: 'Weight for crew base location',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'restRequirements',
+          displayLabel: 'Rest Requirements',
+          description: 'Weight for rest requirements',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'languageSkills',
+          displayLabel: 'Language Skills',
+          description: 'Weight for language skills',
+          type: 'slider',
+          min: 0,
+          max: 50,
+          step: 5,
+          unit: '%'
+        }
+      ],
+      nlpSettings: [
+        {
+          key: 'enabled',
+          displayLabel: 'Enable NLP',
+          description: 'Process natural language inputs',
+          type: 'boolean'
+        },
+        {
+          key: 'language',
+          displayLabel: 'Primary Language',
+          description: 'Primary language for NLP processing',
+          type: 'select',
+          options: [
+            { value: 'english', label: 'English' },
+            { value: 'arabic', label: 'العربية (Arabic)' },
+            { value: 'hindi', label: 'हिन्दी (Hindi)' },
+            { value: 'urdu', label: 'اردو (Urdu)' }
+          ]
+        },
+        {
+          key: 'confidence',
+          displayLabel: 'Confidence Threshold',
+          description: 'Minimum confidence threshold for NLP results',
+          type: 'slider',
+          min: 50,
+          max: 100,
+          step: 5,
+          unit: '%'
+        },
+        {
+          key: 'autoApply',
+          displayLabel: 'Auto-Apply Recommendations',
+          description: 'Automatically apply high-confidence results',
+          type: 'boolean'
+        }
+      ],
+      notificationSettings: [
+        {
+          key: 'email',
+          displayLabel: 'Email Notifications',
+          description: 'Receive notifications via email',
+          type: 'boolean'
+        },
+        {
+          key: 'sms',
+          displayLabel: 'SMS Alerts',
+          description: 'Receive notifications via SMS',
+          type: 'boolean'
+        },
+        {
+          key: 'push',
+          displayLabel: 'Push Notifications',
+          description: 'Receive push notifications',
+          type: 'boolean'
+        },
+        {
+          key: 'desktop',
+          displayLabel: 'Desktop Notifications',
+          description: 'Receive desktop notifications',
+          type: 'boolean'
+        },
+        {
+          key: 'recoveryAlerts',
+          displayLabel: 'Recovery Plan Alerts',
+          description: 'Receive alerts for recovery plan changes',
+          type: 'boolean'
+        },
+        {
+          key: 'passengerUpdates',
+          displayLabel: 'Passenger Service Updates',
+          description: 'Receive passenger service updates',
+          type: 'boolean'
+        },
+        {
+          key: 'systemAlerts',
+          displayLabel: 'System Status Alerts',
+          description: 'Receive system status alerts',
+          type: 'boolean'
+        }
+      ]
+    }
+  }
 }
 
 // Singleton instance
@@ -578,6 +1165,7 @@ export const useSettingsStorage = () => {
     retryDatabaseConnection: settingsStorage.retryDatabaseConnection.bind(settingsStorage),
     batchSaveByCategory: settingsStorage.batchSaveByCategory.bind(settingsStorage),
     batchSaveMultipleCategories: settingsStorage.batchSaveMultipleCategories.bind(settingsStorage),
-    saveSettingsFromState: settingsStorage.saveSettingsFromState.bind(settingsStorage)
+    saveSettingsFromState: settingsStorage.saveSettingsFromState.bind(settingsStorage),
+    getFieldConfigurations: settingsStorage.getFieldConfigurations.bind(settingsStorage)
   }
 }
