@@ -1089,69 +1089,262 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
 
         {/* Screen Settings */}
         <TabsContent value="screens" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Screen Visibility Settings</CardTitle>
-                <CardDescription>
-                  Configure which screens are visible in the navigation menu
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {screenSettings.length > 0 ? (
-                  screenSettings.map((screen) => (
-                    <div key={screen.id} className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label htmlFor={`screen-${screen.id}`} className="text-base">
-                          {screen.name}
-                        </Label>
-                        <div className="text-sm text-muted-foreground">
-                          Category: {screen.category}
-                          {screen.required && " (Required)"}
-                        </div>
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Eye className="h-5 w-5 text-flydubai-blue" />
+                <CardTitle className="text-flydubai-navy">Screen Visibility Configuration</CardTitle>
+              </div>
+              <CardDescription className="text-sm text-muted-foreground">
+                Control which screens are available in the AERON interface. Required screens cannot be disabled.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {screenSettings.length > 0 ? (
+                <>
+                  {/* Main Category */}
+                  {screenSettings.filter(screen => screen.category === 'main').length > 0 && (
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">Main</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {screenSettings
+                          .filter(screen => screen.category === 'main')
+                          .map((screen) => (
+                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <div className="text-lg font-medium">{screen.name}</div>
+                                {screen.required && (
+                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                    Required
+                                  </Badge>
+                                )}
+                              </div>
+                              <Switch
+                                checked={screen.enabled}
+                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                disabled={screen.required}
+                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                              />
+                            </div>
+                          ))}
                       </div>
-                      <Switch
-                        id={`screen-${screen.id}`}
-                        checked={screen.enabled}
-                        onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
-                        disabled={screen.required}
-                      />
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center py-4 text-muted-foreground">
-                    No screen settings available
-                  </div>
-                )}
+                  )}
 
-                <div className="flex justify-end pt-4">
-                  <Button 
-                    onClick={saveScreenSettings}
-                    disabled={saveStatus === "saving"}
-                    className="min-w-[120px]"
-                  >
-                    {saveStatus === "saving" ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : saveStatus === "success" ? (
-                      <>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Saved
-                      </>
-                    ) : saveStatus === "error" ? (
-                      <>
-                        <XCircle className="mr-2 h-4 w-4" />
-                        Error
-                      </>
-                    ) : (
-                      "Save Screen Settings"
-                    )}
-                  </Button>
+                  {/* Operations Category */}
+                  {screenSettings.filter(screen => screen.category === 'operations').length > 0 && (
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">Operations</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {screenSettings
+                          .filter(screen => screen.category === 'operations')
+                          .map((screen) => (
+                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <div className="text-lg font-medium">{screen.name}</div>
+                                {screen.required && (
+                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                    Required
+                                  </Badge>
+                                )}
+                              </div>
+                              <Switch
+                                checked={screen.enabled}
+                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                disabled={screen.required}
+                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                              />
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Prediction Category */}
+                  {screenSettings.filter(screen => screen.category === 'prediction').length > 0 && (
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">Prediction</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {screenSettings
+                          .filter(screen => screen.category === 'prediction')
+                          .map((screen) => (
+                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <div className="text-lg font-medium">{screen.name}</div>
+                                {screen.required && (
+                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                    Required
+                                  </Badge>
+                                )}
+                              </div>
+                              <Switch
+                                checked={screen.enabled}
+                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                disabled={screen.required}
+                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                              />
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Monitoring Category */}
+                  {screenSettings.filter(screen => screen.category === 'monitoring').length > 0 && (
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">Monitoring</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {screenSettings
+                          .filter(screen => screen.category === 'monitoring')
+                          .map((screen) => (
+                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <div className="text-lg font-medium">{screen.name}</div>
+                                {screen.required && (
+                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                    Required
+                                  </Badge>
+                                )}
+                              </div>
+                              <Switch
+                                checked={screen.enabled}
+                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                disabled={screen.required}
+                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                              />
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Services Category */}
+                  {screenSettings.filter(screen => screen.category === 'services').length > 0 && (
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">Services</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {screenSettings
+                          .filter(screen => screen.category === 'services')
+                          .map((screen) => (
+                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <div className="text-lg font-medium">{screen.name}</div>
+                                {screen.required && (
+                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                    Required
+                                  </Badge>
+                                )}
+                              </div>
+                              <Switch
+                                checked={screen.enabled}
+                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                disabled={screen.required}
+                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                              />
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Analytics Category */}
+                  {screenSettings.filter(screen => screen.category === 'analytics').length > 0 && (
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">Analytics</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {screenSettings
+                          .filter(screen => screen.category === 'analytics')
+                          .map((screen) => (
+                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <div className="text-lg font-medium">{screen.name}</div>
+                                {screen.required && (
+                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                    Required
+                                  </Badge>
+                                )}
+                              </div>
+                              <Switch
+                                checked={screen.enabled}
+                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                disabled={screen.required}
+                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                              />
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* System Category */}
+                  {screenSettings.filter(screen => screen.category === 'system').length > 0 && (
+                    <div className="space-y-4">
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">System</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {screenSettings
+                          .filter(screen => screen.category === 'system')
+                          .map((screen) => (
+                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                              <div className="flex items-center gap-3">
+                                <div className="text-lg font-medium">{screen.name}</div>
+                                {screen.required && (
+                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                    Required
+                                  </Badge>
+                                )}
+                              </div>
+                              <Switch
+                                checked={screen.enabled}
+                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                disabled={screen.required}
+                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                              />
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Eye className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <p>No screen settings available</p>
+                  <p className="text-sm mt-2">Screen settings will appear here when loaded from the database</p>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+              )}
+
+              <div className="flex justify-end pt-6 border-t">
+                <Button 
+                  onClick={saveScreenSettings}
+                  disabled={saveStatus === "saving"}
+                  className="min-w-[120px] btn-flydubai-primary"
+                >
+                  {saveStatus === "saving" ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : saveStatus === "success" ? (
+                    <>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Saved
+                    </>
+                  ) : saveStatus === "error" ? (
+                    <>
+                      <XCircle className="mr-2 h-4 w-4" />
+                      Error
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Screen Settings
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
         {/* Passenger Priority Configuration */}
         <TabsContent value="passenger-priority" className="space-y-6">
