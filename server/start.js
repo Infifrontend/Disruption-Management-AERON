@@ -250,6 +250,95 @@ app.get("/api/settings", async (req, res) => {
   }
 });
 
+// Tab-wise settings endpoint
+app.get("/api/settings/tabs", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM settings WHERE is_active = true ORDER BY category, key",
+    );
+    
+    // Organize settings by tab categories
+    const tabSettings = {
+      screens: {},
+      passengerPriority: {},
+      rules: {},
+      recoveryOptions: {},
+      nlp: {},
+      notifications: {},
+      system: {}
+    };
+
+    // Group settings by tab categories
+    result.rows.forEach(setting => {
+      const category = setting.category;
+      const key = setting.key;
+      const value = setting.value;
+
+      // Map database categories to tab categories
+      if (['passengerPrioritization', 'flightPrioritization', 'flightScoring', 'passengerScoring'].includes(category)) {
+        if (!tabSettings.passengerPriority[category]) {
+          tabSettings.passengerPriority[category] = {};
+        }
+        tabSettings.passengerPriority[category][key] = value;
+      } else if (['operationalRules', 'recoveryConstraints', 'automationSettings'].includes(category)) {
+        if (!tabSettings.rules[category]) {
+          tabSettings.rules[category] = {};
+        }
+        tabSettings.rules[category][key] = value;
+      } else if (['recoveryOptionsRanking', 'aircraftSelectionCriteria', 'crewAssignmentCriteria'].includes(category)) {
+        if (!tabSettings.recoveryOptions[category]) {
+          tabSettings.recoveryOptions[category] = {};
+        }
+        tabSettings.recoveryOptions[category][key] = value;
+      } else if (category === 'nlpSettings') {
+        tabSettings.nlp[key] = value;
+      } else if (category === 'notificationSettings') {
+        tabSettings.notifications[key] = value;
+      } else {
+        // System and other settings
+        if (!tabSettings.system[category]) {
+          tabSettings.system[category] = {};
+        }
+        tabSettings.system[category][key] = value;
+      }
+    });
+
+    // Get screen settings separately
+    const screenResult = await pool.query(
+      "SELECT * FROM screen_settings ORDER BY category, screen_name"
+    );
+    
+    const screensByCategory = {};
+    screenResult.rows.forEach(screen => {
+      if (!screensByCategory[screen.category]) {
+        screensByCategory[screen.category] = [];
+      }
+      screensByCategory[screen.category].push({
+        id: screen.screen_id,
+        name: screen.screen_name,
+        enabled: screen.enabled,
+        required: screen.required,
+        category: screen.category
+      });
+    });
+    
+    tabSettings.screens = screensByCategory;
+
+    res.json(tabSettings);
+  } catch (error) {
+    console.error("Error fetching tab-wise settings:", error);
+    res.json({
+      screens: {},
+      passengerPriority: {},
+      rules: {},
+      recoveryOptions: {},
+      nlp: {},
+      notifications: {},
+      system: {}
+    });
+  }
+});
+
 app.get("/api/settings/:category/:key", async (req, res) => {
   try {
     const { category, key } = req.params;
