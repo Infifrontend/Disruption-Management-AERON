@@ -577,6 +577,7 @@ export const useSettingsStorage = () => {
     getDatabaseStatus: settingsStorage.getDatabaseStatus.bind(settingsStorage),
     retryDatabaseConnection: settingsStorage.retryDatabaseConnection.bind(settingsStorage),
     batchSaveByCategory: settingsStorage.batchSaveByCategory.bind(settingsStorage),
-    batchSaveMultipleCategories: settingsStorage.batchSaveMultipleCategories.bind(settingsStorage)
+    batchSaveMultipleCategories: settingsStorage.batchSaveMultipleCategories.bind(settingsStorage),
+    saveSettingsFromState: settingsStorage.saveSettingsFromState.bind(settingsStorage)
   }
 }
