@@ -112,6 +112,7 @@ type NotificationKey =
   | "systemAlerts";
 
 export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
+  console.log(screenSettings, "tesssttttttt");
   const [activeTab, setActiveTab] = useState("screens");
   const [isLoading, setIsLoading] = useState(true);
   const [saveStatus, setSaveStatus] = useState<
@@ -568,21 +569,28 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const saveScreenSettings = async () => {
     setSaveStatus("saving");
     try {
-      // Convert screen settings to settings format for batch save
-      const settingsToSave = screenSettings.map(screen => ({
-        category: 'screenSettings',
+      // Convert screen settings to settings format for batch save\
+      console.log(screenSettings, "Screen");
+
+      const settingsToSave = screenSettings.map((screen) => ({
+        category: screen.category,
         key: screen.id,
         value: screen.enabled,
-        type: 'boolean' as const
+        type: "boolean" as const,
+        icon: screen.icon,
+        id: screen.id,
+        required: screen.required,
       }));
 
       const success = await settingsStore.saveSettingsFromState(
-        { screenSettings: screenSettings.reduce((acc, screen) => {
-          acc[screen.id] = screen.enabled;
-          return acc;
-        }, {}) },
-        { screenSettings: 'screenSettings' },
-        'user'
+        {
+          screenSettings: screenSettings.reduce((acc, screen) => {
+            acc[screen.id] = screen.enabled;
+            return acc;
+          }, {}),
+        },
+        { screenSettings: "screenSettings" },
+        "user",
       );
 
       if (success) {
@@ -748,26 +756,29 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     try {
       // Convert system settings from rawTabSettings to settings format for batch save
       const settingsToSave = [];
-      
+
       if (rawTabSettings?.system) {
-        Object.entries(rawTabSettings.system).forEach(([categoryKey, categorySettings]) => {
-          if (Array.isArray(categorySettings)) {
-            categorySettings.forEach(setting => {
-              settingsToSave.push({
-                category: categoryKey,
-                key: setting.key,
-                value: setting.value,
-                type: setting.type || 'string'
+        Object.entries(rawTabSettings.system).forEach(
+          ([categoryKey, categorySettings]) => {
+            if (Array.isArray(categorySettings)) {
+              categorySettings.forEach((setting) => {
+                console.log(setting, "setting");
+                settingsToSave.push({
+                  category: categoryKey,
+                  key: setting.key,
+                  value: setting.value,
+                  type: setting.type || "string",
+                });
               });
-            });
-          }
-        });
+            }
+          },
+        );
       }
 
       if (settingsToSave.length > 0) {
         // Create a state object for system settings
         const systemState = {};
-        settingsToSave.forEach(setting => {
+        settingsToSave.forEach((setting) => {
           if (!systemState[setting.category]) {
             systemState[setting.category] = {};
           }
@@ -776,14 +787,14 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
         // Create category mapping
         const categoryMapping = {};
-        Object.keys(systemState).forEach(category => {
+        Object.keys(systemState).forEach((category) => {
           categoryMapping[category] = category;
         });
 
         const success = await settingsStore.saveSettingsFromState(
           systemState,
           categoryMapping,
-          'user'
+          "user",
         );
 
         if (success) {
@@ -1091,6 +1102,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {categoryScreens.map((screen) => {
+                        console.log(screen, "testttt");
                         const Icon = screen.icon;
                         return (
                           <div
@@ -1190,19 +1202,20 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 ).map(([key, value]) => {
                   const Icon = getParameterIcon(key);
                   // Get label from API response data
-                  const settingData = rawTabSettings?.passengerPriority?.passengerPrioritization?.find(
-                    (setting) => setting.key === key
-                  );
-                  const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
+                  const settingData =
+                    rawTabSettings?.passengerPriority?.passengerPrioritization?.find(
+                      (setting) => setting.key === key,
+                    );
+                  const label =
+                    settingData?.label ||
+                    key.charAt(0).toUpperCase() + key.slice(1);
 
                   return (
                     <div key={key} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Icon className="h-4 w-4 text-flydubai-blue" />
-                          <Label className="text-sm font-medium">
-                            {label}
-                          </Label>
+                          <Label className="text-sm font-medium">{label}</Label>
                         </div>
                         <Badge
                           className={`${getWeightColor(value)} bg-transparent border`}
@@ -1273,19 +1286,20 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 ).map(([key, value]) => {
                   const Icon = getParameterIcon(key);
                   // Get label from API response data
-                  const settingData = rawTabSettings?.passengerPriority?.flightPrioritization?.find(
-                    (setting) => setting.key === key
-                  );
-                  const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
+                  const settingData =
+                    rawTabSettings?.passengerPriority?.flightPrioritization?.find(
+                      (setting) => setting.key === key,
+                    );
+                  const label =
+                    settingData?.label ||
+                    key.charAt(0).toUpperCase() + key.slice(1);
 
                   return (
                     <div key={key} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Icon className="h-4 w-4 text-flydubai-blue" />
-                          <Label className="text-sm font-medium">
-                            {label}
-                          </Label>
+                          <Label className="text-sm font-medium">{label}</Label>
                         </div>
                         <Badge
                           className={`${getWeightColor(value)} bg-transparent border`}
@@ -1349,10 +1363,13 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   ([key, value]) => {
                     const Icon = getParameterIcon(key);
                     // Get label from API response data
-                    const settingData = rawTabSettings?.passengerPriority?.flightScoring?.find(
-                      (setting) => setting.key === key
-                    );
-                    const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
+                    const settingData =
+                      rawTabSettings?.passengerPriority?.flightScoring?.find(
+                        (setting) => setting.key === key,
+                      );
+                    const label =
+                      settingData?.label ||
+                      key.charAt(0).toUpperCase() + key.slice(1);
 
                     const maxValue = key === "baseScore" ? 100 : 20;
 
@@ -1427,10 +1444,13 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   ([key, value]) => {
                     const Icon = getParameterIcon(key);
                     // Get label from API response data
-                    const settingData = rawTabSettings?.passengerPriority?.passengerScoring?.find(
-                      (setting) => setting.key === key
-                    );
-                    const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
+                    const settingData =
+                      rawTabSettings?.passengerPriority?.passengerScoring?.find(
+                        (setting) => setting.key === key,
+                      );
+                    const label =
+                      settingData?.label ||
+                      key.charAt(0).toUpperCase() + key.slice(1);
 
                     return (
                       <div key={key} className="space-y-2">
@@ -2183,10 +2203,13 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   .map(([key, value]) => {
                     const Icon = getParameterIcon(key);
                     // Get label from API response data
-                    const settingData = rawTabSettings?.recoveryOptions?.recoveryOptionsRanking?.find(
-                      (setting) => setting.key === key
-                    );
-                    const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
+                    const settingData =
+                      rawTabSettings?.recoveryOptions?.recoveryOptionsRanking?.find(
+                        (setting) => setting.key === key,
+                      );
+                    const label =
+                      settingData?.label ||
+                      key.charAt(0).toUpperCase() + key.slice(1);
 
                     return (
                       <div key={key} className="space-y-2">
@@ -2306,10 +2329,13 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   .map(([key, value]) => {
                     const Icon = getParameterIcon(key);
                     // Get label from API response data
-                    const settingData = rawTabSettings?.recoveryOptions?.aircraftSelectionCriteria?.find(
-                      (setting) => setting.key === key
-                    );
-                    const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
+                    const settingData =
+                      rawTabSettings?.recoveryOptions?.aircraftSelectionCriteria?.find(
+                        (setting) => setting.key === key,
+                      );
+                    const label =
+                      settingData?.label ||
+                      key.charAt(0).toUpperCase() + key.slice(1);
 
                     return (
                       <div key={key} className="space-y-2">
@@ -2431,10 +2457,13 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   .map(([key, value]) => {
                     const Icon = getParameterIcon(key);
                     // Get label from API response data
-                    const settingData = rawTabSettings?.recoveryOptions?.crewAssignmentCriteria?.find(
-                      (setting) => setting.key === key
-                    );
-                    const label = settingData?.label || key.charAt(0).toUpperCase() + key.slice(1);
+                    const settingData =
+                      rawTabSettings?.recoveryOptions?.crewAssignmentCriteria?.find(
+                        (setting) => setting.key === key,
+                      );
+                    const label =
+                      settingData?.label ||
+                      key.charAt(0).toUpperCase() + key.slice(1);
 
                     return (
                       <div key={key} className="space-y-2">
