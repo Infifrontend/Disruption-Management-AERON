@@ -286,6 +286,64 @@ class SettingsStorage {
     return Array.from(this.storage.values())
   }
 
+  // Get tab-wise settings
+  async getTabSettings(): Promise<any> {
+    try {
+      if (this.isDatabaseConnected) {
+        return await databaseService.getTabSettings()
+      } else {
+        // Organize local storage settings by tabs
+        const allSettings = Array.from(this.storage.values())
+        const tabSettings = {
+          screens: {},
+          passengerPriority: {},
+          rules: {},
+          recoveryOptions: {},
+          nlp: {},
+          notifications: {},
+          system: {}
+        }
+
+        allSettings.forEach(setting => {
+          const category = setting.category
+          if (['passengerPrioritization', 'flightPrioritization', 'flightScoring', 'passengerScoring'].includes(category)) {
+            if (!tabSettings.passengerPriority[category]) {
+              tabSettings.passengerPriority[category] = {}
+            }
+            tabSettings.passengerPriority[category][setting.key] = setting.value
+          } else if (['operationalRules', 'recoveryConstraints', 'automationSettings'].includes(category)) {
+            if (!tabSettings.rules[category]) {
+              tabSettings.rules[category] = {}
+            }
+            tabSettings.rules[category][setting.key] = setting.value
+          } else if (['recoveryOptionsRanking', 'aircraftSelectionCriteria', 'crewAssignmentCriteria'].includes(category)) {
+            if (!tabSettings.recoveryOptions[category]) {
+              tabSettings.recoveryOptions[category] = {}
+            }
+            tabSettings.recoveryOptions[category][setting.key] = setting.value
+          } else if (category === 'nlpSettings') {
+            tabSettings.nlp[setting.key] = setting.value
+          } else if (category === 'notificationSettings') {
+            tabSettings.notifications[setting.key] = setting.value
+          }
+        })
+
+        return tabSettings
+      }
+    } catch (error) {
+      console.error('Failed to get tab settings:', error)
+      return {
+        screens: {},
+        passengerPriority: {},
+        rules: {},
+        recoveryOptions: {},
+        nlp: {},
+        notifications: {},
+        system: {}
+      }
+    }
+  }
+
   async deleteSetting(category: string, key: string): Promise<boolean> {
     const id = `${category}_${key}`
 
@@ -497,6 +555,7 @@ export const useSettingsStorage = () => {
     getSetting: settingsStorage.getSetting.bind(settingsStorage),
     getSettingsByCategory: settingsStorage.getSettingsByCategory.bind(settingsStorage),
     getAllSettings: settingsStorage.getAllSettings.bind(settingsStorage),
+    getTabSettings: settingsStorage.getTabSettings.bind(settingsStorage),
     deleteSetting: settingsStorage.deleteSetting.bind(settingsStorage),
     exportSettings: settingsStorage.exportSettings.bind(settingsStorage),
     importSettings: settingsStorage.importSettings.bind(settingsStorage),

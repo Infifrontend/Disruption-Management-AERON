@@ -234,6 +234,28 @@ class DatabaseService {
     }
   }
 
+  // Get tab-wise organized settings
+  async getTabSettings(): Promise<any> {
+    try {
+      const response = await fetch(`${this.baseUrl}/settings/tabs`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Failed to fetch tab-wise settings:", error);
+      return {
+        screens: {},
+        passengerPriority: {},
+        rules: {},
+        recoveryOptions: {},
+        nlp: {},
+        notifications: {},
+        system: {}
+      };
+    }
+  }
+
   async getSetting(
     category: string,
     key: string,

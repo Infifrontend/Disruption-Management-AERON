@@ -275,7 +275,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     // Passenger Prioritization Criteria
     passengerPrioritization: {
       loyaltyTier: 25, // Weight for loyalty status (Platinum, Gold, etc.)
-      ticketClass: 20, // Weight for cabin class (Business, Premium, Economy)
+      ticketClass: 20, // Weight for cabin class (Business, Economy, etc.)
       specialNeeds: 30, // Weight for special requirements (wheelchair, medical, etc.)
       groupSize: 15, // Weight for family/group bookings
       connectionRisk: 10, // Weight for missed connection risk
@@ -417,7 +417,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
       // Load all settings from database using await
       const allSettings = await settingsStore.getAllSettings();
-      
+
 
       // Process settings by category
       allSettings.forEach((setting) => {
@@ -618,7 +618,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
 
   const handleNotificationToggle = (setting) => {
     const newValue = !notificationSettings[setting];
-    
+
 
     setNotificationSettings((prev) => ({
       ...prev,
@@ -633,7 +633,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         "boolean",
         "user",
       );
-    
+
       showSaveStatus();
     } catch (error) {
       console.error(`Failed to save notification setting ${setting}:`, error);
@@ -644,7 +644,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   // Rule Configuration Handlers
   const handleRuleConfigChange = (category, parameter, value) => {
     const actualValue = Array.isArray(value) ? value[0] : value;
-  
+
 
     setRuleConfiguration((prev) => ({
       ...prev,
@@ -662,7 +662,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         "number",
         "user",
       );
-     
+
       showSaveStatus();
     } catch (error) {
       console.error(
@@ -676,7 +676,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const handleRuleToggle = (category, parameter) => {
     const oldValue = ruleConfiguration[category][parameter];
     const newValue = !oldValue;
-   
+
     setRuleConfiguration((prev) => ({
       ...prev,
       [category]: {
@@ -693,7 +693,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         "boolean",
         "user",
       );
-      
+
       showSaveStatus();
     } catch (error) {
       console.error(
@@ -809,7 +809,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   // Recovery Configuration Handlers
   const handleRecoveryConfigChange = (section, parameter, value) => {
     const actualValue = Array.isArray(value) ? value[0] : value;
-   
+
 
     setRecoveryConfiguration((prev) => ({
       ...prev,
@@ -827,7 +827,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         "number",
         "user",
       );
-  
+
       showSaveStatus();
     } catch (error) {
       console.error(
@@ -841,7 +841,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   // Passenger Priority Configuration Handlers
   const handlePriorityConfigChange = (category, parameter, value) => {
     const actualValue = Array.isArray(value) ? value[0] : value;
-   
+
 
     setPassengerPriorityConfig((prev) => ({
       ...prev,
@@ -859,7 +859,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         "number",
         "user",
       );
-      
+
       showSaveStatus();
     } catch (error) {
       console.error(
@@ -921,7 +921,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       // Verify the setting was actually saved by checking database
       try {
         const allSettings = settingsStore.getAllSettings();
-       
+
       } catch (error) {
         console.error("Database verification failed:", error);
         setSaveStatus("error");
@@ -2663,6 +2663,18 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
               )}
             </CardContent>
           </Card>
+
+          {/* Save Button at Bottom */}
+          <div className="flex justify-end pt-4">
+            <Button
+              onClick={saveRuleSettings}
+              className="btn-flydubai-primary"
+              disabled={isLoading || saveStatus === "saving"}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {saveStatus === "saving" ? "Saving..." : "Save Rule Settings"}
+            </Button>
+          </div>
         </TabsContent>
 
         {/* Consolidated Recovery Options */}
@@ -3299,6 +3311,18 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Save Button at Bottom */}
+          <div className="flex justify-end pt-4">
+            <Button
+              onClick={saveRecoverySettings}
+              className="btn-flydubai-primary"
+              disabled={isLoading || saveStatus === "saving"}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {saveStatus === "saving" ? "Saving..." : "Save Recovery Settings"}
+            </Button>
+          </div>
         </TabsContent>
 
         {/* Natural Language Processing */}
@@ -3899,6 +3923,18 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Save Button at Bottom */}
+          <div className="flex justify-end pt-4">
+            <Button
+              onClick={saveNlpSettings}
+              className="btn-flydubai-primary"
+              disabled={isLoading || saveStatus === "saving"}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {saveStatus === "saving" ? "Saving..." : "Save NLP Settings"}
+            </Button>
+          </div>
         </TabsContent>
 
         {/* Notifications */}
@@ -3963,12 +3999,12 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                   passengerUpdates: "Passenger Service Updates",
                   systemAlerts: "System Status Alerts",
                 }).map(([key, label]) => {
-                  const typedKey = key as keyof typeof notificationSettings; 
+                  const typedKey = key as keyof typeof notificationSettings;
                   return (
                     <div key={typedKey} className="flex items-center justify-between">
                       <Label className="text-sm font-medium">{label}</Label>
                       <Switch
-                        checked={notificationSettings[typedKey]}  
+                        checked={notificationSettings[typedKey]}
                         onCheckedChange={() => handleNotificationToggle(typedKey)}
                         className="switch-flydubai"
                       />
@@ -3979,6 +4015,18 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Save Button at Bottom */}
+          <div className="flex justify-end pt-4">
+            <Button
+              onClick={saveNotificationSettings}
+              className="btn-flydubai-primary"
+              disabled={isLoading || saveStatus === "saving"}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {saveStatus === "saving" ? "Saving..." : "Save Notification Settings"}
+            </Button>
+          </div>
         </TabsContent>
 
         {/* System Settings */}
@@ -4082,6 +4130,18 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
               </div>
             </CardContent>
           </Card>
+
+          {/* Save Button at Bottom */}
+          <div className="flex justify-end pt-4">
+            <Button
+              onClick={saveSystemSettings}
+              className="btn-flydubai-primary"
+              disabled={isLoading || saveStatus === "saving"}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {saveStatus === "saving" ? "Saving..." : "Save System Settings"}
+            </Button>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
