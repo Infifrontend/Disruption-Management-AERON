@@ -456,106 +456,104 @@ class SettingsStorage {
     this.debouncedSaveToDatabase()
   }
 
-  // Batch save for tab-wise operations
-  async batchSaveByCategory(
-    category: string,
-    userId: string = "system"
-  ): Promise<boolean> {
+  // Batch save settings for specific categories
+  async batchSaveByCategory(category: string, userId: string = 'system'): Promise<boolean> {
     try {
       const categorySettings = Array.from(this.storage.values()).filter(
         setting => setting.category === category
-      );
-
-      if (categorySettings.length === 0) {
-        console.log(`No settings found for category: ${category}`);
-        return true;
-      }
-
-      // Update timestamps for all settings in this category
-      categorySettings.forEach(setting => {
-        setting.updatedAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-        setting.updatedBy = userId;
-        this.storage.set(setting.id, setting);
-      });
-
-      // Save to localStorage first
-      this.saveToLocalStorage();
+      )
 
       if (this.isDatabaseConnected) {
-        const settingsArray = categorySettings.map(setting => ({
+        const dbSettings = categorySettings.map(setting => ({
           category: setting.category,
           key: setting.key,
           value: setting.value,
           type: setting.type
-        }));
+        }))
 
-        const success = await databaseService.batchSaveSettings(settingsArray, userId);
-        if (success) {
-          console.log(`Batch saved ${settingsArray.length} settings for category: ${category}`);
-          return true;
-        } else {
-          console.warn(`Batch save failed for category: ${category}, using localStorage only`);
-          this.isDatabaseConnected = false;
+        const success = await databaseService.batchSaveSettings(dbSettings, userId)
+        if (!success) {
+          console.warn('Database batch save failed')
+          return false
         }
       }
 
-      return true;
+      return true
     } catch (error) {
-      console.error(`Failed to batch save category ${category}:`, error);
-      return false;
+      console.error('Failed to batch save category settings:', error)
+      return false
     }
   }
 
-  // Batch save multiple categories
-  async batchSaveMultipleCategories(
-    categories: string[],
-    userId: string = "system"
-  ): Promise<boolean> {
+  // Batch save settings for multiple categories
+  async batchSaveMultipleCategories(categories: string[], userId: string = 'system'): Promise<boolean> {
     try {
-      const allSettings = categories.flatMap(category => 
-        Array.from(this.storage.values()).filter(
-          setting => setting.category === category
-        )
-      );
-
-      if (allSettings.length === 0) {
-        console.log(`No settings found for categories: ${categories.join(', ')}`);
-        return true;
+      for (const category of categories) {
+        const success = await this.batchSaveByCategory(category, userId)
+        if (!success) {
+          console.warn(`Failed to save category: ${category}`)
+          return false
+        }
       }
+      return true
+    } catch (error) {
+      console.error('Failed to batch save multiple categories:', error)
+      return false
+    }
+  }
 
-      // Update timestamps for all settings in these categories
-      allSettings.forEach(setting => {
-        setting.updatedAt = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-        setting.updatedBy = userId;
-        this.storage.set(setting.id, setting);
-      });
+  // Save settings from state objects directly
+  async saveSettingsFromState(stateObject: any, categoryMapping: Record<string, string>, userId: string = 'system'): Promise<boolean> {
+    try {
+      const settingsToSave = []
 
-      // Save to localStorage first
-      this.saveToLocalStorage();
+      for (const [stateKey, categoryName] of Object.entries(categoryMapping)) {
+        const categoryData = stateObject[stateKey]
+        if (categoryData && typeof categoryData === 'object') {
+          for (const [key, value] of Object.entries(categoryData)) {
+            const setting = {
+              category: categoryName,
+              key: key,
+              value: value,
+              type: this.getTypeFromValue(value)
+            }
+            settingsToSave.push(setting)
 
-      if (this.isDatabaseConnected) {
-        const settingsArray = allSettings.map(setting => ({
-          category: setting.category,
-          key: setting.key,
-          value: setting.value,
-          type: setting.type
-        }));
-
-        const success = await databaseService.batchSaveSettings(settingsArray, userId);
-        if (success) {
-          console.log(`Batch saved ${settingsArray.length} settings for categories: ${categories.join(', ')}`);
-          return true;
-        } else {
-          console.warn(`Batch save failed for categories: ${categories.join(', ')}, using localStorage only`);
-          this.isDatabaseConnected = false;
+            // Also update local storage
+            const localSetting: SettingsData = {
+              id: `${categoryName}_${key}`,
+              category: categoryName,
+              key: key,
+              value: value,
+              type: setting.type,
+              updatedAt: new Date().toISOString(),
+              updatedBy: userId
+            }
+            this.storage.set(localSetting.id, localSetting)
+          }
         }
       }
 
-      return true;
+      if (this.isDatabaseConnected && settingsToSave.length > 0) {
+        const success = await databaseService.batchSaveSettings(settingsToSave, userId)
+        if (success) {
+          this.saveToLocalStorage()
+          return true
+        }
+      }
+
+      return settingsToSave.length > 0
     } catch (error) {
-      console.error(`Failed to batch save categories ${categories.join(', ')}:`, error);
-      return false;
+      console.error('Failed to save settings from state:', error)
+      return false
     }
+  }
+
+  private getTypeFromValue(value: any): SettingsData['type'] {
+    if (typeof value === 'boolean') return 'boolean'
+    if (typeof value === 'number') return 'number'
+    if (typeof value === 'string') return 'string'
+    return 'object'
   }
 }
 
