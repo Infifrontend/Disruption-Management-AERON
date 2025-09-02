@@ -621,3 +621,10 @@ body {
 .dialog-scrollable::-webkit-scrollbar-thumb:hover {
   background: #0056b3;
 }
+
+/* .border-airline-primary {
+  border-color: var(--airline-primary);
+} */
+.border-airline-primary {
+  border-color: color-mix(in srgb, var(--airline-primary) 90%, black);
+}
