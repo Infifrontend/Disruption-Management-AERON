@@ -119,113 +119,18 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const [fieldConfigurations, setFieldConfigurations] = useState<Record<string, SettingsFieldConfig[]>>({});
   const [rawTabSettings, setRawTabSettings] = useState<any>({});
 
-  // Database-backed state
-  const [nlpSettings, setNlpSettings] = useState({
-    enabled: true,
-    language: "english",
-    confidence: 85,
-    autoApply: false,
-  });
+  // Database-backed state - initialized empty and populated from API
+  const [nlpSettings, setNlpSettings] = useState({});
 
-  // Rule Configuration State
+  // Rule Configuration State - initialized empty and populated from API
   const [ruleConfiguration, setRuleConfiguration] = useState({
-    operationalRules: {
-      maxDelayThreshold: 180, // minutes
-      minConnectionTime: 45, // minutes
-      maxOverbooking: 105, // percentage
-      priorityRebookingTime: 15, // minutes
-      hotacTriggerDelay: 240, // minutes
-    },
-    recoveryConstraints: {
-      maxAircraftSwaps: 3,
-      crewDutyTimeLimits: true,
-      maintenanceSlotProtection: true,
-      slotCoordinationRequired: false,
-      curfewCompliance: true,
-    },
-    automationSettings: {
-      autoApproveThreshold: 95, // confidence percentage
-      requireManagerApproval: false,
-      enablePredictiveActions: true,
-      autoNotifyPassengers: true,
-      autoBookHotac: false,
-    },
+    operationalRules: {},
+    recoveryConstraints: {},
+    automationSettings: {},
   });
 
-  // Custom Rules Management State
-  const [customRules, setCustomRules] = useState([
-    {
-      id: "RULE-001",
-      name: "Weather Contingency Rule",
-      description: "Automatic HOTAC booking when weather delay exceeds 4 hours",
-      category: "Weather",
-      type: "Hard",
-      overridable: false,
-      priority: 1,
-      conditions: "Weather delay > 240 minutes",
-      actions: "Auto-book HOTAC, Notify passengers",
-      createdBy: "System",
-      createdDate: "2024-01-15",
-      status: "Active",
-    },
-    {
-      id: "RULE-002",
-      name: "VIP Passenger Priority",
-      description: "VIP passengers get priority rebooking within 15 minutes",
-      category: "Passenger Service",
-      type: "Soft",
-      overridable: true,
-      priority: 2,
-      conditions: "Passenger.Priority = VIP AND Status = Disrupted",
-      actions: "Priority rebooking queue, Manager notification",
-      createdBy: "ops.manager@flydubai.com",
-      createdDate: "2024-02-01",
-      status: "Active",
-    },
-    {
-      id: "RULE-003",
-      name: "Crew Duty Time Protection",
-      description: "Block crew assignments that exceed regulatory limits",
-      category: "Crew Management",
-      type: "Hard",
-      overridable: false,
-      priority: 1,
-      conditions: "CrewMember.DutyTime + FlightTime > RegulatorLimit",
-      actions: "Block assignment, Find alternative crew",
-      createdBy: "System",
-      createdDate: "2024-01-10",
-      status: "Active",
-    },
-    {
-      id: "RULE-004",
-      name: "Cost Threshold Override",
-      description: "Recovery options exceeding AED 50,000 require approval",
-      category: "Financial",
-      type: "Soft",
-      overridable: true,
-      priority: 3,
-      conditions: "RecoveryOption.Cost > 50000 AED",
-      actions: "Manager approval required, Document justification",
-      createdBy: "finance.manager@flydubai.com",
-      createdDate: "2024-01-20",
-      status: "Active",
-    },
-    {
-      id: "RULE-005",
-      name: "Maintenance Slot Protection",
-      description:
-        "Protect scheduled maintenance slots from disruption recovery",
-      category: "Maintenance",
-      type: "Hard",
-      overridable: true,
-      priority: 2,
-      conditions: "Aircraft.MaintenanceScheduled = True",
-      actions: "Protect slot, Use alternative aircraft",
-      createdBy: "maintenance.manager@flydubai.com",
-      createdDate: "2024-01-25",
-      status: "Active",
-    },
-  ]);
+  // Custom Rules Management State - initialized empty and populated from API
+  const [customRules, setCustomRules] = useState([]);
 
   const [newRule, setNewRule] = useState({
     name: "",
@@ -241,76 +146,19 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   const [showAddRuleForm, setShowAddRuleForm] = useState(false);
   const [editingRule, setEditingRule] = useState(null);
 
-  // Consolidated Recovery Configuration State
+  // Consolidated Recovery Configuration State - initialized empty and populated from API
   const [recoveryConfiguration, setRecoveryConfiguration] = useState({
-    // Recovery Options Ranking
-    recoveryOptionsRanking: {
-      costWeight: 30,
-      timeWeight: 25,
-      passengerImpactWeight: 20,
-      operationalComplexityWeight: 15,
-      reputationWeight: 10,
-      customParameters: [],
-    },
-
-    // Aircraft Selection Criteria
-    aircraftSelectionCriteria: {
-      maintenanceStatus: 25,
-      fuelEfficiency: 20,
-      routeSuitability: 20,
-      passengerCapacity: 15,
-      availabilityWindow: 20,
-      customParameters: [],
-    },
-
-    // Crew Assignment Criteria
-    crewAssignmentCriteria: {
-      dutyTimeRemaining: 30,
-      qualifications: 25,
-      baseLocation: 20,
-      restRequirements: 15,
-      languageSkills: 10,
-      customParameters: [],
-    },
+    recoveryOptionsRanking: {},
+    aircraftSelectionCriteria: {},
+    crewAssignmentCriteria: {},
   });
 
-  // Passenger Priority Configuration State
+  // Passenger Priority Configuration State - initialized empty and populated from API
   const [passengerPriorityConfig, setPassengerPriorityConfig] = useState({
-    // Passenger Prioritization Criteria
-    passengerPrioritization: {
-      loyaltyTier: 25, // Weight for loyalty status (Platinum, Gold, etc.)
-      ticketClass: 20, // Weight for cabin class (Business, Economy, etc.)
-      specialNeeds: 30, // Weight for special requirements (wheelchair, medical, etc.)
-      groupSize: 15, // Weight for family/group bookings
-      connectionRisk: 10, // Weight for missed connection risk
-    },
-
-    // Flight Prioritization for Passengers
-    flightPrioritization: {
-      airlinePreference: 20, // Weight for flydubai vs partner airlines
-      onTimePerformance: 25, // Weight for historical on-time performance
-      aircraftType: 15, // Weight for aircraft comfort/amenities
-      departureTime: 20, // Weight for preferred departure times
-      connectionBuffer: 20, // Weight for adequate connection time
-    },
-
-    // Flight Scoring Algorithm
-    flightScoring: {
-      baseScore: 70, // Starting score for all flights
-      priorityBonus: 15, // Bonus for VIP/Premium passengers
-      airlineBonus: 10, // Bonus for flydubai flights
-      specialReqBonus: 8, // Bonus for accommodating special requirements
-      loyaltyBonus: 8, // Bonus based on loyalty tier
-      groupBonus: 5, // Bonus for keeping groups together
-    },
-
-    // Passenger Scoring Algorithm
-    passengerScoring: {
-      vipWeight: 40, // Weight for VIP status
-      loyaltyWeight: 25, // Weight for loyalty tier
-      specialNeedsWeight: 20, // Weight for special requirements
-      revenueWeight: 15, // Weight for ticket revenue/class
-    },
+    passengerPrioritization: {},
+    flightPrioritization: {},
+    flightScoring: {},
+    passengerScoring: {},
   });
 
   const [customParameters, setCustomParameters] = useState([]);
@@ -355,141 +203,41 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         return obj;
       };
 
-      // Dynamic loading from database with fallback to defaults
-      const loadCategorySettings = (tabData, categoryKey, defaults) => {
+      // Helper function to load category settings from tab data
+      const loadCategorySettings = (tabData, categoryKey) => {
         if (tabData && tabData[categoryKey] && Array.isArray(tabData[categoryKey])) {
-          return {
-            ...defaults,
-            ...convertArrayToObject(tabData[categoryKey])
-          };
+          return convertArrayToObject(tabData[categoryKey]);
         }
-        return defaults;
+        return {};
       };
 
-      // Load NLP Settings
-      const nlpDefaults = {
-        enabled: true,
-        language: "english",
-        confidence: 85,
-        autoApply: false
-      };
-      const newNlpSettings = loadCategorySettings(tabSettings.nlp, 'nlpSettings', nlpDefaults);
+      // Load NLP Settings from nlp tab
+      const newNlpSettings = loadCategorySettings(tabSettings.nlp, 'nlpSettings');
 
-      // Load Rule Configuration
-      const ruleDefaults = {
-        operationalRules: {
-          maxDelayThreshold: 180,
-          minConnectionTime: 45,
-          maxOverbooking: 105,
-          priorityRebookingTime: 15,
-          hotacTriggerDelay: 240
-        },
-        recoveryConstraints: {
-          maxAircraftSwaps: 3,
-          crewDutyTimeLimits: true,
-          maintenanceSlotProtection: true,
-          slotCoordinationRequired: false,
-          curfewCompliance: true
-        },
-        automationSettings: {
-          autoApproveThreshold: 95,
-          requireManagerApproval: false,
-          enablePredictiveActions: true,
-          autoNotifyPassengers: true,
-          autoBookHotac: false
-        }
-      };
-
+      // Load Rule Configuration from rules tab
       const newRuleConfig = {
-        operationalRules: loadCategorySettings(tabSettings.rules, 'operationalRules', ruleDefaults.operationalRules),
-        recoveryConstraints: loadCategorySettings(tabSettings.rules, 'recoveryConstraints', ruleDefaults.recoveryConstraints),
-        automationSettings: loadCategorySettings(tabSettings.rules, 'automationSettings', ruleDefaults.automationSettings)
+        operationalRules: loadCategorySettings(tabSettings.rules, 'operationalRules'),
+        recoveryConstraints: loadCategorySettings(tabSettings.rules, 'recoveryConstraints'),
+        automationSettings: loadCategorySettings(tabSettings.rules, 'automationSettings')
       };
 
-      // Load Recovery Options Configuration
-      const recoveryDefaults = {
-        recoveryOptionsRanking: {
-          costWeight: 30,
-          timeWeight: 25,
-          passengerImpactWeight: 20,
-          operationalComplexityWeight: 15,
-          reputationWeight: 10,
-          customParameters: []
-        },
-        aircraftSelectionCriteria: {
-          maintenanceStatus: 25,
-          fuelEfficiency: 20,
-          routeSuitability: 20,
-          passengerCapacity: 15,
-          availabilityWindow: 20,
-          customParameters: []
-        },
-        crewAssignmentCriteria: {
-          dutyTimeRemaining: 30,
-          qualifications: 25,
-          baseLocation: 20,
-          restRequirements: 15,
-          languageSkills: 10,
-          customParameters: []
-        }
-      };
-
+      // Load Recovery Options Configuration from recoveryOptions tab
       const newRecoveryConfig = {
-        recoveryOptionsRanking: loadCategorySettings(tabSettings.recoveryOptions, 'recoveryOptionsRanking', recoveryDefaults.recoveryOptionsRanking),
-        aircraftSelectionCriteria: loadCategorySettings(tabSettings.recoveryOptions, 'aircraftSelectionCriteria', recoveryDefaults.aircraftSelectionCriteria),
-        crewAssignmentCriteria: loadCategorySettings(tabSettings.recoveryOptions, 'crewAssignmentCriteria', recoveryDefaults.crewAssignmentCriteria)
+        recoveryOptionsRanking: loadCategorySettings(tabSettings.recoveryOptions, 'recoveryOptionsRanking'),
+        aircraftSelectionCriteria: loadCategorySettings(tabSettings.recoveryOptions, 'aircraftSelectionCriteria'),
+        crewAssignmentCriteria: loadCategorySettings(tabSettings.recoveryOptions, 'crewAssignmentCriteria')
       };
 
-      // Load Passenger Priority Configuration
-      const priorityDefaults = {
-        passengerPrioritization: {
-          loyaltyTier: 25,
-          ticketClass: 20,
-          specialNeeds: 30,
-          groupSize: 15,
-          connectionRisk: 10
-        },
-        flightPrioritization: {
-          airlinePreference: 20,
-          onTimePerformance: 25,
-          aircraftType: 15,
-          departureTime: 20,
-          connectionBuffer: 20
-        },
-        flightScoring: {
-          baseScore: 70,
-          priorityBonus: 15,
-          airlineBonus: 10,
-          specialReqBonus: 8,
-          loyaltyBonus: 8,
-          groupBonus: 5
-        },
-        passengerScoring: {
-          vipWeight: 40,
-          loyaltyWeight: 25,
-          specialNeedsWeight: 20,
-          revenueWeight: 15
-        }
-      };
-
+      // Load Passenger Priority Configuration from passengerPriority tab
       const newPriorityConfig = {
-        passengerPrioritization: loadCategorySettings(tabSettings.passengerPriority, 'passengerPrioritization', priorityDefaults.passengerPrioritization),
-        flightPrioritization: loadCategorySettings(tabSettings.passengerPriority, 'flightPrioritization', priorityDefaults.flightPrioritization),
-        flightScoring: loadCategorySettings(tabSettings.passengerPriority, 'flightScoring', priorityDefaults.flightScoring),
-        passengerScoring: loadCategorySettings(tabSettings.passengerPriority, 'passengerScoring', priorityDefaults.passengerScoring)
+        passengerPrioritization: loadCategorySettings(tabSettings.passengerPriority, 'passengerPrioritization'),
+        flightPrioritization: loadCategorySettings(tabSettings.passengerPriority, 'flightPrioritization'),
+        flightScoring: loadCategorySettings(tabSettings.passengerPriority, 'flightScoring'),
+        passengerScoring: loadCategorySettings(tabSettings.passengerPriority, 'passengerScoring')
       };
 
-      // Load Notification Settings
-      const notificationDefaults = {
-        email: true,
-        sms: false,
-        push: true,
-        desktop: true,
-        recoveryAlerts: true,
-        passengerUpdates: true,
-        systemAlerts: false
-      };
-      const newNotificationSettings = loadCategorySettings(tabSettings.notifications, 'notificationSettings', notificationDefaults);
+      // Load Notification Settings from notifications tab
+      const newNotificationSettings = loadCategorySettings(tabSettings.notifications, 'notificationSettings');
 
       // Update state with loaded settings
       setNlpSettings(newNlpSettings);
@@ -513,16 +261,8 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     }
   };
 
-  // Notification settings
-  const [notificationSettings, setNotificationSettings] = useState({
-    email: true,
-    sms: false,
-    push: true,
-    desktop: true,
-    recoveryAlerts: true,
-    passengerUpdates: true,
-    systemAlerts: false,
-  });
+  // Notification settings - initialized empty and populated from API
+  const [notificationSettings, setNotificationSettings] = useState({});
 
   const handleScreenToggle = (screenId) => {
     const updatedSettings = screenSettings.map((screen) => {
@@ -956,96 +696,18 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
     }
   };
 
-  const handleResetAllSettings = () => {
-    settingsStore.resetToDefaults();
-    loadSettingsFromDatabase();
-    setSaveStatus("saved");
-    setTimeout(() => setSaveStatus("idle"), 2000);
-
-    // Reset all configurations to defaults
-    setRuleConfiguration({
-      operationalRules: {
-        maxDelayThreshold: 180,
-        minConnectionTime: 45,
-        maxOverbooking: 105,
-        priorityRebookingTime: 15,
-        hotacTriggerDelay: 240,
-      },
-      recoveryConstraints: {
-        maxAircraftSwaps: 3,
-        crewDutyTimeLimits: true,
-        maintenanceSlotProtection: true,
-        slotCoordinationRequired: false,
-        curfewCompliance: true,
-      },
-      automationSettings: {
-        autoApproveThreshold: 95,
-        requireManagerApproval: false,
-        enablePredictiveActions: true,
-        autoNotifyPassengers: true,
-        autoBookHotac: false,
-      },
-    });
-
-    setRecoveryConfiguration({
-      recoveryOptionsRanking: {
-        costWeight: 30,
-        timeWeight: 25,
-        passengerImpactWeight: 20,
-        operationalComplexityWeight: 15,
-        reputationWeight: 10,
-        customParameters: [],
-      },
-      aircraftSelectionCriteria: {
-        maintenanceStatus: 25,
-        fuelEfficiency: 20,
-        routeSuitability: 20,
-        passengerCapacity: 15,
-        availabilityWindow: 20,
-        customParameters: [],
-      },
-      crewAssignmentCriteria: {
-        dutyTimeRemaining: 30,
-        qualifications: 25,
-        baseLocation: 20,
-        restRequirements: 15,
-        languageSkills: 10,
-        customParameters: [],
-      },
-    });
-
-    setPassengerPriorityConfig({
-      passengerPrioritization: {
-        loyaltyTier: 25,
-        ticketClass: 20,
-        specialNeeds: 30,
-        groupSize: 15,
-        connectionRisk: 10,
-      },
-      flightPrioritization: {
-        airlinePreference: 20,
-        onTimePerformance: 25,
-        aircraftType: 15,
-        departureTime: 20,
-        connectionBuffer: 20,
-      },
-      flightScoring: {
-        baseScore: 70,
-        priorityBonus: 15,
-        airlineBonus: 10,
-        specialReqBonus: 8,
-        loyaltyBonus: 8,
-        groupBonus: 5,
-      },
-      passengerScoring: {
-        vipWeight: 40,
-        loyaltyWeight: 25,
-        specialNeedsWeight: 20,
-        revenueWeight: 15,
-      },
-    });
-
-    setCustomParameters([]);
+  const handleResetAllSettings = async () => {
+    try {
+      setSaveStatus("saving");
+      await settingsStore.resetToDefaults();
+      await loadSettingsFromDatabase();
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch (error) {
+      console.error("Failed to reset settings:", error);
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    }
   };
 
   const calculateTotalWeight = (category, section = null) => {
