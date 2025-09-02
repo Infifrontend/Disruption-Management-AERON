@@ -340,23 +340,13 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
       const tabSettings = await settingsStore.getTabSettings();
       console.log("Loaded tab-wise settings:", tabSettings);
 
-      // Helper function to convert array format to object format
-      const arrayToObject = (settingsArray) => {
-        if (!Array.isArray(settingsArray)) return {};
-        const result = {};
-        settingsArray.forEach(setting => {
-          result[setting.key] = setting.value;
-        });
-        return result;
-      };
-
       // Initialize with defaults and then override with database values
       let newNlpSettings = {
         enabled: true,
         language: "english",
         confidence: 85,
         autoApply: false,
-        ...arrayToObject(tabSettings.nlp?.nlpSettings)
+        ...tabSettings.nlp
       };
 
       let newRuleConfig = {
@@ -366,7 +356,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           maxOverbooking: 105,
           priorityRebookingTime: 15,
           hotacTriggerDelay: 240,
-          ...arrayToObject(tabSettings.rules?.operationalRules)
+          ...tabSettings.rules?.operationalRules
         },
         recoveryConstraints: {
           maxAircraftSwaps: 3,
@@ -374,7 +364,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           maintenanceSlotProtection: true,
           slotCoordinationRequired: false,
           curfewCompliance: true,
-          ...arrayToObject(tabSettings.rules?.recoveryConstraints)
+          ...tabSettings.rules?.recoveryConstraints
         },
         automationSettings: {
           autoApproveThreshold: 95,
@@ -382,7 +372,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           enablePredictiveActions: true,
           autoNotifyPassengers: true,
           autoBookHotac: false,
-          ...arrayToObject(tabSettings.rules?.automationSettings)
+          ...tabSettings.rules?.automationSettings
         },
       };
 
@@ -394,7 +384,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           operationalComplexityWeight: 15,
           reputationWeight: 10,
           customParameters: [],
-          ...arrayToObject(tabSettings.recoveryOptions?.recoveryOptionsRanking)
+          ...tabSettings.recoveryOptions?.recoveryOptionsRanking
         },
         aircraftSelectionCriteria: {
           maintenanceStatus: 25,
@@ -403,7 +393,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           passengerCapacity: 15,
           availabilityWindow: 20,
           customParameters: [],
-          ...arrayToObject(tabSettings.recoveryOptions?.aircraftSelectionCriteria)
+          ...tabSettings.recoveryOptions?.aircraftSelectionCriteria
         },
         crewAssignmentCriteria: {
           dutyTimeRemaining: 30,
@@ -412,7 +402,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           restRequirements: 15,
           languageSkills: 10,
           customParameters: [],
-          ...arrayToObject(tabSettings.recoveryOptions?.crewAssignmentCriteria)
+          ...tabSettings.recoveryOptions?.crewAssignmentCriteria
         },
       };
 
@@ -423,7 +413,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           specialNeeds: 30,
           groupSize: 15,
           connectionRisk: 10,
-          ...arrayToObject(tabSettings.passengerPriority?.passengerPrioritization)
+          ...tabSettings.passengerPriority?.passengerPrioritization
         },
         flightPrioritization: {
           airlinePreference: 20,
@@ -431,7 +421,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           aircraftType: 15,
           departureTime: 20,
           connectionBuffer: 20,
-          ...arrayToObject(tabSettings.passengerPriority?.flightPrioritization)
+          ...tabSettings.passengerPriority?.flightPrioritization
         },
         flightScoring: {
           baseScore: 70,
@@ -440,14 +430,14 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
           specialReqBonus: 8,
           loyaltyBonus: 8,
           groupBonus: 5,
-          ...arrayToObject(tabSettings.passengerPriority?.flightScoring)
+          ...tabSettings.passengerPriority?.flightScoring
         },
         passengerScoring: {
           vipWeight: 40,
           loyaltyWeight: 25,
           specialNeedsWeight: 20,
           revenueWeight: 15,
-          ...arrayToObject(tabSettings.passengerPriority?.passengerScoring)
+          ...tabSettings.passengerPriority?.passengerScoring
         },
       };
 
@@ -459,7 +449,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
         recoveryAlerts: true,
         passengerUpdates: true,
         systemAlerts: false,
-        ...arrayToObject(tabSettings.notifications?.notificationSettings)
+        ...tabSettings.notifications
       };
 
       // Update state with loaded settings

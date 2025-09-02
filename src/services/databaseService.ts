@@ -154,13 +154,13 @@ class DatabaseService {
     console.log('Database service initialized with base URL:', this.baseUrl);
   }
 
-
+  
 
   private getTimeout(): number {
     return parseInt(import.meta.env.VITE_API_TIMEOUT || "5000", 10);
   }
 
-
+  
 
   // Helper method to format URLs correctly for the current backend
   private formatUrl(endpoint: string): string {
@@ -237,21 +237,22 @@ class DatabaseService {
   // Get tab-wise organized settings
   async getTabSettings(): Promise<any> {
     try {
-      const response = await fetch(`${this.baseUrl}/settings/tabs`, {
-        method: 'GET',
-        headers: this.getHeaders()
-      });
-
+      const response = await fetch(`${this.baseUrl}/settings/tabs`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
-      const tabSettings = await response.json();
-      console.log('Database service - Tab settings response:', tabSettings);
-      return tabSettings;
+      return await response.json();
     } catch (error) {
-      console.error('Database service - Failed to get tab settings:', error);
-      throw error;
+      console.error("Failed to fetch tab-wise settings:", error);
+      return {
+        screens: {},
+        passengerPriority: {},
+        rules: {},
+        recoveryOptions: {},
+        nlp: {},
+        notifications: {},
+        system: {}
+      };
     }
   }
 

@@ -306,7 +306,7 @@ class SettingsStorage {
       if (this.isDatabaseConnected) {
         return await databaseService.getTabSettings()
       } else {
-        // Organize local storage settings by tabs in array format
+        // Organize local storage settings by tabs
         const allSettings = Array.from(this.storage.values())
         const tabSettings = {
           screens: {},
@@ -320,47 +320,25 @@ class SettingsStorage {
 
         allSettings.forEach(setting => {
           const category = setting.category
-          
-          // Create setting object with all required fields
-          const settingObject = {
-            id: setting.id,
-            category: setting.category,
-            key: setting.key,
-            value: setting.value,
-            type: setting.type,
-            description: setting.description || '',
-            created_at: setting.updatedAt,
-            updated_at: setting.updatedAt,
-            label: this.getDisplayLabel(setting.key),
-            updated_by: setting.updatedBy,
-            is_active: true
-          }
-
           if (['passengerPrioritization', 'flightPrioritization', 'flightScoring', 'passengerScoring'].includes(category)) {
             if (!tabSettings.passengerPriority[category]) {
-              tabSettings.passengerPriority[category] = []
+              tabSettings.passengerPriority[category] = {}
             }
-            tabSettings.passengerPriority[category].push(settingObject)
+            tabSettings.passengerPriority[category][setting.key] = setting.value
           } else if (['operationalRules', 'recoveryConstraints', 'automationSettings'].includes(category)) {
             if (!tabSettings.rules[category]) {
-              tabSettings.rules[category] = []
+              tabSettings.rules[category] = {}
             }
-            tabSettings.rules[category].push(settingObject)
+            tabSettings.rules[category][setting.key] = setting.value
           } else if (['recoveryOptionsRanking', 'aircraftSelectionCriteria', 'crewAssignmentCriteria'].includes(category)) {
             if (!tabSettings.recoveryOptions[category]) {
-              tabSettings.recoveryOptions[category] = []
+              tabSettings.recoveryOptions[category] = {}
             }
-            tabSettings.recoveryOptions[category].push(settingObject)
+            tabSettings.recoveryOptions[category][setting.key] = setting.value
           } else if (category === 'nlpSettings') {
-            if (!tabSettings.nlp.nlpSettings) {
-              tabSettings.nlp.nlpSettings = []
-            }
-            tabSettings.nlp.nlpSettings.push(settingObject)
+            tabSettings.nlp[setting.key] = setting.value
           } else if (category === 'notificationSettings') {
-            if (!tabSettings.notifications.notificationSettings) {
-              tabSettings.notifications.notificationSettings = []
-            }
-            tabSettings.notifications.notificationSettings.push(settingObject)
+            tabSettings.notifications[setting.key] = setting.value
           }
         })
 
@@ -378,97 +356,6 @@ class SettingsStorage {
         system: {}
       }
     }
-  }
-
-  private getDisplayLabel(key: string): string {
-    const displayLabels = {
-      // Passenger Prioritization
-      loyaltyTier: "Loyalty Tier Status",
-      ticketClass: "Ticket Class (Business/Economy)",
-      specialNeeds: "Special Requirements",
-      groupSize: "Family/Group Bookings",
-      connectionRisk: "Missed Connection Risk",
-      
-      // Flight Prioritization
-      airlinePreference: "Airline Preference (flydubai)",
-      onTimePerformance: "On-Time Performance History",
-      aircraftType: "Aircraft Type & Amenities",
-      departureTime: "Preferred Departure Times",
-      connectionBuffer: "Connection Buffer Time",
-      
-      // Flight Scoring
-      baseScore: "Base Score (Starting Point)",
-      priorityBonus: "VIP/Premium Passenger Bonus",
-      airlineBonus: "flydubai Flight Bonus",
-      specialReqBonus: "Special Requirements Bonus",
-      loyaltyBonus: "Loyalty Tier Bonus",
-      groupBonus: "Group Booking Bonus",
-      
-      // Passenger Scoring
-      vipWeight: "VIP Status Impact",
-      loyaltyWeight: "Loyalty Program Tier",
-      specialNeedsWeight: "Special Assistance Requirements",
-      revenueWeight: "Ticket Revenue/Class Value",
-      
-      // Operational Rules
-      maxDelayThreshold: "Max Delay Threshold",
-      minConnectionTime: "Min Connection Time",
-      maxOverbooking: "Max Overbooking",
-      priorityRebookingTime: "Priority Rebooking Time",
-      hotacTriggerDelay: "HOTAC Trigger Delay",
-      
-      // Recovery Constraints
-      maxAircraftSwaps: "Max Aircraft Swaps",
-      crewDutyTimeLimits: "Crew Duty Time Limits",
-      maintenanceSlotProtection: "Maintenance Slot Protection",
-      slotCoordinationRequired: "Slot Coordination Required",
-      curfewCompliance: "Curfew Compliance",
-      
-      // Automation Settings
-      autoApproveThreshold: "Auto-Approve Threshold",
-      requireManagerApproval: "Require Manager Approval",
-      enablePredictiveActions: "Enable Predictive Actions",
-      autoNotifyPassengers: "Auto-Notify Passengers",
-      autoBookHotac: "Auto-Book HOTAC",
-      
-      // Recovery Options Ranking
-      costWeight: "Cost Impact",
-      timeWeight: "Time to Resolution",
-      passengerImpactWeight: "Passenger Impact",
-      operationalComplexityWeight: "Operational Complexity",
-      reputationWeight: "Brand Reputation Impact",
-      
-      // Aircraft Selection Criteria
-      maintenanceStatus: "Maintenance Status",
-      fuelEfficiency: "Fuel Efficiency",
-      routeSuitability: "Route Suitability",
-      passengerCapacity: "Passenger Capacity",
-      availabilityWindow: "Availability Window",
-      
-      // Crew Assignment Criteria
-      dutyTimeRemaining: "Duty Time Remaining",
-      qualifications: "Qualifications & Certifications",
-      baseLocation: "Base Location",
-      restRequirements: "Rest Requirements",
-      languageSkills: "Language Skills",
-      
-      // NLP Settings
-      enabled: "Enable NLP",
-      language: "Primary Language",
-      confidence: "Confidence Threshold",
-      autoApply: "Auto-Apply Recommendations",
-      
-      // Notification Settings
-      email: "Email Notifications",
-      sms: "SMS Alerts",
-      push: "Push Notifications",
-      desktop: "Desktop Notifications",
-      recoveryAlerts: "Recovery Plan Alerts",
-      passengerUpdates: "Passenger Service Updates",
-      systemAlerts: "System Status Alerts"
-    }
-
-    return displayLabels[key] || key
   }
 
   async deleteSetting(category: string, key: string): Promise<boolean> {
