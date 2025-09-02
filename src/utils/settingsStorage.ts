@@ -304,7 +304,9 @@ class SettingsStorage {
   async getTabSettings(): Promise<any> {
     try {
       if (this.isDatabaseConnected) {
-        return await databaseService.getTabSettings()
+        const result = await databaseService.getTabSettings()
+        console.log('Raw API response from getTabSettings:', result)
+        return result
       } else {
         // Organize local storage settings by tabs - convert to array format for consistency
         const allSettings = Array.from(this.storage.values())
@@ -345,6 +347,12 @@ class SettingsStorage {
               tabSettings.notifications[category] = []
             }
             tabSettings.notifications[category].push(setting)
+          } else {
+            // Put other categories in system tab
+            if (!tabSettings.system[category]) {
+              tabSettings.system[category] = []
+            }
+            tabSettings.system[category].push(setting)
           }
         })
 
