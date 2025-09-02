@@ -46,7 +46,7 @@ export default function App() {
     alertService.setShowAlertCallback(showAlert);
   }, [showAlert]);
 
-  // Update document title based on airline and inject theme
+  // Update document title based on airline and force theme injection
   React.useEffect(() => {
     document.title = `${airlineConfig.displayName} AERON - Airline Recovery Operations Network`;
     // Force theme injection to ensure variables are set
