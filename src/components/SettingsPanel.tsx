@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { useSettingsStorage } from "../utils/settingsStorage";
+import { useSettingsStorage, SettingsFieldConfig } from "../utils/settingsStorage";
+import { SettingField } from "./SettingField";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Input } from "./ui/input";
@@ -114,6 +115,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   >("idle");
   const [isDatabaseConnected, setIsDatabaseConnected] = useState(false);
   const settingsStore = useSettingsStorage();
+  const [fieldConfigurations, setFieldConfigurations] = useState<Record<string, SettingsFieldConfig[]>>({});
 
   // Database-backed state
   const [nlpSettings, setNlpSettings] = useState({
@@ -321,6 +323,8 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
   useEffect(() => {
     loadSettingsFromDatabase();
     checkDatabaseConnection();
+    // Initialize field configurations
+    setFieldConfigurations(settingsStore.getFieldConfigurations());
   }, []);
 
   const checkDatabaseConnection = async () => {
@@ -1700,138 +1704,19 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">
-                      Max Delay Threshold (minutes)
-                    </Label>
-                    <Badge className="bg-gray-100 text-gray-800">
-                      {ruleConfiguration.operationalRules.maxDelayThreshold}
-                    </Badge>
-                  </div>
-                  <Slider
-                    value={[
-                      ruleConfiguration.operationalRules.maxDelayThreshold,
-                    ]}
-                    onValueChange={(value) =>
-                      handleRuleConfigChange(
-                        "operationalRules",
-                        "maxDelayThreshold",
-                        value,
-                      )
+                {fieldConfigurations.operationalRules?.map((fieldConfig) => (
+                  <SettingField
+                    key={fieldConfig.key}
+                    config={fieldConfig}
+                    value={ruleConfiguration.operationalRules[fieldConfig.key]}
+                    onChange={(key, value) =>
+                      handleRuleConfigChange("operationalRules", key, value)
                     }
-                    max={360}
-                    min={60}
-                    step={15}
-                    className="w-full slider-flydubai"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">
-                      Min Connection Time (minutes)
-                    </Label>
-                    <Badge className="bg-gray-100 text-gray-800">
-                      {ruleConfiguration.operationalRules.minConnectionTime}
-                    </Badge>
-                  </div>
-                  <Slider
-                    value={[
-                      ruleConfiguration.operationalRules.minConnectionTime,
-                    ]}
-                    onValueChange={(value) =>
-                      handleRuleConfigChange(
-                        "operationalRules",
-                        "minConnectionTime",
-                        value,
-                      )
+                    onToggle={(key) =>
+                      handleRuleToggle("operationalRules", key)
                     }
-                    max={120}
-                    min={30}
-                    step={5}
-                    className="w-full"
                   />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">
-                      Max Overbooking (%)
-                    </Label>
-                    <Badge className="bg-gray-100 text-gray-800">
-                      {ruleConfiguration.operationalRules.maxOverbooking}%
-                    </Badge>
-                  </div>
-                  <Slider
-                    value={[ruleConfiguration.operationalRules.maxOverbooking]}
-                    onValueChange={(value) =>
-                      handleRuleConfigChange(
-                        "operationalRules",
-                        "maxOverbooking",
-                        value,
-                      )
-                    }
-                    max={120}
-                    min={100}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">
-                      Priority Rebooking Time (minutes)
-                    </Label>
-                    <Badge className="bg-gray-100 text-gray-800">
-                      {ruleConfiguration.operationalRules.priorityRebookingTime}
-                    </Badge>
-                  </div>
-                  <Slider
-                    value={[
-                      ruleConfiguration.operationalRules.priorityRebookingTime,
-                    ]}
-                    onValueChange={(value) =>
-                      handleRuleConfigChange(
-                        "operationalRules",
-                        "priorityRebookingTime",
-                        value,
-                      )
-                    }
-                    max={60}
-                    min={5}
-                    step={5}
-                    className="w-full"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">
-                      HOTAC Trigger Delay (minutes)
-                    </Label>
-                    <Badge className="bg-gray-100 text-gray-800">
-                      {ruleConfiguration.operationalRules.hotacTriggerDelay}
-                    </Badge>
-                  </div>
-                  <Slider
-                    value={[
-                      ruleConfiguration.operationalRules.hotacTriggerDelay,
-                    ]}
-                    onValueChange={(value) =>
-                      handleRuleConfigChange(
-                        "operationalRules",
-                        "hotacTriggerDelay",
-                        value,
-                      )
-                    }
-                    max={480}
-                    min={120}
-                    step={30}
-                    className="w-full"
-                  />
-                </div>
+                ))}
               </CardContent>
             </Card>
 
@@ -1847,106 +1732,19 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">
-                      Max Aircraft Swaps
-                    </Label>
-                    <Badge className="bg-gray-100 text-gray-800">
-                      {ruleConfiguration.recoveryConstraints.maxAircraftSwaps}
-                    </Badge>
-                  </div>
-                  <Slider
-                    value={[
-                      ruleConfiguration.recoveryConstraints.maxAircraftSwaps,
-                    ]}
-                    onValueChange={(value) =>
-                      handleRuleConfigChange(
-                        "recoveryConstraints",
-                        "maxAircraftSwaps",
-                        value,
-                      )
+                {fieldConfigurations.recoveryConstraints?.map((fieldConfig) => (
+                  <SettingField
+                    key={fieldConfig.key}
+                    config={fieldConfig}
+                    value={ruleConfiguration.recoveryConstraints[fieldConfig.key]}
+                    onChange={(key, value) =>
+                      handleRuleConfigChange("recoveryConstraints", key, value)
                     }
-                    max={10}
-                    min={1}
-                    step={1}
-                    className="w-full"
+                    onToggle={(key) =>
+                      handleRuleToggle("recoveryConstraints", key)
+                    }
                   />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">
-                    Crew Duty Time Limits
-                  </Label>
-                  <Switch
-                    checked={
-                      ruleConfiguration.recoveryConstraints.crewDutyTimeLimits
-                    }
-                    onCheckedChange={() =>
-                      handleRuleToggle(
-                        "recoveryConstraints",
-                        "crewDutyTimeLimits",
-                      )
-                    }
-                    className="switch-flydubai"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">
-                    Maintenance Slot Protection
-                  </Label>
-                  <Switch
-                    checked={
-                      ruleConfiguration.recoveryConstraints
-                        .maintenanceSlotProtection
-                    }
-                    onCheckedChange={() =>
-                      handleRuleToggle(
-                        "recoveryConstraints",
-                        "maintenanceSlotProtection",
-                      )
-                    }
-                    className="switch-flydubai"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">
-                    Slot Coordination Required
-                  </Label>
-                  <Switch
-                    checked={
-                      ruleConfiguration.recoveryConstraints
-                        .slotCoordinationRequired
-                    }
-                    onCheckedChange={() =>
-                      handleRuleToggle(
-                        "recoveryConstraints",
-                        "slotCoordinationRequired",
-                      )
-                    }
-                    className="switch-flydubai"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">
-                    Curfew Compliance
-                  </Label>
-                  <Switch
-                    checked={
-                      ruleConfiguration.recoveryConstraints.curfewCompliance
-                    }
-                    onCheckedChange={() =>
-                      handleRuleToggle(
-                        "recoveryConstraints",
-                        "curfewCompliance",
-                      )
-                    }
-                    className="switch-flydubai"
-                  />
-                </div>
+                ))}
               </CardContent>
             </Card>
 
@@ -1962,103 +1760,19 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }) {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">
-                      Auto-Approve Threshold (%)
-                    </Label>
-                    <Badge className="bg-gray-100 text-gray-800">
-                      {
-                        ruleConfiguration.automationSettings
-                          .autoApproveThreshold
-                      }
-                      %
-                    </Badge>
-                  </div>
-                  <Slider
-                    value={[
-                      ruleConfiguration.automationSettings.autoApproveThreshold,
-                    ]}
-                    onValueChange={(value) =>
-                      handleRuleConfigChange(
-                        "automationSettings",
-                        "autoApproveThreshold",
-                        value,
-                      )
+                {fieldConfigurations.automationSettings?.map((fieldConfig) => (
+                  <SettingField
+                    key={fieldConfig.key}
+                    config={fieldConfig}
+                    value={ruleConfiguration.automationSettings[fieldConfig.key]}
+                    onChange={(key, value) =>
+                      handleRuleConfigChange("automationSettings", key, value)
                     }
-                    max={100}
-                    min={80}
-                    step={1}
-                    className="w-full"
+                    onToggle={(key) =>
+                      handleRuleToggle("automationSettings", key)
+                    }
                   />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">
-                    Require Manager Approval
-                  </Label>
-                  <Switch
-                    checked={
-                      ruleConfiguration.automationSettings
-                        .requireManagerApproval
-                    }
-                    onCheckedChange={() =>
-                      handleRuleToggle(
-                        "automationSettings",
-                        "requireManagerApproval",
-                      )
-                    }
-                    className="switch-flydubai"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">
-                    Enable Predictive Actions
-                  </Label>
-                  <Switch
-                    checked={
-                      ruleConfiguration.automationSettings
-                        .enablePredictiveActions
-                    }
-                    onCheckedChange={() =>
-                      handleRuleToggle(
-                        "automationSettings",
-                        "enablePredictiveActions",
-                      )
-                    }
-                    className="switch-flydubai"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">
-                    Auto-Notify Passengers
-                  </Label>
-                  <Switch
-                    checked={
-                      ruleConfiguration.automationSettings.autoNotifyPassengers
-                    }
-                    onCheckedChange={() =>
-                      handleRuleToggle(
-                        "automationSettings",
-                        "autoNotifyPassengers",
-                      )
-                    }
-                    className="switch-flydubai"
-                  />
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Auto-Book HOTAC</Label>
-                  <Switch
-                    checked={ruleConfiguration.automationSettings.autoBookHotac}
-                    onCheckedChange={() =>
-                      handleRuleToggle("automationSettings", "autoBookHotac")
-                    }
-                    className="switch-flydubai"
-                  />
-                </div>
+                ))}
               </CardContent>
             </Card>
           </div>
