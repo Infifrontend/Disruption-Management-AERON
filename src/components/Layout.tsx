@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, ReactNode } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
@@ -5,8 +6,9 @@ import { Badge } from "./ui/badge";
 import { useAppContext } from "../context/AppContext";
 import { databaseService } from "../services/databaseService";
 import { authService } from "../services/authService";
-import { AirlineLogo } from "./AirlineLogo";
-import { useAirlineTheme } from "../hooks/useAirlineTheme";
+import { useAirlineTheme } from '../hooks/useAirlineTheme';
+import { injectAirlineTheme } from '../config/airlineConfig';
+import { AirlineLogo } from './AirlineLogo';
 import {
   TrendingUp,
   Calendar,
@@ -61,7 +63,6 @@ export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const { screenSettings, filters, setFilters, currentUser, setCurrentUser } =
     useAppContext();
-  const { airlineConfig } = useAirlineTheme();
   const [sidebarOpen] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -71,6 +72,13 @@ export function Layout({ children }: LayoutProps) {
     activeFlights: 0,
     totalPassengers: 0,
   });
+
+  const { airlineConfig } = useAirlineTheme();
+
+  useEffect(() => {
+    // Ensure theme is injected when Layout mounts
+    injectAirlineTheme();
+  }, []);
 
   const handleLogout = async () => {
     await authService.logout();
@@ -111,7 +119,7 @@ export function Layout({ children }: LayoutProps) {
       try {
         const disruptions = await databaseService.getAllDisruptions();
 
-        if (!isMounted) return; // Prevent state update if component unmounted
+        if (!isMounted) return;
 
         const totalAffected = disruptions.length;
         const highPriority = disruptions.filter(
@@ -134,7 +142,6 @@ export function Layout({ children }: LayoutProps) {
       } catch (error) {
         if (isMounted) {
           console.error("Failed to fetch flight statistics:", error);
-          // Set default values on error
           setFlightStats({
             totalAffected: 0,
             highPriority: 0,
@@ -146,7 +153,6 @@ export function Layout({ children }: LayoutProps) {
     };
 
     fetchFlightStats();
-    // Refresh stats every 30 seconds for real-time updates
     const interval = setInterval(fetchFlightStats, 30000);
 
     return () => {
@@ -157,7 +163,6 @@ export function Layout({ children }: LayoutProps) {
 
   // Format date and time in IST (Indian Standard Time)
   const formatDateTime = (date: Date) => {
-    // Convert to IST
     const istDate = new Date(
       date.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }),
     );
@@ -182,12 +187,12 @@ export function Layout({ children }: LayoutProps) {
   const { dateStr, timeStr } = formatDateTime(currentDateTime);
 
   const categories = {
-    main: { name: "Main", color: "text-flydubai-blue" },
-    operations: { name: "Operations", color: "text-flydubai-blue" },
-    prediction: { name: "Prediction", color: "text-flydubai-navy" },
-    monitoring: { name: "Monitoring", color: "text-flydubai-navy" },
-    services: { name: "Services", color: "text-flydubai-blue" },
-    analytics: { name: "Analytics", color: "text-flydubai-navy" },
+    main: { name: "Main", color: "text-airline-primary" },
+    operations: { name: "Operations", color: "text-airline-primary" },
+    prediction: { name: "Prediction", color: "text-airline-navy" },
+    monitoring: { name: "Monitoring", color: "text-airline-navy" },
+    services: { name: "Services", color: "text-airline-primary" },
+    analytics: { name: "Analytics", color: "text-airline-navy" },
     system: { name: "System", color: "text-gray-600" },
   };
 
@@ -200,56 +205,56 @@ export function Layout({ children }: LayoutProps) {
           icon: BarChart3,
           title: `${(((flightStats.totalAffected - flightStats.highPriority) / Math.max(flightStats.totalAffected, 1)) * 100).toFixed(1)}% Solution Adoption`,
           subtitle: `${flightStats.totalAffected} Total Disruptions`,
-          color: "flydubai-blue",
+          color: "airline-primary",
         };
       case "/flight-tracking":
         return {
           icon: Calendar,
           title: `${flightStats.activeFlights} Aircraft Active`,
           subtitle: `${flightStats.totalAffected} Flights Tracked`,
-          color: "flydubai-blue",
+          color: "airline-primary",
         };
       case "/disruption":
         return {
           icon: AlertTriangle,
           title: `${flightStats.totalAffected} Flights Affected`,
           subtitle: `${flightStats.highPriority} High Priority`,
-          color: "flydubai-orange",
+          color: "airline-secondary",
         };
       case "/recovery":
         return {
           icon: Plane,
           title: `${Math.min(flightStats.totalAffected * 3, 12)} Options Available`,
           subtitle: `${Math.ceil(flightStats.totalAffected * 0.3)} Recommended`,
-          color: "flydubai-blue",
+          color: "airline-primary",
         };
       case "/prediction-dashboard":
         return {
           icon: Brain,
           title: `${flightStats.totalAffected + Math.floor(flightStats.totalAffected * 0.2)} Disruptions Predicted`,
           subtitle: `${(85 + Math.random() * 10).toFixed(1)}% Accuracy Rate`,
-          color: "flydubai-navy",
+          color: "airline-navy",
         };
       case "/passengers":
         return {
           icon: UserCheck,
           title: `${flightStats.totalPassengers.toLocaleString()} Passengers Affected`,
           subtitle: `${flightStats.totalAffected} Flights`,
-          color: "flydubai-blue",
+          color: "airline-primary",
         };
       case "/pending":
         return {
           icon: ClockIcon,
           title: `${flightStats.highPriority + Math.floor(flightStats.totalAffected * 0.1)} Solutions Pending`,
           subtitle: `${flightStats.highPriority} High Priority`,
-          color: "flydubai-orange",
+          color: "airline-secondary",
         };
       case "/hotac":
         return {
           icon: Hotel,
           title: `${flightStats.totalAffected * 2} HOTAC Records`,
           subtitle: `${Math.floor(flightStats.totalAffected * 0.8)} Confirmed`,
-          color: "flydubai-blue",
+          color: "airline-primary",
         };
       default:
         return null;
@@ -266,18 +271,15 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="h-screen bg-background flex overflow-hidden">
       {/* Sidebar */}
-      <div className="w-52 min-w-[15rem] max-w-[15rem] bg-flydubai-blue text-white border-r border-blue-700 flex flex-col flex-shrink-0 overflow-hidden">
+      <div className="w-52 min-w-[15rem] max-w-[15rem] bg-airline-primary text-white border-r border-airline-primary/70 flex flex-col flex-shrink-0 overflow-hidden">
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-blue-700 min-h-[120px] flex items-center justify-center">
+        <div className="p-4 border-b border-airline-primary/70 min-h-[120px] flex items-center justify-center">
           <div className="flex flex-col items-center gap-2 w-full">
-            <AirlineLogo 
-              width={sidebarOpen ? 100 : 80}
-              className={`responsive-logo ${sidebarOpen ? "h-8 w-auto" : "h-6 w-auto"}`}
-            />
+            <AirlineLogo className="responsive-logo h-8 w-auto" />
             {sidebarOpen && (
               <div className="text-center">
                 <h1 className="text-base font-semibold text-white">AERON</h1>
-                <p className="text-xs text-blue-200 leading-tight">
+                <p className="text-xs text-white/70 leading-tight">
                   Adaptive Engine for Recovery &<br />
                   Operational Navigation
                 </p>
@@ -298,7 +300,7 @@ export function Layout({ children }: LayoutProps) {
               <div key={categoryKey} className="mb-6">
                 {sidebarOpen && (
                   <div className="px-4 mb-2">
-                    <h3 className="text-xs font-medium uppercase tracking-wider text-blue-200">
+                    <h3 className="text-xs font-medium uppercase tracking-wider text-white/70">
                       {category.name}
                     </h3>
                   </div>
@@ -316,7 +318,7 @@ export function Layout({ children }: LayoutProps) {
                       <Button
                         key={screen.id}
                         variant={isActive ? "default" : "ghost"}
-                        className={`w-full justify-start gap-3 px-3 min-h-[40px] ${isActive ? "bg-white text-flydubai-blue hover:bg-gray-100" : "text-white hover:text-[#ff8200]"}`}
+                        className={`w-full justify-start gap-3 px-3 min-h-[40px] ${isActive ? "bg-white text-airline-primary hover:bg-gray-100" : "text-white hover:text-airline-secondary"}`}
                         onClick={() =>
                           navigate(
                             screen.id === "dashboard" ? "/" : `/${screen.id}`,
@@ -341,7 +343,7 @@ export function Layout({ children }: LayoutProps) {
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-blue-700 min-h-[80px]">
+        <div className="p-4 border-t border-airline-primary/70 min-h-[80px]">
           <div className="flex items-center gap-2 mb-2">
             <Badge
               variant="outline"
@@ -361,13 +363,13 @@ export function Layout({ children }: LayoutProps) {
             {sidebarOpen && (
               <div className="text-right flex-1">
                 <p className="text-xs font-medium text-white">{dateStr}</p>
-                <p className="text-xs text-blue-200">{timeStr} IST</p>
+                <p className="text-xs text-white/70">{timeStr} IST</p>
               </div>
             )}
           </div>
           {sidebarOpen && (
-            <div className="pt-2 border-t border-blue-700">
-              <p className="text-xs text-blue-200">
+            <div className="pt-2 border-t border-airline-primary/70">
+              <p className="text-xs text-white/70">
                 Powered by {airlineConfig.displayName} × AERON Partnership
               </p>
             </div>
@@ -382,7 +384,7 @@ export function Layout({ children }: LayoutProps) {
           <div className="bg-card border-b border-border px-6 py-4 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-xl font-semibold">
+                <h1 className="text-xl font-semibold text-airline-navy">
                   {currentScreen?.name || "Dashboard"}
                 </h1>
                 <p className="text-sm text-muted-foreground">
@@ -391,20 +393,10 @@ export function Layout({ children }: LayoutProps) {
                 </p>
               </div>
 
-              {/* {quickStats && (
-                <div className={`flex items-center gap-3 px-4 py-2 bg-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-50 rounded-lg border border-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-200`}>
-                  {React.createElement(quickStats.icon, { className: `h-4 w-4 text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-600` })}
-                  <div className="text-xs">
-                    <p className={`font-medium text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-700`}>{quickStats.title}</p>
-                    <p className={`text-${quickStats.color === 'flydubai-blue' ? 'blue' : quickStats.color === 'flydubai-orange' ? 'orange' : quickStats.color === 'flydubai-navy' ? 'blue' : 'blue'}-600`}>{quickStats.subtitle}</p>
-                  </div>
-                </div>
-              )} */}
-
               {currentUser && (
                 <div className="flex items-center gap-3 border-l pl-4">
                   <div className="text-right">
-                    <p className="text-sm font-medium text-flydubai-navy">
+                    <p className="text-sm font-medium text-airline-navy">
                       {currentUser.fullName}
                     </p>
                     <p className="text-xs text-gray-500">
@@ -434,4 +426,3 @@ export function Layout({ children }: LayoutProps) {
     </div>
   );
 }
-
