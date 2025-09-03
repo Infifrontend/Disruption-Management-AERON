@@ -85,7 +85,7 @@ export interface PassengerData {
 
 
   // Helper method to retry API calls when database is unavailable
-  private async retryApiCall<T>(operation: () => Promise<T>, fallbackValue: T, maxRetries: number = 3): Promise<T> {
+  private async retryApiCall<T>(operation: () => Promise<T>, fallbackValue: T, maxRetries = 3): Promise<T> {
     let lastError: any = null;
     
     for (let attempt = 0; attempt < maxRetries; attempt++) {
