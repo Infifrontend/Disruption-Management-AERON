@@ -444,6 +444,36 @@ class DatabaseService {
     }
   }
 
+  // Batch save custom rules
+  async batchSaveCustomRules(
+    rules: Array<Omit<CustomRule, "id" | "created_at" | "updated_at">>,
+    userId: string = "system"
+  ): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/custom-rules/batch`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          rules,
+          updated_by: userId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log(`Batch saved ${result.saved_rules} custom rules to database`);
+      return true;
+    } catch (error) {
+      console.error("Failed to batch save custom rules:", error);
+      return false;
+    }
+  }
+
   async updateCustomRule(
     ruleId: string,
     updates: Partial<CustomRule>,
