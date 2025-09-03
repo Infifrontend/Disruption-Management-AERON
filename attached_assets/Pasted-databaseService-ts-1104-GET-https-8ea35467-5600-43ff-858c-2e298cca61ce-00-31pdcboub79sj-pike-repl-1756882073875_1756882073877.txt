@@ -1,0 +1,106 @@
+databaseService.ts:1104  GET https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev:3001/api/disruption-categories 503 (Service Unavailable)
+getDisruptionCategories @ databaseService.ts:1104
+fetchDisruptionCategories @ DisruptionInput.tsx:175
+(anonymous) @ DisruptionInput.tsx:185Understand this error
+databaseService.ts:1109 Error fetching disruption categories: Error: HTTP error! status: 503
+    at DatabaseService.getDisruptionCategories (databaseService.ts:1106:15)
+    at async fetchDisruptionCategories (DisruptionInput.tsx:175:24)
+getDisruptionCategories @ databaseService.ts:1109
+await in getDisruptionCategories
+fetchDisruptionCategories @ DisruptionInput.tsx:175
+(anonymous) @ DisruptionInput.tsx:185Understand this error
+databaseService.ts:652  GET https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev:3001/api/screen-settings 503 (Service Unavailable)
+getScreenSettings @ databaseService.ts:652
+loadScreenSettings @ AppContext.tsx:58
+(anonymous) @ AppContext.tsx:106
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=082351ac:16915
+commitPassiveMountOnFiber @ chunk-PJEEZAML.js?v=082351ac:18156
+commitPassiveMountEffects_complete @ chunk-PJEEZAML.js?v=082351ac:18129
+commitPassiveMountEffects_begin @ chunk-PJEEZAML.js?v=082351ac:18119
+commitPassiveMountEffects @ chunk-PJEEZAML.js?v=082351ac:18109
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=082351ac:19490
+flushPassiveEffects @ chunk-PJEEZAML.js?v=082351ac:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=082351ac:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=082351ac:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=082351ac:19432
+commitRoot @ chunk-PJEEZAML.js?v=082351ac:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=082351ac:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=082351ac:18718
+workLoop @ chunk-PJEEZAML.js?v=082351ac:197
+flushWork @ chunk-PJEEZAML.js?v=082351ac:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=082351ac:384Understand this error
+databaseService.ts:658 Failed to fetch screen settings: Error: HTTP error! status: 503
+    at DatabaseService.getScreenSettings (databaseService.ts:654:15)
+    at async loadScreenSettings (AppContext.tsx:58:26)
+getScreenSettings @ databaseService.ts:658
+await in getScreenSettings
+loadScreenSettings @ AppContext.tsx:58
+(anonymous) @ AppContext.tsx:106
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=082351ac:16915
+commitPassiveMountOnFiber @ chunk-PJEEZAML.js?v=082351ac:18156
+commitPassiveMountEffects_complete @ chunk-PJEEZAML.js?v=082351ac:18129
+commitPassiveMountEffects_begin @ chunk-PJEEZAML.js?v=082351ac:18119
+commitPassiveMountEffects @ chunk-PJEEZAML.js?v=082351ac:18109
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=082351ac:19490
+flushPassiveEffects @ chunk-PJEEZAML.js?v=082351ac:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=082351ac:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=082351ac:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=082351ac:19432
+commitRoot @ chunk-PJEEZAML.js?v=082351ac:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=082351ac:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=082351ac:18718
+workLoop @ chunk-PJEEZAML.js?v=082351ac:197
+flushWork @ chunk-PJEEZAML.js?v=082351ac:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=082351ac:384Understand this error
+databaseService.ts:652  GET https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev:3001/api/screen-settings 503 (Service Unavailable)
+getScreenSettings @ databaseService.ts:652
+loadScreenSettings @ AppContext.tsx:58
+(anonymous) @ AppContext.tsx:106
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=082351ac:16915
+invokePassiveEffectMountInDEV @ chunk-PJEEZAML.js?v=082351ac:18324
+invokeEffectsInDev @ chunk-PJEEZAML.js?v=082351ac:19701
+commitDoubleInvokeEffectsInDEV @ chunk-PJEEZAML.js?v=082351ac:19686
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=082351ac:19503
+flushPassiveEffects @ chunk-PJEEZAML.js?v=082351ac:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=082351ac:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=082351ac:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=082351ac:19432
+commitRoot @ chunk-PJEEZAML.js?v=082351ac:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=082351ac:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=082351ac:18718
+workLoop @ chunk-PJEEZAML.js?v=082351ac:197
+flushWork @ chunk-PJEEZAML.js?v=082351ac:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=082351ac:384Understand this error
+databaseService.ts:658 Failed to fetch screen settings: Error: HTTP error! status: 503
+    at DatabaseService.getScreenSettings (databaseService.ts:654:15)
+    at async loadScreenSettings (AppContext.tsx:58:26)
+getScreenSettings @ databaseService.ts:658
+await in getScreenSettings
+loadScreenSettings @ AppContext.tsx:58
+(anonymous) @ AppContext.tsx:106
+commitHookEffectListMount @ chunk-PJEEZAML.js?v=082351ac:16915
+invokePassiveEffectMountInDEV @ chunk-PJEEZAML.js?v=082351ac:18324
+invokeEffectsInDev @ chunk-PJEEZAML.js?v=082351ac:19701
+commitDoubleInvokeEffectsInDEV @ chunk-PJEEZAML.js?v=082351ac:19686
+flushPassiveEffectsImpl @ chunk-PJEEZAML.js?v=082351ac:19503
+flushPassiveEffects @ chunk-PJEEZAML.js?v=082351ac:19447
+performSyncWorkOnRoot @ chunk-PJEEZAML.js?v=082351ac:18868
+flushSyncCallbacks @ chunk-PJEEZAML.js?v=082351ac:9119
+commitRootImpl @ chunk-PJEEZAML.js?v=082351ac:19432
+commitRoot @ chunk-PJEEZAML.js?v=082351ac:19277
+finishConcurrentRender @ chunk-PJEEZAML.js?v=082351ac:18805
+performConcurrentWorkOnRoot @ chunk-PJEEZAML.js?v=082351ac:18718
+workLoop @ chunk-PJEEZAML.js?v=082351ac:197
+flushWork @ chunk-PJEEZAML.js?v=082351ac:176
+performWorkUntilDeadline @ chunk-PJEEZAML.js?v=082351ac:384Understand this error
+databaseService.ts:214  GET https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev:3001/api/settings 503 (Service Unavailable)
+getAllSettings @ databaseService.ts:214
+loadFromDatabase @ settingsStorage.ts:66
+initializeStorage @ settingsStorage.ts:55
+await in initializeStorage
+SettingsStorage @ settingsStorage.ts:47
+(anonymous) @ settingsStorage.ts:999Understand this error
+databaseService.ts:231 Failed to fetch settings from database: Error: HTTP error! status: 503
+    at DatabaseService.getAllSettings (databaseService.ts:216:15)
+    at async SettingsStorage.loadFromDatabase (settingsStorage.ts:66:24)
+    at async SettingsStorage.initializeStorage (settingsStorage.ts:55:7)
