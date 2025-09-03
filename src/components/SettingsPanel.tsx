@@ -873,6 +873,16 @@ export function SettingsPanel({
         if (totalWeight > 100) {
           validationErrors.push(`${section}: Total weight (${totalWeight}%) exceeds 100%`);
         }
+        
+        // Additional validation for custom parameters
+        const customParametersWeight = recoveryConfiguration[section].customParameters?.reduce((sum, p) => sum + p.weight, 0) || 0;
+        const baseParametersWeight = Object.keys(recoveryConfiguration[section])
+          .filter(key => key !== "customParameters")
+          .reduce((sum, key) => sum + (recoveryConfiguration[section][key] || 0), 0);
+        
+        if (customParametersWeight + baseParametersWeight > 100) {
+          validationErrors.push(`${section}: Custom parameters weight (${customParametersWeight}%) plus base parameters weight (${baseParametersWeight}%) exceeds 100%`);
+        }
       }
 
       if (validationErrors.length > 0) {
@@ -1069,7 +1079,6 @@ export function SettingsPanel({
     if (section) {
       // For recovery configuration sections
       const data = recoveryConfiguration[section];
-      console.log(recoveryConfiguration);
       if (data) {
         const baseParams = Object.keys(data).filter(
           (key) => key !== "customParameters",
@@ -1079,18 +1088,18 @@ export function SettingsPanel({
           0,
         );
         customWeights =
-          data.customParameters?.reduce((sum, p) => sum + p.weight, 0) || 0;
+          data.customParameters?.reduce((sum, p) => sum + (p.weight || 0), 0) || 0;
       }
     } else {
       // For passenger priority configuration
       const baseParams = Object.values(passengerPriorityConfig[category] || {});
       baseWeights = baseParams.reduce(
-        (sum: number, val) => sum + Number(val),
+        (sum: number, val) => sum + Number(val || 0),
         0,
       );
       customWeights = customParameters
         .filter((p) => p.category === category)
-        .reduce((sum, p) => sum + p.weight, 0);
+        .reduce((sum, p) => sum + (p.weight || 0), 0);
     }
 
     return baseWeights + customWeights;
