@@ -296,6 +296,21 @@
   transform: none !important;
 }
 
+/* Weight limit reached visual feedback */
+.slider-weight-limited [data-radix-track] {
+  background-color: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+}
+
+.slider-weight-limited [data-radix-range] {
+  background-color: #f87171 !important;
+}
+
+.slider-weight-limited [data-radix-thumb] {
+  border-color: #ef4444 !important;
+  background-color: #fef2f2 !important;
+}
+
 /* Enhanced switch styles for better visibility */
 .switch-flydubai [data-state="checked"] {
   background-color: var(--airline-primary) !important;
