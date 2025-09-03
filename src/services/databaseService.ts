@@ -85,10 +85,11 @@ export interface PassengerData {
 
 
   // Helper method to retry API calls when database is unavailable
-  private async retryApiCall<T>(operation: () => Promise<T>, fallbackValue: T, maxRetries = 3): Promise<T> {
+  private async retryApiCall<T>(operation: () => Promise<T>, fallbackValue: T, maxRetries?: number): Promise<T> {
+    const retries = maxRetries ?? 3;
     let lastError: any = null;
     
-    for (let attempt = 0; attempt < maxRetries; attempt++) {
+    for (let attempt = 0; attempt < retries; attempt++) {
       try {
         const result = await operation();
         // Reset failure count on success
@@ -102,14 +103,14 @@ export interface PassengerData {
           console.log(`API call failed (attempt ${attempt + 1}/${maxRetries}): Database unavailable`);
           
           // Wait before retry, with exponential backoff
-          if (attempt < maxRetries - 1) {
+          if (attempt < retries - 1) {
             const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
             console.log(`Retrying in ${delay}ms...`);
             await new Promise(resolve => setTimeout(resolve, delay));
             
             // Check health before retry
             const isHealthy = await this.healthCheck();
-            if (!isHealthy && attempt < maxRetries - 1) {
+            if (!isHealthy && attempt < retries - 1) {
               continue; // Try again
             }
           }
