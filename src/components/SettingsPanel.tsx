@@ -1573,33 +1573,33 @@ export function SettingsPanel({
 
                   return (
                     <div key={key} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Icon className="h-4 w-4 text-flydubai-blue" />
-                          <Label className="text-sm font-medium">{label}</Label>
-                        </div>
-                        <Badge
-                          className={`${getWeightColor(value)} bg-transparent border`}
-                        >
-                          {value}%
-                        </Badge>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon className="h-4 w-4 text-flydubai-blue" />
+                        <Label className="text-sm font-medium">
+                          {label}
+                        </Label>
                       </div>
-                      <Slider
-                        value={
-                          Array.isArray(value) ? value : [Number(value) || 0]
-                        }
-                        onValueChange={(newValue) =>
-                          handlePriorityConfigChange(
-                            "passengerPrioritization",
-                            key,
-                            newValue,
-                          )
-                        }
-                        max={Math.min(50, getAvailableWeight("passengerPrioritization", null, key, value))}
-                        min={0}
-                        step={5}
-                        className="w-full slider-flydubai"
-                      />
+                      <div className="flex items-center gap-3">
+                        <Slider
+                          value={
+                            Array.isArray(value) ? value : [Number(value) || 0]
+                          }
+                          onValueChange={(newValue) =>
+                            handlePriorityConfigChange(
+                              "passengerPrioritization",
+                              key,
+                              newValue,
+                            )
+                          }
+                          max={Math.min(50, getAvailableWeight("passengerPrioritization", null, key, value))}
+                          min={0}
+                          step={5}
+                          className="flex-1 slider-flydubai"
+                        />
+                        <span className={`text-sm font-medium ${getWeightColor(value)} min-w-[35px] text-right`}>
+                          {value}%
+                        </span>
+                      </div>
                     </div>
                   );
                 })}
@@ -1670,33 +1670,33 @@ export function SettingsPanel({
 
                   return (
                     <div key={key} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Icon className="h-4 w-4 text-flydubai-blue" />
-                          <Label className="text-sm font-medium">{label}</Label>
-                        </div>
-                        <Badge
-                          className={`${getWeightColor(value)} bg-transparent border`}
-                        >
-                          {value}%
-                        </Badge>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Icon className="h-4 w-4 text-flydubai-blue" />
+                        <Label className="text-sm font-medium">
+                          {label}
+                        </Label>
                       </div>
-                      <Slider
-                        value={
-                          Array.isArray(value) ? value : [Number(value) || 0]
-                        }
-                        onValueChange={(newValue) =>
-                          handlePriorityConfigChange(
-                            "flightPrioritization",
-                            key,
-                            newValue,
-                          )
-                        }
-                        max={Math.min(50, getAvailableWeight("flightPrioritization", null, key, value))}
-                        min={0}
-                        step={5}
-                        className="w-full slider-flydubai"
-                      />
+                      <div className="flex items-center gap-3">
+                        <Slider
+                          value={
+                            Array.isArray(value) ? value : [Number(value) || 0]
+                          }
+                          onValueChange={(newValue) =>
+                            handlePriorityConfigChange(
+                              "flightPrioritization",
+                              key,
+                              newValue,
+                            )
+                          }
+                          max={Math.min(50, getAvailableWeight("flightPrioritization", null, key, value))}
+                          min={0}
+                          step={5}
+                          className="flex-1 slider-flydubai"
+                        />
+                        <span className={`text-sm font-medium ${getWeightColor(value)} min-w-[35px] text-right`}>
+                          {value}%
+                        </span>
+                      </div>
                     </div>
                   );
                 })}
@@ -1768,35 +1768,33 @@ export function SettingsPanel({
 
                     return (
                       <div key={key} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4 text-flydubai-blue" />
-                            <Label className="text-sm font-medium">
-                              {label}
-                            </Label>
-                          </div>
-                          <Badge
-                            className={`${getWeightColor(value)} bg-transparent border`}
-                          >
-                            {value}%
-                          </Badge>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon className="h-4 w-4 text-flydubai-blue" />
+                          <Label className="text-sm font-medium">
+                            {label}
+                          </Label>
                         </div>
-                        <Slider
-                          value={
-                            Array.isArray(value) ? value : [Number(value) || 0]
-                          }
-                          onValueChange={(newValue) =>
-                            handlePriorityConfigChange(
-                              "flightScoring",
-                              key,
-                              newValue,
-                            )
-                          }
-                          max={key === "baseScore" ? maxValue : Math.min(maxValue, getAvailableWeight("flightScoring", null, key, value))}
-                          min={key === "baseScore" ? 50 : 0}
-                          step={1}
-                          className="w-full slider-flydubai"
-                        />
+                        <div className="flex items-center gap-3">
+                          <Slider
+                            value={
+                              Array.isArray(value) ? value : [Number(value) || 0]
+                            }
+                            onValueChange={(newValue) =>
+                              handlePriorityConfigChange(
+                                "flightScoring",
+                                key,
+                                newValue,
+                              )
+                            }
+                            max={key === "baseScore" ? maxValue : Math.min(maxValue, getAvailableWeight("flightScoring", null, key, value))}
+                            min={key === "baseScore" ? 50 : 0}
+                            step={1}
+                            className="flex-1 slider-flydubai"
+                          />
+                          <span className={`text-sm font-medium ${getWeightColor(value)} min-w-[35px] text-right`}>
+                            {value}%
+                          </span>
+                        </div>
                       </div>
                     );
                   },
@@ -1847,35 +1845,33 @@ export function SettingsPanel({
 
                     return (
                       <div key={key} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4 text-flydubai-blue" />
-                            <Label className="text-sm font-medium">
-                              {label}
-                            </Label>
-                          </div>
-                          <Badge
-                            className={`${getWeightColor(value)} bg-transparent border`}
-                          >
-                            {value}%
-                          </Badge>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon className="h-4 w-4 text-flydubai-blue" />
+                          <Label className="text-sm font-medium">
+                            {label}
+                          </Label>
                         </div>
-                        <Slider
-                          value={
-                            Array.isArray(value) ? value : [Number(value) || 0]
-                          }
-                          onValueChange={(newValue) =>
-                            handlePriorityConfigChange(
-                              "passengerScoring",
-                              key,
-                              newValue,
-                            )
-                          }
-                          max={Math.min(50, getAvailableWeight("passengerScoring", null, key, value))}
-                          min={0}
-                          step={5}
-                          className="w-full slider-flydubai"
-                        />
+                        <div className="flex items-center gap-3">
+                          <Slider
+                            value={
+                              Array.isArray(value) ? value : [Number(value) || 0]
+                            }
+                            onValueChange={(newValue) =>
+                              handlePriorityConfigChange(
+                                "passengerScoring",
+                                key,
+                                newValue,
+                              )
+                            }
+                            max={Math.min(50, getAvailableWeight("passengerScoring", null, key, value))}
+                            min={0}
+                            step={5}
+                            className="flex-1 slider-flydubai"
+                          />
+                          <span className={`text-sm font-medium ${getWeightColor(value)} min-w-[35px] text-right`}>
+                            {value}%
+                          </span>
+                        </div>
                       </div>
                     );
                   },
@@ -2556,35 +2552,33 @@ export function SettingsPanel({
 
                     return (
                       <div key={key} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4 text-flydubai-blue" />
-                            <Label className="text-sm font-medium">
-                              {label}
-                            </Label>
-                          </div>
-                          <Badge
-                            className={`${getWeightColor(value)} bg-transparent border`}
-                          >
-                            {value}%
-                          </Badge>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon className="h-4 w-4 text-flydubai-blue" />
+                          <Label className="text-sm font-medium">
+                            {label}
+                          </Label>
                         </div>
-                        <Slider
-                          value={
-                            Array.isArray(value) ? value : [Number(value) || 0]
-                          }
-                          onValueChange={(newValue) =>
-                            handleRecoveryConfigChange(
-                              "recoveryOptionsRanking",
-                              key,
-                              newValue,
-                            )
-                          }
-                          max={Math.min(50, getAvailableWeight(null, "recoveryOptionsRanking", key, value))}
-                          min={0}
-                          step={5}
-                          className="w-full slider-flydubai"
-                        />
+                        <div className="flex items-center gap-3">
+                          <Slider
+                            value={
+                              Array.isArray(value) ? value : [Number(value) || 0]
+                            }
+                            onValueChange={(newValue) =>
+                              handleRecoveryConfigChange(
+                                "recoveryOptionsRanking",
+                                key,
+                                newValue,
+                              )
+                            }
+                            max={Math.min(50, getAvailableWeight(null, "recoveryOptionsRanking", key, value))}
+                            min={0}
+                            step={5}
+                            className="flex-1 slider-flydubai"
+                          />
+                          <span className={`text-sm font-medium ${getWeightColor(value)} min-w-[35px] text-right`}>
+                            {value}%
+                          </span>
+                        </div>
                       </div>
                     );
                   })}
@@ -2701,35 +2695,33 @@ export function SettingsPanel({
 
                     return (
                       <div key={key} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4 text-flydubai-blue" />
-                            <Label className="text-sm font-medium">
-                              {label}
-                            </Label>
-                          </div>
-                          <Badge
-                            className={`${getWeightColor(value)} bg-transparent border`}
-                          >
-                            {value}%
-                          </Badge>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon className="h-4 w-4 text-flydubai-blue" />
+                          <Label className="text-sm font-medium">
+                            {label}
+                          </Label>
                         </div>
-                        <Slider
-                          value={
-                            Array.isArray(value) ? value : [Number(value) || 0]
-                          }
-                          onValueChange={(newValue) =>
-                            handleRecoveryConfigChange(
-                              "aircraftSelectionCriteria",
-                              key,
-                              newValue,
-                            )
-                          }
-                          max={Math.min(50, getAvailableWeight(null, "aircraftSelectionCriteria", key, value))}
-                          min={0}
-                          step={5}
-                          className="w-full slider-flydubai"
-                        />
+                        <div className="flex items-center gap-3">
+                          <Slider
+                            value={
+                              Array.isArray(value) ? value : [Number(value) || 0]
+                            }
+                            onValueChange={(newValue) =>
+                              handleRecoveryConfigChange(
+                                "aircraftSelectionCriteria",
+                                key,
+                                newValue,
+                              )
+                            }
+                            max={Math.min(50, getAvailableWeight(null, "aircraftSelectionCriteria", key, value))}
+                            min={0}
+                            step={5}
+                            className="flex-1 slider-flydubai"
+                          />
+                          <span className={`text-sm font-medium ${getWeightColor(value)} min-w-[35px] text-right`}>
+                            {value}%
+                          </span>
+                        </div>
                       </div>
                     );
                   })}
@@ -2848,35 +2840,33 @@ export function SettingsPanel({
 
                     return (
                       <div key={key} className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4 text-flydubai-blue" />
-                            <Label className="text-sm font-medium">
-                              {label}
-                            </Label>
-                          </div>
-                          <Badge
-                            className={`${getWeightColor(value)} bg-transparent border`}
-                          >
-                            {value}%
-                          </Badge>
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon className="h-4 w-4 text-flydubai-blue" />
+                          <Label className="text-sm font-medium">
+                            {label}
+                          </Label>
                         </div>
-                        <Slider
-                          value={
-                            Array.isArray(value) ? value : [Number(value) || 0]
-                          }
-                          onValueChange={(newValue) =>
-                            handleRecoveryConfigChange(
-                              "crewAssignmentCriteria",
-                              key,
-                              newValue,
-                            )
-                          }
-                          max={Math.min(50, getAvailableWeight(null, "crewAssignmentCriteria", key, value))}
-                          min={0}
-                          step={5}
-                          className="w-full slider-flydubai"
-                        />
+                        <div className="flex items-center gap-3">
+                          <Slider
+                            value={
+                              Array.isArray(value) ? value : [Number(value) || 0]
+                            }
+                            onValueChange={(newValue) =>
+                              handleRecoveryConfigChange(
+                                "crewAssignmentCriteria",
+                                key,
+                                newValue,
+                              )
+                            }
+                            max={Math.min(50, getAvailableWeight(null, "crewAssignmentCriteria", key, value))}
+                            min={0}
+                            step={5}
+                            className="flex-1 slider-flydubai"
+                          />
+                          <span className={`text-sm font-medium ${getWeightColor(value)} min-w-[35px] text-right`}>
+                            {value}%
+                          </span>
+                        </div>
                       </div>
                     );
                   })}
