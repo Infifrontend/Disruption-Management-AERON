@@ -628,3 +628,6 @@ body {
 .border-airline-primary {
   border-color: color-mix(in srgb, var(--airline-primary) 90%, black);
 }
+.switch-flydubai [data-state=unchecked] {
+    background-color: #e2e8f0 !important;
+}
