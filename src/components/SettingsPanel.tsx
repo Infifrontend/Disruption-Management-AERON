@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 import {
   useSettingsStorage,
   SettingsFieldConfig,
@@ -132,8 +138,10 @@ const updateScreenSetting = (screenId: string, enabled: boolean) => {
   // Implement actual state update logic here
 };
 
-
-export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.Element {
+export function SettingsPanel({
+  screenSettings,
+  onScreenSettingsChange,
+}): JSX.Element {
   console.log(screenSettings, "tesssttttttt");
   const [activeTab, setActiveTab] = useState("screens");
   const [isLoading, setIsLoading] = useState(true);
@@ -596,7 +604,7 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
       // Use the dedicated screen settings batch save API
       const success = await databaseService.batchSaveScreenSettings(
         screenSettings,
-        "user"
+        "user",
       );
 
       if (success) {
@@ -989,18 +997,21 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
     onScreenSettingsChange(updatedSettings);
   };
 
-  const updateSystemSetting = (categoryKey: string, settingKey: string, value: any) => {
+  const updateSystemSetting = (
+    categoryKey: string,
+    settingKey: string,
+    value: any,
+  ) => {
     setRawTabSettings((prev) => ({
       ...prev,
       system: {
         ...prev.system,
         [categoryKey]: prev.system[categoryKey].map((setting) =>
-          setting.key === settingKey ? { ...setting, value: value } : setting
+          setting.key === settingKey ? { ...setting, value: value } : setting,
         ),
       },
     }));
   };
-
 
   if (isLoading) {
     return (
@@ -1093,37 +1104,57 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
             <CardHeader className="pb-4">
               <div className="flex items-center gap-2 mb-2">
                 <Eye className="h-5 w-5 text-flydubai-blue" />
-                <CardTitle className="text-flydubai-navy">Screen Visibility Configuration</CardTitle>
+                <CardTitle className="text-flydubai-navy">
+                  Screen Visibility Configuration
+                </CardTitle>
               </div>
               <CardDescription className="text-sm text-muted-foreground">
-                Control which screens are available in the AERON interface. Required screens cannot be disabled.
+                Control which screens are available in the AERON interface.
+                Required screens cannot be disabled.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               {screenSettings.length > 0 ? (
                 <>
                   {/* Main Category */}
-                  {screenSettings.filter(screen => screen.category === 'main').length > 0 && (
+                  {screenSettings.filter((screen) => screen.category === "main")
+                    .length > 0 && (
                     <div className="space-y-4">
-                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">Main</h4>
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">
+                        Main
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {screenSettings
-                          .filter(screen => screen.category === 'main')
+                          .filter((screen) => screen.category === "main")
                           .map((screen) => (
-                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div
+                              key={screen.id}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
                               <div className="flex items-center gap-3">
-                                <div className="text-lg font-medium">{screen.name}</div>
+                                <div className=" font-medium">
+                                  {screen.name}
+                                </div>
                                 {screen.required && (
-                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs text-gray-600"
+                                  >
                                     Required
                                   </Badge>
                                 )}
                               </div>
                               <Switch
                                 checked={screen.enabled}
-                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                onCheckedChange={(checked) =>
+                                  updateScreenSetting(screen.id, checked)
+                                }
                                 disabled={screen.required}
-                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                                className={
+                                  screen.enabled
+                                    ? "data-[state=checked]:bg-flydubai-blue"
+                                    : ""
+                                }
                               />
                             </div>
                           ))}
@@ -1132,27 +1163,45 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
                   )}
 
                   {/* Operations Category */}
-                  {screenSettings.filter(screen => screen.category === 'operations').length > 0 && (
+                  {screenSettings.filter(
+                    (screen) => screen.category === "operations",
+                  ).length > 0 && (
                     <div className="space-y-4">
-                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">Operations</h4>
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">
+                        Operations
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {screenSettings
-                          .filter(screen => screen.category === 'operations')
+                          .filter((screen) => screen.category === "operations")
                           .map((screen) => (
-                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div
+                              key={screen.id}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
                               <div className="flex items-center gap-3">
-                                <div className="text-lg font-medium">{screen.name}</div>
+                                <div className=" font-medium">
+                                  {screen.name}
+                                </div>
                                 {screen.required && (
-                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs text-gray-600"
+                                  >
                                     Required
                                   </Badge>
                                 )}
                               </div>
                               <Switch
                                 checked={screen.enabled}
-                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                onCheckedChange={(checked) =>
+                                  updateScreenSetting(screen.id, checked)
+                                }
                                 disabled={screen.required}
-                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                                className={
+                                  screen.enabled
+                                    ? "data-[state=checked]:bg-flydubai-blue"
+                                    : ""
+                                }
                               />
                             </div>
                           ))}
@@ -1161,27 +1210,45 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
                   )}
 
                   {/* Prediction Category */}
-                  {screenSettings.filter(screen => screen.category === 'prediction').length > 0 && (
+                  {screenSettings.filter(
+                    (screen) => screen.category === "prediction",
+                  ).length > 0 && (
                     <div className="space-y-4">
-                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">Prediction</h4>
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">
+                        Prediction
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {screenSettings
-                          .filter(screen => screen.category === 'prediction')
+                          .filter((screen) => screen.category === "prediction")
                           .map((screen) => (
-                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div
+                              key={screen.id}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
                               <div className="flex items-center gap-3">
-                                <div className="text-lg font-medium">{screen.name}</div>
+                                <div className=" font-medium">
+                                  {screen.name}
+                                </div>
                                 {screen.required && (
-                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs text-gray-600"
+                                  >
                                     Required
                                   </Badge>
                                 )}
                               </div>
                               <Switch
                                 checked={screen.enabled}
-                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                onCheckedChange={(checked) =>
+                                  updateScreenSetting(screen.id, checked)
+                                }
                                 disabled={screen.required}
-                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                                className={
+                                  screen.enabled
+                                    ? "data-[state=checked]:bg-flydubai-blue"
+                                    : ""
+                                }
                               />
                             </div>
                           ))}
@@ -1190,27 +1257,45 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
                   )}
 
                   {/* Monitoring Category */}
-                  {screenSettings.filter(screen => screen.category === 'monitoring').length > 0 && (
+                  {screenSettings.filter(
+                    (screen) => screen.category === "monitoring",
+                  ).length > 0 && (
                     <div className="space-y-4">
-                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">Monitoring</h4>
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">
+                        Monitoring
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {screenSettings
-                          .filter(screen => screen.category === 'monitoring')
+                          .filter((screen) => screen.category === "monitoring")
                           .map((screen) => (
-                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div
+                              key={screen.id}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
                               <div className="flex items-center gap-3">
-                                <div className="text-lg font-medium">{screen.name}</div>
+                                <div className=" font-medium">
+                                  {screen.name}
+                                </div>
                                 {screen.required && (
-                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs text-gray-600"
+                                  >
                                     Required
                                   </Badge>
                                 )}
                               </div>
                               <Switch
                                 checked={screen.enabled}
-                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                onCheckedChange={(checked) =>
+                                  updateScreenSetting(screen.id, checked)
+                                }
                                 disabled={screen.required}
-                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                                className={
+                                  screen.enabled
+                                    ? "data-[state=checked]:bg-flydubai-blue"
+                                    : ""
+                                }
                               />
                             </div>
                           ))}
@@ -1219,27 +1304,45 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
                   )}
 
                   {/* Services Category */}
-                  {screenSettings.filter(screen => screen.category === 'services').length > 0 && (
+                  {screenSettings.filter(
+                    (screen) => screen.category === "services",
+                  ).length > 0 && (
                     <div className="space-y-4">
-                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">Services</h4>
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">
+                        Services
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {screenSettings
-                          .filter(screen => screen.category === 'services')
+                          .filter((screen) => screen.category === "services")
                           .map((screen) => (
-                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div
+                              key={screen.id}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
                               <div className="flex items-center gap-3">
-                                <div className="text-lg font-medium">{screen.name}</div>
+                                <div className=" font-medium">
+                                  {screen.name}
+                                </div>
                                 {screen.required && (
-                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs text-gray-600"
+                                  >
                                     Required
                                   </Badge>
                                 )}
                               </div>
                               <Switch
                                 checked={screen.enabled}
-                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                onCheckedChange={(checked) =>
+                                  updateScreenSetting(screen.id, checked)
+                                }
                                 disabled={screen.required}
-                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                                className={
+                                  screen.enabled
+                                    ? "data-[state=checked]:bg-flydubai-blue"
+                                    : ""
+                                }
                               />
                             </div>
                           ))}
@@ -1248,27 +1351,45 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
                   )}
 
                   {/* Analytics Category */}
-                  {screenSettings.filter(screen => screen.category === 'analytics').length > 0 && (
+                  {screenSettings.filter(
+                    (screen) => screen.category === "analytics",
+                  ).length > 0 && (
                     <div className="space-y-4">
-                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">Analytics</h4>
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">
+                        Analytics
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {screenSettings
-                          .filter(screen => screen.category === 'analytics')
+                          .filter((screen) => screen.category === "analytics")
                           .map((screen) => (
-                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div
+                              key={screen.id}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
                               <div className="flex items-center gap-3">
-                                <div className="text-lg font-medium">{screen.name}</div>
+                                <div className=" font-medium">
+                                  {screen.name}
+                                </div>
                                 {screen.required && (
-                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs text-gray-600"
+                                  >
                                     Required
                                   </Badge>
                                 )}
                               </div>
                               <Switch
                                 checked={screen.enabled}
-                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                onCheckedChange={(checked) =>
+                                  updateScreenSetting(screen.id, checked)
+                                }
                                 disabled={screen.required}
-                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                                className={
+                                  screen.enabled
+                                    ? "data-[state=checked]:bg-flydubai-blue"
+                                    : ""
+                                }
                               />
                             </div>
                           ))}
@@ -1277,27 +1398,45 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
                   )}
 
                   {/* System Category */}
-                  {screenSettings.filter(screen => screen.category === 'system').length > 0 && (
+                  {screenSettings.filter(
+                    (screen) => screen.category === "system",
+                  ).length > 0 && (
                     <div className="space-y-4">
-                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">System</h4>
+                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">
+                        System
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {screenSettings
-                          .filter(screen => screen.category === 'system')
+                          .filter((screen) => screen.category === "system")
                           .map((screen) => (
-                            <div key={screen.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div
+                              key={screen.id}
+                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                            >
                               <div className="flex items-center gap-3">
-                                <div className="text-lg font-medium">{screen.name}</div>
+                                <div className=" font-medium">
+                                  {screen.name}
+                                </div>
                                 {screen.required && (
-                                  <Badge variant="outline" className="text-xs text-gray-600">
+                                  <Badge
+                                    variant="outline"
+                                    className="text-xs text-gray-600"
+                                  >
                                     Required
                                   </Badge>
                                 )}
                               </div>
                               <Switch
                                 checked={screen.enabled}
-                                onCheckedChange={(checked) => updateScreenSetting(screen.id, checked)}
+                                onCheckedChange={(checked) =>
+                                  updateScreenSetting(screen.id, checked)
+                                }
                                 disabled={screen.required}
-                                className={screen.enabled ? "data-[state=checked]:bg-flydubai-blue" : ""}
+                                className={
+                                  screen.enabled
+                                    ? "data-[state=checked]:bg-flydubai-blue"
+                                    : ""
+                                }
                               />
                             </div>
                           ))}
@@ -1309,12 +1448,15 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
                 <div className="text-center py-8 text-muted-foreground">
                   <Eye className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                   <p>No screen settings available</p>
-                  <p className="text-sm mt-2">Screen settings will appear here when loaded from the database</p>
+                  <p className="text-sm mt-2">
+                    Screen settings will appear here when loaded from the
+                    database
+                  </p>
                 </div>
               )}
 
               <div className="flex justify-end pt-6 border-t">
-                <Button 
+                <Button
                   onClick={saveScreenSettings}
                   disabled={saveStatus === "saving"}
                   className="min-w-[120px] btn-flydubai-primary"
@@ -1364,16 +1506,6 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
                     decision-making.
                   </p>
                 </div>
-                <Button
-                  onClick={savePassengerPrioritySettings}
-                  className="btn-flydubai-primary"
-                  disabled={isLoading || saveStatus === "saving"}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {saveStatus === "saving"
-                    ? "Saving..."
-                    : "Save Priority Settings"}
-                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -1714,94 +1846,17 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
               </CardContent>
             </Card>
           </div>
+          <div class="flex justify-end">
+            <Button
+              onClick={savePassengerPrioritySettings}
+              className="btn-flydubai-primary"
+              disabled={isLoading || saveStatus === "saving"}
+            >
+              <Save className="h-4 w-4 mr-2" />
+              {saveStatus === "saving" ? "Saving..." : "Save Priority Settings"}
+            </Button>
+          </div>
         </TabsContent>
-
-        {/* System Settings */}
-        <TabsContent value="system" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>System Configuration</CardTitle>
-                <CardDescription>
-                  Advanced system settings and configurations
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {rawTabSettings?.system && Object.keys(rawTabSettings.system).length > 0 ? (
-                  Object.entries(rawTabSettings.system).map(([categoryKey, categorySettings]) => (
-                    <div key={categoryKey} className="space-y-4">
-                      <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        {categoryKey.replace(/([A-Z])/g, ' $1').trim()}
-                      </h4>
-                      <div className="grid gap-4">
-                        {Array.isArray(categorySettings) && categorySettings.map((setting) => (
-                          <div key={`${categoryKey}-${setting.key}`} className="space-y-2">
-                            <Label htmlFor={`${categoryKey}-${setting.key}`}>
-                              {setting.label || setting.key}
-                            </Label>
-                            {setting.type === 'boolean' ? (
-                              <Switch
-                                id={`${categoryKey}-${setting.key}`}
-                                checked={setting.value}
-                                onCheckedChange={(value) => updateSystemSetting(categoryKey, setting.key, value)}
-                              />
-                            ) : setting.type === 'number' ? (
-                              <Input
-                                id={`${categoryKey}-${setting.key}`}
-                                type="number"
-                                value={setting.value}
-                                onChange={(e) => updateSystemSetting(categoryKey, setting.key, Number(e.target.value))}
-                              />
-                            ) : (
-                              <Input
-                                id={`${categoryKey}-${setting.key}`}
-                                type="text"
-                                value={setting.value}
-                                onChange={(e) => updateSystemSetting(categoryKey, setting.key, e.target.value)}
-                              />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <Separator />
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>No system settings available</p>
-                    <p className="text-sm mt-2">System settings will appear here when loaded from the database</p>
-                  </div>
-                )}
-
-                <div className="flex justify-end pt-4">
-                  <Button 
-                    onClick={saveSystemSettings}
-                    disabled={saveStatus === "saving"}
-                    className="min-w-[120px]"
-                  >
-                    {saveStatus === "saving" ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : saveStatus === "success" ? (
-                      <>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Saved
-                      </>
-                    ) : saveStatus === "error" ? (
-                      <>
-                        <XCircle className="mr-2 h-4 w-4" />
-                        Error
-                      </>
-                    ) : (
-                      "Save System Settings"
-                    )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
         {/* Enhanced Rule Configuration */}
         <TabsContent value="rules" className="space-y-6">
           <Card className="border-flydubai-blue bg-blue-50">
@@ -3746,90 +3801,94 @@ export function SettingsPanel({ screenSettings, onScreenSettingsChange }): JSX.E
 
         {/* System Settings Tab - Re-added with correct rendering */}
         <TabsContent value="system" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>System Configuration</CardTitle>
-                <CardDescription>
-                  Advanced system settings and configurations
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {rawTabSettings?.system && Object.keys(rawTabSettings.system).length > 0 ? (
-                  Object.entries(rawTabSettings.system).map(([categoryKey, categorySettings]) => (
-                    <div key={categoryKey} className="space-y-4">
-                      <h4 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-                        {categoryKey.replace(/([A-Z])/g, ' $1').trim()}
-                      </h4>
-                      <div className="grid gap-4">
-                        {Array.isArray(categorySettings) && categorySettings.map((setting) => (
-                          <div key={`${categoryKey}-${setting.key}`} className="space-y-2">
-                            <Label htmlFor={`${categoryKey}-${setting.key}`}>
-                              {setting.label || setting.key}
-                            </Label>
-                            {setting.type === 'boolean' ? (
-                              <Switch
-                                id={`${categoryKey}-${setting.key}`}
-                                checked={setting.value}
-                                onCheckedChange={(value) => updateSystemSetting(categoryKey, setting.key, value)}
-                              />
-                            ) : setting.type === 'number' ? (
-                              <Input
-                                id={`${categoryKey}-${setting.key}`}
-                                type="number"
-                                value={setting.value}
-                                onChange={(e) => updateSystemSetting(categoryKey, setting.key, Number(e.target.value))}
-                              />
-                            ) : (
-                              <Input
-                                id={`${categoryKey}-${setting.key}`}
-                                type="text"
-                                value={setting.value}
-                                onChange={(e) => updateSystemSetting(categoryKey, setting.key, e.target.value)}
-                              />
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <Separator />
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>No system settings available</p>
-                    <p className="text-sm mt-2">System settings will appear here when loaded from the database</p>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-flydubai-blue" />
+                System Configuration
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                General system settings and preferences.
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-flydubai-navy">
+                    Regional Settings
+                  </h3>
+
+                  <div>
+                    <Label className="text-sm font-medium">Time Zone</Label>
+                    <Select defaultValue="indian-standard">
+                      <SelectTrigger className="w-full mt-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="indian-standard">
+                          Indian Standard Time (IST)
+                        </SelectItem>
+                        <SelectItem value="gulf-standard">
+                          Gulf Standard Time (GST)
+                        </SelectItem>
+                        <SelectItem value="utc">
+                          Coordinated Universal Time (UTC)
+                        </SelectItem>
+                        <SelectItem value="local">Local System Time</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                )}
 
-                <div className="flex justify-end pt-4">
-                  <Button 
-                    onClick={saveSystemSettings}
-                    disabled={saveStatus === "saving"}
-                    className="min-w-[120px]"
-                  >
-                    {saveStatus === "saving" ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : saveStatus === "success" ? (
-                      <>
-                        <CheckCircle className="mr-2 h-4 w-4" />
-                        Saved
-                      </>
-                    ) : saveStatus === "error" ? (
-                      <>
-                        <XCircle className="mr-2 h-4 w-4" />
-                        Error
-                      </>
-                    ) : (
-                      "Save System Settings"
-                    )}
-                  </Button>
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Currency Display
+                    </Label>
+                    <Select defaultValue="aed">
+                      <SelectTrigger className="w-full mt-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="aed">AED (Dirham)</SelectItem>
+                        <SelectItem value="usd">USD (US Dollar)</SelectItem>
+                        <SelectItem value="eur">EUR (Euro)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
 
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-flydubai-navy">
+                    Performance Settings
+                  </h3>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-sm font-medium">
+                        High Performance Mode
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Enhanced processing for critical operations
+                      </p>
+                    </div>
+                    <Switch checked={false} className="switch-flydubai" />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-sm font-medium">
+                        Auto-Save Settings
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Automatically save configuration changes
+                      </p>
+                    </div>
+                    <Switch checked={true} className="switch-flydubai" />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
