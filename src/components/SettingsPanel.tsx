@@ -225,7 +225,7 @@ export function SettingsPanel({
     try {
       const rules = await databaseService.getAllCustomRules();
       console.log("Loaded custom rules from database:", rules);
-      
+
       // Transform database format to component format
       const transformedRules = rules.map((rule) => ({
         id: rule.rule_id,
@@ -239,14 +239,15 @@ export function SettingsPanel({
         actions: rule.actions || "",
         status: rule.status,
         createdBy: rule.created_by,
-        createdDate: rule.created_at ? new Date(rule.created_at).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+        createdDate: rule.created_at
+          ? new Date(rule.created_at).toISOString().split("T")[0]
+          : new Date().toISOString().split("T")[0],
       }));
-      
+
       setCustomRules(transformedRules);
     } catch (error) {
       console.error("Failed to load custom rules from database:", error);
-      // Initialize with empty array if database load fails
-      setCustomRules([]);
+      // Keep existing rules if database load fails
     }
   };
 
@@ -447,21 +448,14 @@ export function SettingsPanel({
   // Custom Rules Handlers
   const handleAddRule = async () => {
     if (newRule.name.trim() && newRule.description.trim()) {
-      // Generate next available rule ID
-      const existingIds = customRules.map(rule => {
-        const match = rule.id.match(/RULE-(\d+)/);
-        return match ? parseInt(match[1]) : 0;
-      });
-      const nextId = Math.max(0, ...existingIds) + 1;
-      
       const rule = {
-        id: `RULE-${String(nextId).padStart(3, "0")}`,
+        id: `RULE-${String(customRules.length + 6).padStart(3, "0")}`,
         ...newRule,
         createdBy: "user@flydubai.com",
         createdDate: new Date().toISOString().split("T")[0],
         status: "Active",
       };
-      
+
       try {
         // Save to database
         const success = await databaseService.saveCustomRule({
@@ -477,7 +471,7 @@ export function SettingsPanel({
           status: rule.status,
           created_by: rule.createdBy,
         });
-        
+
         if (success) {
           setCustomRules((prev) => [...prev, rule]);
           setNewRule({
@@ -522,7 +516,7 @@ export function SettingsPanel({
           status: newRule.status,
           updated_by: "user",
         });
-        
+
         if (success) {
           setCustomRules((prev) =>
             prev.map((rule) =>
@@ -554,7 +548,7 @@ export function SettingsPanel({
     try {
       // Delete from database
       const success = await databaseService.deleteCustomRule(ruleId);
-      
+
       if (success) {
         setCustomRules((prev) => prev.filter((rule) => rule.id !== ruleId));
       } else {
@@ -568,22 +562,20 @@ export function SettingsPanel({
   const handleToggleRuleStatus = async (ruleId) => {
     const rule = customRules.find((r) => r.id === ruleId);
     if (!rule) return;
-    
+
     const newStatus = rule.status === "Active" ? "Inactive" : "Active";
-    
+
     try {
       // Update status in database
       const success = await databaseService.updateCustomRule(ruleId, {
         status: newStatus,
         updated_by: "user",
       });
-      
+
       if (success) {
         setCustomRules((prev) =>
           prev.map((rule) =>
-            rule.id === ruleId
-              ? { ...rule, status: newStatus }
-              : rule,
+            rule.id === ruleId ? { ...rule, status: newStatus } : rule,
           ),
         );
       } else {
@@ -614,24 +606,24 @@ export function SettingsPanel({
           priority: targetRule.priority,
           updated_by: "user",
         });
-        
+
         const success2 = await databaseService.updateCustomRule(targetRule.id, {
           priority: rule.priority,
           updated_by: "user",
         });
-        
+
         if (success1 && success2) {
           setCustomRules((prev) => {
             const newRules = [...prev];
             const ruleToUpdate = newRules.find((r) => r.id === rule.id);
             const targetToUpdate = newRules.find((r) => r.id === targetRule.id);
-            
+
             if (ruleToUpdate && targetToUpdate) {
               const tempPriority = ruleToUpdate.priority;
               ruleToUpdate.priority = targetToUpdate.priority;
               targetToUpdate.priority = tempPriority;
             }
-            
+
             return newRules.sort((a, b) => a.priority - b.priority);
           });
         } else {
@@ -810,23 +802,27 @@ export function SettingsPanel({
         "user",
       );
 
-      // Transform custom rules for batch save
-      const rulesForSave = customRules.map(rule => ({
-        rule_id: rule.id,
-        name: rule.name,
-        description: rule.description,
-        category: rule.category,
-        type: rule.type,
-        priority: rule.priority,
-        overridable: rule.overridable,
-        conditions: rule.conditions,
-        actions: rule.actions,
-        status: rule.status,
-        created_by: rule.createdBy || "user",
-      }));
-
-      // Use batch save for better performance
-      const rulesSuccess = await databaseService.batchSaveCustomRules(rulesForSave, "user");
+      // Save custom rules to database
+      let rulesSuccess = true;
+      for (const rule of customRules) {
+        const ruleSuccess = await databaseService.saveCustomRule({
+          rule_id: rule.id,
+          name: rule.name,
+          description: rule.description,
+          category: rule.category,
+          type: rule.type,
+          priority: rule.priority,
+          overridable: rule.overridable,
+          conditions: rule.conditions,
+          actions: rule.actions,
+          status: rule.status,
+          created_by: rule.createdBy || "user",
+        });
+        if (!ruleSuccess) {
+          rulesSuccess = false;
+          break;
+        }
+      }
 
       if (configSuccess && rulesSuccess) {
         showSaveStatus();
