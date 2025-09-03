@@ -82,6 +82,49 @@ export interface PassengerData {
   ticketClass: string;
   loyaltyTier: string;
   specialNeeds?: string;
+
+
+  // Helper method to retry API calls when database is unavailable
+  private async retryApiCall<T>(operation: () => Promise<T>, fallbackValue: T, maxRetries: number = 3): Promise<T> {
+    let lastError: any = null;
+    
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        const result = await operation();
+        // Reset failure count on success
+        this.onDatabaseSuccess();
+        return result;
+      } catch (error: any) {
+        lastError = error;
+        
+        // Check if it's a 503 error (database unavailable)
+        if (error.message?.includes('503')) {
+          console.log(`API call failed (attempt ${attempt + 1}/${maxRetries}): Database unavailable`);
+          
+          // Wait before retry, with exponential backoff
+          if (attempt < maxRetries - 1) {
+            const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
+            console.log(`Retrying in ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            
+            // Check health before retry
+            const isHealthy = await this.healthCheck();
+            if (!isHealthy && attempt < maxRetries - 1) {
+              continue; // Try again
+            }
+          }
+        } else {
+          // For non-503 errors, don't retry
+          break;
+        }
+      }
+    }
+    
+    console.error("API call failed after retries:", lastError);
+    this.onDatabaseFailure();
+    return fallbackValue;
+  }
+
   contactInfo: any;
   rebookingStatus?: string;
 }
@@ -208,9 +251,9 @@ class DatabaseService {
     );
   }
 
-  // Settings operations
+  // Settings operations with retry logic
   async getAllSettings(): Promise<SettingsData[]> {
-    try {
+    return this.retryApiCall(async () => {
       const response = await fetch(`${this.baseUrl}/settings`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -227,11 +270,7 @@ class DatabaseService {
         updatedAt: setting.updated_at,
         updatedBy: setting.updated_by,
       }));
-    } catch (error) {
-      console.error("Failed to fetch settings from database:", error);
-      // Return empty array as fallback
-      return [];
-    }
+    }, []);
   }
 
   // Get tab-wise organized settings
@@ -504,7 +543,7 @@ class DatabaseService {
     }
   }
 
-  // Health check method
+  // Health check method with retry logic
   async healthCheck(): Promise<boolean> {
     // Return cached result if valid
     if (this.isCacheValid()) {
@@ -541,6 +580,18 @@ class DatabaseService {
         try {
           const data = await response.json();
           isHealthy = data.status === "healthy";
+          
+          // Special handling for database sleep/wake cycles
+          if (data.database === 'sleeping') {
+            console.log('Database is sleeping, will retry shortly...');
+            // Don't cache sleeping state, allow immediate retry
+            this.healthCheckCache = {
+              status: false,
+              timestamp: Date.now() - (this.HEALTH_CHECK_CACHE_DURATION - 5000), // Short cache
+            };
+            return false;
+          }
+          
           if (isHealthy) {
             console.log('Database health check successful:', data);
           }
@@ -648,16 +699,13 @@ class DatabaseService {
 
   // Screen settings operations
   async getScreenSettings(): Promise<any[]> {
-    try {
+    return this.retryApiCall(async () => {
       const response = await fetch(`${this.baseUrl}/screen-settings`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       return await response.json();
-    } catch (error) {
-      console.error("Failed to fetch screen settings:", error);
-      return [];
-    }
+    }, []);
   }
 
   async saveScreenSetting(
@@ -1100,15 +1148,12 @@ class DatabaseService {
   }
 
   async getDisruptionCategories(): Promise<any[]> {
-    try {
+    return this.retryApiCall(async () => {
       const response = await fetch(`${this.baseUrl}/disruption-categories`);
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       return await response.json();
-    } catch (error) {
-      console.error("Error fetching disruption categories:", error);
-      return [];
-    }
+    }, []);
   }
 
   async getRecoveryOptionTemplates(categoryId?: string): Promise<any[]> {

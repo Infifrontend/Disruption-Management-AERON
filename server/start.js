@@ -85,20 +85,40 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// Middleware to check database availability
+// Middleware to check database availability with better handling
 app.use((req, res, next) => {
-  // Allow health check and static routes to pass through
-  if (req.path === '/api/health' || req.path.startsWith('/api/auth/')) {
+  // Allow health check, auth routes, and debug routes to pass through
+  if (req.path === '/api/health' || 
+      req.path.startsWith('/api/auth/') || 
+      req.path === '/api/debug') {
     return next();
   }
   
-  // For database-dependent routes, check availability
+  // For database-dependent routes, check availability but allow retry logic
   if (!databaseAvailable && req.path.startsWith('/api/')) {
     console.warn(`Database unavailable for ${req.method} ${req.path}`);
-    return res.status(503).json({ 
-      error: 'Database temporarily unavailable',
-      message: 'Please try again in a moment'
+    
+    // Trigger a connection test before responding
+    testConnection().then(() => {
+      if (databaseAvailable) {
+        // Database became available, continue with the request
+        next();
+      } else {
+        // Still unavailable, return 503
+        res.status(503).json({ 
+          error: 'Database temporarily unavailable',
+          message: 'Database is waking up, please retry in a few seconds',
+          retryAfter: 5
+        });
+      }
+    }).catch(() => {
+      res.status(503).json({ 
+        error: 'Database temporarily unavailable',
+        message: 'Database is waking up, please retry in a few seconds',
+        retryAfter: 5
+      });
     });
+    return;
   }
   
   next();
@@ -133,6 +153,8 @@ let databaseAvailable = false;
 async function testConnection() {
   try {
     const client = await pool.connect();
+    // Test the connection with a simple query
+    await client.query('SELECT 1');
     console.log("✅ PostgreSQL connected successfully");
     client.release();
     connectionRetries = 0; // Reset on success
@@ -145,21 +167,43 @@ async function testConnection() {
     );
     databaseAvailable = false;
 
-    if (connectionRetries < maxRetries) {
-      setTimeout(testConnection, 2000 * connectionRetries); // Shorter retry intervals
+    // Special handling for Neon database sleep/wake cycles
+    if (err.message.includes('terminating connection due to administrator command') ||
+        err.message.includes('server closed the connection unexpectedly')) {
+      console.log('Database appears to be in sleep mode, retrying connection...');
+      // Shorter delay for sleep mode recovery
+      setTimeout(testConnection, 1000);
+    } else if (connectionRetries < maxRetries) {
+      setTimeout(testConnection, 2000 * connectionRetries);
     } else {
       console.log(
         "❌ Max connection retries reached. API will continue without database.",
       );
       databaseAvailable = false;
+      
+      // Schedule periodic retry attempts
+      setTimeout(() => {
+        connectionRetries = 0;
+        console.log('Attempting periodic database reconnection...');
+        testConnection();
+      }, 30000); // Retry every 30 seconds
     }
   }
 }
 
-// Handle database connection errors gracefully
+// Handle database connection errors gracefully with retry logic
 pool.on('error', (err) => {
   console.error('Database pool error:', err.message);
   databaseAvailable = false;
+  
+  // Don't immediately retry on certain errors
+  if (!err.message.includes('terminating connection due to administrator command')) {
+    // Retry connection after a delay for other errors
+    setTimeout(() => {
+      console.log('Attempting to restore database connection...');
+      testConnection();
+    }, 5000);
+  }
 });
 
 pool.on('connect', () => {
@@ -169,6 +213,7 @@ pool.on('connect', () => {
 
 pool.on('remove', () => {
   console.log('Database client removed');
+  // Don't mark as unavailable on client removal - this is normal
 });
 
 // Start connection test but don't block server startup
@@ -179,14 +224,24 @@ app.get("/api/health", async (req, res) => {
   try {
     let dbStatus = 'disconnected';
     
-    if (databaseAvailable) {
-      try {
-        const client = await pool.connect();
-        await client.query('SELECT 1');
-        client.release();
-        dbStatus = 'connected';
-      } catch (dbError) {
-        console.warn('Health check database test failed:', dbError.message);
+    // Always try to test the database connection on health check
+    try {
+      const client = await pool.connect();
+      await client.query('SELECT 1');
+      client.release();
+      dbStatus = 'connected';
+      databaseAvailable = true;
+    } catch (dbError) {
+      console.warn('Health check database test failed:', dbError.message);
+      
+      // Handle specific Neon database errors
+      if (dbError.message.includes('terminating connection due to administrator command') ||
+          dbError.message.includes('server closed the connection unexpectedly')) {
+        dbStatus = 'sleeping';
+        console.log('Database appears to be sleeping, attempting to wake...');
+        // Trigger connection test to wake the database
+        setTimeout(testConnection, 100);
+      } else {
         dbStatus = 'error';
         databaseAvailable = false;
       }
@@ -196,7 +251,8 @@ app.get("/api/health", async (req, res) => {
       status: "healthy", 
       timestamp: new Date().toISOString(),
       database: dbStatus,
-      environment: process.env.NODE_ENV || 'development'
+      environment: process.env.NODE_ENV || 'development',
+      databaseAvailable
     });
   } catch (error) {
     console.error('Health check error:', error);
