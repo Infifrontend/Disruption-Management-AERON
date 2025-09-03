@@ -40,6 +40,11 @@ app.use(
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
 
+      // In development, allow all origins
+      if (process.env.NODE_ENV === 'development') {
+        return callback(null, true);
+      }
+
       // Check if origin matches any allowed origins
       const isAllowed = allowedOrigins.some((allowedOrigin) =>
         origin.includes(allowedOrigin),
@@ -49,8 +54,13 @@ app.use(
         return callback(null, true);
       }
 
-      // Allow all other origins for now (can be restricted later)
-      return callback(null, false);
+      // Allow replit domains
+      if (origin.includes('replit.dev') || origin.includes('replit.co')) {
+        return callback(null, true);
+      }
+
+      console.log('CORS blocked origin:', origin);
+      return callback(new Error('Not allowed by CORS'), false);
     },
     credentials: allowCredentials,
     methods: allowedMethods,
@@ -74,6 +84,25 @@ app.use((req, res, next) => {
 });
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
+
+// Middleware to check database availability
+app.use((req, res, next) => {
+  // Allow health check and static routes to pass through
+  if (req.path === '/api/health' || req.path.startsWith('/api/auth/')) {
+    return next();
+  }
+  
+  // For database-dependent routes, check availability
+  if (!databaseAvailable && req.path.startsWith('/api/')) {
+    console.warn(`Database unavailable for ${req.method} ${req.path}`);
+    return res.status(503).json({ 
+      error: 'Database temporarily unavailable',
+      message: 'Please try again in a moment'
+    });
+  }
+  
+  next();
+});
 
 // PostgreSQL connection with fallback and proper Neon handling
 // Use DB_URL environment variable for the connection string
@@ -127,12 +156,56 @@ async function testConnection() {
   }
 }
 
+// Handle database connection errors gracefully
+pool.on('error', (err) => {
+  console.error('Database pool error:', err.message);
+  databaseAvailable = false;
+});
+
+pool.on('connect', () => {
+  console.log('Database pool connected');
+  databaseAvailable = true;
+});
+
+pool.on('remove', () => {
+  console.log('Database client removed');
+});
+
 // Start connection test but don't block server startup
 testConnection();
 
 // Health check endpoint
-app.get("/api/health", (req, res) => {
-  res.json({ status: "healthy", timestamp: new Date().toISOString() });
+app.get("/api/health", async (req, res) => {
+  try {
+    let dbStatus = 'disconnected';
+    
+    if (databaseAvailable) {
+      try {
+        const client = await pool.connect();
+        await client.query('SELECT 1');
+        client.release();
+        dbStatus = 'connected';
+      } catch (dbError) {
+        console.warn('Health check database test failed:', dbError.message);
+        dbStatus = 'error';
+        databaseAvailable = false;
+      }
+    }
+    
+    res.json({ 
+      status: "healthy", 
+      timestamp: new Date().toISOString(),
+      database: dbStatus,
+      environment: process.env.NODE_ENV || 'development'
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({ 
+      status: "error", 
+      timestamp: new Date().toISOString(),
+      error: error.message 
+    });
+  }
 });
 
 // Authentication endpoints
@@ -240,6 +313,10 @@ app.get("/api/debug", (req, res) => {
 // Settings endpoints
 app.get("/api/settings", async (req, res) => {
   try {
+    if (!databaseAvailable) {
+      return res.json([]); // Return empty array for fallback
+    }
+    
     const result = await pool.query(
       "SELECT * FROM settings WHERE is_active = true ORDER BY category, key",
     );
@@ -4642,24 +4719,38 @@ const server = app.listen(port, "0.0.0.0", () => {
   console.log(`📊 Server started successfully at ${new Date().toISOString()}`);
 });
 
-// Graceful shutdown handling
-process.on("SIGTERM", () => {
-  console.log("SIGTERM signal received, closing HTTP server");
-  server.close(() => {
-    console.log("HTTP server closed");
-    pool.end(() => {
-      console.log("Database pool closed");
-      process.exit(0);
-    });
-  });
-});
+
 
 process.on("uncaughtException", (error) => {
-  console.error("Uncaught Exception:", error);
+  console.error("Uncaught Exception:", error.message);
+  console.error("Stack:", error.stack);
   // Don't exit the process, just log the error
 });
 
 process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
   // Don't exit the process, just log the error
+});
+
+// Handle SIGTERM and SIGINT gracefully
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    pool.end(() => {
+      console.log('Database connections closed');
+      process.exit(0);
+    });
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  server.close(() => {
+    console.log('Server closed');
+    pool.end(() => {
+      console.log('Database connections closed');
+      process.exit(0);
+    });
+  });
 });

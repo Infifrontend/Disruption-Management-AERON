@@ -157,7 +157,7 @@ class DatabaseService {
   
 
   private getTimeout(): number {
-    return parseInt(import.meta.env.VITE_API_TIMEOUT || "5000", 10);
+    return parseInt(import.meta.env.VITE_API_TIMEOUT || "10000", 10);
   }
 
   
@@ -529,6 +529,8 @@ class DatabaseService {
           "Content-Type": "application/json",
         },
         signal: controller.signal,
+        mode: 'cors',
+        credentials: 'include'
       });
 
       clearTimeout(timeoutId);
@@ -538,11 +540,17 @@ class DatabaseService {
       if (response.ok) {
         try {
           const data = await response.json();
-          isHealthy = data.status === "healthy" || response.status === 200;
+          isHealthy = data.status === "healthy";
+          if (isHealthy) {
+            console.log('Database health check successful:', data);
+          }
         } catch (jsonError) {
+          console.warn('Health check JSON parse error:', jsonError);
           // If JSON parsing fails but response is ok, consider it healthy
-          isHealthy = true;
+          isHealthy = response.status === 200;
         }
+      } else {
+        console.warn(`Health check HTTP error: ${response.status} ${response.statusText}`);
       }
 
       // Cache the result
@@ -562,7 +570,20 @@ class DatabaseService {
 
       return isHealthy;
     } catch (error) {
-      console.warn("Health check failed:", error || "Unknown error");
+      if (error instanceof Error) {
+        if (error.name === 'AbortError') {
+          console.warn("Health check timed out");
+        } else if (error.message.includes('CORS')) {
+          console.warn("Health check CORS error:", error.message);
+        } else if (error.message.includes('fetch')) {
+          console.warn("Health check network error:", error.message);
+        } else {
+          console.warn("Health check failed:", error.message);
+        }
+      } else {
+        console.warn("Health check failed with unknown error");
+      }
+      
       this.onDatabaseFailure();
 
       // Cache the failure result with shorter duration
