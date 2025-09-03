@@ -210,6 +210,7 @@ export function SettingsPanel({
   // Load settings from database on component mount
   useEffect(() => {
     loadSettingsFromDatabase();
+    loadCustomRulesFromDatabase();
     checkDatabaseConnection();
     // Initialize field configurations
     setFieldConfigurations(settingsStore.getFieldConfigurations());
@@ -218,6 +219,34 @@ export function SettingsPanel({
   const checkDatabaseConnection = async () => {
     const connected = settingsStore.getDatabaseStatus();
     setIsDatabaseConnected(connected);
+  };
+
+  const loadCustomRulesFromDatabase = async () => {
+    try {
+      const rules = await databaseService.getAllCustomRules();
+      console.log("Loaded custom rules from database:", rules);
+      
+      // Transform database format to component format
+      const transformedRules = rules.map((rule) => ({
+        id: rule.rule_id,
+        name: rule.name,
+        description: rule.description,
+        category: rule.category,
+        type: rule.type,
+        priority: rule.priority,
+        overridable: rule.overridable,
+        conditions: rule.conditions || "",
+        actions: rule.actions || "",
+        status: rule.status,
+        createdBy: rule.created_by,
+        createdDate: rule.created_at ? new Date(rule.created_at).toISOString().split("T")[0] : new Date().toISOString().split("T")[0],
+      }));
+      
+      setCustomRules(transformedRules);
+    } catch (error) {
+      console.error("Failed to load custom rules from database:", error);
+      // Keep existing rules if database load fails
+    }
   };
 
   const loadSettingsFromDatabase = async () => {
@@ -415,7 +444,7 @@ export function SettingsPanel({
   };
 
   // Custom Rules Handlers
-  const handleAddRule = () => {
+  const handleAddRule = async () => {
     if (newRule.name.trim() && newRule.description.trim()) {
       const rule = {
         id: `RULE-${String(customRules.length + 6).padStart(3, "0")}`,
@@ -424,18 +453,42 @@ export function SettingsPanel({
         createdDate: new Date().toISOString().split("T")[0],
         status: "Active",
       };
-      setCustomRules((prev) => [...prev, rule]);
-      setNewRule({
-        name: "",
-        description: "",
-        category: "Operational",
-        type: "Soft",
-        overridable: true,
-        priority: 3,
-        conditions: "",
-        actions: "",
-      });
-      setShowAddRuleForm(false);
+      
+      try {
+        // Save to database
+        const success = await databaseService.saveCustomRule({
+          rule_id: rule.id,
+          name: rule.name,
+          description: rule.description,
+          category: rule.category,
+          type: rule.type,
+          priority: rule.priority,
+          overridable: rule.overridable,
+          conditions: rule.conditions,
+          actions: rule.actions,
+          status: rule.status,
+          created_by: rule.createdBy,
+        });
+        
+        if (success) {
+          setCustomRules((prev) => [...prev, rule]);
+          setNewRule({
+            name: "",
+            description: "",
+            category: "Operational",
+            type: "Soft",
+            overridable: true,
+            priority: 3,
+            conditions: "",
+            actions: "",
+          });
+          setShowAddRuleForm(false);
+        } else {
+          console.error("Failed to save custom rule to database");
+        }
+      } catch (error) {
+        console.error("Error saving custom rule:", error);
+      }
     }
   };
 
@@ -445,75 +498,141 @@ export function SettingsPanel({
     setShowAddRuleForm(true);
   };
 
-  const handleUpdateRule = () => {
+  const handleUpdateRule = async () => {
     if (editingRule && newRule.name.trim() && newRule.description.trim()) {
-      setCustomRules((prev) =>
-        prev.map((rule) =>
-          rule.id === editingRule.id ? { ...rule, ...newRule } : rule,
-        ),
-      );
-      setEditingRule(null);
-      setNewRule({
-        name: "",
-        description: "",
-        category: "Operational",
-        type: "Soft",
-        overridable: true,
-        priority: 3,
-        conditions: "",
-        actions: "",
-      });
-      setShowAddRuleForm(false);
+      try {
+        // Update in database
+        const success = await databaseService.updateCustomRule(editingRule.id, {
+          name: newRule.name,
+          description: newRule.description,
+          category: newRule.category,
+          type: newRule.type,
+          priority: newRule.priority,
+          overridable: newRule.overridable,
+          conditions: newRule.conditions,
+          actions: newRule.actions,
+          status: newRule.status,
+          updated_by: "user",
+        });
+        
+        if (success) {
+          setCustomRules((prev) =>
+            prev.map((rule) =>
+              rule.id === editingRule.id ? { ...rule, ...newRule } : rule,
+            ),
+          );
+          setEditingRule(null);
+          setNewRule({
+            name: "",
+            description: "",
+            category: "Operational",
+            type: "Soft",
+            overridable: true,
+            priority: 3,
+            conditions: "",
+            actions: "",
+          });
+          setShowAddRuleForm(false);
+        } else {
+          console.error("Failed to update custom rule in database");
+        }
+      } catch (error) {
+        console.error("Error updating custom rule:", error);
+      }
     }
   };
 
-  const handleDeleteRule = (ruleId) => {
-    setCustomRules((prev) => prev.filter((rule) => rule.id !== ruleId));
-  };
-
-  const handleToggleRuleStatus = (ruleId) => {
-    setCustomRules((prev) =>
-      prev.map((rule) =>
-        rule.id === ruleId
-          ? {
-              ...rule,
-              status: rule.status === "Active" ? "Inactive" : "Active",
-            }
-          : rule,
-      ),
-    );
-  };
-
-  const handleMovePriority = (ruleId, direction) => {
-    setCustomRules((prev) => {
-      const ruleIndex = prev.findIndex((rule) => rule.id === ruleId);
-      if (ruleIndex === -1) return prev;
-
-      const newRules = [...prev];
-      const rule = newRules[ruleIndex];
-
-      if (direction === "up" && rule.priority > 1) {
-        // Find rule with priority - 1 and swap
-        const targetRule = newRules.find(
-          (r) => r.priority === rule.priority - 1,
-        );
-        if (targetRule) {
-          targetRule.priority = rule.priority;
-          rule.priority = rule.priority - 1;
-        }
-      } else if (direction === "down") {
-        // Find rule with priority + 1 and swap
-        const targetRule = newRules.find(
-          (r) => r.priority === rule.priority + 1,
-        );
-        if (targetRule) {
-          targetRule.priority = rule.priority;
-          rule.priority = rule.priority + 1;
-        }
+  const handleDeleteRule = async (ruleId) => {
+    try {
+      // Delete from database
+      const success = await databaseService.deleteCustomRule(ruleId);
+      
+      if (success) {
+        setCustomRules((prev) => prev.filter((rule) => rule.id !== ruleId));
+      } else {
+        console.error("Failed to delete custom rule from database");
       }
+    } catch (error) {
+      console.error("Error deleting custom rule:", error);
+    }
+  };
 
-      return newRules.sort((a, b) => a.priority - b.priority);
-    });
+  const handleToggleRuleStatus = async (ruleId) => {
+    const rule = customRules.find((r) => r.id === ruleId);
+    if (!rule) return;
+    
+    const newStatus = rule.status === "Active" ? "Inactive" : "Active";
+    
+    try {
+      // Update status in database
+      const success = await databaseService.updateCustomRule(ruleId, {
+        status: newStatus,
+        updated_by: "user",
+      });
+      
+      if (success) {
+        setCustomRules((prev) =>
+          prev.map((rule) =>
+            rule.id === ruleId
+              ? { ...rule, status: newStatus }
+              : rule,
+          ),
+        );
+      } else {
+        console.error("Failed to update rule status in database");
+      }
+    } catch (error) {
+      console.error("Error updating rule status:", error);
+    }
+  };
+
+  const handleMovePriority = async (ruleId, direction) => {
+    const ruleIndex = customRules.findIndex((rule) => rule.id === ruleId);
+    if (ruleIndex === -1) return;
+
+    const rule = customRules[ruleIndex];
+    let targetRule = null;
+
+    if (direction === "up" && rule.priority > 1) {
+      targetRule = customRules.find((r) => r.priority === rule.priority - 1);
+    } else if (direction === "down") {
+      targetRule = customRules.find((r) => r.priority === rule.priority + 1);
+    }
+
+    if (targetRule) {
+      try {
+        // Update both rules in database
+        const success1 = await databaseService.updateCustomRule(rule.id, {
+          priority: targetRule.priority,
+          updated_by: "user",
+        });
+        
+        const success2 = await databaseService.updateCustomRule(targetRule.id, {
+          priority: rule.priority,
+          updated_by: "user",
+        });
+        
+        if (success1 && success2) {
+          setCustomRules((prev) => {
+            const newRules = [...prev];
+            const ruleToUpdate = newRules.find((r) => r.id === rule.id);
+            const targetToUpdate = newRules.find((r) => r.id === targetRule.id);
+            
+            if (ruleToUpdate && targetToUpdate) {
+              const tempPriority = ruleToUpdate.priority;
+              ruleToUpdate.priority = targetToUpdate.priority;
+              targetToUpdate.priority = tempPriority;
+            }
+            
+            return newRules.sort((a, b) => a.priority - b.priority);
+          });
+        } else {
+          console.error("Failed to update rule priorities in database");
+        }
+      } catch (error) {
+        console.error("Error updating rule priorities:", error);
+      }
+    }
   };
 
   // Recovery Configuration Handlers
@@ -670,19 +789,42 @@ export function SettingsPanel({
   const saveRuleSettings = async () => {
     setSaveStatus("saving");
     try {
+      // Save rule configuration settings
       const categoryMapping = {
         operationalRules: "operationalRules",
         recoveryConstraints: "recoveryConstraints",
         automationSettings: "automationSettings",
       };
 
-      const success = await settingsStore.saveSettingsFromState(
+      const configSuccess = await settingsStore.saveSettingsFromState(
         ruleConfiguration,
         categoryMapping,
         "user",
       );
 
-      if (success) {
+      // Save custom rules to database
+      let rulesSuccess = true;
+      for (const rule of customRules) {
+        const ruleSuccess = await databaseService.saveCustomRule({
+          rule_id: rule.id,
+          name: rule.name,
+          description: rule.description,
+          category: rule.category,
+          type: rule.type,
+          priority: rule.priority,
+          overridable: rule.overridable,
+          conditions: rule.conditions,
+          actions: rule.actions,
+          status: rule.status,
+          created_by: rule.createdBy || "user",
+        });
+        if (!ruleSuccess) {
+          rulesSuccess = false;
+          break;
+        }
+      }
+
+      if (configSuccess && rulesSuccess) {
         showSaveStatus();
       } else {
         setSaveStatus("error");
