@@ -245,7 +245,8 @@ export function SettingsPanel({
       setCustomRules(transformedRules);
     } catch (error) {
       console.error("Failed to load custom rules from database:", error);
-      // Keep existing rules if database load fails
+      // Initialize with empty array if database load fails
+      setCustomRules([]);
     }
   };
 
@@ -446,8 +447,15 @@ export function SettingsPanel({
   // Custom Rules Handlers
   const handleAddRule = async () => {
     if (newRule.name.trim() && newRule.description.trim()) {
+      // Generate next available rule ID
+      const existingIds = customRules.map(rule => {
+        const match = rule.id.match(/RULE-(\d+)/);
+        return match ? parseInt(match[1]) : 0;
+      });
+      const nextId = Math.max(0, ...existingIds) + 1;
+      
       const rule = {
-        id: `RULE-${String(customRules.length + 6).padStart(3, "0")}`,
+        id: `RULE-${String(nextId).padStart(3, "0")}`,
         ...newRule,
         createdBy: "user@flydubai.com",
         createdDate: new Date().toISOString().split("T")[0],
@@ -802,27 +810,23 @@ export function SettingsPanel({
         "user",
       );
 
-      // Save custom rules to database
-      let rulesSuccess = true;
-      for (const rule of customRules) {
-        const ruleSuccess = await databaseService.saveCustomRule({
-          rule_id: rule.id,
-          name: rule.name,
-          description: rule.description,
-          category: rule.category,
-          type: rule.type,
-          priority: rule.priority,
-          overridable: rule.overridable,
-          conditions: rule.conditions,
-          actions: rule.actions,
-          status: rule.status,
-          created_by: rule.createdBy || "user",
-        });
-        if (!ruleSuccess) {
-          rulesSuccess = false;
-          break;
-        }
-      }
+      // Transform custom rules for batch save
+      const rulesForSave = customRules.map(rule => ({
+        rule_id: rule.id,
+        name: rule.name,
+        description: rule.description,
+        category: rule.category,
+        type: rule.type,
+        priority: rule.priority,
+        overridable: rule.overridable,
+        conditions: rule.conditions,
+        actions: rule.actions,
+        status: rule.status,
+        created_by: rule.createdBy || "user",
+      }));
+
+      // Use batch save for better performance
+      const rulesSuccess = await databaseService.batchSaveCustomRules(rulesForSave, "user");
 
       if (configSuccess && rulesSuccess) {
         showSaveStatus();

@@ -868,10 +868,25 @@ app.post("/api/custom-rules", async (req, res) => {
       created_by,
     } = req.body;
 
+    // Use UPSERT to handle duplicates
     const result = await pool.query(
       `INSERT INTO custom_rules 
        (rule_id, name, description, category, type, priority, overridable, conditions, actions, status, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+       ON CONFLICT (rule_id) 
+       DO UPDATE SET
+         name = EXCLUDED.name,
+         description = EXCLUDED.description,
+         category = EXCLUDED.category,
+         type = EXCLUDED.type,
+         priority = EXCLUDED.priority,
+         overridable = EXCLUDED.overridable,
+         conditions = EXCLUDED.conditions,
+         actions = EXCLUDED.actions,
+         status = EXCLUDED.status,
+         updated_by = EXCLUDED.created_by,
+         updated_at = CURRENT_TIMESTAMP
+       RETURNING *`,
       [
         rule_id,
         name,
@@ -890,6 +905,89 @@ app.post("/api/custom-rules", async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error saving custom rule:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Batch save custom rules endpoint
+app.post("/api/custom-rules/batch", async (req, res) => {
+  try {
+    const { rules, updated_by } = req.body;
+
+    if (!Array.isArray(rules)) {
+      return res.status(400).json({ error: "Rules must be an array" });
+    }
+
+    const client = await pool.connect();
+    
+    try {
+      await client.query("BEGIN");
+      
+      const results = [];
+      for (const rule of rules) {
+        const {
+          rule_id,
+          name,
+          description,
+          category,
+          type,
+          priority,
+          overridable,
+          conditions,
+          actions,
+          status,
+          created_by,
+        } = rule;
+
+        const result = await client.query(
+          `INSERT INTO custom_rules 
+           (rule_id, name, description, category, type, priority, overridable, conditions, actions, status, created_by)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+           ON CONFLICT (rule_id) 
+           DO UPDATE SET
+             name = EXCLUDED.name,
+             description = EXCLUDED.description,
+             category = EXCLUDED.category,
+             type = EXCLUDED.type,
+             priority = EXCLUDED.priority,
+             overridable = EXCLUDED.overridable,
+             conditions = EXCLUDED.conditions,
+             actions = EXCLUDED.actions,
+             status = EXCLUDED.status,
+             updated_by = EXCLUDED.created_by,
+             updated_at = CURRENT_TIMESTAMP
+           RETURNING *`,
+          [
+            rule_id,
+            name,
+            description,
+            category,
+            type,
+            priority,
+            overridable,
+            conditions,
+            actions,
+            status || 'Active',
+            created_by || updated_by || 'system',
+          ],
+        );
+        results.push(result.rows[0]);
+      }
+
+      await client.query("COMMIT");
+      res.json({ 
+        success: true, 
+        saved_rules: results.length,
+        rules: results
+      });
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error("Error batch saving custom rules:", error);
     res.status(500).json({ error: error.message });
   }
 });
