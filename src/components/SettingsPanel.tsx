@@ -520,26 +520,42 @@ export function SettingsPanel({
   const handleRecoveryConfigChange = (section, parameter, value) => {
     const actualValue = Array.isArray(value) ? value[0] : value;
 
-    setRecoveryConfiguration((prev) => ({
-      ...prev,
-      [section]: {
-        ...prev[section],
-        [parameter]: actualValue,
-      },
-    }));
+    // Calculate what the new total would be for this section
+    const currentTotal = calculateTotalWeight(null, section);
+    const currentValue = recoveryConfiguration[section][parameter] || 0;
+    const newTotal = currentTotal - currentValue + actualValue;
+
+    // Only allow the change if it doesn't exceed 100%
+    if (newTotal <= 100) {
+      setRecoveryConfiguration((prev) => ({
+        ...prev,
+        [section]: {
+          ...prev[section],
+          [parameter]: actualValue,
+        },
+      }));
+    }
   };
 
   // Passenger Priority Configuration Handlers
   const handlePriorityConfigChange = (category, parameter, value) => {
     const actualValue = Array.isArray(value) ? value[0] : value;
 
-    setPassengerPriorityConfig((prev) => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [parameter]: actualValue,
-      },
-    }));
+    // Calculate what the new total would be
+    const currentTotal = calculateTotalWeight(category);
+    const currentValue = passengerPriorityConfig[category][parameter] || 0;
+    const newTotal = currentTotal - currentValue + actualValue;
+
+    // Only allow the change if it doesn't exceed 100%
+    if (newTotal <= 100) {
+      setPassengerPriorityConfig((prev) => ({
+        ...prev,
+        [category]: {
+          ...prev[category],
+          [parameter]: actualValue,
+        },
+      }));
+    }
   };
 
   const handleAddCustomParameter = () => {
@@ -894,6 +910,12 @@ export function SettingsPanel({
     }
 
     return baseWeights + customWeights;
+  };
+
+  const getAvailableWeight = (category, section = null, currentParam = null, currentValue = 0) => {
+    const total = calculateTotalWeight(category, section);
+    const remaining = 100 - total + currentValue;
+    return Math.max(0, remaining);
   };
 
   const getWeightColor = (weight) => {
@@ -1573,7 +1595,7 @@ export function SettingsPanel({
                             newValue,
                           )
                         }
-                        max={50}
+                        max={Math.min(50, getAvailableWeight("passengerPrioritization", null, key, value))}
                         min={0}
                         step={5}
                         className="w-full slider-flydubai"
@@ -1591,16 +1613,29 @@ export function SettingsPanel({
                       className={
                         calculateTotalWeight("passengerPrioritization") === 100
                           ? "bg-green-100 text-green-800"
-                          : "bg-orange-100 text-orange-800"
+                          : calculateTotalWeight("passengerPrioritization") > 100
+                            ? "bg-red-100 text-red-800"
+                            : "bg-orange-100 text-orange-800"
                       }
                     >
-                      {calculateTotalWeight("passengerPrioritization")}%
+                      {calculateTotalWeight("passengerPrioritization")}% / 100%
                     </Badge>
                   </div>
-                  {calculateTotalWeight("passengerPrioritization") !== 100 && (
+                  {calculateTotalWeight("passengerPrioritization") > 100 && (
+                    <p className="text-xs text-red-600 mt-1">
+                      ❌ Total weight exceeds 100%. Please reduce some values.
+                    </p>
+                  )}
+                  {calculateTotalWeight("passengerPrioritization") < 100 &&
+                    calculateTotalWeight("passengerPrioritization") !== 100 && (
                     <p className="text-xs text-orange-600 mt-1">
                       ⚠️ Recommended total: 100%. Current deviation may affect
                       prioritization accuracy.
+                    </p>
+                  )}
+                  {calculateTotalWeight("passengerPrioritization") === 100 && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✅ Perfect weight distribution.
                     </p>
                   )}
                 </div>
@@ -1657,10 +1692,10 @@ export function SettingsPanel({
                             newValue,
                           )
                         }
-                        max={50}
+                        max={Math.min(50, getAvailableWeight("flightPrioritization", null, key, value))}
                         min={0}
                         step={5}
-                        className="w-full"
+                        className="w-full slider-flydubai"
                       />
                     </div>
                   );
@@ -1675,12 +1710,31 @@ export function SettingsPanel({
                       className={
                         calculateTotalWeight("flightPrioritization") === 100
                           ? "bg-green-100 text-green-800"
-                          : "bg-orange-100 text-orange-800"
+                          : calculateTotalWeight("flightPrioritization") > 100
+                            ? "bg-red-100 text-red-800"
+                            : "bg-orange-100 text-orange-800"
                       }
                     >
-                      {calculateTotalWeight("flightPrioritization")}%
+                      {calculateTotalWeight("flightPrioritization")}% / 100%
                     </Badge>
                   </div>
+                  {calculateTotalWeight("flightPrioritization") > 100 && (
+                    <p className="text-xs text-red-600 mt-1">
+                      ❌ Total weight exceeds 100%. Please reduce some values.
+                    </p>
+                  )}
+                  {calculateTotalWeight("flightPrioritization") < 100 &&
+                    calculateTotalWeight("flightPrioritization") !== 100 && (
+                    <p className="text-xs text-orange-600 mt-1">
+                      ⚠️ Recommended total: 100%. Current deviation may affect
+                      prioritization accuracy.
+                    </p>
+                  )}
+                  {calculateTotalWeight("flightPrioritization") === 100 && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✅ Perfect weight distribution.
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -1738,10 +1792,10 @@ export function SettingsPanel({
                               newValue,
                             )
                           }
-                          max={maxValue}
+                          max={key === "baseScore" ? maxValue : Math.min(maxValue, getAvailableWeight("flightScoring", null, key, value))}
                           min={key === "baseScore" ? 50 : 0}
                           step={1}
-                          className="w-full"
+                          className="w-full slider-flydubai"
                         />
                       </div>
                     );
@@ -1817,10 +1871,10 @@ export function SettingsPanel({
                               newValue,
                             )
                           }
-                          max={50}
+                          max={Math.min(50, getAvailableWeight("passengerScoring", null, key, value))}
                           min={0}
                           step={5}
-                          className="w-full"
+                          className="w-full slider-flydubai"
                         />
                       </div>
                     );
@@ -1836,12 +1890,31 @@ export function SettingsPanel({
                       className={
                         calculateTotalWeight("passengerScoring") === 100
                           ? "bg-green-100 text-green-800"
-                          : "bg-orange-100 text-orange-800"
+                          : calculateTotalWeight("passengerScoring") > 100
+                            ? "bg-red-100 text-red-800"
+                            : "bg-orange-100 text-orange-800"
                       }
                     >
-                      {calculateTotalWeight("passengerScoring")}%
+                      {calculateTotalWeight("passengerScoring")}% / 100%
                     </Badge>
                   </div>
+                  {calculateTotalWeight("passengerScoring") > 100 && (
+                    <p className="text-xs text-red-600 mt-1">
+                      ❌ Total weight exceeds 100%. Please reduce some values.
+                    </p>
+                  )}
+                  {calculateTotalWeight("passengerScoring") < 100 &&
+                    calculateTotalWeight("passengerScoring") !== 100 && (
+                    <p className="text-xs text-orange-600 mt-1">
+                      ⚠️ Recommended total: 100%. Current deviation may affect
+                      prioritization accuracy.
+                    </p>
+                  )}
+                  {calculateTotalWeight("passengerScoring") === 100 && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✅ Perfect weight distribution.
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -2507,10 +2580,10 @@ export function SettingsPanel({
                               newValue,
                             )
                           }
-                          max={50}
+                          max={Math.min(50, getAvailableWeight(null, "recoveryOptionsRanking", key, value))}
                           min={0}
                           step={5}
-                          className="w-full"
+                          className="w-full slider-flydubai"
                         />
                       </div>
                     );
@@ -2571,12 +2644,31 @@ export function SettingsPanel({
                         calculateTotalWeight(null, "recoveryOptionsRanking") ===
                         100
                           ? "bg-green-100 text-green-800"
-                          : "bg-orange-100 text-orange-800"
+                          : calculateTotalWeight(null, "recoveryOptionsRanking") > 100
+                            ? "bg-red-100 text-red-800"
+                            : "bg-orange-100 text-orange-800"
                       }
                     >
-                      {calculateTotalWeight(null, "recoveryOptionsRanking")}%
+                      {calculateTotalWeight(null, "recoveryOptionsRanking")}% / 100%
                     </Badge>
                   </div>
+                  {calculateTotalWeight(null, "recoveryOptionsRanking") > 100 && (
+                    <p className="text-xs text-red-600 mt-1">
+                      ❌ Total weight exceeds 100%. Please reduce some values.
+                    </p>
+                  )}
+                  {calculateTotalWeight(null, "recoveryOptionsRanking") < 100 &&
+                    calculateTotalWeight(null, "recoveryOptionsRanking") !== 100 && (
+                    <p className="text-xs text-orange-600 mt-1">
+                      ⚠️ Recommended total: 100%. Current deviation may affect
+                      prioritization accuracy.
+                    </p>
+                  )}
+                  {calculateTotalWeight(null, "recoveryOptionsRanking") === 100 && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✅ Perfect weight distribution.
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -2633,10 +2725,10 @@ export function SettingsPanel({
                               newValue,
                             )
                           }
-                          max={50}
+                          max={Math.min(50, getAvailableWeight(null, "aircraftSelectionCriteria", key, value))}
                           min={0}
                           step={5}
-                          className="w-full"
+                          className="w-full slider-flydubai"
                         />
                       </div>
                     );
@@ -2699,12 +2791,31 @@ export function SettingsPanel({
                           "aircraftSelectionCriteria",
                         ) === 100
                           ? "bg-green-100 text-green-800"
-                          : "bg-orange-100 text-orange-800"
+                          : calculateTotalWeight(null, "aircraftSelectionCriteria") > 100
+                            ? "bg-red-100 text-red-800"
+                            : "bg-orange-100 text-orange-800"
                       }
                     >
-                      {calculateTotalWeight(null, "aircraftSelectionCriteria")}%
+                      {calculateTotalWeight(null, "aircraftSelectionCriteria")}% / 100%
                     </Badge>
                   </div>
+                  {calculateTotalWeight(null, "aircraftSelectionCriteria") > 100 && (
+                    <p className="text-xs text-red-600 mt-1">
+                      ❌ Total weight exceeds 100%. Please reduce some values.
+                    </p>
+                  )}
+                  {calculateTotalWeight(null, "aircraftSelectionCriteria") < 100 &&
+                    calculateTotalWeight(null, "aircraftSelectionCriteria") !== 100 && (
+                    <p className="text-xs text-orange-600 mt-1">
+                      ⚠️ Recommended total: 100%. Current deviation may affect
+                      prioritization accuracy.
+                    </p>
+                  )}
+                  {calculateTotalWeight(null, "aircraftSelectionCriteria") === 100 && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✅ Perfect weight distribution.
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -2761,10 +2872,10 @@ export function SettingsPanel({
                               newValue,
                             )
                           }
-                          max={50}
+                          max={Math.min(50, getAvailableWeight(null, "crewAssignmentCriteria", key, value))}
                           min={0}
                           step={5}
-                          className="w-full"
+                          className="w-full slider-flydubai"
                         />
                       </div>
                     );
@@ -2825,12 +2936,31 @@ export function SettingsPanel({
                         calculateTotalWeight(null, "crewAssignmentCriteria") ===
                         100
                           ? "bg-green-100 text-green-800"
-                          : "bg-orange-100 text-orange-800"
+                          : calculateTotalWeight(null, "crewAssignmentCriteria") > 100
+                            ? "bg-red-100 text-red-800"
+                            : "bg-orange-100 text-orange-800"
                       }
                     >
-                      {calculateTotalWeight(null, "crewAssignmentCriteria")}%
+                      {calculateTotalWeight(null, "crewAssignmentCriteria")}% / 100%
                     </Badge>
                   </div>
+                  {calculateTotalWeight(null, "crewAssignmentCriteria") > 100 && (
+                    <p className="text-xs text-red-600 mt-1">
+                      ❌ Total weight exceeds 100%. Please reduce some values.
+                    </p>
+                  )}
+                  {calculateTotalWeight(null, "crewAssignmentCriteria") < 100 &&
+                    calculateTotalWeight(null, "crewAssignmentCriteria") !== 100 && (
+                    <p className="text-xs text-orange-600 mt-1">
+                      ⚠️ Recommended total: 100%. Current deviation may affect
+                      prioritization accuracy.
+                    </p>
+                  )}
+                  {calculateTotalWeight(null, "crewAssignmentCriteria") === 100 && (
+                    <p className="text-xs text-green-600 mt-1">
+                      ✅ Perfect weight distribution.
+                    </p>
+                  )}
                 </div>
               </CardContent>
             </Card>
