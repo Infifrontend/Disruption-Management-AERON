@@ -656,6 +656,30 @@ export function SettingsPanel({
     }
   };
 
+  // Custom Parameter Weight Change Handler
+  const handleCustomParameterWeightChange = (section, paramId, newWeight) => {
+    // Calculate what the new total would be for this section
+    const currentTotal = calculateTotalWeight(null, section);
+    const param = recoveryConfiguration[section].customParameters.find(p => p.id === paramId);
+    const currentWeight = param ? param.weight : 0;
+    const newTotal = currentTotal - currentWeight + newWeight;
+
+    // Only allow the change if it doesn't exceed 100%
+    if (newTotal <= 100) {
+      setRecoveryConfiguration((prev) => ({
+        ...prev,
+        [section]: {
+          ...prev[section],
+          customParameters: prev[section].customParameters.map(param => 
+            param.id === paramId 
+              ? { ...param, weight: newWeight }
+              : param
+          ),
+        },
+      }));
+    }
+  };
+
   // Passenger Priority Configuration Handlers
   const handlePriorityConfigChange = (category, parameter, value) => {
     const actualValue = Array.isArray(value) ? value[0] : value;
@@ -840,6 +864,24 @@ export function SettingsPanel({
   const saveRecoverySettings = async () => {
     setSaveStatus("saving");
     try {
+      // Validate weight totals for each section before saving
+      const sections = ['recoveryOptionsRanking', 'aircraftSelectionCriteria', 'crewAssignmentCriteria'];
+      const validationErrors = [];
+
+      for (const section of sections) {
+        const totalWeight = calculateTotalWeight(null, section);
+        if (totalWeight > 100) {
+          validationErrors.push(`${section}: Total weight (${totalWeight}%) exceeds 100%`);
+        }
+      }
+
+      if (validationErrors.length > 0) {
+        console.error("Validation errors:", validationErrors);
+        setSaveStatus("error");
+        setTimeout(() => setSaveStatus("idle"), 3000);
+        return;
+      }
+
       const categoryMapping = {
         recoveryOptionsRanking: "recoveryOptionsRanking",
         aircraftSelectionCriteria: "aircraftSelectionCriteria",
@@ -1061,7 +1103,15 @@ export function SettingsPanel({
     currentValue = 0,
   ) => {
     const total = calculateTotalWeight(category, section);
-    const remaining = 100 - total + currentValue;
+    let adjustedCurrentValue = currentValue;
+    
+    // For custom parameters, find the current weight by ID
+    if (section && typeof currentParam === 'string' && currentParam.startsWith('custom_')) {
+      const param = recoveryConfiguration[section]?.customParameters?.find(p => p.id === currentParam);
+      adjustedCurrentValue = param ? param.weight : 0;
+    }
+    
+    const remaining = 100 - total + adjustedCurrentValue;
     return Math.max(0, remaining);
   };
 
@@ -2800,9 +2850,31 @@ export function SettingsPanel({
                           </Button>
                         </div>
                       </div>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-gray-600 mb-2">
                         {param.description}
                       </p>
+                      <Slider
+                        value={[param.weight]}
+                        onValueChange={(newValue) =>
+                          handleCustomParameterWeightChange(
+                            "recoveryOptionsRanking",
+                            param.id,
+                            newValue[0]
+                          )
+                        }
+                        max={Math.min(
+                          50,
+                          getAvailableWeight(
+                            null,
+                            "recoveryOptionsRanking",
+                            param.id,
+                            param.weight
+                          )
+                        )}
+                        min={0}
+                        step={5}
+                        className="w-full slider-flydubai"
+                      />
                     </div>
                   ),
                 )}
@@ -2960,9 +3032,31 @@ export function SettingsPanel({
                           </Button>
                         </div>
                       </div>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-gray-600 mb-2">
                         {param.description}
                       </p>
+                      <Slider
+                        value={[param.weight]}
+                        onValueChange={(newValue) =>
+                          handleCustomParameterWeightChange(
+                            "aircraftSelectionCriteria",
+                            param.id,
+                            newValue[0]
+                          )
+                        }
+                        max={Math.min(
+                          50,
+                          getAvailableWeight(
+                            null,
+                            "aircraftSelectionCriteria",
+                            param.id,
+                            param.weight
+                          )
+                        )}
+                        min={0}
+                        step={5}
+                        className="w-full slider-flydubai"
+                      />
                     </div>
                   ),
                 )}
@@ -3123,9 +3217,31 @@ export function SettingsPanel({
                           </Button>
                         </div>
                       </div>
-                      <p className="text-xs text-gray-600">
+                      <p className="text-xs text-gray-600 mb-2">
                         {param.description}
                       </p>
+                      <Slider
+                        value={[param.weight]}
+                        onValueChange={(newValue) =>
+                          handleCustomParameterWeightChange(
+                            "crewAssignmentCriteria",
+                            param.id,
+                            newValue[0]
+                          )
+                        }
+                        max={Math.min(
+                          50,
+                          getAvailableWeight(
+                            null,
+                            "crewAssignmentCriteria",
+                            param.id,
+                            param.weight
+                          )
+                        )}
+                        min={0}
+                        step={5}
+                        className="w-full slider-flydubai"
+                      />
                     </div>
                   ),
                 )}
