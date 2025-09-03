@@ -88,41 +88,18 @@ const pool = new Pool({
     connectionString.includes("neon.tech")
       ? { rejectUnauthorized: false }
       : false,
-  max: 3, // Reduced for Neon compatibility
-  min: 0, // Don't keep idle connections for Neon
-  idleTimeoutMillis: 30000, // Shorter idle timeout for Neon
-  connectionTimeoutMillis: 15000, // Increased timeout
-  maxUses: 100, // Recycle connections more frequently
-  acquireTimeoutMillis: 10000, // Timeout for acquiring connections
+  max: 5, // Reduced maximum connections to prevent exhaustion
+  min: 1, // Keep at least one connection alive
+  idleTimeoutMillis: 60000, // Keep connections alive longer
+  connectionTimeoutMillis: 10000, // Increased timeout for better reliability
+  maxUses: 1000, // Reduced max uses to recycle connections more frequently
+  acquireTimeoutMillis: 8000, // Timeout for acquiring connections
 });
 
-// Enhanced connection management
+// Test database connection on startup with retry logic
 let connectionRetries = 0;
-const maxRetries = 5;
+const maxRetries = 3;
 let databaseAvailable = false;
-let reconnectTimer = null;
-
-// Handle pool errors gracefully
-pool.on('error', (err) => {
-  console.log('⚠️ Unexpected database pool error:', err.message);
-  databaseAvailable = false;
-  
-  // Don't crash the server - schedule reconnection attempt
-  if (!reconnectTimer) {
-    reconnectTimer = setTimeout(() => {
-      reconnectTimer = null;
-      testConnection();
-    }, 5000);
-  }
-});
-
-// Handle individual client errors
-pool.on('connect', (client) => {
-  client.on('error', (err) => {
-    console.log('⚠️ Database client error:', err.message);
-    // Don't crash - let the pool handle it
-  });
-});
 
 async function testConnection() {
   try {
@@ -140,19 +117,12 @@ async function testConnection() {
     databaseAvailable = false;
 
     if (connectionRetries < maxRetries) {
-      const delay = Math.min(5000 * connectionRetries, 30000); // Max 30s delay
-      setTimeout(testConnection, delay);
+      setTimeout(testConnection, 2000 * connectionRetries); // Shorter retry intervals
     } else {
       console.log(
         "❌ Max connection retries reached. API will continue without database.",
       );
       databaseAvailable = false;
-      
-      // Schedule periodic retry attempts
-      setTimeout(() => {
-        connectionRetries = 0;
-        testConnection();
-      }, 60000); // Retry every minute
     }
   }
 }
@@ -161,22 +131,8 @@ async function testConnection() {
 testConnection();
 
 // Health check endpoint
-app.get("/api/health", async (req, res) => {
-  try {
-    const dbHealthy = await checkDatabaseHealth();
-    res.json({ 
-      status: dbHealthy ? "healthy" : "degraded", 
-      database: dbHealthy ? "connected" : "disconnected",
-      timestamp: new Date().toISOString() 
-    });
-  } catch (error) {
-    res.json({ 
-      status: "degraded", 
-      database: "error",
-      error: error.message,
-      timestamp: new Date().toISOString() 
-    });
-  }
+app.get("/api/health", (req, res) => {
+  res.json({ status: "healthy", timestamp: new Date().toISOString() });
 });
 
 // Authentication endpoints
@@ -1524,54 +1480,16 @@ app.post("/api/settings/reset", async (req, res) => {
   }
 });
 
-// Enhanced helper function to check database availability
+// Helper function to check database availability
 async function withDatabaseFallback(operation, fallbackValue = []) {
   try {
-    // Quick check if database is marked as unavailable
-    if (!databaseAvailable) {
-      console.warn("Database marked as unavailable, using fallback");
-      return fallbackValue;
-    }
-    
-    const result = await operation();
-    databaseAvailable = true; // Mark as available on success
-    return result;
+    return await operation();
   } catch (error) {
     console.warn(
       "Database operation failed, returning fallback:",
       error.message,
     );
-    
-    // Handle specific connection termination errors
-    if (error.code === '57P01' || error.message?.includes("terminating connection")) {
-      console.log("📡 Database connection terminated - marking as unavailable");
-      databaseAvailable = false;
-      
-      // Trigger reconnection attempt
-      if (!reconnectTimer) {
-        reconnectTimer = setTimeout(() => {
-          reconnectTimer = null;
-          testConnection();
-        }, 3000);
-      }
-    }
-    
     return fallbackValue;
-  }
-}
-
-// Add database health check endpoint that actually tests the connection
-async function checkDatabaseHealth() {
-  try {
-    const client = await pool.connect();
-    await client.query('SELECT 1');
-    client.release();
-    databaseAvailable = true;
-    return true;
-  } catch (error) {
-    console.log('Database health check failed:', error.message);
-    databaseAvailable = false;
-    return false;
   }
 }
 
@@ -4738,40 +4656,10 @@ process.on("SIGTERM", () => {
 
 process.on("uncaughtException", (error) => {
   console.error("Uncaught Exception:", error);
-  
-  // Handle specific database connection errors gracefully
-  if (error.message && error.message.includes("terminating connection due to administrator command")) {
-    console.log("📡 Database connection terminated by server - scheduling reconnection");
-    databaseAvailable = false;
-    
-    // Schedule reconnection attempt
-    setTimeout(() => {
-      connectionRetries = 0;
-      testConnection();
-    }, 5000);
-    
-    return; // Don't exit the process for this specific error
-  }
-  
-  // For other uncaught exceptions, log but don't exit in development
-  if (process.env.NODE_ENV !== "production") {
-    console.error("🚨 Uncaught exception in development mode - continuing...");
-  } else {
-    console.error("🚨 Uncaught exception in production - exiting gracefully");
-    process.exit(1);
-  }
+  // Don't exit the process, just log the error
 });
 
 process.on("unhandledRejection", (reason, promise) => {
   console.error("Unhandled Rejection at:", promise, "reason:", reason);
-  
-  // Handle database-related rejections gracefully
-  if (reason && typeof reason === 'object' && reason.code === '57P01') {
-    console.log("📡 Database rejection due to connection termination - will retry");
-    databaseAvailable = false;
-    return;
-  }
-  
   // Don't exit the process, just log the error
-  console.error("🚨 Unhandled rejection - continuing operation");
 });
