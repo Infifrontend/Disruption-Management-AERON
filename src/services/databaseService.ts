@@ -195,7 +195,7 @@ class DatabaseService {
       this.circuitBreakerTimeout = setTimeout(() => {
         console.log("Circuit breaker half-open - attempting to reconnect");
         this.circuitBreakerOpen = false;
-        this.failureCount = 0;
+        this.failureCount = Math.floor(this.MAX_FAILURES / 2); // Gradual recovery
       }, this.CIRCUIT_BREAKER_TIMEOUT);
     }
   }
@@ -504,7 +504,7 @@ class DatabaseService {
     }
   }
 
-  // Health check method
+  // Health check method with enhanced error handling
   async healthCheck(): Promise<boolean> {
     // Return cached result if valid
     if (this.isCacheValid()) {
@@ -538,7 +538,9 @@ class DatabaseService {
       if (response.ok) {
         try {
           const data = await response.json();
-          isHealthy = data.status === "healthy" || response.status === 200;
+          // Check both overall status and database status
+          isHealthy = (data.status === "healthy" || data.status === "degraded") && 
+                     (data.database === "connected" || response.status === 200);
         } catch (jsonError) {
           // If JSON parsing fails but response is ok, consider it healthy
           isHealthy = true;
@@ -568,12 +570,39 @@ class DatabaseService {
       // Cache the failure result with shorter duration
       this.healthCheckCache = {
         status: false,
-        timestamp: Date.now() - (this.HEALTH_CHECK_CACHE_DURATION - 15000), // Cache for only 5s on failure
+        timestamp: Date.now() - (this.HEALTH_CHECK_CACHE_DURATION - 10000), // Cache for only 10s on failure
       };
       return false;
     } finally {
       this.isHealthChecking = false;
     }
+  }
+
+  // Add retry mechanism for critical operations
+  private async retryOperation<T>(
+    operation: () => Promise<T>,
+    maxRetries: number = 2,
+    fallbackValue: T | null = null
+  ): Promise<T | null> {
+    for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+      try {
+        const result = await operation();
+        if (attempt > 1) {
+          console.log(`Operation succeeded on attempt ${attempt}`);
+          this.onDatabaseSuccess();
+        }
+        return result;
+      } catch (error) {
+        if (attempt <= maxRetries) {
+          console.log(`Operation failed on attempt ${attempt}, retrying...`);
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // Exponential backoff
+        } else {
+          console.error(`Operation failed after ${maxRetries + 1} attempts:`, error);
+          this.onDatabaseFailure();
+        }
+      }
+    }
+    return fallbackValue;
   }
 
   // Backend status check method
