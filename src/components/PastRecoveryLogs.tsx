@@ -157,6 +157,7 @@ export function PastRecoveryLogs() {
     try {
       const data = await databaseService.getPastRecoveryLogs(filterParams);
       setRecoveryLogs(data);
+      console.log(data, "recoveryLogs");
     } catch (error) {
       console.error("Error fetching recovery logs:", error);
       setRecoveryLogs([]);
@@ -166,8 +167,10 @@ export function PastRecoveryLogs() {
   const fetchKPIData = async () => {
     try {
       const response = await fetch("/api/past-recovery-kpi");
+      console.log(response);
       if (response.ok) {
         const data = await response.json();
+        console.log(data, "kpi dtatta");
         setKpiData(data);
       } else {
         calculateKPIFromLogs();
@@ -183,6 +186,7 @@ export function PastRecoveryLogs() {
       const response = await fetch("/api/past-recovery-trends");
       if (response.ok) {
         let data = await response.json();
+        console.log(data, "trend data");
         if (Array.isArray(data) && data.length > 0) {
           data = [
             {
@@ -425,7 +429,7 @@ export function PastRecoveryLogs() {
     Failed: "bg-red-100 text-red-800",
     Cancelled: "bg-gray-100 text-gray-800",
   };
-
+  console.log(recoveryLogs, "dddddddddddddddddd");
   const filteredLogs = recoveryLogs.filter((log) => {
     if (filters.status !== "all" && log.status !== filters.status) return false;
     if (filters.category !== "all" && log.categorization !== filters.category)
@@ -472,9 +476,9 @@ export function PastRecoveryLogs() {
     }).format(amount);
   };
 
-  const formatDuration = (minutes: number) => {
+  const formatDuration = (minutes: number, decimals: number = 0) => {
     const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
+    const mins = (minutes % 60).toFixed(decimals);
     return `${hours}h ${mins}m`;
   };
 
@@ -939,7 +943,10 @@ export function PastRecoveryLogs() {
                       ([category, count]) => {
                         const percentage =
                           totalLogs > 0
-                            ? (((count as number) / (totalLogs as number)) * 100).toFixed(1)
+                            ? (
+                                ((count as number) / (totalLogs as number)) *
+                                100
+                              ).toFixed(1)
                             : 0;
                         return (
                           <div
@@ -1635,7 +1642,7 @@ export function PastRecoveryLogs() {
                           </td>
                           <td className="p-3">
                             <div className="text-sm font-medium">
-                              {log.flight_number}
+                              {log.flight_number} 11
                             </div>
                             <div className="text-xs text-gray-500">
                               {log.route}
