@@ -306,22 +306,11 @@ export function SettingsPanel({
 
   const loadManualEntriesFromDatabase = async () => {
     try {
-      // Get manual knowledge entries from settings
-      const entries = await databaseService.getSettingsByCategory('manualKnowledgeEntries');
+      // Use the dedicated manual knowledge entries endpoint
+      const entries = await databaseService.getAllManualKnowledgeEntries();
       console.log("Loaded manual entries from database:", entries);
 
-      // Transform database format to component format
-      const transformedEntries = entries.map((entry) => ({
-        id: entry.key,
-        title: entry.value.title || '',
-        category: entry.value.category || 'operations',
-        source: entry.value.source || '',
-        tags: entry.value.tags || '',
-        createdAt: entry.createdAt,
-        createdBy: entry.updatedBy,
-      }));
-
-      setManualEntries(transformedEntries);
+      setManualEntries(entries);
     } catch (error) {
       console.error("Failed to load manual entries from database:", error);
       // Keep existing entries if database load fails
