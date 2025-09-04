@@ -41,7 +41,7 @@ app.use(
       if (!origin) return callback(null, true);
 
       // In development, allow all origins
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === "development") {
         return callback(null, true);
       }
 
@@ -55,12 +55,12 @@ app.use(
       }
 
       // Allow replit domains
-      if (origin.includes('replit.dev') || origin.includes('replit.co')) {
+      if (origin.includes("replit.dev") || origin.includes("replit.co")) {
         return callback(null, true);
       }
 
-      console.log('CORS blocked origin:', origin);
-      return callback(new Error('Not allowed by CORS'), false);
+      console.log("CORS blocked origin:", origin);
+      return callback(new Error("Not allowed by CORS"), false);
     },
     credentials: allowCredentials,
     methods: allowedMethods,
@@ -88,36 +88,40 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware to check database availability with better handling
 app.use((req, res, next) => {
   // Allow health check, auth routes, and debug routes to pass through
-  if (req.path === '/api/health' || 
-      req.path.startsWith('/api/auth/') || 
-      req.path === '/api/debug') {
+  if (
+    req.path === "/api/health" ||
+    req.path.startsWith("/api/auth/") ||
+    req.path === "/api/debug"
+  ) {
     return next();
   }
 
   // For database-dependent routes, check availability but allow retry logic
-  if (!databaseAvailable && req.path.startsWith('/api/')) {
+  if (!databaseAvailable && req.path.startsWith("/api/")) {
     console.warn(`Database unavailable for ${req.method} ${req.path}`);
 
     // Trigger a connection test before responding
-    testConnection().then(() => {
-      if (databaseAvailable) {
-        // Database became available, continue with the request
-        next();
-      } else {
-        // Still unavailable, return 503
-        res.status(503).json({ 
-          error: 'Database temporarily unavailable',
-          message: 'Database is waking up, please retry in a few seconds',
-          retryAfter: 5
+    testConnection()
+      .then(() => {
+        if (databaseAvailable) {
+          // Database became available, continue with the request
+          next();
+        } else {
+          // Still unavailable, return 503
+          res.status(503).json({
+            error: "Database temporarily unavailable",
+            message: "Database is waking up, please retry in a few seconds",
+            retryAfter: 5,
+          });
+        }
+      })
+      .catch(() => {
+        res.status(503).json({
+          error: "Database temporarily unavailable",
+          message: "Database is waking up, please retry in a few seconds",
+          retryAfter: 5,
         });
-      }
-    }).catch(() => {
-      res.status(503).json({ 
-        error: 'Database temporarily unavailable',
-        message: 'Database is waking up, please retry in a few seconds',
-        retryAfter: 5
       });
-    });
     return;
   }
 
@@ -154,7 +158,7 @@ async function testConnection() {
   try {
     const client = await pool.connect();
     // Test the connection with a simple query
-    await client.query('SELECT 1');
+    await client.query("SELECT 1");
     console.log("✅ PostgreSQL connected successfully");
     client.release();
     connectionRetries = 0; // Reset on success
@@ -168,9 +172,15 @@ async function testConnection() {
     databaseAvailable = false;
 
     // Special handling for Neon database sleep/wake cycles
-    if (err.message.includes('terminating connection due to administrator command') ||
-        err.message.includes('server closed the connection unexpectedly')) {
-      console.log('Database appears to be in sleep mode, retrying connection...');
+    if (
+      err.message.includes(
+        "terminating connection due to administrator command",
+      ) ||
+      err.message.includes("server closed the connection unexpectedly")
+    ) {
+      console.log(
+        "Database appears to be in sleep mode, retrying connection...",
+      );
       // Shorter delay for sleep mode recovery
       setTimeout(testConnection, 1000);
     } else if (connectionRetries < maxRetries) {
@@ -184,7 +194,7 @@ async function testConnection() {
       // Schedule periodic retry attempts
       setTimeout(() => {
         connectionRetries = 0;
-        console.log('Attempting periodic database reconnection...');
+        console.log("Attempting periodic database reconnection...");
         testConnection();
       }, 30000); // Retry every 30 seconds
     }
@@ -192,27 +202,29 @@ async function testConnection() {
 }
 
 // Handle database connection errors gracefully with retry logic
-pool.on('error', (err) => {
-  console.error('Database pool error:', err.message);
+pool.on("error", (err) => {
+  console.error("Database pool error:", err.message);
   databaseAvailable = false;
 
   // Don't immediately retry on certain errors
-  if (!err.message.includes('terminating connection due to administrator command')) {
+  if (
+    !err.message.includes("terminating connection due to administrator command")
+  ) {
     // Retry connection after a delay for other errors
     setTimeout(() => {
-      console.log('Attempting to restore database connection...');
+      console.log("Attempting to restore database connection...");
       testConnection();
     }, 5000);
   }
 });
 
-pool.on('connect', () => {
-  console.log('Database pool connected');
+pool.on("connect", () => {
+  console.log("Database pool connected");
   databaseAvailable = true;
 });
 
-pool.on('remove', () => {
-  console.log('Database client removed');
+pool.on("remove", () => {
+  console.log("Database client removed");
   // Don't mark as unavailable on client removal - this is normal
 });
 
@@ -222,44 +234,48 @@ testConnection();
 // Health check endpoint
 app.get("/api/health", async (req, res) => {
   try {
-    let dbStatus = 'disconnected';
+    let dbStatus = "disconnected";
 
     // Always try to test the database connection on health check
     try {
       const client = await pool.connect();
-      await client.query('SELECT 1');
+      await client.query("SELECT 1");
       client.release();
-      dbStatus = 'connected';
+      dbStatus = "connected";
       databaseAvailable = true;
     } catch (dbError) {
-      console.warn('Health check database test failed:', dbError.message);
+      console.warn("Health check database test failed:", dbError.message);
 
       // Handle specific Neon database errors
-      if (dbError.message.includes('terminating connection due to administrator command') ||
-          dbError.message.includes('server closed the connection unexpectedly')) {
-        dbStatus = 'sleeping';
-        console.log('Database appears to be sleeping, attempting to wake...');
+      if (
+        dbError.message.includes(
+          "terminating connection due to administrator command",
+        ) ||
+        dbError.message.includes("server closed the connection unexpectedly")
+      ) {
+        dbStatus = "sleeping";
+        console.log("Database appears to be sleeping, attempting to wake...");
         // Trigger connection test to wake the database
         setTimeout(testConnection, 100);
       } else {
-        dbStatus = 'error';
+        dbStatus = "error";
         databaseAvailable = false;
       }
     }
 
-    res.json({ 
-      status: "healthy", 
+    res.json({
+      status: "healthy",
       timestamp: new Date().toISOString(),
       database: dbStatus,
-      environment: process.env.NODE_ENV || 'development',
-      databaseAvailable
+      environment: process.env.NODE_ENV || "development",
+      databaseAvailable,
     });
   } catch (error) {
-    console.error('Health check error:', error);
-    res.status(500).json({ 
-      status: "error", 
+    console.error("Health check error:", error);
+    res.status(500).json({
+      status: "error",
       timestamp: new Date().toISOString(),
-      error: error.message 
+      error: error.message,
     });
   }
 });
@@ -553,14 +569,16 @@ app.get("/api/settings/tabs", async (req, res) => {
         tabSettings.recoveryOptions[category].push(fullSetting);
       }
       // NLP Settings
-      else if (category === "nlpSettings" || category === "manualKnowledgeEntries") {
+      else if (
+        category === "nlpSettings" ||
+        category === "manualKnowledgeEntries"
+      ) {
         if (!tabSettings.nlp[category]) {
           tabSettings.nlp[category] = [];
         }
         tabSettings.nlp[category].push(fullSetting);
       }
       // Notification Settings
-
       else if (category === "notificationSettings") {
         if (!tabSettings.notifications[category]) {
           tabSettings.notifications[category] = [];
@@ -568,7 +586,6 @@ app.get("/api/settings/tabs", async (req, res) => {
         tabSettings.notifications[category].push(fullSetting);
       }
       // Screen Settings - handle separately if needed
-
       else if (
         [
           "main",
@@ -576,8 +593,8 @@ app.get("/api/settings/tabs", async (req, res) => {
           "prediction",
           "monitoring",
           "services",
-          "analytics",  
-          "system"
+          "analytics",
+          "system",
         ].includes(category)
       ) {
         if (!tabSettings.screens[category]) {
@@ -718,13 +735,13 @@ app.get("/api/screen-settings", async (req, res) => {
     );
 
     // Transform to match the expected format for screenSettings state
-    const transformedScreens = result.rows.map(screen => ({
+    const transformedScreens = result.rows.map((screen) => ({
       id: screen.screen_id,
       name: screen.screen_name,
       icon: screen.icon || "Settings", // Default icon if not set
       category: screen.category,
       enabled: screen.enabled,
-      required: screen.required
+      required: screen.required,
     }));
 
     res.json(transformedScreens);
@@ -800,7 +817,7 @@ app.post("/api/screen-settings/batch", async (req, res) => {
       return res.status(400).json({ error: "screenSettings must be an array" });
     }
 
-    const updatePromises = screenSettings.map(screen => {
+    const updatePromises = screenSettings.map((screen) => {
       return pool.query(
         `INSERT INTO screen_settings (screen_id, screen_name, category, enabled, required, icon, updated_by)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
@@ -821,17 +838,17 @@ app.post("/api/screen-settings/batch", async (req, res) => {
           screen.enabled,
           screen.required,
           screen.icon || "Settings",
-          updated_by || "system"
-        ]
+          updated_by || "system",
+        ],
       );
     });
 
     const results = await Promise.all(updatePromises);
-    const updatedScreens = results.map(result => result.rows[0]);
+    const updatedScreens = results.map((result) => result.rows[0]);
 
-    res.json({ 
+    res.json({
       message: `Updated ${updatedScreens.length} screen settings`,
-      screens: updatedScreens
+      screens: updatedScreens,
     });
   } catch (error) {
     console.error("Error batch updating screen settings:", error);
@@ -967,18 +984,18 @@ app.post("/api/custom-rules/batch", async (req, res) => {
             overridable,
             conditions,
             actions,
-            status || 'Active',
-            created_by || updated_by || 'system',
+            status || "Active",
+            created_by || updated_by || "system",
           ],
         );
         results.push(result.rows[0]);
       }
 
       await client.query("COMMIT");
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         saved_rules: results.length,
-        rules: results
+        rules: results,
       });
     } catch (error) {
       await client.query("ROLLBACK");
@@ -1093,16 +1110,16 @@ app.delete("/api/custom-parameters/:parameter_id", async (req, res) => {
 app.get("/api/manual-knowledge-entries", async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM settings WHERE category = 'manualKnowledgeEntries' AND is_active = true ORDER BY updated_at DESC"
+      "SELECT * FROM settings WHERE category = 'manualKnowledgeEntries' AND is_active = true ORDER BY updated_at DESC",
     );
-    
+
     // Transform database format to component format
     const transformedEntries = result.rows.map((entry) => ({
       id: entry.key,
-      title: entry.value.title || '',
-      category: entry.value.category || 'operations',
-      source: entry.value.source || '',
-      tags: entry.value.tags || '',
+      title: entry.value.title || "",
+      category: entry.value.category || "operations",
+      source: entry.value.source || "",
+      tags: entry.value.tags || "",
       createdAt: entry.updated_at,
       createdBy: entry.updated_by,
     }));
@@ -1117,20 +1134,26 @@ app.get("/api/manual-knowledge-entries", async (req, res) => {
 app.post("/api/manual-knowledge-entries", async (req, res) => {
   try {
     const { title, category, source, tags, created_by } = req.body;
-    
+
     const entryId = `manual_${Date.now()}`;
     const entryData = {
       title,
-      category: category || 'operations',
+      category: category || "operations",
       source,
-      tags: tags || '',
+      tags: tags || "",
     };
 
     const result = await pool.query(
       `INSERT INTO settings (category, key, value, type, updated_by)
        VALUES ($1, $2, $3, $4, $5)
        RETURNING *`,
-      ['manualKnowledgeEntries', entryId, JSON.stringify(entryData), 'object', created_by || 'system']
+      [
+        "manualKnowledgeEntries",
+        entryId,
+        JSON.stringify(entryData),
+        "object",
+        created_by || "system",
+      ],
     );
 
     const savedEntry = {
@@ -1155,11 +1178,13 @@ app.delete("/api/manual-knowledge-entries/:entryId", async (req, res) => {
     const { entryId } = req.params;
     const result = await pool.query(
       "UPDATE settings SET is_active = false WHERE category = 'manualKnowledgeEntries' AND key = $1 RETURNING *",
-      [entryId]
+      [entryId],
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Manual knowledge entry not found" });
+      return res
+        .status(404)
+        .json({ error: "Manual knowledge entry not found" });
     }
 
     res.json({ message: "Manual knowledge entry deleted successfully" });
@@ -4507,8 +4532,8 @@ app.get("/api/past-recovery-logs", async (req, res) => {
           ELSE '2h 30m'
         END as duration,
         CASE
-          WHEN fd.recovery_status = 'completed' THEN 'Successful'
-          WHEN fd.recovery_status = 'in_progress' THEN 'Partial'
+          WHEN fd.recovery_status = 'approved' THEN 'Successful'
+          WHEN fd.recovery_status = 'pending' THEN 'Partial'
           ELSE 'Successful'
         END as status,
         fd.passengers as affected_passengers,
@@ -4585,6 +4610,7 @@ app.get("/api/past-recovery-logs", async (req, res) => {
     console.log("With parameters:", params);
 
     const result = await pool.query(query, params);
+    console.log(`Found past recovery logs` + `${JSON.stringify(result)}`);
 
     // Transform numeric fields
     const transformedData = result.rows.map((row) => ({
@@ -4969,22 +4995,27 @@ app.post("/api/documents", async (req, res) => {
       file_type,
       file_size,
       content_base64,
-      uploaded_by = 'system',
-      metadata = {}
+      uploaded_by = "system",
+      metadata = {},
     } = req.body;
 
     // Validate required fields
     if (!name || !original_name || !file_type || !content_base64) {
       return res.status(400).json({
-        error: "Missing required fields: name, original_name, file_type, content_base64"
+        error:
+          "Missing required fields: name, original_name, file_type, content_base64",
       });
     }
 
     // Validate file type
-    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
     if (!allowedTypes.includes(file_type)) {
       return res.status(400).json({
-        error: "Invalid file type. Only PDF and DOC files are allowed."
+        error: "Invalid file type. Only PDF and DOC files are allowed.",
       });
     }
 
@@ -4992,7 +5023,7 @@ app.post("/api/documents", async (req, res) => {
     const maxSize = 3 * 1024 * 1024; // 3MB in bytes
     if (file_size > maxSize) {
       return res.status(400).json({
-        error: "File size exceeds 3MB limit."
+        error: "File size exceeds 3MB limit.",
       });
     }
 
@@ -5010,20 +5041,20 @@ app.post("/api/documents", async (req, res) => {
         content_base64,
         uploaded_by,
         JSON.stringify(metadata),
-        'uploaded'
-      ]
+        "uploaded",
+      ],
     );
 
     res.json({
       success: true,
       document: result.rows[0],
-      message: "Document uploaded successfully"
+      message: "Document uploaded successfully",
     });
   } catch (error) {
     console.error("Error uploading document:", error);
     res.status(500).json({
       error: "Failed to upload document",
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -5035,7 +5066,7 @@ app.get("/api/documents", async (req, res) => {
               uploaded_by, processing_status, metadata
        FROM document_repository 
        WHERE is_active = true 
-       ORDER BY upload_date DESC`
+       ORDER BY upload_date DESC`,
     );
 
     res.json(result.rows);
@@ -5043,7 +5074,7 @@ app.get("/api/documents", async (req, res) => {
     console.error("Error fetching documents:", error);
     res.status(500).json({
       error: "Failed to fetch documents",
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -5053,7 +5084,7 @@ app.get("/api/documents/:id", async (req, res) => {
     const { id } = req.params;
     const result = await pool.query(
       `SELECT * FROM document_repository WHERE id = $1 AND is_active = true`,
-      [id]
+      [id],
     );
 
     if (result.rows.length === 0) {
@@ -5065,7 +5096,7 @@ app.get("/api/documents/:id", async (req, res) => {
     console.error("Error fetching document:", error);
     res.status(500).json({
       error: "Failed to fetch document",
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -5078,7 +5109,7 @@ app.delete("/api/documents/:id", async (req, res) => {
        SET is_active = false, updated_at = CURRENT_TIMESTAMP
        WHERE id = $1 AND is_active = true
        RETURNING *`,
-      [id]
+      [id],
     );
 
     if (result.rows.length === 0) {
@@ -5087,13 +5118,13 @@ app.delete("/api/documents/:id", async (req, res) => {
 
     res.json({
       success: true,
-      message: "Document deleted successfully"
+      message: "Document deleted successfully",
     });
   } catch (error) {
     console.error("Error deleting document:", error);
     res.status(500).json({
       error: "Failed to delete document",
-      details: error.message
+      details: error.message,
     });
   }
 });
@@ -5122,8 +5153,6 @@ const server = app.listen(port, "0.0.0.0", () => {
   console.log(`📊 Server started successfully at ${new Date().toISOString()}`);
 });
 
-
-
 process.on("uncaughtException", (error) => {
   console.error("Uncaught Exception:", error.message);
   console.error("Stack:", error.stack);
@@ -5136,23 +5165,23 @@ process.on("unhandledRejection", (reason, promise) => {
 });
 
 // Handle SIGTERM and SIGINT gracefully
-process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully');
+process.on("SIGTERM", () => {
+  console.log("SIGTERM received, shutting down gracefully");
   server.close(() => {
-    console.log('Server closed');
+    console.log("Server closed");
     pool.end(() => {
-      console.log('Database connections closed');
+      console.log("Database connections closed");
       process.exit(0);
     });
   });
 });
 
-process.on('SIGINT', () => {
-  console.log('SIGINT received, shutting down gracefully');
+process.on("SIGINT", () => {
+  console.log("SIGINT received, shutting down gracefully");
   server.close(() => {
-    console.log('Server closed');
+    console.log("Server closed");
     pool.end(() => {
-      console.log('Database connections closed');
+      console.log("Database connections closed");
       process.exit(0);
     });
   });
