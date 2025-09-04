@@ -1438,7 +1438,7 @@ export function PastRecoveryLogs() {
             </CardContent>
           </Card>
         </TabsContent>
-      </div>
+    
 
         {/* Performance Trends Tab */}
         <TabsContent value="performance-trends" className="space-y-6">
@@ -1887,8 +1887,10 @@ export function PastRecoveryLogs() {
                     </div>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
+              </div>
+            </CardContent>
+           </Card>
+        </TabsContent>
+      </Tabs>
+    </div>)
+};
