@@ -131,15 +131,6 @@ type Screen = {
   icon: React.ElementType;
 };
 
-// Define SystemSettings type
-type SystemSettings = {
-  timeZone?: string;
-  currencyDisplay?: string;
-  highPerformanceMode?: boolean;
-  autoSaveSettings?: boolean;
-};
-
-
 // Define a placeholder for updateScreenSetting function if it's not defined elsewhere
 // In a real scenario, this would be passed as a prop or imported
 const updateScreenSetting = (screenId: string, enabled: boolean) => {
@@ -179,9 +170,6 @@ export function SettingsPanel({
     Record<string, SettingsFieldConfig[]>
   >({});
   const [rawTabSettings, setRawTabSettings] = useState<any>({});
-
-  // System settings state
-  const [systemSettings, setSystemSettings] = useState<SystemSettings>({});
 
   // Database-backed state - initialized empty and populated from API
   const [nlpSettings, setNlpSettings] = useState({});
@@ -362,16 +350,6 @@ export function SettingsPanel({
         return {};
       };
 
-      // Load System Settings
-      const newSystemSettings: SystemSettings = {};
-      if (tabSettings.system) {
-        const systemConfig = loadCategorySettings(tabSettings.system, "systemSettings");
-        newSystemSettings.timeZone = systemConfig.timeZone;
-        newSystemSettings.currencyDisplay = systemConfig.currencyDisplay;
-        newSystemSettings.highPerformanceMode = systemConfig.highPerformanceMode;
-        newSystemSettings.autoSaveSettings = systemConfig.autoSaveSettings;
-      }
-
       // Load NLP Settings from nlp tab
       const newNlpSettings = loadCategorySettings(
         tabSettings.nlp,
@@ -451,7 +429,6 @@ export function SettingsPanel({
       // Documents are loaded by loadDocumentsFromDatabase() function
 
       // Update state with loaded settings
-      setSystemSettings(newSystemSettings);
       setNlpSettings(newNlpSettings);
       setRuleConfiguration(newRuleConfig);
       setRecoveryConfiguration(newRecoveryConfig);
@@ -459,7 +436,6 @@ export function SettingsPanel({
       setNotificationSettings(newNotificationSettings);
 
       console.log("Settings loaded successfully from database");
-      console.log("System Settings:", newSystemSettings);
       console.log("NLP Settings:", newNlpSettings);
       console.log("Rule Configuration:", newRuleConfig);
       console.log("Recovery Configuration:", newRecoveryConfig);
@@ -511,22 +487,6 @@ export function SettingsPanel({
       [setting]: newValue,
     }));
   };
-
-  // System settings handlers
-  const handleSystemToggle = (setting: keyof SystemSettings) => {
-    setSystemSettings((prev) => ({
-      ...prev,
-      [setting]: !prev[setting],
-    }));
-  };
-
-  const handleSystemChange = (setting: keyof SystemSettings, value: any) => {
-    setSystemSettings((prev) => ({
-      ...prev,
-      [setting]: value,
-    }));
-  };
-
 
   // Rule Configuration Handlers
   const handleRuleConfigChange = (category, parameter, value) => {
@@ -1093,46 +1053,58 @@ export function SettingsPanel({
   const saveSystemSettings = async () => {
     setSaveStatus("saving");
     try {
-      // Convert system settings from current state to the format expected by saveSettingsFromState
-      const systemStateToSave: Record<string, Record<string, any>> = {
-        systemSettings: {},
-      };
+      // Convert system settings from rawTabSettings to settings format for batch save
+      const settingsToSave = [];
 
-      // Map current systemSettings state to the save format
-      Object.keys(systemSettings).forEach((key) => {
-        const systemKey = key as keyof SystemSettings;
-        if (systemSettings[systemKey] !== undefined) {
-          systemStateToSave.systemSettings[systemKey] = systemSettings[systemKey];
-        }
-      });
-
-      // Map additional system settings from rawTabSettings if they exist
       if (rawTabSettings?.system) {
-        rawTabSettings.system.forEach((setting) => {
-          // Ensure we don't overwrite if already in systemSettings state,
-          // but also handle cases where they might only exist in rawTabSettings
-          if (systemStateToSave.systemSettings[setting.key] === undefined) {
-            systemStateToSave.systemSettings[setting.key] = setting.value;
-          }
-        });
+        Object.entries(rawTabSettings.system).forEach(
+          ([categoryKey, categorySettings]) => {
+            if (Array.isArray(categorySettings)) {
+              categorySettings.forEach((setting) => {
+                console.log(setting, "setting");
+                settingsToSave.push({
+                  category: categoryKey,
+                  key: setting.key,
+                  value: setting.value,
+                  type: setting.type || "string",
+                });
+              });
+            }
+          },
+        );
       }
 
-      // Define category mapping for system settings
-      const categoryMapping = {
-        systemSettings: "systemSettings",
-      };
+      if (settingsToSave.length > 0) {
+        // Create a state object for system settings
+        const systemState = {};
+        settingsToSave.forEach((setting) => {
+          if (!systemState[setting.category]) {
+            systemState[setting.category] = {};
+          }
+          systemState[setting.category][setting.key] = setting.value;
+        });
 
-      const success = await settingsStore.saveSettingsFromState(
-        systemStateToSave,
-        categoryMapping,
-        "user",
-      );
+        // Create category mapping
+        const categoryMapping = {};
+        Object.keys(systemState).forEach((category) => {
+          categoryMapping[category] = category;
+        });
 
-      if (success) {
-        showSaveStatus();
+        const success = await settingsStore.saveSettingsFromState(
+          systemState,
+          categoryMapping,
+          "user",
+        );
+
+        if (success) {
+          showSaveStatus();
+        } else {
+          setSaveStatus("error");
+          setTimeout(() => setSaveStatus("idle"), 3000);
+        }
       } else {
-        setSaveStatus("error");
-        setTimeout(() => setSaveStatus("idle"), 3000);
+        // No system settings to save, just show success
+        showSaveStatus();
       }
     } catch (error) {
       console.error("Failed to save system settings:", error);
@@ -1140,7 +1112,6 @@ export function SettingsPanel({
       setTimeout(() => setSaveStatus("idle"), 3000);
     }
   };
-
 
   const handleSaveAllSettings = async () => {
     setSaveStatus("saving");
@@ -2285,9 +2256,8 @@ export function SettingsPanel({
                     <strong>Scoring Example:</strong> VIP passenger on flydubai
                     flight = {passengerPriorityConfig.flightScoring.baseScore}{" "}
                     (base) +{" "}
-                    {passengerPriorityConfig.flightScoring.priorityBonus}{" "}
-                    (VIP) +{" "}
-                    {passengerPriorityConfig.flightScoring.airlineBonus}{" "}
+                    {passengerPriorityConfig.flightScoring.priorityBonus} (VIP)
+                    + {passengerPriorityConfig.flightScoring.airlineBonus}{" "}
                     (flydubai) ={" "}
                     {passengerPriorityConfig.flightScoring.baseScore +
                       passengerPriorityConfig.flightScoring.priorityBonus +
@@ -4431,102 +4401,92 @@ export function SettingsPanel({
           </div>
         </TabsContent>
 
-        {/* System Settings Tab */}
+        {/* System Settings Tab - Re-added with correct rendering */}
         <TabsContent value="system" className="space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex items-center gap-2 mb-2">
-                <Settings2 className="h-5 w-5 text-flydubai-blue" />
-                <CardTitle className="text-flydubai-navy">
-                  System Configuration
-                </CardTitle>
-              </div>
-              <CardDescription className="text-sm text-muted-foreground">
-                Configure system-wide settings and performance parameters.
-              </CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="h-5 w-5 text-flydubai-blue" />
+                System Configuration
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                General system settings and preferences.
+              </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* High Performance Mode */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <Label className="text-sm font-medium">High Performance Mode</Label>
-                  <p className="text-xs text-gray-600">
-                    Enable high performance processing for faster calculations
-                  </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-flydubai-navy">
+                    Regional Settings
+                  </h3>
+
+                  <div>
+                    <Label className="text-sm font-medium">Time Zone</Label>
+                    <Select defaultValue="indian-standard">
+                      <SelectTrigger className="w-full mt-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="indian-standard">
+                          Indian Standard Time (IST)
+                        </SelectItem>
+                        <SelectItem value="gulf-standard">
+                          Gulf Standard Time (GST)
+                        </SelectItem>
+                        <SelectItem value="utc">
+                          Coordinated Universal Time (UTC)
+                        </SelectItem>
+                        <SelectItem value="local">Local System Time</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Currency Display
+                    </Label>
+                    <Select defaultValue="aed">
+                      <SelectTrigger className="w-full mt-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="aed">AED (Dirham)</SelectItem>
+                        <SelectItem value="usd">USD (US Dollar)</SelectItem>
+                        <SelectItem value="eur">EUR (Euro)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <Switch
-                  checked={systemSettings.highPerformanceMode || false}
-                  onCheckedChange={(checked) =>
-                    handleSystemToggle("highPerformanceMode")
-                  }
-                  className="switch-flydubai"
-                />
-              </div>
 
-              {/* Auto-Save Settings */}
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
-                  <Label className="text-sm font-medium">Auto-Save Settings</Label>
-                  <p className="text-xs text-gray-600">
-                    Automatically save changes without manual confirmation
-                  </p>
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-flydubai-navy">
+                    Performance Settings
+                  </h3>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-sm font-medium">
+                        High Performance Mode
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Enhanced processing for critical operations
+                      </p>
+                    </div>
+                    <Switch checked={false} className="switch-flydubai" />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-sm font-medium">
+                        Auto-Save Settings
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Automatically save configuration changes
+                      </p>
+                    </div>
+                    <Switch checked={true} className="switch-flydubai" />
+                  </div>
                 </div>
-                <Switch
-                  checked={systemSettings.autoSaveSettings || false}
-                  onCheckedChange={(checked) =>
-                    handleSystemToggle("autoSaveSettings")
-                  }
-                  className="switch-flydubai"
-                />
-              </div>
-
-              {/* Additional system settings from database */}
-              {rawTabSettings?.system && (
-                <DynamicSettingsRenderer
-                  tabSettings={rawTabSettings.system}
-                  onSettingChange={handleSystemChange} // Use handleSystemChange for general settings
-                />
-              )}
-
-              {!rawTabSettings?.system && Object.keys(systemSettings).length === 0 && (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Settings2 className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <p>No additional system settings available</p>
-                  <p className="text-sm mt-2">
-                    Additional system settings will appear here when loaded from the
-                    database
-                  </p>
-                </div>
-              )}
-
-              <div className="flex justify-end pt-6 border-t">
-                <Button
-                  onClick={saveSystemSettings}
-                  disabled={saveStatus === "saving"}
-                  className="min-w-[120px] btn-flydubai-primary"
-                >
-                  {saveStatus === "saving" ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : saveStatus === "success" ? (
-                    <>
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Saved
-                    </>
-                  ) : saveStatus === "error" ? (
-                    <>
-                      <XCircle className="mr-2 h-4 w-4" />
-                      Error
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save System Settings
-                    </>
-                  )}
-                </Button>
               </div>
             </CardContent>
           </Card>
