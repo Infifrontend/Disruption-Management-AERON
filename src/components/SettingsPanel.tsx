@@ -1290,8 +1290,6 @@ export function SettingsPanel({
     system: { name: "System", color: "text-gray-600" },
   };
 
-  // This function is defined in the original code but was not directly used in the provided diff.
-  // Keeping it here for completeness as per instructions.
   const updateScreenSetting = (screenId: string, enabled: boolean) => {
     const updatedSettings = screenSettings.map((screen: Screen) => {
       if (screen.id === screenId && !screen.required) {
@@ -4406,137 +4404,89 @@ export function SettingsPanel({
         {/* System Settings Tab - Re-added with correct rendering */}
         <TabsContent value="system" className="space-y-6">
           <Card>
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-2 mb-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
                 <Settings className="h-5 w-5 text-flydubai-blue" />
-                <CardTitle className="text-flydubai-navy">
-                  System Configuration
-                </CardTitle>
-              </div>
-              <CardDescription className="text-sm text-muted-foreground">
-                Configure system-wide settings, performance parameters, and
-                operational preferences.
-              </CardDescription>
+                System Configuration
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                General system settings and preferences.
+              </p>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* System Settings Form */}
-              {rawTabSettings?.system && Object.keys(rawTabSettings.system).length > 0 ? (
-                <div className="space-y-6">
-                  {Object.entries(rawTabSettings.system).map(([categoryKey, categorySettings]) => (
-                    <div key={categoryKey} className="space-y-4">
-                      <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">
-                        {categoryKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
-                      </h4>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Array.isArray(categorySettings) && categorySettings.map((setting) => (
-                          <div key={setting.key} className="space-y-2">
-                            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                              <div className="flex-1">
-                                <Label className="text-sm font-medium">
-                                  {setting.label || setting.key.charAt(0).toUpperCase() + setting.key.slice(1)}
-                                </Label>
-                                {setting.description && (
-                                  <p className="text-xs text-gray-600 mt-1">
-                                    {setting.description}
-                                  </p>
-                                )}
-                              </div>
-                              <div className="ml-4">
-                                {setting.type === 'boolean' ? (
-                                  <Switch
-                                    checked={setting.value}
-                                    onCheckedChange={(checked) =>
-                                      updateSystemSetting(categoryKey, setting.key, checked)
-                                    }
-                                    className="switch-flydubai"
-                                  />
-                                ) : setting.type === 'number' ? (
-                                  <Input
-                                    type="number"
-                                    value={setting.value}
-                                    onChange={(e) =>
-                                      updateSystemSetting(categoryKey, setting.key, Number(e.target.value))
-                                    }
-                                    className="w-24 text-right"
-                                    min={setting.min}
-                                    max={setting.max}
-                                    step={setting.step}
-                                  />
-                                ) : setting.type === 'select' && setting.options ? (
-                                  <Select
-                                    value={String(setting.value)}
-                                    onValueChange={(value) =>
-                                      updateSystemSetting(categoryKey, setting.key, value)
-                                    }
-                                  >
-                                    <SelectTrigger className="w-40">
-                                      <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                      {setting.options.map((option) => (
-                                        <SelectItem key={option.value} value={String(option.value)}>
-                                          {option.label}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                ) : (
-                                  <Input
-                                    value={setting.value}
-                                    onChange={(e) =>
-                                      updateSystemSetting(categoryKey, setting.key, e.target.value)
-                                    }
-                                    className="w-40"
-                                    placeholder={setting.placeholder}
-                                  />
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Settings className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                  <p>No system settings available</p>
-                  <p className="text-sm mt-2">
-                    System settings will appear here when loaded from the database
-                  </p>
-                </div>
-              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-flydubai-navy">
+                    Regional Settings
+                  </h3>
 
-              {/* Save Button */}
-              <div className="flex justify-end pt-6 border-t">
-                <Button
-                  onClick={saveSystemSettings}
-                  disabled={saveStatus === "saving"}
-                  className="min-w-[120px] btn-flydubai-primary"
-                >
-                  {saveStatus === "saving" ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : saveStatus === "success" ? (
-                    <>
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Saved
-                    </>
-                  ) : saveStatus === "error" ? (
-                    <>
-                      <XCircle className="mr-2 h-4 w-4" />
-                      Error
-                    </>
-                  ) : (
-                    <>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save System Settings
-                    </>
-                  )}
-                </Button>
+                  <div>
+                    <Label className="text-sm font-medium">Time Zone</Label>
+                    <Select defaultValue="indian-standard">
+                      <SelectTrigger className="w-full mt-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="indian-standard">
+                          Indian Standard Time (IST)
+                        </SelectItem>
+                        <SelectItem value="gulf-standard">
+                          Gulf Standard Time (GST)
+                        </SelectItem>
+                        <SelectItem value="utc">
+                          Coordinated Universal Time (UTC)
+                        </SelectItem>
+                        <SelectItem value="local">Local System Time</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">
+                      Currency Display
+                    </Label>
+                    <Select defaultValue="aed">
+                      <SelectTrigger className="w-full mt-2">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="aed">AED (Dirham)</SelectItem>
+                        <SelectItem value="usd">USD (US Dollar)</SelectItem>
+                        <SelectItem value="eur">EUR (Euro)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-sm font-semibold text-flydubai-navy">
+                    Performance Settings
+                  </h3>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-sm font-medium">
+                        High Performance Mode
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Enhanced processing for critical operations
+                      </p>
+                    </div>
+                    <Switch checked={false} className="switch-flydubai" />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-sm font-medium">
+                        Auto-Save Settings
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Automatically save configuration changes
+                      </p>
+                    </div>
+                    <Switch checked={true} className="switch-flydubai" />
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
