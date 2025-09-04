@@ -106,35 +106,18 @@ interface TrendData {
   satisfaction: number;
 }
 
-interface PaginationData {
-  currentPage: number;
-  totalPages: number;
-  totalCount: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
-
 export function PastRecoveryLogs() {
   const [recoveryLogs, setRecoveryLogs] = useState<RecoveryLog[]>([]);
   const [kpiData, setKpiData] = useState<KPIData | null>(null);
   const [trendData, setTrendData] = useState<TrendData[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("key-metrics");
-  const [pagination, setPagination] = useState<PaginationData>({
-    currentPage: 1,
-    totalPages: 1,
-    totalCount: 0,
-    hasNextPage: false,
-    hasPrevPage: false,
-  });
   const [filters, setFilters] = useState({
     status: "all",
     category: "all",
     priority: "all",
     dateRange: "all",
     search: "",
-    page: 1,
-    limit: 10,
   });
 
   useEffect(() => {
@@ -145,32 +128,15 @@ export function PastRecoveryLogs() {
 
   // Refetch data when filters change
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
+    if (
+      filters.status !== "all" ||
+      filters.category !== "all" ||
+      filters.priority !== "all" ||
+      filters.dateRange !== "all"
+    ) {
       fetchRecoveryLogs(filters);
-    }, filters.search ? 500 : 0); // Debounce search input
-
-    return () => clearTimeout(timeoutId);
-  }, [filters.status, filters.category, filters.priority, filters.dateRange, filters.search, filters.page, filters.limit]);
-
-  const handlePageChange = (newPage: number) => {
-    setFilters({ ...filters, page: newPage });
-  };
-
-  const handleSearchChange = (value: string) => {
-    setFilters({ ...filters, search: value, page: 1 }); // Reset to first page when searching
-  };
-
-  const clearFilters = () => {
-    setFilters({
-      status: "all",
-      category: "all",
-      priority: "all",
-      dateRange: "all",
-      search: "",
-      page: 1,
-      limit: 10,
-    });
-  };
+    }
+  }, [filters.status, filters.category, filters.priority, filters.dateRange]);
 
   const fetchAllData = async () => {
     try {
@@ -189,44 +155,17 @@ export function PastRecoveryLogs() {
 
   const fetchRecoveryLogs = async (filterParams = filters) => {
     try {
-      const response = await databaseService.getPastRecoveryLogs(filterParams);
-      console.log("Fetched recovery logs:", response);
+      const data = await databaseService.getPastRecoveryLogs(filterParams);
+      console.log("Fetched recovery logs:", data);
+      setRecoveryLogs(data || []);
       
-      // Handle both old format (array) and new format (object with data and pagination)
-      if (Array.isArray(response)) {
-        setRecoveryLogs(response);
-        setPagination({
-          currentPage: 1,
-          totalPages: 1,
-          totalCount: response.length,
-          hasNextPage: false,
-          hasPrevPage: false,
-        });
-      } else {
-        setRecoveryLogs(response?.data || []);
-        setPagination(response?.pagination || {
-          currentPage: 1,
-          totalPages: 1,
-          totalCount: 0,
-          hasNextPage: false,
-          hasPrevPage: false,
-        });
-      }
-
       // Calculate KPIs from fetched logs if not already set
-      if (!kpiData && (response?.data || response)?.length > 0) {
+      if (!kpiData && data && data.length > 0) {
         calculateKPIFromLogs();
       }
     } catch (error) {
       console.error("Error fetching recovery logs:", error);
       setRecoveryLogs([]);
-      setPagination({
-        currentPage: 1,
-        totalPages: 1,
-        totalCount: 0,
-        hasNextPage: false,
-        hasPrevPage: false,
-      });
     }
   };
 
@@ -1124,9 +1063,11 @@ export function PastRecoveryLogs() {
                 <div>
                   <Label>Search Logs</Label>
                   <Input
-                    placeholder="Flight, route, reason, aircraft..."
+                    placeholder="Flight, route, reason..."
                     value={filters.search}
-                    onChange={(e) => handleSearchChange(e.target.value)}
+                    onChange={(e) =>
+                      setFilters({ ...filters, search: e.target.value })
+                    }
                   />
                 </div>
                 <div>
@@ -1190,7 +1131,15 @@ export function PastRecoveryLogs() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={clearFilters}
+                  onClick={() =>
+                    setFilters({
+                      status: "all",
+                      category: "all",
+                      priority: "all",
+                      dateRange: "all",
+                      search: "",
+                    })
+                  }
                 >
                   Clear Filters
                 </Button>
@@ -1201,33 +1150,9 @@ export function PastRecoveryLogs() {
           {/* Recovery History Table */}
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>
-                  Recovery History ({pagination.totalCount} total records)
-                </CardTitle>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>
-                    Page {pagination.currentPage} of {pagination.totalPages}
-                  </span>
-                  <Select
-                    value={filters.limit.toString()}
-                    onValueChange={(value) =>
-                      setFilters({ ...filters, limit: parseInt(value), page: 1 })
-                    }
-                  >
-                    <SelectTrigger className="w-20">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="5">5</SelectItem>
-                      <SelectItem value="10">10</SelectItem>
-                      <SelectItem value="25">25</SelectItem>
-                      <SelectItem value="50">50</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <span>per page</span>
-                </div>
-              </div>
+              <CardTitle>
+                Recovery History ({filteredLogs.length} records)
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -1261,7 +1186,7 @@ export function PastRecoveryLogs() {
                     </tr>
                   </thead>
                   <tbody>
-                    {recoveryLogs.map((log) => (
+                    {filteredLogs.slice(0, 10).map((log) => (
                       <tr
                         key={log.solution_id}
                         className="border-b hover:bg-gray-50"
@@ -1362,64 +1287,6 @@ export function PastRecoveryLogs() {
                   </tbody>
                 </table>
               </div>
-              
-              {/* Pagination Controls */}
-              {pagination.totalPages > 1 && (
-                <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                  <div className="text-sm text-muted-foreground">
-                    Showing {((pagination.currentPage - 1) * filters.limit) + 1} to{" "}
-                    {Math.min(pagination.currentPage * filters.limit, pagination.totalCount)} of{" "}
-                    {pagination.totalCount} results
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(pagination.currentPage - 1)}
-                      disabled={!pagination.hasPrevPage}
-                    >
-                      Previous
-                    </Button>
-                    
-                    {/* Page numbers */}
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                        let pageNum;
-                        if (pagination.totalPages <= 5) {
-                          pageNum = i + 1;
-                        } else if (pagination.currentPage <= 3) {
-                          pageNum = i + 1;
-                        } else if (pagination.currentPage >= pagination.totalPages - 2) {
-                          pageNum = pagination.totalPages - 4 + i;
-                        } else {
-                          pageNum = pagination.currentPage - 2 + i;
-                        }
-                        
-                        return (
-                          <Button
-                            key={pageNum}
-                            variant={pageNum === pagination.currentPage ? "default" : "outline"}
-                            size="sm"
-                            className="w-8 h-8 p-0"
-                            onClick={() => handlePageChange(pageNum)}
-                          >
-                            {pageNum}
-                          </Button>
-                        );
-                      })}
-                    </div>
-                    
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePageChange(pagination.currentPage + 1)}
-                      disabled={!pagination.hasNextPage}
-                    >
-                      Next
-                    </Button>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -1693,14 +1560,9 @@ export function PastRecoveryLogs() {
 
               {/* Audit Records Table */}
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-medium">
-                    Audit Records ({pagination.totalCount} total records)
-                  </h4>
-                  <div className="text-sm text-muted-foreground">
-                    Page {pagination.currentPage} of {pagination.totalPages}
-                  </div>
-                </div>
+                <h4 className="font-medium mb-3">
+                  Audit Records ({filteredLogs.length} records)
+                </h4>
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
@@ -1716,7 +1578,7 @@ export function PastRecoveryLogs() {
                       </tr>
                     </thead>
                     <tbody>
-                      {recoveryLogs.map((log) => (
+                      {filteredLogs.slice(0, 10).map((log) => (
                         <tr
                           key={`${log.solution_id}-audit`}
                           className="border-b hover:bg-gray-50"
@@ -1739,7 +1601,7 @@ export function PastRecoveryLogs() {
                           </td>
                           <td className="p-3">
                             <div className="text-sm font-medium">
-                              {log.flight_number}
+                              {log.flight_number} 11
                             </div>
                             <div className="text-xs text-gray-500">
                               {log.route}
@@ -1797,63 +1659,6 @@ export function PastRecoveryLogs() {
                     </tbody>
                   </table>
                 </div>
-                
-                {/* Pagination Controls for Audit Trail */}
-                {pagination.totalPages > 1 && (
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                    <div className="text-sm text-muted-foreground">
-                      Showing {((pagination.currentPage - 1) * filters.limit) + 1} to{" "}
-                      {Math.min(pagination.currentPage * filters.limit, pagination.totalCount)} of{" "}
-                      {pagination.totalCount} results
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handlePageChange(pagination.currentPage - 1)}
-                        disabled={!pagination.hasPrevPage}
-                      >
-                        Previous
-                      </Button>
-                      
-                      <div className="flex items-center gap-1">
-                        {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                          let pageNum;
-                          if (pagination.totalPages <= 5) {
-                            pageNum = i + 1;
-                          } else if (pagination.currentPage <= 3) {
-                            pageNum = i + 1;
-                          } else if (pagination.currentPage >= pagination.totalPages - 2) {
-                            pageNum = pagination.totalPages - 4 + i;
-                          } else {
-                            pageNum = pagination.currentPage - 2 + i;
-                          }
-                          
-                          return (
-                            <Button
-                              key={pageNum}
-                              variant={pageNum === pagination.currentPage ? "default" : "outline"}
-                              size="sm"
-                              className="w-8 h-8 p-0"
-                              onClick={() => handlePageChange(pageNum)}
-                            >
-                              {pageNum}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                      
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handlePageChange(pagination.currentPage + 1)}
-                        disabled={!pagination.hasNextPage}
-                      >
-                        Next
-                      </Button>
-                    </div>
-                  </div>
-                )}
               </div>
             </CardContent>
           </Card>
