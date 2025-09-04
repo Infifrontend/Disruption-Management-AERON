@@ -863,7 +863,7 @@ class SettingsStorage {
           } else {
             Object.entries(stateValue).forEach(([key, value]) => {
               let type: SettingsData["type"] = "string";
-              
+
               if (typeof value === "boolean") {
                 type = "boolean";
               } else if (typeof value === "number") {
@@ -887,36 +887,6 @@ class SettingsStorage {
         const success = await databaseService.batchSaveSettings(settingsToSave, userId);
         if (success) {
           console.log(`Successfully saved ${settingsToSave.length} settings to database`);
-          return true;
-        }
-      }
-
-      return false;
-    } catch (error) {
-      console.error("Failed to save settings from state:", error);
-      return false;
-    }
-  }ng";
-
-              if (typeof value === 'boolean') type = "boolean";
-              else if (typeof value === 'number') type = "number";
-              else if (typeof value === 'object') type = "object";
-
-              settingsToSave.push({
-                category,
-                key,
-                value,
-                type,
-              });
-            });
-          }
-        }
-      });
-
-      if (settingsToSave.length > 0) {
-        const success = await databaseService.batchSaveSettings(settingsToSave, userId);
-        if (success) {
-          console.log(`Batch saved ${settingsToSave.length} settings to database`);
           // Update localStorage cache
           this.saveToLocalStorage(settingsToSave);
         }
