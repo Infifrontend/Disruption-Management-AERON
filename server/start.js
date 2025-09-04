@@ -2574,10 +2574,10 @@ app.get("/api/past-recovery-kpi", async (req, res) => {
       costEfficiency: 3.8,
       passengerSatisfaction: 8.2,
       totalPassengers: parseInt(data.total_passengers) || 0,
-      avgRecoveryEfficiency: parseFloat((data.avg_recovery_efficiency || 92.5).toFixed(1)),
+      avgRecoveryEfficiency: parseFloat((parseFloat(data.avg_recovery_efficiency) || 92.5).toFixed(1)),
       totalDelayReduction: parseInt(data.total_delay_reduction) || 0,
       cancellationsAvoided: parseInt(data.cancellations_avoided) || 0,
-      totalCostSavings: parseFloat((data.avg_cost_savings || 0).toFixed(0))
+      totalCostSavings: parseFloat((parseFloat(data.avg_cost_savings) || 0).toFixed(0))
     });
   } catch (error) {
     console.error("Error fetching past recovery KPI:", error);
