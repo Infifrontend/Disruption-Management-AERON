@@ -1780,6 +1780,9 @@ class DatabaseService {
       const response = await fetch(url);
       if (!response.ok) {
         console.warn(`Past recovery logs API returned ${response.status}`);
+        if (response.status === 404) {
+          return []; // Return empty array for 404
+        }
         throw new Error(
           `Failed to fetch past recovery logs: ${response.status}`,
         );

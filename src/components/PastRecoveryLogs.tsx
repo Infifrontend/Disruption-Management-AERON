@@ -156,8 +156,13 @@ export function PastRecoveryLogs() {
   const fetchRecoveryLogs = async (filterParams = filters) => {
     try {
       const data = await databaseService.getPastRecoveryLogs(filterParams);
-      setRecoveryLogs(data);
-      console.log(data, "recoveryLogs");
+      console.log("Fetched recovery logs:", data);
+      setRecoveryLogs(data || []);
+      
+      // Calculate KPIs from fetched logs if not already set
+      if (!kpiData && data && data.length > 0) {
+        calculateKPIFromLogs();
+      }
     } catch (error) {
       console.error("Error fetching recovery logs:", error);
       setRecoveryLogs([]);
@@ -167,12 +172,12 @@ export function PastRecoveryLogs() {
   const fetchKPIData = async () => {
     try {
       const response = await fetch("/api/past-recovery-kpi");
-      console.log(response);
       if (response.ok) {
         const data = await response.json();
-        console.log(data, "kpi dtatta");
+        console.log("Fetched KPI data:", data);
         setKpiData(data);
       } else {
+        console.warn("KPI API failed, calculating from logs");
         calculateKPIFromLogs();
       }
     } catch (error) {
@@ -185,54 +190,9 @@ export function PastRecoveryLogs() {
     try {
       const response = await fetch("/api/past-recovery-trends");
       if (response.ok) {
-        let data = await response.json();
-        console.log(data, "trend data");
+        const data = await response.json();
+        console.log("Fetched trend data:", data);
         if (Array.isArray(data) && data.length > 0) {
-          data = [
-            {
-              month: "Jan 25",
-              efficiency: 82,
-              delayReduction: 45,
-              costSavings: 12500,
-              satisfaction: 7.8,
-            },
-            {
-              month: "Feb 25",
-              efficiency: 85,
-              delayReduction: 52,
-              costSavings: 15200,
-              satisfaction: 8.1,
-            },
-            {
-              month: "Mar 25",
-              efficiency: 88,
-              delayReduction: 58,
-              costSavings: 18700,
-              satisfaction: 8.4,
-            },
-            {
-              month: "Apr 25",
-              efficiency: 91,
-              delayReduction: 65,
-              costSavings: 22100,
-              satisfaction: 8.7,
-            },
-            {
-              month: "May 25",
-              efficiency: 89,
-              delayReduction: 62,
-              costSavings: 19800,
-              satisfaction: 8.5,
-            },
-            {
-              month: "Jun 25",
-              efficiency: 93,
-              delayReduction: 71,
-              costSavings: 25400,
-              satisfaction: 9.0,
-            },
-          ];
-
           setTrendData(data);
         } else {
           console.warn("Empty trends data from API, using mock data");
@@ -429,7 +389,6 @@ export function PastRecoveryLogs() {
     Failed: "bg-red-100 text-red-800",
     Cancelled: "bg-gray-100 text-gray-800",
   };
-  console.log(recoveryLogs, "dddddddddddddddddd");
   const filteredLogs = recoveryLogs.filter((log) => {
     if (filters.status !== "all" && log.status !== filters.status) return false;
     if (filters.category !== "all" && log.categorization !== filters.category)
