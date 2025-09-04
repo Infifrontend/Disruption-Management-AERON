@@ -2562,8 +2562,10 @@ app.get("/api/past-recovery-kpi", async (req, res) => {
     const kpiResult = await pool.query(kpiQuery);
     const data = kpiResult.rows[0];
 
-    const successRate = data.total_recoveries > 0 ? 
-      (data.successful_recoveries / data.total_recoveries) * 100 : 0;
+    const successRate =
+      data.total_recoveries > 0
+        ? (data.successful_recoveries / data.total_recoveries) * 100
+        : 0;
 
     const avgResolutionTime = data.avg_delay ? data.avg_delay * 2 : 180; // Convert to minutes
 
@@ -2574,10 +2576,12 @@ app.get("/api/past-recovery-kpi", async (req, res) => {
       costEfficiency: 3.8,
       passengerSatisfaction: 8.2,
       totalPassengers: parseInt(data.total_passengers) || 0,
-      avgRecoveryEfficiency: parseFloat((data.avg_recovery_efficiency || 92.5).toFixed(1)),
+      avgRecoveryEfficiency: parseFloat(
+        (Number(data.avg_recovery_efficiency) || 92.5).toFixed(1),
+      ),
       totalDelayReduction: parseInt(data.total_delay_reduction) || 0,
       cancellationsAvoided: parseInt(data.cancellations_avoided) || 0,
-      totalCostSavings: parseFloat((data.avg_cost_savings || 0).toFixed(0))
+      totalCostSavings: parseFloat((data.avg_cost_savings || 0).toFixed(0)),
     });
   } catch (error) {
     console.error("Error fetching past recovery KPI:", error);
@@ -2609,20 +2613,56 @@ app.get("/api/past-recovery-trends", async (req, res) => {
     if (trendsResult.rows.length === 0) {
       // Return mock data if no trends found
       res.json([
-        { month: "Jan 25", efficiency: 82, delayReduction: 45, costSavings: 12500, satisfaction: 7.8 },
-        { month: "Feb 25", efficiency: 85, delayReduction: 52, costSavings: 15200, satisfaction: 8.1 },
-        { month: "Mar 25", efficiency: 88, delayReduction: 58, costSavings: 18700, satisfaction: 8.4 },
-        { month: "Apr 25", efficiency: 91, delayReduction: 65, costSavings: 22100, satisfaction: 8.7 },
-        { month: "May 25", efficiency: 89, delayReduction: 62, costSavings: 19800, satisfaction: 8.5 },
-        { month: "Jun 25", efficiency: 93, delayReduction: 71, costSavings: 25400, satisfaction: 9.0 }
+        {
+          month: "Jan 25",
+          efficiency: 82,
+          delayReduction: 45,
+          costSavings: 12500,
+          satisfaction: 7.8,
+        },
+        {
+          month: "Feb 25",
+          efficiency: 85,
+          delayReduction: 52,
+          costSavings: 15200,
+          satisfaction: 8.1,
+        },
+        {
+          month: "Mar 25",
+          efficiency: 88,
+          delayReduction: 58,
+          costSavings: 18700,
+          satisfaction: 8.4,
+        },
+        {
+          month: "Apr 25",
+          efficiency: 91,
+          delayReduction: 65,
+          costSavings: 22100,
+          satisfaction: 8.7,
+        },
+        {
+          month: "May 25",
+          efficiency: 89,
+          delayReduction: 62,
+          costSavings: 19800,
+          satisfaction: 8.5,
+        },
+        {
+          month: "Jun 25",
+          efficiency: 93,
+          delayReduction: 71,
+          costSavings: 25400,
+          satisfaction: 9.0,
+        },
       ]);
     } else {
-      const trends = trendsResult.rows.map(row => ({
+      const trends = trendsResult.rows.map((row) => ({
         month: row.month,
         efficiency: Math.round(parseFloat(row.efficiency)),
         delayReduction: Math.round(parseFloat(row.delay_reduction)),
         costSavings: Math.round(parseFloat(row.cost_savings)),
-        satisfaction: parseFloat(parseFloat(row.satisfaction).toFixed(1))
+        satisfaction: parseFloat(parseFloat(row.satisfaction).toFixed(1)),
       }));
       res.json(trends);
     }
@@ -4675,33 +4715,33 @@ app.get("/api/past-recovery-logs", async (req, res) => {
     const params = [];
     let paramCount = 0;
 
-    if (status && status !== 'all') {
+    if (status && status !== "all") {
       paramCount++;
-      if (status === 'Successful') {
+      if (status === "Successful") {
         query += ` AND (fd.recovery_status IN ('completed', 'approved') OR fd.status = 'Resolved')`;
-      } else if (status === 'Partial') {
+      } else if (status === "Partial") {
         query += ` AND fd.recovery_status = 'pending'`;
-      } else if (status === 'Failed') {
+      } else if (status === "Failed") {
         query += ` AND fd.recovery_status = 'rejected'`;
       }
     }
 
-    if (category && category !== 'all') {
+    if (category && category !== "all") {
       paramCount++;
       query += ` AND (fd.categorization = $${paramCount} OR fd.disruption_type = $${paramCount})`;
       params.push(category);
     }
 
-    if (priority && priority !== 'all') {
+    if (priority && priority !== "all") {
       paramCount++;
       query += ` AND fd.severity = $${paramCount}`;
       params.push(priority);
     }
 
-    if (dateRange && dateRange !== 'all') {
-      if (dateRange === 'last7days') {
+    if (dateRange && dateRange !== "all") {
+      if (dateRange === "last7days") {
         query += ` AND fd.created_at >= NOW() - INTERVAL '7 days'`;
-      } else if (dateRange === 'last30days') {
+      } else if (dateRange === "last30days") {
         query += ` AND fd.created_at >= NOW() - INTERVAL '30 days'`;
       }
     }
@@ -4991,8 +5031,13 @@ app.get("/api/past-recovery-kpi", async (req, res) => {
       costEfficiency: 5.2, // Average cost variance
       passengerSatisfaction: parseFloat(data.avg_satisfaction) || 0,
       totalPassengers: parseInt(data.total_passengers) || 0,
-      avgRecoveryEfficiency: parseFloat(data.avg_recovery_efficiency) || 0,
-      totalDelayReduction: parseInt(data.total_delay_reduction) || 0,
+      avgRecoveryEfficiency: parseFloat(
+        (isNaN(Number(data?.avg_recovery_efficiency))
+          ? 92.5
+          : Number(data.avg_recovery_efficiency)
+        ).toFixed(1),
+      ),
+      totalDelayReduction: parseInt(data?.total_delay_reduction) || 0,
       cancellationsAvoided: parseInt(data.cancellations_avoided) || 0,
       totalCostSavings: parseFloat(data.total_cost_savings) || 0,
     };
