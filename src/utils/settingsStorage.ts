@@ -416,6 +416,13 @@ class SettingsStorage {
         value: false,
         type: "boolean",
       },
+      // Document Repository defaults
+      {
+        category: "nlpSettings",
+        key: "documentRepository",
+        value: { documents: [] },
+        type: "object",
+      },
 
       // Notification Settings defaults
       {
@@ -495,12 +502,12 @@ class SettingsStorage {
     }
   }
 
-  private saveToLocalStorage(): void {
+  private saveToLocalStorage(settings?: SettingsData[]): void {
     try {
-      const settings = Array.from(this.storage.values());
-      const serialized = JSON.stringify(settings);
+      const settingsToSave = settings || Array.from(this.storage.values());
+      const serialized = JSON.stringify(settingsToSave);
       localStorage.setItem(this.STORAGE_KEY, serialized);
-      console.log(`Saved ${settings.length} settings to localStorage`);
+      console.log(`Saved ${settingsToSave.length} settings to localStorage`);
     } catch (error) {
       console.error("Failed to save settings to localStorage:", error);
       throw error;
@@ -822,54 +829,69 @@ class SettingsStorage {
 
   // Save settings from state objects directly
   async saveSettingsFromState(
-    stateObject: any,
+    stateObject: Record<string, any>,
     categoryMapping: Record<string, string>,
-    userId: string = "system",
+    userId: string = "system"
   ): Promise<boolean> {
     try {
-      const settingsToSave = [];
-      console.log("Saving settings from state:", stateObject, categoryMapping);
-      for (const [stateKey, categoryName] of Object.entries(categoryMapping)) {
-        const categoryData = stateObject[stateKey];
-        if (categoryData && typeof categoryData === "object") {
-          for (const [key, value] of Object.entries(categoryData)) {
-            const setting = {
-              category: categoryName,
-              key: key,
-              value: value,
-              type: this.getTypeFromValue(value),
-            };
-            settingsToSave.push(setting);
+      const settingsToSave: Array<{
+        category: string;
+        key: string;
+        value: any;
+        type: SettingsData["type"];
+      }> = [];
 
-            // Also update local storage
-            const localSetting: SettingsData = {
-              id: `${categoryName}_${key}`,
-              category: categoryName,
-              key: key,
-              value: value,
-              type: setting.type,
-              updatedAt: new Date().toISOString(),
-              updatedBy: userId,
-            };
-            this.storage.set(localSetting.id, localSetting);
+      Object.entries(stateObject).forEach(([stateKey, stateValue]) => {
+        const category = categoryMapping[stateKey];
+        if (category && stateValue && typeof stateValue === 'object') {
+          // Special handling for document repository
+          if (stateKey === 'documentRepository') {
+            // Save document repository as a single object setting
+            settingsToSave.push({
+              category,
+              key: 'data',
+              value: stateValue,
+              type: "object",
+            });
+
+            // Also batch save the actual documents to the document repository table
+            if (stateValue.documents && Array.isArray(stateValue.documents)) {
+              databaseService.batchSaveDocuments(stateValue.documents, userId).catch(error => {
+                console.error('Failed to save documents to repository:', error);
+              });
+            }
+          } else {
+            Object.entries(stateValue).forEach(([key, value]) => {
+              let type: SettingsData["type"] = "string";
+
+              if (typeof value === 'boolean') type = "boolean";
+              else if (typeof value === 'number') type = "number";
+              else if (typeof value === 'object') type = "object";
+
+              settingsToSave.push({
+                category,
+                key,
+                value,
+                type,
+              });
+            });
           }
         }
-      }
+      });
 
-      if (this.isDatabaseConnected && settingsToSave.length > 0) {
-        const success = await databaseService.batchSaveSettings(
-          settingsToSave,
-          userId,
-        );
+      if (settingsToSave.length > 0) {
+        const success = await databaseService.batchSaveSettings(settingsToSave, userId);
         if (success) {
-          this.saveToLocalStorage();
-          return true;
+          console.log(`Batch saved ${settingsToSave.length} settings to database`);
+          // Update localStorage cache
+          this.saveToLocalStorage(settingsToSave);
         }
+        return success;
       }
 
-      return settingsToSave.length > 0;
+      return true;
     } catch (error) {
-      console.error("Failed to save settings from state:", error);
+      console.error('Failed to save settings from state:', error);
       return false;
     }
   }

@@ -138,6 +138,21 @@ const updateScreenSetting = (screenId: string, enabled: boolean) => {
   // Implement actual state update logic here
 };
 
+// Types for Document Upload
+type UploadedDocument = {
+  name: string;
+  size: number;
+  type: string;
+  uploadedAt: Date;
+};
+
+type FileUploadProgress = {
+  name: string;
+  progress: number;
+  status: 'uploading' | 'completed' | 'error';
+  error?: string;
+};
+
 export function SettingsPanel({
   screenSettings,
   onScreenSettingsChange,
@@ -207,6 +222,10 @@ export function SettingsPanel({
     description: "",
   });
 
+  // Document Repository State
+  const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<FileUploadProgress[]>([]);
+
   // Load settings from database on component mount
   useEffect(() => {
     loadSettingsFromDatabase();
@@ -236,7 +255,7 @@ export function SettingsPanel({
         priority: rule.priority,
         overridable: rule.overridable,
         conditions: rule.conditions || "",
-        actions: rule.actions || "",
+        actions: rule.actions,
         status: rule.status,
         createdBy: rule.created_by,
         createdDate: rule.created_at
@@ -358,6 +377,10 @@ export function SettingsPanel({
         tabSettings.notifications,
         "notificationSettings",
       );
+
+      // Load Document Repository settings (assuming they are stored similarly)
+      const loadedDocuments = tabSettings.nlp?.documentRepository || [];
+      setUploadedDocuments(loadedDocuments);
 
       // Update state with loaded settings
       setNlpSettings(newNlpSettings);
@@ -670,8 +693,8 @@ export function SettingsPanel({
         ...prev,
         [section]: {
           ...prev[section],
-          customParameters: prev[section].customParameters.map(param => 
-            param.id === paramId 
+          customParameters: prev[section].customParameters.map(param =>
+            param.id === paramId
               ? { ...param, weight: newWeight }
               : param
           ),
@@ -873,13 +896,13 @@ export function SettingsPanel({
         if (totalWeight > 100) {
           validationErrors.push(`${section}: Total weight (${totalWeight}%) exceeds 100%`);
         }
-        
+
         // Additional validation for custom parameters
         const customParametersWeight = recoveryConfiguration[section].customParameters?.reduce((sum, p) => sum + p.weight, 0) || 0;
         const baseParametersWeight = Object.keys(recoveryConfiguration[section])
           .filter(key => key !== "customParameters")
           .reduce((sum, key) => sum + (recoveryConfiguration[section][key] || 0), 0);
-        
+
         if (customParametersWeight + baseParametersWeight > 100) {
           validationErrors.push(`${section}: Custom parameters weight (${customParametersWeight}%) plus base parameters weight (${baseParametersWeight}%) exceeds 100%`);
         }
@@ -922,13 +945,17 @@ export function SettingsPanel({
     try {
       const categoryMapping = {
         nlpSettings: "nlpSettings",
+        documentRepository: "documentRepository", // Add document repository mapping
       };
 
-      // Create a wrapper object for the nlpSettings
-      const stateWrapper = { nlpSettings };
+      // Combine NLP settings and document repository data
+      const stateToSave = {
+        nlpSettings: nlpSettings,
+        documentRepository: uploadedDocuments,
+      };
 
       const success = await settingsStore.saveSettingsFromState(
-        stateWrapper,
+        stateToSave,
         categoryMapping,
         "user",
       );
@@ -1113,13 +1140,13 @@ export function SettingsPanel({
   ) => {
     const total = calculateTotalWeight(category, section);
     let adjustedCurrentValue = currentValue;
-    
+
     // For custom parameters, find the current weight by ID
     if (section && typeof currentParam === 'string' && currentParam.startsWith('custom_')) {
       const param = recoveryConfiguration[section]?.customParameters?.find(p => p.id === currentParam);
       adjustedCurrentValue = param ? param.weight : 0;
     }
-    
+
     const remaining = 100 - total + adjustedCurrentValue;
     return Math.max(0, remaining);
   };
@@ -1239,6 +1266,64 @@ export function SettingsPanel({
         ),
       },
     }));
+  };
+
+  // Document Upload Handlers
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const MAX_FILE_SIZE_MB = 3;
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+
+    const newUploads: FileUploadProgress[] = [];
+
+    for (const file of files) {
+      if (!allowedTypes.includes(file.type)) {
+        newUploads.push({ name: file.name, progress: 0, status: 'error', error: 'Invalid file type. Only PDF and DOC files are allowed.' });
+        continue;
+      }
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        newUploads.push({ name: file.name, progress: 0, status: 'error', error: `File size exceeds ${MAX_FILE_SIZE_MB}MB limit.` });
+        continue;
+      }
+
+      newUploads.push({ name: file.name, progress: 0, status: 'uploading' });
+    }
+
+    setUploadProgress(prev => [...prev, ...newUploads]);
+
+    for (const file of files) {
+      // Check validation again in case the above loop was skipped or file was modified
+      if (!allowedTypes.includes(file.type) || file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        continue; // Already handled above, or skip if not validated
+      }
+
+      // Simulate upload process and update progress
+      // In a real app, this would be an actual API call
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+
+      const fileProgressIndex = uploadProgress.findIndex(up => up.name === file.name);
+      if (fileProgressIndex === -1) { // If it's a newly added file for processing
+        setUploadProgress(prev => prev.map(p => p.name === file.name ? {...p, progress: 100, status: 'completed'} : p));
+        setUploadedDocuments(prev => [...prev, {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          uploadedAt: new Date(),
+        }]);
+      } else { // If it was already in the progress list
+        setUploadProgress(prev => prev.map((p, index) => index === fileProgressIndex ? { ...p, progress: 100, status: 'completed' } : p));
+        setUploadedDocuments(prev => [...prev, {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          uploadedAt: new Date(),
+        }]);
+      }
+    }
+  };
+
+  const handleRemoveDocument = (indexToRemove: number) => {
+    setUploadedDocuments(prev => prev.filter((_, index) => index !== indexToRemove));
   };
 
   if (isLoading) {
@@ -3550,605 +3635,165 @@ export function SettingsPanel({
 
         {/* Natural Language Processing */}
         <TabsContent value="nlp" className="space-y-6">
-          {/* Header Section - Natural Language & Knowledge Repository Combined */}
-          <Card className="border-flydubai-blue bg-blue-50">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-flydubai-blue">
-                    <Brain className="h-5 w-5" />
-                    Natural Language & Knowledge Repository
-                  </CardTitle>
-                  <p className="text-sm text-blue-700">
-                    Configure natural language processing and manage the
-                    knowledge repository that enhances recovery step
-                    recommendations. Upload documents and add manual entries to
-                    improve AERON's decision-making capabilities.
-                  </p>
-                </div>
-                {/* <Button
-                  onClick={saveNlpSettings}
-                  className="btn-flydubai-primary"
-                  disabled={isLoading || saveStatus === "saving"}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  {saveStatus === "saving" ? "Saving..." : "Save NLP Settings"}
-                </Button> */}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <Alert className="border-blue-200 bg-blue-50">
-                <Info className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-blue-800">
-                  <strong>Knowledge Impact:</strong> All uploaded documents and
-                  manual entries are processed and indexed to provide contextual
-                  information during recovery options generation, improving
-                  recommendation accuracy and compliance.
-                </AlertDescription>
-              </Alert>
-            </CardContent>
-          </Card>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Natural Language Processing */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-flydubai-navy">
-                  <MessageSquare className="h-5 w-5" />
-                  Natural Language Processing
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Configure natural language recognition and interpretation
-                  settings.
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm font-medium">Enable NLP</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Process natural language inputs
-                    </p>
-                  </div>
-                  <Switch
-                    checked={nlpSettings.enabled}
-                    onCheckedChange={() => handleNlpToggle("enabled")}
-                    className="switch-flydubai"
-                  />
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium">
-                    Primary Language
-                  </Label>
-                  <Select
-                    value={nlpSettings.language}
-                    onValueChange={(value) =>
-                      handleNlpChange("language", value)
-                    }
-                  >
-                    <SelectTrigger className="w-full mt-2">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="english">English</SelectItem>
-                      <SelectItem value="arabic">العربية (Arabic)</SelectItem>
-                      <SelectItem value="hindi">हिन्दी (Hindi)</SelectItem>
-                      <SelectItem value="urdu">اردو (Urdu)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label className="text-sm font-medium">
-                    Confidence Threshold
-                  </Label>
-                  <div className="flex items-center gap-2 mt-2">
-                    <Slider
-                      value={[nlpSettings.confidence]}
-                      onValueChange={(value) =>
-                        handleNlpChange("confidence", value[0])
-                      }
-                      max={100}
-                      min={50}
-                      step={5}
-                      className="flex-1"
-                    />
-                    <Badge className="bg-gray-100 text-gray-800 min-w-[50px]">
-                      {nlpSettings.confidence}%
-                    </Badge>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm font-medium">
-                      Auto-Apply Recommendations
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      Automatically apply high-confidence results
-                    </p>
-                  </div>
-                  <Switch
-                    checked={nlpSettings.autoApply}
-                    onCheckedChange={() => handleNlpToggle("autoApply")}
-                    className="switch-flydubai"
-                  />
-                </div>
-
-                {/* Knowledge Impacts - Integrated */}
-              </CardContent>
-            </Card>
-
-            {/* Repository Status - Updated Layout */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-flydubai-navy">
-                  <TrendingUp className="h-5 w-5" />
-                  Repository Status
-                </CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  Overview of knowledge repository status and processing
-                  statistics.
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="text-center p-3 bg-blue-50 rounded-lg">
-                    <div className="text-2xl font-bold text-flydubai-blue">
-                      247
-                    </div>
-                    <div className="text-xs text-gray-600">Total Documents</div>
-                  </div>
-                  <div className="text-center p-3 bg-green-50 rounded-lg">
-                    <div className="text-2xl font-bold text-green-600">185</div>
-                    <div className="text-xs text-gray-600">Processed</div>
-                  </div>
-                </div>
-
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Document Processing</span>
-                    <div className="flex items-center gap-2">
-                      <Progress value={75} className="w-24 h-2" />
-                      <span className="text-xs text-gray-600 min-w-[30px]">
-                        75%
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Last Updated:</span>
-                    <span className="text-gray-600 font-medium">
-                      2 hours ago
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span>Status:</span>
-                    <Badge className="bg-green-100 text-green-800">
-                      Operational
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Document Repository - Updated Design */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-flydubai-navy">
-                    <FileText className="h-5 w-5" />
-                    Document Repository
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Manage operational knowledge and procedural documentation
-                    for recovery layoffs.
-                  </p>
-                </div>
-                <Button className="btn-flydubai-primary">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Upload Document
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 gap-3">
-                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded">
-                        <FileText className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">
-                            Flexible Operations Manual 2024.pdf
-                          </p>
-                          <Badge className="bg-green-100 text-green-800 text-xs">
-                            Processed
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Operations • Emergency procedures and protocols
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Updated: 1 day ago • Size: 2.3 MB
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-orange-100 rounded">
-                        <FileText className="h-4 w-4 text-orange-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">
-                            Emergency Response Procedures.docx
-                          </p>
-                          <Badge className="bg-orange-100 text-orange-800 text-xs">
-                            Processing
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Emergency • Response procedures and escalation
-                          protocols
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Updated: 3 hours ago • Size: 1.8 MB
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-gray-100 rounded">
-                        <FileText className="h-4 w-4 text-gray-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">
-                            Weather Decision Guidelines.pdf
-                          </p>
-                          <Badge className="bg-gray-100 text-gray-800 text-xs">
-                            Pending
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Weather • Decision making guidelines and protocols
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Updated: 1 week ago • Size: 950 KB
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Manual Knowledge Entries - New Section */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2 text-flydubai-navy">
-                    <Edit className="h-5 w-5" />
-                    Manual Knowledge Entries
-                  </CardTitle>
-                  <p className="text-sm text-muted-foreground">
-                    Administer natural knowledge entries that have specifically
-                    organized and delivery problems.
-                  </p>
-                </div>
-                <Button className="btn-flydubai-primary">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Manual Entry
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 gap-3">
-                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-100 rounded">
-                        <User className="h-4 w-4 text-purple-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">
-                            VIP Passenger Handling Disruptions
-                          </p>
-                          <Badge className="bg-purple-100 text-purple-800 text-xs">
-                            Passage Source
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Passenger Service • Special handling procedures and
-                          enhanced controls
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Created: 2 days ago • By: ops.manager@flydubai.com
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-100 rounded">
-                        <Shield className="h-4 w-4 text-green-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">
-                            Emergency Response Procedures.docx
-                          </p>
-                          <Badge className="bg-green-100 text-green-800 text-xs">
-                            Passage Source
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Emergency • Emergency response procedures and
-                          escalation protocols
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Created: 3 hours ago • By: emergency.team@flydubai.com
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded">
-                        <FileText className="h-4 w-4 text-blue-600" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">
-                            Aircraft Usage Decision Guidelines.pdf
-                          </p>
-                          <Badge className="bg-blue-100 text-blue-800 text-xs">
-                            Passage Source
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-gray-600 mt-1">
-                          Operations • Decision guidelines and maintenance
-                          strategies
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          Created: 1 week ago • By: operations.team@flydubai.com
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" variant="ghost" className="h-8 w-8 p-0">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-8 w-8 p-0 text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Manual Knowledge Entry Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-flydubai-navy">
-                <Plus className="h-5 w-5" />
-                Add Manual Knowledge Entry
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Add new manual knowledge entry to enhance recovery
-                recommendations and decisions.
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="knowledge-title">Title</Label>
-                    <Input
-                      id="knowledge-title"
-                      placeholder="e.g., Special handling for Medical Emergencies"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="knowledge-category">Category</Label>
-                    <Select defaultValue="operations">
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="operations">Operations</SelectItem>
-                        <SelectItem value="emergency">Emergency</SelectItem>
-                        <SelectItem value="weather">Weather</SelectItem>
-                        <SelectItem value="passenger">
-                          Passenger Service
-                        </SelectItem>
-                        <SelectItem value="crew">Crew Management</SelectItem>
-                        <SelectItem value="maintenance">Maintenance</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="knowledge-source">Source</Label>
-                  <Textarea
-                    id="knowledge-source"
-                    placeholder="Provide the specific guidelines or decision criteria that should be considered during recovery operations..."
-                    rows={3}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="knowledge-tags">Tags</Label>
-                  <Input
-                    id="knowledge-tags"
-                    placeholder="Add tags like: VIP, Medical, Emergency, Weather..."
-                  />
-                </div>
-
-                <div className="flex justify-end gap-3">
-                  <Button variant="outline">Cancel</Button>
-                  <Button className="btn-flydubai-primary">
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Entry
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Test Natural Language Input */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-flydubai-navy">
                 <Brain className="h-5 w-5" />
-                Test Natural Language Input
+                Natural Language Processing Configuration
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Testing natural language inputs for a pre-trained using the
-                online knowledge standards.
+                Configure NLP settings for processing user queries and
+                generating insights.
               </p>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    Sample Natural Language Inputs
-                  </Label>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Examples of supported input formats.
-                  </p>
-                  <div className="bg-gray-50 p-3 rounded text-sm">
-                    <ul className="space-y-1 text-gray-700">
-                      <li>
-                        • Prioritize passengers who need special connectivity
-                        with delayed flights
-                      </li>
-                      <li>
-                        • Focus on cost-effective recovery options while keeping
-                        crew together
-                      </li>
-                      <li>
-                        • Apply emergency protocols for medical passengers
-                        requiring special assistance
-                      </li>
-                      <li>
-                        • Prioritize VIP passengers and send flight cancellation
-                        notice more than 30 minutes before departure
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Best Input</Label>
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Enter a natural language query for AI processing with
-                    current knowledge standards.
-                  </p>
-                  <Textarea
-                    placeholder="e.g., 'Due to Emitab, ME Emergency, Departing passengers with infants for immediate rebooking on the next qualified flydubai flight to minimize disruption and provide hotel accommodation if delays exceed 4 hours'"
-                    rows={3}
-                    className="text-sm"
-                  />
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <Button variant="outline">Cancel</Button>
-                  <Button className="btn-flydubai-primary">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Process with Knowledge Repository
-                  </Button>
-                </div>
-              </div>
+            <CardContent className="space-y-4">
+              {fieldConfigurations?.nlpSettings?.map((fieldConfig) => (
+                <SettingField
+                  key={fieldConfig.key}
+                  config={fieldConfig}
+                  value={nlpSettings[fieldConfig.key]}
+                  onChange={(key, value) => handleNlpChange(key, value)}
+                  onToggle={(key) => handleNlpToggle(key)}
+                />
+              ))}
             </CardContent>
           </Card>
 
-          {/* Save Button at Bottom */}
-          <div className="flex justify-end pt-4">
+          {/* Document Repository Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-flydubai-navy">
+                <FileText className="h-5 w-5" />
+                Document Repository
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                Upload and manage documents for NLP training and reference. Only PDF and DOC files are supported (max 3MB).
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                <div className="text-center">
+                  <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                  <div className="space-y-2">
+                    <Button
+                      onClick={() => document.getElementById('file-upload')?.click()}
+                      className="btn-flydubai-primary"
+                      disabled={saveStatus === "saving"}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Upload Document
+                    </Button>
+                    <p className="text-sm text-gray-500">
+                      Drag and drop files here or click to browse
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Supported formats: PDF, DOC, DOCX (Max 3MB)
+                    </p>
+                  </div>
+                </div>
+                <input
+                  id="file-upload"
+                  type="file"
+                  accept=".pdf,.doc,.docx"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileUpload}
+                />
+              </div>
+
+              {/* File Upload Progress */}
+              {uploadProgress.length > 0 && (
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium">Uploading Files:</h4>
+                  {uploadProgress.map((file, index) => (
+                    <div key={index} className="flex items-center gap-2 text-sm">
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <span className="truncate">{file.name}</span>
+                          <span className="text-xs text-gray-500">
+                            {file.status === 'uploading' && `${file.progress}%`}
+                            {file.status === 'completed' && (
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                            )}
+                            {file.status === 'error' && (
+                              <XCircle className="h-4 w-4 text-red-600" />
+                            )}
+                          </span>
+                        </div>
+                        {file.status === 'uploading' && (
+                          <Progress value={file.progress} className="h-1 mt-1" />
+                        )}
+                        {file.status === 'error' && (
+                          <p className="text-xs text-red-600 mt-1">{file.error}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Uploaded Documents List */}
+              {uploadedDocuments.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-medium">Uploaded Documents:</h4>
+                    <Badge variant="outline" className="text-xs">
+                      {uploadedDocuments.length} file{uploadedDocuments.length !== 1 ? 's' : ''}
+                    </Badge>
+                  </div>
+                  <div className="space-y-2 max-h-40 overflow-y-auto">
+                    {uploadedDocuments.map((doc, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                        <div className="flex items-center gap-2 flex-1">
+                          <FileText className="h-4 w-4 text-flydubai-blue flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-medium truncate">{doc.name}</p>
+                            <p className="text-xs text-gray-500">
+                              {(doc.size / (1024 * 1024)).toFixed(2)} MB • Uploaded {new Date(doc.uploadedAt).toLocaleDateString()}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleRemoveDocument(index)}
+                          className="h-6 w-6 p-0 text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* File Upload Statistics */}
+              {uploadedDocuments.length > 0 && (
+                <div className="grid grid-cols-3 gap-4 p-4 bg-blue-50 rounded-lg">
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-flydubai-blue">
+                      {uploadedDocuments.length}
+                    </div>
+                    <div className="text-xs text-gray-600">Total Files</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-flydubai-blue">
+                      {(uploadedDocuments.reduce((sum, doc) => sum + doc.size, 0) / (1024 * 1024)).toFixed(1)}MB
+                    </div>
+                    <div className="text-xs text-gray-600">Total Size</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-lg font-bold text-flydubai-blue">
+                      {uploadedDocuments.filter(doc => doc.name.toLowerCase().includes('.pdf')).length}
+                    </div>
+                    <div className="text-xs text-gray-600">PDF Files</div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end">
             <Button
               onClick={saveNlpSettings}
               className="btn-flydubai-primary"
