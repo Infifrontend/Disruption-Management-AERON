@@ -226,10 +226,22 @@ export function SettingsPanel({
   const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
   const [uploadProgress, setUploadProgress] = useState<FileUploadProgress[]>([]);
 
+  // Manual Knowledge Entry State
+  const [manualEntries, setManualEntries] = useState<any[]>([]);
+  const [newManualEntry, setNewManualEntry] = useState({
+    title: '',
+    category: 'operations',
+    source: '',
+    tags: ''
+  });
+  const [showAddEntryForm, setShowAddEntryForm] = useState(false);
+
   // Load settings from database on component mount
   useEffect(() => {
     loadSettingsFromDatabase();
     loadCustomRulesFromDatabase();
+    loadDocumentsFromDatabase();
+    loadManualEntriesFromDatabase();
     checkDatabaseConnection();
     // Initialize field configurations
     setFieldConfigurations(settingsStore.getFieldConfigurations());
@@ -267,6 +279,50 @@ export function SettingsPanel({
     } catch (error) {
       console.error("Failed to load custom rules from database:", error);
       // Keep existing rules if database load fails
+    }
+  };
+
+  const loadDocumentsFromDatabase = async () => {
+    try {
+      const documents = await databaseService.getAllDocuments();
+      console.log("Loaded documents from database:", documents);
+
+      // Transform database format to component format
+      const transformedDocs = documents.map((doc) => ({
+        name: doc.name,
+        size: doc.file_size,
+        type: doc.file_type,
+        uploadedAt: new Date(doc.upload_date),
+      }));
+
+      setUploadedDocuments(transformedDocs);
+    } catch (error) {
+      console.error("Failed to load documents from database:", error);
+      // Keep existing documents if database load fails
+    }
+  };
+
+  const loadManualEntriesFromDatabase = async () => {
+    try {
+      // Get manual knowledge entries from settings
+      const entries = await databaseService.getSettingsByCategory('manualKnowledgeEntries');
+      console.log("Loaded manual entries from database:", entries);
+
+      // Transform database format to component format
+      const transformedEntries = entries.map((entry) => ({
+        id: entry.key,
+        title: entry.value.title || '',
+        category: entry.value.category || 'operations',
+        source: entry.value.source || '',
+        tags: entry.value.tags || '',
+        createdAt: entry.updatedAt,
+        createdBy: entry.updatedBy,
+      }));
+
+      setManualEntries(transformedEntries);
+    } catch (error) {
+      console.error("Failed to load manual entries from database:", error);
+      // Keep existing entries if database load fails
     }
   };
 
@@ -378,9 +434,8 @@ export function SettingsPanel({
         "notificationSettings",
       );
 
-      // Load Document Repository settings (assuming they are stored similarly)
-      const loadedDocuments = tabSettings.nlp?.documentRepository || [];
-      setUploadedDocuments(loadedDocuments);
+      // Load Document Repository settings - handled by separate function
+      // Documents are loaded by loadDocumentsFromDatabase() function
 
       // Update state with loaded settings
       setNlpSettings(newNlpSettings);
@@ -945,13 +1000,15 @@ export function SettingsPanel({
     try {
       const categoryMapping = {
         nlpSettings: "nlpSettings",
-        documentRepository: "documentRepository", // Add document repository mapping
+        documentRepository: "documentRepository",
+        manualKnowledgeEntries: "manualKnowledgeEntries",
       };
 
-      // Combine NLP settings and document repository data
+      // Combine NLP settings, document repository data, and manual entries
       const stateToSave = {
         nlpSettings: nlpSettings,
         documentRepository: uploadedDocuments,
+        manualKnowledgeEntries: manualEntries,
       };
 
       const success = await settingsStore.saveSettingsFromState(
@@ -1297,33 +1354,121 @@ export function SettingsPanel({
         continue; // Already handled above, or skip if not validated
       }
 
-      // Simulate upload process and update progress
-      // In a real app, this would be an actual API call
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+      try {
+        // Convert file to base64
+        const base64Content = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            const result = reader.result as string;
+            resolve(result.split(',')[1]); // Remove data:mime;base64, prefix
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
 
-      const fileProgressIndex = uploadProgress.findIndex(up => up.name === file.name);
-      if (fileProgressIndex === -1) { // If it's a newly added file for processing
-        setUploadProgress(prev => prev.map(p => p.name === file.name ? {...p, progress: 100, status: 'completed'} : p));
-        setUploadedDocuments(prev => [...prev, {
+        // Save to database
+        const success = await databaseService.saveDocument({
           name: file.name,
-          size: file.size,
-          type: file.type,
-          uploadedAt: new Date(),
-        }]);
-      } else { // If it was already in the progress list
-        setUploadProgress(prev => prev.map((p, index) => index === fileProgressIndex ? { ...p, progress: 100, status: 'completed' } : p));
-        setUploadedDocuments(prev => [...prev, {
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          uploadedAt: new Date(),
-        }]);
+          original_name: file.name,
+          file_type: file.type,
+          file_size: file.size,
+          content_base64: base64Content,
+          uploaded_by: 'user',
+          metadata: {
+            uploadDate: new Date().toISOString(),
+            category: 'nlp_documents'
+          }
+        });
+
+        if (success) {
+          setUploadProgress(prev => prev.map(p => p.name === file.name ? {...p, progress: 100, status: 'completed'} : p));
+          setUploadedDocuments(prev => [...prev, {
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            uploadedAt: new Date(),
+          }]);
+          console.log('Document saved to database successfully:', file.name);
+        } else {
+          setUploadProgress(prev => prev.map(p => p.name === file.name ? {...p, progress: 0, status: 'error', error: 'Failed to save to database'} : p));
+        }
+      } catch (error) {
+        console.error('Error saving document:', error);
+        setUploadProgress(prev => prev.map(p => p.name === file.name ? {...p, progress: 0, status: 'error', error: 'Upload failed'} : p));
       }
     }
   };
 
-  const handleRemoveDocument = (indexToRemove: number) => {
-    setUploadedDocuments(prev => prev.filter((_, index) => index !== indexToRemove));
+  const handleRemoveDocument = async (indexToRemove: number) => {
+    const documentToRemove = uploadedDocuments[indexToRemove];
+    
+    try {
+      // In a real implementation, you'd get the document ID from the database
+      // For now, we'll remove from local state and let the next load refresh from DB
+      setUploadedDocuments(prev => prev.filter((_, index) => index !== indexToRemove));
+      console.log('Document removed from list:', documentToRemove.name);
+    } catch (error) {
+      console.error('Error removing document:', error);
+    }
+  };
+
+  // Manual Knowledge Entry Handlers
+  const handleAddManualEntry = async () => {
+    if (newManualEntry.title.trim() && newManualEntry.source.trim()) {
+      const entry = {
+        id: `manual_${Date.now()}`,
+        ...newManualEntry,
+        createdAt: new Date().toISOString(),
+        createdBy: 'user@flydubai.com',
+      };
+
+      try {
+        // Save individual entry to database
+        const success = await databaseService.saveSetting(
+          'manualKnowledgeEntries',
+          entry.id,
+          {
+            title: entry.title,
+            category: entry.category,
+            source: entry.source,
+            tags: entry.tags,
+          },
+          'object',
+          'user'
+        );
+
+        if (success) {
+          setManualEntries(prev => [...prev, entry]);
+          setNewManualEntry({
+            title: '',
+            category: 'operations',
+            source: '',
+            tags: ''
+          });
+          setShowAddEntryForm(false);
+          console.log('Manual entry saved successfully:', entry.id);
+        } else {
+          console.error('Failed to save manual entry to database');
+        }
+      } catch (error) {
+        console.error('Error saving manual entry:', error);
+      }
+    }
+  };
+
+  const handleDeleteManualEntry = async (entryId: string) => {
+    try {
+      const success = await databaseService.deleteSetting('manualKnowledgeEntries', entryId);
+      
+      if (success) {
+        setManualEntries(prev => prev.filter(entry => entry.id !== entryId));
+        console.log('Manual entry deleted successfully:', entryId);
+      } else {
+        console.error('Failed to delete manual entry from database');
+      }
+    } catch (error) {
+      console.error('Error deleting manual entry:', error);
+    }
   };
 
   if (isLoading) {
@@ -3898,44 +4043,144 @@ export function SettingsPanel({
                     Add manual natural knowledge entries for enhancing recovery recommendations and disruption.
                   </p>
                 </div>
-                <Button className="btn-flydubai-primary">
+                <Button 
+                  className="btn-flydubai-primary"
+                  onClick={() => setShowAddEntryForm(true)}
+                >
                   Add Manual Entry
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Add Entry Form */}
+              {showAddEntryForm && (
+                <Card className="mb-6 border-dashed border-2 border-gray-300">
+                  <CardHeader>
+                    <CardTitle className="text-sm">Create New Knowledge Entry</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Title</Label>
+                        <Input 
+                          placeholder="Add manual knowledge entry title"
+                          value={newManualEntry.title}
+                          onChange={(e) => setNewManualEntry(prev => ({ ...prev, title: e.target.value }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Category</Label>
+                        <Select
+                          value={newManualEntry.category}
+                          onValueChange={(value) => setNewManualEntry(prev => ({ ...prev, category: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select category" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="operations">Operations</SelectItem>
+                            <SelectItem value="maintenance">Maintenance</SelectItem>
+                            <SelectItem value="crew">Crew</SelectItem>
+                            <SelectItem value="weather">Weather</SelectItem>
+                            <SelectItem value="passenger">Passenger Services</SelectItem>
+                            <SelectItem value="security">Security</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Source</Label>
+                      <Textarea 
+                        placeholder="Provide the specific guidelines, or list criteria that should be considered during recovery operations."
+                        value={newManualEntry.source}
+                        onChange={(e) => setNewManualEntry(prev => ({ ...prev, source: e.target.value }))}
+                        rows={3}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Tags</Label>
+                      <Input 
+                        placeholder="Add tags like: ATC, VIP, Emergency Weather..."
+                        value={newManualEntry.tags}
+                        onChange={(e) => setNewManualEntry(prev => ({ ...prev, tags: e.target.value }))}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="outline"
+                        onClick={() => {
+                          setShowAddEntryForm(false);
+                          setNewManualEntry({
+                            title: '',
+                            category: 'operations',
+                            source: '',
+                            tags: ''
+                          });
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        className="btn-flydubai-primary"
+                        onClick={handleAddManualEntry}
+                        disabled={!newManualEntry.title.trim() || !newManualEntry.source.trim()}
+                      >
+                        Save Entry
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Manual Entries List */}
+              {manualEntries.length > 0 && (
                 <div className="space-y-2">
-                  <Label>Title</Label>
-                  <Input placeholder="Add manual knowledge entry title" />
+                  <h4 className="font-medium text-sm">Saved Knowledge Entries:</h4>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {manualEntries.map((entry, index) => (
+                      <div key={entry.id} className="flex items-start justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <div className="font-medium text-sm">{entry.title}</div>
+                            <Badge variant="outline" className="text-xs">
+                              {entry.category}
+                            </Badge>
+                          </div>
+                          <div className="text-xs text-gray-600 mb-2">
+                            {entry.source}
+                          </div>
+                          {entry.tags && (
+                            <div className="text-xs text-blue-600">
+                              Tags: {entry.tags}
+                            </div>
+                          )}
+                          <div className="text-xs text-gray-500 mt-1">
+                            Added: {new Date(entry.createdAt).toLocaleDateString()}
+                          </div>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteManualEntry(entry.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label>Category</Label>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="operations">Operations</SelectItem>
-                      <SelectItem value="maintenance">Maintenance</SelectItem>
-                      <SelectItem value="crew">Crew</SelectItem>
-                      <SelectItem value="weather">Weather</SelectItem>
-                    </SelectContent>
-                  </Select>
+              )}
+
+              {manualEntries.length === 0 && !showAddEntryForm && (
+                <div className="text-center py-8 text-gray-500">
+                  <Edit className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <p>No manual knowledge entries added yet</p>
+                  <p className="text-sm">
+                    Click "Add Manual Entry" to create your first knowledge entry
+                  </p>
                 </div>
-              </div>
-              <div className="space-y-2">
-                <Label>Source</Label>
-                <Input placeholder="Provide the specific guidelines, or list criteria that should be considered during recovery operations." />
-              </div>
-              <div className="space-y-2">
-                <Label>Tags</Label>
-                <Input placeholder="Add tags like: ATC, VIP, Make-in Emergency Weather..." />
-              </div>
-              <div className="flex justify-end gap-2">
-                <Button variant="outline">Cancel</Button>
-                <Button className="btn-flydubai-primary">Save Entry</Button>
-              </div>
+              )}
             </CardContent>
           </Card>
 

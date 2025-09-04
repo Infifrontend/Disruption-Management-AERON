@@ -553,7 +553,7 @@ app.get("/api/settings/tabs", async (req, res) => {
         tabSettings.recoveryOptions[category].push(fullSetting);
       }
       // NLP Settings
-      else if (category === "nlpSettings") {
+      else if (category === "nlpSettings" || category === "manualKnowledgeEntries") {
         if (!tabSettings.nlp[category]) {
           tabSettings.nlp[category] = [];
         }
