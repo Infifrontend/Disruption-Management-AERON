@@ -657,7 +657,28 @@ INSERT INTO settings (category, key, value, type, description, updated_by) VALUE
 ('notificationSettings', 'desktop', 'true', 'boolean', 'Enable desktop notifications', 'system'),
 ('notificationSettings', 'recoveryAlerts', 'true', 'boolean', 'Enable recovery plan alerts', 'system'),
 ('notificationSettings', 'passengerUpdates', 'true', 'boolean', 'Enable passenger service updates', 'system'),
-('notificationSettings', 'systemAlerts', 'false', 'boolean', 'Enable system status alerts', 'system')
+('notificationSettings', 'systemAlerts', 'false', 'boolean', 'Enable system status alerts', 'system'),
+
+-- System Configuration Settings
+('systemConfiguration', 'highPerformanceMode', 'false', 'boolean', 'Enable high performance mode for faster processing', 'system'),
+('systemConfiguration', 'autoSaveSettings', 'true', 'boolean', 'Automatically save settings changes', 'system'),
+('systemConfiguration', 'debugMode', 'false', 'boolean', 'Enable debug mode for troubleshooting', 'system'),
+('systemConfiguration', 'maxConcurrentRequests', '50', 'number', 'Maximum number of concurrent API requests', 'system'),
+('systemConfiguration', 'sessionTimeout', '30', 'number', 'Session timeout in minutes', 'system'),
+('systemConfiguration', 'defaultTimezone', '"UTC"', 'string', 'Default timezone for the system', 'system'),
+('systemConfiguration', 'logLevel', '"INFO"', 'string', 'System logging level', 'system'),
+
+-- Performance Settings
+('performanceSettings', 'cacheDuration', '300', 'number', 'Cache duration in seconds', 'system'),
+('performanceSettings', 'enableDataCompression', 'true', 'boolean', 'Enable data compression for API responses', 'system'),
+('performanceSettings', 'queryTimeout', '30', 'number', 'Database query timeout in seconds', 'system'),
+('performanceSettings', 'batchSize', '100', 'number', 'Default batch size for bulk operations', 'system'),
+
+-- Security Settings
+('securitySettings', 'enableTwoFactorAuth', 'false', 'boolean', 'Enable two-factor authentication', 'system'),
+('securitySettings', 'passwordMinLength', '8', 'number', 'Minimum password length', 'system'),
+('securitySettings', 'maxLoginAttempts', '5', 'number', 'Maximum login attempts before lockout', 'system'),
+('securitySettings', 'lockoutDuration', '15', 'number', 'Account lockout duration in minutes', 'system')
 ON CONFLICT (category, key) DO NOTHING;
 
 -- Insert sample custom rules

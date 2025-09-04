@@ -576,8 +576,7 @@ app.get("/api/settings/tabs", async (req, res) => {
           "prediction",
           "monitoring",
           "services",
-          "analytics",  
-          "system"
+          "analytics"
         ].includes(category)
       ) {
         if (!tabSettings.screens[category]) {
@@ -585,7 +584,21 @@ app.get("/api/settings/tabs", async (req, res) => {
         }
         tabSettings.screens[category].push(fullSetting);
       }
-      // System Settings - catch remaining categories
+      // System Settings - handle system-related categories
+      else if (
+        [
+          "systemConfiguration",
+          "performanceSettings",
+          "securitySettings",
+          "system"
+        ].includes(category)
+      ) {
+        if (!tabSettings.system[category]) {
+          tabSettings.system[category] = [];
+        }
+        tabSettings.system[category].push(fullSetting);
+      }
+      // Catch remaining categories as system settings
       else {
         if (!tabSettings.system[category]) {
           tabSettings.system[category] = [];
