@@ -2396,6 +2396,128 @@ class DatabaseService {
       return false;
     }
   }
+
+  // Document Repository operations
+  async saveDocument(document: {
+    name: string;
+    original_name: string;
+    file_type: string;
+    file_size: number;
+    content_base64: string;
+    uploaded_by?: string;
+    metadata?: any;
+  }): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/documents`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ...document,
+          uploaded_by: document.uploaded_by || "system",
+          metadata: document.metadata || {},
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return true;
+    } catch (error) {
+      console.error("Failed to save document:", error);
+      return false;
+    }
+  }
+
+  async getAllDocuments(): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/documents`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Failed to fetch documents:", error);
+      return [];
+    }
+  }
+
+  async getDocument(id: string): Promise<any | null> {
+    try {
+      const response = await fetch(`${this.baseUrl}/documents/${id}`);
+      if (!response.ok) return null;
+      return await response.json();
+    } catch (error) {
+      console.error(`Failed to fetch document ${id}:`, error);
+      return null;
+    }
+  }
+
+  async deleteDocument(id: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/documents/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return true;
+    } catch (error) {
+      console.error(`Failed to delete document ${id}:`, error);
+      return false;
+    }
+  }
+
+  async updateDocumentStatus(id: string, status: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/documents/${id}/status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ processing_status: status }),
+      });
+
+      return response.ok;
+    } catch (error) {
+      console.error(`Failed to update document status ${id}:`, error);
+      return false;
+    }
+  }
+
+  // Batch save documents for document repository
+  async batchSaveDocuments(
+    documents: any[],
+    userId: string = "system"
+  ): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/documents/batch`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          documents,
+          uploaded_by: userId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log(`Batch saved ${result.saved_documents} documents to database`);
+      return true;
+    } catch (error) {
+      console.error("Failed to batch save documents:", error);
+      return false;
+    }
+  }
 }
 
 // Singleton instance
