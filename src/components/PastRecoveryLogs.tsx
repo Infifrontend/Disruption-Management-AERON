@@ -120,6 +120,12 @@ export function PastRecoveryLogs() {
     search: "",
   });
 
+  // Pagination and Sorting states
+  const [currentPage, setCurrentPage] = useState(1);
+  const [logsPerPage, setLogsPerPage] = useState(10);
+  const [sortBy, setSortBy] = useState("date_created");
+  const [sortOrder, setSortOrder] = useState("desc");
+
   useEffect(() => {
     fetchAllData();
     const interval = setInterval(() => fetchAllData(), 300000); // Refresh every 5 minutes
@@ -158,7 +164,7 @@ export function PastRecoveryLogs() {
       const data = await databaseService.getPastRecoveryLogs(filterParams);
       console.log("Fetched recovery logs:", data);
       setRecoveryLogs(data || []);
-      
+
       // Calculate KPIs from fetched logs if not already set
       if (!kpiData && data && data.length > 0) {
         calculateKPIFromLogs();
@@ -175,6 +181,10 @@ export function PastRecoveryLogs() {
       if (response.ok) {
         const data = await response.json();
         console.log("Fetched KPI data:", data);
+        // Ensure avgRecoveryEfficiency is a number, default to 0 if not
+        if (data && typeof data.avgRecoveryEfficiency === 'undefined') {
+          data.avgRecoveryEfficiency = 0;
+        }
         setKpiData(data);
       } else {
         console.warn("KPI API failed, calculating from logs");
@@ -262,8 +272,10 @@ export function PastRecoveryLogs() {
       totalRecoveries > 0
         ? recoveryLogs.reduce((sum, log) => {
             const duration = log.duration || "0h 0m";
-            const hours = parseInt(duration.match(/(\d+)h/)?.[1] || "0");
-            const minutes = parseInt(duration.match(/(\d+)m/)?.[1] || "0");
+            const hoursMatch = duration.match(/(\d+)h/);
+            const minutesMatch = duration.match(/(\d+)m/);
+            const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0;
+            const minutes = minutesMatch ? parseInt(minutesMatch[1], 10) : 0;
             return sum + (hours * 60 + minutes);
           }, 0) / totalRecoveries
         : 0;
@@ -380,6 +392,9 @@ export function PastRecoveryLogs() {
     if (recoveryLogs.length > 0 && !kpiData) {
       calculateKPIFromLogs();
       calculateTrendsFromLogs();
+    } else if (recoveryLogs.length > 0 && kpiData) {
+      // Recalculate trends if logs change and KPIs are already set
+      calculateTrendsFromLogs();
     }
   }, [recoveryLogs]);
 
@@ -407,26 +422,66 @@ export function PastRecoveryLogs() {
     return true;
   });
 
+  // Sorting logic
+  const sortedLogs = filteredLogs.sort((a, b) => {
+    const valueA = a[sortBy as keyof RecoveryLog];
+    const valueB = b[sortBy as keyof RecoveryLog];
+
+    if (valueA === undefined || valueB === undefined) return 0;
+
+    let comparison = 0;
+    if (sortBy === "cost") {
+      comparison = (a.actual_cost || 0) - (b.actual_cost || 0);
+    } else if (sortBy === "passengers") {
+      comparison = (a.affected_passengers || 0) - (b.affected_passengers || 0);
+    } else if (sortBy === "efficiency") {
+      comparison = (a.recovery_efficiency || 0) - (b.recovery_efficiency || 0);
+    } else if (typeof valueA === "string" && typeof valueB === "string") {
+      comparison = valueA.localeCompare(valueB);
+    } else if (typeof valueA === "number" && typeof valueB === "number") {
+      comparison = valueA - valueB;
+    } else {
+      comparison = String(valueA).localeCompare(String(valueB));
+    }
+
+    return sortOrder === "asc" ? comparison : -comparison;
+  });
+
+  // Pagination logic
+  const totalPages = Math.ceil(sortedLogs.length / logsPerPage);
+  const paginatedLogs = sortedLogs.slice((currentPage - 1) * logsPerPage, currentPage * logsPerPage);
+
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("en-IN", {
-      timeZone: "Asia/Kolkata",
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+    if (!dateString) return "";
+    try {
+      return new Date(dateString).toLocaleDateString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
+    } catch (e) {
+      return dateString; // fallback to original string if date is invalid
+    }
   };
 
   const formatDateTime = (dateString: string) => {
-    return new Date(dateString).toLocaleString("en-IN", {
-      timeZone: "Asia/Kolkata",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    if (!dateString) return "";
+    try {
+      return new Date(dateString).toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (e) {
+      return dateString; // fallback to original string if date is invalid
+    }
   };
 
-  const formatCurrency = (amount: number) => {
+  const formatCurrency = (amount: number | undefined) => {
+    if (amount === undefined) return "AED 0";
     return new Intl.NumberFormat("en-AE", {
       style: "currency",
       currency: "AED",
@@ -435,7 +490,8 @@ export function PastRecoveryLogs() {
     }).format(amount);
   };
 
-  const formatDuration = (minutes: number, decimals: number = 0) => {
+  const formatDuration = (minutes: number | undefined, decimals: number = 0) => {
+    if (minutes === undefined) return "0h 0m";
     const hours = Math.floor(minutes / 60);
     const mins = (minutes % 60).toFixed(decimals);
     return `${hours}h ${mins}m`;
@@ -524,7 +580,7 @@ export function PastRecoveryLogs() {
                 </div>
                 <div className="text-center">
                   <div className="text-2xl font-bold text-blue-600">
-                    {Math.round((kpiData?.totalDelayReduction || 0) / 60)}h
+                    {formatDuration(kpiData?.totalDelayReduction || 0, 0)}
                   </div>
                   <div className="text-sm text-gray-600">
                     Total Delay Reduction
@@ -806,7 +862,7 @@ export function PastRecoveryLogs() {
                     />
                     <Pie
                       data={(() => {
-                        const categoryCount = {};
+                        const categoryCount: { [key: string]: number } = {};
                         filteredLogs.forEach((log) => {
                           const category =
                             log.disruption_category?.toLowerCase() || "other";
@@ -814,7 +870,7 @@ export function PastRecoveryLogs() {
                             (categoryCount[category] || 0) + 1;
                         });
 
-                        const colorMap = {
+                        const colorMap: { [key: string]: string } = {
                           weather: "var(--color-weather)",
                           crew: "var(--color-crew)",
                           aog: "var(--color-aog)",
@@ -870,6 +926,7 @@ export function PastRecoveryLogs() {
                               </text>
                             );
                           }
+                          return null;
                         }}
                       />
                     </Pie>
@@ -879,7 +936,7 @@ export function PastRecoveryLogs() {
                 {/* Legend */}
                 <div className="grid grid-cols-2 gap-2 mt-4">
                   {(() => {
-                    const categoryCount = {};
+                    const categoryCount: { [key: string]: number } = {};
                     const totalLogs = filteredLogs.length;
 
                     filteredLogs.forEach((log) => {
@@ -888,7 +945,7 @@ export function PastRecoveryLogs() {
                         (categoryCount[category] || 0) + 1;
                     });
 
-                    const colorMap = {
+                    const colorMap: { [key: string]: string } = {
                       Weather: "bg-blue-500",
                       Crew: "bg-orange-500",
                       AOG: "bg-gray-500",
@@ -1055,9 +1112,44 @@ export function PastRecoveryLogs() {
           {/* Filters */}
           <Card>
             <CardContent className="pt-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Filter className="h-4 w-4" />
-                <span className="font-medium">Filters & Search</span>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Filter className="h-4 w-4" />
+                  <span className="font-medium">Filters & Search</span>
+                </div>
+                <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-sm">Sort by:</Label>
+                    <Select value={sortBy} onValueChange={(value) => setSortBy(value)}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="date_created">Date Created</SelectItem>
+                        <SelectItem value="flight_number">Flight Number</SelectItem>
+                        <SelectItem value="status">Status</SelectItem>
+                        <SelectItem value="cost">Cost</SelectItem>
+                        <SelectItem value="passengers">Passengers</SelectItem>
+                        <SelectItem value="efficiency">Efficiency</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                    >
+                      {sortOrder === "asc" ? "↑" : "↓"}
+                    </Button>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <Filter className="h-4 w-4 mr-2" />
+                    Advanced Filter
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Detailed Report
+                  </Button>
+                </div>
               </div>
               <div className="grid grid-cols-4 gap-4">
                 <div>
@@ -1186,7 +1278,7 @@ export function PastRecoveryLogs() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredLogs.slice(0, 10).map((log) => (
+                    {paginatedLogs.map((log) => (
                       <tr
                         key={log.solution_id}
                         className="border-b hover:bg-gray-50"
@@ -1287,6 +1379,62 @@ export function PastRecoveryLogs() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between px-4 py-4 border-t">
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Previous
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        const page = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                        return (
+                          <Button
+                            key={page}
+                            variant={currentPage === page ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className="w-10"
+                          >
+                            {page}
+                          </Button>
+                        );
+                      })}
+                      {totalPages > 5 && currentPage < totalPages - 2 && (
+                        <>
+                          <span className="px-2">...</span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setCurrentPage(totalPages)}
+                            className="w-10"
+                          >
+                            {totalPages}
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    Page {currentPage} of {totalPages}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -1439,6 +1587,29 @@ export function PastRecoveryLogs() {
                   </p>
                 </div>
                 <div className="flex gap-2">
+                  <div className="flex items-center gap-2">
+                    <Label className="text-sm">Sort by:</Label>
+                    <Select value={sortBy} onValueChange={(value) => setSortBy(value)}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="date_created">Date Created</SelectItem>
+                        <SelectItem value="flight_number">Flight Number</SelectItem>
+                        <SelectItem value="status">Status</SelectItem>
+                        <SelectItem value="cost">Cost</SelectItem>
+                        <SelectItem value="passengers">Passengers</SelectItem>
+                        <SelectItem value="efficiency">Efficiency</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                    >
+                      {sortOrder === "asc" ? "↑" : "↓"}
+                    </Button>
+                  </div>
                   <Button variant="outline" size="sm">
                     <Filter className="h-4 w-4 mr-2" />
                     Advanced Filter
@@ -1578,7 +1749,7 @@ export function PastRecoveryLogs() {
                       </tr>
                     </thead>
                     <tbody>
-                      {filteredLogs.slice(0, 10).map((log) => (
+                      {paginatedLogs.map((log) => (
                         <tr
                           key={`${log.solution_id}-audit`}
                           className="border-b hover:bg-gray-50"
@@ -1601,7 +1772,7 @@ export function PastRecoveryLogs() {
                           </td>
                           <td className="p-3">
                             <div className="text-sm font-medium">
-                              {log.flight_number} 11
+                              {log.flight_number}
                             </div>
                             <div className="text-xs text-gray-500">
                               {log.route}
@@ -1659,11 +1830,64 @@ export function PastRecoveryLogs() {
                     </tbody>
                   </table>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
-  );
-}
+
+                {/* Pagination Controls for Audit Trail */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between px-4 py-4 border-t">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        Previous
+                      </Button>
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                          const page = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
+                          return (
+                            <Button
+                              key={page}
+                              variant={currentPage === page ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setCurrentPage(page)}
+                              className="w-10"
+                            >
+                              {page}
+                            </Button>
+                          );
+                        })}
+                        {totalPages > 5 && currentPage < totalPages - 2 && (
+                          <>
+                            <span className="px-2">...</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setCurrentPage(totalPages)}
+                              className="w-10"
+                            >
+                              {totalPages}
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        Next
+                      </Button>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      Page {currentPage} of {totalPages}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
