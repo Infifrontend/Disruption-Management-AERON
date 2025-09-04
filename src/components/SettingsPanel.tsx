@@ -759,7 +759,7 @@ export function SettingsPanel({
 
     // Get all parameters in this category except the one being changed
     const otherParams = Object.keys(passengerPriorityConfig[category]).filter(
-      key => key !== parameter
+      key => key !== parameter && !key.startsWith('customParameters') // exclude customParameters array itself
     );
 
     // Calculate current total of other parameters
@@ -769,24 +769,26 @@ export function SettingsPanel({
 
     // If increasing and would exceed 100%, redistribute from other parameters
     if (difference > 0) {
-      const maxPossibleIncrease = Math.min(difference, otherParamsTotal);
-      const finalValue = currentValue + maxPossibleIncrease;
+      // Ensure the new value does not exceed 100% and respects available weight
+      const availableWeight = getAvailableWeight(category, null, parameter, currentValue);
+      const clampedNewValue = Math.min(newValue, currentValue + availableWeight);
+      const actualDifference = clampedNewValue - currentValue;
 
-      if (maxPossibleIncrease <= 0) return; // Can't increase
+      if (actualDifference <= 0) return; // Cannot increase further
 
-      // Redistribute the weight proportionally from other parameters
-      const redistributeAmount = maxPossibleIncrease;
       const newConfig = { ...passengerPriorityConfig[category] };
+      newConfig[parameter] = clampedNewValue;
 
-      // Set the new value for the changed parameter
-      newConfig[parameter] = finalValue;
+      // Redistribute the weight proportionally from other parameters if needed
+      const totalWeightAfterChange = calculateTotalWeight(category) - currentValue + clampedNewValue;
+      const remainingWeightForRedistribution = 100 - totalWeightAfterChange;
 
-      // Redistribute from other parameters proportionally
-      if (otherParamsTotal > 0) {
+      if (remainingWeightForRedistribution < 0 && otherParamsTotal > 0) {
+        const amountToReduce = Math.abs(remainingWeightForRedistribution);
         otherParams.forEach(key => {
           const currentParamValue = newConfig[key] || 0;
           const proportion = currentParamValue / otherParamsTotal;
-          const reduction = redistributeAmount * proportion;
+          const reduction = amountToReduce * proportion;
           newConfig[key] = Math.max(0, Math.round((currentParamValue - reduction) * 10) / 10);
         });
       }
@@ -1204,14 +1206,18 @@ export function SettingsPanel({
       }
     } else {
       // For passenger priority configuration
-      const baseParams = Object.values(passengerPriorityConfig[category] || {});
-      baseWeights = baseParams.reduce(
-        (sum: number, val) => sum + Number(val || 0),
-        0,
-      );
-      customWeights = customParameters
-        .filter((p) => p.category === category)
-        .reduce((sum, p) => sum + (p.weight || 0), 0);
+      const data = passengerPriorityConfig[category];
+      if (data) {
+        const baseParams = Object.keys(data).filter(
+          (key) => key !== "customParameters" && !key.startsWith('customParameters') // Ensure we don't count the customParameters array itself
+        );
+        baseWeights = baseParams.reduce(
+          (sum: number, key) => sum + Number(data[key] || 0),
+          0,
+        );
+        customWeights =
+          data.customParameters?.reduce((sum, p) => sum + (p.weight || 0), 0) || 0;
+      }
     }
 
     return baseWeights + customWeights;
@@ -1230,6 +1236,10 @@ export function SettingsPanel({
     if (section && typeof currentParam === 'string' && currentParam.startsWith('custom_')) {
       const param = recoveryConfiguration[section]?.customParameters?.find(p => p.id === currentParam);
       adjustedCurrentValue = param ? param.weight : 0;
+    }
+    // For regular parameters, if currentParam is provided, use its value
+    else if (!section && typeof currentParam === 'string' && currentParam !== 'customParameters') {
+      adjustedCurrentValue = passengerPriorityConfig[category]?.[currentParam] || 0;
     }
 
     const remaining = 100 - total + adjustedCurrentValue;
@@ -2051,7 +2061,7 @@ export function SettingsPanel({
                             newValue,
                           )
                         }
-                        max={100}
+                        max={Math.min(100, getAvailableWeight("passengerPrioritization", null, key, Number(value) || 0))}
                         min={0}
                         step={5}
                         className="w-full slider-flydubai"
@@ -2149,7 +2159,7 @@ export function SettingsPanel({
                             newValue,
                           )
                         }
-                        max={100}
+                        max={Math.min(100, getAvailableWeight("flightPrioritization", null, key, Number(value) || 0))}
                         min={0}
                         step={5}
                         className="w-full slider-flydubai"
