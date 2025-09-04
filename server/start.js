@@ -4645,7 +4645,7 @@ app.put("/api/flight-recovery-status/:flightId", async (req, res) => {
 // Past recovery Logs endpoint
 app.get("/api/past-recovery-logs", async (req, res) => {
   try {
-    const { status, category, priority, dateRange } = req.query;
+    const { status, category, priority, dateRange, page = 1, limit = 10, search = '' } = req.query;
 
     console.log("Fetching past recovery logs data");
 
@@ -4746,12 +4746,86 @@ app.get("/api/past-recovery-logs", async (req, res) => {
       }
     }
 
-    query += ` ORDER BY fd.created_at DESC LIMIT 50`;
+    // Add search functionality
+    if (search && search.trim() !== '') {
+      paramCount++;
+      query += ` AND (
+        LOWER(fd.flight_number) LIKE LOWER($${paramCount}) OR
+        LOWER(fd.route) LIKE LOWER($${paramCount}) OR
+        LOWER(fd.disruption_reason) LIKE LOWER($${paramCount}) OR
+        LOWER(fd.aircraft) LIKE LOWER($${paramCount})
+      )`;
+      params.push(`%${search.trim()}%`);
+    }
+
+    // Add pagination
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10;
+    const offset = (pageNum - 1) * limitNum;
+    
+    query += ` ORDER BY fd.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+    params.push(limitNum, offset);
 
     console.log("Executing past recovery logs query:", query);
     console.log("With parameters:", params);
 
-    const result = await pool.query(query, params);
+    // Get total count for pagination
+    let countQuery = `
+      SELECT COUNT(*) as total
+      FROM flight_disruptions fd
+      WHERE (fd.recovery_status IS NOT NULL OR fd.status = 'Resolved')
+    `;
+    
+    const countParams = [];
+    let countParamCount = 0;
+    
+    // Apply same filters to count query
+    if (status && status !== "all") {
+      countParamCount++;
+      if (status === "Successful") {
+        countQuery += ` AND (fd.recovery_status IN ('completed', 'approved') OR fd.status = 'Resolved')`;
+      } else if (status === "Partial") {
+        countQuery += ` AND fd.recovery_status = 'pending'`;
+      } else if (status === "Failed") {
+        countQuery += ` AND fd.recovery_status = 'rejected'`;
+      }
+    }
+
+    if (category && category !== "all") {
+      countParamCount++;
+      countQuery += ` AND (fd.categorization = $${countParamCount} OR fd.disruption_type = $${countParamCount})`;
+      countParams.push(category);
+    }
+
+    if (priority && priority !== "all") {
+      countParamCount++;
+      countQuery += ` AND fd.severity = $${countParamCount}`;
+      countParams.push(priority);
+    }
+
+    if (dateRange && dateRange !== "all") {
+      if (dateRange === "last7days") {
+        countQuery += ` AND fd.created_at >= NOW() - INTERVAL '7 days'`;
+      } else if (dateRange === "last30days") {
+        countQuery += ` AND fd.created_at >= NOW() - INTERVAL '30 days'`;
+      }
+    }
+
+    if (search && search.trim() !== '') {
+      countParamCount++;
+      countQuery += ` AND (
+        LOWER(fd.flight_number) LIKE LOWER($${countParamCount}) OR
+        LOWER(fd.route) LIKE LOWER($${countParamCount}) OR
+        LOWER(fd.disruption_reason) LIKE LOWER($${countParamCount}) OR
+        LOWER(fd.aircraft) LIKE LOWER($${countParamCount})
+      )`;
+      countParams.push(`%${search.trim()}%`);
+    }
+
+    const [result, countResult] = await Promise.all([
+      pool.query(query, params),
+      pool.query(countQuery, countParams)
+    ]);
 
     // Transform numeric fields
     const transformedData = result.rows.map((row) => ({
@@ -4770,12 +4844,36 @@ app.get("/api/past-recovery-logs", async (req, res) => {
         parseInt(row.downstream_flights_affected) || 0,
     }));
 
-    if (transformedData.length === 0) {
-      // Return mock data if no real data exists
+    const totalCount = parseInt(countResult.rows[0]?.total) || 0;
+    const pageNum = parseInt(page) || 1;
+    const limitNum = parseInt(limit) || 10;
+    const totalPages = Math.ceil(totalCount / limitNum);
+
+    if (transformedData.length === 0 && pageNum === 1) {
+      // Return mock data if no real data exists and it's the first page
       console.log("No past recovery data found, returning mock data");
-      res.json(getMockPastRecoveryData());
+      const mockData = getMockPastRecoveryData();
+      res.json({
+        data: mockData,
+        pagination: {
+          currentPage: 1,
+          totalPages: 1,
+          totalCount: mockData.length,
+          hasNextPage: false,
+          hasPrevPage: false
+        }
+      });
     } else {
-      res.json(transformedData);
+      res.json({
+        data: transformedData,
+        pagination: {
+          currentPage: pageNum,
+          totalPages: totalPages,
+          totalCount: totalCount,
+          hasNextPage: pageNum < totalPages,
+          hasPrevPage: pageNum > 1
+        }
+      });
     }
   } catch (error) {
     console.error("Error fetching past recovery logs:", error);
@@ -5019,6 +5117,9 @@ app.get("/api/past-recovery-kpi", async (req, res) => {
     const result = await pool.query(query);
     const data = result.rows[0];
 
+    const avgRecoveryEfficiency = Number(data?.avg_recovery_efficiency) || 92.5;
+    const totalCostSavings = Number(data?.total_cost_savings) || 0;
+    
     const kpiData = {
       totalRecoveries: parseInt(data.total_recoveries) || 0,
       successRate:
@@ -5031,15 +5132,10 @@ app.get("/api/past-recovery-kpi", async (req, res) => {
       costEfficiency: 5.2, // Average cost variance
       passengerSatisfaction: parseFloat(data.avg_satisfaction) || 0,
       totalPassengers: parseInt(data.total_passengers) || 0,
-      avgRecoveryEfficiency: parseFloat(
-        (isNaN(Number(data?.avg_recovery_efficiency))
-          ? 92.5
-          : Number(data.avg_recovery_efficiency)
-        ).toFixed(1),
-      ),
+      avgRecoveryEfficiency: parseFloat(avgRecoveryEfficiency.toFixed(1)),
       totalDelayReduction: parseInt(data?.total_delay_reduction) || 0,
       cancellationsAvoided: parseInt(data.cancellations_avoided) || 0,
-      totalCostSavings: parseFloat(data.total_cost_savings) || 0,
+      totalCostSavings: parseFloat(totalCostSavings.toFixed(2)),
     };
 
     res.json(kpiData);
