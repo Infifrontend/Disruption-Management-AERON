@@ -317,7 +317,7 @@ export function SettingsPanel({
         category: entry.value.category || 'operations',
         source: entry.value.source || '',
         tags: entry.value.tags || '',
-        createdAt: entry.updatedAt,
+        createdAt: entry.createdAt,
         createdBy: entry.updatedBy,
       }));
 
@@ -3943,7 +3943,7 @@ export function SettingsPanel({
                     Upload and manage operational documentation for recovery algorithm.
                   </p>
                 </div>
-                <Button 
+                <Button
                   className="btn-flydubai-primary"
                   onClick={() => document.getElementById('document-upload')?.click()}
                 >
@@ -4056,7 +4056,7 @@ export function SettingsPanel({
                     Add manual natural knowledge entries for enhancing recovery recommendations and disruption.
                   </p>
                 </div>
-                <Button 
+                <Button
                   className="btn-flydubai-primary"
                   onClick={() => setShowAddEntryForm(true)}
                 >
@@ -4075,7 +4075,7 @@ export function SettingsPanel({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label>Title</Label>
-                        <Input 
+                        <Input
                           placeholder="Add manual knowledge entry title"
                           value={newManualEntry.title}
                           onChange={(e) => setNewManualEntry(prev => ({ ...prev, title: e.target.value }))}
@@ -4103,7 +4103,7 @@ export function SettingsPanel({
                     </div>
                     <div className="space-y-2">
                       <Label>Source</Label>
-                      <Textarea 
+                      <Textarea
                         placeholder="Provide the specific guidelines, or list criteria that should be considered during recovery operations."
                         value={newManualEntry.source}
                         onChange={(e) => setNewManualEntry(prev => ({ ...prev, source: e.target.value }))}
@@ -4112,14 +4112,14 @@ export function SettingsPanel({
                     </div>
                     <div className="space-y-2">
                       <Label>Tags</Label>
-                      <Input 
+                      <Input
                         placeholder="Add tags like: ATC, VIP, Emergency Weather..."
                         value={newManualEntry.tags}
                         onChange={(e) => setNewManualEntry(prev => ({ ...prev, tags: e.target.value }))}
                       />
                     </div>
                     <div className="flex justify-end gap-2">
-                      <Button 
+                      <Button
                         variant="outline"
                         onClick={() => {
                           setShowAddEntryForm(false);
@@ -4133,7 +4133,7 @@ export function SettingsPanel({
                       >
                         Cancel
                       </Button>
-                      <Button 
+                      <Button
                         className="btn-flydubai-primary"
                         onClick={handleAddManualEntry}
                         disabled={!newManualEntry.title.trim() || !newManualEntry.source.trim()}
@@ -4147,41 +4147,85 @@ export function SettingsPanel({
 
               {/* Manual Entries List */}
               {manualEntries.length > 0 && (
-                <div className="space-y-2">
-                  <h4 className="font-medium text-sm">Saved Knowledge Entries:</h4>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {manualEntries.map((entry, index) => (
-                      <div key={entry.id} className="flex items-start justify-between p-3 bg-gray-50 rounded-lg">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <div className="font-medium text-sm">{entry.title}</div>
-                            <Badge variant="outline" className="text-xs">
-                              {entry.category}
-                            </Badge>
-                          </div>
-                          <div className="text-xs text-gray-600 mb-2">
-                            {entry.source}
-                          </div>
-                          {entry.tags && (
-                            <div className="text-xs text-blue-600">
-                              Tags: {entry.tags}
+                <div className="space-y-3">
+                  {manualEntries.map((entry) => {
+                    // Get category icon and color
+                    const getCategoryIcon = (category: string) => {
+                      switch (category.toLowerCase()) {
+                        case 'passenger service':
+                          return { icon: User, color: 'bg-purple-100 text-purple-600', badgeColor: 'bg-purple-100 text-purple-700' };
+                        case 'emergency':
+                          return { icon: AlertTriangle, color: 'bg-green-100 text-green-600', badgeColor: 'bg-green-100 text-green-700' };
+                        case 'operations':
+                          return { icon: Settings, color: 'bg-blue-100 text-blue-600', badgeColor: 'bg-blue-100 text-blue-700' };
+                        default:
+                          return { icon: FileText, color: 'bg-gray-100 text-gray-600', badgeColor: 'bg-gray-100 text-gray-700' };
+                      }
+                    };
+
+                    const { icon: CategoryIcon, color: iconColor, badgeColor } = getCategoryIcon(entry.category);
+
+                    return (
+                      <div
+                        key={entry.id}
+                        className="flex items-start gap-3 p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
+                      >
+                        {/* Category Icon */}
+                        <div className={`p-2 rounded-lg ${iconColor} flex-shrink-0`}>
+                          <CategoryIcon className="h-4 w-4" />
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1">
+                              <h5 className="font-medium text-gray-900 text-sm leading-5 mb-1">
+                                {entry.title}
+                              </h5>
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-sm text-gray-600">
+                                  {entry.category}
+                                </span>
+                                <span className="text-gray-400">•</span>
+                                <span className="text-sm text-gray-500">
+                                  {entry.source || 'No source specified'}
+                                </span>
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                Created: {entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : 'Unknown'} • By: {entry.createdBy || 'Unknown'}
+                              </div>
                             </div>
-                          )}
-                          <div className="text-xs text-gray-500 mt-1">
-                            Added: {new Date(entry.createdAt).toLocaleDateString()}
+
+                            {/* Source Badge */}
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <Badge variant="outline" className={`text-xs px-2 py-1 ${badgeColor} border-0`}>
+                                Passage Source
+                              </Badge>
+                            </div>
                           </div>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteManualEntry(entry.id)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-gray-400 hover:text-blue-600 hover:bg-blue-50"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteManualEntry(entry.id)}
+                            className="h-8 w-8 p-0 text-gray-400 hover:text-red-600 hover:bg-red-50"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                    ))}
-                  </div>
+                    );
+                  })}
                 </div>
               )}
 
@@ -4218,14 +4262,14 @@ export function SettingsPanel({
                     <strong>Customer complaints who need special connectivity with rebooking flights:</strong>
                     • Book on next available options with forming cross-booking
                     • Check on any allowable options
-                    • Weather is to passenger not affected service options 
+                    • Weather is to passenger not affected service options
                     • Special in flight cancellation make to better before departure
                   </AlertDescription>
                 </Alert>
 
                 <div className="space-y-2">
                   <Label>Test Input</Label>
-                  <Textarea 
+                  <Textarea
                     placeholder="Test a customer strange input for performance using the customers knowledge networks."
                     className="min-h-[100px]"
                   />
@@ -4233,7 +4277,7 @@ export function SettingsPanel({
 
                 <div className="space-y-2">
                   <Label>Expected Output</Label>
-                  <Textarea 
+                  <Textarea
                     placeholder="Tell us what information the customer should get informed and their availability during flight disruptions."
                     className="min-h-[100px]"
                     readOnly

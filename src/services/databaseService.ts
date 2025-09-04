@@ -2397,6 +2397,61 @@ class DatabaseService {
     }
   }
 
+  // Manual Knowledge Entries operations
+  async getManualKnowledgeEntries(): Promise<any[]> {
+    try {
+      const response = await fetch(`${this.baseUrl}/manual-knowledge-entries`);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching manual knowledge entries:', error);
+      return [];
+    }
+  }
+
+  async saveManualKnowledgeEntry(entryData: any): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/manual-knowledge-entries`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(entryData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      return true;
+    } catch (error) {
+      console.error('Error saving manual knowledge entry:', error);
+      return false;
+    }
+  }
+
+  async deleteManualKnowledgeEntry(entryId: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${this.baseUrl}/manual-knowledge-entries/${entryId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Error deleting manual knowledge entry:', error);
+      return false;
+    }
+  }
+
   // Document Repository operations
   async saveDocument(documentData: any): Promise<boolean> {
     try {
