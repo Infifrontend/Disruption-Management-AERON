@@ -657,7 +657,15 @@ INSERT INTO settings (category, key, value, type, description, updated_by) VALUE
 ('notificationSettings', 'desktop', 'true', 'boolean', 'Enable desktop notifications', 'system'),
 ('notificationSettings', 'recoveryAlerts', 'true', 'boolean', 'Enable recovery plan alerts', 'system'),
 ('notificationSettings', 'passengerUpdates', 'true', 'boolean', 'Enable passenger service updates', 'system'),
-('notificationSettings', 'systemAlerts', 'false', 'boolean', 'Enable system status alerts', 'system')
+('notificationSettings', 'systemAlerts', 'false', 'boolean', 'Enable system status alerts', 'system'),
+
+-- System Settings
+('systemSettings', 'highPerformanceMode', 'false', 'boolean', 'Enable high performance processing for faster calculations', 'system'),
+('systemSettings', 'autoSaveSettings', 'true', 'boolean', 'Automatically save changes without manual confirmation', 'system'),
+('systemSettings', 'debugMode', 'false', 'boolean', 'Enable debug mode for troubleshooting', 'system'),
+('systemSettings', 'cacheEnabled', 'true', 'boolean', 'Enable caching for improved performance', 'system'),
+('systemSettings', 'sessionTimeout', '3600', 'number', 'Session timeout in seconds', 'system'),
+('systemSettings', 'maxConcurrentUsers', '100', 'number', 'Maximum number of concurrent users', 'system')
 ON CONFLICT (category, key) DO NOTHING;
 
 -- Insert sample custom rules
