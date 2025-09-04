@@ -93,11 +93,11 @@ app.use((req, res, next) => {
       req.path === '/api/debug') {
     return next();
   }
-  
+
   // For database-dependent routes, check availability but allow retry logic
   if (!databaseAvailable && req.path.startsWith('/api/')) {
     console.warn(`Database unavailable for ${req.method} ${req.path}`);
-    
+
     // Trigger a connection test before responding
     testConnection().then(() => {
       if (databaseAvailable) {
@@ -120,7 +120,7 @@ app.use((req, res, next) => {
     });
     return;
   }
-  
+
   next();
 });
 
@@ -180,7 +180,7 @@ async function testConnection() {
         "❌ Max connection retries reached. API will continue without database.",
       );
       databaseAvailable = false;
-      
+
       // Schedule periodic retry attempts
       setTimeout(() => {
         connectionRetries = 0;
@@ -195,7 +195,7 @@ async function testConnection() {
 pool.on('error', (err) => {
   console.error('Database pool error:', err.message);
   databaseAvailable = false;
-  
+
   // Don't immediately retry on certain errors
   if (!err.message.includes('terminating connection due to administrator command')) {
     // Retry connection after a delay for other errors
@@ -223,7 +223,7 @@ testConnection();
 app.get("/api/health", async (req, res) => {
   try {
     let dbStatus = 'disconnected';
-    
+
     // Always try to test the database connection on health check
     try {
       const client = await pool.connect();
@@ -233,7 +233,7 @@ app.get("/api/health", async (req, res) => {
       databaseAvailable = true;
     } catch (dbError) {
       console.warn('Health check database test failed:', dbError.message);
-      
+
       // Handle specific Neon database errors
       if (dbError.message.includes('terminating connection due to administrator command') ||
           dbError.message.includes('server closed the connection unexpectedly')) {
@@ -246,7 +246,7 @@ app.get("/api/health", async (req, res) => {
         databaseAvailable = false;
       }
     }
-    
+
     res.json({ 
       status: "healthy", 
       timestamp: new Date().toISOString(),
@@ -372,7 +372,7 @@ app.get("/api/settings", async (req, res) => {
     if (!databaseAvailable) {
       return res.json([]); // Return empty array for fallback
     }
-    
+
     const result = await pool.query(
       "SELECT * FROM settings WHERE is_active = true ORDER BY category, key",
     );
@@ -560,7 +560,7 @@ app.get("/api/settings/tabs", async (req, res) => {
         tabSettings.nlp[category].push(fullSetting);
       }
       // Notification Settings
-        
+
       else if (category === "notificationSettings") {
         if (!tabSettings.notifications[category]) {
           tabSettings.notifications[category] = [];
@@ -568,7 +568,7 @@ app.get("/api/settings/tabs", async (req, res) => {
         tabSettings.notifications[category].push(fullSetting);
       }
       // Screen Settings - handle separately if needed
-        
+
       else if (
         [
           "main",
@@ -716,7 +716,7 @@ app.get("/api/screen-settings", async (req, res) => {
     const result = await pool.query(
       "SELECT * FROM screen_settings ORDER BY category, screen_name",
     );
-    
+
     // Transform to match the expected format for screenSettings state
     const transformedScreens = result.rows.map(screen => ({
       id: screen.screen_id,
@@ -726,7 +726,7 @@ app.get("/api/screen-settings", async (req, res) => {
       enabled: screen.enabled,
       required: screen.required
     }));
-    
+
     res.json(transformedScreens);
   } catch (error) {
     console.error("Error fetching screen settings:", error);
@@ -795,7 +795,7 @@ app.put("/api/screen-settings/:screen_id", async (req, res) => {
 app.post("/api/screen-settings/batch", async (req, res) => {
   try {
     const { screenSettings, updated_by } = req.body;
-    
+
     if (!Array.isArray(screenSettings)) {
       return res.status(400).json({ error: "screenSettings must be an array" });
     }
@@ -828,7 +828,7 @@ app.post("/api/screen-settings/batch", async (req, res) => {
 
     const results = await Promise.all(updatePromises);
     const updatedScreens = results.map(result => result.rows[0]);
-    
+
     res.json({ 
       message: `Updated ${updatedScreens.length} screen settings`,
       screens: updatedScreens
@@ -919,10 +919,10 @@ app.post("/api/custom-rules/batch", async (req, res) => {
     }
 
     const client = await pool.connect();
-    
+
     try {
       await client.query("BEGIN");
-      
+
       const results = [];
       for (const rule of rules) {
         const {
@@ -1886,7 +1886,8 @@ app.post("/api/disruptions/", async (req, res) => {
           OR category_code = CASE
             WHEN $1 LIKE '%Aircraft%' OR $1 LIKE '%AOG%' THEN 'AIRCRAFT_ISSUE'
             WHEN $1 LIKE '%Crew%' OR $1 LIKE '%duty time%' OR $1 LIKE '%sick%' THEN 'CREW_ISSUE'
-            WHEN $1 LIKE '%Weather%' OR $1 LIKE '%ATC%' THEN 'ATC_WEATHER'
+            WHEN $1 LIKE '%Weather%' OR $1 LIKE '%storm%' OR $1 LIKE '%fog%' THEN 'ATC_WEATHER'
+            WHEN $1 LIKE '%ATC%' OR $1 LIKE '%slot%' OR $1 LIKE '%traffic%' THEN 'ATC_WEATHER'
             WHEN $1 LIKE '%Curfew%' OR $1 LIKE '%Congestion%' OR $1 LIKE '%Airport%' THEN 'CURFEW_CONGESTION'
             WHEN $1 LIKE '%Rotation%' OR $1 LIKE '%Maintenance%' THEN 'ROTATION_MAINTENANCE'
             ELSE 'AIRCRAFT_ISSUE'
@@ -4483,7 +4484,6 @@ app.get("/api/past-recovery-logs", async (req, res) => {
       cost_variance: parseFloat(row.cost_variance) || 0,
       otp_impact: parseFloat(row.otp_impact) || 0,
       passenger_satisfaction: parseFloat(row.passenger_satisfaction) || 0,
-      rebooking_success: parseFloat(row.rebooking_success) || 0,
       potential_delay_minutes: parseInt(row.potential_delay_minutes) || 0,
       actual_delay_minutes: parseInt(row.actual_delay_minutes) || 0,
       delay_reduction_minutes: parseInt(row.delay_reduction_minutes) || 0,
