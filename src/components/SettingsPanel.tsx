@@ -140,6 +140,7 @@ const updateScreenSetting = (screenId: string, enabled: boolean) => {
 
 // Types for Document Upload
 type UploadedDocument = {
+  id?: string; // Added for database ID
   name: string;
   size: number;
   type: string;
@@ -289,7 +290,8 @@ export function SettingsPanel({
 
       // Transform database format to component format
       const transformedDocs = documents.map((doc) => ({
-        name: doc.name,
+        id: doc.id, // Assuming the database service returns an ID
+        name: doc.original_name,
         size: doc.file_size,
         type: doc.file_type,
         uploadedAt: new Date(doc.upload_date),
@@ -1401,16 +1403,27 @@ export function SettingsPanel({
 
   const handleRemoveDocument = async (indexToRemove: number) => {
     const documentToRemove = uploadedDocuments[indexToRemove];
-    
+    if (!documentToRemove || !documentToRemove.id) {
+      console.error("Cannot remove document: ID is missing.");
+      setUploadedDocuments(prev => prev.filter((_, index) => index !== indexToRemove)); // Still remove from UI
+      return;
+    }
+
     try {
-      // In a real implementation, you'd get the document ID from the database
-      // For now, we'll remove from local state and let the next load refresh from DB
-      setUploadedDocuments(prev => prev.filter((_, index) => index !== indexToRemove));
-      console.log('Document removed from list:', documentToRemove.name);
+      const success = await databaseService.deleteDocument(documentToRemove.id);
+
+      if (success) {
+        setUploadedDocuments(prev => prev.filter((_, index) => index !== indexToRemove));
+        console.log('Document deleted from database and list:', documentToRemove.name);
+      } else {
+        console.error('Failed to delete document from database.');
+        // Optionally, keep it in the UI or show an error to the user
+      }
     } catch (error) {
       console.error('Error removing document:', error);
     }
   };
+
 
   // Manual Knowledge Entry Handlers
   const handleAddManualEntry = async () => {
@@ -1459,7 +1472,7 @@ export function SettingsPanel({
   const handleDeleteManualEntry = async (entryId: string) => {
     try {
       const success = await databaseService.deleteSetting('manualKnowledgeEntries', entryId);
-      
+
       if (success) {
         setManualEntries(prev => prev.filter(entry => entry.id !== entryId));
         console.log('Manual entry deleted successfully:', entryId);

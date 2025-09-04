@@ -158,7 +158,7 @@ class DatabaseService {
   private async retryApiCall<T>(operation: () => Promise<T>, fallbackValue: T, maxRetries?: number): Promise<T> {
     const retries = maxRetries ?? 3;
     let lastError: any = null;
-    
+
     for (let attempt = 0; attempt < retries; attempt++) {
       try {
         const result = await operation();
@@ -167,17 +167,17 @@ class DatabaseService {
         return result;
       } catch (error: any) {
         lastError = error;
-        
+
         // Check if it's a 503 error (database unavailable)
         if (error.message?.includes('503')) {
           console.log(`API call failed (attempt ${attempt + 1}/${retries}): Database unavailable`);
-          
+
           // Wait before retry, with exponential backoff
           if (attempt < retries - 1) {
             const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
             console.log(`Retrying in ${delay}ms...`);
             await new Promise(resolve => setTimeout(resolve, delay));
-            
+
             // Check health before retry
             const isHealthy = await this.healthCheck();
             if (!isHealthy && attempt < retries - 1) {
@@ -190,19 +190,19 @@ class DatabaseService {
         }
       }
     }
-    
+
     console.error("API call failed after retries:", lastError);
     this.onDatabaseFailure();
     return fallbackValue;
   }
 
-  
+
 
   private getTimeout(): number {
     return parseInt(import.meta.env.VITE_API_TIMEOUT || "10000", 10);
   }
 
-  
+
 
   // Helper method to format URLs correctly for the current backend
   private formatUrl(endpoint: string): string {
@@ -609,7 +609,7 @@ class DatabaseService {
         try {
           const data = await response.json();
           isHealthy = data.status === "healthy";
-          
+
           // Special handling for database sleep/wake cycles
           if (data.database === 'sleeping') {
             console.log('Database is sleeping, will retry shortly...');
@@ -620,7 +620,7 @@ class DatabaseService {
             };
             return false;
           }
-          
+
           if (isHealthy) {
             console.log('Database health check successful:', data);
           }
@@ -663,7 +663,7 @@ class DatabaseService {
       } else {
         console.warn("Health check failed with unknown error");
       }
-      
+
       this.onDatabaseFailure();
 
       // Cache the failure result with shorter duration
@@ -973,8 +973,8 @@ class DatabaseService {
         route: disruption.route,
         origin: disruption.origin,
         destination: disruption.destination,
-        origin_city: disruption.originCity,
-        destination_city: disruption.destinationCity,
+        origin_city: disruption.origin_city,
+        destination_city: disruption.destination_city,
         aircraft: disruption.aircraft,
         scheduled_departure: disruption.scheduledDeparture,
         estimated_departure: disruption.estimatedDeparture,
@@ -2398,76 +2398,57 @@ class DatabaseService {
   }
 
   // Document Repository operations
-  async saveDocument(document: {
-    name: string;
-    original_name: string;
-    file_type: string;
-    file_size: number;
-    content_base64: string;
-    uploaded_by?: string;
-    metadata?: any;
-  }): Promise<boolean> {
+  async saveDocument(documentData: any): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/documents`, {
-        method: "POST",
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          ...document,
-          uploaded_by: document.uploaded_by || "system",
-          metadata: document.metadata || {},
-        }),
+        body: JSON.stringify(documentData),
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return true;
+      const result = await response.json();
+      return result.success || true;
     } catch (error) {
-      console.error("Failed to save document:", error);
+      console.error('Error saving document:', error);
       return false;
     }
   }
 
-  async getAllDocuments(): Promise<any[]> {
+  async getDocuments(): Promise<any[]> {
     try {
       const response = await fetch(`${this.baseUrl}/documents`);
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+
       return await response.json();
     } catch (error) {
-      console.error("Failed to fetch documents:", error);
+      console.error('Error fetching documents:', error);
       return [];
     }
   }
 
-  async getDocument(id: string): Promise<any | null> {
+  async deleteDocument(documentId: string): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/documents/${id}`);
-      if (!response.ok) return null;
-      return await response.json();
-    } catch (error) {
-      console.error(`Failed to fetch document ${id}:`, error);
-      return null;
-    }
-  }
-
-  async deleteDocument(id: string): Promise<boolean> {
-    try {
-      const response = await fetch(`${this.baseUrl}/documents/${id}`, {
-        method: "DELETE",
+      const response = await fetch(`${this.baseUrl}/documents/${documentId}`, {
+        method: 'DELETE',
       });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return true;
+      const result = await response.json();
+      return result.success || true;
     } catch (error) {
-      console.error(`Failed to delete document ${id}:`, error);
+      console.error('Error deleting document:', error);
       return false;
     }
   }
