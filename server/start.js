@@ -4849,6 +4849,144 @@ app.get("/api/operational-insights", async (req, res) => {
   }
 });
 
+// Document Repository endpoints
+app.post("/api/documents", async (req, res) => {
+  try {
+    const {
+      name,
+      original_name,
+      file_type,
+      file_size,
+      content_base64,
+      uploaded_by = 'system',
+      metadata = {}
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !original_name || !file_type || !content_base64) {
+      return res.status(400).json({
+        error: "Missing required fields: name, original_name, file_type, content_base64"
+      });
+    }
+
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    if (!allowedTypes.includes(file_type)) {
+      return res.status(400).json({
+        error: "Invalid file type. Only PDF and DOC files are allowed."
+      });
+    }
+
+    // Validate file size (3MB limit)
+    const maxSize = 3 * 1024 * 1024; // 3MB in bytes
+    if (file_size > maxSize) {
+      return res.status(400).json({
+        error: "File size exceeds 3MB limit."
+      });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO document_repository (
+        name, original_name, file_type, file_size, content_base64, 
+        uploaded_by, metadata, processing_status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      RETURNING *`,
+      [
+        name,
+        original_name,
+        file_type,
+        file_size,
+        content_base64,
+        uploaded_by,
+        JSON.stringify(metadata),
+        'uploaded'
+      ]
+    );
+
+    res.json({
+      success: true,
+      document: result.rows[0],
+      message: "Document uploaded successfully"
+    });
+  } catch (error) {
+    console.error("Error uploading document:", error);
+    res.status(500).json({
+      error: "Failed to upload document",
+      details: error.message
+    });
+  }
+});
+
+app.get("/api/documents", async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, name, original_name, file_type, file_size, upload_date, 
+              uploaded_by, processing_status, metadata
+       FROM document_repository 
+       WHERE is_active = true 
+       ORDER BY upload_date DESC`
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+    res.status(500).json({
+      error: "Failed to fetch documents",
+      details: error.message
+    });
+  }
+});
+
+app.get("/api/documents/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      `SELECT * FROM document_repository WHERE id = $1 AND is_active = true`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error("Error fetching document:", error);
+    res.status(500).json({
+      error: "Failed to fetch document",
+      details: error.message
+    });
+  }
+});
+
+app.delete("/api/documents/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query(
+      `UPDATE document_repository 
+       SET is_active = false, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1 AND is_active = true
+       RETURNING *`,
+      [id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Document not found" });
+    }
+
+    res.json({
+      success: true,
+      message: "Document deleted successfully"
+    });
+  } catch (error) {
+    console.error("Error deleting document:", error);
+    res.status(500).json({
+      error: "Failed to delete document",
+      details: error.message
+    });
+  }
+});
+
 // Error handling middleware
 app.use((error, req, res, next) => {
   console.error("Unhandled error:", error);
