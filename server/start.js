@@ -1089,6 +1089,86 @@ app.delete("/api/custom-parameters/:parameter_id", async (req, res) => {
   }
 });
 
+// Manual Knowledge Entries endpoints
+app.get("/api/manual-knowledge-entries", async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM settings WHERE category = 'manualKnowledgeEntries' AND is_active = true ORDER BY updated_at DESC"
+    );
+    
+    // Transform database format to component format
+    const transformedEntries = result.rows.map((entry) => ({
+      id: entry.key,
+      title: entry.value.title || '',
+      category: entry.value.category || 'operations',
+      source: entry.value.source || '',
+      tags: entry.value.tags || '',
+      createdAt: entry.updated_at,
+      createdBy: entry.updated_by,
+    }));
+
+    res.json(transformedEntries);
+  } catch (error) {
+    console.error("Error fetching manual knowledge entries:", error);
+    res.json([]);
+  }
+});
+
+app.post("/api/manual-knowledge-entries", async (req, res) => {
+  try {
+    const { title, category, source, tags, created_by } = req.body;
+    
+    const entryId = `manual_${Date.now()}`;
+    const entryData = {
+      title,
+      category: category || 'operations',
+      source,
+      tags: tags || '',
+    };
+
+    const result = await pool.query(
+      `INSERT INTO settings (category, key, value, type, updated_by)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      ['manualKnowledgeEntries', entryId, JSON.stringify(entryData), 'object', created_by || 'system']
+    );
+
+    const savedEntry = {
+      id: result.rows[0].key,
+      title: entryData.title,
+      category: entryData.category,
+      source: entryData.source,
+      tags: entryData.tags,
+      createdAt: result.rows[0].updated_at,
+      createdBy: result.rows[0].updated_by,
+    };
+
+    res.json(savedEntry);
+  } catch (error) {
+    console.error("Error saving manual knowledge entry:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete("/api/manual-knowledge-entries/:entryId", async (req, res) => {
+  try {
+    const { entryId } = req.params;
+    const result = await pool.query(
+      "UPDATE settings SET is_active = false WHERE category = 'manualKnowledgeEntries' AND key = $1 RETURNING *",
+      [entryId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Manual knowledge entry not found" });
+    }
+
+    res.json({ message: "Manual knowledge entry deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting manual knowledge entry:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Batch save settings endpoint for tab-wise saves
 app.post("/api/settings/batch", async (req, res) => {
   try {
