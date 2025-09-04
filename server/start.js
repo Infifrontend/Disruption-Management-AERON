@@ -88,8 +88,8 @@ app.use(express.urlencoded({ extended: true }));
 // Middleware to check database availability with better handling
 app.use((req, res, next) => {
   // Allow health check, auth routes, and debug routes to pass through
-  if (req.path === '/api/health' ||
-      req.path.startsWith('/api/auth/') ||
+  if (req.path === '/api/health' || 
+      req.path.startsWith('/api/auth/') || 
       req.path === '/api/debug') {
     return next();
   }
@@ -105,14 +105,14 @@ app.use((req, res, next) => {
         next();
       } else {
         // Still unavailable, return 503
-        res.status(503).json({
+        res.status(503).json({ 
           error: 'Database temporarily unavailable',
           message: 'Database is waking up, please retry in a few seconds',
           retryAfter: 5
         });
       }
     }).catch(() => {
-      res.status(503).json({
+      res.status(503).json({ 
         error: 'Database temporarily unavailable',
         message: 'Database is waking up, please retry in a few seconds',
         retryAfter: 5
@@ -247,8 +247,8 @@ app.get("/api/health", async (req, res) => {
       }
     }
 
-    res.json({
-      status: "healthy",
+    res.json({ 
+      status: "healthy", 
       timestamp: new Date().toISOString(),
       database: dbStatus,
       environment: process.env.NODE_ENV || 'development',
@@ -256,10 +256,10 @@ app.get("/api/health", async (req, res) => {
     });
   } catch (error) {
     console.error('Health check error:', error);
-    res.status(500).json({
-      status: "error",
+    res.status(500).json({ 
+      status: "error", 
       timestamp: new Date().toISOString(),
-      error: error.message
+      error: error.message 
     });
   }
 });
@@ -476,20 +476,6 @@ app.get("/api/settings/tabs", async (req, res) => {
       recoveryAlerts: "Recovery Plan Alerts",
       passengerUpdates: "Passenger Service Updates",
       systemAlerts: "System Status Alerts",
-
-      // System Settings - Regional Settings
-      timezone: "Timezone",
-      language: "Language",
-      currency: "Currency",
-      dateFormat: "Date Format",
-      timeFormat: "Time Format",
-
-      // System Settings - Performance Settings
-      highPerformanceMode: "High Performance Mode",
-      autoSaveSettings: "Auto-Save Settings",
-      cacheTimeout: "Cache Timeout (seconds)",
-      maxConcurrentRequests: "Max Concurrent Requests",
-      enableOptimizations: "Enable Optimizations",
     };
 
     // Organize settings by tab categories
@@ -590,7 +576,7 @@ app.get("/api/settings/tabs", async (req, res) => {
           "prediction",
           "monitoring",
           "services",
-          "analytics",
+          "analytics",  
           "system"
         ].includes(category)
       ) {
@@ -598,13 +584,6 @@ app.get("/api/settings/tabs", async (req, res) => {
           tabSettings.screens[category] = [];
         }
         tabSettings.screens[category].push(fullSetting);
-      }
-      // System Settings - catch remaining categories
-      else if (category.startsWith('regionalSettings') || category.startsWith('performanceSettings')) {
-        if (!tabSettings.system[category]) {
-          tabSettings.system[category] = [];
-        }
-        tabSettings.system[category].push(fullSetting);
       }
       // System Settings - catch remaining categories
       else {
@@ -795,7 +774,7 @@ app.put("/api/screen-settings/:screen_id", async (req, res) => {
     const { enabled, updated_by } = req.body;
 
     const result = await pool.query(
-      `UPDATE screen_settings
+      `UPDATE screen_settings 
        SET enabled = $1, updated_by = $2, updated_at = CURRENT_TIMESTAMP
        WHERE screen_id = $3 RETURNING *`,
       [enabled, updated_by || "system", screen_id],
@@ -850,7 +829,7 @@ app.post("/api/screen-settings/batch", async (req, res) => {
     const results = await Promise.all(updatePromises);
     const updatedScreens = results.map(result => result.rows[0]);
 
-    res.json({
+    res.json({ 
       message: `Updated ${updatedScreens.length} screen settings`,
       screens: updatedScreens
     });
@@ -891,10 +870,10 @@ app.post("/api/custom-rules", async (req, res) => {
 
     // Use UPSERT to handle duplicates
     const result = await pool.query(
-      `INSERT INTO custom_rules
+      `INSERT INTO custom_rules 
        (rule_id, name, description, category, type, priority, overridable, conditions, actions, status, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-       ON CONFLICT (rule_id)
+       ON CONFLICT (rule_id) 
        DO UPDATE SET
          name = EXCLUDED.name,
          description = EXCLUDED.description,
@@ -961,10 +940,10 @@ app.post("/api/custom-rules/batch", async (req, res) => {
         } = rule;
 
         const result = await client.query(
-          `INSERT INTO custom_rules
+          `INSERT INTO custom_rules 
            (rule_id, name, description, category, type, priority, overridable, conditions, actions, status, created_by)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-           ON CONFLICT (rule_id)
+           ON CONFLICT (rule_id) 
            DO UPDATE SET
              name = EXCLUDED.name,
              description = EXCLUDED.description,
@@ -996,8 +975,8 @@ app.post("/api/custom-rules/batch", async (req, res) => {
       }
 
       await client.query("COMMIT");
-      res.json({
-        success: true,
+      res.json({ 
+        success: true, 
         saved_rules: results.length,
         rules: results
       });
@@ -1116,7 +1095,7 @@ app.get("/api/manual-knowledge-entries", async (req, res) => {
     const result = await pool.query(
       "SELECT * FROM settings WHERE category = 'manualKnowledgeEntries' AND is_active = true ORDER BY updated_at DESC"
     );
-
+    
     // Transform database format to component format
     const transformedEntries = result.rows.map((entry) => ({
       id: entry.key,
@@ -1138,7 +1117,7 @@ app.get("/api/manual-knowledge-entries", async (req, res) => {
 app.post("/api/manual-knowledge-entries", async (req, res) => {
   try {
     const { title, category, source, tags, created_by } = req.body;
-
+    
     const entryId = `manual_${Date.now()}`;
     const entryData = {
       title,
@@ -1434,90 +1413,362 @@ app.post("/api/settings/reset", async (req, res) => {
 
     // Insert default settings
     const defaults = [
-      // Passenger Priority defaults
-      { category: "passengerPrioritization", key: "loyaltyTier", value: 25, type: "number" },
-      { category: "passengerPrioritization", key: "ticketClass", value: 20, type: "number" },
-      { category: "passengerPrioritization", key: "specialNeeds", value: 30, type: "number" },
-      { category: "passengerPrioritization", key: "groupSize", value: 15, type: "number" },
-      { category: "passengerPrioritization", key: "connectionRisk", value: 10, type: "number" },
-
-      // Recovery Options Ranking defaults
-      { category: "recoveryOptionsRanking", key: "costWeight", value: 30, type: "number" },
-      { category: "recoveryOptionsRanking", key: "timeWeight", value: 25, type: "number" },
-      { category: "recoveryOptionsRanking", key: "passengerImpactWeight", value: 20, type: "number" },
-      { category: "recoveryOptionsRanking", key: "operationalComplexityWeight", value: 15, type: "number" },
-      { category: "recoveryOptionsRanking", key: "reputationWeight", value: 10, type: "number" },
-
-      // Aircraft Selection Criteria defaults
-      { category: "aircraftSelectionCriteria", key: "maintenanceStatus", value: 25, type: "number" },
-      { category: "aircraftSelectionCriteria", key: "fuelEfficiency", value: 20, type: "number" },
-      { category: "aircraftSelectionCriteria", key: "routeSuitability", value: 20, type: "number" },
-      { category: "aircraftSelectionCriteria", key: "passengerCapacity", value: 15, type: "number" },
-      { category: "aircraftSelectionCriteria", key: "availabilityWindow", value: 20, type: "number" },
-
-      // Crew Assignment Criteria defaults
-      { category: "crewAssignmentCriteria", key: "dutyTimeRemaining", value: 30, type: "number" },
-      { category: "crewAssignmentCriteria", key: "qualifications", value: 25, type: "number" },
-      { category: "crewAssignmentCriteria", key: "baseLocation", value: 20, type: "number" },
-      { category: "crewAssignmentCriteria", key: "restRequirements", value: 15, type: "number" },
-      { category: "crewAssignmentCriteria", key: "languageSkills", value: 10, type: "number" },
-
-      // Flight Prioritization defaults
-      { category: "flightPrioritization", key: "airlinePreference", value: 20, type: "number" },
-      { category: "flightPrioritization", key: "onTimePerformance", value: 25, type: "number" },
-      { category: "flightPrioritization", key: "aircraftType", value: 15, type: "number" },
-      { category: "flightPrioritization", key: "departureTime", value: 20, type: "number" },
-      { category: "flightPrioritization", key: "connectionBuffer", value: 20, type: "number" },
-
-      // Flight Scoring defaults
-      { category: "flightScoring", key: "baseScore", value: 70, type: "number" },
-      { category: "flightScoring", key: "priorityBonus", value: 15, type: "number" },
-      { category: "flightScoring", key: "airlineBonus", value: 10, type: "number" },
-      { category: "flightScoring", key: "specialReqBonus", value: 8, type: "number" },
-      { category: "flightScoring", key: "loyaltyBonus", value: 8, type: "number" },
-      { category: "flightScoring", key: "groupBonus", value: 5, type: "number" },
-
-      // Passenger Scoring defaults
-      { category: "passengerScoring", key: "vipWeight", value: 40, type: "number" },
-      { category: "passengerScoring", key: "loyaltyWeight", value: 25, type: "number" },
-      { category: "passengerScoring", key: "specialNeedsWeight", value: 20, type: "number" },
-      { category: "passengerScoring", key: "revenueWeight", value: 15, type: "number" },
-
-      // NLP Settings defaults
+      {
+        category: "operationalRules",
+        key: "maxDelayThreshold",
+        value: 180,
+        type: "number",
+      },
+      {
+        category: "operationalRules",
+        key: "minConnectionTime",
+        value: 45,
+        type: "number",
+      },
+      {
+        category: "operationalRules",
+        key: "maxOverbooking",
+        value: 105,
+        type: "number",
+      },
+      {
+        category: "operationalRules",
+        key: "priorityRebookingTime",
+        value: 15,
+        type: "number",
+      },
+      {
+        category: "operationalRules",
+        key: "hotacTriggerDelay",
+        value: 240,
+        type: "number",
+      },
+      {
+        category: "recoveryConstraints",
+        key: "maxAircraftSwaps",
+        value: 3,
+        type: "number",
+      },
+      {
+        category: "recoveryConstraints",
+        key: "crewDutyTimeLimits",
+        value: true,
+        type: "boolean",
+      },
+      {
+        category: "recoveryConstraints",
+        key: "maintenanceSlotProtection",
+        value: true,
+        type: "boolean",
+      },
+      {
+        category: "recoveryConstraints",
+        key: "slotCoordinationRequired",
+        value: false,
+        type: "boolean",
+      },
+      {
+        category: "recoveryConstraints",
+        key: "curfewCompliance",
+        value: true,
+        type: "boolean",
+      },
+      {
+        category: "automationSettings",
+        key: "autoApproveThreshold",
+        value: 95,
+        type: "number",
+      },
+      {
+        category: "automationSettings",
+        key: "requireManagerApproval",
+        value: false,
+        type: "boolean",
+      },
+      {
+        category: "automationSettings",
+        key: "enablePredictiveActions",
+        value: true,
+        type: "boolean",
+      },
+      {
+        category: "automationSettings",
+        key: "autoNotifyPassengers",
+        value: true,
+        type: "boolean",
+      },
+      {
+        category: "automationSettings",
+        key: "autoBookHotac",
+        value: false,
+        type: "boolean",
+      },
+      {
+        category: "passengerPrioritization",
+        key: "loyaltyTier",
+        value: 25,
+        type: "number",
+      },
+      {
+        category: "passengerPrioritization",
+        key: "ticketClass",
+        value: 20,
+        type: "number",
+      },
+      {
+        category: "passengerPrioritization",
+        key: "specialNeeds",
+        value: 30,
+        type: "number",
+      },
+      {
+        category: "passengerPrioritization",
+        key: "groupSize",
+        value: 15,
+        type: "number",
+      },
+      {
+        category: "passengerPrioritization",
+        key: "connectionRisk",
+        value: 10,
+        type: "number",
+      },
+      {
+        category: "recoveryOptionsRanking",
+        key: "costWeight",
+        value: 30,
+        type: "number",
+      },
+      {
+        category: "recoveryOptionsRanking",
+        key: "timeWeight",
+        value: 25,
+        type: "number",
+      },
+      {
+        category: "recoveryOptionsRanking",
+        key: "passengerImpactWeight",
+        value: 20,
+        type: "number",
+      },
+      {
+        category: "recoveryOptionsRanking",
+        key: "operationalComplexityWeight",
+        value: 15,
+        type: "number",
+      },
+      {
+        category: "recoveryOptionsRanking",
+        key: "reputationWeight",
+        value: 10,
+        type: "number",
+      },
+      {
+        category: "aircraftSelectionCriteria",
+        key: "maintenanceStatus",
+        value: 25,
+        type: "number",
+      },
+      {
+        category: "aircraftSelectionCriteria",
+        key: "fuelEfficiency",
+        value: 20,
+        type: "number",
+      },
+      {
+        category: "aircraftSelectionCriteria",
+        key: "routeSuitability",
+        value: 20,
+        type: "number",
+      },
+      {
+        category: "aircraftSelectionCriteria",
+        key: "passengerCapacity",
+        value: 15,
+        type: "number",
+      },
+      {
+        category: "aircraftSelectionCriteria",
+        key: "availabilityWindow",
+        value: 20,
+        type: "number",
+      },
+      {
+        category: "crewAssignmentCriteria",
+        key: "dutyTimeRemaining",
+        value: 30,
+        type: "number",
+      },
+      {
+        category: "crewAssignmentCriteria",
+        key: "qualifications",
+        value: 25,
+        type: "number",
+      },
+      {
+        category: "crewAssignmentCriteria",
+        key: "baseLocation",
+        value: 20,
+        type: "number",
+      },
+      {
+        category: "crewAssignmentCriteria",
+        key: "restRequirements",
+        value: 15,
+        type: "number",
+      },
+      {
+        category: "crewAssignmentCriteria",
+        key: "languageSkills",
+        value: 10,
+        type: "number",
+      },
+      {
+        category: "flightPrioritization",
+        key: "airlinePreference",
+        value: 20,
+        type: "number",
+      },
+      {
+        category: "flightPrioritization",
+        key: "onTimePerformance",
+        value: 25,
+        type: "number",
+      },
+      {
+        category: "flightPrioritization",
+        key: "aircraftType",
+        value: 15,
+        type: "number",
+      },
+      {
+        category: "flightPrioritization",
+        key: "departureTime",
+        value: 20,
+        type: "number",
+      },
+      {
+        category: "flightPrioritization",
+        key: "connectionBuffer",
+        value: 20,
+        type: "number",
+      },
+      {
+        category: "flightScoring",
+        key: "baseScore",
+        value: 70,
+        type: "number",
+      },
+      {
+        category: "flightScoring",
+        key: "priorityBonus",
+        value: 15,
+        type: "number",
+      },
+      {
+        category: "flightScoring",
+        key: "airlineBonus",
+        value: 10,
+        type: "number",
+      },
+      {
+        category: "flightScoring",
+        key: "specialReqBonus",
+        value: 8,
+        type: "number",
+      },
+      {
+        category: "flightScoring",
+        key: "loyaltyBonus",
+        value: 8,
+        type: "number",
+      },
+      {
+        category: "flightScoring",
+        key: "groupBonus",
+        value: 5,
+        type: "number",
+      },
+      {
+        category: "passengerScoring",
+        key: "vipWeight",
+        value: 40,
+        type: "number",
+      },
+      {
+        category: "passengerScoring",
+        key: "loyaltyWeight",
+        value: 25,
+        type: "number",
+      },
+      {
+        category: "passengerScoring",
+        key: "specialNeedsWeight",
+        value: 20,
+        type: "number",
+      },
+      {
+        category: "passengerScoring",
+        key: "revenueWeight",
+        value: 15,
+        type: "number",
+      },
       { category: "nlpSettings", key: "enabled", value: true, type: "boolean" },
-      { category: "nlpSettings", key: "language", value: "english", type: "string" },
+      {
+        category: "nlpSettings",
+        key: "language",
+        value: "english",
+        type: "string",
+      },
       { category: "nlpSettings", key: "confidence", value: 85, type: "number" },
-      { category: "nlpSettings", key: "autoApply", value: false, type: "boolean" },
-
-      // Notification Settings defaults
-      { category: "notificationSettings", key: "email", value: true, type: "boolean" },
-      { category: "notificationSettings", key: "sms", value: false, type: "boolean" },
-      { category: "notificationSettings", key: "push", value: true, type: "boolean" },
-      { category: "notificationSettings", key: "desktop", value: true, type: "boolean" },
-      { category: "notificationSettings", key: "recoveryAlerts", value: true, type: "boolean" },
-      { category: "notificationSettings", key: "passengerUpdates", value: true, type: "boolean" },
-      { category: "notificationSettings", key: "systemAlerts", value: false, type: "boolean" },
-
-      // Rule Configuration defaults
-      { category: "operationalRules", key: "maxDelayThreshold", value: 180, type: "number" },
-      { category: "operationalRules", key: "minConnectionTime", value: 45, type: "number" },
-      { category: "operationalRules", key: "maxOverbooking", value: 105, type: "number" },
-      { category: "operationalRules", key: "priorityRebookingTime", value: 15, type: "number" },
-      { category: "operationalRules", key: "hotacTriggerDelay", value: 240, type: "number" },
-
-      // Recovery Constraints defaults
-      { category: "recoveryConstraints", key: "maxAircraftSwaps", value: 3, type: "number" },
-      { category: "recoveryConstraints", key: "crewDutyTimeLimits", value: true, type: "boolean" },
-      { category: "recoveryConstraints", key: "maintenanceSlotProtection", value: true, type: "boolean" },
-      { category: "recoveryConstraints", key: "slotCoordinationRequired", value: false, type: "boolean" },
-      { category: "recoveryConstraints", key: "curfewCompliance", value: true, type: "boolean" },
-
-      // Automation Settings defaults
-      { category: "automationSettings", key: "autoApproveThreshold", value: 95, type: "number" },
-      { category: "automationSettings", key: "requireManagerApproval", value: false, type: "boolean" },
-      { category: "automationSettings", key: "enablePredictiveActions", value: true, type: "boolean" },
-      { category: "automationSettings", key: "autoNotifyPassengers", value: true, type: "boolean" },
-      { category: "automationSettings", key: "autoBookHotac", value: false, type: "boolean" },
+      {
+        category: "nlpSettings",
+        key: "autoApply",
+        value: false,
+        type: "boolean",
+      },
+      {
+        category: "notificationSettings",
+        key: "email",
+        value: true,
+        type: "boolean",
+      },
+      {
+        category: "notificationSettings",
+        key: "sms",
+        value: false,
+        type: "boolean",
+      },
+      {
+        category: "notificationSettings",
+        key: "push",
+        value: true,
+        type: "boolean",
+      },
+      {
+        category: "notificationSettings",
+        key: "desktop",
+        value: true,
+        type: "boolean",
+      },
+      {
+        category: "notificationSettings",
+        key: "recoveryAlerts",
+        value: true,
+        type: "boolean",
+      },
+      {
+        category: "notificationSettings",
+        key: "passengerUpdates",
+        value: true,
+        type: "boolean",
+      },
+      {
+        category: "notificationSettings",
+        key: "systemAlerts",
+        value: false,
+        type: "boolean",
+      },
     ];
 
     for (const setting of defaults) {
@@ -4716,7 +4967,7 @@ app.post("/api/documents", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO document_repository (
-        name, original_name, file_type, file_size, content_base64,
+        name, original_name, file_type, file_size, content_base64, 
         uploaded_by, metadata, processing_status
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *`,
@@ -4749,10 +5000,10 @@ app.post("/api/documents", async (req, res) => {
 app.get("/api/documents", async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, name, original_name, file_type, file_size, upload_date,
+      `SELECT id, name, original_name, file_type, file_size, upload_date, 
               uploaded_by, processing_status, metadata
-       FROM document_repository
-       WHERE is_active = true
+       FROM document_repository 
+       WHERE is_active = true 
        ORDER BY upload_date DESC`
     );
 
@@ -4792,7 +5043,7 @@ app.delete("/api/documents/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      `UPDATE document_repository
+      `UPDATE document_repository 
        SET is_active = false, updated_at = CURRENT_TIMESTAMP
        WHERE id = $1 AND is_active = true
        RETURNING *`,
