@@ -1773,8 +1773,17 @@ class DatabaseService {
       if (filters.dateRange && filters.dateRange !== "all") {
         queryParams.append("dateRange", filters.dateRange);
       }
+      if (filters.search && filters.search.trim()) {
+        queryParams.append('search', filters.search.trim());
+      }
+      if (filters.page) {
+        queryParams.append('page', filters.page.toString());
+      }
+      if (filters.limit) {
+        queryParams.append('limit', filters.limit.toString());
+      }
 
-      const url = `${this.baseUrl}/past-recovery-logs${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+      const url = `${this.baseUrl}/api/past-recovery-logs${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
       console.log("Fetching past recovery logs from:", url);
 
       const response = await fetch(url);
