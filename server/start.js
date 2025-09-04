@@ -4453,6 +4453,37 @@ app.put("/api/disruptions/:disruptionId/status", async (req, res) => {
   }
 });
 
+// Update flight recovery status by flight ID
+app.put("/api/flight-recovery-status/:flightId", async (req, res) => {
+  try {
+    const { flightId } = req.params;
+    const { recovery_status } = req.body;
+
+    if (!recovery_status) {
+      return res.status(400).json({ error: "Recovery status is required" });
+    }
+
+    console.log(
+      `Updating recovery status for flight ${flightId} to ${recovery_status}`,
+    );
+
+    const result = await pool.query(
+      "UPDATE flight_disruptions SET recovery_status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *",
+      [recovery_status, flightId],
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Flight disruption not found" });
+    }
+
+    console.log(`Successfully updated recovery status for flight ${flightId}`);
+    res.json({ success: true, disruption: result.rows[0] });
+  } catch (error) {
+    console.error("Error updating flight recovery status:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Past recovery Logs endpoint
 app.get("/api/past-recovery-logs", async (req, res) => {
   try {
