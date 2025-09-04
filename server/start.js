@@ -791,7 +791,7 @@ app.put("/api/screen-settings/:screen_id", async (req, res) => {
     const { enabled, updated_by } = req.body;
 
     const result = await pool.query(
-      `UPDATE screen_settings 
+      `UPDATE screen_settings
        SET enabled = $1, updated_by = $2, updated_at = CURRENT_TIMESTAMP
        WHERE screen_id = $3 RETURNING *`,
       [enabled, updated_by || "system", screen_id],
@@ -887,10 +887,10 @@ app.post("/api/custom-rules", async (req, res) => {
 
     // Use UPSERT to handle duplicates
     const result = await pool.query(
-      `INSERT INTO custom_rules 
+      `INSERT INTO custom_rules
        (rule_id, name, description, category, type, priority, overridable, conditions, actions, status, created_by)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-       ON CONFLICT (rule_id) 
+       ON CONFLICT (rule_id)
        DO UPDATE SET
          name = EXCLUDED.name,
          description = EXCLUDED.description,
@@ -957,10 +957,10 @@ app.post("/api/custom-rules/batch", async (req, res) => {
         } = rule;
 
         const result = await client.query(
-          `INSERT INTO custom_rules 
+          `INSERT INTO custom_rules
            (rule_id, name, description, category, type, priority, overridable, conditions, actions, status, created_by)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-           ON CONFLICT (rule_id) 
+           ON CONFLICT (rule_id)
            DO UPDATE SET
              name = EXCLUDED.name,
              description = EXCLUDED.description,
@@ -2546,7 +2546,7 @@ app.get("/api/past-recovery-kpi", async (req, res) => {
 
     // Get KPI data from disruptions
     const kpiQuery = `
-      SELECT 
+      SELECT
         COUNT(*) as total_recoveries,
         COUNT(CASE WHEN (recovery_status IN ('completed', 'approved') OR status = 'Resolved') THEN 1 END) as successful_recoveries,
         AVG(delay_minutes) as avg_delay,
@@ -2555,7 +2555,7 @@ app.get("/api/past-recovery-kpi", async (req, res) => {
         SUM(CASE WHEN delay_minutes > 50 THEN delay_minutes - 50 ELSE 0 END) as total_delay_reduction,
         COUNT(CASE WHEN recovery_status IS NOT NULL THEN 1 END) as cancellations_avoided,
         AVG(delay_minutes * 100) as avg_cost_savings
-      FROM flight_disruptions 
+      FROM flight_disruptions
       WHERE recovery_status IS NOT NULL OR status = 'Resolved'
     `;
 
@@ -2595,13 +2595,13 @@ app.get("/api/past-recovery-trends", async (req, res) => {
     console.log("Fetching past recovery trends data");
 
     const trendsQuery = `
-      SELECT 
+      SELECT
         TO_CHAR(DATE_TRUNC('month', created_at), 'Mon YY') as month,
         AVG(CASE WHEN delay_minutes > 0 THEN 95.0 - (delay_minutes::numeric / 20) ELSE 95.0 END) as efficiency,
         AVG(CASE WHEN delay_minutes > 50 THEN delay_minutes - 50 ELSE 0 END) as delay_reduction,
         AVG(delay_minutes * 1000) as cost_savings,
         AVG(8.0 + RANDOM() * 2) as satisfaction
-      FROM flight_disruptions 
+      FROM flight_disruptions
       WHERE (recovery_status IS NOT NULL OR status = 'Resolved')
         AND created_at >= NOW() - INTERVAL '6 months'
       GROUP BY DATE_TRUNC('month', created_at)
@@ -4645,368 +4645,54 @@ app.put("/api/flight-recovery-status/:flightId", async (req, res) => {
 // Past recovery Logs endpoint
 app.get("/api/past-recovery-logs", async (req, res) => {
   try {
-    const { status, category, priority, dateRange, page = 1, limit = 10, search = '' } = req.query;
+    const { status, category, priority, dateRange, search, page, limit } = req.query;
 
-    console.log("Fetching past recovery logs data");
-
-    // Build the base query to get recovery logs from flight_disruptions
+    // Build query with filters
     let query = `
-      SELECT
-        'SOL-' || fd.id as solution_id,
-        fd.id as disruption_id,
-        fd.flight_number,
-        fd.route,
-        fd.aircraft,
-        fd.disruption_type,
-        fd.disruption_reason,
-        fd.severity as priority,
-        fd.created_at as date_created,
-        fd.updated_at as date_executed,
-        fd.updated_at as date_completed,
-        CASE
-          WHEN fd.delay_minutes > 0 THEN (fd.delay_minutes / 60) || 'h ' || (fd.delay_minutes % 60) || 'm'
-          ELSE '2h 30m'
-        END as duration,
-        CASE
-          WHEN fd.recovery_status = 'completed' THEN 'Successful'
-          WHEN fd.recovery_status = 'approved' THEN 'Successful'
-          WHEN fd.recovery_status = 'pending' THEN 'Partial'
-          WHEN fd.status = 'Resolved' THEN 'Successful'
-          ELSE 'Successful'
-        END as status,
-        fd.passengers as affected_passengers,
-        COALESCE(fd.delay_minutes * 1000, 125000) as actual_cost,
-        COALESCE(fd.delay_minutes * 1100, 130000) as estimated_cost,
-        CASE
-          WHEN fd.delay_minutes > 0 THEN ROUND(((fd.delay_minutes * 1100 - fd.delay_minutes * 1000) / (fd.delay_minutes * 1100)::numeric * 100), 1)
-          ELSE -3.8
-        END as cost_variance,
-        COALESCE(95.0 - (fd.delay_minutes::numeric / 10), 92.5) as otp_impact,
-        'Option A' as solution_chosen,
-        3 as total_options,
-        'Operations Manager' as executed_by,
-        'System Auto-approval' as approved_by,
-        COALESCE(8.0 + RANDOM() * 2, 8.2) as passenger_satisfaction,
-        COALESCE(90.0 + RANDOM() * 10, 94.1) as rebooking_success,
-        COALESCE(fd.categorization, fd.disruption_type, 'Other') as categorization,
-        true as cancellation_avoided,
-        COALESCE(fd.delay_minutes + 100, 255) as potential_delay_minutes,
-        COALESCE(fd.delay_minutes, 155) as actual_delay_minutes,
-        COALESCE(GREATEST(fd.delay_minutes - 50, 0), 50) as delay_reduction_minutes,
-        COALESCE(fd.disruption_type, 'Other') as disruption_category,
-        COALESCE(95.0 - (fd.delay_minutes::numeric / 20), 92.5) as recovery_efficiency,
-        CASE
-          WHEN fd.delay_minutes > 300 THEN 'High'
-          WHEN fd.delay_minutes > 100 THEN 'Medium'
-          ELSE 'Low'
-        END as network_impact,
-        CASE
-          WHEN fd.delay_minutes > 300 THEN 3
-          WHEN fd.delay_minutes > 100 THEN 1
-          ELSE 0
-        END as downstream_flights_affected,
-        '{}'::jsonb as details,
-        fd.created_at
-      FROM flight_disruptions fd
-      WHERE (fd.recovery_status IS NOT NULL OR fd.status = 'Resolved')
+      SELECT * FROM recovery_logs
+      WHERE 1=1
     `;
-
-    // Add filters
     const params = [];
     let paramCount = 0;
 
+    // Add filters
     if (status && status !== "all") {
       paramCount++;
-      if (status === "Successful") {
-        query += ` AND (fd.recovery_status IN ('completed', 'approved') OR fd.status = 'Resolved')`;
-      } else if (status === "Partial") {
-        query += ` AND fd.recovery_status = 'pending'`;
-      } else if (status === "Failed") {
-        query += ` AND fd.recovery_status = 'rejected'`;
-      }
+      query += ` AND status = $${paramCount}`;
+      params.push(status);
     }
 
     if (category && category !== "all") {
       paramCount++;
-      query += ` AND (fd.categorization = $${paramCount} OR fd.disruption_type = $${paramCount})`;
+      query += ` AND disruption_category = $${paramCount}`;
       params.push(category);
     }
 
     if (priority && priority !== "all") {
       paramCount++;
-      query += ` AND fd.severity = $${paramCount}`;
+      query += ` AND priority = $${paramCount}`;
       params.push(priority);
     }
 
-    if (dateRange && dateRange !== "all") {
-      if (dateRange === "last7days") {
-        query += ` AND fd.created_at >= NOW() - INTERVAL '7 days'`;
-      } else if (dateRange === "last30days") {
-        query += ` AND fd.created_at >= NOW() - INTERVAL '30 days'`;
-      }
-    }
-
-    // Add search functionality
-    if (search && search.trim() !== '') {
+    if (search && search.trim()) {
       paramCount++;
-      query += ` AND (
-        LOWER(fd.flight_number) LIKE LOWER($${paramCount}) OR
-        LOWER(fd.route) LIKE LOWER($${paramCount}) OR
-        LOWER(fd.disruption_reason) LIKE LOWER($${paramCount}) OR
-        LOWER(fd.aircraft) LIKE LOWER($${paramCount})
-      )`;
+      query += ` AND (flight_number ILIKE $${paramCount} OR route ILIKE $${paramCount} OR disruption_reason ILIKE $${paramCount})`;
       params.push(`%${search.trim()}%`);
     }
 
     // Add pagination
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 10;
-    const offset = (pageNum - 1) * limitNum;
-    
-    query += ` ORDER BY fd.created_at DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
-    params.push(limitNum, offset);
+    const currentPage = parseInt(page) || 1;
+    const itemsPerPage = parseInt(limit) || 50;
+    const offset = (currentPage - 1) * itemsPerPage;
 
-    console.log("Executing past recovery logs query:", query);
-    console.log("With parameters:", params);
+    query += ` ORDER BY date_created DESC LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}`;
+    params.push(itemsPerPage, offset);
 
-    // Get total count for pagination
-    let countQuery = `
-      SELECT COUNT(*) as total
-      FROM flight_disruptions fd
-      WHERE (fd.recovery_status IS NOT NULL OR fd.status = 'Resolved')
-    `;
-    
-    const countParams = [];
-    let countParamCount = 0;
-    
-    // Apply same filters to count query
-    if (status && status !== "all") {
-      countParamCount++;
-      if (status === "Successful") {
-        countQuery += ` AND (fd.recovery_status IN ('completed', 'approved') OR fd.status = 'Resolved')`;
-      } else if (status === "Partial") {
-        countQuery += ` AND fd.recovery_status = 'pending'`;
-      } else if (status === "Failed") {
-        countQuery += ` AND fd.recovery_status = 'rejected'`;
-      }
-    }
-
-    if (category && category !== "all") {
-      countParamCount++;
-      countQuery += ` AND (fd.categorization = $${countParamCount} OR fd.disruption_type = $${countParamCount})`;
-      countParams.push(category);
-    }
-
-    if (priority && priority !== "all") {
-      countParamCount++;
-      countQuery += ` AND fd.severity = $${countParamCount}`;
-      countParams.push(priority);
-    }
-
-    if (dateRange && dateRange !== "all") {
-      if (dateRange === "last7days") {
-        countQuery += ` AND fd.created_at >= NOW() - INTERVAL '7 days'`;
-      } else if (dateRange === "last30days") {
-        countQuery += ` AND fd.created_at >= NOW() - INTERVAL '30 days'`;
-      }
-    }
-
-    if (search && search.trim() !== '') {
-      countParamCount++;
-      countQuery += ` AND (
-        LOWER(fd.flight_number) LIKE LOWER($${countParamCount}) OR
-        LOWER(fd.route) LIKE LOWER($${countParamCount}) OR
-        LOWER(fd.disruption_reason) LIKE LOWER($${countParamCount}) OR
-        LOWER(fd.aircraft) LIKE LOWER($${countParamCount})
-      )`;
-      countParams.push(`%${search.trim()}%`);
-    }
-
-    const [result, countResult] = await Promise.all([
-      pool.query(query, params),
-      pool.query(countQuery, countParams)
-    ]);
-
-    // Transform numeric fields
-    const transformedData = result.rows.map((row) => ({
-      ...row,
-      affected_passengers: parseInt(row.affected_passengers) || 0,
-      actual_cost: parseFloat(row.actual_cost) || 0,
-      estimated_cost: parseFloat(row.estimated_cost) || 0,
-      cost_variance: parseFloat(row.cost_variance) || 0,
-      otp_impact: parseFloat(row.otp_impact) || 0,
-      passenger_satisfaction: parseFloat(row.passenger_satisfaction) || 0,
-      potential_delay_minutes: parseInt(row.potential_delay_minutes) || 0,
-      actual_delay_minutes: parseInt(row.actual_delay_minutes) || 0,
-      delay_reduction_minutes: parseInt(row.delay_reduction_minutes) || 0,
-      recovery_efficiency: parseFloat(row.recovery_efficiency) || 0,
-      downstream_flights_affected:
-        parseInt(row.downstream_flights_affected) || 0,
-    }));
-
-    const totalCount = parseInt(countResult.rows[0]?.total) || 0;
-    const pageNum = parseInt(page) || 1;
-    const limitNum = parseInt(limit) || 10;
-    const totalPages = Math.ceil(totalCount / limitNum);
-
-    if (transformedData.length === 0 && pageNum === 1) {
-      // Return mock data if no real data exists and it's the first page
-      console.log("No past recovery data found, returning mock data");
-      const mockData = getMockPastRecoveryData();
-      res.json({
-        data: mockData,
-        pagination: {
-          currentPage: 1,
-          totalPages: 1,
-          totalCount: mockData.length,
-          hasNextPage: false,
-          hasPrevPage: false
-        }
-      });
-    } else {
-      res.json({
-        data: transformedData,
-        pagination: {
-          currentPage: pageNum,
-          totalPages: totalPages,
-          totalCount: totalCount,
-          hasNextPage: pageNum < totalPages,
-          hasPrevPage: pageNum > 1
-        }
-      });
-    }
+    const result = await pool.query(query, params);
+    res.json(result.rows || []);
   } catch (error) {
     console.error("Error fetching past recovery logs:", error);
-
-    // Fallback query execution
-    try {
-      const { status, category, priority, dateRange } = req.query;
-
-      let query = `
-        SELECT
-          'SOL-' || fd.id as solution_id,
-          fd.id as disruption_id,
-          fd.flight_number,
-          fd.route,
-          fd.aircraft,
-          fd.disruption_type,
-          fd.disruption_reason,
-          fd.severity as priority,
-          fd.created_at as date_created,
-          fd.updated_at as date_executed,
-          fd.updated_at as date_completed,
-          CASE
-            WHEN fd.delay_minutes > 0 THEN (fd.delay_minutes / 60) || 'h ' || (fd.delay_minutes % 60) || 'm'
-            ELSE '2h 30m'
-          END as duration,
-          CASE
-            WHEN fd.recovery_status = 'approved' THEN 'Successful'
-            WHEN fd.recovery_status = 'pending' THEN 'Partial'
-            ELSE 'Successful'
-          END as status,
-          fd.passengers as affected_passengers,
-          COALESCE(fd.delay_minutes * 1000, 125000) as actual_cost,
-          COALESCE(fd.delay_minutes * 1100, 130000) as estimated_cost,
-          CASE
-            WHEN fd.delay_minutes > 0 THEN ROUND(((fd.delay_minutes * 1100 - fd.delay_minutes * 1000) / (fd.delay_minutes * 1100)::numeric * 100), 1)
-            ELSE -3.8
-          END as cost_variance,
-          COALESCE(95.0 - (fd.delay_minutes::numeric / 10), 92.5) as otp_impact,
-          'Option A' as solution_chosen,
-          3 as total_options,
-          'Operations Manager' as executed_by,
-          'System Auto-approval' as approved_by,
-          COALESCE(8.0 + RANDOM() * 2, 8.2) as passenger_satisfaction,
-          COALESCE(90.0 + RANDOM() * 10, 94.1) as rebooking_success,
-          fd.categorization,
-          true as cancellation_avoided,
-          COALESCE(fd.delay_minutes, 155) as potential_delay_minutes,
-          COALESCE(fd.delay_minutes, 155) as actual_delay_minutes,
-          COALESCE(CASE WHEN fd.delay_minutes > 100 THEN fd.delay_minutes - 100 ELSE 0 END, 0) as delay_reduction_minutes,
-          fd.disruption_type as disruption_category,
-          COALESCE(95.0 - (fd.delay_minutes::numeric / 20), 92.5) as recovery_efficiency,
-          CASE
-            WHEN fd.delay_minutes > 300 THEN 'High'
-            WHEN fd.delay_minutes > 100 THEN 'Medium'
-            ELSE 'Low'
-          END as network_impact,
-          CASE
-            WHEN fd.delay_minutes > 300 THEN 3
-            WHEN fd.delay_minutes > 100 THEN 1
-            ELSE 0
-          END as downstream_flights_affected,
-          '{}'::jsonb as details,
-          fd.created_at
-        FROM flight_disruptions fd
-        WHERE fd.recovery_status = 'completed'
-      `;
-
-      const params = [];
-      let paramCount = 0;
-
-      // Add filters
-      if (status && status !== "all") {
-        paramCount++;
-        query += ` AND fd.recovery_status = $${paramCount}`;
-        params.push(status);
-      }
-
-      if (category && category !== "all") {
-        paramCount++;
-        query += ` AND (fd.categorization = $${paramCount} OR fd.disruption_type = $${paramCount})`;
-        params.push(category);
-      }
-
-      if (priority && priority !== "all") {
-        paramCount++;
-        query += ` AND fd.severity = $${paramCount}`;
-        params.push(priority);
-      }
-
-      if (dateRange && dateRange !== "all") {
-        if (dateRange === "last7days") {
-          query += ` AND fd.created_at >= NOW() - INTERVAL '7 days'`;
-        } else if (dateRange === "last30days") {
-          query += ` AND fd.created_at >= NOW() - INTERVAL '30 days'`;
-        }
-      }
-
-      query += ` ORDER BY fd.created_at DESC LIMIT 50`;
-
-      console.log("Executing fallback past recovery logs query:", query);
-      console.log("With parameters:", params);
-
-      const result = await pool.query(query, params);
-      console.log(`Found past recovery logs: ${result.rows.length} records`);
-
-      // Transform numeric fields
-      const transformedData = result.rows.map((row) => ({
-        ...row,
-        affected_passengers: parseInt(row.affected_passengers) || 0,
-        actual_cost: parseFloat(row.actual_cost) || 0,
-        estimated_cost: parseFloat(row.estimated_cost) || 0,
-        cost_variance: parseFloat(row.cost_variance) || 0,
-        otp_impact: parseFloat(row.otp_impact) || 0,
-        passenger_satisfaction: parseFloat(row.passenger_satisfaction) || 0,
-        potential_delay_minutes: parseInt(row.potential_delay_minutes) || 0,
-        actual_delay_minutes: parseInt(row.actual_delay_minutes) || 0,
-        delay_reduction_minutes: parseInt(row.delay_reduction_minutes) || 0,
-        recovery_efficiency: parseFloat(row.recovery_efficiency) || 0,
-        downstream_flights_affected:
-          parseInt(row.downstream_flights_affected) || 0,
-      }));
-
-      if (transformedData.length === 0) {
-        // Return mock data if no real data exists
-        console.log("No past recovery data found, returning mock data");
-        res.json(getMockPastRecoveryData());
-      } else {
-        res.json(transformedData);
-      }
-    } catch (fallbackError) {
-      console.error("Fallback query also failed:", fallbackError);
-      res.json(getMockPastRecoveryData());
-    }
+    res.json([]);
   }
 });
 
@@ -5119,7 +4805,7 @@ app.get("/api/past-recovery-kpi", async (req, res) => {
 
     const avgRecoveryEfficiency = Number(data?.avg_recovery_efficiency) || 92.5;
     const totalCostSavings = Number(data?.total_cost_savings) || 0;
-    
+
     const kpiData = {
       totalRecoveries: parseInt(data.total_recoveries) || 0,
       successRate:
@@ -5150,23 +4836,23 @@ app.get("/api/past-recovery-trends", async (req, res) => {
   try {
     console.log("Fetching past recovery trends data");
 
-    const query = `
+    const trendsQuery = `
       SELECT
         TO_CHAR(DATE_TRUNC('month', created_at), 'Mon YY') as month,
         AVG(CASE WHEN delay_minutes > 0 THEN 95.0 - (delay_minutes::numeric / 20) ELSE 95.0 END) as efficiency,
         AVG(CASE WHEN delay_minutes > 50 THEN delay_minutes - 50 ELSE 0 END) as delay_reduction,
         AVG(delay_minutes * 1000) as cost_savings,
         AVG(8.0 + RANDOM() * 2) as satisfaction
-      FROM flight_disruptions 
+      FROM flight_disruptions
       WHERE (recovery_status IS NOT NULL OR status = 'Resolved')
         AND created_at >= NOW() - INTERVAL '6 months'
       GROUP BY DATE_TRUNC('month', created_at)
       ORDER BY DATE_TRUNC('month', created_at)
     `;
 
-    const result = await pool.query(query);
+    const trendsResult = await pool.query(trendsQuery);
 
-    const trendData = result.rows.map((row) => ({
+    const trendData = trendsResult.rows.map((row) => ({
       month: row.month,
       efficiency: Math.round(parseFloat(row.efficiency) || 0),
       delayReduction: Math.round(parseFloat(row.delay_reduction) || 0),
@@ -5401,7 +5087,7 @@ app.post("/api/documents", async (req, res) => {
 
     const result = await pool.query(
       `INSERT INTO document_repository (
-        name, original_name, file_type, file_size, content_base64, 
+        name, original_name, file_type, file_size, content_base64,
         uploaded_by, metadata, processing_status
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *`,
@@ -5434,10 +5120,10 @@ app.post("/api/documents", async (req, res) => {
 app.get("/api/documents", async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT id, name, original_name, file_type, file_size, upload_date, 
+      `SELECT id, name, original_name, file_type, file_size, upload_date,
               uploaded_by, processing_status, metadata
-       FROM document_repository 
-       WHERE is_active = true 
+       FROM document_repository
+       WHERE is_active = true
        ORDER BY upload_date DESC`,
     );
 
@@ -5477,7 +5163,7 @@ app.delete("/api/documents/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      `UPDATE document_repository 
+      `UPDATE document_repository
        SET is_active = false, updated_at = CURRENT_TIMESTAMP
        WHERE id = $1 AND is_active = true
        RETURNING *`,
