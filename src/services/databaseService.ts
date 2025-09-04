@@ -2413,6 +2413,10 @@ class DatabaseService {
     }
   }
 
+  async getAllManualKnowledgeEntries(): Promise<any[]> {
+    return this.getManualKnowledgeEntries();
+  }
+
   async saveManualKnowledgeEntry(entryData: any): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/manual-knowledge-entries`, {
@@ -2488,6 +2492,10 @@ class DatabaseService {
       console.error('Error fetching documents:', error);
       return [];
     }
+  }
+
+  async getAllDocuments(): Promise<any[]> {
+    return this.getDocuments();
   }
 
   async deleteDocument(documentId: string): Promise<boolean> {
