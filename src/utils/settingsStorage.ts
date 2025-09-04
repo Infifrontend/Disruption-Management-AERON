@@ -467,6 +467,70 @@ class SettingsStorage {
         value: false,
         type: "boolean",
       },
+
+      // Regional Settings defaults
+      {
+        category: "regionalSettings",
+        key: "timezone",
+        value: "Asia/Dubai",
+        type: "string",
+      },
+      {
+        category: "regionalSettings",
+        key: "language",
+        value: "en",
+        type: "string",
+      },
+      {
+        category: "regionalSettings",
+        key: "currency",
+        value: "AED",
+        type: "string",
+      },
+      {
+        category: "regionalSettings",
+        key: "dateFormat",
+        value: "DD/MM/YYYY",
+        type: "string",
+      },
+      {
+        category: "regionalSettings",
+        key: "timeFormat",
+        value: "24",
+        type: "string",
+      },
+
+      // Performance Settings defaults
+      {
+        category: "performanceSettings",
+        key: "highPerformanceMode",
+        value: false,
+        type: "boolean",
+      },
+      {
+        category: "performanceSettings",
+        key: "autoSaveSettings",
+        value: true,
+        type: "boolean",
+      },
+      {
+        category: "performanceSettings",
+        key: "cacheTimeout",
+        value: 300,
+        type: "number",
+      },
+      {
+        category: "performanceSettings",
+        key: "maxConcurrentRequests",
+        value: 10,
+        type: "number",
+      },
+      {
+        category: "performanceSettings",
+        key: "enableOptimizations",
+        value: true,
+        type: "boolean",
+      },
     ];
 
     defaults.forEach((setting) => {
