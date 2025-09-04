@@ -1095,22 +1095,27 @@ export function SettingsPanel({
       // Convert system settings from rawTabSettings to settings format for batch save
       const settingsToSave = [];
 
-      if (rawTabSettings?.system) {
-        Object.entries(rawTabSettings.system).forEach(
-          ([categoryKey, categorySettings]) => {
-            if (Array.isArray(categorySettings)) {
-              categorySettings.forEach((setting) => {
-                console.log(setting, "setting");
-                settingsToSave.push({
-                  category: categoryKey,
-                  key: setting.key,
-                  value: setting.value,
-                  type: setting.type || "string",
-                });
-              });
-            }
-          },
-        );
+      // Extract regional and performance settings from rawTabSettings
+      // Assuming regional settings are under 'regionalSettings' and performance under 'performanceSettings'
+      if (rawTabSettings?.system?.regionalSettings) {
+        rawTabSettings.system.regionalSettings.forEach((setting) => {
+          settingsToSave.push({
+            category: "regionalSettings",
+            key: setting.key,
+            value: setting.value,
+            type: setting.type || "string",
+          });
+        });
+      }
+      if (rawTabSettings?.system?.performanceSettings) {
+        rawTabSettings.system.performanceSettings.forEach((setting) => {
+          settingsToSave.push({
+            category: "performanceSettings",
+            key: setting.key,
+            value: setting.value,
+            type: setting.type || "boolean",
+          });
+        });
       }
 
       if (settingsToSave.length > 0) {
@@ -2287,8 +2292,9 @@ export function SettingsPanel({
                     <strong>Scoring Example:</strong> VIP passenger on flydubai
                     flight = {passengerPriorityConfig.flightScoring.baseScore}{" "}
                     (base) +{" "}
-                    {passengerPriorityConfig.flightScoring.priorityBonus} (VIP)
-                    + {passengerPriorityConfig.flightScoring.airlineBonus}{" "}
+                    {passengerPriorityConfig.flightScoring.priorityBonus}{" "}
+                    (VIP) +{" "}
+                    {passengerPriorityConfig.flightScoring.airlineBonus}{" "}
                     (flydubai) ={" "}
                     {passengerPriorityConfig.flightScoring.baseScore +
                       passengerPriorityConfig.flightScoring.priorityBonus +
@@ -4379,89 +4385,96 @@ export function SettingsPanel({
         {/* System Settings Tab - Re-added with correct rendering */}
         <TabsContent value="system" className="space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5 text-flydubai-blue" />
-                System Configuration
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                General system settings and preferences.
-              </p>
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Settings2 className="h-5 w-5 text-flydubai-blue" />
+                <CardTitle className="text-flydubai-navy">
+                  System Configuration
+                </CardTitle>
+              </div>
+              <CardDescription className="text-sm text-muted-foreground">
+                Configure system-wide settings including performance
+                optimization, regional preferences, and operational parameters.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-flydubai-navy">
-                    Regional Settings
-                  </h3>
+            <CardContent className="space-y-8">
+              {/* Dynamic System Settings */}
+              {rawTabSettings?.system &&
+                Object.entries(rawTabSettings.system).map(
+                  ([categoryKey, categorySettings]) => {
+                    if (!Array.isArray(categorySettings)) return null;
 
-                  <div>
-                    <Label className="text-sm font-medium">Time Zone</Label>
-                    <Select defaultValue="indian-standard">
-                      <SelectTrigger className="w-full mt-2">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="indian-standard">
-                          Indian Standard Time (IST)
-                        </SelectItem>
-                        <SelectItem value="gulf-standard">
-                          Gulf Standard Time (GST)
-                        </SelectItem>
-                        <SelectItem value="utc">
-                          Coordinated Universal Time (UTC)
-                        </SelectItem>
-                        <SelectItem value="local">Local System Time</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    const categoryName = categoryKey
+                      .replace(/([A-Z])/g, " $1")
+                      .replace(/^./, (str) => str.toUpperCase());
 
-                  <div>
-                    <Label className="text-sm font-medium">
-                      Currency Display
-                    </Label>
-                    <Select defaultValue="aed">
-                      <SelectTrigger className="w-full mt-2">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="aed">AED (Dirham)</SelectItem>
-                        <SelectItem value="usd">USD (US Dollar)</SelectItem>
-                        <SelectItem value="eur">EUR (Euro)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                    return (
+                      <div key={categoryKey} className="space-y-4">
+                        <h4 className="text-sm font-medium text-flydubai-blue uppercase tracking-wider">
+                          {categoryName}
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {categorySettings.map((setting) => (
+                            <DynamicSettingsRenderer
+                              key={`${categoryKey}-${setting.key}`}
+                              setting={setting}
+                              value={setting.value}
+                              onValueChange={(newValue) =>
+                                updateSystemSetting(
+                                  categoryKey,
+                                  setting.key,
+                                  newValue,
+                                )
+                              }
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  },
+                )}
+
+              {/* Fallback if no system settings */}
+              {(!rawTabSettings?.system ||
+                Object.keys(rawTabSettings.system).length === 0) && (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Settings2 className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                  <p>No system settings available</p>
+                  <p className="text-sm mt-2">
+                    System settings will appear here when loaded from the
+                    database
+                  </p>
                 </div>
+              )}
 
-                <div className="space-y-4">
-                  <h3 className="text-sm font-semibold text-flydubai-navy">
-                    Performance Settings
-                  </h3>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-sm font-medium">
-                        High Performance Mode
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        Enhanced processing for critical operations
-                      </p>
-                    </div>
-                    <Switch checked={false} className="switch-flydubai" />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <Label className="text-sm font-medium">
-                        Auto-Save Settings
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        Automatically save configuration changes
-                      </p>
-                    </div>
-                    <Switch checked={true} className="switch-flydubai" />
-                  </div>
-                </div>
+              <div className="flex justify-end pt-6 border-t">
+                <Button
+                  onClick={saveSystemSettings}
+                  disabled={saveStatus === "saving"}
+                  className="min-w-[120px] btn-flydubai-primary"
+                >
+                  {saveStatus === "saving" ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : saveStatus === "success" ? (
+                    <>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Saved
+                    </>
+                  ) : saveStatus === "error" ? (
+                    <>
+                      <XCircle className="mr-2 h-4 w-4" />
+                      Error
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save System Settings
+                    </>
+                  )}
+                </Button>
               </div>
             </CardContent>
           </Card>
