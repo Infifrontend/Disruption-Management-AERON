@@ -751,20 +751,57 @@ export function SettingsPanel({
 
   // Passenger Priority Configuration Handlers
   const handlePriorityConfigChange = (category, parameter, value) => {
-    const actualValue = Array.isArray(value) ? value[0] : value;
-
-    // Calculate what the new total would be
-    const currentTotal = calculateTotalWeight(category);
+    const newValue = Array.isArray(value) ? value[0] : Number(value) || 0;
     const currentValue = passengerPriorityConfig[category][parameter] || 0;
-    const newTotal = currentTotal - currentValue + actualValue;
+    const difference = newValue - currentValue;
 
-    // Only allow the change if it doesn't exceed 100%
-    if (newTotal <= 100) {
+    if (difference === 0) return;
+
+    // Get all parameters in this category except the one being changed
+    const otherParams = Object.keys(passengerPriorityConfig[category]).filter(
+      key => key !== parameter
+    );
+
+    // Calculate current total of other parameters
+    const otherParamsTotal = otherParams.reduce(
+      (sum, key) => sum + (passengerPriorityConfig[category][key] || 0), 0
+    );
+
+    // If increasing and would exceed 100%, redistribute from other parameters
+    if (difference > 0) {
+      const maxPossibleIncrease = Math.min(difference, otherParamsTotal);
+      const finalValue = currentValue + maxPossibleIncrease;
+
+      if (maxPossibleIncrease <= 0) return; // Can't increase
+
+      // Redistribute the weight proportionally from other parameters
+      const redistributeAmount = maxPossibleIncrease;
+      const newConfig = { ...passengerPriorityConfig[category] };
+
+      // Set the new value for the changed parameter
+      newConfig[parameter] = finalValue;
+
+      // Redistribute from other parameters proportionally
+      if (otherParamsTotal > 0) {
+        otherParams.forEach(key => {
+          const currentParamValue = newConfig[key] || 0;
+          const proportion = currentParamValue / otherParamsTotal;
+          const reduction = redistributeAmount * proportion;
+          newConfig[key] = Math.max(0, Math.round((currentParamValue - reduction) * 10) / 10);
+        });
+      }
+
+      setPassengerPriorityConfig((prev) => ({
+        ...prev,
+        [category]: newConfig,
+      }));
+    } else {
+      // If decreasing, just update the value
       setPassengerPriorityConfig((prev) => ({
         ...prev,
         [category]: {
           ...prev[category],
-          [parameter]: actualValue,
+          [parameter]: newValue,
         },
       }));
     }
@@ -2014,15 +2051,7 @@ export function SettingsPanel({
                             newValue,
                           )
                         }
-                        max={Math.min(
-                          50,
-                          getAvailableWeight(
-                            "passengerPrioritization",
-                            null,
-                            key,
-                            value,
-                          ),
-                        )}
+                        max={100}
                         min={0}
                         step={5}
                         className="w-full slider-flydubai"
@@ -2120,15 +2149,7 @@ export function SettingsPanel({
                             newValue,
                           )
                         }
-                        max={Math.min(
-                          50,
-                          getAvailableWeight(
-                            "flightPrioritization",
-                            null,
-                            key,
-                            value,
-                          ),
-                        )}
+                        max={100}
                         min={0}
                         step={5}
                         className="w-full slider-flydubai"
@@ -2319,15 +2340,7 @@ export function SettingsPanel({
                               newValue,
                             )
                           }
-                          max={Math.min(
-                            50,
-                            getAvailableWeight(
-                              "passengerScoring",
-                              null,
-                              key,
-                              value,
-                            ),
-                          )}
+                          max={100}
                           min={0}
                           step={5}
                           className="w-full slider-flydubai"
@@ -3036,15 +3049,7 @@ export function SettingsPanel({
                               newValue,
                             )
                           }
-                          max={Math.min(
-                            50,
-                            getAvailableWeight(
-                              null,
-                              "recoveryOptionsRanking",
-                              key,
-                              value,
-                            ),
-                          )}
+                          max={100}
                           min={0}
                           step={5}
                           className="w-full slider-flydubai"
@@ -3103,15 +3108,7 @@ export function SettingsPanel({
                             newValue[0]
                           )
                         }
-                        max={Math.min(
-                          50,
-                          getAvailableWeight(
-                            null,
-                            "recoveryOptionsRanking",
-                            param.id,
-                            param.weight
-                          )
-                        )}
+                        max={100}
                         min={0}
                         step={5}
                         className="w-full slider-flydubai"
@@ -3218,15 +3215,7 @@ export function SettingsPanel({
                               newValue,
                             )
                           }
-                          max={Math.min(
-                            50,
-                            getAvailableWeight(
-                              null,
-                              "aircraftSelectionCriteria",
-                              key,
-                              value,
-                            ),
-                          )}
+                          max={100}
                           min={0}
                           step={5}
                           className="w-full slider-flydubai"
@@ -3285,15 +3274,7 @@ export function SettingsPanel({
                             newValue[0]
                           )
                         }
-                        max={Math.min(
-                          50,
-                          getAvailableWeight(
-                            null,
-                            "aircraftSelectionCriteria",
-                            param.id,
-                            param.weight
-                          )
-                        )}
+                        max={100}
                         min={0}
                         step={5}
                         className="w-full slider-flydubai"
@@ -3403,15 +3384,7 @@ export function SettingsPanel({
                               newValue,
                             )
                           }
-                          max={Math.min(
-                            50,
-                            getAvailableWeight(
-                              null,
-                              "crewAssignmentCriteria",
-                              key,
-                              value,
-                            ),
-                          )}
+                          max={100}
                           min={0}
                           step={5}
                           className="w-full slider-flydubai"
@@ -3470,15 +3443,7 @@ export function SettingsPanel({
                             newValue[0]
                           )
                         }
-                        max={Math.min(
-                          50,
-                          getAvailableWeight(
-                            null,
-                            "crewAssignmentCriteria",
-                            param.id,
-                            param.weight
-                          )
-                        )}
+                        max={100}
                         min={0}
                         step={5}
                         className="w-full slider-flydubai"
