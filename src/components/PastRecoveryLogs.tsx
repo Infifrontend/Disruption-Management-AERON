@@ -158,7 +158,7 @@ export function PastRecoveryLogs() {
       const data = await databaseService.getPastRecoveryLogs(filterParams);
       console.log("Fetched recovery logs:", data);
       setRecoveryLogs(data || []);
-      
+
       // Calculate KPIs from fetched logs if not already set
       if (!kpiData && data && data.length > 0) {
         calculateKPIFromLogs();
@@ -1601,7 +1601,7 @@ export function PastRecoveryLogs() {
                           </td>
                           <td className="p-3">
                             <div className="text-sm font-medium">
-                              {log.flight_number} 11
+                              {log.flight_number}
                             </div>
                             <div className="text-xs text-gray-500">
                               {log.route}
