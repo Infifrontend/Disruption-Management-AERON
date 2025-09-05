@@ -974,7 +974,7 @@ export function ComparisonMatrix({
 
         // Impacted flights from API (nextSectors array) - include reassigned flight data
         impactedFlights: (
-          optionReassignedData.flights ||
+          (optionReassignedData as any).flights ||
           rotationPlan?.nextSectors ||
           []
         )?.map((sector) => ({
@@ -1024,7 +1024,7 @@ export function ComparisonMatrix({
           })) || [],
 
         // Include reassigned crew summary
-        reassignedCrewSummary: optionReassignedData.crew || [],
+        reassignedCrewSummary: (optionReassignedData as any).crew || [],
 
         // Operational metrics calculated from API data
         operationalMetrics: {

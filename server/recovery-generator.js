@@ -95,7 +95,7 @@ const availableDummyCrew = [
     role_code: "SCC",
     role: "Senior cabin crew",
     qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
-    status: "available",
+    status: "available",``
     issue: null,
     experience_years: 9,
     base: "DXB",
