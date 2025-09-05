@@ -831,7 +831,7 @@ class SettingsStorage {
   async saveSettingsFromState(
     stateObject: Record<string, any>,
     categoryMapping: Record<string, string>,
-    userId: string = "system"
+    userId: string = "system",
   ): Promise<boolean> {
     try {
       const settingsToSave: Array<{
@@ -843,30 +843,35 @@ class SettingsStorage {
 
       Object.entries(stateObject).forEach(([stateKey, stateValue]) => {
         const category = categoryMapping[stateKey];
-        if (category && stateValue && typeof stateValue === 'object') {
+        if (category && stateValue && typeof stateValue === "object") {
           // Special handling for document repository
-          if (stateKey === 'documentRepository') {
+          if (stateKey === "documentRepository") {
             // Save document repository as a single object setting
             settingsToSave.push({
               category,
-              key: 'data',
+              key: "data",
               value: stateValue,
               type: "object",
             });
 
             // Also batch save the actual documents to the document repository table
             if (stateValue.documents && Array.isArray(stateValue.documents)) {
-              databaseService.batchSaveDocuments(stateValue.documents, userId).catch(error => {
-                console.error('Failed to save documents to repository:', error);
-              });
+              databaseService
+                .batchSaveDocuments(stateValue.documents, userId)
+                .catch((error) => {
+                  console.error(
+                    "Failed to save documents to repository:",
+                    error,
+                  );
+                });
             }
           } else {
             Object.entries(stateValue).forEach(([key, value]) => {
               let type: SettingsData["type"] = "string";
 
-              if (typeof value === 'boolean') type = "boolean";
-              else if (typeof value === 'number') type = "number";
-              else if (typeof value === 'object') type = "object";
+              if (typeof value === "boolean") type = "boolean";
+              else if (typeof value === "number") type = "number";
+              else if (typeof value === "object") type = "object";
 
               settingsToSave.push({
                 category,
@@ -880,18 +885,24 @@ class SettingsStorage {
       });
 
       if (settingsToSave.length > 0) {
-        const success = await databaseService.batchSaveSettings(settingsToSave, userId);
-        if (success) {
-          console.log(`Batch saved ${settingsToSave.length} settings to database`);
-          // Update localStorage cache
-          this.saveToLocalStorage(settingsToSave);
+        const savedSettings = await databaseService.batchSaveSettings(
+          settingsToSave,
+          userId,
+        );
+        if (savedSettings) {
+          console.log(
+            `Batch saved ${settingsToSave.length} settings to database`,
+          );
+          // Update localStorage cache with full SettingsData[]
+          this.saveToLocalStorage(savedSettings as any);
+          return true;
         }
-        return success;
+        return false;
       }
 
       return true;
     } catch (error) {
-      console.error('Failed to save settings from state:', error);
+      console.error("Failed to save settings from state:", error);
       return false;
     }
   }

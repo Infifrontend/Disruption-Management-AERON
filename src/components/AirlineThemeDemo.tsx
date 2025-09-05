@@ -4,6 +4,7 @@ import { Button } from './ui/button';
 import { useAirlineTheme } from '../hooks/useAirlineTheme';
 import { AirlineBrandedCard, AirlineBadge, AirlineProgressBar } from './DynamicAirlineComponents';
 import { getAirlineContent } from '../utils/airlineThemeUtils';
+import AirlineLogo from './AirlineLogo';
 
 export function AirlineThemeDemo() {
   const { airlineConfig, isQatarAirways, isFlydubai } = useAirlineTheme();

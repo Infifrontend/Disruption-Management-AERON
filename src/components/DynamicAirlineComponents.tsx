@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useAirlineTheme } from '../hooks/useAirlineTheme';
-import { AirlineLogo } from './AirlineLogo';
+import AirlineLogo from './AirlineLogo';
 
 export function AirlineHeader({ children }: { children?: React.ReactNode }) {
   const { airlineConfig } = useAirlineTheme();
