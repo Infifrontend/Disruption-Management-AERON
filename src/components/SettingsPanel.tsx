@@ -150,7 +150,7 @@ type UploadedDocument = {
 type FileUploadProgress = {
   name: string;
   progress: number;
-  status: 'uploading' | 'completed' | 'error';
+  status: "uploading" | "completed" | "error";
   error?: string;
 };
 
@@ -224,16 +224,20 @@ export function SettingsPanel({
   });
 
   // Document Repository State
-  const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
-  const [uploadProgress, setUploadProgress] = useState<FileUploadProgress[]>([]);
+  const [uploadedDocuments, setUploadedDocuments] = useState<
+    UploadedDocument[]
+  >([]);
+  const [uploadProgress, setUploadProgress] = useState<FileUploadProgress[]>(
+    [],
+  );
 
   // Manual Knowledge Entry State
   const [manualEntries, setManualEntries] = useState<any[]>([]);
   const [newManualEntry, setNewManualEntry] = useState({
-    title: '',
-    category: 'operations',
-    source: '',
-    tags: ''
+    title: "",
+    category: "operations",
+    source: "",
+    tags: "",
   });
   const [showAddEntryForm, setShowAddEntryForm] = useState(false);
 
@@ -389,14 +393,17 @@ export function SettingsPanel({
       };
 
       // Add empty customParameters arrays if they don't exist
-      if (!newRecoveryConfig.recoveryOptionsRanking.customParameters) {
-        newRecoveryConfig.recoveryOptionsRanking.customParameters = [];
+      if (!(newRecoveryConfig as any).recoveryOptionsRanking.customParameters) {
+        (newRecoveryConfig as any).recoveryOptionsRanking.customParameters = [];
       }
-      if (!newRecoveryConfig.aircraftSelectionCriteria.customParameters) {
-        newRecoveryConfig.aircraftSelectionCriteria.customParameters = [];
+      if (
+        !(newRecoveryConfig as any).aircraftSelectionCriteria.customParameters
+      ) {
+        (newRecoveryConfig as any).aircraftSelectionCriteria.customParameters =
+          [];
       }
-      if (!newRecoveryConfig.crewAssignmentCriteria.customParameters) {
-        newRecoveryConfig.crewAssignmentCriteria.customParameters = [];
+      if (!(newRecoveryConfig as any).crewAssignmentCriteria.customParameters) {
+        (newRecoveryConfig as any).crewAssignmentCriteria.customParameters = [];
       }
 
       // Load Passenger Priority Configuration from passengerPriority tab
@@ -532,12 +539,12 @@ export function SettingsPanel({
           name: rule.name,
           description: rule.description,
           category: rule.category,
-          type: rule.type,
+          type: (rule as any).type,
           priority: rule.priority,
           overridable: rule.overridable,
           conditions: rule.conditions,
           actions: rule.actions,
-          status: rule.status,
+          status: (rule as any).status,
           created_by: rule.createdBy,
         });
 
@@ -577,12 +584,12 @@ export function SettingsPanel({
           name: newRule.name,
           description: newRule.description,
           category: newRule.category,
-          type: newRule.type,
-          priority: newRule.priority,
+          type: (newRule as any).type,
+          priority: (newRule as any).priority,
           overridable: newRule.overridable,
           conditions: newRule.conditions,
           actions: newRule.actions,
-          status: newRule.status,
+          status: (newRule as any).status,
           updated_by: "user",
         });
 
@@ -729,7 +736,9 @@ export function SettingsPanel({
   const handleCustomParameterWeightChange = (section, paramId, newWeight) => {
     // Calculate what the new total would be for this section
     const currentTotal = calculateTotalWeight(null, section);
-    const param = recoveryConfiguration[section].customParameters.find(p => p.id === paramId);
+    const param = recoveryConfiguration[section].customParameters.find(
+      (p) => p.id === paramId,
+    );
     const currentWeight = param ? param.weight : 0;
     const newTotal = currentTotal - currentWeight + newWeight;
 
@@ -739,10 +748,8 @@ export function SettingsPanel({
         ...prev,
         [section]: {
           ...prev[section],
-          customParameters: prev[section].customParameters.map(param =>
-            param.id === paramId
-              ? { ...param, weight: newWeight }
-              : param
+          customParameters: prev[section].customParameters.map((param) =>
+            param.id === paramId ? { ...param, weight: newWeight } : param,
           ),
         },
       }));
@@ -759,19 +766,28 @@ export function SettingsPanel({
 
     // Get all parameters in this category except the one being changed
     const otherParams = Object.keys(passengerPriorityConfig[category]).filter(
-      key => key !== parameter && !key.startsWith('customParameters') // exclude customParameters array itself
+      (key) => key !== parameter && !key.startsWith("customParameters"), // exclude customParameters array itself
     );
 
     // Calculate current total of other parameters
     const otherParamsTotal = otherParams.reduce(
-      (sum, key) => sum + (passengerPriorityConfig[category][key] || 0), 0
+      (sum, key) => sum + (passengerPriorityConfig[category][key] || 0),
+      0,
     );
 
     // If increasing and would exceed 100%, redistribute from other parameters
     if (difference > 0) {
       // Ensure the new value does not exceed 100% and respects available weight
-      const availableWeight = getAvailableWeight(category, null, parameter, currentValue);
-      const clampedNewValue = Math.min(newValue, currentValue + availableWeight);
+      const availableWeight = getAvailableWeight(
+        category,
+        null,
+        parameter,
+        currentValue,
+      );
+      const clampedNewValue = Math.min(
+        newValue,
+        currentValue + availableWeight,
+      );
       const actualDifference = clampedNewValue - currentValue;
 
       if (actualDifference <= 0) return; // Cannot increase further
@@ -780,16 +796,20 @@ export function SettingsPanel({
       newConfig[parameter] = clampedNewValue;
 
       // Redistribute the weight proportionally from other parameters if needed
-      const totalWeightAfterChange = calculateTotalWeight(category) - currentValue + clampedNewValue;
+      const totalWeightAfterChange =
+        calculateTotalWeight(category) - currentValue + clampedNewValue;
       const remainingWeightForRedistribution = 100 - totalWeightAfterChange;
 
       if (remainingWeightForRedistribution < 0 && otherParamsTotal > 0) {
         const amountToReduce = Math.abs(remainingWeightForRedistribution);
-        otherParams.forEach(key => {
+        otherParams.forEach((key) => {
           const currentParamValue = newConfig[key] || 0;
           const proportion = currentParamValue / otherParamsTotal;
           const reduction = amountToReduce * proportion;
-          newConfig[key] = Math.max(0, Math.round((currentParamValue - reduction) * 10) / 10);
+          newConfig[key] = Math.max(
+            0,
+            Math.round((currentParamValue - reduction) * 10) / 10,
+          );
         });
       }
 
@@ -973,23 +993,38 @@ export function SettingsPanel({
     setSaveStatus("saving");
     try {
       // Validate weight totals for each section before saving
-      const sections = ['recoveryOptionsRanking', 'aircraftSelectionCriteria', 'crewAssignmentCriteria'];
+      const sections = [
+        "recoveryOptionsRanking",
+        "aircraftSelectionCriteria",
+        "crewAssignmentCriteria",
+      ];
       const validationErrors = [];
 
       for (const section of sections) {
         const totalWeight = calculateTotalWeight(null, section);
         if (totalWeight > 100) {
-          validationErrors.push(`${section}: Total weight (${totalWeight}%) exceeds 100%`);
+          validationErrors.push(
+            `${section}: Total weight (${totalWeight}%) exceeds 100%`,
+          );
         }
 
         // Additional validation for custom parameters
-        const customParametersWeight = recoveryConfiguration[section].customParameters?.reduce((sum, p) => sum + p.weight, 0) || 0;
+        const customParametersWeight =
+          recoveryConfiguration[section].customParameters?.reduce(
+            (sum, p) => sum + p.weight,
+            0,
+          ) || 0;
         const baseParametersWeight = Object.keys(recoveryConfiguration[section])
-          .filter(key => key !== "customParameters")
-          .reduce((sum, key) => sum + (recoveryConfiguration[section][key] || 0), 0);
+          .filter((key) => key !== "customParameters")
+          .reduce(
+            (sum, key) => sum + (recoveryConfiguration[section][key] || 0),
+            0,
+          );
 
         if (customParametersWeight + baseParametersWeight > 100) {
-          validationErrors.push(`${section}: Custom parameters weight (${customParametersWeight}%) plus base parameters weight (${baseParametersWeight}%) exceeds 100%`);
+          validationErrors.push(
+            `${section}: Custom parameters weight (${customParametersWeight}%) plus base parameters weight (${baseParametersWeight}%) exceeds 100%`,
+          );
         }
       }
 
@@ -1202,21 +1237,24 @@ export function SettingsPanel({
           0,
         );
         customWeights =
-          data.customParameters?.reduce((sum, p) => sum + (p.weight || 0), 0) || 0;
+          data.customParameters?.reduce((sum, p) => sum + (p.weight || 0), 0) ||
+          0;
       }
     } else {
       // For passenger priority configuration
       const data = passengerPriorityConfig[category];
       if (data) {
         const baseParams = Object.keys(data).filter(
-          (key) => key !== "customParameters" && !key.startsWith('customParameters') // Ensure we don't count the customParameters array itself
+          (key) =>
+            key !== "customParameters" && !key.startsWith("customParameters"), // Ensure we don't count the customParameters array itself
         );
         baseWeights = baseParams.reduce(
           (sum: number, key) => sum + Number(data[key] || 0),
           0,
         );
         customWeights =
-          data.customParameters?.reduce((sum, p) => sum + (p.weight || 0), 0) || 0;
+          data.customParameters?.reduce((sum, p) => sum + (p.weight || 0), 0) ||
+          0;
       }
     }
 
@@ -1233,13 +1271,24 @@ export function SettingsPanel({
     let adjustedCurrentValue = currentValue;
 
     // For custom parameters, find the current weight by ID
-    if (section && typeof currentParam === 'string' && currentParam.startsWith('custom_')) {
-      const param = recoveryConfiguration[section]?.customParameters?.find(p => p.id === currentParam);
+    if (
+      section &&
+      typeof currentParam === "string" &&
+      currentParam.startsWith("custom_")
+    ) {
+      const param = recoveryConfiguration[section]?.customParameters?.find(
+        (p) => p.id === currentParam,
+      );
       adjustedCurrentValue = param ? param.weight : 0;
     }
     // For regular parameters, if currentParam is provided, use its value
-    else if (!section && typeof currentParam === 'string' && currentParam !== 'customParameters') {
-      adjustedCurrentValue = passengerPriorityConfig[category]?.[currentParam] || 0;
+    else if (
+      !section &&
+      typeof currentParam === "string" &&
+      currentParam !== "customParameters"
+    ) {
+      adjustedCurrentValue =
+        passengerPriorityConfig[category]?.[currentParam] || 0;
     }
 
     const remaining = 100 - total + adjustedCurrentValue;
@@ -1364,31 +1413,50 @@ export function SettingsPanel({
   };
 
   // Document Upload Handlers
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const files = Array.from(event.target.files || []);
     const MAX_FILE_SIZE_MB = 3;
-    const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+    const allowedTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
 
     const newUploads: FileUploadProgress[] = [];
 
     for (const file of files) {
       if (!allowedTypes.includes(file.type)) {
-        newUploads.push({ name: file.name, progress: 0, status: 'error', error: 'Invalid file type. Only PDF and DOC files are allowed.' });
+        newUploads.push({
+          name: file.name,
+          progress: 0,
+          status: "error",
+          error: "Invalid file type. Only PDF and DOC files are allowed.",
+        });
         continue;
       }
       if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-        newUploads.push({ name: file.name, progress: 0, status: 'error', error: `File size exceeds ${MAX_FILE_SIZE_MB}MB limit.` });
+        newUploads.push({
+          name: file.name,
+          progress: 0,
+          status: "error",
+          error: `File size exceeds ${MAX_FILE_SIZE_MB}MB limit.`,
+        });
         continue;
       }
 
-      newUploads.push({ name: file.name, progress: 0, status: 'uploading' });
+      newUploads.push({ name: file.name, progress: 0, status: "uploading" });
     }
 
-    setUploadProgress(prev => [...prev, ...newUploads]);
+    setUploadProgress((prev) => [...prev, ...newUploads]);
 
     for (const file of files) {
       // Check validation again in case the above loop was skipped or file was modified
-      if (!allowedTypes.includes(file.type) || file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      if (
+        !allowedTypes.includes(file.type) ||
+        file.size > MAX_FILE_SIZE_MB * 1024 * 1024
+      ) {
         continue; // Already handled above, or skip if not validated
       }
 
@@ -1398,7 +1466,7 @@ export function SettingsPanel({
           const reader = new FileReader();
           reader.onload = () => {
             const result = reader.result as string;
-            resolve(result.split(',')[1]); // Remove data:mime;base64, prefix
+            resolve(result.split(",")[1]); // Remove data:mime;base64, prefix
           };
           reader.onerror = reject;
           reader.readAsDataURL(file);
@@ -1411,28 +1479,54 @@ export function SettingsPanel({
           file_type: file.type,
           file_size: file.size,
           content_base64: base64Content,
-          uploaded_by: 'user',
+          uploaded_by: "user",
           metadata: {
             uploadDate: new Date().toISOString(),
-            category: 'nlp_documents'
-          }
+            category: "nlp_documents",
+          },
         });
 
         if (success) {
-          setUploadProgress(prev => prev.map(p => p.name === file.name ? {...p, progress: 100, status: 'completed'} : p));
-          setUploadedDocuments(prev => [...prev, {
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            uploadedAt: new Date(),
-          }]);
-          console.log('Document saved to database successfully:', file.name);
+          setUploadProgress((prev) =>
+            prev.map((p) =>
+              p.name === file.name
+                ? { ...p, progress: 100, status: "completed" }
+                : p,
+            ),
+          );
+          setUploadedDocuments((prev) => [
+            ...prev,
+            {
+              name: file.name,
+              size: file.size,
+              type: file.type,
+              uploadedAt: new Date(),
+            },
+          ]);
+          console.log("Document saved to database successfully:", file.name);
         } else {
-          setUploadProgress(prev => prev.map(p => p.name === file.name ? {...p, progress: 0, status: 'error', error: 'Failed to save to database'} : p));
+          setUploadProgress((prev) =>
+            prev.map((p) =>
+              p.name === file.name
+                ? {
+                    ...p,
+                    progress: 0,
+                    status: "error",
+                    error: "Failed to save to database",
+                  }
+                : p,
+            ),
+          );
         }
       } catch (error) {
-        console.error('Error saving document:', error);
-        setUploadProgress(prev => prev.map(p => p.name === file.name ? {...p, progress: 0, status: 'error', error: 'Upload failed'} : p));
+        console.error("Error saving document:", error);
+        setUploadProgress((prev) =>
+          prev.map((p) =>
+            p.name === file.name
+              ? { ...p, progress: 0, status: "error", error: "Upload failed" }
+              : p,
+          ),
+        );
       }
     }
   };
@@ -1441,7 +1535,9 @@ export function SettingsPanel({
     const documentToRemove = uploadedDocuments[indexToRemove];
     if (!documentToRemove || !documentToRemove.id) {
       console.error("Cannot remove document: ID is missing.");
-      setUploadedDocuments(prev => prev.filter((_, index) => index !== indexToRemove)); // Still remove from UI
+      setUploadedDocuments((prev) =>
+        prev.filter((_, index) => index !== indexToRemove),
+      ); // Still remove from UI
       return;
     }
 
@@ -1449,17 +1545,21 @@ export function SettingsPanel({
       const success = await databaseService.deleteDocument(documentToRemove.id);
 
       if (success) {
-        setUploadedDocuments(prev => prev.filter((_, index) => index !== indexToRemove));
-        console.log('Document deleted from database and list:', documentToRemove.name);
+        setUploadedDocuments((prev) =>
+          prev.filter((_, index) => index !== indexToRemove),
+        );
+        console.log(
+          "Document deleted from database and list:",
+          documentToRemove.name,
+        );
       } else {
-        console.error('Failed to delete document from database.');
+        console.error("Failed to delete document from database.");
         // Optionally, keep it in the UI or show an error to the user
       }
     } catch (error) {
-      console.error('Error removing document:', error);
+      console.error("Error removing document:", error);
     }
   };
-
 
   // Manual Knowledge Entry Handlers
   const handleAddManualEntry = async () => {
@@ -1468,13 +1568,13 @@ export function SettingsPanel({
         id: `manual_${Date.now()}`,
         ...newManualEntry,
         createdAt: new Date().toISOString(),
-        createdBy: 'user@flydubai.com',
+        createdBy: "user@flydubai.com",
       };
 
       try {
         // Save individual entry to database
         const success = await databaseService.saveSetting(
-          'manualKnowledgeEntries',
+          "manualKnowledgeEntries",
           entry.id,
           {
             title: entry.title,
@@ -1482,41 +1582,46 @@ export function SettingsPanel({
             source: entry.source,
             tags: entry.tags,
           },
-          'object',
-          'user'
+          "object",
+          "user",
         );
 
         if (success) {
-          setManualEntries(prev => [...prev, entry]);
+          setManualEntries((prev) => [...prev, entry]);
           setNewManualEntry({
-            title: '',
-            category: 'operations',
-            source: '',
-            tags: ''
+            title: "",
+            category: "operations",
+            source: "",
+            tags: "",
           });
           setShowAddEntryForm(false);
-          console.log('Manual entry saved successfully:', entry.id);
+          console.log("Manual entry saved successfully:", entry.id);
         } else {
-          console.error('Failed to save manual entry to database');
+          console.error("Failed to save manual entry to database");
         }
       } catch (error) {
-        console.error('Error saving manual entry:', error);
+        console.error("Error saving manual entry:", error);
       }
     }
   };
 
   const handleDeleteManualEntry = async (entryId: string) => {
     try {
-      const success = await databaseService.deleteSetting('manualKnowledgeEntries', entryId);
+      const success = await databaseService.deleteSetting(
+        "manualKnowledgeEntries",
+        entryId,
+      );
 
       if (success) {
-        setManualEntries(prev => prev.filter(entry => entry.id !== entryId));
-        console.log('Manual entry deleted successfully:', entryId);
+        setManualEntries((prev) =>
+          prev.filter((entry) => entry.id !== entryId),
+        );
+        console.log("Manual entry deleted successfully:", entryId);
       } else {
-        console.error('Failed to delete manual entry from database');
+        console.error("Failed to delete manual entry from database");
       }
     } catch (error) {
-      console.error('Error deleting manual entry:', error);
+      console.error("Error deleting manual entry:", error);
     }
   };
 
@@ -2047,7 +2152,7 @@ export function SettingsPanel({
                         <Badge
                           className={`${getWeightColor(value)} bg-transparent border`}
                         >
-                          {value}%
+                          {(value as any)}%
                         </Badge>
                       </div>
                       <Slider
@@ -2061,7 +2166,15 @@ export function SettingsPanel({
                             newValue,
                           )
                         }
-                        max={Math.min(100, getAvailableWeight("passengerPrioritization", null, key, Number(value) || 0))}
+                        max={Math.min(
+                          100,
+                          getAvailableWeight(
+                            "passengerPrioritization",
+                            null,
+                            key,
+                            Number(value) || 0,
+                          ),
+                        )}
                         min={0}
                         step={5}
                         className="w-full slider-flydubai"
@@ -2145,7 +2258,7 @@ export function SettingsPanel({
                         <Badge
                           className={`${getWeightColor(value)} bg-transparent border`}
                         >
-                          {value}%
+                          {(value as any)}%
                         </Badge>
                       </div>
                       <Slider
@@ -2159,7 +2272,15 @@ export function SettingsPanel({
                             newValue,
                           )
                         }
-                        max={Math.min(100, getAvailableWeight("flightPrioritization", null, key, Number(value) || 0))}
+                        max={Math.min(
+                          100,
+                          getAvailableWeight(
+                            "flightPrioritization",
+                            null,
+                            key,
+                            Number(value) || 0,
+                          ),
+                        )}
                         min={0}
                         step={5}
                         className="w-full slider-flydubai"
@@ -2245,7 +2366,7 @@ export function SettingsPanel({
                           <Badge
                             className={`${getWeightColor(value)} bg-transparent border`}
                           >
-                            {value}%
+                            {(value as any)}%
                           </Badge>
                         </div>
                         <Slider
@@ -2268,7 +2389,7 @@ export function SettingsPanel({
                                     "flightScoring",
                                     null,
                                     key,
-                                    value,
+                                    (value as any),
                                   ),
                                 )
                           }
@@ -2285,14 +2406,14 @@ export function SettingsPanel({
                   <Calculator className="h-4 w-4 text-blue-600" />
                   <AlertDescription className="text-blue-800 text-xs">
                     <strong>Scoring Example:</strong> VIP passenger on flydubai
-                    flight = {passengerPriorityConfig.flightScoring.baseScore}{" "}
+                    flight = {(passengerPriorityConfig as any).flightScoring.baseScore}{" "}
                     (base) +{" "}
-                    {passengerPriorityConfig.flightScoring.priorityBonus} (VIP)
-                    + {passengerPriorityConfig.flightScoring.airlineBonus}{" "}
+                    {(passengerPriorityConfig as any).flightScoring.priorityBonus} (VIP)
+                    + {(passengerPriorityConfig as any).flightScoring.airlineBonus}{" "}
                     (flydubai) ={" "}
-                    {passengerPriorityConfig.flightScoring.baseScore +
-                      passengerPriorityConfig.flightScoring.priorityBonus +
-                      passengerPriorityConfig.flightScoring.airlineBonus}
+                    {(passengerPriorityConfig as any).flightScoring.baseScore +
+                      (passengerPriorityConfig as any).flightScoring.priorityBonus +
+                      (passengerPriorityConfig as any).flightScoring.airlineBonus}
                     % match
                   </AlertDescription>
                 </Alert>
@@ -2336,7 +2457,7 @@ export function SettingsPanel({
                           <Badge
                             className={`${getWeightColor(value)} bg-transparent border`}
                           >
-                            {value}%
+                            {(value as any)}%
                           </Badge>
                         </div>
                         <Slider
@@ -2398,7 +2519,7 @@ export function SettingsPanel({
               </CardContent>
             </Card>
           </div>
-          <div class="flex justify-end">
+          <div className="flex justify-end">
             <Button
               onClick={savePassengerPrioritySettings}
               className="btn-flydubai-primary"
@@ -3045,7 +3166,7 @@ export function SettingsPanel({
                           <Badge
                             className={`${getWeightColor(value)} bg-transparent border`}
                           >
-                            {value}%
+                            {(value as any)}%
                           </Badge>
                         </div>
                         <Slider
@@ -3069,7 +3190,7 @@ export function SettingsPanel({
                   })}
 
                 {/* Custom Parameters */}
-                {recoveryConfiguration.recoveryOptionsRanking.customParameters.map(
+                { (recoveryConfiguration as any).recoveryOptionsRanking.customParameters.map(
                   (param) => (
                     <div
                       key={param.id}
@@ -3115,7 +3236,7 @@ export function SettingsPanel({
                           handleCustomParameterWeightChange(
                             "recoveryOptionsRanking",
                             param.id,
-                            newValue[0]
+                            newValue[0],
                           )
                         }
                         max={100}
@@ -3211,7 +3332,7 @@ export function SettingsPanel({
                           <Badge
                             className={`${getWeightColor(value)} bg-transparent border`}
                           >
-                            {value}%
+                            {(value as any)}%
                           </Badge>
                         </div>
                         <Slider
@@ -3235,7 +3356,7 @@ export function SettingsPanel({
                   })}
 
                 {/* Custom Parameters */}
-                {recoveryConfiguration.aircraftSelectionCriteria.customParameters.map(
+                { (recoveryConfiguration as any).aircraftSelectionCriteria.customParameters.map(
                   (param) => (
                     <div
                       key={param.id}
@@ -3281,7 +3402,7 @@ export function SettingsPanel({
                           handleCustomParameterWeightChange(
                             "aircraftSelectionCriteria",
                             param.id,
-                            newValue[0]
+                            newValue[0],
                           )
                         }
                         max={100}
@@ -3380,7 +3501,7 @@ export function SettingsPanel({
                           <Badge
                             className={`${getWeightColor(value)} bg-transparent border`}
                           >
-                            {value}%
+                            {(value as any)}%
                           </Badge>
                         </div>
                         <Slider
@@ -3404,7 +3525,7 @@ export function SettingsPanel({
                   })}
 
                 {/* Custom Parameters */}
-                {recoveryConfiguration.crewAssignmentCriteria.customParameters.map(
+                { (recoveryConfiguration as any).crewAssignmentCriteria.customParameters.map(
                   (param) => (
                     <div
                       key={param.id}
@@ -3450,7 +3571,7 @@ export function SettingsPanel({
                           handleCustomParameterWeightChange(
                             "crewAssignmentCriteria",
                             param.id,
-                            newValue[0]
+                            newValue[0],
                           )
                         }
                         max={100}
@@ -3634,7 +3755,7 @@ export function SettingsPanel({
                       <span>Cost Impact:</span>
                       <span className="font-medium">
                         {
-                          recoveryConfiguration.recoveryOptionsRanking
+                           (recoveryConfiguration as any).recoveryOptionsRanking
                             .costWeight
                         }
                         %
@@ -3644,7 +3765,7 @@ export function SettingsPanel({
                       <span>Time to Resolution:</span>
                       <span className="font-medium">
                         {
-                          recoveryConfiguration.recoveryOptionsRanking
+                           (recoveryConfiguration as any).recoveryOptionsRanking
                             .timeWeight
                         }
                         %
@@ -3654,7 +3775,7 @@ export function SettingsPanel({
                       <span>Passenger Impact:</span>
                       <span className="font-medium">
                         {
-                          recoveryConfiguration.recoveryOptionsRanking
+                           (recoveryConfiguration as any).recoveryOptionsRanking
                             .passengerImpactWeight
                         }
                         %
@@ -3672,7 +3793,7 @@ export function SettingsPanel({
                       <span>Maintenance Status:</span>
                       <span className="font-medium">
                         {
-                          recoveryConfiguration.aircraftSelectionCriteria
+                           (recoveryConfiguration as any).aircraftSelectionCriteria
                             .maintenanceStatus
                         }
                         %
@@ -3682,7 +3803,7 @@ export function SettingsPanel({
                       <span>Fuel Efficiency:</span>
                       <span className="font-medium">
                         {
-                          recoveryConfiguration.aircraftSelectionCriteria
+                           (recoveryConfiguration as any).aircraftSelectionCriteria
                             .fuelEfficiency
                         }
                         %
@@ -3692,7 +3813,7 @@ export function SettingsPanel({
                       <span>Route Suitability:</span>
                       <span className="font-medium">
                         {
-                          recoveryConfiguration.aircraftSelectionCriteria
+                          (recoveryConfiguration as any).aircraftSelectionCriteria
                             .routeSuitability
                         }
                         %
@@ -3710,7 +3831,7 @@ export function SettingsPanel({
                       <span>Duty Time Remaining:</span>
                       <span className="font-medium">
                         {
-                          recoveryConfiguration.crewAssignmentCriteria
+                          (recoveryConfiguration as any).crewAssignmentCriteria
                             .dutyTimeRemaining
                         }
                         %
@@ -3720,7 +3841,7 @@ export function SettingsPanel({
                       <span>Qualifications:</span>
                       <span className="font-medium">
                         {
-                          recoveryConfiguration.crewAssignmentCriteria
+                          (recoveryConfiguration as any).crewAssignmentCriteria
                             .qualifications
                         }
                         %
@@ -3730,7 +3851,7 @@ export function SettingsPanel({
                       <span>Base Location:</span>
                       <span className="font-medium">
                         {
-                          recoveryConfiguration.crewAssignmentCriteria
+                          (recoveryConfiguration as any).crewAssignmentCriteria
                             .baseLocation
                         }
                         %
@@ -3767,7 +3888,10 @@ export function SettingsPanel({
                     Natural Language & Knowledge Repository
                   </CardTitle>
                   <p className="text-sm text-blue-700 mt-1">
-                    Manage natural language processing and manage the native knowledge networks that enhance recovery algorithms. Upload documents and add contextual information during recovery options generation.
+                    Manage natural language processing and manage the native
+                    knowledge networks that enhance recovery algorithms. Upload
+                    documents and add contextual information during recovery
+                    options generation.
                   </p>
                 </div>
               </div>
@@ -3783,7 +3907,8 @@ export function SettingsPanel({
                   Natural Language Processing
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Configure natural language recognition and transcription settings.
+                  Configure natural language recognition and transcription
+                  settings.
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -3792,10 +3917,10 @@ export function SettingsPanel({
                     <div className="font-medium">Enable NLP</div>
                   </div>
                   <Switch
-                    checked={nlpSettings.enabled || false}
+                    checked={(nlpSettings as any).enabled || false}
                     onCheckedChange={() => handleNlpToggle("enabled")}
                     className={
-                      nlpSettings.enabled
+                      (nlpSettings as any).enabled
                         ? "data-[state=checked]:bg-flydubai-blue"
                         : ""
                     }
@@ -3803,10 +3928,14 @@ export function SettingsPanel({
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium">Primary Language</Label>
+                  <Label className="text-sm font-medium">
+                    Primary Language
+                  </Label>
                   <Select
-                    value={nlpSettings.language || "english"}
-                    onValueChange={(value) => handleNlpChange("language", value)}
+                    value={(nlpSettings as any).language || "english"}
+                    onValueChange={(value) =>
+                      handleNlpChange("language", value)
+                    }
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select language" />
@@ -3822,14 +3951,18 @@ export function SettingsPanel({
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label className="text-sm font-medium">Confidence Threshold</Label>
+                    <Label className="text-sm font-medium">
+                      Confidence Threshold
+                    </Label>
                     <Badge className="bg-blue-100 text-blue-800 border-blue-200">
-                      {nlpSettings.confidence || 85}%
+                      {(nlpSettings as any).confidence || 85}%
                     </Badge>
                   </div>
                   <Slider
-                    value={[nlpSettings.confidence || 85]}
-                    onValueChange={(value) => handleNlpChange("confidence", value[0])}
+                    value={[(nlpSettings as any).confidence || 85]}
+                    onValueChange={(value) =>
+                      handleNlpChange("confidence", value[0])
+                    }
                     max={100}
                     min={50}
                     step={5}
@@ -3839,13 +3972,15 @@ export function SettingsPanel({
 
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <div className="font-medium">Auto-Apply Recommendations</div>
+                    <div className="font-medium">
+                      Auto-Apply Recommendations
+                    </div>
                   </div>
                   <Switch
-                    checked={nlpSettings.autoApply || false}
+                    checked={(nlpSettings as any).autoApply || false}
                     onCheckedChange={() => handleNlpToggle("autoApply")}
                     className={
-                      nlpSettings.autoApply
+                      (nlpSettings as any).autoApply
                         ? "data-[state=checked]:bg-flydubai-blue"
                         : ""
                     }
@@ -3862,7 +3997,8 @@ export function SettingsPanel({
                   Repository Status
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
-                  Overview of knowledge repository status and processing statistics.
+                  Overview of knowledge repository status and processing
+                  statistics.
                 </p>
               </CardHeader>
               <CardContent>
@@ -3880,11 +4016,17 @@ export function SettingsPanel({
                       <div className="text-2xl font-bold text-blue-900">
                         {uploadedDocuments.length}
                       </div>
-                      <div className="text-xs text-blue-700">Total Documents</div>
+                      <div className="text-xs text-blue-700">
+                        Total Documents
+                      </div>
                     </div>
                     <div>
                       <div className="text-2xl font-bold text-green-600">
-                        {uploadedDocuments.filter(doc => doc.type === 'application/pdf').length}
+                        {
+                          uploadedDocuments.filter(
+                            (doc) => doc.type === "application/pdf",
+                          ).length
+                        }
                       </div>
                       <div className="text-xs text-blue-700">PDF Files</div>
                     </div>
@@ -3904,12 +4046,15 @@ export function SettingsPanel({
                     Document Repository
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Upload and manage operational documentation for recovery algorithm.
+                    Upload and manage operational documentation for recovery
+                    algorithm.
                   </p>
                 </div>
                 <Button
                   className="btn-flydubai-primary"
-                  onClick={() => document.getElementById('document-upload')?.click()}
+                  onClick={() =>
+                    document.getElementById("document-upload")?.click()
+                  }
                 >
                   Upload Documents
                 </Button>
@@ -3931,11 +4076,14 @@ export function SettingsPanel({
                   Upload Operational Documents
                 </h3>
                 <p className="text-sm text-blue-700 mb-4">
-                  Drag and drop files here, or click to browse. Only PDF and DOC files under 3MB are allowed.
+                  Drag and drop files here, or click to browse. Only PDF and DOC
+                  files under 3MB are allowed.
                 </p>
                 <Button
                   variant="outline"
-                  onClick={() => document.getElementById('document-upload')?.click()}
+                  onClick={() =>
+                    document.getElementById("document-upload")?.click()
+                  }
                   className="border-blue-300 text-blue-700 hover:bg-blue-100"
                 >
                   Choose Files
@@ -3947,21 +4095,26 @@ export function SettingsPanel({
                 <div className="space-y-2">
                   <h4 className="font-medium text-sm">Upload Progress:</h4>
                   {uploadProgress.map((file, index) => (
-                    <div key={index} className="flex items-center gap-3 p-2 bg-gray-50 rounded">
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 p-2 bg-gray-50 rounded"
+                    >
                       <div className="flex-1">
                         <div className="text-sm font-medium">{file.name}</div>
-                        {file.status === 'error' && (
-                          <div className="text-xs text-red-600">{file.error}</div>
+                        {file.status === "error" && (
+                          <div className="text-xs text-red-600">
+                            {file.error}
+                          </div>
                         )}
                       </div>
                       <div className="w-24">
-                        {file.status === 'uploading' && (
+                        {file.status === "uploading" && (
                           <Progress value={file.progress} className="h-2" />
                         )}
-                        {file.status === 'completed' && (
+                        {file.status === "completed" && (
                           <CheckCircle className="h-4 w-4 text-green-600" />
                         )}
-                        {file.status === 'error' && (
+                        {file.status === "error" && (
                           <XCircle className="h-4 w-4 text-red-600" />
                         )}
                       </div>
@@ -3976,19 +4129,25 @@ export function SettingsPanel({
                   <h4 className="font-medium text-sm">Uploaded Documents:</h4>
                   <div className="space-y-2 max-h-48 overflow-y-auto">
                     {uploadedDocuments.map((doc, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                      >
                         <div className="flex items-center gap-3">
                           <FileText className="h-4 w-4 text-blue-600" />
                           <div>
-                            <div className="font-medium text-sm">{doc.name}</div>
+                            <div className="font-medium text-sm">
+                              {doc.name}
+                            </div>
                             <div className="text-xs text-gray-500">
-                              {(doc.size / 1024 / 1024).toFixed(2)} MB • {new Date(doc.uploadedAt).toLocaleDateString()}
+                              {(doc.size / 1024 / 1024).toFixed(2)} MB •{" "}
+                              {new Date(doc.uploadedAt).toLocaleDateString()}
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="text-xs">
-                            {doc.type === 'application/pdf' ? 'PDF' : 'DOC'}
+                            {doc.type === "application/pdf" ? "PDF" : "DOC"}
                           </Badge>
                           <Button
                             variant="ghost"
@@ -4017,7 +4176,8 @@ export function SettingsPanel({
                     Manual Knowledge Entry
                   </CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Add manual natural knowledge entries for enhancing recovery recommendations and disruption.
+                    Add manual natural knowledge entries for enhancing recovery
+                    recommendations and disruption.
                   </p>
                 </div>
                 <Button
@@ -4033,7 +4193,9 @@ export function SettingsPanel({
               {showAddEntryForm && (
                 <Card className="mb-6 border-dashed border-2 border-gray-300">
                   <CardHeader>
-                    <CardTitle className="text-sm">Create New Knowledge Entry</CardTitle>
+                    <CardTitle className="text-sm">
+                      Create New Knowledge Entry
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -4042,24 +4204,40 @@ export function SettingsPanel({
                         <Input
                           placeholder="Add manual knowledge entry title"
                           value={newManualEntry.title}
-                          onChange={(e) => setNewManualEntry(prev => ({ ...prev, title: e.target.value }))}
+                          onChange={(e) =>
+                            setNewManualEntry((prev) => ({
+                              ...prev,
+                              title: e.target.value,
+                            }))
+                          }
                         />
                       </div>
                       <div className="space-y-2">
                         <Label>Category</Label>
                         <Select
                           value={newManualEntry.category}
-                          onValueChange={(value) => setNewManualEntry(prev => ({ ...prev, category: value }))}
+                          onValueChange={(value) =>
+                            setNewManualEntry((prev) => ({
+                              ...prev,
+                              category: value,
+                            }))
+                          }
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="operations">Operations</SelectItem>
-                            <SelectItem value="maintenance">Maintenance</SelectItem>
+                            <SelectItem value="operations">
+                              Operations
+                            </SelectItem>
+                            <SelectItem value="maintenance">
+                              Maintenance
+                            </SelectItem>
                             <SelectItem value="crew">Crew</SelectItem>
                             <SelectItem value="weather">Weather</SelectItem>
-                            <SelectItem value="passenger">Passenger Services</SelectItem>
+                            <SelectItem value="passenger">
+                              Passenger Services
+                            </SelectItem>
                             <SelectItem value="security">Security</SelectItem>
                           </SelectContent>
                         </Select>
@@ -4070,7 +4248,12 @@ export function SettingsPanel({
                       <Textarea
                         placeholder="Provide the specific guidelines, or list criteria that should be considered during recovery operations."
                         value={newManualEntry.source}
-                        onChange={(e) => setNewManualEntry(prev => ({ ...prev, source: e.target.value }))}
+                        onChange={(e) =>
+                          setNewManualEntry((prev) => ({
+                            ...prev,
+                            source: e.target.value,
+                          }))
+                        }
                         rows={3}
                       />
                     </div>
@@ -4079,7 +4262,12 @@ export function SettingsPanel({
                       <Input
                         placeholder="Add tags like: ATC, VIP, Emergency Weather..."
                         value={newManualEntry.tags}
-                        onChange={(e) => setNewManualEntry(prev => ({ ...prev, tags: e.target.value }))}
+                        onChange={(e) =>
+                          setNewManualEntry((prev) => ({
+                            ...prev,
+                            tags: e.target.value,
+                          }))
+                        }
                       />
                     </div>
                     <div className="flex justify-end gap-2">
@@ -4088,10 +4276,10 @@ export function SettingsPanel({
                         onClick={() => {
                           setShowAddEntryForm(false);
                           setNewManualEntry({
-                            title: '',
-                            category: 'operations',
-                            source: '',
-                            tags: ''
+                            title: "",
+                            category: "operations",
+                            source: "",
+                            tags: "",
                           });
                         }}
                       >
@@ -4100,7 +4288,10 @@ export function SettingsPanel({
                       <Button
                         className="btn-flydubai-primary"
                         onClick={handleAddManualEntry}
-                        disabled={!newManualEntry.title.trim() || !newManualEntry.source.trim()}
+                        disabled={
+                          !newManualEntry.title.trim() ||
+                          !newManualEntry.source.trim()
+                        }
                       >
                         Save Entry
                       </Button>
@@ -4116,18 +4307,38 @@ export function SettingsPanel({
                     // Get category icon and color
                     const getCategoryIcon = (category: string) => {
                       switch (category.toLowerCase()) {
-                        case 'passenger service':
-                          return { icon: User, color: 'bg-purple-100 text-purple-600', badgeColor: 'bg-purple-100 text-purple-700' };
-                        case 'emergency':
-                          return { icon: AlertTriangle, color: 'bg-green-100 text-green-600', badgeColor: 'bg-green-100 text-green-700' };
-                        case 'operations':
-                          return { icon: Settings, color: 'bg-blue-100 text-blue-600', badgeColor: 'bg-blue-100 text-blue-700' };
+                        case "passenger service":
+                          return {
+                            icon: User,
+                            color: "bg-purple-100 text-purple-600",
+                            badgeColor: "bg-purple-100 text-purple-700",
+                          };
+                        case "emergency":
+                          return {
+                            icon: AlertTriangle,
+                            color: "bg-green-100 text-green-600",
+                            badgeColor: "bg-green-100 text-green-700",
+                          };
+                        case "operations":
+                          return {
+                            icon: Settings,
+                            color: "bg-blue-100 text-blue-600",
+                            badgeColor: "bg-blue-100 text-blue-700",
+                          };
                         default:
-                          return { icon: FileText, color: 'bg-gray-100 text-gray-600', badgeColor: 'bg-gray-100 text-gray-700' };
+                          return {
+                            icon: FileText,
+                            color: "bg-gray-100 text-gray-600",
+                            badgeColor: "bg-gray-100 text-gray-700",
+                          };
                       }
                     };
 
-                    const { icon: CategoryIcon, color: iconColor, badgeColor } = getCategoryIcon(entry.category);
+                    const {
+                      icon: CategoryIcon,
+                      color: iconColor,
+                      badgeColor,
+                    } = getCategoryIcon(entry.category);
 
                     return (
                       <div
@@ -4135,7 +4346,9 @@ export function SettingsPanel({
                         className="flex items-start gap-3 p-4 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors"
                       >
                         {/* Category Icon */}
-                        <div className={`p-2 rounded-lg ${iconColor} flex-shrink-0`}>
+                        <div
+                          className={`p-2 rounded-lg ${iconColor} flex-shrink-0`}
+                        >
                           <CategoryIcon className="h-4 w-4" />
                         </div>
 
@@ -4152,17 +4365,26 @@ export function SettingsPanel({
                                 </span>
                                 <span className="text-gray-400">•</span>
                                 <span className="text-sm text-gray-500">
-                                  {entry.source || 'No source specified'}
+                                  {entry.source || "No source specified"}
                                 </span>
                               </div>
                               <div className="text-xs text-gray-500">
-                                Created: {entry.createdAt ? new Date(entry.createdAt).toLocaleDateString() : 'Unknown'} • By: {entry.createdBy || 'Unknown'}
+                                Created:{" "}
+                                {entry.createdAt
+                                  ? new Date(
+                                      entry.createdAt,
+                                    ).toLocaleDateString()
+                                  : "Unknown"}{" "}
+                                • By: {entry.createdBy || "Unknown"}
                               </div>
                             </div>
 
                             {/* Source Badge */}
                             <div className="flex items-center gap-2 flex-shrink-0">
-                              <Badge variant="outline" className={`text-xs px-2 py-1 ${badgeColor} border-0`}>
+                              <Badge
+                                variant="outline"
+                                className={`text-xs px-2 py-1 ${badgeColor} border-0`}
+                              >
                                 Passage Source
                               </Badge>
                             </div>
@@ -4198,7 +4420,8 @@ export function SettingsPanel({
                   <Edit className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                   <p>No manual knowledge entries added yet</p>
                   <p className="text-sm">
-                    Click "Add Manual Entry" to create your first knowledge entry
+                    Click "Add Manual Entry" to create your first knowledge
+                    entry
                   </p>
                 </div>
               )}
@@ -4213,21 +4436,27 @@ export function SettingsPanel({
                 NLP Natural Language Input
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                Test natural language inputs for preprocessing using the native knowledge networks.
+                Test natural language inputs for preprocessing using the native
+                knowledge networks.
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-4">
-                <h4 className="font-medium text-sm">Sample Natural Language Inputs</h4>
+                <h4 className="font-medium text-sm">
+                  Sample Natural Language Inputs
+                </h4>
 
                 <Alert className="border-blue-200 bg-blue-50">
                   <Info className="h-4 w-4 text-blue-600" />
                   <AlertDescription className="text-blue-800">
-                    <strong>Customer complaints who need special connectivity with rebooking flights:</strong>
+                    <strong>
+                      Customer complaints who need special connectivity with
+                      rebooking flights:
+                    </strong>
                     • Book on next available options with forming cross-booking
-                    • Check on any allowable options
-                    • Weather is to passenger not affected service options
-                    • Special in flight cancellation make to better before departure
+                    • Check on any allowable options • Weather is to passenger
+                    not affected service options • Special in flight
+                    cancellation make to better before departure
                   </AlertDescription>
                 </Alert>
 

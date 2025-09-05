@@ -8,7 +8,7 @@ interface AirlineLogoProps {
   alt?: string;
 }
 
-export function AirlineLogo({
+export default function AirlineLogo({
   className = "responsive-logo",
   width,
   height,
@@ -69,3 +69,5 @@ export function AirlineLogo({
     />
   );
 }
+
+
