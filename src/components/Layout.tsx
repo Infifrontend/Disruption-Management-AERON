@@ -366,13 +366,13 @@ export function Layout({ children }: LayoutProps) {
               </div>
             )}
           </div>
-          {sidebarOpen && (
+          {/* {sidebarOpen && (
             <div className="pt-2 border-t border-airline-primary">
               <p className="text-xs text-white/70">
                 Powered by {airlineConfig.displayName} × AERON Partnership
               </p>
             </div>
-          )}
+          )} */}
         </div>
       </div>
 
