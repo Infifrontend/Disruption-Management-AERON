@@ -7,7 +7,7 @@ import { databaseService } from "../services/databaseService";
 import { authService } from "../services/authService";
 import { useAirlineTheme } from "../hooks/useAirlineTheme";
 import { injectAirlineTheme } from "../config/airlineConfig";
-import { AirlineLogo } from "./AirlineLogo";
+import AirlineLogo from "./AirlineLogo";
 import {
   TrendingUp,
   Calendar,
