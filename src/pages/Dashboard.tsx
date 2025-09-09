@@ -42,6 +42,7 @@ import {
   MapPin,
   Activity,
   Radar,
+  Calendar,
 } from "lucide-react";
 
 export function Dashboard() {
@@ -49,44 +50,52 @@ export function Dashboard() {
   const { filters, setFilters, screenSettings } = useAppContext();
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [dateFilter, setDateFilter] = useState<string>("today");
 
   const enabledScreens = screenSettings.filter((screen) => screen.enabled);
 
-  // Fetch dashboard analytics on component mount using single consolidated API call
+  // Date filter options
+  const dateFilterOptions = [
+    { value: "today", label: "Today" },
+    { value: "yesterday", label: "Yesterday" },
+    { value: "this_week", label: "This Week" },
+    { value: "this_month", label: "This Month" },
+  ];
+
+  // Fetch dashboard analytics with date filter
+  const fetchAnalytics = async (showLoading = true) => {
+    try {
+      if (showLoading) setLoading(true);
+      const data = await dashboardAnalytics.getDashboardAnalytics(dateFilter);
+      console.log("Dashboard analytics loaded for", dateFilter, ":", data);
+      setAnalytics(data);
+    } catch (error) {
+      console.error("Failed to fetch dashboard analytics:", error);
+      // Keep any existing data on error to prevent UI breakdown
+    } finally {
+      if (showLoading) setLoading(false);
+    }
+  };
+
+  // Fetch analytics when component mounts or date filter changes
   useEffect(() => {
-    const fetchAnalytics = async () => {
-      try {
-        setLoading(true);
-        const data = await dashboardAnalytics.getDashboardAnalytics();
-        console.log("Dashboard analytics loaded:", data);
-        setAnalytics(data);
-      } catch (error) {
-        console.error("Failed to fetch dashboard analytics:", error);
-        // Keep any existing data on error to prevent UI breakdown
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    // Initial fetch
     fetchAnalytics();
+  }, [dateFilter]);
 
-    // Set up periodic refresh every 30 seconds for real-time updates
+  // Set up periodic refresh every 30 seconds for real-time updates
+  useEffect(() => {
     const interval = setInterval(() => {
       // Don't show loading state on periodic refreshes to avoid UI flicker
-      const refreshAnalytics = async () => {
-        try {
-          const data = await dashboardAnalytics.getDashboardAnalytics();
-          setAnalytics(data);
-        } catch (error) {
-          console.error("Failed to refresh dashboard analytics:", error);
-        }
-      };
-      refreshAnalytics();
+      fetchAnalytics(false);
     }, 30000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [dateFilter]);
+
+  // Handle date filter change
+  const handleDateFilterChange = (value: string) => {
+    setDateFilter(value);
+  };
 
   // const handleCreateRecoveryPlan = (disruption: any) => {
   //   setSelectedDisruption(disruption);
@@ -102,6 +111,36 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Date Filter Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-flydubai-navy">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Real-time flight operations and recovery analytics
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Calendar className="h-5 w-5 text-flydubai-blue" />
+          <Select value={dateFilter} onValueChange={handleDateFilterChange}>
+            <SelectTrigger className="w-40 border-flydubai-blue/30 focus:border-flydubai-blue">
+              <SelectValue placeholder="Select date range" />
+            </SelectTrigger>
+            <SelectContent>
+              {dateFilterOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {loading && (
+            <div className="text-sm text-muted-foreground">
+              Loading analytics...
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Alert Banner */}
       <Alert className="border-flydubai-orange bg-orange-50">
         <AlertTriangle className="h-4 w-4 text-flydubai-orange" />
