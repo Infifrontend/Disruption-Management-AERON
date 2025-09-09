@@ -1,7 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
 import { useState, useEffect } from "react";
-import { dashboardAnalytics, DashboardAnalytics } from "../services/dashboardAnalytics";
+import {
+  dashboardAnalytics,
+  DashboardAnalytics,
+} from "../services/dashboardAnalytics";
 import {
   Card,
   CardContent,
@@ -43,8 +46,7 @@ import {
 
 export function Dashboard() {
   const navigate = useNavigate();
-  const { filters, setFilters, screenSettings } =
-    useAppContext();
+  const { filters, setFilters, screenSettings } = useAppContext();
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -55,16 +57,17 @@ export function Dashboard() {
     const fetchAnalytics = async () => {
       try {
         const data = await dashboardAnalytics.getDashboardAnalytics();
+        console.log(data);
         setAnalytics(data);
       } catch (error) {
-        console.error('Failed to fetch dashboard analytics:', error);
+        console.error("Failed to fetch dashboard analytics:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchAnalytics();
-    
+
     // Set up periodic refresh every 30 seconds
     const interval = setInterval(fetchAnalytics, 30000);
     return () => clearInterval(interval);
@@ -88,7 +91,11 @@ export function Dashboard() {
       <Alert className="border-flydubai-orange bg-orange-50">
         <AlertTriangle className="h-4 w-4 text-flydubai-orange" />
         <AlertDescription className="text-orange-800">
-          <strong>Active Disruptions:</strong> {loading ? 'Loading...' : `${analytics?.operationalInsights.activeDisruptions || 0} Flydubai flights currently disrupted`}. AERON recovery plans available.
+          <strong>Active Disruptions:</strong>{" "}
+          {loading
+            ? "Loading..."
+            : `${analytics?.operationalInsights.activeDisruptions || 0} Flydubai flights currently disrupted`}
+          . AERON recovery plans available.
         </AlertDescription>
       </Alert>
 
@@ -106,26 +113,35 @@ export function Dashboard() {
                   Flydubai AERON Performance Today
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {loading ? 'Loading...' : `${analytics?.performance.decisionsProcessed || 0} recovery decisions processed • ${analytics?.performance.successRate || '0.0%'} success rate`}
+                  {loading
+                    ? "Loading..."
+                    : `${analytics?.performance.decisionsProcessed || 0} recovery decisions processed • ${analytics?.performance.successRate || "0.0%"} success rate`}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-6">
               <div className="text-center">
                 <p className="text-lg font-semibold text-flydubai-blue">
-                  {loading ? 'Loading...' : analytics?.performance.costSavings || 'AED 0K'}
+                  {loading
+                    ? "Loading..."
+                    : analytics?.performance.costSavings || "AED 0K"}
                 </p>
                 <p className="text-xs text-muted-foreground">Cost Savings</p>
               </div>
               <div className="text-center">
                 <p className="text-lg font-semibold text-flydubai-navy">
-                  {loading ? 'Loading...' : analytics?.performance.avgDecisionTime || '0 min'}
+                  {loading
+                    ? "Loading..."
+                    : analytics?.performance.avgDecisionTime || "0 min"}
                 </p>
                 <p className="text-xs text-muted-foreground">Avg Decision</p>
               </div>
               <div className="text-center">
                 <p className="text-lg font-semibold text-flydubai-orange">
-                  {loading ? 'Loading...' : analytics?.performance.passengersServed?.toLocaleString() || '0'}
+                  {loading
+                    ? "Loading..."
+                    : analytics?.performance.passengersServed?.toLocaleString() ||
+                      "0"}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Passengers Served
@@ -163,7 +179,10 @@ export function Dashboard() {
                   </span>
                 </div>
                 <p className="text-2xl font-bold text-red-700">
-                  {loading ? 'Loading...' : analytics?.passengerImpact.affectedPassengers?.toLocaleString() || '0'}
+                  {loading
+                    ? "Loading..."
+                    : analytics?.passengerImpact.affectedPassengers?.toLocaleString() ||
+                      "0"}
                 </p>
                 <p className="text-xs text-red-600">Across all disruptions</p>
               </div>
@@ -175,7 +194,10 @@ export function Dashboard() {
                   </span>
                 </div>
                 <p className="text-2xl font-bold text-yellow-700">
-                  {loading ? 'Loading...' : analytics?.passengerImpact.highPriority?.toLocaleString() || '0'}
+                  {loading
+                    ? "Loading..."
+                    : analytics?.passengerImpact.highPriority?.toLocaleString() ||
+                      "0"}
                 </p>
                 <p className="text-xs text-yellow-600">
                   Need immediate attention
@@ -189,7 +211,10 @@ export function Dashboard() {
                   </span>
                 </div>
                 <p className="text-2xl font-bold text-blue-700">
-                  {loading ? 'Loading...' : analytics?.passengerImpact.rebookings?.toLocaleString() || '0'}
+                  {loading
+                    ? "Loading..."
+                    : analytics?.passengerImpact.rebookings?.toLocaleString() ||
+                      "0"}
                 </p>
                 <p className="text-xs text-blue-600">Successfully rebooked</p>
               </div>
@@ -201,7 +226,10 @@ export function Dashboard() {
                   </span>
                 </div>
                 <p className="text-2xl font-bold text-green-700">
-                  {loading ? 'Loading...' : analytics?.passengerImpact.resolved?.toLocaleString() || '0'}
+                  {loading
+                    ? "Loading..."
+                    : analytics?.passengerImpact.resolved?.toLocaleString() ||
+                      "0"}
                 </p>
                 <p className="text-xs text-green-600">
                   Passengers accommodated
@@ -221,37 +249,74 @@ export function Dashboard() {
           <CardContent>
             <div className="space-y-3">
               {loading ? (
-                <div className="p-4 text-center text-gray-500">Loading disrupted stations...</div>
-              ) : analytics?.disruptedStations && analytics.disruptedStations.length > 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  Loading disrupted stations...
+                </div>
+              ) : analytics?.disruptedStations &&
+                analytics.disruptedStations.length > 0 ? (
                 analytics.disruptedStations.map((station, index) => {
                   const colorClasses = {
-                    high: { bg: 'bg-red-50', border: 'border-red-200', dot: 'bg-red-500', text: 'text-red-900', subtext: 'text-red-600', value: 'text-red-700' },
-                    medium: { bg: 'bg-orange-50', border: 'border-orange-200', dot: 'bg-orange-500', text: 'text-orange-900', subtext: 'text-orange-600', value: 'text-orange-700' },
-                    low: { bg: 'bg-yellow-50', border: 'border-yellow-200', dot: 'bg-yellow-500', text: 'text-yellow-900', subtext: 'text-yellow-600', value: 'text-yellow-700' }
+                    high: {
+                      bg: "bg-red-50",
+                      border: "border-red-200",
+                      dot: "bg-red-500",
+                      text: "text-red-900",
+                      subtext: "text-red-600",
+                      value: "text-red-700",
+                    },
+                    medium: {
+                      bg: "bg-orange-50",
+                      border: "border-orange-200",
+                      dot: "bg-orange-500",
+                      text: "text-orange-900",
+                      subtext: "text-orange-600",
+                      value: "text-orange-700",
+                    },
+                    low: {
+                      bg: "bg-yellow-50",
+                      border: "border-yellow-200",
+                      dot: "bg-yellow-500",
+                      text: "text-yellow-900",
+                      subtext: "text-yellow-600",
+                      value: "text-yellow-700",
+                    },
                   }[station.severity];
-                  
+
                   return (
-                    <div key={station.code} className={`flex items-center justify-between p-3 rounded-lg border ${colorClasses.bg} ${colorClasses.border}`}>
+                    <div
+                      key={station.code}
+                      className={`flex items-center justify-between p-3 rounded-lg border ${colorClasses.bg} ${colorClasses.border}`}
+                    >
                       <div className="flex items-center gap-3">
-                        <div className={`w-3 h-3 rounded-full ${colorClasses.dot}`}></div>
+                        <div
+                          className={`w-3 h-3 rounded-full ${colorClasses.dot}`}
+                        ></div>
                         <div>
-                          <p className={`font-semibold ${colorClasses.text}`}>{station.name}</p>
+                          <p className={`font-semibold ${colorClasses.text}`}>
+                            {station.name}
+                          </p>
                           <p className={`text-xs ${colorClasses.subtext}`}>
                             {station.disruptedFlights} disrupted flights
                           </p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className={`text-lg font-bold ${colorClasses.value}`}>
+                        <p
+                          className={`text-lg font-bold ${colorClasses.value}`}
+                        >
                           {station.passengersAffected.toLocaleString()}
                         </p>
-                        <p className={`text-xs ${colorClasses.subtext}`}>passengers affected</p>
+                        <p className={`text-xs ${colorClasses.subtext}`}>
+                          passengers affected
+                        </p>
                       </div>
                     </div>
                   );
                 })
               ) : (
-                <div className="p-4 text-center text-gray-500">No disrupted stations found</div>
+                <div className="p-4 text-center text-gray-500">
+                  No disrupted stations found
+                </div>
               )}
             </div>
           </CardContent>
@@ -276,7 +341,9 @@ export function Dashboard() {
                 </span>
               </div>
               <p className="text-2xl font-bold text-blue-800">
-                {loading ? 'Loading...' : analytics?.operationalInsights.recoveryRate || '0.0%'}
+                {loading
+                  ? "Loading..."
+                  : analytics?.operationalInsights.recoveryRate || "0.0%"}
               </p>
               <p className="text-xs text-blue-600">Real-time calculation</p>
             </div>
@@ -289,7 +356,9 @@ export function Dashboard() {
                 </span>
               </div>
               <p className="text-2xl font-bold text-green-800">
-                {loading ? 'Loading...' : analytics?.operationalInsights.avgResolutionTime || '0.0h'}
+                {loading
+                  ? "Loading..."
+                  : analytics?.operationalInsights.avgResolutionTime || "0.0h"}
               </p>
               <p className="text-xs text-green-600">Average resolution time</p>
             </div>
@@ -302,10 +371,14 @@ export function Dashboard() {
                 </span>
               </div>
               <p className="text-2xl font-bold text-purple-800">
-                {loading ? 'Loading...' : analytics?.operationalInsights.networkImpact || 'Low'}
+                {loading
+                  ? "Loading..."
+                  : analytics?.operationalInsights.networkImpact || "Low"}
               </p>
               <p className="text-xs text-purple-600">
-                {loading ? 'Loading...' : `${analytics?.operationalInsights.activeDisruptions || 0} active disruptions`}
+                {loading
+                  ? "Loading..."
+                  : `${analytics?.operationalInsights.activeDisruptions || 0} active disruptions`}
               </p>
             </div>
 
@@ -317,7 +390,9 @@ export function Dashboard() {
                 </span>
               </div>
               <p className="text-2xl font-bold text-orange-800">
-                {loading ? 'Loading...' : analytics?.operationalInsights.criticalPriority || 0}
+                {loading
+                  ? "Loading..."
+                  : analytics?.operationalInsights.criticalPriority || 0}
               </p>
               <p className="text-xs text-orange-600">
                 Require immediate action
@@ -332,16 +407,28 @@ export function Dashboard() {
                   Most Disrupted Route
                 </p>
                 <p className="text-sm text-gray-600">
-                  {loading ? 'Loading...' : `${analytics?.operationalInsights.mostDisruptedRoute.route || 'N/A'} - ${analytics?.operationalInsights.mostDisruptedRoute.impact || 'No data'}`}
+                  {loading
+                    ? "Loading..."
+                    : `${analytics?.operationalInsights.mostDisruptedRoute.route || "N/A"} - ${analytics?.operationalInsights.mostDisruptedRoute.impact || "No data"}`}
                 </p>
               </div>
-              <Badge className={`${
-                loading ? 'bg-gray-100 text-gray-700 border-gray-200' :
-                analytics?.operationalInsights.mostDisruptedRoute.impact === 'High Impact' ? 'bg-red-100 text-red-700 border-red-200' :
-                analytics?.operationalInsights.mostDisruptedRoute.impact === 'Medium Impact' ? 'bg-orange-100 text-orange-700 border-orange-200' :
-                'bg-yellow-100 text-yellow-700 border-yellow-200'
-              }`}>
-                {loading ? 'Loading...' : analytics?.operationalInsights.mostDisruptedRoute.impact || 'No Impact'}
+              <Badge
+                className={`${
+                  loading
+                    ? "bg-gray-100 text-gray-700 border-gray-200"
+                    : analytics?.operationalInsights.mostDisruptedRoute
+                          .impact === "High Impact"
+                      ? "bg-red-100 text-red-700 border-red-200"
+                      : analytics?.operationalInsights.mostDisruptedRoute
+                            .impact === "Medium Impact"
+                        ? "bg-orange-100 text-orange-700 border-orange-200"
+                        : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                }`}
+              >
+                {loading
+                  ? "Loading..."
+                  : analytics?.operationalInsights.mostDisruptedRoute.impact ||
+                    "No Impact"}
               </Badge>
             </div>
           </div>
@@ -367,11 +454,16 @@ export function Dashboard() {
                       Active Flights
                     </p>
                     <p className="text-xl font-semibold text-flydubai-blue">
-                      {loading ? 'Loading...' : analytics?.networkOverview.activeFlights?.toLocaleString() || '0'}
+                      {loading
+                        ? "Loading..."
+                        : analytics?.networkOverview.activeFlights?.toLocaleString() ||
+                          "0"}
                     </p>
                     <p className="text-xs text-green-600 flex items-center gap-1">
                       <TrendingUp className="h-3 w-3" />
-                      {loading ? 'Loading...' : `${analytics?.networkOverview.dailyChange.activeFlights >= 0 ? '+' : ''}${analytics?.networkOverview.dailyChange.activeFlights || 0} from yesterday`}
+                      {loading
+                        ? "Loading..."
+                        : `${analytics?.networkOverview.dailyChange.activeFlights >= 0 ? "+" : ""}${analytics?.networkOverview.dailyChange.activeFlights || 0} from yesterday`}
                     </p>
                   </div>
                 </div>
@@ -385,10 +477,14 @@ export function Dashboard() {
                   <div>
                     <p className="text-sm text-muted-foreground">Disruptions</p>
                     <p className="text-xl font-semibold text-flydubai-orange">
-                      {loading ? 'Loading...' : analytics?.networkOverview.disruptions || '0'}
+                      {loading
+                        ? "Loading..."
+                        : analytics?.networkOverview.disruptions || "0"}
                     </p>
                     <p className="text-xs text-red-600">
-                      {loading ? 'Loading...' : `${analytics?.operationalInsights.criticalPriority || 0} critical • ${analytics?.passengerImpact.affectedPassengers?.toLocaleString() || '0'} pax affected`}
+                      {loading
+                        ? "Loading..."
+                        : `${analytics?.operationalInsights.criticalPriority || 0} critical • ${analytics?.passengerImpact.affectedPassengers?.toLocaleString() || "0"} pax affected`}
                     </p>
                   </div>
                 </div>
@@ -404,10 +500,15 @@ export function Dashboard() {
                       Total Passengers
                     </p>
                     <p className="text-xl font-semibold text-purple-600">
-                      {loading ? 'Loading...' : analytics?.networkOverview.totalPassengers?.toLocaleString() || '0'}
+                      {loading
+                        ? "Loading..."
+                        : analytics?.networkOverview.totalPassengers?.toLocaleString() ||
+                          "0"}
                     </p>
                     <p className="text-xs text-red-600">
-                      {loading ? 'Loading...' : `${analytics?.networkOverview.disruptions && analytics?.networkOverview.totalPassengers ? ((analytics.passengerImpact.affectedPassengers / analytics.networkOverview.totalPassengers) * 100).toFixed(1) : '0.0'}% disrupted today`}
+                      {loading
+                        ? "Loading..."
+                        : `${analytics?.networkOverview.disruptions && analytics?.networkOverview.totalPassengers ? ((analytics.passengerImpact.affectedPassengers / analytics.networkOverview.totalPassengers) * 100).toFixed(1) : "0.0"}% disrupted today`}
                     </p>
                   </div>
                 </div>
@@ -423,7 +524,9 @@ export function Dashboard() {
                       OTP Performance
                     </p>
                     <p className="text-xl font-semibold text-green-600">
-                      {loading ? 'Loading...' : analytics?.networkOverview.otpPerformance || '0.0%'}
+                      {loading
+                        ? "Loading..."
+                        : analytics?.networkOverview.otpPerformance || "0.0%"}
                     </p>
                     <p className="text-xs text-green-600 flex items-center gap-1">
                       <TrendingUp className="h-3 w-3" />
