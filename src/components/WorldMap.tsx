@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { dashboardAnalytics } from "../services/dashboardAnalytics";
 import { Button } from "./ui/button";
 import {
   Select,
@@ -27,35 +28,47 @@ export function WorldMap() {
   const [panX, setPanX] = useState(0);
   const [panY, setPanY] = useState(0);
   const [liveData, setLiveData] = useState({
-    activeFlights: 89,
-    onSchedule: 47,
-    delayed: 18,
-    disrupted: 3,
+    activeFlights: 0,
+    onSchedule: 0,
+    delayed: 0,
+    disrupted: 0,
   });
+  const [realFlightData, setRealFlightData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Simulate real-time data updates
+  // Fetch real-time data from database
   useEffect(() => {
-    let intervalId:any;
-    if (isRealtime) {
-      intervalId = setInterval(() => {
-        // In a real app, this would fetch data from an API
-        const newActiveFlights = Math.floor(Math.random() * 20) + 70;
-        const newOnSchedule = Math.floor(Math.random() * 10) + 40;
-        const newDelayed = Math.floor(Math.random() * 5) + 15;
-        const newDisrupted = Math.floor(Math.random() * 2);
-
+    const fetchFlightData = async () => {
+      try {
+        setLoading(true);
+        const analytics = await dashboardAnalytics.getDashboardAnalytics();
+        setRealFlightData(analytics);
+        
+        // Update live data from real analytics
         setLiveData({
-          activeFlights: newActiveFlights,
-          onSchedule: newOnSchedule,
-          delayed: newDelayed,
-          disrupted: newDisrupted,
+          activeFlights: analytics.networkOverview.activeFlights || 0,
+          onSchedule: Math.round((analytics.networkOverview.activeFlights || 0) * (parseFloat(analytics.networkOverview.otpPerformance) / 100) || 0),
+          delayed: (analytics.networkOverview.disruptions || 0) - (analytics.operationalInsights.criticalPriority || 0),
+          disrupted: analytics.operationalInsights.criticalPriority || 0,
         });
         setLastUpdate(new Date());
-      }, 15000); // Update every 15 seconds
-    } else {
-      clearInterval(intervalId);
+      } catch (error) {
+        console.error('Failed to fetch flight data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFlightData();
+    
+    let intervalId: any;
+    if (isRealtime) {
+      intervalId = setInterval(fetchFlightData, 30000); // Update every 30 seconds
     }
-    return () => clearInterval(intervalId);
+    
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [isRealtime]);
 
   // Helper function to convert lat/lng to SVG coordinates
