@@ -88,8 +88,7 @@ export function Dashboard() {
       <Alert className="border-flydubai-orange bg-orange-50">
         <AlertTriangle className="h-4 w-4 text-flydubai-orange" />
         <AlertDescription className="text-orange-800">
-          <strong>Active Disruptions:</strong> 18 Flydubai flights affected by
-          sandstorm at DXB. AERON recovery plans available.
+          <strong>Active Disruptions:</strong> {loading ? 'Loading...' : `${analytics?.operationalInsights.activeDisruptions || 0} Flydubai flights currently disrupted`}. AERON recovery plans available.
         </AlertDescription>
       </Alert>
 
@@ -276,8 +275,10 @@ export function Dashboard() {
                   Recovery Rate
                 </span>
               </div>
-              <p className="text-2xl font-bold text-blue-800">89.2%</p>
-              <p className="text-xs text-blue-600">+4.3% from yesterday</p>
+              <p className="text-2xl font-bold text-blue-800">
+                {loading ? 'Loading...' : analytics?.operationalInsights.recoveryRate || '0.0%'}
+              </p>
+              <p className="text-xs text-blue-600">Real-time calculation</p>
             </div>
 
             <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
@@ -287,8 +288,10 @@ export function Dashboard() {
                   Avg Resolution
                 </span>
               </div>
-              <p className="text-2xl font-bold text-green-800">2.4h</p>
-              <p className="text-xs text-green-600">-18 min improvement</p>
+              <p className="text-2xl font-bold text-green-800">
+                {loading ? 'Loading...' : analytics?.operationalInsights.avgResolutionTime || '0.0h'}
+              </p>
+              <p className="text-xs text-green-600">Average resolution time</p>
             </div>
 
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
@@ -298,8 +301,12 @@ export function Dashboard() {
                   Network Impact
                 </span>
               </div>
-              <p className="text-2xl font-bold text-purple-800">Medium</p>
-              <p className="text-xs text-purple-600">23 active disruptions</p>
+              <p className="text-2xl font-bold text-purple-800">
+                {loading ? 'Loading...' : analytics?.operationalInsights.networkImpact || 'Low'}
+              </p>
+              <p className="text-xs text-purple-600">
+                {loading ? 'Loading...' : `${analytics?.operationalInsights.activeDisruptions || 0} active disruptions`}
+              </p>
             </div>
 
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
@@ -309,7 +316,9 @@ export function Dashboard() {
                   Critical Priority
                 </span>
               </div>
-              <p className="text-2xl font-bold text-orange-800">5</p>
+              <p className="text-2xl font-bold text-orange-800">
+                {loading ? 'Loading...' : analytics?.operationalInsights.criticalPriority || 0}
+              </p>
               <p className="text-xs text-orange-600">
                 Require immediate action
               </p>
@@ -323,11 +332,16 @@ export function Dashboard() {
                   Most Disrupted Route
                 </p>
                 <p className="text-sm text-gray-600">
-                  DXB → DEL experiencing weather delays
+                  {loading ? 'Loading...' : `${analytics?.operationalInsights.mostDisruptedRoute.route || 'N/A'} - ${analytics?.operationalInsights.mostDisruptedRoute.impact || 'No data'}`}
                 </p>
               </div>
-              <Badge className="bg-red-100 text-red-700 border-red-200">
-                High Impact
+              <Badge className={`${
+                loading ? 'bg-gray-100 text-gray-700 border-gray-200' :
+                analytics?.operationalInsights.mostDisruptedRoute.impact === 'High Impact' ? 'bg-red-100 text-red-700 border-red-200' :
+                analytics?.operationalInsights.mostDisruptedRoute.impact === 'Medium Impact' ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                'bg-yellow-100 text-yellow-700 border-yellow-200'
+              }`}>
+                {loading ? 'Loading...' : analytics?.operationalInsights.mostDisruptedRoute.impact || 'No Impact'}
               </Badge>
             </div>
           </div>
@@ -353,11 +367,11 @@ export function Dashboard() {
                       Active Flights
                     </p>
                     <p className="text-xl font-semibold text-flydubai-blue">
-                      847
+                      {loading ? 'Loading...' : analytics?.networkOverview.activeFlights?.toLocaleString() || '0'}
                     </p>
                     <p className="text-xs text-green-600 flex items-center gap-1">
                       <TrendingUp className="h-3 w-3" />
-                      +12 from yesterday
+                      {loading ? 'Loading...' : `${analytics?.networkOverview.dailyChange.activeFlights >= 0 ? '+' : ''}${analytics?.networkOverview.dailyChange.activeFlights || 0} from yesterday`}
                     </p>
                   </div>
                 </div>
@@ -371,10 +385,10 @@ export function Dashboard() {
                   <div>
                     <p className="text-sm text-muted-foreground">Disruptions</p>
                     <p className="text-xl font-semibold text-flydubai-orange">
-                      23
+                      {loading ? 'Loading...' : analytics?.networkOverview.disruptions || '0'}
                     </p>
                     <p className="text-xs text-red-600">
-                      5 critical • 4,127 pax affected
+                      {loading ? 'Loading...' : `${analytics?.operationalInsights.criticalPriority || 0} critical • ${analytics?.passengerImpact.affectedPassengers?.toLocaleString() || '0'} pax affected`}
                     </p>
                   </div>
                 </div>
@@ -390,9 +404,11 @@ export function Dashboard() {
                       Total Passengers
                     </p>
                     <p className="text-xl font-semibold text-purple-600">
-                      42,158
+                      {loading ? 'Loading...' : analytics?.networkOverview.totalPassengers?.toLocaleString() || '0'}
                     </p>
-                    <p className="text-xs text-red-600">9.8% disrupted today</p>
+                    <p className="text-xs text-red-600">
+                      {loading ? 'Loading...' : `${analytics?.networkOverview.disruptions && analytics?.networkOverview.totalPassengers ? ((analytics.passengerImpact.affectedPassengers / analytics.networkOverview.totalPassengers) * 100).toFixed(1) : '0.0'}% disrupted today`}
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -407,11 +423,11 @@ export function Dashboard() {
                       OTP Performance
                     </p>
                     <p className="text-xl font-semibold text-green-600">
-                      89.2%
+                      {loading ? 'Loading...' : analytics?.networkOverview.otpPerformance || '0.0%'}
                     </p>
                     <p className="text-xs text-green-600 flex items-center gap-1">
                       <TrendingUp className="h-3 w-3" />
-                      +2.1% this week
+                      Real-time performance
                     </p>
                   </div>
                 </div>
