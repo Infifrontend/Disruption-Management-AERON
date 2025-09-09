@@ -52,24 +52,39 @@ export function Dashboard() {
 
   const enabledScreens = screenSettings.filter((screen) => screen.enabled);
 
-  // Fetch dashboard analytics on component mount
+  // Fetch dashboard analytics on component mount using single consolidated API call
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
+        setLoading(true);
         const data = await dashboardAnalytics.getDashboardAnalytics();
-        console.log(data);
+        console.log("Dashboard analytics loaded:", data);
         setAnalytics(data);
       } catch (error) {
         console.error("Failed to fetch dashboard analytics:", error);
+        // Keep any existing data on error to prevent UI breakdown
       } finally {
         setLoading(false);
       }
     };
 
+    // Initial fetch
     fetchAnalytics();
 
-    // Set up periodic refresh every 30 seconds
-    const interval = setInterval(fetchAnalytics, 30000);
+    // Set up periodic refresh every 30 seconds for real-time updates
+    const interval = setInterval(() => {
+      // Don't show loading state on periodic refreshes to avoid UI flicker
+      const refreshAnalytics = async () => {
+        try {
+          const data = await dashboardAnalytics.getDashboardAnalytics();
+          setAnalytics(data);
+        } catch (error) {
+          console.error("Failed to refresh dashboard analytics:", error);
+        }
+      };
+      refreshAnalytics();
+    }, 30000);
+
     return () => clearInterval(interval);
   }, []);
 
