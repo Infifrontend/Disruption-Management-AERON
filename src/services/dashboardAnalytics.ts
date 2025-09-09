@@ -66,25 +66,15 @@ class DashboardAnalyticsService {
     }
 
     try {
-      // Fetch all required data from database
-      const [allDisruptions, recoveryLogs, pendingSolutions] =
-        await Promise.all([
-          databaseService.getAllDisruptions(),
-          this.getRecoveryLogs(),
-          databaseService.getPendingRecoverySolutions(),
-        ]);
+      // Make single API call to get consolidated dashboard data
+      const response = await fetch(`${databaseService.apiBaseUrl}/dashboard-analytics`);
+      
+      if (!response.ok) {
+        throw new Error(`Dashboard analytics API error: ${response.status}`);
+      }
 
-      console.log("Fetched data for dashboard analytics:", [
-        allDisruptions,
-        recoveryLogs,
-        pendingSolutions,
-      ]);
-      // Calculate analytics from real data
-      const analytics = await this.calculateAnalytics(
-        allDisruptions,
-        recoveryLogs,
-        pendingSolutions,
-      );
+      const analytics = await response.json();
+      console.log("Fetched consolidated dashboard analytics:", analytics);
 
       // Update cache
       this.cache = analytics;
@@ -94,12 +84,37 @@ class DashboardAnalyticsService {
     } catch (error) {
       console.error("Failed to fetch dashboard analytics:", error);
 
-      // Return cached data if available, otherwise fallback data
-      if (this.cache) {
-        return this.cache;
-      }
+      // Fallback to individual API calls if consolidated endpoint fails
+      try {
+        const [allDisruptions, recoveryLogs, pendingSolutions] =
+          await Promise.all([
+            databaseService.getAllDisruptions(),
+            this.getRecoveryLogs(),
+            databaseService.getPendingRecoverySolutions(),
+          ]);
 
-      return this.getFallbackAnalytics();
+        console.log("Using fallback individual API calls for dashboard analytics");
+        // Calculate analytics from real data
+        const analytics = await this.calculateAnalytics(
+          allDisruptions,
+          recoveryLogs,
+          pendingSolutions,
+        );
+
+        // Update cache
+        this.cache = analytics;
+        this.cacheTimestamp = Date.now();
+        return analytics;
+      } catch (fallbackError) {
+        console.error("Fallback dashboard analytics also failed:", fallbackError);
+        
+        // Return cached data if available, otherwise fallback data
+        if (this.cache) {
+          return this.cache;
+        }
+
+        return this.getFallbackAnalytics();
+      }
     }
   }
 

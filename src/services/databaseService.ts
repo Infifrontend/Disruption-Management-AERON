@@ -154,6 +154,11 @@ class DatabaseService {
     console.log('Database service initialized with base URL:', this.baseUrl);
   }
 
+  // Getter for baseUrl to allow other services to access it
+  get apiBaseUrl(): string {
+    return this.baseUrl;
+  }
+
   // Helper method to retry API calls when database is unavailable
   private async retryApiCall<T>(operation: () => Promise<T>, fallbackValue: T, maxRetries?: number): Promise<T> {
     const retries = maxRetries ?? 3;
