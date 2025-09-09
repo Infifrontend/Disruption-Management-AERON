@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -328,64 +328,218 @@ export function DisruptionInput({
   const [isGeneratingOptions, setIsGeneratingOptions] = useState(false);
   const [loadingRecovery, setLoadingRecovery] = useState({});
 
-  const updateExpiredDisruptions = useCallback(async () => {
-    try {
-      const result = await databaseService.updateExpiredDisruptions();
-      if (result.success && result.updated_count > 0) {
-        console.log(`Updated ${result.updated_count} expired disruptions`);
-        // Refetch flights after updating expired ones
-        await fetchFlights();
-      }
-    } catch (error) {
-      console.error('Error updating expired disruptions:', error);
-    }
+  // Fetch flights from database
+  useEffect(() => {
+    fetchFlights();
+    // Changed interval to 3 minutes (180000 ms) as requested
+    const interval = setInterval(fetchFlights, 180000);
+    return () => clearInterval(interval);
   }, []);
 
-  // Fetch flights from database
-  const fetchFlights = useCallback(async () => {
+  const fetchFlights = async () => {
     try {
+      setError(null);
       setLoading(true);
-      console.log('Fetching disrupted flights from last 24 hours...');
 
-      // Update expired disruptions first, then fetch current ones
-      await updateExpiredDisruptions();
+      // First sync from external API to get latest data and prevent duplicates
+      const syncResult = await databaseService.syncDisruptionsFromExternalAPI();
 
-      const flights = await databaseService.getAllDisruptions("", "", true); // last24Hours = true
-      console.log('Fetched flights:', flights);
+      // Then fetch all current disruptions from database, filtering by recovery_status = 'assigned'
+      // Changed filter to 'assigned' as per the requirement
+      const data = await databaseService.getAllDisruptions("assigned");
+      // debugger;
+      // Process all data, including incomplete records with fallbacks
+      const processedData = data
+        .filter((disruption) => {
+          if (!disruption) return false;
+          // Only include disruptions with recovery_status = 'assigned' or null/undefined
+          // This filter ensures we only process assigned recovery status flights
+          const recoveryStatus =
+            disruption.recoveryStatus || (disruption as any).recovery_status;
+          return recoveryStatus === "assigned";
+        })
+        .map((disruption) => {
+          // Provide defaults for missing required fields
+          return {
+            ...disruption,
+            flightNumber:
+              (disruption as any).flight_number ||
+              disruption.flightNumber ||
+              `UNKNOWN-${Date.now()}`,
+            scheduledDeparture:
+              (disruption as any).scheduled_departure ||
+              disruption.scheduledDeparture ||
+              new Date().toISOString(),
+            estimatedDeparture:
+              (disruption as any).estimated_departure ||
+              disruption.estimatedDeparture,
+            origin: disruption.origin || "DXB",
+            destination: disruption.destination || "UNKNOWN",
+            originCity:
+              (disruption as any).origin_city ||
+              disruption.originCity ||
+              disruption.origin ||
+              "Dubai",
+            destinationCity:
+              (disruption as any).destination_city ||
+              disruption.destinationCity ||
+              disruption.destination ||
+              "Unknown",
+            status: disruption.status || "Unknown",
+            severity: disruption.severity || "Medium",
+            type:
+              (disruption as any).disruption_type ||
+              disruption.type ||
+              "Technical",
+            disruptionReason:
+              (disruption as any).disruption_reason ||
+              disruption.disruptionReason ||
+              "Information not available",
+            passengers: disruption.passengers || 0,
+            crew: disruption.crew || 6,
+            delay: (disruption as any).delay_minutes || disruption.delay || 0,
+            aircraft: disruption.aircraft || "Unknown",
+            connectionFlights:
+              (disruption as any).connection_flights ||
+              disruption.connectionFlights ||
+              0,
+            recoveryStatus: disruption.recoveryStatus || "assigned",
+          };
+        });
 
-      if (Array.isArray(flights)) {
-        const processedFlights = flights.map(flight => ({
-          ...flight,
-          id: flight.id?.toString() || `temp-${Date.now()}-${Math.random()}`,
-        }));
+      const transformedFlights = processedData.map(transformFlightData);
+      setFlights(transformedFlights);
 
-        setFlights(processedFlights);
-        setError(null);
-      } else {
-        console.warn('Received non-array response for flights:', flights);
-        setFlights([]);
+      // Count incomplete records
+      const incompleteCount =
+        data.length -
+        processedData.filter(
+          (d) =>
+            d.flightNumber &&
+            d.flightNumber.indexOf("UNKNOWN-") === -1 &&
+            d.scheduledDeparture &&
+            d.origin &&
+            d.origin !== "DXB" &&
+            d.destination &&
+            d.destination !== "UNKNOWN",
+        ).length;
+
+      // Show sync results in success message if any data was synced
+      if (syncResult && (syncResult.inserted > 0 || syncResult.updated > 0)) {
+        let message = `✅ Data refreshed successfully! ${syncResult.inserted} new disruptions added, ${syncResult.updated} updated.`;
+        if (incompleteCount > 0) {
+          message += ` Note: ${incompleteCount} records had missing information and were displayed with defaults.`;
+        }
+        setSuccess(message);
+        setTimeout(() => setSuccess(null), 8000);
+      }
+
+      // Clear any previous errors if we have any data
+      if (transformedFlights.length === 0 && data.length === 0) {
+        setError(
+          "No flight disruptions found with assigned recovery status. Add new disruptions using the 'Add Disruption' button.",
+        );
+      } else if (incompleteCount > 0 && incompleteCount < data.length) {
+        setSuccess(
+          `⚠️ ${incompleteCount} disruptions had incomplete information but are shown with default values. All ${transformedFlights.length} disruptions are displayed.`,
+        );
+        setTimeout(() => setSuccess(null), 6000);
       }
     } catch (error) {
-      console.error('Error fetching flights:', error);
-      setError('Failed to load flights. Please try again.');
-      setFlights([]);
+      console.error("Error fetching flights:", error);
+
+      // Check if it's a connectivity issue
+      try {
+        const isHealthy = await databaseService.healthCheck();
+        if (!isHealthy) {
+          setError(
+            "🔄 Database connection is temporarily unavailable. You can still add new disruptions, and they will be synced when the connection is restored.",
+          );
+        } else {
+          setError(
+            "⚠️ Failed to load flight data. The database connection is working, but there may be data issues. You can still add new disruptions manually.",
+          );
+        }
+      } catch (healthError) {
+        setError(
+          "🔌 System connectivity issues detected. You can add new disruptions offline, and they will be synced when the connection is restored.",
+        );
+      }
+
+      // Try to load existing data from database as fallback
+      try {
+        const fallbackData =
+          await databaseService.getAllDisruptions("assigned");
+        if (fallbackData && fallbackData.length > 0) {
+          // Process all fallback data, even if incomplete
+          const processedFallbackData = fallbackData.map((disruption) => {
+            return {
+              ...disruption,
+              flightNumber:
+                (disruption as any).flight_number ||
+                disruption.flightNumber ||
+                `FALLBACK-${Date.now()}`,
+              scheduledDeparture:
+                (disruption as any).scheduled_departure ||
+                disruption.scheduledDeparture ||
+                new Date().toISOString(),
+              estimatedDeparture:
+                (disruption as any).estimated_departure ||
+                disruption.estimatedDeparture,
+              origin: disruption.origin || "DXB",
+              destination: disruption.destination || "UNKNOWN",
+              originCity:
+                (disruption as any).origin_city ||
+                disruption.originCity ||
+                disruption.origin ||
+                "Dubai",
+              destinationCity:
+                (disruption as any).destination_city ||
+                disruption.destinationCity ||
+                disruption.destination ||
+                "Unknown",
+              status: disruption.status || "Unknown",
+              severity: disruption.severity || "Medium",
+              type:
+                (disruption as any).disruption_type ||
+                disruption.type ||
+                "Technical",
+              disruptionReason:
+                (disruption as any).disruption_reason ||
+                disruption.disruptionReason ||
+                "Cached data - may be incomplete",
+              passengers: disruption.passengers || 0,
+              crew: disruption.crew || 6,
+              delay: (disruption as any).delay_minutes || disruption.delay || 0,
+              aircraft: disruption.aircraft || "Unknown",
+              connectionFlights:
+                (disruption as any).connection_flights ||
+                disruption.connectionFlights ||
+                0,
+              recoveryStatus: disruption.recoveryStatus || "assigned",
+            };
+          });
+
+          const transformedFlights =
+            processedFallbackData.map(transformFlightData);
+          setFlights(transformedFlights);
+
+          if (transformedFlights.length > 0) {
+            setError(
+              "⚠️ Using cached flight data. Some information may be outdated or incomplete. Try refreshing when connection is restored.",
+            );
+          }
+        } else {
+          setFlights([]);
+        }
+      } catch (fallbackError) {
+        console.error("Fallback fetch also failed:", fallbackError);
+        setFlights([]);
+      }
     } finally {
       setLoading(false);
     }
-  }, [updateExpiredDisruptions]);
-
-  useEffect(() => {
-    fetchFlights();
-    fetchDisruptionCategories();
-
-    // Set up interval to update expired disruptions every 30 minutes
-    const interval = setInterval(() => {
-      updateExpiredDisruptions();
-    }, 30 * 60 * 1000); // 30 minutes
-
-    return () => clearInterval(interval);
-  }, [fetchFlights, fetchDisruptionCategories, updateExpiredDisruptions]);
-
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
