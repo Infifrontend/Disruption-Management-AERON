@@ -865,6 +865,7 @@ class DatabaseService {
   async getAllDisruptions(
     recoveryStatus: string = "",
     categoryCode: string = "",
+    last24Hours: boolean = false,
   ): Promise<FlightDisruption[]> {
     try {
       // Build URL with query parameters
@@ -877,6 +878,10 @@ class DatabaseService {
 
       if (categoryCode) {
         queryParams.append("category_code", categoryCode);
+      }
+
+      if (last24Hours) {
+        queryParams.append("last_24_hours", "true");
       }
 
       if (queryParams.toString()) {
@@ -2312,6 +2317,37 @@ class DatabaseService {
     } catch (error) {
       console.error("Failed to update crew hotel assignment status:", error);
       return false;
+    }
+  }
+
+  // Update expired disruptions (older than 24 hours)
+  async updateExpiredDisruptions(): Promise<{
+    success: boolean;
+    updated_count: number;
+    updated_flights: any[];
+  }> {
+    try {
+      console.log("Updating expired flight disruptions...");
+      
+      const response = await fetch(`${this.baseUrl}/disruptions/update-expired`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("Successfully updated expired disruptions:", result);
+      return result;
+    } catch (error) {
+      console.error("Failed to update expired disruptions:", error);
+      return {
+        success: false,
+        updated_count: 0,
+        updated_flights: [],
+      };
     }
   }
 
