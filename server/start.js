@@ -12,6 +12,7 @@ const port = process.env.BACKEND_PORT || 3001;
 // CORS Configuration from environment variables
 const allowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.split(",") || [
   "localhost",
+  "127.0.0.1",
   "replit.dev",
   "sisko.replit.dev",
 ];
