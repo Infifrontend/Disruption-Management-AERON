@@ -5177,23 +5177,50 @@ app.get("/api/disrupted-stations", async (req, res) => {
 // Consolidated dashboard analytics endpoint
 app.get("/api/dashboard-analytics", async (req, res) => {
   try {
-    console.log("Fetching consolidated dashboard analytics");
+    const { dateFilter = "today" } = req.query;
+    console.log("Fetching consolidated dashboard analytics for:", dateFilter);
 
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    // Calculate date range based on filter
+    let startDate, endDate;
+    
+    switch (dateFilter) {
+      case "yesterday":
+        startDate = new Date(today.getTime() - 24 * 60 * 60 * 1000);
+        endDate = today;
+        break;
+      case "this_week":
+        const dayOfWeek = today.getDay();
+        const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday = 0, Monday = 1
+        startDate = new Date(today.getTime() - daysFromMonday * 24 * 60 * 60 * 1000);
+        endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Include today
+        break;
+      case "this_month":
+        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+        endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Include today
+        break;
+      case "today":
+      default:
+        startDate = today;
+        endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Include rest of today
+        break;
+    }
 
-    // Get all recent disruptions (last 7 days for better analytics)
-    const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+    console.log(`Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+
+    // Get disruptions for the selected date range
     const disruptionsResult = await pool.query(`
       SELECT * FROM flight_disruptions 
-      WHERE created_at >= $1
+      WHERE created_at >= $1 AND created_at < $2
       ORDER BY created_at DESC
-    `, [sevenDaysAgo]);
+    `, [startDate, endDate]);
 
     const disruptions = disruptionsResult.rows;
     console.log(`Found ${disruptions.length} disruptions for analytics`);
 
-    // Get recovery logs
+    // Get recovery logs for the date range
     const logsResult = await pool.query(`
       SELECT 
         'SOL-' || fd.id as solution_id,
@@ -5222,8 +5249,8 @@ app.get("/api/dashboard-analytics", async (req, res) => {
         COALESCE(fd.delay_minutes * 1000, 125000) as actual_cost,
         COALESCE(95.0 - (fd.delay_minutes::numeric / 10), 92.5) as rebooking_success
       FROM flight_disruptions fd
-      WHERE fd.created_at >= $1
-    `, [today]);
+      WHERE fd.created_at >= $1 AND fd.created_at < $2
+    `, [startDate, endDate]);
 
     const logs = logsResult.rows;
 
@@ -5347,65 +5374,82 @@ app.get("/api/dashboard-analytics", async (req, res) => {
       networkOverview,
     };
 
-    // If no real data, provide meaningful sample data
+    // If no real data, provide meaningful sample data based on date filter
     if (disruptions.length === 0) {
-      console.log("No disruptions found, providing sample analytics");
+      console.log(`No disruptions found for ${dateFilter}, providing sample analytics`);
+      
+      // Adjust sample data based on date range
+      let multiplier = 1;
+      switch (dateFilter) {
+        case "yesterday":
+          multiplier = 0.8;
+          break;
+        case "this_week":
+          multiplier = 5;
+          break;
+        case "this_month":
+          multiplier = 20;
+          break;
+        default:
+          multiplier = 1;
+      }
+      
       const sampleAnalytics = {
         performance: {
-          costSavings: "AED 125K",
+          costSavings: `AED ${Math.round(125 * multiplier)}K`,
           avgDecisionTime: "18 min",
-          passengersServed: 2847,
+          passengersServed: Math.round(2847 * multiplier),
           successRate: "94.2%",
-          decisionsProcessed: 23,
+          decisionsProcessed: Math.round(23 * multiplier),
         },
         passengerImpact: {
-          affectedPassengers: 2847,
-          highPriority: 386,
-          rebookings: 854,
-          resolved: 2703,
+          affectedPassengers: Math.round(2847 * multiplier),
+          highPriority: Math.round(386 * multiplier),
+          rebookings: Math.round(854 * multiplier),
+          resolved: Math.round(2703 * multiplier),
         },
         disruptedStations: [
           {
             code: "DXB",
             name: "DXB - Dubai",
-            disruptedFlights: 8,
-            passengersAffected: 1247,
+            disruptedFlights: Math.round(8 * multiplier),
+            passengersAffected: Math.round(1247 * multiplier),
             severity: "high",
           },
           {
             code: "DEL",
             name: "DEL - Delhi",
-            disruptedFlights: 5,
-            passengersAffected: 823,
+            disruptedFlights: Math.round(5 * multiplier),
+            passengersAffected: Math.round(823 * multiplier),
             severity: "medium",
           },
           {
             code: "BOM",
             name: "BOM - Mumbai",
-            disruptedFlights: 3,
-            passengersAffected: 457,
+            disruptedFlights: Math.round(3 * multiplier),
+            passengersAffected: Math.round(457 * multiplier),
             severity: "medium",
           },
         ],
         operationalInsights: {
           recoveryRate: "94.2%",
           avgResolutionTime: "2.3h",
-          networkImpact: "Medium",
-          criticalPriority: 3,
-          activeDisruptions: 12,
+          networkImpact: multiplier > 10 ? "High" : multiplier > 3 ? "Medium" : "Low",
+          criticalPriority: Math.round(3 * multiplier),
+          activeDisruptions: Math.round(12 * multiplier),
           mostDisruptedRoute: {
             route: "DXB → DEL",
             impact: "High Impact",
           },
         },
         networkOverview: {
-          activeFlights: 847,
-          disruptions: 23,
-          totalPassengers: 38427,
+          activeFlights: Math.round(847 * multiplier),
+          disruptions: Math.round(23 * multiplier),
+          totalPassengers: Math.round(38427 * multiplier),
           otpPerformance: "87.3%",
           dailyChange: {
-            activeFlights: 2,
-            disruptions: -1,
+            activeFlights: Math.round(2 * (multiplier / 5)),
+            disruptions: Math.round(-1 * (multiplier / 5)),
           },
         },
       };

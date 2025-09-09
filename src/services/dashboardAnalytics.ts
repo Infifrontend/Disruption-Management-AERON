@@ -57,29 +57,37 @@ export interface DashboardAnalytics {
 class DashboardAnalyticsService {
   private cache: DashboardAnalytics | null = null;
   private cacheTimestamp: number = 0;
+  private lastDateFilter: string = "";
   private readonly CACHE_DURATION = 30000; // 30 seconds cache
 
-  async getDashboardAnalytics(): Promise<DashboardAnalytics> {
-    // Return cached data if still valid
-    if (this.cache && Date.now() - this.cacheTimestamp < this.CACHE_DURATION) {
+  async getDashboardAnalytics(dateFilter: string = "today"): Promise<DashboardAnalytics> {
+    // Create cache key that includes date filter
+    const cacheKey = `analytics_${dateFilter}`;
+    
+    // Return cached data if still valid for this date filter
+    if (this.cache && Date.now() - this.cacheTimestamp < this.CACHE_DURATION && this.lastDateFilter === dateFilter) {
       return this.cache;
     }
 
     try {
-      // Make single API call to get consolidated dashboard data
-      const response = await fetch(`${databaseService.apiBaseUrl}/dashboard-analytics`);
+      // Make single API call to get consolidated dashboard data with date filter
+      const url = new URL(`${databaseService.apiBaseUrl}/dashboard-analytics`);
+      url.searchParams.append('dateFilter', dateFilter);
+      
+      const response = await fetch(url.toString());
       
       if (!response.ok) {
         throw new Error(`Dashboard analytics API error: ${response.status}`);
       }
 
       const analytics = await response.json();
-      console.log("Fetched consolidated dashboard analytics:", analytics);
+      console.log("Fetched consolidated dashboard analytics for", dateFilter, ":", analytics);
 
       // Update cache
       this.cache = analytics;
       this.cacheTimestamp = Date.now();
-      console.log("Updated dashboard analytics cache");
+      this.lastDateFilter = dateFilter;
+      console.log("Updated dashboard analytics cache for", dateFilter);
       return analytics;
     } catch (error) {
       console.error("Failed to fetch dashboard analytics:", error);
@@ -522,6 +530,7 @@ class DashboardAnalyticsService {
   clearCache(): void {
     this.cache = null;
     this.cacheTimestamp = 0;
+    this.lastDateFilter = "";
   }
 }
 
