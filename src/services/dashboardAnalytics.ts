@@ -103,7 +103,7 @@ class DashboardAnalyticsService {
   
   private async getRecoveryLogs(): Promise<any[]> {
     try {
-      return await databaseService.getRecoveryLogs('', '', '', '');
+      return await databaseService.getPastRecoveryLogs('', '', '', '');
     } catch (error) {
       console.error('Failed to fetch recovery logs:', error);
       return [];

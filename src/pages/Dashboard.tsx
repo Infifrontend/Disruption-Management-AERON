@@ -1,5 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
+import { useState, useEffect } from "react";
+import { dashboardAnalytics, DashboardAnalytics } from "../services/dashboardAnalytics";
 import {
   Card,
   CardContent,
@@ -43,8 +45,30 @@ export function Dashboard() {
   const navigate = useNavigate();
   const { filters, setFilters, screenSettings } =
     useAppContext();
+  const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const enabledScreens = screenSettings.filter((screen) => screen.enabled);
+
+  // Fetch dashboard analytics on component mount
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        const data = await dashboardAnalytics.getDashboardAnalytics();
+        setAnalytics(data);
+      } catch (error) {
+        console.error('Failed to fetch dashboard analytics:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+    
+    // Set up periodic refresh every 30 seconds
+    const interval = setInterval(fetchAnalytics, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // const handleCreateRecoveryPlan = (disruption: any) => {
   //   setSelectedDisruption(disruption);
@@ -83,26 +107,26 @@ export function Dashboard() {
                   Flydubai AERON Performance Today
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  8 recovery decisions processed • 96.1% success rate
+                  {loading ? 'Loading...' : `${analytics?.performance.decisionsProcessed || 0} recovery decisions processed • ${analytics?.performance.successRate || '0.0%'} success rate`}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-6">
               <div className="text-center">
                 <p className="text-lg font-semibold text-flydubai-blue">
-                  AED 312K
+                  {loading ? 'Loading...' : analytics?.performance.costSavings || 'AED 0K'}
                 </p>
                 <p className="text-xs text-muted-foreground">Cost Savings</p>
               </div>
               <div className="text-center">
                 <p className="text-lg font-semibold text-flydubai-navy">
-                  7.8 min
+                  {loading ? 'Loading...' : analytics?.performance.avgDecisionTime || '0 min'}
                 </p>
                 <p className="text-xs text-muted-foreground">Avg Decision</p>
               </div>
               <div className="text-center">
                 <p className="text-lg font-semibold text-flydubai-orange">
-                  2,847
+                  {loading ? 'Loading...' : analytics?.performance.passengersServed?.toLocaleString() || '0'}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   Passengers Served
@@ -139,7 +163,9 @@ export function Dashboard() {
                     Affected Passengers
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-red-700">754</p>
+                <p className="text-2xl font-bold text-red-700">
+                  {loading ? 'Loading...' : analytics?.passengerImpact.affectedPassengers?.toLocaleString() || '0'}
+                </p>
                 <p className="text-xs text-red-600">Across all disruptions</p>
               </div>
               <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
@@ -149,7 +175,9 @@ export function Dashboard() {
                     High Priority
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-yellow-700">400</p>
+                <p className="text-2xl font-bold text-yellow-700">
+                  {loading ? 'Loading...' : analytics?.passengerImpact.highPriority?.toLocaleString() || '0'}
+                </p>
                 <p className="text-xs text-yellow-600">
                   Need immediate attention
                 </p>
@@ -161,7 +189,9 @@ export function Dashboard() {
                     Rebookings
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-blue-700">255</p>
+                <p className="text-2xl font-bold text-blue-700">
+                  {loading ? 'Loading...' : analytics?.passengerImpact.rebookings?.toLocaleString() || '0'}
+                </p>
                 <p className="text-xs text-blue-600">Successfully rebooked</p>
               </div>
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
@@ -171,7 +201,9 @@ export function Dashboard() {
                     Resolved
                   </span>
                 </div>
-                <p className="text-2xl font-bold text-green-700">750</p>
+                <p className="text-2xl font-bold text-green-700">
+                  {loading ? 'Loading...' : analytics?.passengerImpact.resolved?.toLocaleString() || '0'}
+                </p>
                 <p className="text-xs text-green-600">
                   Passengers accommodated
                 </p>
@@ -189,53 +221,39 @@ export function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                  <div>
-                    <p className="font-semibold text-red-900">DXB - Dubai</p>
-                    <p className="text-xs text-red-600">12 disrupted flights</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-red-700">2,847</p>
-                  <p className="text-xs text-red-600">passengers affected</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg border border-orange-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
-                  <div>
-                    <p className="font-semibold text-orange-900">DEL - Delhi</p>
-                    <p className="text-xs text-orange-600">
-                      7 disrupted flights
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-orange-700">823</p>
-                  <p className="text-xs text-orange-600">passengers affected</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                  <div>
-                    <p className="font-semibold text-yellow-900">
-                      BOM - Mumbai
-                    </p>
-                    <p className="text-xs text-yellow-600">
-                      4 disrupted flights
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-yellow-700">457</p>
-                  <p className="text-xs text-yellow-600">passengers affected</p>
-                </div>
-              </div>
+              {loading ? (
+                <div className="p-4 text-center text-gray-500">Loading disrupted stations...</div>
+              ) : analytics?.disruptedStations && analytics.disruptedStations.length > 0 ? (
+                analytics.disruptedStations.map((station, index) => {
+                  const colorClasses = {
+                    high: { bg: 'bg-red-50', border: 'border-red-200', dot: 'bg-red-500', text: 'text-red-900', subtext: 'text-red-600', value: 'text-red-700' },
+                    medium: { bg: 'bg-orange-50', border: 'border-orange-200', dot: 'bg-orange-500', text: 'text-orange-900', subtext: 'text-orange-600', value: 'text-orange-700' },
+                    low: { bg: 'bg-yellow-50', border: 'border-yellow-200', dot: 'bg-yellow-500', text: 'text-yellow-900', subtext: 'text-yellow-600', value: 'text-yellow-700' }
+                  }[station.severity];
+                  
+                  return (
+                    <div key={station.code} className={`flex items-center justify-between p-3 rounded-lg border ${colorClasses.bg} ${colorClasses.border}`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${colorClasses.dot}`}></div>
+                        <div>
+                          <p className={`font-semibold ${colorClasses.text}`}>{station.name}</p>
+                          <p className={`text-xs ${colorClasses.subtext}`}>
+                            {station.disruptedFlights} disrupted flights
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`text-lg font-bold ${colorClasses.value}`}>
+                          {station.passengersAffected.toLocaleString()}
+                        </p>
+                        <p className={`text-xs ${colorClasses.subtext}`}>passengers affected</p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="p-4 text-center text-gray-500">No disrupted stations found</div>
+              )}
             </div>
           </CardContent>
         </Card>
