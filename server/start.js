@@ -1833,7 +1833,7 @@ async function withDatabaseFallback(operation, fallbackValue = []) {
 // Flight Disruptions endpoints
 app.get("/api/disruptions/", async (req, res) => {
   const result = await withDatabaseFallback(async () => {
-    const { recovery_status, category_code } = req.query;
+    const { recovery_status, category_code, last_24_hours } = req.query;
 
     // Build the base query with JOIN
     let query = `
@@ -1853,6 +1853,12 @@ app.get("/api/disruptions/", async (req, res) => {
     const conditions = [];
     const params = [];
     let paramCount = 0;
+
+    // Filter by last 24 hours if requested
+    if (last_24_hours === 'true') {
+      conditions.push(`fd.created_at >= NOW() - INTERVAL '24 hours'`);
+      conditions.push(`fd.status != 'expired'`);
+    }
 
     // Filter by recovery_status if provided
     if (recovery_status) {
@@ -4569,6 +4575,34 @@ app.put("/api/disruptions/:disruptionId/status", async (req, res) => {
   } catch (error) {
     console.error("Error updating disruption status:", error);
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Update expired flight disruptions (older than 24 hours)
+app.put("/api/disruptions/update-expired", async (req, res) => {
+  try {
+    console.log("Updating expired flight disruptions...");
+
+    const result = await pool.query(
+      `UPDATE flight_disruptions 
+       SET status = 'expired', updated_at = CURRENT_TIMESTAMP 
+       WHERE created_at < NOW() - INTERVAL '24 hours' 
+       AND status NOT IN ('expired', 'Resolved', 'Completed', 'Cancelled')
+       RETURNING id, flight_number, created_at, status`,
+    );
+
+    const updatedCount = result.rows.length;
+    console.log(`Updated ${updatedCount} expired flight disruptions`);
+
+    res.json({
+      success: true,
+      updated_count: updatedCount,
+      updated_flights: result.rows,
+      message: `Successfully updated ${updatedCount} expired flight disruptions`,
+    });
+  } catch (error) {
+    console.error("Error updating expired flight disruptions:", error);
+    res.status(500).json({ error: error.message });
   }
 });
 
