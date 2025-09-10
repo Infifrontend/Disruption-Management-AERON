@@ -2578,40 +2578,53 @@ app.get("/api/dashboard-analytics", async (req, res) => {
     let startDate, endDate;
     const now = new Date();
 
-    switch (dateFilter) {
-      case "yesterday":
-        startDate = new Date(now);
-        startDate.setDate(startDate.getDate() - 1);
-        startDate.setHours(0, 0, 0, 0);
-        endDate = new Date(startDate);
-        endDate.setHours(23, 59, 59, 999);
-        break;
-      case "this_week":
-        startDate = new Date(now);
-        startDate.setDate(startDate.getDate() - now.getDay());
-        startDate.setHours(0, 0, 0, 0);
-        endDate = new Date(now);
-        endDate.setHours(23, 59, 59, 999);
-        break;
-      case "this_month":
-        startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(
-          now.getFullYear(),
-          now.getMonth() + 1,
-          0,
-          23,
-          59,
-          59,
-          999,
-        );
-        break;
-      case "today":
-      default:
-        startDate = new Date(now);
-        startDate.setHours(0, 0, 0, 0);
-        endDate = new Date(now);
-        endDate.setHours(23, 59, 59, 999);
-        break;
+    // Check if it's a custom date range (format: "startDate_endDate")
+    if (dateFilter.includes('_') && dateFilter !== 'this_week' && dateFilter !== 'this_month' && dateFilter !== 'last_month') {
+      const [startDateStr, endDateStr] = dateFilter.split('_');
+      startDate = new Date(startDateStr);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(endDateStr);
+      endDate.setHours(23, 59, 59, 999);
+    } else {
+      switch (dateFilter) {
+        case "yesterday":
+          startDate = new Date(now);
+          startDate.setDate(startDate.getDate() - 1);
+          startDate.setHours(0, 0, 0, 0);
+          endDate = new Date(startDate);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case "this_week":
+          startDate = new Date(now);
+          startDate.setDate(startDate.getDate() - now.getDay());
+          startDate.setHours(0, 0, 0, 0);
+          endDate = new Date(now);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+        case "this_month":
+          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+          endDate = new Date(
+            now.getFullYear(),
+            now.getMonth() + 1,
+            0,
+            23,
+            59,
+            59,
+            999,
+          );
+          break;
+        case "last_month":
+          startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+          endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+          break;
+        case "today":
+        default:
+          startDate = new Date(now);
+          startDate.setHours(0, 0, 0, 0);
+          endDate = new Date(now);
+          endDate.setHours(23, 59, 59, 999);
+          break;
+      }
     }
 
     console.log(`Fetching consolidated dashboard analytics for: ${dateFilter}`);

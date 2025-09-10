@@ -51,6 +51,11 @@ export function Dashboard() {
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<string>("today");
+  const [customDateRange, setCustomDateRange] = useState({
+    startDate: "",
+    endDate: new Date().toISOString().split('T')[0] // Current date as default end date
+  });
+  const [showDateRangePicker, setShowDateRangePicker] = useState(false);
 
   const enabledScreens = screenSettings.filter((screen) => screen.enabled);
 
@@ -60,6 +65,8 @@ export function Dashboard() {
     { value: "yesterday", label: "Yesterday" },
     { value: "this_week", label: "This Week" },
     { value: "this_month", label: "This Month" },
+    { value: "last_month", label: "Last Month" },
+    { value: "date_range", label: "Date Range" },
   ];
 
   // Fetch dashboard analytics with date filter
@@ -95,6 +102,42 @@ export function Dashboard() {
   // Handle date filter change
   const handleDateFilterChange = (value: string) => {
     setDateFilter(value);
+    if (value === "date_range") {
+      setShowDateRangePicker(true);
+    } else {
+      setShowDateRangePicker(false);
+    }
+  };
+
+  // Handle custom date range change
+  const handleCustomDateRangeChange = (field: 'startDate' | 'endDate', value: string) => {
+    setCustomDateRange(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  // Apply custom date range
+  const applyCustomDateRange = () => {
+    if (customDateRange.startDate && customDateRange.endDate) {
+      // Convert dates to the format expected by the analytics service
+      const formattedRange = `${customDateRange.startDate}_${customDateRange.endDate}`;
+      fetchAnalyticsWithCustomRange(formattedRange);
+    }
+  };
+
+  // Fetch analytics with custom date range
+  const fetchAnalyticsWithCustomRange = async (dateRange: string) => {
+    try {
+      setLoading(true);
+      const data = await dashboardAnalytics.getDashboardAnalytics(dateRange);
+      console.log("Dashboard analytics loaded for custom range", dateRange, ":", data);
+      setAnalytics(data);
+    } catch (error) {
+      console.error("Failed to fetch dashboard analytics for custom range:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // const handleCreateRecoveryPlan = (disruption: any) => {
@@ -133,6 +176,53 @@ export function Dashboard() {
               ))}
             </SelectContent>
           </Select>
+          
+          {showDateRangePicker && (
+            <div className="flex items-center gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-lg">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-600">Start Date</label>
+                <Input
+                  type="date"
+                  value={customDateRange.startDate}
+                  onChange={(e) => handleCustomDateRangeChange('startDate', e.target.value)}
+                  max={customDateRange.endDate || new Date().toISOString().split('T')[0]}
+                  className="w-36 text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-medium text-gray-600">End Date</label>
+                <Input
+                  type="date"
+                  value={customDateRange.endDate}
+                  onChange={(e) => handleCustomDateRangeChange('endDate', e.target.value)}
+                  min={customDateRange.startDate}
+                  max={new Date().toISOString().split('T')[0]}
+                  className="w-36 text-sm"
+                />
+              </div>
+              <div className="flex gap-1 pt-4">
+                <Button
+                  size="sm"
+                  onClick={applyCustomDateRange}
+                  disabled={!customDateRange.startDate || !customDateRange.endDate}
+                  className="bg-flydubai-blue hover:bg-blue-700 text-white text-xs px-3"
+                >
+                  Apply
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setShowDateRangePicker(false);
+                    setDateFilter("today");
+                  }}
+                  className="text-xs px-3"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

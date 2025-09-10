@@ -66,8 +66,12 @@ class DashboardAnalyticsService {
     // Create cache key that includes date filter
     const cacheKey = `analytics_${dateFilter}`;
 
-    // Return cached data if still valid for this date filter
+    // For custom date ranges, don't use cache to ensure fresh data
+    const isCustomRange = dateFilter.includes('_') && dateFilter !== 'this_week' && dateFilter !== 'this_month' && dateFilter !== 'last_month';
+    
+    // Return cached data if still valid for this date filter (except for custom ranges)
     if (
+      !isCustomRange &&
       this.cache &&
       Date.now() - this.cacheTimestamp < this.CACHE_DURATION &&
       this.lastDateFilter === dateFilter
@@ -94,11 +98,13 @@ class DashboardAnalyticsService {
         analytics,
       );
 
-      // Update cache
-      this.cache = analytics;
-      this.cacheTimestamp = Date.now();
-      this.lastDateFilter = dateFilter;
-      console.log("Updated dashboard analytics cache for", dateFilter);
+      // Update cache (except for custom date ranges)
+      if (!isCustomRange) {
+        this.cache = analytics;
+        this.cacheTimestamp = Date.now();
+        this.lastDateFilter = dateFilter;
+        console.log("Updated dashboard analytics cache for", dateFilter);
+      }
       return analytics;
     } catch (error) {
       console.error("Failed to fetch dashboard analytics:", error);
