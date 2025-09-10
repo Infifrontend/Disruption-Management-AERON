@@ -342,9 +342,12 @@ export function DisruptionInput({
       setLoading(true);
 
       // First update expired disruptions (older than 24 hours)
-      const expiredUpdateResult = await databaseService.updateExpiredDisruptions();
+      const expiredUpdateResult =
+        await databaseService.updateExpiredDisruptions();
       if (expiredUpdateResult.success && expiredUpdateResult.updatedCount > 0) {
-        console.log(`Marked ${expiredUpdateResult.updatedCount} disruptions as expired`);
+        console.log(
+          `Marked ${expiredUpdateResult.updatedCount} disruptions as expired`,
+        );
       }
 
       // First sync from external API to get latest data and prevent duplicates
@@ -920,7 +923,7 @@ export function DisruptionInput({
     const selectedCategory = disruptionCategories.find(
       (cat) => cat.category_code === newDisruption.categorization,
     );
-
+    console.log(newDisruption, "okokok");
     const newFlightData = {
       flightNumber: newDisruption.flightNumber,
       route: `${newDisruption.origin} → ${newDisruption.destination}`,
