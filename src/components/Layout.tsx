@@ -30,6 +30,8 @@ import {
   RotateCcw,
   Wifi,
   WifiOff,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 const iconMap = {
@@ -60,7 +62,7 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { screenSettings, filters, setFilters, currentUser, setCurrentUser } =
+  const { screenSettings, filters, setFilters, currentUser, setCurrentUser, theme, setTheme } =
     useAppContext();
   const [sidebarOpen] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -85,7 +87,36 @@ export function Layout({ children }: LayoutProps) {
     navigate("/login");
   };
 
-  const enabledScreens = screenSettings.filter((screen) => screen.enabled);
+  // Filter screens based on user role and enabled status
+  const enabledScreens = screenSettings.filter((screen) => {
+    if (!screen.enabled) return false;
+    
+    // Define role-based access control
+    const restrictedScreens = {
+      'settings': ['admin', 'manager'],
+      'prediction-dashboard': ['admin', 'manager', 'analyst'],
+      'reports': ['admin', 'manager'],
+      'risk-assessment': ['admin', 'manager', 'analyst'],
+      'hotac': ['admin', 'manager', 'ops'],
+      'maintenance': ['admin', 'manager', 'maintenance'],
+      'fuel-optimization': ['admin', 'manager', 'ops']
+    };
+    
+    // If no user is logged in, only show basic screens
+    if (!currentUser) {
+      return ['dashboard', 'disruption', 'flight-tracking'].includes(screen.id);
+    }
+    
+    // Check if screen requires specific roles
+    const requiredRoles = restrictedScreens[screen.id];
+    if (requiredRoles) {
+      return requiredRoles.includes(currentUser.userType?.toLowerCase()) || 
+             requiredRoles.includes(currentUser.role?.toLowerCase());
+    }
+    
+    // Default: show screen if enabled
+    return true;
+  });
 
   // Update connectivity status
   useEffect(() => {
@@ -392,27 +423,47 @@ export function Layout({ children }: LayoutProps) {
                 </p>
               </div>
 
-              {currentUser && (
-                <div className="flex items-center gap-3 border-l pl-4">
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-airline-navy">
-                      {currentUser.fullName}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {currentUser.userCode} |{" "}
-                      {currentUser.userType.replace("_", " ").toUpperCase()}
-                    </p>
+              <div className="flex items-center gap-3">
+                {/* Theme Toggle */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setTheme(theme === 'default' ? 'dark' : 'default')}
+                  className="flex items-center gap-2"
+                  title={`Switch to ${theme === 'default' ? 'dark' : 'default'} theme`}
+                >
+                  {theme === 'default' ? (
+                    <Moon className="h-4 w-4" />
+                  ) : (
+                    <Sun className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">
+                    {theme === 'default' ? 'Dark' : 'Light'}
+                  </span>
+                </Button>
+
+                {currentUser && (
+                  <div className="flex items-center gap-3 border-l pl-4">
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-airline-navy">
+                        {currentUser.fullName}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {currentUser.userCode} |{" "}
+                        {currentUser.userType.replace("_", " ").toUpperCase()}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleLogout}
+                      className="text-red-600 border-red-200 hover:bg-red-50"
+                    >
+                      Logout
+                    </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleLogout}
-                    className="text-red-600 border-red-200 hover:bg-red-50"
-                  >
-                    Logout
-                  </Button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         )}
