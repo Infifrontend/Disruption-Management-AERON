@@ -105,18 +105,19 @@ const transformFlightData = (disruption: FlightDisruption) => {
     disruption.flightNumber.includes("UNKNOWN-") ||
     !disruption.scheduledDeparture ||
     !disruption.origin ||
+    disruption.origin === "UNKNOWN" ||
     !disruption.destination ||
     disruption.destination === "UNKNOWN";
   return {
     id: disruption.id,
     flightNumber: disruption.flightNumber || "UNKNOWN",
-    origin: disruption.origin || "DXB",
-    destination: disruption.destination || "UNKNOWN",
+    origin: disruption.origin && disruption.origin !== "UNKNOWN" ? disruption.origin : "DXB",
+    destination: disruption.destination && disruption.destination !== "UNKNOWN" ? disruption.destination : "DXB",
     originCity:
-      disruption.originCity || getLocationName(disruption.origin || "DXB"),
+      disruption.originCity || getLocationName(disruption.origin && disruption.origin !== "UNKNOWN" ? disruption.origin : "DXB"),
     destinationCity:
       disruption.destinationCity ||
-      getLocationName(disruption.destination || "UNKNOWN"),
+      getLocationName(disruption.destination && disruption.destination !== "UNKNOWN" ? disruption.destination : "DXB"),
     scheduledDeparture: scheduledDeparture,
     scheduledArrival: scheduledArrival,
     currentStatus: disruption.status,
@@ -369,6 +370,9 @@ export function DisruptionInput({
         })
         .map((disruption) => {
           // Provide defaults for missing required fields
+          const cleanOrigin = disruption.origin && disruption.origin !== "UNKNOWN" ? disruption.origin : "DXB";
+          const cleanDestination = disruption.destination && disruption.destination !== "UNKNOWN" ? disruption.destination : "DXB";
+          
           return {
             ...disruption,
             flightNumber:
@@ -382,18 +386,16 @@ export function DisruptionInput({
             estimatedDeparture:
               (disruption as any).estimated_departure ||
               disruption.estimatedDeparture,
-            origin: disruption.origin || "DXB",
-            destination: disruption.destination || "UNKNOWN",
+            origin: cleanOrigin,
+            destination: cleanDestination,
             originCity:
               (disruption as any).origin_city ||
               disruption.originCity ||
-              disruption.origin ||
-              "Dubai",
+              getLocationName(cleanOrigin),
             destinationCity:
               (disruption as any).destination_city ||
               disruption.destinationCity ||
-              disruption.destination ||
-              "Unknown",
+              getLocationName(cleanDestination),
             status: disruption.status || "Unknown",
             severity: disruption.severity || "Medium",
             type:
@@ -489,6 +491,9 @@ export function DisruptionInput({
         if (fallbackData && fallbackData.length > 0) {
           // Process all fallback data, even if incomplete
           const processedFallbackData = fallbackData.map((disruption) => {
+            const cleanOrigin = disruption.origin && disruption.origin !== "UNKNOWN" ? disruption.origin : "DXB";
+            const cleanDestination = disruption.destination && disruption.destination !== "UNKNOWN" ? disruption.destination : "DXB";
+            
             return {
               ...disruption,
               flightNumber:
@@ -502,18 +507,16 @@ export function DisruptionInput({
               estimatedDeparture:
                 (disruption as any).estimated_departure ||
                 disruption.estimatedDeparture,
-              origin: disruption.origin || "DXB",
-              destination: disruption.destination || "UNKNOWN",
+              origin: cleanOrigin,
+              destination: cleanDestination,
               originCity:
                 (disruption as any).origin_city ||
                 disruption.originCity ||
-                disruption.origin ||
-                "Dubai",
+                getLocationName(cleanOrigin),
               destinationCity:
                 (disruption as any).destination_city ||
                 disruption.destinationCity ||
-                disruption.destination ||
-                "Unknown",
+                getLocationName(cleanDestination),
               status: disruption.status || "Unknown",
               severity: disruption.severity || "Medium",
               type:
