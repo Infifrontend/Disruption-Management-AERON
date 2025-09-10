@@ -60,28 +60,39 @@ class DashboardAnalyticsService {
   private lastDateFilter: string = "";
   private readonly CACHE_DURATION = 30000; // 30 seconds cache
 
-  async getDashboardAnalytics(dateFilter: string = "today"): Promise<DashboardAnalytics> {
+  async getDashboardAnalytics(
+    dateFilter: string = "today",
+  ): Promise<DashboardAnalytics> {
     // Create cache key that includes date filter
     const cacheKey = `analytics_${dateFilter}`;
-    
+
     // Return cached data if still valid for this date filter
-    if (this.cache && Date.now() - this.cacheTimestamp < this.CACHE_DURATION && this.lastDateFilter === dateFilter) {
+    if (
+      this.cache &&
+      Date.now() - this.cacheTimestamp < this.CACHE_DURATION &&
+      this.lastDateFilter === dateFilter
+    ) {
       return this.cache;
     }
 
     try {
       // Make single API call to get consolidated dashboard data with date filter
       const url = new URL(`${databaseService.apiBaseUrl}/dashboard-analytics`);
-      url.searchParams.append('dateFilter', dateFilter);
-      
+      url.searchParams.append("dateFilter", dateFilter);
+
       const response = await fetch(url.toString());
-      
+
       if (!response.ok) {
         throw new Error(`Dashboard analytics API error: ${response.status}`);
       }
 
       const analytics = await response.json();
-      console.log("Fetched consolidated dashboard analytics for", dateFilter, ":", analytics);
+      console.log(
+        "Fetched consolidated dashboard analytics for",
+        dateFilter,
+        ":",
+        analytics,
+      );
 
       // Update cache
       this.cache = analytics;
@@ -101,7 +112,9 @@ class DashboardAnalyticsService {
             databaseService.getPendingRecoverySolutions(),
           ]);
 
-        console.log("Using fallback individual API calls for dashboard analytics");
+        console.log(
+          "Using fallback individual API calls for dashboard analytics",
+        );
         // Calculate analytics from real data
         const analytics = await this.calculateAnalytics(
           allDisruptions,
@@ -114,8 +127,11 @@ class DashboardAnalyticsService {
         this.cacheTimestamp = Date.now();
         return analytics;
       } catch (fallbackError) {
-        console.error("Fallback dashboard analytics also failed:", fallbackError);
-        
+        console.error(
+          "Fallback dashboard analytics also failed:",
+          fallbackError,
+        );
+
         // Return cached data if available, otherwise fallback data
         if (this.cache) {
           return this.cache;
@@ -128,7 +144,7 @@ class DashboardAnalyticsService {
 
   private async getRecoveryLogs(): Promise<any[]> {
     try {
-      return await databaseService.getPastRecoveryLogs("", "", "", "");
+      return await databaseService.getPastRecoveryLogs("");
     } catch (error) {
       console.error("Failed to fetch recovery logs:", error);
       return [];
@@ -150,7 +166,7 @@ class DashboardAnalyticsService {
     console.log("Calculating analytics with:", {
       totalDisruptions: allDisruptions.length,
       totalLogs: allLogs.length,
-      pendingSolutions: pendingSolutions?.length || 0
+      pendingSolutions: pendingSolutions?.length || 0,
     });
 
     // Calculate performance metrics
@@ -193,21 +209,23 @@ class DashboardAnalyticsService {
   private calculatePerformanceMetrics(disruptions: any[], logs: any[]) {
     console.log("Calculating performance metrics with:", {
       disruptionsCount: disruptions.length,
-      logsCount: logs.length
+      logsCount: logs.length,
     });
 
     // Handle disruptions data properly
     const totalPassengers = disruptions.reduce((sum, d) => {
-      const passengers = parseInt(d.passengers) || parseInt(d.affected_passengers) || 0;
+      const passengers =
+        parseInt(d.passengers) || parseInt(d.affected_passengers) || 0;
       return sum + passengers;
     }, 0);
 
     // Calculate from disruptions if no logs available
     const totalDisruptions = disruptions.length;
-    const resolvedDisruptions = disruptions.filter(d => 
-      d.status === "Resolved" || 
-      d.recovery_status === "completed" || 
-      d.recovery_status === "approved"
+    const resolvedDisruptions = disruptions.filter(
+      (d) =>
+        d.status === "Resolved" ||
+        d.recovery_status === "completed" ||
+        d.recovery_status === "approved",
     ).length;
 
     // Calculate costs from disruptions
@@ -218,24 +236,29 @@ class DashboardAnalyticsService {
     }, 0);
 
     // Calculate average resolution time from delay data
-    const avgDelayTime = disruptions.length > 0 
-      ? disruptions.reduce((sum, d) => sum + (parseInt(d.delay_minutes) || 120), 0) / disruptions.length
-      : 120;
+    const avgDelayTime =
+      disruptions.length > 0
+        ? disruptions.reduce(
+            (sum, d) => sum + (parseInt(d.delay_minutes) || 120),
+            0,
+          ) / disruptions.length
+        : 120;
 
     // Calculate success rate
-    const successRate = totalDisruptions > 0 
-      ? ((resolvedDisruptions / totalDisruptions) * 100).toFixed(1)
-      : "95.0";
+    const successRate =
+      totalDisruptions > 0
+        ? ((resolvedDisruptions / totalDisruptions) * 100).toFixed(1)
+        : "95.0";
 
     // Use actual recovery logs if available
-    const completedRecoveries = logs.filter(log => 
-      log.status === "Successful" || 
-      log.status === "completed"
+    const completedRecoveries = logs.filter(
+      (log) => log.status === "Successful" || log.status === "completed",
     );
 
-    const logSuccessRate = logs.length > 0 
-      ? ((completedRecoveries.length / logs.length) * 100).toFixed(1)
-      : successRate;
+    const logSuccessRate =
+      logs.length > 0
+        ? ((completedRecoveries.length / logs.length) * 100).toFixed(1)
+        : successRate;
 
     const logCost = completedRecoveries.reduce(
       (sum, log) => sum + (parseFloat(log.actual_cost) || 0),
@@ -249,7 +272,7 @@ class DashboardAnalyticsService {
       totalPassengers,
       totalCost: finalCost,
       successRate: finalSuccessRate,
-      decisionsProcessed: Math.max(logs.length, totalDisruptions)
+      decisionsProcessed: Math.max(logs.length, totalDisruptions),
     });
 
     return {
@@ -266,36 +289,46 @@ class DashboardAnalyticsService {
     pendingSolutions: any[],
   ) {
     const totalPassengers = disruptions.reduce(
-      (sum, d) => sum + (parseInt(d.passengers) || parseInt(d.affected_passengers) || 0),
+      (sum, d) =>
+        sum + (parseInt(d.passengers) || parseInt(d.affected_passengers) || 0),
       0,
     );
     const highPriorityDisruptions = disruptions.filter(
       (d) => d.severity === "High" || d.severity === "Critical",
     );
     const highPriorityPassengers = highPriorityDisruptions.reduce(
-      (sum, d) => sum + (parseInt(d.passengers) || parseInt(d.affected_passengers) || 0),
+      (sum, d) =>
+        sum + (parseInt(d.passengers) || parseInt(d.affected_passengers) || 0),
       0,
     );
 
     // Calculate actual rebookings and resolved from disruption recovery status
-    const resolvedDisruptions = disruptions.filter(d => 
-      d.recovery_status === 'completed' || 
-      d.status === 'Resolved' || 
-      d.status === 'Completed'
+    const resolvedDisruptions = disruptions.filter(
+      (d) =>
+        d.recovery_status === "completed" ||
+        d.status === "Resolved" ||
+        d.status === "Completed",
     );
-    
+
     const resolvedPassengers = resolvedDisruptions.reduce(
-      (sum, d) => sum + (parseInt(d.passengers) || parseInt(d.affected_passengers) || 0),
+      (sum, d) =>
+        sum + (parseInt(d.passengers) || parseInt(d.affected_passengers) || 0),
       0,
     );
 
     // Estimate rebookings based on disruption severity and type
     const rebookings = disruptions.reduce((sum, d) => {
-      const passengers = parseInt(d.passengers) || parseInt(d.affected_passengers) || 0;
+      const passengers =
+        parseInt(d.passengers) || parseInt(d.affected_passengers) || 0;
       // Higher rebooking rate for cancelled flights, lower for delays
-      const rebookingRate = d.status === 'Cancelled' ? 0.9 : 
-                           d.severity === 'High' ? 0.5 : 
-                           d.severity === 'Critical' ? 0.8 : 0.2;
+      const rebookingRate =
+        d.status === "Cancelled"
+          ? 0.9
+          : d.severity === "High"
+            ? 0.5
+            : d.severity === "Critical"
+              ? 0.8
+              : 0.2;
       return sum + Math.round(passengers * rebookingRate);
     }, 0);
 
@@ -313,7 +346,7 @@ class DashboardAnalyticsService {
     disruptions.forEach((disruption) => {
       const origin = disruption.origin || "UNK";
       let originCity = disruption.origin_city;
-      
+
       // Use proper city mapping if origin_city is missing, null, or "Unknown"
       if (!originCity || originCity === "Unknown" || originCity === "unknown") {
         originCity = this.getKnownCityName(origin);
@@ -331,7 +364,10 @@ class DashboardAnalyticsService {
 
       const station = stationMap.get(origin);
       station.disruptedFlights++;
-      station.passengersAffected += parseInt(disruption.passengers) || parseInt(disruption.affected_passengers) || 0;
+      station.passengersAffected +=
+        parseInt(disruption.passengers) ||
+        parseInt(disruption.affected_passengers) ||
+        0;
 
       // Determine severity based on passengers affected
       if (station.passengersAffected > 500) {
@@ -341,7 +377,10 @@ class DashboardAnalyticsService {
       }
     });
 
-    console.log("Disrupted stations calculated:", Array.from(stationMap.values()));
+    console.log(
+      "Disrupted stations calculated:",
+      Array.from(stationMap.values()),
+    );
 
     // Return top 3 most affected stations
     return Array.from(stationMap.values())
@@ -355,46 +394,51 @@ class DashboardAnalyticsService {
     pendingSolutions: any[],
   ) {
     // Calculate from disruptions data
-    const criticalDisruptions = disruptions.filter(d => 
-      d.severity === "Critical" || d.severity === "High"
+    const criticalDisruptions = disruptions.filter(
+      (d) => d.severity === "Critical" || d.severity === "High",
     ).length;
 
-    const activeDisruptions = disruptions.filter(d => 
-      d.status === "Active" || 
-      d.status === "Delayed" || 
-      (d.recovery_status !== "completed" && d.recovery_status !== "approved")
+    const activeDisruptions = disruptions.filter(
+      (d) =>
+        d.status === "Active" ||
+        d.status === "Delayed" ||
+        (d.recovery_status !== "completed" && d.recovery_status !== "approved"),
     ).length;
 
     // Use logs if available, otherwise calculate from disruptions
-    const completedLogs = logs.filter(log => 
-      log.status === "Successful" || log.status === "completed"
+    const completedLogs = logs.filter(
+      (log) => log.status === "Successful" || log.status === "completed",
     );
-    
-    const resolvedDisruptions = disruptions.filter(d => 
-      d.status === "Resolved" || 
-      d.recovery_status === "completed" || 
-      d.recovery_status === "approved"
+
+    const resolvedDisruptions = disruptions.filter(
+      (d) =>
+        d.status === "Resolved" ||
+        d.recovery_status === "completed" ||
+        d.recovery_status === "approved",
     ).length;
 
     const totalItems = Math.max(logs.length, disruptions.length);
     const successfulItems = Math.max(completedLogs.length, resolvedDisruptions);
 
-    const recoveryRate = totalItems > 0 
-      ? ((successfulItems / totalItems) * 100).toFixed(1)
-      : "95.0";
+    const recoveryRate =
+      totalItems > 0
+        ? ((successfulItems / totalItems) * 100).toFixed(1)
+        : "95.0";
 
     // Calculate average resolution time
-    const avgResolutionTime = disruptions.length > 0
-      ? disruptions.reduce((sum, d) => {
-          const delayMinutes = parseInt(d.delay_minutes) || 120;
-          return sum + (delayMinutes / 60); // Convert to hours
-        }, 0) / disruptions.length
-      : 2.4;
+    const avgResolutionTime =
+      disruptions.length > 0
+        ? disruptions.reduce((sum, d) => {
+            const delayMinutes = parseInt(d.delay_minutes) || 120;
+            return sum + delayMinutes / 60; // Convert to hours
+          }, 0) / disruptions.length
+        : 2.4;
 
     // Find most disrupted route
     const routeMap = new Map();
     disruptions.forEach((d) => {
-      const route = d.route || `${d.origin || 'UNK'} → ${d.destination || 'UNK'}`;
+      const route =
+        d.route || `${d.origin || "UNK"} → ${d.destination || "UNK"}`;
       routeMap.set(route, (routeMap.get(route) || 0) + 1);
     });
 
@@ -405,7 +449,12 @@ class DashboardAnalyticsService {
       )[0];
       mostDisruptedRoute = {
         route: maxRoute[0],
-        impact: maxRoute[1] > 3 ? "High Impact" : maxRoute[1] > 1 ? "Medium Impact" : "Low Impact",
+        impact:
+          maxRoute[1] > 3
+            ? "High Impact"
+            : maxRoute[1] > 1
+              ? "Medium Impact"
+              : "Low Impact",
       };
     }
 
@@ -413,7 +462,7 @@ class DashboardAnalyticsService {
       criticalDisruptions,
       activeDisruptions,
       recoveryRate,
-      avgResolutionTime: avgResolutionTime.toFixed(1)
+      avgResolutionTime: avgResolutionTime.toFixed(1),
     });
 
     return {
@@ -434,43 +483,58 @@ class DashboardAnalyticsService {
   private calculateNetworkOverview(disruptions: any[], logs: any[]) {
     // Calculate more realistic network metrics based on actual data
     const disruptionCount = disruptions.length;
-    
+
     // Use disruption ratio to estimate total network (typically 3-8% of flights have disruptions)
-    const estimatedActiveFlights = disruptionCount > 0 
-      ? Math.max(Math.round(disruptionCount / 0.05), 100) // Assume 5% disruption rate
-      : 150; // Default baseline
-    
+    const estimatedActiveFlights =
+      disruptionCount > 0
+        ? Math.max(Math.round(disruptionCount / 0.05), 100) // Assume 5% disruption rate
+        : 150; // Default baseline
+
     const totalPassengers = disruptions.reduce((sum, d) => {
-      return sum + (parseInt(d.passengers) || parseInt(d.affected_passengers) || 0);
+      return (
+        sum + (parseInt(d.passengers) || parseInt(d.affected_passengers) || 0)
+      );
     }, 0);
 
     // More realistic network passenger estimate (disrupted passengers typically 2-5% of total)
-    const estimatedTotalPassengers = totalPassengers > 0 
-      ? Math.max(Math.round(totalPassengers / 0.03), 10000) // Assume 3% of passengers affected
-      : 15000; // Default baseline
+    const estimatedTotalPassengers =
+      totalPassengers > 0
+        ? Math.max(Math.round(totalPassengers / 0.03), 10000) // Assume 3% of passengers affected
+        : 15000; // Default baseline
 
     // Calculate OTP more accurately
-    const significantDelays = disruptions.filter(d => 
-      parseInt(d.delay_minutes) > 15 || d.status === 'Cancelled'
+    const significantDelays = disruptions.filter(
+      (d) => parseInt(d.delay_minutes) > 15 || d.status === "Cancelled",
     ).length;
-    
-    const onTimeFlights = Math.max(0, estimatedActiveFlights - significantDelays);
-    const otpPerformance = estimatedActiveFlights > 0 
-      ? ((onTimeFlights / estimatedActiveFlights) * 100).toFixed(1)
-      : "91.5";
+
+    const onTimeFlights = Math.max(
+      0,
+      estimatedActiveFlights - significantDelays,
+    );
+    const otpPerformance =
+      estimatedActiveFlights > 0
+        ? ((onTimeFlights / estimatedActiveFlights) * 100).toFixed(1)
+        : "91.5";
 
     // Better daily change calculation based on severity
-    const criticalDisruptions = disruptions.filter(d => 
-      d.severity === 'Critical' || d.severity === 'High'
+    const criticalDisruptions = disruptions.filter(
+      (d) => d.severity === "Critical" || d.severity === "High",
     ).length;
-    
-    const avgImpact = disruptions.length > 0 
-      ? disruptions.reduce((sum, d) => {
-          const delayWeight = Math.min(parseInt(d.delay_minutes) || 0, 300) / 300; // Cap at 5 hours
-          const severityWeight = d.severity === 'Critical' ? 1.0 : d.severity === 'High' ? 0.7 : 0.3;
-          return sum + (delayWeight * severityWeight);
-        }, 0) / disruptions.length
-      : 0;
+
+    const avgImpact =
+      disruptions.length > 0
+        ? disruptions.reduce((sum, d) => {
+            const delayWeight =
+              Math.min(parseInt(d.delay_minutes) || 0, 300) / 300; // Cap at 5 hours
+            const severityWeight =
+              d.severity === "Critical"
+                ? 1.0
+                : d.severity === "High"
+                  ? 0.7
+                  : 0.3;
+            return sum + delayWeight * severityWeight;
+          }, 0) / disruptions.length
+        : 0;
 
     const dailyChange = {
       activeFlights: Math.round((0.9 - avgImpact) * 20), // Impact on flight operations
@@ -483,7 +547,7 @@ class DashboardAnalyticsService {
       estimatedTotalPassengers,
       otpPerformance,
       disruptionCount: disruptions.length,
-      criticalDisruptions
+      criticalDisruptions,
     });
 
     return {
@@ -509,28 +573,28 @@ class DashboardAnalyticsService {
     const cityMap: Record<string, string> = {
       // UAE
       DXB: "Dubai",
-      AUH: "Abu Dhabi", 
+      AUH: "Abu Dhabi",
       SLL: "Salalah",
       AAN: "Al Ain",
       DWC: "Dubai World Central",
-      
+
       // India/Pakistan
       DEL: "Delhi",
       BOM: "Mumbai",
       KHI: "Karachi",
       COK: "Kochi",
-      
+
       // Nepal
       BKT: "Bhaktalpur",
       KTM: "Kathmandu",
-      
+
       // Middle East
       DOH: "Doha",
       KWI: "Kuwait",
       CAI: "Cairo",
       AMM: "Amman",
       BGW: "Baghdad",
-      
+
       // Europe
       IST: "Istanbul",
       LHR: "London",
