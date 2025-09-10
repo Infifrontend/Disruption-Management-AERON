@@ -87,6 +87,34 @@ export function Layout({ children }: LayoutProps) {
 
   const enabledScreens = screenSettings.filter((screen) => screen.enabled);
 
+  // Filter screens based on user permissions
+  const getFilteredScreensByPermission = (screens) => {
+    if (!currentUser) return [];
+    
+    // Define route permissions mapping
+    const routePermissions = {
+      'maintenance': 'super_admin',
+      'passengers': 'passenger_manager', 
+      'hotac': 'crew_manager',
+      'settings': 'super_admin'
+    };
+
+    return screens.filter(screen => {
+      const requiredUserType = routePermissions[screen.id];
+      
+      // If no specific permission required, show to all authenticated users
+      if (!requiredUserType) return true;
+      
+      // Super admin has access to everything
+      if (currentUser.userType === 'super_admin') return true;
+      
+      // Check specific user type permission
+      return currentUser.userType === requiredUserType;
+    });
+  };
+
+  const filteredScreens = getFilteredScreensByPermission(enabledScreens);
+
   // Update connectivity status
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -261,7 +289,7 @@ export function Layout({ children }: LayoutProps) {
   };
 
   const quickStats = getQuickStats();
-  const currentScreen = enabledScreens.find(
+  const currentScreen = filteredScreens.find(
     (s) =>
       location.pathname === `/${s.id}` ||
       (location.pathname === "/" && s.id === "dashboard"),
@@ -290,7 +318,7 @@ export function Layout({ children }: LayoutProps) {
         {/* Navigation Menu */}
         <div className="flex-1 overflow-y-auto py-4">
           {Object.entries(categories).map(([categoryKey, category]) => {
-            const categoryScreens = enabledScreens.filter(
+            const categoryScreens = filteredScreens.filter(
               (screen) => screen.category === categoryKey,
             );
             if (categoryScreens.length === 0) return null;
