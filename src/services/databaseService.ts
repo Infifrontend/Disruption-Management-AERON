@@ -1539,6 +1539,40 @@ class DatabaseService {
     }
   }
 
+  // Update expired disruptions
+  async updateExpiredDisruptions(): Promise<{
+    success: boolean;
+    updatedCount: number;
+    cutoffTime?: string;
+  }> {
+    try {
+      console.log("Updating expired disruptions...");
+      
+      const response = await fetch(`${this.baseUrl}/disruptions/update-expired`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log(`Updated ${result.updatedCount} disruptions to expired status`);
+      
+      return {
+        success: result.success,
+        updatedCount: result.updatedCount,
+        cutoffTime: result.cutoffTime,
+      };
+    } catch (error) {
+      console.error("Error updating expired disruptions:", error);
+      return { success: false, updatedCount: 0 };
+    }
+  }
+
   // Sync disruptions from external API - disabled to prevent unknown records
   async syncDisruptionsFromExternalAPI(): Promise<{
     inserted: number;

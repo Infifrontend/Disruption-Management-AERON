@@ -1835,6 +1835,10 @@ app.get("/api/disruptions/", async (req, res) => {
   const result = await withDatabaseFallback(async () => {
     const { recovery_status, category_code } = req.query;
 
+    // Calculate 24 hours ago
+    const twentyFourHoursAgo = new Date();
+    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+
     // Build the base query with JOIN
     let query = `
       SELECT
@@ -1849,10 +1853,20 @@ app.get("/api/disruptions/", async (req, res) => {
       FROM flight_disruptions fd
       LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
     `;
+    
     // Build WHERE conditions
     const conditions = [];
     const params = [];
     let paramCount = 0;
+
+    // Always filter to last 24 hours and exclude expired status
+    paramCount++;
+    conditions.push(`fd.created_at >= $${paramCount}`);
+    params.push(twentyFourHoursAgo.toISOString());
+    
+    paramCount++;
+    conditions.push(`fd.status != $${paramCount}`);
+    params.push('expired');
 
     // Filter by recovery_status if provided
     if (recovery_status) {
@@ -1868,10 +1882,8 @@ app.get("/api/disruptions/", async (req, res) => {
       params.push(category_code);
     }
 
-    // Add WHERE clause if there are conditions
-    if (conditions.length > 0) {
-      query += ` WHERE ${conditions.join(" AND ")}`;
-    }
+    // Add WHERE clause
+    query += ` WHERE ${conditions.join(" AND ")}`;
 
     // Add ORDER BY
     query += ` ORDER BY fd.created_at DESC`;
@@ -2156,6 +2168,39 @@ app.put("/api/passengers/:pnr/rebooking", async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error updating passenger rebooking:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Update expired disruptions endpoint
+app.post("/api/disruptions/update-expired", async (req, res) => {
+  try {
+    console.log("Updating expired flight disruptions...");
+    
+    // Calculate 24 hours ago
+    const twentyFourHoursAgo = new Date();
+    twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+    
+    // Update disruptions older than 24 hours to 'expired' status
+    const updateResult = await pool.query(
+      `UPDATE flight_disruptions 
+       SET status = 'expired', updated_at = CURRENT_TIMESTAMP 
+       WHERE created_at < $1 AND status != 'expired' 
+       RETURNING id, flight_number, created_at`,
+      [twentyFourHoursAgo.toISOString()]
+    );
+
+    const updatedCount = updateResult.rows.length;
+    console.log(`Updated ${updatedCount} disruptions to expired status`);
+
+    res.json({
+      success: true,
+      updatedCount,
+      updatedDisruptions: updateResult.rows,
+      cutoffTime: twentyFourHoursAgo.toISOString()
+    });
+  } catch (error) {
+    console.error("Error updating expired disruptions:", error);
     res.status(500).json({ error: error.message });
   }
 });
