@@ -341,11 +341,17 @@ export function DisruptionInput({
       setError(null);
       setLoading(true);
 
+      // First update expired disruptions (older than 24 hours)
+      const expiredUpdateResult = await databaseService.updateExpiredDisruptions();
+      if (expiredUpdateResult.success && expiredUpdateResult.updatedCount > 0) {
+        console.log(`Marked ${expiredUpdateResult.updatedCount} disruptions as expired`);
+      }
+
       // First sync from external API to get latest data and prevent duplicates
       const syncResult = await databaseService.syncDisruptionsFromExternalAPI();
 
       // Then fetch all current disruptions from database, filtering by recovery_status = 'assigned'
-      // Changed filter to 'assigned' as per the requirement
+      // This will now only return disruptions from the last 24 hours (non-expired)
       const data = await databaseService.getAllDisruptions("assigned");
       // debugger;
       // Process all data, including incomplete records with fallbacks
@@ -434,14 +440,21 @@ export function DisruptionInput({
         setTimeout(() => setSuccess(null), 8000);
       }
 
+      // Show information about expired disruptions update
+      if (expiredUpdateResult.success && expiredUpdateResult.updatedCount > 0) {
+        const expiredMessage = `ℹ️ ${expiredUpdateResult.updatedCount} disruptions older than 24 hours were marked as expired and filtered out.`;
+        setSuccess(expiredMessage);
+        setTimeout(() => setSuccess(null), 6000);
+      }
+
       // Clear any previous errors if we have any data
       if (transformedFlights.length === 0 && data.length === 0) {
         setError(
-          "No flight disruptions found with assigned recovery status. Add new disruptions using the 'Add Disruption' button.",
+          "No flight disruptions found from the last 24 hours with assigned recovery status. Add new disruptions using the 'Add Disruption' button.",
         );
       } else if (incompleteCount > 0 && incompleteCount < data.length) {
         setSuccess(
-          `⚠️ ${incompleteCount} disruptions had incomplete information but are shown with default values. All ${transformedFlights.length} disruptions are displayed.`,
+          `⚠️ ${incompleteCount} disruptions had incomplete information but are shown with default values. Showing ${transformedFlights.length} disruptions from the last 24 hours.`,
         );
         setTimeout(() => setSuccess(null), 6000);
       }
