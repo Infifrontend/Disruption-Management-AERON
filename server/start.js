@@ -1853,7 +1853,7 @@ app.get("/api/disruptions/", async (req, res) => {
       FROM flight_disruptions fd
       LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
     `;
-    
+
     // Build WHERE conditions
     const conditions = [];
     const params = [];
@@ -1863,10 +1863,10 @@ app.get("/api/disruptions/", async (req, res) => {
     paramCount++;
     conditions.push(`fd.created_at >= $${paramCount}`);
     params.push(twentyFourHoursAgo.toISOString());
-    
+
     paramCount++;
     conditions.push(`fd.status != $${paramCount}`);
-    params.push('expired');
+    params.push("expired");
 
     // Filter by recovery_status if provided
     if (recovery_status) {
@@ -2176,18 +2176,18 @@ app.put("/api/passengers/:pnr/rebooking", async (req, res) => {
 app.post("/api/disruptions/update-expired", async (req, res) => {
   try {
     console.log("Updating expired flight disruptions...");
-    
+
     // Calculate 24 hours ago
     const twentyFourHoursAgo = new Date();
     twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
-    
+
     // Update disruptions older than 24 hours to 'expired' status
     const updateResult = await pool.query(
       `UPDATE flight_disruptions 
        SET status = 'expired', updated_at = CURRENT_TIMESTAMP 
        WHERE created_at < $1 AND status != 'expired' 
        RETURNING id, flight_number, created_at`,
-      [twentyFourHoursAgo.toISOString()]
+      [twentyFourHoursAgo.toISOString()],
     );
 
     const updatedCount = updateResult.rows.length;
@@ -2197,7 +2197,7 @@ app.post("/api/disruptions/update-expired", async (req, res) => {
       success: true,
       updatedCount,
       updatedDisruptions: updateResult.rows,
-      cutoffTime: twentyFourHoursAgo.toISOString()
+      cutoffTime: twentyFourHoursAgo.toISOString(),
     });
   } catch (error) {
     console.error("Error updating expired disruptions:", error);
@@ -2533,32 +2533,40 @@ app.post("/api/hotel-bookings", async (req, res) => {
 // Consolidated Dashboard Analytics endpoint
 app.get("/api/dashboard-analytics", async (req, res) => {
   try {
-    const { dateFilter = 'today' } = req.query;
-    
+    const { dateFilter = "today" } = req.query;
+
     // Calculate date range based on filter
     let startDate, endDate;
     const now = new Date();
-    
+
     switch (dateFilter) {
-      case 'yesterday':
+      case "yesterday":
         startDate = new Date(now);
         startDate.setDate(startDate.getDate() - 1);
         startDate.setHours(0, 0, 0, 0);
         endDate = new Date(startDate);
         endDate.setHours(23, 59, 59, 999);
         break;
-      case 'this_week':
+      case "this_week":
         startDate = new Date(now);
         startDate.setDate(startDate.getDate() - now.getDay());
         startDate.setHours(0, 0, 0, 0);
         endDate = new Date(now);
         endDate.setHours(23, 59, 59, 999);
         break;
-      case 'this_month':
+      case "this_month":
         startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-        endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+        endDate = new Date(
+          now.getFullYear(),
+          now.getMonth() + 1,
+          0,
+          23,
+          59,
+          59,
+          999,
+        );
         break;
-      case 'today':
+      case "today":
       default:
         startDate = new Date(now);
         startDate.setHours(0, 0, 0, 0);
@@ -2568,7 +2576,9 @@ app.get("/api/dashboard-analytics", async (req, res) => {
     }
 
     console.log(`Fetching consolidated dashboard analytics for: ${dateFilter}`);
-    console.log(`Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    console.log(
+      `Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`,
+    );
 
     // Get disruptions for the date range
     const disruptionsQuery = `
@@ -2579,10 +2589,13 @@ app.get("/api/dashboard-analytics", async (req, res) => {
         AND fd.status != 'expired'
       ORDER BY fd.created_at DESC
     `;
-    
-    const disruptionsResult = await pool.query(disruptionsQuery, [startDate.toISOString(), endDate.toISOString()]);
+
+    const disruptionsResult = await pool.query(disruptionsQuery, [
+      startDate.toISOString(),
+      endDate.toISOString(),
+    ]);
     const disruptions = disruptionsResult.rows;
-    
+
     console.log(`Found ${disruptions.length} disruptions for analytics`);
 
     // Get actual passenger rebooking data
@@ -2593,7 +2606,10 @@ app.get("/api/dashboard-analytics", async (req, res) => {
       WHERE fd.created_at >= $1 AND fd.created_at <= $2
         AND pr.status = 'confirmed'
     `;
-    const rebookingsResult = await pool.query(rebookingsQuery, [startDate.toISOString(), endDate.toISOString()]);
+    const rebookingsResult = await pool.query(rebookingsQuery, [
+      startDate.toISOString(),
+      endDate.toISOString(),
+    ]);
     const actualRebookings = parseInt(rebookingsResult.rows[0]?.count) || 0;
 
     // Get recovery logs for performance metrics
@@ -2605,46 +2621,101 @@ app.get("/api/dashboard-analytics", async (req, res) => {
       FROM recovery_logs 
       WHERE date_created >= $1 AND date_created <= $2
     `;
-    const recoveryLogsResult = await pool.query(recoveryLogsQuery, [startDate.toISOString(), endDate.toISOString()]);
+    const recoveryLogsResult = await pool.query(recoveryLogsQuery, [
+      startDate.toISOString(),
+      endDate.toISOString(),
+    ]);
     const recoveryData = recoveryLogsResult.rows[0];
 
     // Calculate performance metrics
-    const totalPassengers = disruptions.reduce((sum, d) => sum + (parseInt(d.passengers) || 0), 0);
-    const totalCost = parseFloat(recoveryData?.total_cost) || 
-                     disruptions.reduce((sum, d) => sum + ((parseInt(d.delay_minutes) || 0) * 150), 0);
-    
-    const completedRecoveries = parseInt(recoveryData?.completed_count) || 
-                               disruptions.filter(d => d.recovery_status === 'completed' || d.status === 'Resolved').length;
-    
-    const totalRecoveries = Math.max(disruptions.length, parseInt(recoveryData?.completed_count) || 0);
-    const successRate = totalRecoveries > 0 ? ((parseInt(recoveryData?.successful_count) || completedRecoveries) / totalRecoveries * 100) : 95.0;
-    
-    const avgDecisionTime = parseFloat(recoveryData?.avg_resolution_hours) || 
-                           (disruptions.length > 0 ? disruptions.reduce((sum, d) => sum + (parseInt(d.delay_minutes) || 120), 0) / disruptions.length / 60 : 2.0);
+    const totalPassengers = disruptions.reduce(
+      (sum, d) => sum + (parseInt(d.passengers) || 0),
+      0,
+    );
+    const totalCost =
+      parseFloat(recoveryData?.total_cost) ||
+      disruptions.reduce(
+        (sum, d) => sum + (parseInt(d.delay_minutes) || 0) * 150,
+        0,
+      );
+
+    const completedRecoveries =
+      parseInt(recoveryData?.completed_count) ||
+      disruptions.filter(
+        (d) => d.recovery_status === "completed" || d.status === "Resolved",
+      ).length;
+
+    const totalRecoveries = Math.max(
+      disruptions.length,
+      parseInt(recoveryData?.completed_count) || 0,
+    );
+    const successRate =
+      totalRecoveries > 0
+        ? ((parseInt(recoveryData?.successful_count) || completedRecoveries) /
+            totalRecoveries) *
+          100
+        : 95.0;
+
+    const avgDecisionTime =
+      parseFloat(recoveryData?.avg_resolution_hours) ||
+      (disruptions.length > 0
+        ? disruptions.reduce(
+            (sum, d) => sum + (parseInt(d.delay_minutes) || 120),
+            0,
+          ) /
+          disruptions.length /
+          60
+        : 2.0);
 
     // Calculate passenger impact with real data
-    const highPriorityDisruptions = disruptions.filter(d => d.severity === 'High' || d.severity === 'Critical');
-    const highPriorityPassengers = highPriorityDisruptions.reduce((sum, d) => sum + (parseInt(d.passengers) || 0), 0);
-    
+    const highPriorityDisruptions = disruptions.filter(
+      (d) => d.severity === "High" || d.severity === "Critical",
+    );
+    const highPriorityPassengers = highPriorityDisruptions.reduce(
+      (sum, d) => sum + (parseInt(d.passengers) || 0),
+      0,
+    );
+
     // Calculate resolved passengers from successful recovery logs and completed disruptions
-    const resolvedDisruptions = disruptions.filter(d => d.recovery_status === 'completed' || d.status === 'Resolved');
-    const resolvedPassengers = resolvedDisruptions.reduce((sum, d) => sum + (parseInt(d.passengers) || 0), 0);
+    const resolvedDisruptions = disruptions.filter(
+      (d) => d.recovery_status === "completed" || d.status === "Resolved",
+    );
+    const resolvedPassengers = resolvedDisruptions.reduce(
+      (sum, d) => sum + (parseInt(d.passengers) || 0),
+      0,
+    );
 
     // Calculate disrupted stations with proper city mapping
     const stationMap = new Map();
     const cityMapping = {
-      'DXB': 'Dubai', 'AUH': 'Abu Dhabi', 'SLL': 'Salalah', 'AAN': 'Al Ain',
-      'DEL': 'Delhi', 'BOM': 'Mumbai', 'KHI': 'Karachi', 'COK': 'Kochi',
-      'BKT': 'Bhaktalpur', 'KTM': 'Kathmandu', 'DOH': 'Doha', 'KWI': 'Kuwait',
-      'CAI': 'Cairo', 'AMM': 'Amman', 'BGW': 'Baghdad', 'IST': 'Istanbul',
-      'LHR': 'London', 'CDG': 'Paris', 'FRA': 'Frankfurt', 'DWC': 'Dubai World Central'
+      DXB: "Dubai",
+      AUH: "Abu Dhabi",
+      SLL: "Salalah",
+      AAN: "Al Ain",
+      DEL: "Delhi",
+      BOM: "Mumbai",
+      KHI: "Karachi",
+      COK: "Kochi",
+      BKT: "Bhaktalpur",
+      KTM: "Kathmandu",
+      DOH: "Doha",
+      KWI: "Kuwait",
+      CAI: "Cairo",
+      AMM: "Amman",
+      BGW: "Baghdad",
+      IST: "Istanbul",
+      LHR: "London",
+      CDG: "Paris",
+      FRA: "Frankfurt",
+      DWC: "Dubai World Central",
     };
 
     disruptions.forEach((disruption) => {
-      const origin = disruption.origin || 'UNK';
-      const originCity = disruption.origin_city && disruption.origin_city !== 'Unknown' 
-        ? disruption.origin_city 
-        : cityMapping[origin] || 'Unknown';
+      const origin = disruption.origin || "UNK";
+      const originCity =
+        disruption.origin_city && disruption.origin_city !== "Unknown"
+          ? disruption.origin_city
+          : cityMapping[origin] || "Unknown";
 
       if (!stationMap.has(origin)) {
         stationMap.set(origin, {
@@ -2652,7 +2723,7 @@ app.get("/api/dashboard-analytics", async (req, res) => {
           name: `${origin} - ${originCity}`,
           disruptedFlights: 0,
           passengersAffected: 0,
-          severity: 'low',
+          severity: "low",
         });
       }
 
@@ -2662,9 +2733,9 @@ app.get("/api/dashboard-analytics", async (req, res) => {
 
       // Determine severity based on passengers affected
       if (station.passengersAffected > 500) {
-        station.severity = 'high';
+        station.severity = "high";
       } else if (station.passengersAffected > 200) {
-        station.severity = 'medium';
+        station.severity = "medium";
       }
     });
 
@@ -2673,36 +2744,53 @@ app.get("/api/dashboard-analytics", async (req, res) => {
       .slice(0, 3);
 
     // Calculate operational insights
-    const criticalDisruptions = disruptions.filter(d => d.severity === 'Critical' || d.severity === 'High').length;
-    const activeDisruptions = disruptions.filter(d => 
-      d.status === 'Active' || d.status === 'Delayed' || 
-      (d.recovery_status !== 'completed' && d.recovery_status !== 'approved')
+    const criticalDisruptions = disruptions.filter(
+      (d) => d.severity === "Critical" || d.severity === "High",
+    ).length;
+    const activeDisruptions = disruptions.filter(
+      (d) =>
+        d.status === "Active" ||
+        d.status === "Delayed" ||
+        (d.recovery_status !== "completed" && d.recovery_status !== "approved"),
     ).length;
 
     // Calculate network overview with real flight data
     const estimatedTotalFlights = Math.max(disruptions.length * 30, 200); // Estimate based on disruption ratio
     const estimatedTotalPassengers = Math.max(totalPassengers * 20, 5000); // Estimate total network
-    
-    const delayedFlights = disruptions.filter(d => parseInt(d.delay_minutes) > 15).length;
+
+    const delayedFlights = disruptions.filter(
+      (d) => parseInt(d.delay_minutes) > 15,
+    ).length;
     const onTimeFlights = estimatedTotalFlights - delayedFlights;
-    const otpPerformance = estimatedTotalFlights > 0 ? ((onTimeFlights / estimatedTotalFlights) * 100) : 89.2;
+    const otpPerformance =
+      estimatedTotalFlights > 0
+        ? (onTimeFlights / estimatedTotalFlights) * 100
+        : 89.2;
 
     // Find most disrupted route
     const routeMap = new Map();
     disruptions.forEach((d) => {
-      const route = d.route || `${d.origin || 'UNK'} → ${d.destination || 'UNK'}`;
+      const route =
+        d.route || `${d.origin || "UNK"} → ${d.destination || "UNK"}`;
       routeMap.set(route, (routeMap.get(route) || 0) + 1);
     });
 
     let mostDisruptedRoute = { route: "No disruptions", impact: "N/A" };
     if (routeMap.size > 0) {
-      const maxRoute = Array.from(routeMap.entries()).sort((a, b) => b[1] - a[1])[0];
+      const maxRoute = Array.from(routeMap.entries()).sort(
+        (a, b) => b[1] - a[1],
+      )[0];
       mostDisruptedRoute = {
         route: maxRoute[0],
-        impact: maxRoute[1] > 2 ? "High Impact" : maxRoute[1] > 1 ? "Medium Impact" : "Low Impact",
+        impact:
+          maxRoute[1] > 2
+            ? "High Impact"
+            : maxRoute[1] > 1
+              ? "Medium Impact"
+              : "Low Impact",
       };
     }
-
+    console.log(actualRebookings, "testtsttsts");
     const analytics = {
       performance: {
         costSavings: `AED ${Math.round(totalCost / 1000)}K`,
@@ -2721,7 +2809,12 @@ app.get("/api/dashboard-analytics", async (req, res) => {
       operationalInsights: {
         recoveryRate: `${successRate.toFixed(1)}%`,
         avgResolutionTime: `${avgDecisionTime.toFixed(1)}h`,
-        networkImpact: activeDisruptions > 5 ? "High" : activeDisruptions > 2 ? "Medium" : "Low",
+        networkImpact:
+          activeDisruptions > 5
+            ? "High"
+            : activeDisruptions > 2
+              ? "Medium"
+              : "Low",
         criticalPriority: criticalDisruptions,
         activeDisruptions: activeDisruptions,
         mostDisruptedRoute: mostDisruptedRoute,
@@ -2738,12 +2831,11 @@ app.get("/api/dashboard-analytics", async (req, res) => {
       },
     };
 
-    console.log('Successfully calculated consolidated dashboard analytics');
+    console.log("Successfully calculated consolidated dashboard analytics");
     res.json(analytics);
-
   } catch (error) {
     console.error("Error fetching consolidated dashboard analytics:", error);
-    
+
     // Return fallback data on error
     res.json({
       performance: {
@@ -2857,8 +2949,10 @@ app.get("/api/past-recovery-kpi", async (req, res) => {
     const kpiResult = await pool.query(kpiQuery);
     const data = kpiResult.rows[0];
 
-    const successRate = data.total_recoveries > 0 ? 
-      (data.successful_recoveries / data.total_recoveries) * 100 : 0;
+    const successRate =
+      data.total_recoveries > 0
+        ? (data.successful_recoveries / data.total_recoveries) * 100
+        : 0;
 
     const avgResolutionTime = data.avg_delay ? data.avg_delay * 2 : 180; // Convert to minutes
 
@@ -2869,10 +2963,14 @@ app.get("/api/past-recovery-kpi", async (req, res) => {
       costEfficiency: 3.8,
       passengerSatisfaction: 8.2,
       totalPassengers: parseInt(data.total_passengers) || 0,
-      avgRecoveryEfficiency: parseFloat((parseFloat(data.avg_recovery_efficiency) || 92.5).toFixed(1)),
+      avgRecoveryEfficiency: parseFloat(
+        (parseFloat(data.avg_recovery_efficiency) || 92.5).toFixed(1),
+      ),
       totalDelayReduction: parseInt(data.total_delay_reduction) || 0,
       cancellationsAvoided: parseInt(data.cancellations_avoided) || 0,
-      totalCostSavings: parseFloat((parseFloat(data.avg_cost_savings) || 0).toFixed(0))
+      totalCostSavings: parseFloat(
+        (parseFloat(data.avg_cost_savings) || 0).toFixed(0),
+      ),
     });
   } catch (error) {
     console.error("Error fetching past recovery KPI:", error);
@@ -2904,20 +3002,56 @@ app.get("/api/past-recovery-trends", async (req, res) => {
     if (trendsResult.rows.length === 0) {
       // Return mock data if no trends found
       res.json([
-        { month: "Jan 25", efficiency: 82, delayReduction: 45, costSavings: 12500, satisfaction: 7.8 },
-        { month: "Feb 25", efficiency: 85, delayReduction: 52, costSavings: 15200, satisfaction: 8.1 },
-        { month: "Mar 25", efficiency: 88, delayReduction: 58, costSavings: 18700, satisfaction: 8.4 },
-        { month: "Apr 25", efficiency: 91, delayReduction: 65, costSavings: 22100, satisfaction: 8.7 },
-        { month: "May 25", efficiency: 89, delayReduction: 62, costSavings: 19800, satisfaction: 8.5 },
-        { month: "Jun 25", efficiency: 93, delayReduction: 71, costSavings: 25400, satisfaction: 9.0 }
+        {
+          month: "Jan 25",
+          efficiency: 82,
+          delayReduction: 45,
+          costSavings: 12500,
+          satisfaction: 7.8,
+        },
+        {
+          month: "Feb 25",
+          efficiency: 85,
+          delayReduction: 52,
+          costSavings: 15200,
+          satisfaction: 8.1,
+        },
+        {
+          month: "Mar 25",
+          efficiency: 88,
+          delayReduction: 58,
+          costSavings: 18700,
+          satisfaction: 8.4,
+        },
+        {
+          month: "Apr 25",
+          efficiency: 91,
+          delayReduction: 65,
+          costSavings: 22100,
+          satisfaction: 8.7,
+        },
+        {
+          month: "May 25",
+          efficiency: 89,
+          delayReduction: 62,
+          costSavings: 19800,
+          satisfaction: 8.5,
+        },
+        {
+          month: "Jun 25",
+          efficiency: 93,
+          delayReduction: 71,
+          costSavings: 25400,
+          satisfaction: 9.0,
+        },
       ]);
     } else {
-      const trends = trendsResult.rows.map(row => ({
+      const trends = trendsResult.rows.map((row) => ({
         month: row.month,
         efficiency: Math.round(parseFloat(row.efficiency)),
         delayReduction: Math.round(parseFloat(row.delay_reduction)),
         costSavings: Math.round(parseFloat(row.cost_savings)),
-        satisfaction: parseFloat(parseFloat(row.satisfaction).toFixed(1))
+        satisfaction: parseFloat(parseFloat(row.satisfaction).toFixed(1)),
       }));
       res.json(trends);
     }
@@ -4970,33 +5104,33 @@ app.get("/api/past-recovery-logs", async (req, res) => {
     const params = [];
     let paramCount = 0;
 
-    if (status && status !== 'all') {
+    if (status && status !== "all") {
       paramCount++;
-      if (status === 'Successful') {
+      if (status === "Successful") {
         query += ` AND (fd.recovery_status IN ('completed', 'approved') OR fd.status = 'Resolved')`;
-      } else if (status === 'Partial') {
+      } else if (status === "Partial") {
         query += ` AND fd.recovery_status = 'pending'`;
-      } else if (status === 'Failed') {
+      } else if (status === "Failed") {
         query += ` AND fd.recovery_status = 'rejected'`;
       }
     }
 
-    if (category && category !== 'all') {
+    if (category && category !== "all") {
       paramCount++;
       query += ` AND (fd.categorization = $${paramCount} OR fd.disruption_type = $${paramCount})`;
       params.push(category);
     }
 
-    if (priority && priority !== 'all') {
+    if (priority && priority !== "all") {
       paramCount++;
       query += ` AND fd.severity = $${paramCount}`;
       params.push(priority);
     }
 
-    if (dateRange && dateRange !== 'all') {
-      if (dateRange === 'last7days') {
+    if (dateRange && dateRange !== "all") {
+      if (dateRange === "last7days") {
         query += ` AND fd.created_at >= NOW() - INTERVAL '7 days'`;
-      } else if (dateRange === 'last30days') {
+      } else if (dateRange === "last30days") {
         query += ` AND fd.created_at >= NOW() - INTERVAL '30 days'`;
       }
     }
@@ -5476,10 +5610,10 @@ app.get("/api/dashboard-analytics", async (req, res) => {
 
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
+
     // Calculate date range based on filter
     let startDate, endDate;
-    
+
     switch (dateFilter) {
       case "yesterday":
         startDate = new Date(today.getTime() - 24 * 60 * 60 * 1000);
@@ -5488,7 +5622,9 @@ app.get("/api/dashboard-analytics", async (req, res) => {
       case "this_week":
         const dayOfWeek = today.getDay();
         const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Sunday = 0, Monday = 1
-        startDate = new Date(today.getTime() - daysFromMonday * 24 * 60 * 60 * 1000);
+        startDate = new Date(
+          today.getTime() - daysFromMonday * 24 * 60 * 60 * 1000,
+        );
         endDate = new Date(now.getTime() + 24 * 60 * 60 * 1000); // Include today
         break;
       case "this_month":
@@ -5502,20 +5638,26 @@ app.get("/api/dashboard-analytics", async (req, res) => {
         break;
     }
 
-    console.log(`Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`);
+    console.log(
+      `Date range: ${startDate.toISOString()} to ${endDate.toISOString()}`,
+    );
 
     // Get disruptions for the selected date range
-    const disruptionsResult = await pool.query(`
+    const disruptionsResult = await pool.query(
+      `
       SELECT * FROM flight_disruptions 
       WHERE created_at >= $1 AND created_at < $2
       ORDER BY created_at DESC
-    `, [startDate, endDate]);
+    `,
+      [startDate, endDate],
+    );
 
     const disruptions = disruptionsResult.rows;
     console.log(`Found ${disruptions.length} disruptions for analytics`);
 
     // Get recovery logs for the date range
-    const logsResult = await pool.query(`
+    const logsResult = await pool.query(
+      `
       SELECT 
         'SOL-' || fd.id as solution_id,
         fd.id as disruption_id,
@@ -5544,25 +5686,37 @@ app.get("/api/dashboard-analytics", async (req, res) => {
         COALESCE(95.0 - (fd.delay_minutes::numeric / 10), 92.5) as rebooking_success
       FROM flight_disruptions fd
       WHERE fd.created_at >= $1 AND fd.created_at < $2
-    `, [startDate, endDate]);
+    `,
+      [startDate, endDate],
+    );
 
     const logs = logsResult.rows;
 
     // Calculate performance metrics
-    const completedRecoveries = logs.filter(log => log.status === "completed");
-    const totalCost = completedRecoveries.reduce((sum, log) => sum + (log.actual_cost || 0), 0);
-    const avgTime = completedRecoveries.length > 0 
-      ? completedRecoveries.reduce((sum, log) => {
-          const duration = log.duration ? parseDuration(log.duration) : 0;
-          return sum + duration;
-        }, 0) / completedRecoveries.length 
-      : 0;
+    const completedRecoveries = logs.filter(
+      (log) => log.status === "completed",
+    );
+    const totalCost = completedRecoveries.reduce(
+      (sum, log) => sum + (log.actual_cost || 0),
+      0,
+    );
+    const avgTime =
+      completedRecoveries.length > 0
+        ? completedRecoveries.reduce((sum, log) => {
+            const duration = log.duration ? parseDuration(log.duration) : 0;
+            return sum + duration;
+          }, 0) / completedRecoveries.length
+        : 0;
 
-    const successRate = logs.length > 0 
-      ? ((completedRecoveries.length / logs.length) * 100).toFixed(1) 
-      : "0.0";
+    const successRate =
+      logs.length > 0
+        ? ((completedRecoveries.length / logs.length) * 100).toFixed(1)
+        : "0.0";
 
-    const totalPassengers = disruptions.reduce((sum, d) => sum + (d.passengers || 0), 0);
+    const totalPassengers = disruptions.reduce(
+      (sum, d) => sum + (d.passengers || 0),
+      0,
+    );
 
     const performance = {
       costSavings: `AED ${Math.round(totalCost / 1000)}K`,
@@ -5573,8 +5727,13 @@ app.get("/api/dashboard-analytics", async (req, res) => {
     };
 
     // Calculate passenger impact
-    const highPriorityDisruptions = disruptions.filter(d => d.severity === "High" || d.severity === "Critical");
-    const highPriorityPassengers = highPriorityDisruptions.reduce((sum, d) => sum + (d.passengers || 0), 0);
+    const highPriorityDisruptions = disruptions.filter(
+      (d) => d.severity === "High" || d.severity === "Critical",
+    );
+    const highPriorityPassengers = highPriorityDisruptions.reduce(
+      (sum, d) => sum + (d.passengers || 0),
+      0,
+    );
 
     const passengerImpact = {
       affectedPassengers: totalPassengers,
@@ -5615,8 +5774,12 @@ app.get("/api/dashboard-analytics", async (req, res) => {
       .slice(0, 3);
 
     // Calculate operational insights
-    const criticalDisruptions = disruptions.filter(d => d.severity === "Critical").length;
-    const activeDisruptions = disruptions.filter(d => d.status !== "Resolved" && d.status !== "Completed").length;
+    const criticalDisruptions = disruptions.filter(
+      (d) => d.severity === "Critical",
+    ).length;
+    const activeDisruptions = disruptions.filter(
+      (d) => d.status !== "Resolved" && d.status !== "Completed",
+    ).length;
 
     const routeMap = new Map();
     disruptions.forEach((d) => {
@@ -5626,7 +5789,9 @@ app.get("/api/dashboard-analytics", async (req, res) => {
 
     let mostDisruptedRoute = { route: "N/A", impact: "N/A" };
     if (routeMap.size > 0) {
-      const maxRoute = Array.from(routeMap.entries()).sort((a, b) => b[1] - a[1])[0];
+      const maxRoute = Array.from(routeMap.entries()).sort(
+        (a, b) => b[1] - a[1],
+      )[0];
       mostDisruptedRoute = {
         route: maxRoute[0],
         impact: maxRoute[1] > 5 ? "High Impact" : "Medium Impact",
@@ -5636,7 +5801,12 @@ app.get("/api/dashboard-analytics", async (req, res) => {
     const operationalInsights = {
       recoveryRate: `${successRate}%`,
       avgResolutionTime: `${(avgTime / 60).toFixed(1)}h`,
-      networkImpact: activeDisruptions > 20 ? "High" : activeDisruptions > 10 ? "Medium" : "Low",
+      networkImpact:
+        activeDisruptions > 20
+          ? "High"
+          : activeDisruptions > 10
+            ? "Medium"
+            : "Low",
       criticalPriority: criticalDisruptions,
       activeDisruptions,
       mostDisruptedRoute,
@@ -5645,9 +5815,13 @@ app.get("/api/dashboard-analytics", async (req, res) => {
     // Calculate network overview
     const estimatedActiveFlights = Math.max(disruptions.length * 35, 800);
     const estimatedTotalPassengers = Math.max(totalPassengers * 10, 40000);
-    const otpFromLogs = completedRecoveries.length > 0
-      ? completedRecoveries.reduce((sum, log) => sum + (log.rebooking_success || 85), 0) / completedRecoveries.length
-      : 89.2;
+    const otpFromLogs =
+      completedRecoveries.length > 0
+        ? completedRecoveries.reduce(
+            (sum, log) => sum + (log.rebooking_success || 85),
+            0,
+          ) / completedRecoveries.length
+        : 89.2;
 
     const networkOverview = {
       activeFlights: estimatedActiveFlights,
@@ -5670,8 +5844,10 @@ app.get("/api/dashboard-analytics", async (req, res) => {
 
     // If no real data, provide meaningful sample data based on date filter
     if (disruptions.length === 0) {
-      console.log(`No disruptions found for ${dateFilter}, providing sample analytics`);
-      
+      console.log(
+        `No disruptions found for ${dateFilter}, providing sample analytics`,
+      );
+
       // Adjust sample data based on date range
       let multiplier = 1;
       switch (dateFilter) {
@@ -5687,7 +5863,7 @@ app.get("/api/dashboard-analytics", async (req, res) => {
         default:
           multiplier = 1;
       }
-      
+
       const sampleAnalytics = {
         performance: {
           costSavings: `AED ${Math.round(125 * multiplier)}K`,
@@ -5728,7 +5904,8 @@ app.get("/api/dashboard-analytics", async (req, res) => {
         operationalInsights: {
           recoveryRate: "94.2%",
           avgResolutionTime: "2.3h",
-          networkImpact: multiplier > 10 ? "High" : multiplier > 3 ? "Medium" : "Low",
+          networkImpact:
+            multiplier > 10 ? "High" : multiplier > 3 ? "Medium" : "Low",
           criticalPriority: Math.round(3 * multiplier),
           activeDisruptions: Math.round(12 * multiplier),
           mostDisruptedRoute: {
@@ -5752,10 +5929,9 @@ app.get("/api/dashboard-analytics", async (req, res) => {
 
     console.log("Successfully calculated consolidated dashboard analytics");
     res.json(analytics);
-
   } catch (error) {
     console.error("Error fetching consolidated dashboard analytics:", error);
-    
+
     // Return fallback data
     res.json({
       performance: {
