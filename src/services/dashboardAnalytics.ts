@@ -266,26 +266,44 @@ class DashboardAnalyticsService {
     pendingSolutions: any[],
   ) {
     const totalPassengers = disruptions.reduce(
-      (sum, d) => sum + (d.passengers || 0),
+      (sum, d) => sum + (parseInt(d.passengers) || parseInt(d.affected_passengers) || 0),
       0,
     );
     const highPriorityDisruptions = disruptions.filter(
       (d) => d.severity === "High" || d.severity === "Critical",
     );
     const highPriorityPassengers = highPriorityDisruptions.reduce(
-      (sum, d) => sum + (d.passengers || 0),
+      (sum, d) => sum + (parseInt(d.passengers) || parseInt(d.affected_passengers) || 0),
       0,
     );
 
-    // Estimate rebookings and resolved based on solutions
-    const rebookings = Math.round(totalPassengers * 0.3); // 30% typically need rebooking
-    const resolved = Math.round(totalPassengers * 0.95); // 95% eventually resolved
+    // Calculate actual rebookings and resolved from disruption recovery status
+    const resolvedDisruptions = disruptions.filter(d => 
+      d.recovery_status === 'completed' || 
+      d.status === 'Resolved' || 
+      d.status === 'Completed'
+    );
+    
+    const resolvedPassengers = resolvedDisruptions.reduce(
+      (sum, d) => sum + (parseInt(d.passengers) || parseInt(d.affected_passengers) || 0),
+      0,
+    );
+
+    // Estimate rebookings based on disruption severity and type
+    const rebookings = disruptions.reduce((sum, d) => {
+      const passengers = parseInt(d.passengers) || parseInt(d.affected_passengers) || 0;
+      // Higher rebooking rate for cancelled flights, lower for delays
+      const rebookingRate = d.status === 'Cancelled' ? 0.9 : 
+                           d.severity === 'High' ? 0.5 : 
+                           d.severity === 'Critical' ? 0.8 : 0.2;
+      return sum + Math.round(passengers * rebookingRate);
+    }, 0);
 
     return {
       affectedPassengers: totalPassengers,
       highPriority: highPriorityPassengers,
-      rebookings,
-      resolved,
+      rebookings: rebookings,
+      resolved: resolvedPassengers,
     };
   }
 
@@ -294,7 +312,12 @@ class DashboardAnalyticsService {
 
     disruptions.forEach((disruption) => {
       const origin = disruption.origin || "UNK";
-      const originCity = disruption.origin_city || this.getKnownCityName(origin);
+      let originCity = disruption.origin_city;
+      
+      // Use proper city mapping if origin_city is missing, null, or "Unknown"
+      if (!originCity || originCity === "Unknown" || originCity === "unknown") {
+        originCity = this.getKnownCityName(origin);
+      }
 
       if (!stationMap.has(origin)) {
         stationMap.set(origin, {
@@ -308,12 +331,12 @@ class DashboardAnalyticsService {
 
       const station = stationMap.get(origin);
       station.disruptedFlights++;
-      station.passengersAffected += parseInt(disruption.passengers) || 0;
+      station.passengersAffected += parseInt(disruption.passengers) || parseInt(disruption.affected_passengers) || 0;
 
       // Determine severity based on passengers affected
-      if (station.passengersAffected > 1000) {
+      if (station.passengersAffected > 500) {
         station.severity = "high";
-      } else if (station.passengersAffected > 300) {
+      } else if (station.passengersAffected > 200) {
         station.severity = "medium";
       }
     });
@@ -409,38 +432,49 @@ class DashboardAnalyticsService {
   }
 
   private calculateNetworkOverview(disruptions: any[], logs: any[]) {
-    // Calculate active flights based on disruptions and typical flight volumes
+    // Calculate more realistic network metrics based on actual data
     const disruptionCount = disruptions.length;
-    const estimatedActiveFlights = Math.max(disruptionCount * 25, disruptionCount > 0 ? 500 : 0);
+    
+    // Use disruption ratio to estimate total network (typically 3-8% of flights have disruptions)
+    const estimatedActiveFlights = disruptionCount > 0 
+      ? Math.max(Math.round(disruptionCount / 0.05), 100) // Assume 5% disruption rate
+      : 150; // Default baseline
     
     const totalPassengers = disruptions.reduce((sum, d) => {
-      return sum + (parseInt(d.passengers) || 0);
+      return sum + (parseInt(d.passengers) || parseInt(d.affected_passengers) || 0);
     }, 0);
 
-    // Estimate total network passengers (disrupted passengers are typically 5-10% of total)
+    // More realistic network passenger estimate (disrupted passengers typically 2-5% of total)
     const estimatedTotalPassengers = totalPassengers > 0 
-      ? Math.max(totalPassengers * 15, totalPassengers + 25000)
-      : 0;
+      ? Math.max(Math.round(totalPassengers / 0.03), 10000) // Assume 3% of passengers affected
+      : 15000; // Default baseline
 
-    // Calculate OTP from disruption data
-    const delayedFlights = disruptions.filter(d => 
-      parseInt(d.delay_minutes) > 15
+    // Calculate OTP more accurately
+    const significantDelays = disruptions.filter(d => 
+      parseInt(d.delay_minutes) > 15 || d.status === 'Cancelled'
     ).length;
     
-    const totalFlights = Math.max(estimatedActiveFlights, disruptionCount * 20);
-    const onTimeFlights = totalFlights - delayedFlights;
-    const otpPerformance = totalFlights > 0 
-      ? ((onTimeFlights / totalFlights) * 100).toFixed(1)
-      : "89.2";
+    const onTimeFlights = Math.max(0, estimatedActiveFlights - significantDelays);
+    const otpPerformance = estimatedActiveFlights > 0 
+      ? ((onTimeFlights / estimatedActiveFlights) * 100).toFixed(1)
+      : "91.5";
 
-    // Calculate daily changes
-    const avgDelayMinutes = disruptions.length > 0 
-      ? disruptions.reduce((sum, d) => sum + (parseInt(d.delay_minutes) || 0), 0) / disruptions.length
+    // Better daily change calculation based on severity
+    const criticalDisruptions = disruptions.filter(d => 
+      d.severity === 'Critical' || d.severity === 'High'
+    ).length;
+    
+    const avgImpact = disruptions.length > 0 
+      ? disruptions.reduce((sum, d) => {
+          const delayWeight = Math.min(parseInt(d.delay_minutes) || 0, 300) / 300; // Cap at 5 hours
+          const severityWeight = d.severity === 'Critical' ? 1.0 : d.severity === 'High' ? 0.7 : 0.3;
+          return sum + (delayWeight * severityWeight);
+        }, 0) / disruptions.length
       : 0;
 
     const dailyChange = {
-      activeFlights: Math.floor(avgDelayMinutes / 30) * -1, // More delays = fewer active flights
-      disruptions: Math.max(-5, Math.min(5, disruptionCount - 10)), // Compare to baseline of 10
+      activeFlights: Math.round((0.9 - avgImpact) * 20), // Impact on flight operations
+      disruptions: Math.max(-10, Math.min(10, disruptionCount - 8)), // Compare to baseline of 8
     };
 
     console.log("Network overview calculated:", {
@@ -448,7 +482,8 @@ class DashboardAnalyticsService {
       totalPassengers,
       estimatedTotalPassengers,
       otpPerformance,
-      disruptionCount: disruptions.length
+      disruptionCount: disruptions.length,
+      criticalDisruptions
     });
 
     return {
@@ -472,17 +507,37 @@ class DashboardAnalyticsService {
 
   private getKnownCityName(code: string): string {
     const cityMap: Record<string, string> = {
+      // UAE
       DXB: "Dubai",
+      AUH: "Abu Dhabi", 
+      SLL: "Salalah",
+      AAN: "Al Ain",
+      DWC: "Dubai World Central",
+      
+      // India/Pakistan
       DEL: "Delhi",
       BOM: "Mumbai",
+      KHI: "Karachi",
+      COK: "Kochi",
+      
+      // Nepal
+      BKT: "Bhaktalpur",
+      KTM: "Kathmandu",
+      
+      // Middle East
       DOH: "Doha",
+      KWI: "Kuwait",
+      CAI: "Cairo",
+      AMM: "Amman",
+      BGW: "Baghdad",
+      
+      // Europe
       IST: "Istanbul",
       LHR: "London",
-      KHI: "Karachi",
-      AUH: "Abu Dhabi",
-      SLL: "Salalah",
+      CDG: "Paris",
+      FRA: "Frankfurt",
     };
-    return cityMap[code] || "Unknown";
+    return cityMap[code] || `${code} Airport`;
   }
 
   private getFallbackAnalytics(): DashboardAnalytics {
