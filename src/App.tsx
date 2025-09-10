@@ -19,7 +19,6 @@ import { FuelOptimizationPage } from './pages/FuelOptimizationPage'
 import { ReportsPage } from './pages/ReportsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { AppProvider } from './context/AppContext'
-import { ThemeProvider } from './context/ThemeContext'
 import { useCustomAlert } from './hooks/useCustomAlert'
 import { alertService } from './services/alertService';
 import { CustomAlertDialog } from './components/CustomAlertDialog'
@@ -27,7 +26,6 @@ import './styles/globals.css'
 import { LoginPage } from './pages/LoginPage' // Assuming LoginPage component is created
 import { ProtectedRoute } from './components/ProtectedRoute' // Assuming ProtectedRoute component is created
 import { useAirlineTheme } from './hooks/useAirlineTheme'
-import { Toaster } from 'sonner'
 
 // Loading component
 const LoadingSpinner = () => (
@@ -58,207 +56,207 @@ export default function App() {
   }, [airlineConfig]);
 
   return (
-    <ThemeProvider>
-      <AppProvider>
-        <Router basename={import.meta.env.VITE_FRONTEND_BASE_URL || '/'}>
-          <div className="min-h-screen bg-background text-foreground">
-            <Suspense fallback={<LoadingSpinner />}>
-              <Routes>
-                <Route path="/login" element={<LoginPage />} />
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Dashboard />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <Dashboard />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/flight-tracking"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <FlightTracking />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/disruption"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <DisruptionPage />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/recovery"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <RecoveryOptions />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/comparison"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ComparisonPage />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/detailed"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <DetailedPlan />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/prediction-dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <PredictionDashboard />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/prediction-analytics"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <PredictionAnalyticsPage />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/risk-assessment"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <RiskAssessmentPage />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/pending"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <PendingSolutionsPage />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/past-logs"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <PastLogsPage />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/maintenance"
-                  element={
-                    <ProtectedRoute requiredUserType="super_admin">
-                      <Layout>
-                        <MaintenancePage />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/passengers"
-                  element={
-                    <ProtectedRoute requiredUserType="passenger_manager">
-                      <Layout>
-                        <PassengerServicesPage />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/hotac"
-                  element={
-                    <ProtectedRoute requiredUserType="crew_manager">
-                      <Layout>
-                        <HOTACPage />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/fuel-optimization"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <FuelOptimizationPage />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/reports"
-                  element={
-                    <ProtectedRoute>
-                      <Layout>
-                        <ReportsPage />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/settings"
-                  element={
-                    <ProtectedRoute requiredUserType="super_admin">
-                      <Layout>
-                        <SettingsPage />
-                      </Layout>
-                    </ProtectedRoute>
-                  }
-                />
-                <Route path="*" element={<Navigate to="/login" replace />} />
-              </Routes>
-            </Suspense>
-          </div>
-        </Router>
-        <Toaster theme="system" />
-        <CustomAlertDialog
-          isOpen={alertState.isOpen}
-          title={alertState.title}
-          message={alertState.message}
-          onConfirm={handleConfirm}
-          onCancel={handleCancel}
-        />
-      </AppProvider>
-    </ThemeProvider>
+    <AppProvider>
+      <Router basename={import.meta.env.VITE_FRONTEND_BASE_URL || '/'}>
+        <div className="min-h-screen bg-background">
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              <Route path="/login" element={<LoginPage />} />
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/flight-tracking"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <FlightTracking />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/disruption"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <DisruptionPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/recovery"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <RecoveryOptions />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/comparison"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ComparisonPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/detailed"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <DetailedPlan />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/prediction-dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <PredictionDashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/prediction-analytics"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <PredictionAnalyticsPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/risk-assessment"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <RiskAssessmentPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/pending"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <PendingSolutionsPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/past-logs"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <PastLogsPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/maintenance"
+                element={
+                  <ProtectedRoute requiredUserType="super_admin">
+                    <Layout>
+                      <MaintenancePage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/passengers"
+                element={
+                  <ProtectedRoute requiredUserType="passenger_manager">
+                    <Layout>
+                      <PassengerServicesPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/hotac"
+                element={
+                  <ProtectedRoute requiredUserType="crew_manager">
+                    <Layout>
+                      <HOTACPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/fuel-optimization"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <FuelOptimizationPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/reports"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <ReportsPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute requiredUserType="super_admin">
+                    <Layout>
+                      <SettingsPage />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </Suspense>
+        </div>
+      </Router>
+      <CustomAlertDialog
+        isOpen={alertState.isOpen}
+        onOpenChange={hideAlert}
+        title={alertState.title}
+        message={alertState.message}
+        type={alertState.type}
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+        showCancel={alertState.showCancel}
+      />
+    </AppProvider>
   )
 }

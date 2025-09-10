@@ -426,7 +426,7 @@ export function ComparisonMatrix({
     title: "Weather Delay Recovery Options",
     options: [
       {
-        id: "ROUTE_OPTIMIZATION",
+        id: "ROUTE_OPTIMIZE",
         title: "Route Optimization",
         description: "Alternative routing to avoid weather",
         cost: "AED 12,000",
@@ -640,11 +640,11 @@ export function ComparisonMatrix({
 
   const getScenarioData = (categorization) => {
     switch (categorization) {
-      case "Aircraft issue (e.g., AOG, maintenance)":
+      case "Aircraft issue (e.g., AOG)":
         return getAircraftIssueRecovery();
       case "Crew issue (e.g., sick report, duty time breach)":
         return getCrewIssueRecovery();
-      case "Weather delay":
+      case "ATC/weather delay":
         return getWeatherDelayRecovery();
       case "Airport curfew/ramp congestion":
         return getCurfewCongestionRecovery();
@@ -1362,9 +1362,12 @@ export function ComparisonMatrix({
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Recovery Options Analysis</h2>
-          <p className="text-gray-600 dark:text-gray-400 mt-1">
-            Compare and evaluate different recovery strategies
+          <h2 className="text-2xl font-semibold text-flydubai-navy">
+            Recovery Options Comparison
+          </h2>
+          <p className="text-muted-foreground">
+            Comparing {comparisonOptions.length} recovery options for{" "}
+            {flight.flightNumber}
           </p>
           <div className="flex items-center gap-2 mt-2">
             <Badge
@@ -4260,14 +4263,14 @@ export function ComparisonMatrix({
                                       crewData: updatedCrew,
                                     },
                                   };
-
+                                  
                                   setSelectedOptionDetails(updatedOptionDetails);
-
+                                  
                                   // Capture reassigned crew data for Service Page
                                   const reassignedCrew = updatedCrew.filter(crewMember => 
                                     crewMember.replacedCrew && crewMember.assignedAt
                                   );
-
+                                  
                                   if (reassignedCrew.length > 0) {
                                     setReassignedCrewData({
                                       flightId: selectedFlight?.id,
@@ -4278,7 +4281,7 @@ export function ComparisonMatrix({
                                       totalReassignments: reassignedCrew.length
                                     });
                                   }
-
+                                  
                                   console.log(selectedOptionDetails, "test11");
                                 }
 

@@ -41,40 +41,30 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --background: 224 71.4% 4.1%;
+    --foreground: 210 20% 98%;
+    --card: 224 71.4% 4.1%;
+    --card-foreground: 210 20% 98%;
+    --popover: 224 71.4% 4.1%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 210 20% 98%;
+    --primary-foreground: 220.9 39.3% 11%;
+    --secondary: 215 27.9% 16.9%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 215 27.9% 16.9%;
+    --muted-foreground: 217.9 10.6% 64.9%;
+    --accent: 215 27.9% 16.9%;
+    --accent-foreground: 210 20% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+    --destructive-foreground: 210 20% 98%;
+    --border: 215 27.9% 16.9%;
+    --input: 215 27.9% 16.9%;
+    --ring: 216 12.2% 83.9%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    
-    /* Dark mode airline colors */
-    --airline-primary: #0066CC;
-    --airline-secondary: #ff8200;
-    --airline-navy: #1a1a2e;
-    --airline-links: #4a9eff;
-    --airline-accent: #2a2a3e;
-    --airline-success: #22c55e;
-    --airline-warning: #f59e0b;
-    --airline-error: #ef4444;
   }
 }
 
@@ -232,47 +222,20 @@
 }
 
 .dark *:hover::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.8);
+  background: rgba(30, 41, 59, 0.8);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.4);
+  background: rgba(148, 163, 184, 0.3);
 }
 
 .dark *:hover::-webkit-scrollbar-thumb {
-  background: rgba(100, 116, 139, 0.7);
+  background: rgba(148, 163, 184, 0.6);
 }
 
 .dark *:hover::-webkit-scrollbar-thumb:hover {
-  background: rgba(148, 163, 184, 0.9);
-  border: 1px solid rgba(100, 116, 139, 0.3);
-}
-
-/* Dark mode specific styles */
-.dark .bg-gradient-flydubai-light {
-  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-}
-
-.dark .input-flydubai {
-  border-color: rgb(51 65 85);
-  background-color: rgb(15 23 42);
-  color: rgb(241 245 249);
-}
-
-.dark .input-flydubai:focus {
-  border-color: var(--airline-primary);
-  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.3);
-}
-
-.dark .select-flydubai {
-  border-color: rgb(51 65 85);
-  background-color: rgb(15 23 42);
-  color: rgb(241 245 249);
-}
-
-.dark .select-flydubai:focus {
-  border-color: var(--airline-primary);
-  box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.3);
+  background: rgba(203, 213, 225, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 /* Enhanced slider styles with better visibility */
