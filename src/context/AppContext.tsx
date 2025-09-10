@@ -21,8 +21,6 @@ interface AppContextType {
   currentUser: User | null
   setCurrentUser: (user: User | null) => void
   airlineConfig: AirlineTheme;
-  theme: 'default' | 'dark';
-  setTheme: (theme: 'default' | 'dark') => void;
 }
 
 type screenSettings = {
@@ -52,35 +50,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   });
 
   const [screenSettings, setScreenSettings] = useState<screenSettings[]>([]);
-  
-  // Theme state with localStorage persistence
-  const [theme, setThemeState] = useState<'default' | 'dark'>(() => {
-    const savedTheme = localStorage.getItem('aeron-theme');
-    return (savedTheme as 'default' | 'dark') || 'default';
-  });
-
-  const setTheme = (newTheme: 'default' | 'dark') => {
-    setThemeState(newTheme);
-    localStorage.setItem('aeron-theme', newTheme);
-    
-    // Apply theme to document
-    const root = document.documentElement;
-    if (newTheme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  };
-
-  // Initialize theme on component mount
-  useEffect(() => {
-    const root = document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-  }, [theme]);
 
   // Load screen settings from API on component mount
   useEffect(() => {
@@ -157,8 +126,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         currentUser,
         setCurrentUser,
         airlineConfig,
-        theme,
-        setTheme,
       }}
     >
       {children}
