@@ -3800,7 +3800,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 </span>
                               </div>
                             </div>
-                          </CardContent>
+                          </div>
+                        </CardContent>
                         </Card>
                       ))}
                     </div>
