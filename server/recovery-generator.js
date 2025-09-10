@@ -395,53 +395,6 @@ const getAircraftIssuesRecoveryData = () => {
               fuel_score: "91%",
               overall: "92%",
             },
-            rotation_plan: [
-              {
-                leg: 1,
-                flight_no: "FZ141",
-                route: "DXB → MCT",
-                std: "2025-09-10T08:45:00+04:00",
-                sta: "2025-09-10T09:30:00+04:00",
-                block_time: "0h 45m",
-                notes: "Short regional hop"
-              },
-              {
-                leg: 2,
-                flight_no: "FZ142",
-                route: "MCT → DXB",
-                std: "2025-09-10T10:15:00+04:00",
-                sta: "2025-09-10T11:05:00+04:00",
-                block_time: "0h 50m",
-                notes: "Return sector"
-              },
-              {
-                leg: 3,
-                flight_no: "FZ737",
-                route: "DXB → KWI",
-                std: "2025-09-10T12:15:00+04:00",
-                sta: "2025-09-10T13:30:00+04:00",
-                block_time: "1h 15m",
-                notes: "Mid-day regional"
-              },
-              {
-                leg: 4,
-                flight_no: "FZ738",
-                route: "KWI → DXB",
-                std: "2025-09-10T14:30:00+04:00",
-                sta: "2025-09-10T15:45:00+04:00",
-                block_time: "1h 15m",
-                notes: "Return sector"
-              },
-              {
-                leg: 5,
-                flight_no: "FZ851",
-                route: "DXB → BKK",
-                std: "2025-09-10T17:00:00+04:00",
-                sta: "2025-09-11T02:00:00+07:00",
-                block_time: "6h 00m",
-                notes: "Long-haul ETOPS sector"
-              }
-            ]
           },
           {
             reg: "A6-FEL",
@@ -459,26 +412,6 @@ const getAircraftIssuesRecoveryData = () => {
               fuel_score: "75%",
               overall: "64%",
             },
-            rotation_plan: [
-              {
-                leg: 1,
-                flight_no: "FZ892",
-                route: "DXB → IST",
-                std: "2025-09-10T15:30:00+04:00",
-                sta: "2025-09-10T19:30:00+03:00",
-                block_time: "5h 00m",
-                notes: "Assigned primary sector"
-              },
-              {
-                leg: 2,
-                flight_no: "FZ893",
-                route: "IST → DXB",
-                std: "2025-09-10T21:00:00+03:00",
-                sta: "2025-09-11T02:00:00+04:00",
-                block_time: "4h 00m",
-                notes: "Return leg"
-              }
-            ]
           },
           {
             reg: "A6-FGH",
@@ -496,26 +429,6 @@ const getAircraftIssuesRecoveryData = () => {
               fuel_score: "61%",
               overall: "52%",
             },
-            rotation_plan: [
-              {
-                leg: 1,
-                flight_no: "FZ523",
-                route: "DXB → DOH",
-                std: "2025-09-10T17:00:00+04:00",
-                sta: "2025-09-10T17:50:00+03:00",
-                block_time: "1h 50m",
-                notes: "Short hop before maintenance"
-              },
-              {
-                leg: 2,
-                flight_no: "FZ524",
-                route: "DOH → DXB",
-                std: "2025-09-10T19:00:00+03:00",
-                sta: "2025-09-10T21:00:00+04:00",
-                block_time: "2h 00m",
-                notes: "Return sector, aircraft then routed to hangar"
-              }
-            ]
           },
           {
             reg: "A6-FIJ",
@@ -526,7 +439,6 @@ const getAircraftIssuesRecoveryData = () => {
             assigned: { status: "assigned", value: "FZ445" },
             turnaround: "75 min",
             maintenance: { status: "aog", value: "AOG Issue" },
-            rotation_plan: [],
           },
         ],
         crew: [
@@ -4546,9 +4458,9 @@ export function generateRecoveryOptionsForDisruption(
     disruption.category_code ||
     mapDisruptionTypeToCategory(
       disruption.disruption_type ||
-      disruption.disruptionType ||
-      disruption.type ||
-      "Technical",
+        disruption.disruptionType ||
+        disruption.type ||
+        "Technical",
       disruption.disruption_reason || "Unknown",
     );
 

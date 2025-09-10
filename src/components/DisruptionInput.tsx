@@ -120,7 +120,222 @@ const transformFlightData = (disruption: FlightDisruption) => {
     disruption.destinationCity &&
     disruption.destinationCity !== "Unknown" &&
     disruption.destinationCity !== "unknown"
-      ? dis<ctrl62>    disruptionCategories.length > 0
+      ? disruption.destinationCity
+      : getLocationName(cleanDestination);
+
+  // Check if this is an incomplete record
+  const isIncomplete =
+    !disruption.flightNumber ||
+    disruption.flightNumber.includes("UNKNOWN-") ||
+    !disruption.scheduledDeparture ||
+    !disruption.origin ||
+    disruption.origin === "UNKNOWN" ||
+    !disruption.destination ||
+    disruption.destination === "UNKNOWN";
+  return {
+    id: disruption.id,
+    flightNumber: disruption.flightNumber || "UNKNOWN",
+    origin: cleanOrigin,
+    destination: cleanDestination,
+    originCity: cleanOriginCity,
+    destinationCity: cleanDestinationCity,
+    scheduledDeparture: scheduledDeparture,
+    scheduledArrival: scheduledArrival,
+    currentStatus: disruption.status,
+    delay: disruption.delay || 0,
+    aircraft: disruption.aircraft || "Unknown",
+    gate:
+      (disruption as any).gate || `T2-A${Math.floor(Math.random() * 30) + 1}`, // Generate consistent gate
+    passengers: disruption.passengers || 0,
+    crew: disruption.crew || 6,
+    disruptionType: disruption.type
+      ? disruption.type.toLowerCase()
+      : "technical",
+    categorization: disruption?.categoryName,
+    disruptionReason:
+      disruption.disruptionReason ||
+      (isIncomplete
+        ? "⚠️ Incomplete information - some data may be missing"
+        : "Information not available"),
+    severity: disruption.severity
+      ? disruption.severity.toLowerCase()
+      : "medium",
+    impact: `Flight affected due to ${disruption.disruptionReason || "operational issues"}${isIncomplete ? " (Incomplete data)" : ""}`,
+    lastUpdate: getTimeAgo(
+      disruption.updatedAt || disruption.createdAt || new Date().toISOString(),
+    ),
+    priority: disruption.severity || "Medium",
+    connectionFlights: disruption.connectionFlights || 0,
+    vipPassengers:
+      Math.floor((disruption.passengers || 0) * 0.02) +
+      (disruption.passengers > 0 ? 1 : 0),
+    isIncomplete: isIncomplete, // Flag to identify incomplete records
+  };
+};
+
+// Helper function to get location names for display
+const getLocationName = (code: string) => {
+  const locations: { [key: string]: string } = {
+    DXB: "Dubai",
+    BOM: "Mumbai",
+    DEL: "Delhi",
+    KHI: "Karachi",
+    COK: "Kochi",
+    IST: "Istanbul",
+    AUH: "Abu Dhabi",
+    CMB: "Colombo",
+    BCN: "Barcelona",
+    PRG: "Prague",
+    SLL: "Salalah",
+  };
+  return locations[code] || code;
+};
+
+// Fetch disruption categories from database
+const fetchDisruptionCategories = async (): Promise<DisruptionCategory[]> => {
+  try {
+    const categories = await databaseService.getDisruptionCategories();
+    return categories || [];
+  } catch (error) {
+    console.error("Error fetching disruption categories:", error);
+    return []; // Return empty array if fetch fails
+  }
+};
+
+// Updated getCategorization to use fetched categories
+let disruptionCategories: DisruptionCategory[] = [];
+fetchDisruptionCategories().then((categories) => {
+  disruptionCategories = categories;
+});
+
+const getCategorization = (type: string): string => {
+  const categoryMap: { [key: string]: string } = {
+    Technical: "Aircraft issue (e.g., AOG)",
+    Weather: "ATC/weather delay",
+    Crew: "Crew issue (e.g., sick report, duty time breach)",
+    ATC: "ATC/weather delay",
+  };
+
+  // Check if the provided type maps to a known category name directly
+  if (categoryMap[type]) {
+    return categoryMap[type];
+  }
+
+  // Fallback to searching for a category that might match the type description or name
+  const foundCategory = disruptionCategories.find(
+    (cat) =>
+      cat.category_name.toLowerCase().includes(type.toLowerCase()) ||
+      cat.description.toLowerCase().includes(type.toLowerCase()),
+  );
+
+  return foundCategory
+    ? foundCategory.category_name
+    : categoryMap[type] || "Aircraft issue (e.g., AOG)";
+};
+
+const addHours = (dateString: string, hours: number) => {
+  try {
+    if (!dateString) {
+      // If no date provided, use current time plus hours
+      const date = new Date();
+      date.setHours(date.getHours() + hours);
+      return date.toISOString();
+    }
+
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      // If invalid date, use current time plus hours
+      console.warn(
+        `Invalid date string: ${dateString}, using current time + ${hours}h`,
+      );
+      const fallbackDate = new Date();
+      fallbackDate.setHours(fallbackDate.getHours() + hours);
+      return fallbackDate.toISOString();
+    }
+
+    date.setHours(date.getHours() + hours);
+    return date.toISOString();
+  } catch (error) {
+    console.error("Error in addHours:", error, "dateString:", dateString);
+    // Fallback to current time plus hours
+    const fallbackDate = new Date();
+    fallbackDate.setHours(fallbackDate.getHours() + hours);
+    return fallbackDate.toISOString();
+  }
+};
+
+const getTimeAgo = (dateString: string) => {
+  if (!dateString) return "Unknown";
+
+  const now = new Date();
+  const date = new Date(dateString);
+
+  if (isNaN(date.getTime())) {
+    return "Unknown";
+  }
+
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+
+  if (diffMins < 1) return "Just now";
+  if (diffMins < 60) return `${diffMins} mins ago`;
+  const diffHours = Math.floor(diffMins / 60);
+  if (diffHours < 24) return `${diffHours} hours ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays} days ago`;
+};
+
+interface DisruptionInputProps {
+  disruption?: any;
+  onSelectFlight?: (flight: any) => void;
+  onNavigateToComparison?: (flight: any, options?: any[]) => void;
+}
+export function DisruptionInput({
+  disruption,
+  onSelectFlight,
+  onNavigateToComparison,
+}: DisruptionInputProps) {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [selectedFlight, setSelectedFlight] = useState(null);
+  const [flights, setFlights] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    status: "all",
+    priority: "all",
+    origin: "all",
+    destination: "all",
+    hub: "all",
+    categorization: "all",
+    search: "",
+  });
+  const [sortBy, setSortBy] = useState("priority");
+  const [view, setView] = useState("table");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [newDisruption, setNewDisruption] = useState({
+    flightNumber: "",
+    origin: "",
+    destination: "",
+    scheduledDeparture: new Date()
+      .toLocaleString("sv-SE", { timeZone: "Asia/Kolkata" })
+      .slice(0, 16),
+    scheduledArrival: new Date(Date.now() + 2 * 60 * 60 * 1000)
+      .toLocaleString("sv-SE", { timeZone: "Asia/Kolkata" })
+      .slice(0, 16),
+    currentStatus: "Delayed",
+    delay: "",
+    aircraft: "",
+    gate: "",
+    passengers: "",
+    crew: 6,
+    disruptionType: "technical",
+    categorization:
+      disruptionCategories.length > 0
         ? disruptionCategories[0]?.category_code
         : "AIRCRAFT_ISSUE",
     disruptionReason: "",
@@ -1856,7 +2071,7 @@ const transformFlightData = (disruption: FlightDisruption) => {
                               {paginatedInboundFlights.map((flight) => (
                                 <TableRow
                                   key={flight.id}
-                                  className={`hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer ${selectedFlight?.id === flight.id ? "bg-muted dark:bg-muted/50 border-muted dark:border-muted/50" : ""}`}
+                                  className={`cursor-pointer hover:bg-blue-50 ${selectedFlight?.id === flight.id ? "bg-blue-100 border-blue-200" : ""}`}
                                   onClick={() => handleFlightSelection(flight)}
                                 >
                                   <TableCell>
@@ -1891,7 +2106,7 @@ const transformFlightData = (disruption: FlightDisruption) => {
                                         {flight.origin}
                                       </span>
                                       <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                                      <span className="font-medium truncate text-blue-600 dark:text-blue-400">
+                                      <span className="font-medium truncate text-flydubai-blue">
                                         {flight.destination}
                                       </span>
                                     </div>
@@ -1995,13 +2210,13 @@ const transformFlightData = (disruption: FlightDisruption) => {
                                           flight.id || flight.flightNumber
                                         ]
                                       }
-                                      className="border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                                      className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                                     >
                                       {loadingRecovery[
                                         flight.id || flight.flightNumber
                                       ] ? (
                                         <>
-                                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600 dark:border-blue-400 mr-1"></div>
+                                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-flydubai-blue mr-1"></div>
                                           Loading...
                                         </>
                                       ) : (
@@ -2109,7 +2324,7 @@ const transformFlightData = (disruption: FlightDisruption) => {
                           filteredFlights.length > 0 && (
                             <div className="text-center py-12">
                               <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                <Plane className="h-8 w-8 text-gray-400" />
+                                <Plane className="h-8 w-8 text-gray-400 transform rotate-180" />
                               </div>
                               <h3 className="text-lg font-medium text-gray-900 mb-2">
                                 No inbound flights found
@@ -2164,7 +2379,7 @@ const transformFlightData = (disruption: FlightDisruption) => {
                               {paginatedOutboundFlights.map((flight) => (
                                 <TableRow
                                   key={flight.id}
-                                  className={`hover:bg-accent hover:text-accent-foreground transition-colors cursor-pointer ${selectedFlight?.id === flight.id ? "bg-muted dark:bg-muted/50 border-muted dark:border-muted/50" : ""}`}
+                                  className={`cursor-pointer hover:bg-blue-50 ${selectedFlight?.id === flight.id ? "bg-blue-100 border-blue-200" : ""}`}
                                   onClick={() => handleFlightSelection(flight)}
                                 >
                                   <TableCell>
@@ -2195,7 +2410,7 @@ const transformFlightData = (disruption: FlightDisruption) => {
                                   </TableCell>
                                   <TableCell>
                                     <div className="flex items-center gap-2 max-w-[140px]">
-                                      <span className="font-medium text-blue-600 dark:text-blue-400">
+                                      <span className="font-medium text-flydubai-blue">
                                         {flight.origin}
                                       </span>
                                       <ArrowRight className="h-3 w-3 text-muted-foreground flex-shrink-0" />
@@ -2303,13 +2518,13 @@ const transformFlightData = (disruption: FlightDisruption) => {
                                           flight.id || flight.flightNumber
                                         ]
                                       }
-                                      className="border-blue-600 text-blue-600 hover:bg-blue-50 dark:border-blue-400 dark:text-blue-400 dark:hover:bg-blue-900/30"
+                                      className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
                                     >
                                       {loadingRecovery[
                                         flight.id || flight.flightNumber
                                       ] ? (
                                         <>
-                                          <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-600 dark:border-blue-400 border-t-transparent mr-1"></div>
+                                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-flydubai-blue mr-1"></div>
                                           Loading...
                                         </>
                                       ) : (
@@ -2476,11 +2691,11 @@ const transformFlightData = (disruption: FlightDisruption) => {
 
       {/* Selected Flight Summary - Fixed at bottom with proper margin */}
       {selectedFlight && (
-        <div className="sticky bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 shadow-lg z-10 mt-4">
+        <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-lg z-10 mt-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <Plane className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                <Plane className="h-4 w-4 text-flydubai-blue" />
                 <span className="font-medium text-sm">Selected Flight:</span>
               </div>
               <div className="text-sm">
@@ -2519,7 +2734,7 @@ const transformFlightData = (disruption: FlightDisruption) => {
                 size="sm"
                 onClick={() => handleGenerateRecoveryOptions(selectedFlight)}
                 disabled={!selectedFlight || isGeneratingOptions}
-                className="bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600"
+                className="text-xs bg-flydubai-blue hover:bg-blue-700"
               >
                 {isGeneratingOptions ? (
                   <>
