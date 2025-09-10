@@ -913,14 +913,22 @@ class DatabaseService {
           ? flight.flight_number || "-"
           : flight.flight_number;
 
+        // Clean city names - ensure we don't return "Unknown"
+        const cleanOriginCity = flight.origin_city && flight.origin_city !== "Unknown" && flight.origin_city !== "unknown"
+          ? flight.origin_city
+          : flight.origin || "N/A";
+        const cleanDestinationCity = flight.destination_city && flight.destination_city !== "Unknown" && flight.destination_city !== "unknown"
+          ? flight.destination_city
+          : flight.destination || "N/A";
+
         return {
           id: flight.id,
           flightNumber: displayFlightNumber,
           route: flight.route,
           origin: flight.origin,
           destination: flight.destination,
-          originCity: flight.origin_city,
-          destinationCity: flight.destination_city,
+          originCity: cleanOriginCity,
+          destinationCity: cleanDestinationCity,
           aircraft: flight.aircraft,
           scheduledDeparture: flight.scheduled_departure,
           estimatedDeparture: flight.estimated_departure,

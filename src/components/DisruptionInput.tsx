@@ -99,6 +99,18 @@ const transformFlightData = (disruption: FlightDisruption) => {
     scheduledArrival = addHours(scheduledDeparture, 3);
   }
 
+  // Clean origin and destination
+  const cleanOrigin = disruption.origin && disruption.origin !== "UNKNOWN" ? disruption.origin : "DXB";
+  const cleanDestination = disruption.destination && disruption.destination !== "UNKNOWN" ? disruption.destination : "DXB";
+  
+  // Clean city names - don't use "Unknown", use the location name instead
+  const cleanOriginCity = disruption.originCity && disruption.originCity !== "Unknown" && disruption.originCity !== "unknown" 
+    ? disruption.originCity 
+    : getLocationName(cleanOrigin);
+  const cleanDestinationCity = disruption.destinationCity && disruption.destinationCity !== "Unknown" && disruption.destinationCity !== "unknown"
+    ? disruption.destinationCity 
+    : getLocationName(cleanDestination);
+
   // Check if this is an incomplete record
   const isIncomplete =
     !disruption.flightNumber ||
@@ -111,13 +123,10 @@ const transformFlightData = (disruption: FlightDisruption) => {
   return {
     id: disruption.id,
     flightNumber: disruption.flightNumber || "UNKNOWN",
-    origin: disruption.origin && disruption.origin !== "UNKNOWN" ? disruption.origin : "DXB",
-    destination: disruption.destination && disruption.destination !== "UNKNOWN" ? disruption.destination : "DXB",
-    originCity:
-      disruption.originCity || getLocationName(disruption.origin && disruption.origin !== "UNKNOWN" ? disruption.origin : "DXB"),
-    destinationCity:
-      disruption.destinationCity ||
-      getLocationName(disruption.destination && disruption.destination !== "UNKNOWN" ? disruption.destination : "DXB"),
+    origin: cleanOrigin,
+    destination: cleanDestination,
+    originCity: cleanOriginCity,
+    destinationCity: cleanDestinationCity,
     scheduledDeparture: scheduledDeparture,
     scheduledArrival: scheduledArrival,
     currentStatus: disruption.status,
