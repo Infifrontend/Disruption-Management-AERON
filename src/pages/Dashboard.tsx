@@ -133,11 +133,6 @@ export function Dashboard() {
               ))}
             </SelectContent>
           </Select>
-          {loading && (
-            <div className="text-sm text-muted-foreground">
-              Loading analytics...
-            </div>
-          )}
         </div>
       </div>
 

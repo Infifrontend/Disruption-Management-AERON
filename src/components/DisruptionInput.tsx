@@ -100,16 +100,28 @@ const transformFlightData = (disruption: FlightDisruption) => {
   }
 
   // Clean origin and destination
-  const cleanOrigin = disruption.origin && disruption.origin !== "UNKNOWN" ? disruption.origin : "DXB";
-  const cleanDestination = disruption.destination && disruption.destination !== "UNKNOWN" ? disruption.destination : "DXB";
-  
+  const cleanOrigin =
+    disruption.origin && disruption.origin !== "UNKNOWN"
+      ? disruption.origin
+      : "DXB";
+  const cleanDestination =
+    disruption.destination && disruption.destination !== "UNKNOWN"
+      ? disruption.destination
+      : "DXB";
+
   // Clean city names - don't use "Unknown", use the location name instead
-  const cleanOriginCity = disruption.originCity && disruption.originCity !== "Unknown" && disruption.originCity !== "unknown" 
-    ? disruption.originCity 
-    : getLocationName(cleanOrigin);
-  const cleanDestinationCity = disruption.destinationCity && disruption.destinationCity !== "Unknown" && disruption.destinationCity !== "unknown"
-    ? disruption.destinationCity 
-    : getLocationName(cleanDestination);
+  const cleanOriginCity =
+    disruption.originCity &&
+    disruption.originCity !== "Unknown" &&
+    disruption.originCity !== "unknown"
+      ? disruption.originCity
+      : getLocationName(cleanOrigin);
+  const cleanDestinationCity =
+    disruption.destinationCity &&
+    disruption.destinationCity !== "Unknown" &&
+    disruption.destinationCity !== "unknown"
+      ? disruption.destinationCity
+      : getLocationName(cleanDestination);
 
   // Check if this is an incomplete record
   const isIncomplete =
@@ -379,9 +391,15 @@ export function DisruptionInput({
         })
         .map((disruption) => {
           // Provide defaults for missing required fields
-          const cleanOrigin = disruption.origin && disruption.origin !== "UNKNOWN" ? disruption.origin : "DXB";
-          const cleanDestination = disruption.destination && disruption.destination !== "UNKNOWN" ? disruption.destination : "DXB";
-          
+          const cleanOrigin =
+            disruption.origin && disruption.origin !== "UNKNOWN"
+              ? disruption.origin
+              : "DXB";
+          const cleanDestination =
+            disruption.destination && disruption.destination !== "UNKNOWN"
+              ? disruption.destination
+              : "DXB";
+
           return {
             ...disruption,
             flightNumber:
@@ -500,9 +518,15 @@ export function DisruptionInput({
         if (fallbackData && fallbackData.length > 0) {
           // Process all fallback data, even if incomplete
           const processedFallbackData = fallbackData.map((disruption) => {
-            const cleanOrigin = disruption.origin && disruption.origin !== "UNKNOWN" ? disruption.origin : "DXB";
-            const cleanDestination = disruption.destination && disruption.destination !== "UNKNOWN" ? disruption.destination : "DXB";
-            
+            const cleanOrigin =
+              disruption.origin && disruption.origin !== "UNKNOWN"
+                ? disruption.origin
+                : "DXB";
+            const cleanDestination =
+              disruption.destination && disruption.destination !== "UNKNOWN"
+                ? disruption.destination
+                : "DXB";
+
             return {
               ...disruption,
               flightNumber:
