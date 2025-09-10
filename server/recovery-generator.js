@@ -451,7 +451,7 @@ const getAircraftIssuesRecoveryData = () => {
             issue: "Crew exceeded allowed maximum duty hours under regulations",
             experience_years: 15,
             base: "DXB",
-            languages: ["Arabic", "English"],
+            languages: ["Arabic", "English"]
           },
           {
             name: "FO Sarah Johnson",
