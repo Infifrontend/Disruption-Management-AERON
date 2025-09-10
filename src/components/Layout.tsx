@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useAppContext } from "../context/AppContext";
+import { useTheme } from "../context/ThemeContext";
 import { databaseService } from "../services/databaseService";
 import { authService } from "../services/authService";
 import { useAirlineTheme } from "../hooks/useAirlineTheme";
@@ -30,6 +31,8 @@ import {
   RotateCcw,
   Wifi,
   WifiOff,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 const iconMap = {
@@ -62,6 +65,7 @@ export function Layout({ children }: LayoutProps) {
   const location = useLocation();
   const { screenSettings, filters, setFilters, currentUser, setCurrentUser } =
     useAppContext();
+  const { theme, toggleTheme } = useTheme();
   const [sidebarOpen] = useState(true);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -298,9 +302,9 @@ export function Layout({ children }: LayoutProps) {
   return (
     <div className="h-screen bg-background flex overflow-hidden">
       {/* Sidebar */}
-      <div className="w-52 min-w-[15rem] max-w-[15rem] bg-airline-primary text-white border-r border-airline-primary flex flex-col flex-shrink-0 overflow-hidden">
+      <div className="w-52 min-w-[15rem] max-w-[15rem] bg-airline-primary dark:bg-airline-navy text-white border-r border-airline-primary dark:border-airline-navy flex flex-col flex-shrink-0 overflow-hidden">
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-airline-primary min-h-[120px] flex items-center justify-center">
+        <div className="p-4 border-b border-airline-primary dark:border-airline-navy/20 min-h-[120px] flex items-center justify-center">
           <div className="flex flex-col items-center gap-2 w-full">
             <AirlineLogo className="responsive-logo h-8 w-auto" />
             {sidebarOpen && (
@@ -345,7 +349,7 @@ export function Layout({ children }: LayoutProps) {
                       <Button
                         key={screen.id}
                         variant={isActive ? "default" : "ghost"}
-                        className={`w-full justify-start gap-3 px-3 min-h-[40px] ${isActive ? "bg-white text-airline-primary hover:bg-gray-100" : "text-white hover:text-airline-secondary"}`}
+                        className={`w-full justify-start gap-3 px-3 min-h-[40px] ${isActive ? "bg-white dark:bg-gray-800 text-airline-primary dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700" : "text-white hover:text-airline-secondary dark:hover:text-airline-accent"}`}
                         onClick={() =>
                           navigate(
                             screen.id === "dashboard" ? "/" : `/${screen.id}`,
@@ -370,14 +374,14 @@ export function Layout({ children }: LayoutProps) {
         </div>
 
         {/* Sidebar Footer */}
-        <div className="p-4 border-t border-airline-primary min-h-[80px]">
+        <div className="p-4 border-t border-airline-primary dark:border-airline-navy/20 min-h-[80px]">
           <div className="flex items-center gap-2 mb-2">
             <Badge
               variant="outline"
               className={`${
                 isOnline
-                  ? "bg-green-100 text-green-800 border-green-300"
-                  : "bg-red-100 text-red-800 border-red-300"
+                  ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border-green-300 dark:border-green-700"
+                  : "bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 border-red-300 dark:border-red-700"
               } flex-shrink-0 flex items-center gap-1`}
             >
               {isOnline ? (
@@ -420,27 +424,44 @@ export function Layout({ children }: LayoutProps) {
                 </p>
               </div>
 
-              {currentUser && (
-                <div className="flex items-center gap-3 border-l pl-4">
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-airline-navy">
-                      {currentUser.fullName}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {currentUser.userCode} |{" "}
-                      {currentUser.userType.replace("_", " ").toUpperCase()}
-                    </p>
+              <div className="flex items-center gap-3">
+                {/* Theme Toggle */}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={toggleTheme}
+                  className="bg-white/10 border-white/20 text-white hover:bg-white/20 dark:bg-gray-800/50 dark:border-gray-600 dark:hover:bg-gray-700/50"
+                  title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+                >
+                  {theme === 'light' ? (
+                    <Moon className="h-4 w-4" />
+                  ) : (
+                    <Sun className="h-4 w-4" />
+                  )}
+                </Button>
+
+                {currentUser && (
+                  <div className="flex items-center gap-3 border-l border-white/20 dark:border-gray-600 pl-4">
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-airline-navy dark:text-white">
+                        {currentUser.fullName}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {currentUser.userCode} |{" "}
+                        {currentUser.userType.replace("_", " ").toUpperCase()}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleLogout}
+                      className="text-red-600 dark:text-red-400 border-red-200 dark:border-red-700 hover:bg-red-50 dark:hover:bg-red-900/20"
+                    >
+                      Logout
+                    </Button>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleLogout}
-                    className="text-red-600 border-red-200 hover:bg-red-50"
-                  >
-                    Logout
-                  </Button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         )}
