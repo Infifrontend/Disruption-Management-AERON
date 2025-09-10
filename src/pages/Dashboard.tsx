@@ -51,7 +51,7 @@ export function Dashboard() {
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<string>("today");
-  
+
   const enabledScreens = screenSettings.filter((screen) => screen.enabled);
 
   // Date filter options
