@@ -1,6 +1,6 @@
+
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: ['class'],
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -48,7 +48,7 @@ export default {
         'airline-secondary': 'var(--airline-secondary)',
         'airline-navy': 'var(--airline-navy)',
         'airline-links': 'var(--airline-links)',
-
+        
         // Legacy Flydubai colors (mapped to dynamic variables for backward compatibility)
         'flydubai-blue': 'var(--airline-primary)',
         'flydubai-orange': 'var(--airline-secondary)',
