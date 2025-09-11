@@ -12,8 +12,9 @@ const __dirname = dirname(__filename);
 const logsDir = join(__dirname, '../logs');
 try {
   mkdirSync(logsDir, { recursive: true });
+  console.log(`Logs directory created/verified at: ${logsDir}`);
 } catch (err) {
-  // Directory might already exist
+  console.error(`Failed to create logs directory: ${err.message}`);
 }
 
 // Create write streams for different log levels

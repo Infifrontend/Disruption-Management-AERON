@@ -4,6 +4,7 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { generateRecoveryOptionsForDisruption } from './recovery-generator.js';
+import { logInfo, logError, logException } from './logger.js';
 
 class LLMRecoveryService {
   constructor() {
@@ -55,9 +56,17 @@ class LLMRecoveryService {
         (response) => this.parseResponse(response.content)
       ]);
 
-      console.log(`✅ LLM Recovery Service initialized with ${this.llmProvider} provider`);
+      logInfo(`LLM Recovery Service initialized with ${this.llmProvider} provider`, {
+        provider: this.llmProvider,
+        model: this.model,
+        status: 'initialized'
+      });
     } catch (error) {
-      console.error(`❌ Failed to initialize LLM: ${error.message}`);
+      logError(`Failed to initialize LLM: ${error.message}`, error, {
+        provider: this.llmProvider,
+        model: this.model,
+        status: 'initialization_failed'
+      });
       this.llm = null;
       this.chain = null;
     }
@@ -201,27 +210,49 @@ Return only valid JSON with both "options" and "steps" arrays.`;
 
   async generateRecoveryOptions(disruptionData, categoryInfo = {}) {
     if (!this.chain) {
-      console.warn('LLM chain not available, falling back to default recovery generator');
+      logError('LLM chain not available, falling back to default recovery generator', null, {
+        provider: this.llmProvider,
+        flight_number: disruptionData.flight_number,
+        fallback: true
+      });
       return this.fallbackToDefaultGenerator(disruptionData, categoryInfo);
     }
 
     try {
       const promptVariables = this.buildPromptVariables(disruptionData, categoryInfo);
       
-      console.log(`Generating LLM recovery options for flight ${disruptionData.flight_number}`);
+      logInfo(`Generating LLM recovery options for flight ${disruptionData.flight_number}`, {
+        flight_number: disruptionData.flight_number,
+        provider: this.llmProvider,
+        model: this.model,
+        disruption_type: disruptionData.disruption_type,
+        severity: disruptionData.severity,
+        category: categoryInfo.category_name
+      });
       
       const result = await this.chain.invoke(promptVariables);
       
       if (result && result.options && result.steps) {
-        console.log(`✅ LLM generated ${result.options.length} options and ${result.steps.length} steps`);
+        logInfo(`LLM generated recovery options successfully`, {
+          flight_number: disruptionData.flight_number,
+          provider: this.llmProvider,
+          options_count: result.options.length,
+          steps_count: result.steps.length,
+          duration: 'success'
+        });
         return result;
       } else {
         throw new Error('Invalid LLM response format');
       }
 
     } catch (error) {
-      console.error('Error calling LLM:', error.message);
-      console.warn('Falling back to default recovery generator');
+      logError('Error calling LLM', error, {
+        flight_number: disruptionData.flight_number,
+        provider: this.llmProvider,
+        model: this.model,
+        error_type: error.constructor.name,
+        fallback: true
+      });
       return this.fallbackToDefaultGenerator(disruptionData, categoryInfo);
     }
   }
@@ -254,14 +285,23 @@ Return only valid JSON with both "options" and "steps" arrays.`;
       };
 
     } catch (error) {
-      console.error('Error parsing LLM response:', error.message);
-      console.error('Raw LLM content:', content);
+      logError('Error parsing LLM response', error, {
+        provider: this.llmProvider,
+        content_preview: content ? content.substring(0, 200) + '...' : 'empty',
+        content_length: content ? content.length : 0,
+        error_type: error.constructor.name
+      });
       throw error;
     }
   }
 
   fallbackToDefaultGenerator(disruptionData, categoryInfo) {
-    console.log('Using fallback default recovery generator');
+    logInfo('Using fallback default recovery generator', {
+      flight_number: disruptionData.flight_number,
+      disruption_type: disruptionData.disruption_type,
+      reason: 'LLM unavailable or failed',
+      category: categoryInfo.category_name
+    });
     return generateRecoveryOptionsForDisruption(disruptionData, categoryInfo);
   }
 
