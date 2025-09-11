@@ -1,4 +1,4 @@
-modules = [ "web", "nodejs-24"]
+modules = ["web", "nodejs-24"]
 run = "npm run dev"
 
 [nix]
@@ -9,7 +9,7 @@ packages = ["vim-full", "postgresql_13"]
 run = ["sh", "-c", "npm run dev"]
 
 [workflows]
-runButton = "Project"
+runButton = "Start Full Stack"
 
 [[workflows.workflow]]
 name = "Run"
@@ -42,11 +42,6 @@ author = 45149410
 task = "shell.exec"
 args = "node server/start.js"
 
-[[workflows.workflow]]
-name = "Project"
-mode = "parallel"
-author = "agent"
-
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "Frontend"
@@ -55,10 +50,6 @@ args = "Frontend"
 task = "workflow.run"
 args = "Backend"
 
-[[workflows.workflow]]
-name = "Frontend"
-author = "agent"
-
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
@@ -66,10 +57,6 @@ waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
-
-[[workflows.workflow]]
-name = "Backend"
-author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
@@ -92,4 +79,4 @@ localPort = 5001
 externalPort = 80
 
 [agent]
-expertMode = true
+expertMode = false
