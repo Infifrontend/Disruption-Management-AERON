@@ -6,6 +6,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { 
   logger, 
+  logInfo,
   logError, 
   logException, 
   requestLogger,
