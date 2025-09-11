@@ -398,6 +398,34 @@ app.get("/api/debug", (req, res) => {
   });
 });
 
+// Test logging endpoint
+app.get("/api/test-logging", (req, res) => {
+  try {
+    logInfo('Test logging endpoint called', { 
+      timestamp: new Date().toISOString(),
+      ip: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+    
+    logError('Test error log from endpoint', new Error('Test error for logging verification'), {
+      endpoint: '/api/test-logging',
+      method: req.method
+    });
+    
+    res.json({ 
+      success: true, 
+      message: 'Logging test completed. Check logs/ directory for log files.',
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logError('Error in test logging endpoint', error);
+    res.status(500).json({ 
+      error: 'Failed to test logging', 
+      details: error.message 
+    });
+  }
+});
+
 // Settings endpoints
 app.get("/api/settings", async (req, res) => {
   try {
