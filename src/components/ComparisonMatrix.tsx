@@ -2999,6 +2999,7 @@ export function ComparisonMatrix({
                                                 )}
                                               </div>
                                             </div>
+                                          </div>
                                           </TableCell>
                                         </TableRow>
                                       )}

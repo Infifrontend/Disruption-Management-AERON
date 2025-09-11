@@ -142,12 +142,12 @@ const pool = new Pool({
     connectionString.includes("neon.tech")
       ? { rejectUnauthorized: false }
       : false,
-  max: 5, // Reduced maximum connections to prevent exhaustion
-  min: 1, // Keep at least one connection alive
-  idleTimeoutMillis: 60000, // Keep connections alive longer
-  connectionTimeoutMillis: 10000, // Increased timeout for better reliability
-  maxUses: 1000, // Reduced max uses to recycle connections more frequently
-  acquireTimeoutMillis: 8000, // Timeout for acquiring connections
+  max: 10, // Increase max connections
+  min: 2, // Keep more connections alive
+  idleTimeoutMillis: 30000, // Shorter idle timeout to prevent stale connections
+  connectionTimeoutMillis: 5000, // Shorter connection timeout
+  maxUses: 7500, // Higher max uses before recycling
+  acquireTimeoutMillis: 5000, // Shorter acquire timeout
 });
 
 // Test database connection on startup with retry logic
