@@ -1,8 +1,8 @@
 
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatAnthropic } from "@langchain/anthropic";
-import { PromptTemplate } from "@langchain/core/prompts";
-import { LLMChain } from "langchain/chains";
+import { ChatPromptTemplate } from "@langchain/core/prompts";
+import { RunnableSequence } from "@langchain/core/runnables";
 import { generateRecoveryOptionsForDisruption } from './recovery-generator.js';
 
 class LLMRecoveryService {
@@ -10,20 +10,23 @@ class LLMRecoveryService {
     this.llmProvider = process.env.LLM_PROVIDER || 'openai';
     this.model = process.env.LLM_MODEL || 'gpt-3.5-turbo';
     this.llm = null;
+    this.promptTemplate = null;
+    this.chain = null;
     this.initializeLLM();
   }
 
   initializeLLM() {
     try {
+      // Initialize LLM based on provider
       switch (this.llmProvider.toLowerCase()) {
         case 'openai':
           if (!process.env.OPENAI_API_KEY) {
             throw new Error('OPENAI_API_KEY environment variable is required for OpenAI provider');
           }
           this.llm = new ChatOpenAI({
-            modelName: this.model,
+            model: this.model,
             temperature: 0.7,
-            openAIApiKey: process.env.OPENAI_API_KEY,
+            apiKey: process.env.OPENAI_API_KEY,
           });
           break;
 
@@ -32,25 +35,36 @@ class LLMRecoveryService {
             throw new Error('ANTHROPIC_API_KEY environment variable is required for Anthropic provider');
           }
           this.llm = new ChatAnthropic({
-            modelName: this.model || 'claude-3-sonnet-20240229',
+            model: this.model || 'claude-3-sonnet-20240229',
             temperature: 0.7,
-            anthropicApiKey: process.env.ANTHROPIC_API_KEY,
+            apiKey: process.env.ANTHROPIC_API_KEY,
           });
           break;
 
         default:
           throw new Error(`Unsupported LLM provider: ${this.llmProvider}`);
       }
+
+      // Initialize prompt template
+      this.promptTemplate = this.createPromptTemplate();
+      
+      // Create runnable chain
+      this.chain = RunnableSequence.from([
+        this.promptTemplate,
+        this.llm,
+        (response) => this.parseResponse(response.content)
+      ]);
+
       console.log(`✅ LLM Recovery Service initialized with ${this.llmProvider} provider`);
     } catch (error) {
       console.error(`❌ Failed to initialize LLM: ${error.message}`);
       this.llm = null;
+      this.chain = null;
     }
   }
 
   createPromptTemplate() {
-    const template = `
-You are an expert flight operations recovery specialist. Given the following flight disruption details, generate comprehensive recovery options.
+    const template = `You are an expert flight operations recovery specialist. Given the following flight disruption details, generate comprehensive recovery options.
 
 Flight Disruption Information:
 - Flight Number: {flightNumber}
@@ -163,51 +177,44 @@ Also generate recovery steps in this format:
   ]
 }}
 
-Return only valid JSON with both "options" and "steps" arrays.
-`;
+Return only valid JSON with both "options" and "steps" arrays.`;
 
-    return PromptTemplate.fromTemplate(template);
+    return ChatPromptTemplate.fromTemplate(template);
+  }
+
+  buildPromptVariables(disruptionData, categoryInfo = {}) {
+    return {
+      flightNumber: disruptionData.flight_number || 'Unknown',
+      route: disruptionData.route || `${disruptionData.origin} → ${disruptionData.destination}`,
+      aircraft: disruptionData.aircraft || 'Unknown',
+      scheduledDeparture: disruptionData.scheduled_departure || 'Unknown',
+      estimatedDeparture: disruptionData.estimated_departure || 'Unknown', 
+      delayMinutes: disruptionData.delay_minutes || 0,
+      passengers: disruptionData.passengers || 0,
+      crew: disruptionData.crew || 0,
+      disruptionType: disruptionData.disruption_type || 'Unknown',
+      disruptionReason: disruptionData.disruption_reason || 'Unknown',
+      severity: disruptionData.severity || 'Medium',
+      categoryName: categoryInfo.category_name || disruptionData.categorization || 'General'
+    };
   }
 
   async generateRecoveryOptions(disruptionData, categoryInfo = {}) {
-    if (!this.llm) {
-      console.warn('LLM not available, falling back to default recovery generator');
+    if (!this.chain) {
+      console.warn('LLM chain not available, falling back to default recovery generator');
       return this.fallbackToDefaultGenerator(disruptionData, categoryInfo);
     }
 
     try {
-      const promptTemplate = this.createPromptTemplate();
-      const chain = new LLMChain({
-        llm: this.llm,
-        prompt: promptTemplate,
-      });
-
-      const promptVariables = {
-        flightNumber: disruptionData.flight_number || 'Unknown',
-        route: disruptionData.route || `${disruptionData.origin} → ${disruptionData.destination}`,
-        aircraft: disruptionData.aircraft || 'Unknown',
-        scheduledDeparture: disruptionData.scheduled_departure || 'Unknown',
-        estimatedDeparture: disruptionData.estimated_departure || 'Unknown', 
-        delayMinutes: disruptionData.delay_minutes || 0,
-        passengers: disruptionData.passengers || 0,
-        crew: disruptionData.crew || 0,
-        disruptionType: disruptionData.disruption_type || 'Unknown',
-        disruptionReason: disruptionData.disruption_reason || 'Unknown',
-        severity: disruptionData.severity || 'Medium',
-        categoryName: categoryInfo.category_name || disruptionData.categorization || 'General'
-      };
-
+      const promptVariables = this.buildPromptVariables(disruptionData, categoryInfo);
+      
       console.log(`Generating LLM recovery options for flight ${disruptionData.flight_number}`);
       
-      const response = await chain.call(promptVariables);
-      const llmOutput = response.text;
-
-      // Parse LLM response
-      const parsedResponse = this.parseLLMResponse(llmOutput);
+      const result = await this.chain.invoke(promptVariables);
       
-      if (parsedResponse && parsedResponse.options && parsedResponse.steps) {
-        console.log(`✅ LLM generated ${parsedResponse.options.length} options and ${parsedResponse.steps.length} steps`);
-        return parsedResponse;
+      if (result && result.options && result.steps) {
+        console.log(`✅ LLM generated ${result.options.length} options and ${result.steps.length} steps`);
+        return result;
       } else {
         throw new Error('Invalid LLM response format');
       }
@@ -219,18 +226,18 @@ Return only valid JSON with both "options" and "steps" arrays.
     }
   }
 
-  parseLLMResponse(llmOutput) {
+  parseResponse(content) {
     try {
       // Clean the response to extract JSON
-      let cleanedOutput = llmOutput.trim();
+      let cleanedContent = content.trim();
       
       // Remove markdown code blocks if present
-      if (cleanedOutput.startsWith('```')) {
-        cleanedOutput = cleanedOutput.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+      if (cleanedContent.startsWith('```')) {
+        cleanedContent = cleanedContent.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
       }
 
       // Try to parse the JSON
-      const parsed = JSON.parse(cleanedOutput);
+      const parsed = JSON.parse(cleanedContent);
       
       // Validate structure
       if (!parsed.options || !Array.isArray(parsed.options)) {
@@ -248,8 +255,8 @@ Return only valid JSON with both "options" and "steps" arrays.
 
     } catch (error) {
       console.error('Error parsing LLM response:', error.message);
-      console.error('Raw LLM output:', llmOutput);
-      return null;
+      console.error('Raw LLM content:', content);
+      throw error;
     }
   }
 
@@ -269,7 +276,8 @@ Return only valid JSON with both "options" and "steps" arrays.
 
     try {
       // Simple test call
-      const testResponse = await this.llm.call([{ role: 'user', content: 'Hello' }]);
+      const testMessage = { role: 'user', content: 'Hello' };
+      await this.llm.invoke([testMessage]);
       return {
         status: 'healthy',
         provider: this.llmProvider,
