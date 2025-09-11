@@ -1,6 +1,5 @@
 
 import pino from 'pino';
-import { createWriteStream } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { mkdirSync, existsSync } from 'fs';
@@ -31,7 +30,40 @@ console.log(`Info log path: ${infoLogPath}`);
 console.log(`Error log path: ${errorLogPath}`);
 console.log(`Exception log path: ${exceptionLogPath}`);
 
-// Create logger with multiple destinations
+// Create logger with multiple destinations using latest Pino transport API
+const transport = pino.transport({
+  targets: [
+    // Console output
+    {
+      target: 'pino-pretty',
+      level: 'info',
+      options: {
+        colorize: true,
+        translateTime: 'SYS:standard',
+        ignore: 'pid,hostname'
+      }
+    },
+    // Info log file
+    {
+      target: 'pino/file',
+      level: 'info',
+      options: {
+        destination: infoLogPath,
+        mkdir: true
+      }
+    },
+    // Error log file  
+    {
+      target: 'pino/file',
+      level: 'error',
+      options: {
+        destination: errorLogPath,
+        mkdir: true
+      }
+    }
+  ]
+});
+
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
   timestamp: pino.stdTimeFunctions.isoTime,
@@ -45,35 +77,17 @@ const logger = pino({
     res: pino.stdSerializers.res,
     err: pino.stdSerializers.err
   }
-}, pino.multistream([
-  // Console output
-  {
-    stream: pino.destination({
-      dest: 1, // stdout
-      sync: false
-      
-    }),
-    level: 'info'
-  },
-  // Info log file
-  {
-    stream: pino.destination({
-      dest: infoLogPath,
-      sync: false
-    }),
-    level: 'info'
-  },
-  // Error log file  
-  {
-    stream: pino.destination({
-      dest: errorLogPath,
-      sync: false
-    }),
-    level: 'error'
-  }
-]));
+}, transport);
 
-// Custom exception logger with file destination
+// Custom exception logger with dedicated transport
+const exceptionTransport = pino.transport({
+  target: 'pino/file',
+  options: {
+    destination: exceptionLogPath,
+    mkdir: true
+  }
+});
+
 const exceptionLogger = pino({
   level: 'error',
   timestamp: pino.stdTimeFunctions.isoTime,
@@ -82,25 +96,18 @@ const exceptionLogger = pino({
       return { level: label };
     }
   }
-}, pino.destination({
-  dest: exceptionLogPath,
-  sync: false
-}));
+}, exceptionTransport);
 
-// Enhanced logging methods with immediate flushing
+// Enhanced logging methods
 const logInfo = (message, meta = {}) => {
   console.log(`[INFO] ${message}`, meta); // Console backup
   logger.info(meta, message);
-  // Force flush
-  logger.flush();
 };
 
 const logError = (message, error = null, meta = {}) => {
   const errorMeta = error ? { error: error.message, stack: error.stack, ...meta } : meta;
   console.error(`[ERROR] ${message}`, errorMeta); // Console backup
   logger.error(errorMeta, message);
-  // Force flush
-  logger.flush();
 };
 
 const logException = (error, context = 'Unknown') => {
@@ -114,10 +121,6 @@ const logException = (error, context = 'Unknown') => {
   console.error(`[EXCEPTION] Unhandled exception in ${context}`, exceptionData); // Console backup
   exceptionLogger.error(exceptionData, `Unhandled exception in ${context}`);
   logger.error(exceptionData, `Unhandled exception in ${context}`);
-  
-  // Force flush both loggers
-  exceptionLogger.flush();
-  logger.flush();
 };
 
 // Express middleware for request logging
