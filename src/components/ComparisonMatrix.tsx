@@ -72,7 +72,7 @@ export function ComparisonMatrix({
 
   // Function to update reassigned data state
   const updateReassignedData = (optionId, type, data) => {
-    setReassignedData(prevData => ({
+    setReassignedData((prevData) => ({
       ...prevData,
       [optionId]: {
         ...(prevData[optionId] || {}),
@@ -80,7 +80,6 @@ export function ComparisonMatrix({
       },
     }));
   };
-
 
   // Function to check if option requires execution based on impact_area
   const requiresExecution = (option) => {
@@ -934,6 +933,12 @@ export function ComparisonMatrix({
       }
 
       // Transform the API data to match the expected structure for the rotation dialog
+      console.log(
+        (optionReassignedData as any).flights,
+        rotationPlan?.nextSectors,
+        "testttttt",
+      );
+
       const enrichedRotationPlan = {
         // Aircraft options from API (aircraftOptions array)
         aircraftRotations: rotationPlan?.aircraftOptions?.map((aircraft) => ({
@@ -4263,14 +4268,18 @@ export function ComparisonMatrix({
                                       crewData: updatedCrew,
                                     },
                                   };
-                                  
-                                  setSelectedOptionDetails(updatedOptionDetails);
-                                  
-                                  // Capture reassigned crew data for Service Page
-                                  const reassignedCrew = updatedCrew.filter(crewMember => 
-                                    crewMember.replacedCrew && crewMember.assignedAt
+
+                                  setSelectedOptionDetails(
+                                    updatedOptionDetails,
                                   );
-                                  
+
+                                  // Capture reassigned crew data for Service Page
+                                  const reassignedCrew = updatedCrew.filter(
+                                    (crewMember) =>
+                                      crewMember.replacedCrew &&
+                                      crewMember.assignedAt,
+                                  );
+
                                   if (reassignedCrew.length > 0) {
                                     setReassignedCrewData({
                                       flightId: selectedFlight?.id,
@@ -4278,10 +4287,10 @@ export function ComparisonMatrix({
                                       optionTitle: selectedOptionDetails?.title,
                                       reassignedCrew: reassignedCrew,
                                       timestamp: new Date().toISOString(),
-                                      totalReassignments: reassignedCrew.length
+                                      totalReassignments: reassignedCrew.length,
                                     });
                                   }
-                                  
+
                                   console.log(selectedOptionDetails, "test11");
                                 }
 

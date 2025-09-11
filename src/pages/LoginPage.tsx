@@ -41,9 +41,9 @@ export function LoginPage() {
 
   const handleDemoLogin = async (userType: string) => {
     const demoCredentials = {
-      super_admin: { email: 'admin@flydubai.com', password: 'password123' },
-      passenger_manager: { email: 'passenger@flydubai.com', password: 'password123' },
-      crew_manager: { email: 'crew@flydubai.com', password: 'password123' }
+      super_admin: { email: 'admin@flydubai.com', password: '' },
+      passenger_manager: { email: 'passenger@flydubai.com', password: '' },
+      crew_manager: { email: 'crew@flydubai.com', password: '' }
     };
 
     const creds = demoCredentials[userType as keyof typeof demoCredentials];
@@ -154,9 +154,9 @@ export function LoginPage() {
                   Crew Manager (CM001)
                 </Button>
               </div>
-              <p className="text-xs text-gray-500 text-center mt-2">
+              {/* <p className="text-xs text-gray-500 text-center mt-2">
                 Password for all demo accounts: password123
-              </p>
+              </p> */}
             </div>
           </CardContent>
         </Card>

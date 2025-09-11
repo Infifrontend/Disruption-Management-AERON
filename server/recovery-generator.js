@@ -6,134 +6,463 @@ const availableDummyCrew = [
     name: "Capt. James Walker",
     role_code: "CAPT",
     role: "Captain",
-    qualifications: [{ code: "B737", name: "Boeing 737" }],
+    qualifications: [
+      {
+        code: "B737",
+        name: "Boeing 737"
+      }
+    ],
     status: "available",
     issue: null,
     experience_years: 18,
     base: "LHR",
-    languages: ["English"],
+    languages: [
+      "English"
+    ],
+    rotation_plan: [
+      {
+        flightNumber: "FZ141",
+        origin_code: "LHR",
+        destination_code: "DXB",
+        origin: "London Heathrow",
+        destination: "Dubai",
+        departure: "2025-09-10T07:30:00+01:00",
+        arrival: "2025-09-10T15:30:00+04:00",
+        delay: "On Time",
+        passengers: 178,
+        status: "On Time",
+        impact: "High Impact",
+        reason: "Primary PIC — replacement required, flight will be delayed or cancelled without a qualified Captain."
+      }
+    ]
   },
   {
     name: "Capt. Ravi Sharma",
     role_code: "CAPT",
     role: "Captain",
-    qualifications: [{ code: "B737", name: "Boeing 737" }],
+    qualifications: [
+      {
+        code: "B737",
+        name: "Boeing 737"
+      }
+    ],
     status: "available",
     issue: null,
     experience_years: 15,
     base: "DEL",
-    languages: ["English", "Hindi"],
+    languages: [
+      "English",
+      "Hindi"
+    ],
+    rotation_plan: [
+      {
+        flightNumber: "FZ431",
+        origin_code: "DEL",
+        destination_code: "DXB",
+        origin: "Delhi",
+        destination: "Dubai",
+        departure: "2025-09-10T09:00:00+05:30",
+        arrival: "2025-09-10T11:30:00+04:00",
+        delay: "15 min",
+        passengers: 164,
+        status: "Delayed",
+        impact: "High Impact",
+        reason: "Primary PIC removed — replacement required, departure may be delayed while finding a qualified Captain."
+      }
+    ]
   },
   {
     name: "Capt. Elena Petrova",
     role_code: "CAPT",
     role: "Captain",
-    qualifications: [{ code: "B737", name: "Boeing 737" }],
+    qualifications: [
+      {
+        code: "B737",
+        name: "Boeing 737"
+      }
+    ],
     status: "available",
     issue: null,
     experience_years: 13,
     base: "DME",
-    languages: ["Russian", "English"],
+    languages: [
+      "Russian",
+      "English"
+    ],
+    rotation_plan: [
+      {
+        flightNumber: "FZ178",
+        origin_code: "JFK",
+        destination_code: "DXB",
+        origin: "New York JFK",
+        destination: "Dubai",
+        departure: "2025-09-10T12:00:00-04:00",
+        arrival: "2025-09-11T09:00:00+04:00",
+        delay: "30 min",
+        passengers: 182,
+        status: "Delayed",
+        impact: "High Impact",
+        reason: "Primary PIC — replacement required, long-haul pairing means downstream duties will also be affected."
+      }
+    ]
   },
   {
     name: "FO Michael Adams",
     role_code: "FO",
     role: "First officer",
-    qualifications: [{ code: "B737M", name: "Boeing 737 MAX" }],
+    qualifications: [
+      {
+        code: "B737M",
+        name: "Boeing 737 MAX"
+      }
+    ],
     status: "available",
     issue: null,
     experience_years: 8,
     base: "JFK",
-    languages: ["English", "Spanish"],
+    languages: [
+      "English",
+      "Spanish"
+    ],
+    rotation_plan: [
+      {
+        flightNumber: "FZ523",
+        origin_code: "DXB",
+        destination_code: "DOH",
+        origin: "Dubai",
+        destination: "Doha",
+        departure: "2025-09-10T11:00:00+04:00",
+        arrival: "2025-09-10T11:50:00+03:00",
+        delay: "On Time",
+        passengers: 156,
+        status: "On Time",
+        impact: "High Impact",
+        reason: "Primary FO removed — flight cannot legally depart without a qualified First Officer unless a reserve is available at origin."
+      },
+      {
+        flightNumber: "FZ524",
+        origin_code: "DOH",
+        destination_code: "DXB",
+        origin: "Doha",
+        destination: "Dubai",
+        departure: "2025-09-10T13:30:00+03:00",
+        arrival: "2025-09-10T15:30:00+04:00",
+        delay: "10 min",
+        passengers: 149,
+        status: "Delayed",
+        impact: "Medium Impact",
+        reason: "Subsequent leg may be covered by a reserve FO, possible delay if replacement is not available quickly."
+      }
+    ]
   },
   {
     name: "FO Hannah Lee",
     role_code: "FO",
     role: "First officer",
-    qualifications: [{ code: "B737M", name: "Boeing 737 MAX" }],
+    qualifications: [
+      {
+        code: "B737M",
+        name: "Boeing 737 MAX"
+      }
+    ],
     status: "available",
     issue: null,
     experience_years: 6,
     base: "ICN",
-    languages: ["Korean", "English"],
+    languages: [
+      "Korean",
+      "English"
+    ],
+    rotation_plan: [
+      {
+        flightNumber: "FZ821",
+        origin_code: "HND",
+        destination_code: "DXB",
+        origin: "Tokyo Haneda",
+        destination: "Dubai",
+        departure: "2025-09-10T14:00:00+09:00",
+        arrival: "2025-09-10T21:00:00+04:00",
+        delay: "20 min",
+        passengers: 172,
+        status: "Delayed",
+        impact: "High Impact",
+        reason: "Primary FO removed — replacement required at origin, long sector increases risk to downstream schedule."
+      }
+    ]
   },
   {
     name: "FO Ahmed Nasser",
     role_code: "FO",
     role: "First officer",
-    qualifications: [{ code: "B737M", name: "Boeing 737 MAX" }],
+    qualifications: [
+      {
+        code: "B737M",
+        name: "Boeing 737 MAX"
+      }
+    ],
     status: "available",
     issue: null,
     experience_years: 7,
     base: "DXB",
-    languages: ["Arabic", "English"],
+    languages: [
+      "Arabic",
+      "English"
+    ],
+    rotation_plan: [
+      {
+        flightNumber: "FZ523",
+        origin_code: "DXB",
+        destination_code: "DOH",
+        origin: "Dubai",
+        destination: "Doha",
+        departure: "2025-09-10T11:00:00+04:00",
+        arrival: "2025-09-10T11:50:00+03:00",
+        delay: "On Time",
+        passengers: 156,
+        status: "On Time",
+        impact: "High Impact",
+        reason: "Primary FO removed — replacement required at origin, immediate impact to departure."
+      },
+      {
+        flightNumber: "FZ524",
+        origin_code: "DOH",
+        destination_code: "DXB",
+        origin: "Doha",
+        destination: "Dubai",
+        departure: "2025-09-10T13:30:00+03:00",
+        arrival: "2025-09-10T15:30:00+04:00",
+        delay: "10 min",
+        passengers: 149,
+        status: "Delayed",
+        impact: "Medium Impact",
+        reason: "Turnaround dependent — may be covered by reserve FO, risk of knock-on delays."
+      }
+    ]
   },
   {
     name: "SSCC Grace Thompson",
     role_code: "SCC",
     role: "Senior cabin crew",
-    qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
+    qualifications: [
+      {
+        code: "SCC",
+        name: "Senior Cabin Crew"
+      }
+    ],
     status: "available",
     issue: null,
     experience_years: 12,
     base: "LHR",
-    languages: ["English", "French"],
+    languages: [
+      "English",
+      "French"
+    ],
+    rotation_plan: [
+      {
+        flightNumber: "FZ141",
+        origin_code: "LHR",
+        destination_code: "DXB",
+        origin: "London Heathrow",
+        destination: "Dubai",
+        departure: "2025-09-10T07:30:00+01:00",
+        arrival: "2025-09-10T15:30:00+04:00",
+        delay: "On Time",
+        passengers: 178,
+        status: "On Time",
+        impact: "Medium Impact",
+        reason: "Senior cabin crew removal affects service and leadership on board, replacement or reallocation required."
+      }
+    ]
   },
   {
     name: "SSCC Pedro Alvarez",
     role_code: "SCC",
     role: "Senior cabin crew",
-    qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
+    qualifications: [
+      {
+        code: "SCC",
+        name: "Senior Cabin Crew"
+      }
+    ],
     status: "available",
     issue: null,
     experience_years: 10,
     base: "MAD",
-    languages: ["Spanish", "English"],
+    languages: [
+      "Spanish",
+      "English"
+    ],
+    rotation_plan: [
+      {
+        flightNumber: "FZ144",
+        origin_code: "MAD",
+        destination_code: "DXB",
+        origin: "Madrid",
+        destination: "Dubai",
+        departure: "2025-09-10T10:00:00+02:00",
+        arrival: "2025-09-10T19:00:00+04:00",
+        delay: "On Time",
+        passengers: 165,
+        status: "On Time",
+        impact: "Medium Impact",
+        reason: "Senior cabin crew absent — may affect service delivery and compliance, replacement required."
+      }
+    ]
   },
   {
     name: "SSCC Fatima Noor",
     role_code: "SCC",
     role: "Senior cabin crew",
-    qualifications: [{ code: "SCC", name: "Senior Cabin Crew" }],
+    qualifications: [
+      {
+        code: "SCC",
+        name: "Senior Cabin Crew"
+      }
+    ],
     status: "available",
     issue: null,
     experience_years: 9,
     base: "DXB",
-    languages: ["Arabic", "Urdu", "English"],
+    languages: [
+      "Arabic",
+      "Urdu",
+      "English"
+    ],
+    rotation_plan: [
+      {
+        flightNumber: "FZ523",
+        origin_code: "DXB",
+        destination_code: "DOH",
+        origin: "Dubai",
+        destination: "Doha",
+        departure: "2025-09-10T11:00:00+04:00",
+        arrival: "2025-09-10T11:50:00+03:00",
+        delay: "On Time",
+        passengers: 156,
+        status: "On Time",
+        impact: "Medium Impact",
+        reason: "Senior cabin crew absent — service/lead role needs replacement, possible reallocation required."
+      },
+      {
+        flightNumber: "FZ524",
+        origin_code: "DOH",
+        destination_code: "DXB",
+        origin: "Doha",
+        destination: "Dubai",
+        departure: "2025-09-10T13:30:00+03:00",
+        arrival: "2025-09-10T15:30:00+04:00",
+        delay: "10 min",
+        passengers: 149,
+        status: "Delayed",
+        impact: "Medium Impact",
+        reason: "Turnaround dependent — replacement required to maintain minimum service levels, may cause delay."
+      }
+    ]
   },
   {
     name: "CC Laura Bennett",
     role_code: "CC",
     role: "Cabin crew",
-    qualifications: [{ code: "CC", name: "Cabin Crew" }],
+    qualifications: [
+      {
+        code: "CC",
+        name: "Cabin Crew"
+      }
+    ],
     status: "available",
     issue: null,
     experience_years: 5,
     base: "SYD",
-    languages: ["English"],
+    languages: [
+      "English"
+    ],
+    rotation_plan: [
+      {
+        flightNumber: "FZ451",
+        origin_code: "SYD",
+        destination_code: "DXB",
+        origin: "Sydney",
+        destination: "Dubai",
+        departure: "2025-09-10T09:00:00+10:00",
+        arrival: "2025-09-10T17:00:00+04:00",
+        delay: "On Time",
+        passengers: 172,
+        status: "On Time",
+        impact: "Medium Impact",
+        reason: "Cabin crew removed — replacement required to meet minimum staffing, may cause service disruption or delay."
+      }
+    ]
   },
   {
     name: "CC Samuel Osei",
     role_code: "CC",
     role: "Cabin crew",
-    qualifications: [{ code: "CC", name: "Cabin Crew" }],
+    qualifications: [
+      {
+        code: "CC",
+        name: "Cabin Crew"
+      }
+    ],
     status: "available",
     issue: null,
     experience_years: 4,
     base: "ACC",
-    languages: ["English", "Twi"],
+    languages: [
+      "English",
+      "Twi"
+    ],
+    rotation_plan: [
+      {
+        flightNumber: "FZ134",
+        origin_code: "ACC",
+        destination_code: "DXB",
+        origin: "Accra",
+        destination: "Dubai",
+        departure: "2025-09-10T08:30:00+00:00",
+        arrival: "2025-09-10T18:00:00+04:00",
+        delay: "On Time",
+        passengers: 161,
+        status: "On Time",
+        impact: "Medium Impact",
+        reason: "Cabin crew removed — replacement or reshuffle needed to meet minimum crew levels, may delay departure."
+      }
+    ]
   },
   {
     name: "CC Yuki Tanaka",
     role_code: "CC",
     role: "Cabin crew",
-    qualifications: [{ code: "CC", name: "Cabin Crew" }],
+    qualifications: [
+      {
+        code: "CC",
+        name: "Cabin Crew"
+      }
+    ],
     status: "available",
     issue: null,
     experience_years: 3,
     base: "HND",
-    languages: ["Japanese", "English"],
-  },
+    languages: [
+      "Japanese",
+      "English"
+    ],
+    rotation_plan: [
+      {
+        flightNumber: "FZ821",
+        origin_code: "HND",
+        destination_code: "DXB",
+        origin: "Tokyo Haneda",
+        destination: "Dubai",
+        departure: "2025-09-10T14:00:00+09:00",
+        arrival: "2025-09-10T21:00:00+04:00",
+        delay: "20 min",
+        passengers: 172,
+        status: "Delayed",
+        impact: "Medium Impact",
+        reason: "Cabin crew removed — service/COMPLIANCE impact, replacement required to avoid further delays."
+      }
+    ]
+  }
 ];
 
 // Embedded aircraft issues recovery data
@@ -382,64 +711,267 @@ const getAircraftIssuesRecoveryData = () => {
           {
             reg: "A6-FED",
             type: "B737-800 (189Y)",
-            etops: { status: "available", value: "180min" },
-            cabinMatch: { status: "exact", value: "Exact" },
+            etops: {
+              status: "available",
+              value: "180min"
+            },
+            cabinMatch: {
+              status: "exact",
+              value: "Exact"
+            },
             availability: "Available Now",
-            assigned: { status: "none", value: "None" },
+            assigned: {
+              status: "none",
+              value: "None"
+            },
             turnaround: "45 min",
-            maintenance: { status: "current", value: "Current" },
+            maintenance: {
+              status: "current",
+              value: "Current"
+            },
             option_score: {
               cost_score: "92%",
               delay_score: "88%",
               crew_impact: "95%",
               fuel_score: "91%",
-              overall: "92%",
+              overall: "92%"
             },
+            rotation_plan: [
+              {
+                flightNumber: "FZ141",
+                origin_code: "DXB",
+                destination_code: "MCT",
+                origin: "Dubai",
+                destination: "Muscat",
+                departure: "2025-09-10T08:45:00+04:00",
+                arrival: "2025-09-10T09:30:00+04:00",
+                delay: "10 min",
+                passengers: 152,
+                status: "On Time",
+                impact: "Low Impact",
+                reason: "Nominal operations"
+              },
+              {
+                flightNumber: "FZ142",
+                origin_code: "MCT",
+                destination_code: "DXB",
+                origin: "Muscat",
+                destination: "Dubai",
+                departure: "2025-09-10T10:15:00+04:00",
+                arrival: "2025-09-10T11:05:00+04:00",
+                delay: "5 min",
+                passengers: 148,
+                status: "On Time",
+                impact: "Low Impact",
+                reason: "Turnaround buffer"
+              },
+              {
+                flightNumber: "FZ737",
+                origin_code: "DXB",
+                destination_code: "KWI",
+                origin: "Dubai",
+                destination: "Kuwait",
+                departure: "2025-09-10T12:15:00+04:00",
+                arrival: "2025-09-10T13:30:00+04:00",
+                delay: "15 min",
+                passengers: 170,
+                status: "Delayed",
+                impact: "Medium Impact",
+                reason: "Busy apron slot"
+              },
+              {
+                flightNumber: "FZ738",
+                origin_code: "KWI",
+                destination_code: "DXB",
+                origin: "Kuwait",
+                destination: "Dubai",
+                departure: "2025-09-10T14:30:00+04:00",
+                arrival: "2025-09-10T15:45:00+04:00",
+                delay: "0 min",
+                passengers: 165,
+                status: "On Time",
+                impact: "Low Impact",
+                reason: "Smooth turnaround"
+              },
+              {
+                flightNumber: "FZ851",
+                origin_code: "DXB",
+                destination_code: "BKK",
+                origin: "Dubai",
+                destination: "Bangkok",
+                departure: "2025-09-10T17:00:00+04:00",
+                arrival: "2025-09-11T02:00:00+07:00",
+                delay: "25 min",
+                passengers: 189,
+                status: "Delayed",
+                impact: "High Impact",
+                reason: "ETOPS briefing delay"
+              }
+            ]
           },
           {
             reg: "A6-FEL",
             type: "B737-MAX8 (189Y)",
-            etops: { status: "available", value: "180min" },
-            cabinMatch: { status: "similar", value: "Similar" },
+            etops: {
+              status: "available",
+              value: "180min"
+            },
+            cabinMatch: {
+              status: "similar",
+              value: "Similar"
+            },
             availability: "Available 14:30",
-            assigned: { status: "assigned", value: "FZ892" },
+            assigned: {
+              status: "assigned",
+              value: "FZ892"
+            },
             turnaround: "60 min",
-            maintenance: { status: "current", value: "Current" },
+            maintenance: {
+              status: "current",
+              value: "Current"
+            },
             option_score: {
               cost_score: "65%",
               delay_score: "55%",
               crew_impact: "60%",
               fuel_score: "75%",
-              overall: "64%",
+              overall: "64%"
             },
+            rotation_plan: [
+              {
+                flightNumber: "FZ892",
+                origin_code: "DXB",
+                destination_code: "IST",
+                origin: "Dubai",
+                destination: "Istanbul",
+                departure: "2025-09-10T15:30:00+04:00",
+                arrival: "2025-09-10T19:30:00+03:00",
+                delay: "20 min",
+                passengers: 178,
+                status: "Delayed",
+                impact: "Medium Impact",
+                reason: "Gate congestion"
+              },
+              {
+                flightNumber: "FZ893",
+                origin_code: "IST",
+                destination_code: "DXB",
+                origin: "Istanbul",
+                destination: "Dubai",
+                departure: "2025-09-10T21:00:00+03:00",
+                arrival: "2025-09-11T02:00:00+04:00",
+                delay: "30 min",
+                passengers: 181,
+                status: "Delayed",
+                impact: "High Impact",
+                reason: "Late inbound connection"
+              }
+            ]
           },
           {
             reg: "A6-FGH",
             type: "B737-800 (164Y)",
-            etops: { status: "available", value: "180min" },
-            cabinMatch: { status: "reduced", value: "Reduced" },
+            etops: {
+              status: "available",
+              value: "180min"
+            },
+            cabinMatch: {
+              status: "reduced",
+              value: "Reduced"
+            },
             availability: "Available 16:00",
-            assigned: { status: "none", value: "None" },
+            assigned: {
+              status: "none",
+              value: "None"
+            },
             turnaround: "50 min",
-            maintenance: { status: "due", value: "Due A-Check" },
+            maintenance: {
+              status: "due",
+              value: "Due A-Check"
+            },
             option_score: {
               cost_score: "52%",
               delay_score: "38%",
               crew_impact: "55%",
               fuel_score: "61%",
-              overall: "52%",
+              overall: "52%"
             },
+            rotation_plan: [
+              {
+                flightNumber: "FZ523",
+                origin_code: "DXB",
+                destination_code: "DOH",
+                origin: "Dubai",
+                destination: "Doha",
+                departure: "2025-09-10T17:00:00+04:00",
+                arrival: "2025-09-10T17:50:00+03:00",
+                delay: "10 min",
+                passengers: 120,
+                status: "On Time",
+                impact: "Low Impact",
+                reason: "Normal ops"
+              },
+              {
+                flightNumber: "FZ524",
+                origin_code: "DOH",
+                destination_code: "DXB",
+                origin: "Doha",
+                destination: "Dubai",
+                departure: "2025-09-10T19:00:00+03:00",
+                arrival: "2025-09-10T21:00:00+04:00",
+                delay: "40 min",
+                passengers: 130,
+                status: "Delayed",
+                impact: "Medium Impact",
+                reason: "Awaiting maintenance clearance"
+              }
+            ]
           },
           {
             reg: "A6-FIJ",
             type: "B737-MAX8 (189Y)",
-            etops: { status: "none", value: "None" },
-            cabinMatch: { status: "exact", value: "Exact" },
+            etops: {
+              status: "none",
+              value: "None"
+            },
+            cabinMatch: {
+              status: "exact",
+              value: "Exact"
+            },
             availability: "Available 18:00",
-            assigned: { status: "assigned", value: "FZ445" },
+            assigned: {
+              status: "assigned",
+              value: "FZ445"
+            },
             turnaround: "75 min",
-            maintenance: { status: "aog", value: "AOG Issue" },
-          },
+            maintenance: {
+              status: "aog",
+              value: "AOG Issue"
+            },
+            option_score: {
+              cost_score: "0%",
+              delay_score: "0%",
+              crew_impact: "0%",
+              fuel_score: "0%",
+              overall: "0%"
+            },
+            rotation_plan: [
+              {
+                flightNumber: "FZ445",
+                origin_code: "DXB",
+                destination_code: "LHE",
+                origin: "Dubai",
+                destination: "Lahore",
+                departure: "2025-09-10T18:30:00+04:00",
+                arrival: "2025-09-10T22:45:00+05:00",
+                delay: "90 min",
+                passengers: 182,
+                status: "Cancelled",
+                impact: "High Impact",
+                reason: "AOG technical issue"
+              }
+            ]
+          }
         ],
         crew: [
           {
@@ -4458,9 +4990,9 @@ export function generateRecoveryOptionsForDisruption(
     disruption.category_code ||
     mapDisruptionTypeToCategory(
       disruption.disruption_type ||
-        disruption.disruptionType ||
-        disruption.type ||
-        "Technical",
+      disruption.disruptionType ||
+      disruption.type ||
+      "Technical",
       disruption.disruption_reason || "Unknown",
     );
 
