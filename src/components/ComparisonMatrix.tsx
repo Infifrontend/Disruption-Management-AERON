@@ -70,6 +70,9 @@ export function ComparisonMatrix({
   // State for reassigned data, keyed by option ID
   const [reassignedData, setReassignedData] = useState({});
 
+  // State for expanded crew in crew availability tab
+  const [expandedCrew, setExpandedCrew] = useState<number | null>(null);
+
   // Function to update reassigned data state
   const updateReassignedData = (optionId, type, data) => {
     setReassignedData((prevData) => ({
@@ -1192,7 +1195,7 @@ export function ComparisonMatrix({
       //     `/api/recovery-option-details/${option.id}`,
       //   );
       //   if (detailsResponse.ok) {
-      //     fullDetails = await detailsResponse.json();
+      //     fullDetails = await response.json();
       //   }
       // } catch (error) {
       //   console.warn("Could not fetch full details:", error);
@@ -2040,7 +2043,7 @@ export function ComparisonMatrix({
                                     selectedAircraftFlight === index ||
                                     (selectedAircraftFlight === null &&
                                       isDefault);
-                                  
+
                                   // Generate rotation impact data for this aircraft
                                   const rotationImpact = aircraft.rotation_impact || [
                                     {
@@ -2248,7 +2251,7 @@ export function ComparisonMatrix({
                                           </div>
                                         </TableCell>
                                       </TableRow>
-                                      
+
                                       {/* Rotation Impact Accordion */}
                                       {expandedAircraft === index && (
                                         <TableRow>
@@ -2284,7 +2287,7 @@ export function ComparisonMatrix({
                                                           {flight.impact}
                                                         </Badge>
                                                       </div>
-                                                      
+
                                                       <div className="grid grid-cols-4 gap-4 text-sm">
                                                         <div>
                                                           <span className="text-gray-500">Status:</span>
@@ -2308,7 +2311,7 @@ export function ComparisonMatrix({
                                                           </div>
                                                         </div>
                                                       </div>
-                                                      
+
                                                       <div className="mt-2 text-sm">
                                                         <span className="text-gray-500">Reason:</span>
                                                         <span className="ml-2">{flight.reason}</span>
@@ -2890,69 +2893,129 @@ export function ComparisonMatrix({
                                               </>
                                             )}
                                           </Button>
-                                          {(hasBeenSwapped ||
-                                            crewMember.isAutoAssigned) && (
+                                          {/* Rotation Impact Icon for Violated Crew */}
+                                          {isAffected && (
                                             <Button
-                                              variant="outline"
                                               size="sm"
-                                              className="border-gray-300 text-gray-600 hover:bg-gray-50"
-                                              onClick={() => {
-                                                // Revert swap logic
-                                                if (
-                                                  selectedOptionDetails &&
-                                                  selectedOptionDetails?.rotation_plan
-                                                ) {
-                                                  const updatedCrew = [
-                                                    ...(selectedOptionDetails
-                                                      .rotation_plan.crew ||
-                                                      selectedOptionDetails
-                                                        .rotation_plan
-                                                        .crewData ||
-                                                      []),
-                                                  ];
-                                                  updatedCrew[index] = {
-                                                    ...updatedCrew[index],
-                                                    name:
-                                                      crewMember.replacedCrew ||
-                                                      crewMember.name,
-                                                    status:
-                                                      crewMember.status ===
-                                                        "Sick" ||
-                                                      crewMember.status ===
-                                                        "Unavailable"
-                                                        ? crewMember.status
-                                                        : "Available",
-                                                    availability:
-                                                      crewMember.status ===
-                                                        "Sick" ||
-                                                      crewMember.status ===
-                                                        "Unavailable"
-                                                        ? crewMember.status
-                                                        : "Available",
-                                                    replacedCrew: undefined,
-                                                    assignedAt: undefined,
-                                                    autoAssignedReplacement:
-                                                      undefined,
-                                                    isAutoAssigned: undefined,
-                                                  };
-                                                  setSelectedOptionDetails({
-                                                    ...selectedOptionDetails,
-                                                    rotation_plan: {
-                                                      ...selectedOptionDetails.rotation_plan,
-                                                      crew: updatedCrew,
-                                                      crewData: updatedCrew,
-                                                    },
-                                                  });
-                                                }
+                                              variant="ghost"
+                                              className="h-8 w-8 p-0 ml-1"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setExpandedCrew(
+                                                  expandedCrew === index ? null : index
+                                                );
                                               }}
                                             >
-                                              <XCircle className="h-4 w-4 mr-2" />
-                                              Revert
+                                              <Activity className="h-4 w-4 text-flydubai-blue" />
                                             </Button>
                                           )}
                                         </div>
                                       </TableCell>
                                     </TableRow>
+
+                                    {/* Rotation Impact Accordion for Violated Crew */}
+                                    {expandedCrew === index && isAffected && (
+                                      <TableRow>
+                                        <TableCell colSpan={4} className="p-0">
+                                          <div className="bg-gray-50 border-t border-gray-200">
+                                            <div className="p-4">
+                                              <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                                                <Activity className="h-4 w-4 text-flydubai-blue" />
+                                                Rotation Impact for {crewMember.name}
+                                              </h4>
+                                              <div className="space-y-3">
+                                                {(() => {
+                                                  // Get rotation impact for this crew member from crew_available data
+                                                  const availableCrewList = Array.isArray(
+                                                    selectedOptionDetails?.crew_available,
+                                                  ) ? selectedOptionDetails.crew_available : [];
+
+                                                  // Find matching crew member in available crew list
+                                                  const matchingCrewMember = availableCrewList.find(
+                                                    (availableCrew) => availableCrew.name === crewMember.name || 
+                                                    availableCrew.role_code === crewMember.role_code
+                                                  );
+
+                                                  // Use rotation impact from crew_available or generate sample data
+                                                  const rotationImpact = matchingCrewMember?.rotation_impact || [
+                                                    {
+                                                      delay: "On Time",
+                                                      impact: "High Impact",
+                                                      origin: "London Heathrow",
+                                                      reason: "Primary PIC — replacement required, flight will be delayed or cancelled without a qualified Captain.",
+                                                      status: "On Time",
+                                                      arrival: "2025-09-10T15:30:00+04:00",
+                                                      departure: "2025-09-10T07:30:00+01:00",
+                                                      passengers: 178,
+                                                      destination: "Dubai",
+                                                      origin_code: "LHR",
+                                                      flightNumber: "FZ141",
+                                                      destination_code: "DXB"
+                                                    }
+                                                  ];
+
+                                                  return rotationImpact.map((impact, impactIndex) => (
+                                                    <div key={impactIndex} className="bg-white rounded-lg border p-3">
+                                                      <div className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center gap-3">
+                                                          <div className="flex items-center gap-2">
+                                                            <Plane className="h-4 w-4 text-flydubai-blue" />
+                                                            <span className="font-medium">{impact.flightNumber}</span>
+                                                          </div>
+                                                          <div className="text-sm text-gray-600">
+                                                            {impact.origin_code} → {impact.destination_code}
+                                                          </div>
+                                                        </div>
+                                                        <Badge
+                                                          className={
+                                                            impact.impact === "Low Impact"
+                                                              ? "bg-green-100 text-green-700 border-green-200"
+                                                              : impact.impact === "Medium Impact"
+                                                                ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                                                : "bg-red-100 text-red-700 border-red-200"
+                                                          }
+                                                        >
+                                                          {impact.impact}
+                                                        </Badge>
+                                                      </div>
+
+                                                      <div className="grid grid-cols-4 gap-4 text-sm">
+                                                        <div>
+                                                          <span className="text-gray-500">Status:</span>
+                                                          <div className="font-medium">{impact.status}</div>
+                                                        </div>
+                                                        <div>
+                                                          <span className="text-gray-500">Delay:</span>
+                                                          <div className="font-medium">{impact.delay}</div>
+                                                        </div>
+                                                        <div>
+                                                          <span className="text-gray-500">Passengers:</span>
+                                                          <div className="font-medium">{impact.passengers}</div>
+                                                        </div>
+                                                        <div>
+                                                          <span className="text-gray-500">Departure:</span>
+                                                          <div className="font-medium">
+                                                            {new Date(impact.departure).toLocaleTimeString('en-US', {
+                                                              hour: '2-digit',
+                                                              minute: '2-digit'
+                                                            })}
+                                                          </div>
+                                                        </div>
+                                                      </div>
+
+                                                      <div className="mt-2 text-sm">
+                                                        <span className="text-gray-500">Reason:</span>
+                                                        <span className="ml-2">{impact.reason}</span>
+                                                      </div>
+                                                    </div>
+                                                  ));
+                                                })()}
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </TableCell>
+                                      </TableRow>
+                                    )}
                                   );
                                 })}
                               </TableBody>
@@ -3476,8 +3539,6 @@ export function ComparisonMatrix({
           )}
         </DialogContent>
       </Dialog>
-
-   
 
       {/* Crew Swap Dialog */}
       <Dialog open={showCrewSwapDialog} onOpenChange={setShowCrewSwapDialog}>
