@@ -3272,7 +3272,6 @@ app.get("/api/recovery-templates/:categoryId", async (req, res) => {
 
 // Import LLM Recovery Service
 import { llmRecoveryService } from './llm-recovery-service.js';
-import { logInfo, logError } from './logger.js';
 
 // Helper function to validate and parse disruption ID
 function validateDisruptionId(disruptionId) {
@@ -3420,25 +3419,13 @@ async function saveRecoveryData(disruptionId, options, steps) {
 
 // LLM-powered recovery options generation endpoint
 app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) => {
-  const startTime = Date.now();
-  let disruptionData = null;
-
   try {
     const { disruptionId } = req.params;
-    
-    logInfo(`LLM recovery generation request received`, {
-      disruptionId,
-      endpoint: '/api/recovery-options/generate-llm',
-      provider: llmRecoveryService.llmProvider
-    });
+    console.log(`Generating LLM recovery options for disruption ID: ${disruptionId}`);
 
     // Validate disruption ID
     const validation = validateDisruptionId(disruptionId);
     if (!validation.isValid) {
-      logError('Invalid disruption ID provided', null, {
-        disruptionId,
-        validationError: validation.error
-      });
       return res.status(400).json({
         error: validation.error,
         optionsCount: 0,
@@ -3451,11 +3438,6 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
     // Check for existing recovery data
     const existingData = await checkExistingRecoveryData(numericDisruptionId);
     if (existingData.hasExisting) {
-      logInfo('Found existing recovery data, returning cached results', {
-        disruptionId: numericDisruptionId,
-        optionsCount: existingData.optionsCount,
-        stepsCount: existingData.stepsCount
-      });
       return res.json({
         success: true,
         message: "Recovery options and steps already exist",
@@ -3476,9 +3458,6 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
     );
 
     if (disruptionResult.rows.length === 0) {
-      logError('Disruption not found in database', null, {
-        disruptionId: numericDisruptionId
-      });
       return res.status(404).json({
         error: "Disruption not found",
         optionsCount: 0,
@@ -3486,15 +3465,8 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
       });
     }
 
-    disruptionData = disruptionResult.rows[0];
-    
-    logInfo('Retrieved disruption data from database', {
-      disruptionId: numericDisruptionId,
-      flightNumber: disruptionData.flight_number,
-      disruptionType: disruptionData.disruption_type,
-      passengers: disruptionData.passengers,
-      severity: disruptionData.severity
-    });
+    const disruptionData = disruptionResult.rows[0];
+    console.log("Found disruption:", disruptionData.flight_number);
 
     // Prepare category information
     const categoryInfo = {
@@ -3503,11 +3475,7 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
       category_id: disruptionData.category_id,
     };
 
-    logInfo('Prepared category information for LLM', {
-      disruptionId: numericDisruptionId,
-      categoryCode: categoryInfo.category_code,
-      categoryName: categoryInfo.category_name
-    });
+    console.log("Using LLM with category info:", categoryInfo);
 
     // Generate recovery options using LLM
     const { options, steps } = await llmRecoveryService.generateRecoveryOptions(
@@ -3515,13 +3483,7 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
       categoryInfo
     );
 
-    logInfo('LLM recovery generation completed', {
-      disruptionId: numericDisruptionId,
-      flightNumber: disruptionData.flight_number,
-      optionsCount: options.length,
-      stepsCount: steps.length,
-      provider: llmRecoveryService.llmProvider
-    });
+    console.log(`LLM generated ${options.length} options and ${steps.length} steps`);
 
     // Save recovery data efficiently
     const { optionsCount, stepsCount } = await saveRecoveryData(
@@ -3530,16 +3492,7 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
       steps
     );
 
-    const duration = Date.now() - startTime;
-
-    logInfo('LLM recovery options saved successfully', {
-      disruptionId: numericDisruptionId,
-      flightNumber: disruptionData.flight_number,
-      optionsCount,
-      stepsCount,
-      duration: `${duration}ms`,
-      provider: llmRecoveryService.llmProvider
-    });
+    console.log("Successfully saved all LLM recovery options and steps");
     
     res.json({
       success: true,
@@ -3551,16 +3504,7 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
     });
 
   } catch (error) {
-    const duration = Date.now() - startTime;
-    
-    logError('LLM recovery options generation failed', error, {
-      disruptionId: req.params.disruptionId,
-      flightNumber: disruptionData?.flight_number || 'Unknown',
-      provider: llmRecoveryService.llmProvider,
-      duration: `${duration}ms`,
-      errorType: error.name || 'UnknownError'
-    });
-
+    console.error("Error generating LLM recovery options:", error);
     res.status(500).json({
       error: "Failed to generate LLM recovery options",
       details: error.message,
