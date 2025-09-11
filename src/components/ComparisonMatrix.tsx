@@ -2453,7 +2453,7 @@ export function ComparisonMatrix({
                                     crewMember.assignedAt;
 
                                   return (
-                                    
+                                    <>
                                     <TableRow
                                       key={index}
                                       className={`hover:bg-gray-50 ${
@@ -3016,6 +3016,7 @@ export function ComparisonMatrix({
                                         </TableCell>
                                       </TableRow>
                                     )}
+                                      </>
                                   );
                                 })}
                               </TableBody>
