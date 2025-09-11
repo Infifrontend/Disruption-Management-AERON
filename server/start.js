@@ -3484,6 +3484,8 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
     );
 
     console.log(`LLM generated ${options.length} options and ${steps.length} steps`);
+    console.log("Options:", options);
+    console.log("Steps:", steps);
 
     // Save recovery data efficiently
     const { optionsCount, stepsCount } = await saveRecoveryData(
