@@ -4,6 +4,7 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { generateRecoveryOptionsForDisruption } from './recovery-generator.js';
+import { logInfo, logError } from './logger.js';
 
 class LLMRecoveryService {
   constructor() {
@@ -17,6 +18,11 @@ class LLMRecoveryService {
 
   initializeLLM() {
     try {
+      logInfo(`Initializing LLM Recovery Service with provider: ${this.llmProvider}`, {
+        provider: this.llmProvider,
+        model: this.model
+      });
+
       // Initialize LLM based on provider
       switch (this.llmProvider.toLowerCase()) {
         case 'openai':
@@ -28,6 +34,7 @@ class LLMRecoveryService {
             temperature: 0.7,
             apiKey: process.env.OPENAI_API_KEY,
           });
+          logInfo('OpenAI LLM provider initialized successfully', { model: this.model });
           break;
 
         case 'anthropic':
@@ -39,6 +46,7 @@ class LLMRecoveryService {
             temperature: 0.7,
             apiKey: process.env.ANTHROPIC_API_KEY,
           });
+          logInfo('Anthropic LLM provider initialized successfully', { model: this.model || 'claude-3-sonnet-20240229' });
           break;
 
         default:
@@ -47,6 +55,7 @@ class LLMRecoveryService {
 
       // Initialize prompt template
       this.promptTemplate = this.createPromptTemplate();
+      logInfo('LLM prompt template created successfully');
       
       // Create runnable chain
       this.chain = RunnableSequence.from([
@@ -55,9 +64,16 @@ class LLMRecoveryService {
         (response) => this.parseResponse(response.content)
       ]);
 
-      console.log(`✅ LLM Recovery Service initialized with ${this.llmProvider} provider`);
+      logInfo(`LLM Recovery Service initialized successfully`, {
+        provider: this.llmProvider,
+        model: this.model,
+        status: 'ready'
+      });
     } catch (error) {
-      console.error(`❌ Failed to initialize LLM: ${error.message}`);
+      logError('Failed to initialize LLM Recovery Service', error, {
+        provider: this.llmProvider,
+        model: this.model
+      });
       this.llm = null;
       this.chain = null;
     }
@@ -200,40 +216,86 @@ Return only valid JSON with both "options" and "steps" arrays.`;
   }
 
   async generateRecoveryOptions(disruptionData, categoryInfo = {}) {
+    const flightNumber = disruptionData.flight_number || 'Unknown';
+    const disruptionType = disruptionData.disruption_type || 'Unknown';
+    const category = categoryInfo.category_name || 'Unknown';
+
     if (!this.chain) {
-      console.warn('LLM chain not available, falling back to default recovery generator');
+      logError('LLM chain not available, falling back to default recovery generator', null, {
+        flightNumber,
+        disruptionType,
+        category,
+        provider: this.llmProvider
+      });
       return this.fallbackToDefaultGenerator(disruptionData, categoryInfo);
     }
 
     try {
+      const startTime = Date.now();
       const promptVariables = this.buildPromptVariables(disruptionData, categoryInfo);
       
-      console.log(`Generating LLM recovery options for flight ${disruptionData.flight_number}`);
+      logInfo(`Starting LLM recovery options generation`, {
+        flightNumber,
+        disruptionType,
+        category,
+        provider: this.llmProvider,
+        model: this.model,
+        passengers: disruptionData.passengers,
+        delayMinutes: disruptionData.delay_minutes
+      });
       
       const result = await this.chain.invoke(promptVariables);
+      const duration = Date.now() - startTime;
       
       if (result && result.options && result.steps) {
-        console.log(`✅ LLM generated ${result.options.length} options and ${result.steps.length} steps`);
+        logInfo('LLM recovery options generated successfully', {
+          flightNumber,
+          disruptionType,
+          category,
+          provider: this.llmProvider,
+          optionsCount: result.options.length,
+          stepsCount: result.steps.length,
+          duration: `${duration}ms`
+        });
         return result;
       } else {
-        throw new Error('Invalid LLM response format');
+        throw new Error('Invalid LLM response format - missing options or steps arrays');
       }
 
     } catch (error) {
-      console.error('Error calling LLM:', error.message);
-      console.warn('Falling back to default recovery generator');
+      logError('Failed to generate LLM recovery options', error, {
+        flightNumber,
+        disruptionType,
+        category,
+        provider: this.llmProvider,
+        model: this.model,
+        errorType: error.name || 'UnknownError'
+      });
+      
+      logInfo('Falling back to default recovery generator', {
+        flightNumber,
+        disruptionType,
+        reason: 'LLM generation failed'
+      });
+      
       return this.fallbackToDefaultGenerator(disruptionData, categoryInfo);
     }
   }
 
   parseResponse(content) {
     try {
+      logInfo('Parsing LLM response', {
+        contentLength: content.length,
+        hasMarkdown: content.includes('```')
+      });
+
       // Clean the response to extract JSON
       let cleanedContent = content.trim();
       
       // Remove markdown code blocks if present
       if (cleanedContent.startsWith('```')) {
         cleanedContent = cleanedContent.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+        logInfo('Removed markdown code blocks from LLM response');
       }
 
       // Try to parse the JSON
@@ -248,25 +310,71 @@ Return only valid JSON with both "options" and "steps" arrays.`;
         throw new Error('Invalid steps array in LLM response');
       }
 
+      logInfo('LLM response parsed successfully', {
+        optionsCount: parsed.options.length,
+        stepsCount: parsed.steps.length,
+        hasValidStructure: true
+      });
+
       return {
         options: parsed.options,
         steps: parsed.steps
       };
 
     } catch (error) {
-      console.error('Error parsing LLM response:', error.message);
-      console.error('Raw LLM content:', content);
+      logError('Failed to parse LLM response', error, {
+        contentLength: content.length,
+        contentPreview: content.substring(0, 200),
+        errorType: error.name
+      });
       throw error;
     }
   }
 
   fallbackToDefaultGenerator(disruptionData, categoryInfo) {
-    console.log('Using fallback default recovery generator');
-    return generateRecoveryOptionsForDisruption(disruptionData, categoryInfo);
+    const flightNumber = disruptionData.flight_number || 'Unknown';
+    const disruptionType = disruptionData.disruption_type || 'Unknown';
+    
+    logInfo('Using fallback default recovery generator', {
+      flightNumber,
+      disruptionType,
+      category: categoryInfo.category_name || 'Unknown',
+      reason: 'LLM service unavailable or failed'
+    });
+
+    try {
+      const result = generateRecoveryOptionsForDisruption(disruptionData, categoryInfo);
+      
+      logInfo('Fallback recovery options generated successfully', {
+        flightNumber,
+        disruptionType,
+        optionsCount: result.options?.length || 0,
+        stepsCount: result.steps?.length || 0,
+        source: 'default_generator'
+      });
+
+      return result;
+    } catch (error) {
+      logError('Fallback recovery generator failed', error, {
+        flightNumber,
+        disruptionType,
+        category: categoryInfo.category_name || 'Unknown'
+      });
+      throw error;
+    }
   }
 
   async healthCheck() {
+    logInfo('Starting LLM health check', {
+      provider: this.llmProvider,
+      model: this.model
+    });
+
     if (!this.llm) {
+      logError('LLM health check failed - not initialized', null, {
+        provider: this.llmProvider,
+        model: this.model
+      });
       return {
         status: 'unavailable',
         provider: this.llmProvider,
@@ -275,15 +383,31 @@ Return only valid JSON with both "options" and "steps" arrays.`;
     }
 
     try {
+      const startTime = Date.now();
       // Simple test call
       const testMessage = { role: 'user', content: 'Hello' };
       await this.llm.invoke([testMessage]);
+      const duration = Date.now() - startTime;
+
+      logInfo('LLM health check passed', {
+        provider: this.llmProvider,
+        model: this.model,
+        duration: `${duration}ms`,
+        status: 'healthy'
+      });
+
       return {
         status: 'healthy',
         provider: this.llmProvider,
         model: this.model
       };
     } catch (error) {
+      logError('LLM health check failed', error, {
+        provider: this.llmProvider,
+        model: this.model,
+        errorType: error.name
+      });
+
       return {
         status: 'error', 
         provider: this.llmProvider,
