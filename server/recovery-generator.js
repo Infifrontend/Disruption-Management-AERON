@@ -19,7 +19,7 @@ const availableDummyCrew = [
     languages: [
       "English"
     ],
-    rotation_plan: [
+    rotation_impact: [
       {
         flightNumber: "FZ141",
         origin_code: "LHR",
@@ -54,7 +54,7 @@ const availableDummyCrew = [
       "English",
       "Hindi"
     ],
-    rotation_plan: [
+    rotation_impact: [
       {
         flightNumber: "FZ431",
         origin_code: "DEL",
@@ -89,7 +89,7 @@ const availableDummyCrew = [
       "Russian",
       "English"
     ],
-    rotation_plan: [
+    rotation_impact: [
       {
         flightNumber: "FZ178",
         origin_code: "JFK",
@@ -124,7 +124,7 @@ const availableDummyCrew = [
       "English",
       "Spanish"
     ],
-    rotation_plan: [
+    rotation_impact: [
       {
         flightNumber: "FZ523",
         origin_code: "DXB",
@@ -173,7 +173,7 @@ const availableDummyCrew = [
       "Korean",
       "English"
     ],
-    rotation_plan: [
+    rotation_impact: [
       {
         flightNumber: "FZ821",
         origin_code: "HND",
@@ -208,7 +208,7 @@ const availableDummyCrew = [
       "Arabic",
       "English"
     ],
-    rotation_plan: [
+    rotation_impact: [
       {
         flightNumber: "FZ523",
         origin_code: "DXB",
@@ -257,7 +257,7 @@ const availableDummyCrew = [
       "English",
       "French"
     ],
-    rotation_plan: [
+    rotation_impact: [
       {
         flightNumber: "FZ141",
         origin_code: "LHR",
@@ -292,7 +292,7 @@ const availableDummyCrew = [
       "Spanish",
       "English"
     ],
-    rotation_plan: [
+    rotation_impact: [
       {
         flightNumber: "FZ144",
         origin_code: "MAD",
@@ -328,7 +328,7 @@ const availableDummyCrew = [
       "Urdu",
       "English"
     ],
-    rotation_plan: [
+    rotation_impact: [
       {
         flightNumber: "FZ523",
         origin_code: "DXB",
@@ -376,7 +376,7 @@ const availableDummyCrew = [
     languages: [
       "English"
     ],
-    rotation_plan: [
+    rotation_impact: [
       {
         flightNumber: "FZ451",
         origin_code: "SYD",
@@ -411,7 +411,7 @@ const availableDummyCrew = [
       "English",
       "Twi"
     ],
-    rotation_plan: [
+    rotation_impact: [
       {
         flightNumber: "FZ134",
         origin_code: "ACC",
@@ -446,7 +446,7 @@ const availableDummyCrew = [
       "Japanese",
       "English"
     ],
-    rotation_plan: [
+    rotation_impact: [
       {
         flightNumber: "FZ821",
         origin_code: "HND",
@@ -736,7 +736,7 @@ const getAircraftIssuesRecoveryData = () => {
               fuel_score: "91%",
               overall: "92%"
             },
-            rotation_plan: [
+            rotation_impact: [
               {
                 flightNumber: "FZ141",
                 origin_code: "DXB",
@@ -837,7 +837,7 @@ const getAircraftIssuesRecoveryData = () => {
               fuel_score: "75%",
               overall: "64%"
             },
-            rotation_plan: [
+            rotation_impact: [
               {
                 flightNumber: "FZ892",
                 origin_code: "DXB",
@@ -896,7 +896,7 @@ const getAircraftIssuesRecoveryData = () => {
               fuel_score: "61%",
               overall: "52%"
             },
-            rotation_plan: [
+            rotation_impact: [
               {
                 flightNumber: "FZ523",
                 origin_code: "DXB",
@@ -955,7 +955,7 @@ const getAircraftIssuesRecoveryData = () => {
               fuel_score: "0%",
               overall: "0%"
             },
-            rotation_plan: [
+            rotation_impact: [
               {
                 flightNumber: "FZ445",
                 origin_code: "DXB",
