@@ -4,6 +4,15 @@ import pkg from "pg";
 const { Pool } = pkg;
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { 
+  logger, 
+  logInfo, 
+  logError, 
+  logException, 
+  requestLogger,
+  logDatabaseOperation,
+  logRecoveryOperation 
+} from './logger.js';
 
 const app = express();
 // Use environment variable for server port, falling back to PORT or 3001
@@ -86,6 +95,9 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
+// Add request logging middleware
+app.use(requestLogger);
+
 // Middleware to check database availability with better handling
 app.use((req, res, next) => {
   // Allow health check, auth routes, and debug routes to pass through
@@ -131,7 +143,7 @@ app.use((req, res, next) => {
 
 // PostgreSQL connection with fallback and proper Neon handling
 // Use DB_URL environment variable for the connection string
-console.log(process.env.DB_URL, "DB_URL");
+logInfo('Database URL configured', { dbUrl: process.env.DB_URL ? 'Set' : 'Not set' });
 let connectionString =
   process.env.DB_URL || "postgresql://0.0.0.0:5432/aeron_settings";
 
@@ -156,19 +168,23 @@ const maxRetries = 3;
 let databaseAvailable = false;
 
 async function testConnection() {
+  const startTime = Date.now();
   try {
     const client = await pool.connect();
     // Test the connection with a simple query
     await client.query("SELECT 1");
-    console.log("✅ PostgreSQL connected successfully");
+    const duration = Date.now() - startTime;
+    logInfo("PostgreSQL connected successfully", { duration: `${duration}ms` });
     client.release();
     connectionRetries = 0; // Reset on success
     databaseAvailable = true;
   } catch (err) {
     connectionRetries++;
-    console.log(
-      `⚠️ PostgreSQL connection failed (attempt ${connectionRetries}/${maxRetries}):`,
-      err.message,
+    const duration = Date.now() - startTime;
+    logError(
+      `PostgreSQL connection failed (attempt ${connectionRetries}/${maxRetries})`,
+      err,
+      { attempt: connectionRetries, maxRetries, duration: `${duration}ms` }
     );
     databaseAvailable = false;
 
@@ -179,23 +195,22 @@ async function testConnection() {
       ) ||
       err.message.includes("server closed the connection unexpectedly")
     ) {
-      console.log(
-        "Database appears to be in sleep mode, retrying connection...",
-      );
+      logInfo("Database appears to be in sleep mode, retrying connection...");
       // Shorter delay for sleep mode recovery
       setTimeout(testConnection, 1000);
     } else if (connectionRetries < maxRetries) {
       setTimeout(testConnection, 2000 * connectionRetries);
     } else {
-      console.log(
-        "❌ Max connection retries reached. API will continue without database.",
-      );
+      logError("Max connection retries reached. API will continue without database.", null, {
+        maxRetries,
+        finalAttempt: connectionRetries
+      });
       databaseAvailable = false;
 
       // Schedule periodic retry attempts
       setTimeout(() => {
         connectionRetries = 0;
-        console.log("Attempting periodic database reconnection...");
+        logInfo("Attempting periodic database reconnection...");
         testConnection();
       }, 30000); // Retry every 30 seconds
     }
@@ -204,7 +219,7 @@ async function testConnection() {
 
 // Handle database connection errors gracefully with retry logic
 pool.on("error", (err) => {
-  console.error("Database pool error:", err.message);
+  logError("Database pool error", err);
   databaseAvailable = false;
 
   // Don't immediately retry on certain errors
@@ -213,19 +228,19 @@ pool.on("error", (err) => {
   ) {
     // Retry connection after a delay for other errors
     setTimeout(() => {
-      console.log("Attempting to restore database connection...");
+      logInfo("Attempting to restore database connection...");
       testConnection();
     }, 5000);
   }
 });
 
 pool.on("connect", () => {
-  console.log("Database pool connected");
+  logInfo("Database pool connected");
   databaseAvailable = true;
 });
 
 pool.on("remove", () => {
-  console.log("Database client removed");
+  logInfo("Database client removed");
   // Don't mark as unavailable on client removal - this is normal
 });
 
@@ -6506,44 +6521,43 @@ app.use((error, req, res, next) => {
 });
 
 const server = app.listen(port, "0.0.0.0", () => {
-  console.log(
-    `🚀 AERON Settings Database API server running on http://0.0.0.0:${port}`,
-  );
-  console.log(
-    `🌐 External access: https://${process.env.REPL_SLUG}.${process.env.REPLIT_DEV_DOMAIN}:${port}`,
-  );
-  console.log(`📊 Server started successfully at ${new Date().toISOString()}`);
+  logInfo("AERON Settings Database API server started", {
+    port,
+    host: "0.0.0.0",
+    externalUrl: `https://${process.env.REPL_SLUG}.${process.env.REPLIT_DEV_DOMAIN}:${port}`,
+    startTime: new Date().toISOString(),
+    nodeEnv: process.env.NODE_ENV || 'development'
+  });
 });
 
 process.on("uncaughtException", (error) => {
-  console.error("Uncaught Exception:", error.message);
-  console.error("Stack:", error.stack);
+  logException(error, "Uncaught Exception");
   // Don't exit the process, just log the error
 });
 
 process.on("unhandledRejection", (reason, promise) => {
-  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+  logException(reason instanceof Error ? reason : new Error(String(reason)), "Unhandled Rejection");
   // Don't exit the process, just log the error
 });
 
 // Handle SIGTERM and SIGINT gracefully
 process.on("SIGTERM", () => {
-  console.log("SIGTERM received, shutting down gracefully");
+  logInfo("SIGTERM received, shutting down gracefully");
   server.close(() => {
-    console.log("Server closed");
+    logInfo("Server closed");
     pool.end(() => {
-      console.log("Database connections closed");
+      logInfo("Database connections closed");
       process.exit(0);
     });
   });
 });
 
 process.on("SIGINT", () => {
-  console.log("SIGINT received, shutting down gracefully");
+  logInfo("SIGINT received, shutting down gracefully");
   server.close(() => {
-    console.log("Server closed");
+    logInfo("Server closed");
     pool.end(() => {
-      console.log("Database connections closed");
+      logInfo("Database connections closed");
       process.exit(0);
     });
   });
