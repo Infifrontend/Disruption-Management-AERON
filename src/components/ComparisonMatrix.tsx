@@ -126,6 +126,7 @@ export function ComparisonMatrix({
   const [showCrewSwapDialog, setShowCrewSwapDialog] = useState(false);
   const [selectedCrewForSwap, setSelectedCrewForSwap] = useState(null);
   const [availableCrewForSwap, setAvailableCrewForSwap] = useState([]);
+  const [expandedAircraft, setExpandedAircraft] = useState(null);
 
   // Load recovery options from database based on disruption category
   useEffect(() => {
@@ -2039,7 +2040,6 @@ export function ComparisonMatrix({
                                     selectedAircraftFlight === index ||
                                     (selectedAircraftFlight === null &&
                                       isDefault);
-                                  const [expandedAircraft, setExpandedAircraft] = useState(null);
                                   
                                   // Generate rotation impact data for this aircraft
                                   const rotationImpact = aircraft.rotation_impact || [
