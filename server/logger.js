@@ -3,7 +3,7 @@ import pino from 'pino';
 import { createWriteStream } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
-import { mkdirSync } from 'fs';
+import { mkdirSync, existsSync } from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -17,46 +17,21 @@ try {
   console.error(`Failed to create logs directory: ${err.message}`);
 }
 
-// Create write streams for different log levels
-const infoStream = createWriteStream(join(logsDir, 'info.log'), { flags: 'a' });
-const errorStream = createWriteStream(join(logsDir, 'error.log'), { flags: 'a' });
-const exceptionStream = createWriteStream(join(logsDir, 'exceptions.log'), { flags: 'a' });
+// Verify directory exists
+if (!existsSync(logsDir)) {
+  console.error(`Logs directory does not exist: ${logsDir}`);
+}
 
-// Custom transport configuration
-const transport = pino.transport({
-  targets: [
-    // Console output for development
-    {
-      target: 'pino-pretty',
-      level: 'info',
-      options: {
-        colorize: true,
-        translateTime: 'yyyy-mm-dd HH:MM:ss',
-        ignore: 'pid,hostname'
-      }
-    },
-    // Info level logs to file
-    {
-      target: 'pino/file',
-      level: 'info',
-      options: {
-        destination: join(logsDir, 'info.log'),
-        append: true
-      }
-    },
-    // Error level logs to separate file
-    {
-      target: 'pino/file',
-      level: 'error',
-      options: {
-        destination: join(logsDir, 'error.log'),
-        append: true
-      }
-    }
-  ]
-});
+// Create write streams for different log levels with explicit paths
+const infoLogPath = join(logsDir, 'info.log');
+const errorLogPath = join(logsDir, 'error.log');
+const exceptionLogPath = join(logsDir, 'exceptions.log');
 
-// Create logger instance
+console.log(`Info log path: ${infoLogPath}`);
+console.log(`Error log path: ${errorLogPath}`);
+console.log(`Exception log path: ${exceptionLogPath}`);
+
+// Create logger with multiple destinations
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
   timestamp: pino.stdTimeFunctions.isoTime,
@@ -70,9 +45,34 @@ const logger = pino({
     res: pino.stdSerializers.res,
     err: pino.stdSerializers.err
   }
-}, transport);
+}, pino.multistream([
+  // Console output
+  {
+    stream: pino.destination({
+      dest: 1, // stdout
+      sync: false
+    }),
+    level: 'info'
+  },
+  // Info log file
+  {
+    stream: pino.destination({
+      dest: infoLogPath,
+      sync: false
+    }),
+    level: 'info'
+  },
+  // Error log file  
+  {
+    stream: pino.destination({
+      dest: errorLogPath,
+      sync: false
+    }),
+    level: 'error'
+  }
+]));
 
-// Custom exception logger
+// Custom exception logger with file destination
 const exceptionLogger = pino({
   level: 'error',
   timestamp: pino.stdTimeFunctions.isoTime,
@@ -81,16 +81,25 @@ const exceptionLogger = pino({
       return { level: label };
     }
   }
-}, exceptionStream);
+}, pino.destination({
+  dest: exceptionLogPath,
+  sync: false
+}));
 
-// Enhanced logging methods
+// Enhanced logging methods with immediate flushing
 const logInfo = (message, meta = {}) => {
+  console.log(`[INFO] ${message}`, meta); // Console backup
   logger.info(meta, message);
+  // Force flush
+  logger.flush();
 };
 
 const logError = (message, error = null, meta = {}) => {
   const errorMeta = error ? { error: error.message, stack: error.stack, ...meta } : meta;
+  console.error(`[ERROR] ${message}`, errorMeta); // Console backup
   logger.error(errorMeta, message);
+  // Force flush
+  logger.flush();
 };
 
 const logException = (error, context = 'Unknown') => {
@@ -101,8 +110,13 @@ const logException = (error, context = 'Unknown') => {
     timestamp: new Date().toISOString()
   };
   
+  console.error(`[EXCEPTION] Unhandled exception in ${context}`, exceptionData); // Console backup
   exceptionLogger.error(exceptionData, `Unhandled exception in ${context}`);
   logger.error(exceptionData, `Unhandled exception in ${context}`);
+  
+  // Force flush both loggers
+  exceptionLogger.flush();
+  logger.flush();
 };
 
 // Express middleware for request logging
@@ -157,6 +171,14 @@ const logRecoveryOperation = (operation, disruptionId, details = {}) => {
   logInfo(`Recovery operation: ${operation}`, logData);
 };
 
+// Test logging function
+const testLogging = () => {
+  console.log('Testing logging functionality...');
+  logInfo('Test info message', { test: true, timestamp: new Date().toISOString() });
+  logError('Test error message', new Error('Test error'), { test: true, timestamp: new Date().toISOString() });
+  console.log('Logging test completed. Check log files in logs/ directory.');
+};
+
 export {
   logger,
   logInfo,
@@ -164,7 +186,8 @@ export {
   logException,
   requestLogger,
   logDatabaseOperation,
-  logRecoveryOperation
+  logRecoveryOperation,
+  testLogging
 };
 
 export default logger;
