@@ -15,6 +15,9 @@
   "license": "ISC",
   "dependencies": {
     "@hookform/resolvers": "^3.3.0",
+    "@langchain/anthropic": "^0.3.27",
+    "@langchain/core": "^0.3.75",
+    "@langchain/openai": "^0.6.11",
     "@radix-ui/react-accordion": "^1.1.0",
     "@radix-ui/react-alert-dialog": "^1.0.0",
     "@radix-ui/react-aspect-ratio": "^1.0.0",

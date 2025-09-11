@@ -3256,6 +3256,266 @@ app.get("/api/recovery-templates/:categoryId", async (req, res) => {
   }
 });
 
+// Import LLM Recovery Service
+import { llmRecoveryService } from './llm-recovery-service.js';
+
+// LLM-powered recovery options generation endpoint
+app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) => {
+  try {
+    const { disruptionId } = req.params;
+    console.log(
+      `Generating LLM recovery options for disruption ID: ${disruptionId}`,
+    );
+
+    // Validate disruptionId
+    if (
+      !disruptionId ||
+      disruptionId === "undefined" ||
+      disruptionId === "null"
+    ) {
+      return res.status(400).json({
+        error: "Invalid disruption ID",
+        optionsCount: 0,
+        stepsCount: 0,
+      });
+    }
+
+    // Convert disruptionId to integer for database query
+    const numericDisruptionId = parseInt(disruptionId);
+    if (isNaN(numericDisruptionId)) {
+      return res.status(400).json({
+        error: "Invalid disruption ID format",
+        optionsCount: 0,
+        stepsCount: 0,
+      });
+    }
+
+    // Get the disruption details with category information
+    const result = await pool.query(
+      `
+      SELECT fd.*, dc.category_code, dc.category_name
+      FROM flight_disruptions fd
+      LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
+      WHERE fd.id = $1
+    `,
+      [numericDisruptionId],
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        error: "Disruption not found",
+        optionsCount: 0,
+        stepsCount: 0,
+      });
+    }
+
+    const disruptionData = result.rows[0];
+    console.log("Found disruption:", disruptionData.flight_number);
+
+    // Check if recovery steps already exist (not just options)
+    const existingSteps = await pool.query(
+      "SELECT COUNT(*) as count FROM recovery_steps WHERE disruption_id = $1",
+      [numericDisruptionId],
+    );
+
+    const existingOptions = await pool.query(
+      "SELECT COUNT(*) as count FROM recovery_options WHERE disruption_id = $1",
+      [numericDisruptionId],
+    );
+
+    if (existingOptions.rows[0].count > 0 && existingSteps.rows[0].count > 0) {
+      return res.json({
+        success: true,
+        message: "Recovery options and steps already exist",
+        exists: true,
+        optionsCount: parseInt(existingOptions.rows[0].count),
+        stepsCount: parseInt(existingSteps.rows[0].count),
+        source: "existing"
+      });
+    }
+
+    // Get category information from disruption
+    const categoryInfo = {
+      category_code: disruptionData.category_code,
+      category_name: disruptionData.categorization,
+      category_id: disruptionData.category_id,
+    };
+
+    console.log("Using LLM with category info:", categoryInfo);
+
+    // Generate recovery options using LLM
+    const { options, steps } = await llmRecoveryService.generateRecoveryOptions(
+      disruptionData,
+      categoryInfo,
+    );
+
+    console.log(
+      `LLM generated ${options.length} options and ${steps.length} steps`,
+    );
+
+    let optionsCount = 0;
+    let stepsCount = 0;
+
+    // Save recovery steps
+    for (const step of steps) {
+      try {
+        // First check if step already exists
+        const existingStep = await pool.query(
+          "SELECT id FROM recovery_steps WHERE disruption_id = $1 AND step_number = $2",
+          [numericDisruptionId, step.step],
+        );
+
+        if (existingStep.rows.length === 0) {
+          await pool.query(
+            `
+            INSERT INTO recovery_steps (
+              disruption_id, step_number, title, status, timestamp,
+              system, details, step_data
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+          `,
+            [
+              numericDisruptionId,
+              step.step,
+              step.title,
+              step.status,
+              step.timestamp,
+              step.system,
+              step.details,
+              step.data ? JSON.stringify(step.data) : null,
+            ],
+          );
+        }
+        stepsCount++;
+      } catch (error) {
+        console.error("Error saving recovery step:", error);
+      }
+    }
+
+    // Save recovery options (similar logic to existing endpoint)
+    for (let i = 0; i < options.length; i++) {
+      const option = options[i];
+      try {
+        // Check if option already exists
+        const existingOption = await pool.query(
+          "SELECT id FROM recovery_options WHERE disruption_id = $1 AND title = $2",
+          [numericDisruptionId, option.title || `Recovery Option ${i + 1}`],
+        );
+
+        if (existingOption.rows.length === 0) {
+          const insertQuery = `
+            INSERT INTO recovery_options (
+              disruption_id, title, description, cost, timeline, confidence,
+              impact, status, priority, advantages, considerations,
+              resource_requirements, cost_breakdown, timeline_details,
+              risk_assessment, technical_specs, metrics, rotation_plan,
+              impact_area, impact_summary, crew_available
+            ) VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21
+            )
+            ON CONFLICT (disruption_id, title) DO UPDATE SET
+              description = EXCLUDED.description,
+              cost = EXCLUDED.cost,
+              timeline = EXCLUDED.timeline,
+              confidence = EXCLUDED.confidence,
+              impact = EXCLUDED.impact,
+              status = EXCLUDED.status,
+              priority = EXCLUDED.priority,
+              advantages = EXCLUDED.advantages,
+              considerations = EXCLUDED.considerations,
+              resource_requirements = EXCLUDED.resource_requirements,
+              cost_breakdown = EXCLUDED.cost_breakdown,
+              timeline_details = EXCLUDED.timeline_details,
+              risk_assessment = EXCLUDED.risk_assessment,
+              technical_specs = EXCLUDED.technical_specs,
+              metrics = EXCLUDED.metrics,
+              rotation_plan = EXCLUDED.rotation_plan,
+              impact_area = EXCLUDED.impact_area,
+              impact_summary = EXCLUDED.impact_summary,
+              crew_available = EXCLUDED.crew_available,
+              updated_at = CURRENT_TIMESTAMP
+            RETURNING id`;
+
+          // Format arrays and JSON fields properly
+          const formatArrayForPostgres = (arr) => {
+            if (!arr || !Array.isArray(arr)) return [];
+            return arr;
+          };
+
+          const safeStringify = (obj) => {
+            if (obj === null || obj === undefined) return null;
+            if (typeof obj === "string") return obj;
+            try {
+              return JSON.stringify(obj);
+            } catch (e) {
+              console.warn("Failed to stringify object:", obj);
+              return "{}";
+            }
+          };
+
+          const values = [
+            numericDisruptionId,
+            option.title || `LLM Recovery Option ${i + 1}`,
+            option.description || "LLM-generated recovery option details",
+            option.cost || "TBD",
+            option.timeline || "TBD",
+            option.confidence || 80,
+            option.impact || "Medium",
+            option.status || "generated",
+            option.priority || (i + 1),
+            formatArrayForPostgres(option.advantages),
+            formatArrayForPostgres(option.considerations),
+            safeStringify(option.resource_requirements || {}),
+            safeStringify(option.cost_breakdown || {}),
+            safeStringify(option.timeline_details || {}),
+            safeStringify(option.risk_assessment || {}),
+            safeStringify(option.technical_specs || {}),
+            safeStringify(option.metrics || {}),
+            safeStringify({}), // rotation_plan - empty for LLM options
+            safeStringify(option.impact_area || []),
+            option.impact_summary || `LLM-generated recovery option: ${option.title}`,
+            safeStringify({}), // crew_available - empty for LLM options
+          ];
+
+          await pool.query(insertQuery, values);
+          console.log(`Successfully saved LLM recovery option: ${option.title}`);
+        }
+        optionsCount++;
+      } catch (error) {
+        console.error("Error saving LLM recovery option:", error);
+      }
+    }
+
+    console.log("Successfully saved all LLM recovery options and steps");
+    res.json({
+      success: true,
+      optionsCount,
+      stepsCount,
+      message: `Generated ${optionsCount} LLM recovery options and ${stepsCount} steps`,
+      source: "llm",
+      provider: llmRecoveryService.llmProvider
+    });
+  } catch (error) {
+    console.error("Error generating LLM recovery options:", error);
+    res.status(500).json({
+      error: "Failed to generate LLM recovery options",
+      details: error.message,
+    });
+  }
+});
+
+// LLM service health check endpoint
+app.get("/api/llm-recovery/health", async (req, res) => {
+  try {
+    const healthStatus = await llmRecoveryService.healthCheck();
+    res.json(healthStatus);
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
 // Generate and save recovery options for a disruption
 app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
   try {
