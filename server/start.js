@@ -6,7 +6,6 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { 
   logger, 
-  logInfo, 
   logError, 
   logException, 
   requestLogger,
@@ -143,7 +142,7 @@ app.use((req, res, next) => {
 
 // PostgreSQL connection with fallback and proper Neon handling
 // Use DB_URL environment variable for the connection string
-logInfo('Database URL configured', { dbUrl: process.env.DB_URL ? 'Set' : 'Not set' });
+console.log('Database URL configured', { dbUrl: process.env.DB_URL ? 'Set' : 'Not set' });
 let connectionString =
   process.env.DB_URL || "postgresql://0.0.0.0:5432/aeron_settings";
 
@@ -174,7 +173,7 @@ async function testConnection() {
     // Test the connection with a simple query
     await client.query("SELECT 1");
     const duration = Date.now() - startTime;
-    logInfo("PostgreSQL connected successfully", { duration: `${duration}ms` });
+    console.log("PostgreSQL connected successfully", { duration: `${duration}ms` });
     client.release();
     connectionRetries = 0; // Reset on success
     databaseAvailable = true;
@@ -195,7 +194,7 @@ async function testConnection() {
       ) ||
       err.message.includes("server closed the connection unexpectedly")
     ) {
-      logInfo("Database appears to be in sleep mode, retrying connection...");
+      console.log("Database appears to be in sleep mode, retrying connection...");
       // Shorter delay for sleep mode recovery
       setTimeout(testConnection, 1000);
     } else if (connectionRetries < maxRetries) {
@@ -210,7 +209,7 @@ async function testConnection() {
       // Schedule periodic retry attempts
       setTimeout(() => {
         connectionRetries = 0;
-        logInfo("Attempting periodic database reconnection...");
+        console.log("Attempting periodic database reconnection...");
         testConnection();
       }, 30000); // Retry every 30 seconds
     }
@@ -228,19 +227,19 @@ pool.on("error", (err) => {
   ) {
     // Retry connection after a delay for other errors
     setTimeout(() => {
-      logInfo("Attempting to restore database connection...");
+      console.log("Attempting to restore database connection...");
       testConnection();
     }, 5000);
   }
 });
 
 pool.on("connect", () => {
-  logInfo("Database pool connected");
+  console.log("Database pool connected");
   databaseAvailable = true;
 });
 
 pool.on("remove", () => {
-  logInfo("Database client removed");
+  console.log("Database client removed");
   // Don't mark as unavailable on client removal - this is normal
 });
 
@@ -6521,7 +6520,7 @@ app.use((error, req, res, next) => {
 });
 
 const server = app.listen(port, "0.0.0.0", () => {
-  logInfo("AERON Settings Database API server started", {
+  console.log("AERON Settings Database API server started", {
     port,
     host: "0.0.0.0",
     externalUrl: `https://${process.env.REPL_SLUG}.${process.env.REPLIT_DEV_DOMAIN}:${port}`,
@@ -6542,22 +6541,22 @@ process.on("unhandledRejection", (reason, promise) => {
 
 // Handle SIGTERM and SIGINT gracefully
 process.on("SIGTERM", () => {
-  logInfo("SIGTERM received, shutting down gracefully");
+  console.log("SIGTERM received, shutting down gracefully");
   server.close(() => {
-    logInfo("Server closed");
+    console.log("Server closed");
     pool.end(() => {
-      logInfo("Database connections closed");
+      console.log("Database connections closed");
       process.exit(0);
     });
   });
 });
 
 process.on("SIGINT", () => {
-  logInfo("SIGINT received, shutting down gracefully");
+  console.log("SIGINT received, shutting down gracefully");
   server.close(() => {
-    logInfo("Server closed");
+    console.log("Server closed");
     pool.end(() => {
-      logInfo("Database connections closed");
+      console.log("Database connections closed");
       process.exit(0);
     });
   });
