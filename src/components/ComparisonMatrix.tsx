@@ -2039,166 +2039,289 @@ export function ComparisonMatrix({
                                     selectedAircraftFlight === index ||
                                     (selectedAircraftFlight === null &&
                                       isDefault);
+                                  const [expandedAircraft, setExpandedAircraft] = useState(null);
+                                  
+                                  // Generate rotation impact data for this aircraft
+                                  const rotationImpact = aircraft.rotation_impact || [
+                                    {
+                                      delay: "10 min",
+                                      impact: "Low Impact",
+                                      origin: "Dubai",
+                                      reason: "Nominal operations",
+                                      status: "On Time",
+                                      arrival: "2025-09-10T09:30:00+04:00",
+                                      departure: "2025-09-10T08:45:00+04:00",
+                                      passengers: 152,
+                                      destination: "Muscat",
+                                      origin_code: "DXB",
+                                      flightNumber: "FZ141",
+                                      destination_code: "MCT"
+                                    },
+                                    {
+                                      delay: "25 min",
+                                      impact: "Medium Impact",
+                                      origin: "Muscat",
+                                      reason: "Aircraft swap delay",
+                                      status: "Delayed",
+                                      arrival: "2025-09-10T14:20:00+04:00",
+                                      departure: "2025-09-10T11:15:00+04:00",
+                                      passengers: 189,
+                                      destination: "Dubai",
+                                      origin_code: "MCT",
+                                      flightNumber: "FZ142",
+                                      destination_code: "DXB"
+                                    }
+                                  ];
+
                                   return (
-                                    <TableRow
-                                      key={index}
-                                      className={`cursor-pointer hover:bg-blue-50 ${
-                                        isSelected
-                                          ? "bg-blue-100 border-l-4 border-flydubai-blue"
-                                          : ""
-                                      }`}
-                                      onClick={() =>
-                                        setSelectedAircraftFlight(index)
-                                      }
-                                    >
-                                      <TableCell className="font-medium">
-                                        <div className="flex items-center gap-2">
-                                          {aircraft.reg || aircraft.aircraft}
-                                          {isDefault && (
-                                            <Badge className="bg-green-100 text-green-700 border-green-300 text-xs">
-                                              Default Assigned
-                                            </Badge>
+                                    <React.Fragment key={index}>
+                                      <TableRow
+                                        className={`cursor-pointer hover:bg-blue-50 ${
+                                          isSelected
+                                            ? "bg-blue-100 border-l-4 border-flydubai-blue"
+                                            : ""
+                                        }`}
+                                        onClick={() =>
+                                          setSelectedAircraftFlight(index)
+                                        }
+                                      >
+                                        <TableCell className="font-medium">
+                                          <div className="flex items-center gap-2">
+                                            {aircraft.reg || aircraft.aircraft}
+                                            {isDefault && (
+                                              <Badge className="bg-green-100 text-green-700 border-green-300 text-xs">
+                                                Default Assigned
+                                              </Badge>
+                                            )}
+                                            {isSelected && !isDefault && (
+                                              <Badge className="bg-blue-100 text-blue-700 border-blue-300 text-xs">
+                                                Selected
+                                              </Badge>
+                                            )}
+                                          </div>
+                                        </TableCell>
+                                        <TableCell>
+                                          {aircraft.type || "B737-800 (189Y)"}
+                                        </TableCell>
+                                        <TableCell>
+                                          {aircraft.etops?.status ===
+                                          "available" ? (
+                                            <div className="flex items-center gap-1">
+                                              <CheckCircle className="h-4 w-4 text-green-600" />
+                                              <span className="text-green-600">
+                                                {aircraft.etops.value || "180min"}
+                                              </span>
+                                            </div>
+                                          ) : (
+                                            <div className="flex items-center gap-1">
+                                              <XCircle className="h-4 w-4 text-red-600" />
+                                              <span className="text-red-600">
+                                                Reduced
+                                              </span>
+                                            </div>
                                           )}
-                                          {isSelected && !isDefault && (
-                                            <Badge className="bg-blue-100 text-blue-700 border-blue-300 text-xs">
-                                              Selected
-                                            </Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                          {aircraft.cabinMatch?.status ===
+                                          "exact" ? (
+                                            <div className="flex items-center gap-1">
+                                              <CheckCircle className="h-4 w-4 text-green-600" />
+                                              <span className="text-green-600">
+                                                Exact
+                                              </span>
+                                            </div>
+                                          ) : aircraft.cabinMatch?.status ===
+                                            "similar" ? (
+                                            <div className="flex items-center gap-1">
+                                              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                                              <span className="text-yellow-600">
+                                                Similar
+                                              </span>
+                                            </div>
+                                          ) : (
+                                            <div className="flex items-center gap-1">
+                                              <XCircle className="h-4 w-4 text-red-600" />
+                                              <span className="text-red-600">
+                                                Reduced
+                                              </span>
+                                            </div>
                                           )}
-                                        </div>
-                                      </TableCell>
-                                      <TableCell>
-                                        {aircraft.type || "B737-800 (189Y)"}
-                                      </TableCell>
-                                      <TableCell>
-                                        {aircraft.etops?.status ===
-                                        "available" ? (
-                                          <div className="flex items-center gap-1">
-                                            <CheckCircle className="h-4 w-4 text-green-600" />
-                                            <span className="text-green-600">
-                                              {aircraft.etops.value || "180min"}
-                                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                          <span
+                                            className={
+                                              aircraft.availability?.includes(
+                                                "Available",
+                                              )
+                                                ? "text-green-600"
+                                                : "text-blue-600"
+                                            }
+                                          >
+                                            {aircraft.availability ||
+                                              "Available Now"}
+                                          </span>
+                                        </TableCell>
+                                        <TableCell>
+                                          {aircraft.assigned?.status ===
+                                          "none" ? (
+                                            <div className="flex items-center gap-1">
+                                              <CheckCircle className="h-4 w-4 text-green-600" />
+                                              <span className="text-green-600">
+                                                None
+                                              </span>
+                                            </div>
+                                          ) : (
+                                            <div className="flex items-center gap-1">
+                                              <XCircle className="h-4 w-4 text-red-600" />
+                                              <span className="text-red-600">
+                                                {aircraft.assigned?.value ||
+                                                  "FZ892"}
+                                              </span>
+                                            </div>
+                                          )}
+                                        </TableCell>
+                                        <TableCell>
+                                          {aircraft.turnaround ||
+                                            aircraft.turnaroundTime ||
+                                            "45 min"}
+                                        </TableCell>
+                                        <TableCell>
+                                          {aircraft.maintenance?.status ===
+                                          "current" ? (
+                                            <div className="flex items-center gap-1">
+                                              <CheckCircle className="h-4 w-4 text-green-600" />
+                                              <span className="text-green-600">
+                                                Current
+                                              </span>
+                                            </div>
+                                          ) : aircraft.maintenance?.status ===
+                                            "due" ? (
+                                            <div className="flex items-center gap-1">
+                                              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                                              <span className="text-yellow-600">
+                                                Due A-Check
+                                              </span>
+                                            </div>
+                                          ) : (
+                                            <div className="flex items-center gap-1">
+                                              <XCircle className="h-4 w-4 text-red-600" />
+                                              <span className="text-red-600">
+                                                AOG
+                                              </span>
+                                            </div>
+                                          )}
+                                        </TableCell>
+                                        <TableCell>
+                                          <div className="flex items-center gap-2">
+                                            <Button
+                                              size="sm"
+                                              variant={
+                                                isSelected ? "default" : "outline"
+                                              }
+                                              className={
+                                                isSelected
+                                                  ? "bg-flydubai-blue hover:bg-flydubai-blue/90 text-white"
+                                                  : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                              }
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedAircraftFlight(index);
+                                              }}
+                                            >
+                                              {isSelected
+                                                ? "Selected"
+                                                : "Change to This"}
+                                            </Button>
+                                            <Button
+                                              size="sm"
+                                              variant="ghost"
+                                              className="h-8 w-8 p-0"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setExpandedAircraft(
+                                                  expandedAircraft === index ? null : index
+                                                );
+                                              }}
+                                            >
+                                              <Activity className="h-4 w-4 text-flydubai-blue" />
+                                            </Button>
                                           </div>
-                                        ) : (
-                                          <div className="flex items-center gap-1">
-                                            <XCircle className="h-4 w-4 text-red-600" />
-                                            <span className="text-red-600">
-                                              Reduced
-                                            </span>
-                                          </div>
-                                        )}
-                                      </TableCell>
-                                      <TableCell>
-                                        {aircraft.cabinMatch?.status ===
-                                        "exact" ? (
-                                          <div className="flex items-center gap-1">
-                                            <CheckCircle className="h-4 w-4 text-green-600" />
-                                            <span className="text-green-600">
-                                              Exact
-                                            </span>
-                                          </div>
-                                        ) : aircraft.cabinMatch?.status ===
-                                          "similar" ? (
-                                          <div className="flex items-center gap-1">
-                                            <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                                            <span className="text-yellow-600">
-                                              Similar
-                                            </span>
-                                          </div>
-                                        ) : (
-                                          <div className="flex items-center gap-1">
-                                            <XCircle className="h-4 w-4 text-red-600" />
-                                            <span className="text-red-600">
-                                              Reduced
-                                            </span>
-                                          </div>
-                                        )}
-                                      </TableCell>
-                                      <TableCell>
-                                        <span
-                                          className={
-                                            aircraft.availability?.includes(
-                                              "Available",
-                                            )
-                                              ? "text-green-600"
-                                              : "text-blue-600"
-                                          }
-                                        >
-                                          {aircraft.availability ||
-                                            "Available Now"}
-                                        </span>
-                                      </TableCell>
-                                      <TableCell>
-                                        {aircraft.assigned?.status ===
-                                        "none" ? (
-                                          <div className="flex items-center gap-1">
-                                            <CheckCircle className="h-4 w-4 text-green-600" />
-                                            <span className="text-green-600">
-                                              None
-                                            </span>
-                                          </div>
-                                        ) : (
-                                          <div className="flex items-center gap-1">
-                                            <XCircle className="h-4 w-4 text-red-600" />
-                                            <span className="text-red-600">
-                                              {aircraft.assigned?.value ||
-                                                "FZ892"}
-                                            </span>
-                                          </div>
-                                        )}
-                                      </TableCell>
-                                      <TableCell>
-                                        {aircraft.turnaround ||
-                                          aircraft.turnaroundTime ||
-                                          "45 min"}
-                                      </TableCell>
-                                      <TableCell>
-                                        {aircraft.maintenance?.status ===
-                                        "current" ? (
-                                          <div className="flex items-center gap-1">
-                                            <CheckCircle className="h-4 w-4 text-green-600" />
-                                            <span className="text-green-600">
-                                              Current
-                                            </span>
-                                          </div>
-                                        ) : aircraft.maintenance?.status ===
-                                          "due" ? (
-                                          <div className="flex items-center gap-1">
-                                            <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                                            <span className="text-yellow-600">
-                                              Due A-Check
-                                            </span>
-                                          </div>
-                                        ) : (
-                                          <div className="flex items-center gap-1">
-                                            <XCircle className="h-4 w-4 text-red-600" />
-                                            <span className="text-red-600">
-                                              AOG
-                                            </span>
-                                          </div>
-                                        )}
-                                      </TableCell>
-                                      <TableCell>
-                                        <Button
-                                          size="sm"
-                                          variant={
-                                            isSelected ? "default" : "outline"
-                                          }
-                                          className={
-                                            isSelected
-                                              ? "bg-flydubai-blue hover:bg-flydubai-blue/90 text-white"
-                                              : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                                          }
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelectedAircraftFlight(index);
-                                          }}
-                                        >
-                                          {isSelected
-                                            ? "Selected"
-                                            : "Change to This"}
-                                        </Button>
-                                      </TableCell>
-                                    </TableRow>
+                                        </TableCell>
+                                      </TableRow>
+                                      
+                                      {/* Rotation Impact Accordion */}
+                                      {expandedAircraft === index && (
+                                        <TableRow>
+                                          <TableCell colSpan={9} className="p-0">
+                                            <div className="bg-gray-50 border-t border-gray-200">
+                                              <div className="p-4">
+                                                <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                                                  <Activity className="h-4 w-4 text-flydubai-blue" />
+                                                  Rotation Impact for {aircraft.reg || aircraft.aircraft}
+                                                </h4>
+                                                <div className="space-y-3">
+                                                  {rotationImpact.map((flight, flightIndex) => (
+                                                    <div key={flightIndex} className="bg-white rounded-lg border p-3">
+                                                      <div className="flex items-center justify-between mb-2">
+                                                        <div className="flex items-center gap-3">
+                                                          <div className="flex items-center gap-2">
+                                                            <Plane className="h-4 w-4 text-flydubai-blue" />
+                                                            <span className="font-medium">{flight.flightNumber}</span>
+                                                          </div>
+                                                          <div className="text-sm text-gray-600">
+                                                            {flight.origin_code} → {flight.destination_code}
+                                                          </div>
+                                                        </div>
+                                                        <Badge
+                                                          className={
+                                                            flight.impact === "Low Impact"
+                                                              ? "bg-green-100 text-green-700 border-green-200"
+                                                              : flight.impact === "Medium Impact"
+                                                                ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                                                : "bg-red-100 text-red-700 border-red-200"
+                                                          }
+                                                        >
+                                                          {flight.impact}
+                                                        </Badge>
+                                                      </div>
+                                                      
+                                                      <div className="grid grid-cols-4 gap-4 text-sm">
+                                                        <div>
+                                                          <span className="text-gray-500">Status:</span>
+                                                          <div className="font-medium">{flight.status}</div>
+                                                        </div>
+                                                        <div>
+                                                          <span className="text-gray-500">Delay:</span>
+                                                          <div className="font-medium">{flight.delay}</div>
+                                                        </div>
+                                                        <div>
+                                                          <span className="text-gray-500">Passengers:</span>
+                                                          <div className="font-medium">{flight.passengers}</div>
+                                                        </div>
+                                                        <div>
+                                                          <span className="text-gray-500">Departure:</span>
+                                                          <div className="font-medium">
+                                                            {new Date(flight.departure).toLocaleTimeString('en-US', {
+                                                              hour: '2-digit',
+                                                              minute: '2-digit'
+                                                            })}
+                                                          </div>
+                                                        </div>
+                                                      </div>
+                                                      
+                                                      <div className="mt-2 text-sm">
+                                                        <span className="text-gray-500">Reason:</span>
+                                                        <span className="ml-2">{flight.reason}</span>
+                                                      </div>
+                                                    </div>
+                                                  ))}
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </TableCell>
+                                        </TableRow>
+                                      )}
+                                    </React.Fragment>
                                   );
                                 },
                               )}
