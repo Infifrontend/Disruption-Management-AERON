@@ -2453,6 +2453,7 @@ export function ComparisonMatrix({
                                     crewMember.assignedAt;
 
                                   return (
+                                    
                                     <TableRow
                                       key={index}
                                       className={`hover:bg-gray-50 ${
@@ -2912,8 +2913,7 @@ export function ComparisonMatrix({
                                         </div>
                                       </TableCell>
                                     </TableRow>
-
-                                    {/* Rotation Impact Accordion for Violated Crew */}
+                                
                                     {expandedCrew === index && isAffected && (
                                       <TableRow>
                                         <TableCell colSpan={4} className="p-0">
