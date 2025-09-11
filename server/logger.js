@@ -51,6 +51,7 @@ const logger = pino({
     stream: pino.destination({
       dest: 1, // stdout
       sync: false
+      
     }),
     level: 'info'
   },
