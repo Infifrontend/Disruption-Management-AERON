@@ -40,7 +40,7 @@ class LLMRecoveryService {
             model: this.model || 'claude-3-sonnet-20240229',
             temperature: 0.7,
             apiKey: process.env.ANTHROPIC_API_KEY,
-            maxTokens: 4000
+            maxTokens: 32000
           });
           break;
 
