@@ -1,9 +1,8 @@
-import { ChatOpenAI } from "@langchain/openai";
-import { ChatAnthropic } from "@langchain/anthropic";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { generateRecoveryOptionsForDisruption } from './recovery-generator.js';
 import logger, { logInfo, logError, logException } from './logger.js';
+import { modelRouter } from './model-router.js';
 import { appendFile } from "fs/promises";
 
 class PromptTemplateManager {
@@ -281,9 +280,7 @@ class RetryManager {
 
 class LLMRecoveryService {
   constructor() {
-    this.llmProvider = process.env.LLM_PROVIDER || 'openai';
-    this.model = process.env.LLM_MODEL || 'gpt-3.5-turbo';
-    this.llm = null;
+    this.modelRouter = modelRouter;
     this.promptManager = new PromptTemplateManager();
     this.responseProcessor = new ResponseProcessor();
     this.retryManager = new RetryManager();
@@ -292,49 +289,38 @@ class LLMRecoveryService {
 
   initializeLLM() {
     try {
-      this.llm = this.createLLMInstance();
-
-      logInfo(`LLM Recovery Service initialized with ${this.llmProvider} provider`, {
-        provider: this.llmProvider,
-        model: this.model,
+      // Get current provider info from model router
+      const providers = this.modelRouter.listProviders();
+      
+      logInfo('LLM Recovery Service initialized with model router', {
+        defaultProvider: providers.default,
+        availableProviders: providers.available.map(p => `${p.name} (${p.model})`),
         status: 'initialized'
       });
     } catch (error) {
-      logError(`Failed to initialize LLM: ${error.message}`, error, {
-        provider: this.llmProvider,
-        model: this.model,
+      logError('Failed to initialize LLM Recovery Service with model router', error, {
         status: 'initialization_failed'
       });
-      this.llm = null;
     }
   }
 
-  createLLMInstance() {
-    switch (this.llmProvider.toLowerCase()) {
-      case 'openai':
-        if (!process.env.OPENAI_API_KEY) {
-          throw new Error('OPENAI_API_KEY environment variable is required for OpenAI provider');
-        }
-        return new ChatOpenAI({
-          model: this.model,
-          temperature: 0.7,
-          apiKey: process.env.OPENAI_API_KEY,
-        });
-
-      case 'anthropic':
-        if (!process.env.ANTHROPIC_API_KEY) {
-          throw new Error('ANTHROPIC_API_KEY environment variable is required for Anthropic provider');
-        }
-        return new ChatAnthropic({
-          model: this.model || 'claude-3-sonnet-20240229',
-          temperature: 0.7,
-          apiKey: process.env.ANTHROPIC_API_KEY,
-          maxTokens: 32000
-        });
-
-      default:
-        throw new Error(`Unsupported LLM provider: ${this.llmProvider}`);
+  get llm() {
+    try {
+      return this.modelRouter.getProvider();
+    } catch (error) {
+      logError('Failed to get LLM provider from model router', error);
+      return null;
     }
+  }
+
+  get llmProvider() {
+    const providers = this.modelRouter.listProviders();
+    return providers.default || 'unknown';
+  }
+
+  get model() {
+    const config = this.modelRouter.getProviderConfig();
+    return config ? config.model : 'unknown';
   }
 
   buildPromptVariables(disruptionData, categoryInfo = {}) {
@@ -442,28 +428,43 @@ class LLMRecoveryService {
   }
 
   async healthCheck() {
-    if (!this.llm) {
+    try {
+      return await this.modelRouter.healthCheck();
+    } catch (error) {
+      logError('Health check failed', error, {
+        status: 'health_check_error'
+      });
       return {
-        status: 'unavailable',
-        provider: this.llmProvider,
-        error: 'LLM not initialized'
+        status: 'error',
+        error: error.message,
+        provider: this.llmProvider
       };
     }
+  }
 
+  async healthCheckAll() {
+    return await this.modelRouter.healthCheckAll();
+  }
+
+  listProviders() {
+    return this.modelRouter.listProviders();
+  }
+
+  switchProvider(providerName) {
     try {
-      const testMessage = { role: 'user', content: 'Hello' };
-      await this.llm.invoke([testMessage]);
-      return {
-        status: 'healthy',
-        provider: this.llmProvider,
-        model: this.model
-      };
+      const result = this.modelRouter.switchProvider(providerName);
+      logInfo(`LLM provider switched successfully`, {
+        oldProvider: result.old,
+        newProvider: result.new,
+        status: 'provider_switched'
+      });
+      return result;
     } catch (error) {
-      return {
-        status: 'error', 
-        provider: this.llmProvider,
-        error: error.message
-      };
+      logError(`Failed to switch provider to ${providerName}`, error, {
+        targetProvider: providerName,
+        status: 'provider_switch_failed'
+      });
+      throw error;
     }
   }
 }
