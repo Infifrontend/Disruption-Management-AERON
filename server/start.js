@@ -3711,6 +3711,64 @@ app.post("/api/llm-recovery/provider/switch", async (req, res) => {
   }
 });
 
+// Get LLM analytics for a specific provider
+app.get("/api/llm-recovery/analytics/:provider", async (req, res) => {
+  try {
+    const { provider } = req.params;
+    const { timeRange = '24h' } = req.query;
+    
+    const analytics = await llmRecoveryService.getProviderAnalytics(provider, timeRange);
+    
+    logInfo('LLM analytics requested', {
+      provider: provider,
+      timeRange: timeRange,
+      endpoint: '/api/llm-recovery/analytics'
+    });
+    
+    res.json({
+      status: 'success',
+      analytics
+    });
+  } catch (error) {
+    logError('Failed to get LLM analytics', error, {
+      endpoint: '/api/llm-recovery/analytics',
+      provider: req.params?.provider,
+      error_type: error.constructor.name
+    });
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
+// Get all LLM loggers info
+app.get("/api/llm-recovery/loggers", async (req, res) => {
+  try {
+    const loggers = llmRecoveryService.getLLMLoggers();
+    
+    logInfo('LLM loggers info requested', {
+      endpoint: '/api/llm-recovery/loggers',
+      loggerCount: loggers.length
+    });
+    
+    res.json({
+      status: 'success',
+      loggers,
+      note: 'Log files contain detailed request/response data, token usage, and timing metrics'
+    });
+  } catch (error) {
+    logError('Failed to get LLM loggers info', error, {
+      endpoint: '/api/llm-recovery/loggers',
+      error_type: error.constructor.name
+    });
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
 // Generate and save recovery options for a disruption
 app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
   try {
