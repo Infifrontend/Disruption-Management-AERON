@@ -4281,15 +4281,22 @@ export function ComparisonMatrix({
                                 <span className="text-sm text-flydubai-blue">
                                   Rotation Impact
                                 </span>
-                                <svg 
+                                <svg
                                   className={`h-4 w-4 text-flydubai-blue transition-transform ${
-                                    expandedCrew === `available-${index}` ? 'rotate-180' : ''
+                                    expandedCrew === `available-${index}`
+                                      ? "rotate-180"
+                                      : ""
                                   }`}
-                                  fill="none" 
-                                  stroke="currentColor" 
+                                  fill="none"
+                                  stroke="currentColor"
                                   viewBox="0 0 24 24"
                                 >
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 9l-7 7-7-7"
+                                  />
                                 </svg>
                               </Button>
                             </div>
@@ -4476,3 +4483,4 @@ export function ComparisonMatrix({
     </div>
   );
 }
+</new_str>
