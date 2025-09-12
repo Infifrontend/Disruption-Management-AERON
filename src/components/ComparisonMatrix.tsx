@@ -2987,42 +2987,23 @@ export function ComparisonMatrix({
                                             {/* Rotation Impact Icon for Violated Crew */}
 
                                             {isAffected && (
-                                              // <Button
-                                              //   size="sm"
-                                              //   variant="ghost"
-                                              //   className="h-8 flex items-center gap-1 px-2"
-                                              //   onClick={(e) => {
-                                              //     e.stopPropagation();
-                                              //     setExpandedCrew(
-                                              //       expandedCrew ===
-                                              //         `available-${index}`
-                                              //         ? null
-                                              //         : `available-${index}`,
-                                              //     );
-                                              //   }}
-                                              // >
-                                              //   <Activity className="h-4 w-4 text-flydubai-blue" />
-                                              //   <span className="text-xs text-flydubai-blue">
-                                              //     Impact
-                                              //   </span>
-                                              // </Button>
-
                                               <Button
                                                 size="sm"
                                                 variant="ghost"
-                                                className="h-6 w-6 p-0"
+                                                className="h-8 flex items-center gap-1 px-2"
                                                 onClick={(e) => {
                                                   e.stopPropagation();
                                                   setExpandedCrew(
-                                                    expandedCrew === index
+                                                    expandedCrew ===
+                                                      `available-${index}`
                                                       ? null
-                                                      : index,
+                                                      : `available-${index}`,
                                                   );
                                                 }}
                                               >
-                                                <Activity className="h-3 w-3 text-flydubai-blue" />
+                                                <Activity className="h-4 w-4 text-flydubai-blue" />
                                                 <span className="text-xs text-flydubai-blue">
-                                                  Impact
+                                                   Rotation Impact
                                                 </span>
                                               </Button>
                                             )}
@@ -4224,7 +4205,7 @@ export function ComparisonMatrix({
                                   >
                                     <Activity className="h-4 w-4 text-flydubai-blue" />
                                     <span className="text-xs text-flydubai-blue">
-                                      Impact
+                                      Rotation Impact
                                     </span>
                                   </Button>
                                 </div>
