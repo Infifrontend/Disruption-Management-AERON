@@ -19,6 +19,7 @@ try {
 // Verify directory exists
 if (!existsSync(logsDir)) {
   console.error(`Logs directory does not exist: ${logsDir}`);
+  process.exit(1);
 }
 
 // Create write streams for different log levels with explicit paths
@@ -113,16 +114,24 @@ const exceptionLogger = pino({
   }
 }, exceptionTransport);
 
-// Enhanced logging methods
+// Enhanced logging methods with console fallback
 const logInfo = (message, meta = {}) => {
-  // console.log(`[INFO] ${message}`, meta); // Console backup
-  logger.info(meta, message);
+  try {
+    logger.info(meta, message);
+  } catch (err) {
+    console.log(`[INFO] ${message}`, meta);
+    console.error('Logger error:', err.message);
+  }
 };
 
 const logError = (message, error = null, meta = {}) => {
   const errorMeta = error ? { error: error.message, stack: error.stack, ...meta } : meta;
-  // console.error(`[ERROR] ${message}`, errorMeta); // Console backup
-  logger.error(errorMeta, message);
+  try {
+    logger.error(errorMeta, message);
+  } catch (err) {
+    console.error(`[ERROR] ${message}`, errorMeta);
+    console.error('Logger error:', err.message);
+  }
 };
 
 const logException = (error, context = 'Unknown') => {
@@ -193,6 +202,10 @@ const testLogging = () => {
   logError('Test error message', new Error('Test error'), { test: true, timestamp: new Date().toISOString() });
   console.log('Logging test completed. Check log files in logs/ directory.');
 };
+
+// Initialize test to verify logging works on startup
+console.log('Initializing logger and running test...');
+testLogging();
 
 export {
   logger,
