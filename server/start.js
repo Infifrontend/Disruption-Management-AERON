@@ -3622,6 +3622,87 @@ app.get("/api/llm-recovery/health", async (req, res) => {
   }
 });
 
+// LLM service health check all providers
+app.get("/api/llm-recovery/health/all", async (req, res) => {
+  try {
+    const healthStatus = await llmRecoveryService.healthCheckAll();
+    logInfo('LLM health check all providers performed', {
+      defaultProvider: healthStatus.defaultProvider,
+      totalProviders: healthStatus.summary.total,
+      healthyProviders: healthStatus.summary.healthy
+    });
+    res.json(healthStatus);
+  } catch (error) {
+    logError('LLM health check all failed', error, {
+      endpoint: '/api/llm-recovery/health/all',
+      error_type: error.constructor.name
+    });
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
+// List available LLM providers
+app.get("/api/llm-recovery/providers", async (req, res) => {
+  try {
+    const providers = llmRecoveryService.listProviders();
+    logInfo('LLM providers listed', {
+      defaultProvider: providers.default,
+      availableCount: providers.available.length
+    });
+    res.json(providers);
+  } catch (error) {
+    logError('Failed to list LLM providers', error, {
+      endpoint: '/api/llm-recovery/providers',
+      error_type: error.constructor.name
+    });
+    res.status(500).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
+// Switch LLM provider
+app.post("/api/llm-recovery/provider/switch", async (req, res) => {
+  try {
+    const { provider } = req.body;
+    
+    if (!provider) {
+      return res.status(400).json({
+        error: 'Provider name is required',
+        status: 'error'
+      });
+    }
+
+    const result = llmRecoveryService.switchProvider(provider);
+    
+    logInfo('LLM provider switched', {
+      oldProvider: result.old,
+      newProvider: result.new,
+      endpoint: '/api/llm-recovery/provider/switch'
+    });
+    
+    res.json({
+      status: 'success',
+      message: `Switched from ${result.old} to ${result.new}`,
+      ...result
+    });
+  } catch (error) {
+    logError('Failed to switch LLM provider', error, {
+      endpoint: '/api/llm-recovery/provider/switch',
+      requestedProvider: req.body?.provider,
+      error_type: error.constructor.name
+    });
+    res.status(400).json({
+      status: 'error',
+      error: error.message
+    });
+  }
+});
+
 // Generate and save recovery options for a disruption
 app.post("/api/recovery-options/generate/:disruptionId", async (req, res) => {
   try {
