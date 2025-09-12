@@ -2062,6 +2062,53 @@ app.post("/api/disruptions/", async (req, res) => {
       try {
         const categoryResult = await pool.query(
           `SELECT id, category_name, description FROM disruption_categories
+
+
+// LLM Logging endpoints
+app.get("/api/llm-logs/:provider", (req, res) => {
+  try {
+    const { provider } = req.params;
+    const { limit = 50 } = req.query;
+    
+    const logs = modelRouter.getProviderLogs(provider, parseInt(limit));
+    logInfo('LLM logs retrieved', { provider, count: logs.logs.length });
+    
+    res.json(logs);
+  } catch (error) {
+    logError('Failed to retrieve LLM logs', error, { provider: req.params.provider });
+    res.status(500).json({ error: 'Failed to retrieve logs' });
+  }
+});
+
+app.get("/api/llm-stats", (req, res) => {
+  try {
+    const stats = modelRouter.getAllProviderStats();
+    logInfo('LLM stats retrieved', { providers: Object.keys(stats) });
+    
+    res.json(stats);
+  } catch (error) {
+    logError('Failed to retrieve LLM stats', error);
+    res.status(500).json({ error: 'Failed to retrieve stats' });
+  }
+});
+
+app.get("/api/llm-logs", (req, res) => {
+  try {
+    const { limit = 50 } = req.query;
+    const allLogs = {};
+    
+    for (const providerName of modelRouter.providers.keys()) {
+      allLogs[providerName] = modelRouter.getProviderLogs(providerName, parseInt(limit));
+    }
+    
+    res.json(allLogs);
+  } catch (error) {
+    logError('Failed to retrieve all LLM logs', error);
+    res.status(500).json({ error: 'Failed to retrieve logs' });
+  }
+});
+
+
            WHERE category_code = $1 AND is_active = true`,
           [receivedCategoryCode],
         );
@@ -3305,6 +3352,7 @@ app.get("/api/recovery-templates/:categoryId", async (req, res) => {
 
 // Import LLM Recovery Service
 import { llmRecoveryService } from './llm-recovery-service.js';
+import { modelRouter } from './model-router.js';
 
 // Helper function to validate and parse disruption ID
 function validateDisruptionId(disruptionId) {
