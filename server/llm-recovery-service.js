@@ -346,12 +346,73 @@ Return JSON format with exactly one option in "options" array and related steps 
     "considerations": ["consideration 1", "consideration 2", "consideration 3"],
     "impact_area": ["crew", "passenger", "aircraft"],
     "impact_summary": "Brief summary of the recovery approach and its impact",
-    "resource_requirements": [],
-    "cost_breakdown": {{}},
-    "timeline_details": [],
-    "risk_assessment": [],
-    "technical_specs": {{}},
-    "metrics": {{}}
+    "resource_requirements": [
+    {{
+      "title": "Resource Name",
+      "subtitle": "Resource Description", 
+      "availability": "Status",
+      "status": "Current State",
+      "location": "Where it's located",
+      "eta": "Time to availability",
+      "details": "Additional details"
+    }}
+  ],
+  "cost_breakdown": {{
+    "breakdown": [
+      {{
+        "amount": "AED X,XXX",
+        "category": "Category Name",
+        "percentage": number,
+        "description": "Description of cost component"
+      }}
+    ],
+    "total": {{
+      "amount": "AED X,XXX",
+      "title": "Total Estimated Cost",
+      "description": "Brief cost description"
+    }}
+  }},
+  "timeline_details": [
+    {{
+      "step": "Step Name",
+      "status": "completed/in-progress/pending",
+      "details": "Step description",
+      "startTime": "HH:MM",
+      "endTime": "HH:MM", 
+      "duration": "X min"
+    }}
+  ],
+  "risk_assessment": [
+    {{
+      "risk": "Risk description",
+      "risk_impact": "Low/Medium/High",
+      "mitigation_impact": "Low/Medium/High", 
+      "score": number (1-9),
+      "mitigation": "Mitigation strategy"
+    }}
+  ],
+  "technical_specs": {{
+    "implementation": {{
+      "title": "Implementation",
+      "details": "Implementation details"
+    }},
+    "systems_required": {{
+      "title": "Systems required", 
+      "details": ["System 1", "System 2"]
+    }},
+    "certifications": {{
+      "title": "Certifications",
+      "details": ["Cert 1", "Cert 2"]
+    }}
+  }},
+  "metrics": {{
+    "costEfficiency": number (1-100),
+    "timeEfficiency": number (1-100), 
+    "passengerSatisfaction": number (1-100),
+    "crewViolations": number,
+    "aircraftSwaps": number,
+    "networkImpact": "None/Low/Medium/High"
+  }}
   }}],
   "steps": [
     {{
