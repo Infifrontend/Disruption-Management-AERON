@@ -2015,7 +2015,7 @@ export function ComparisonMatrix({
                     <CardHeader>
                       <CardTitle className="text-sm flex items-center gap-2">
                         <Plane className="h-4 w-4 text-flydubai-blue" />
-                        Available Aircraft Options -{" "}
+                        Alternate Aircraft Options -{" "}
                         {selectedOptionDetails?.title}
                       </CardTitle>
                     </CardHeader>
@@ -2228,7 +2228,7 @@ export function ComparisonMatrix({
                                         </TableCell>
                                         <TableCell>
                                           <div className="flex flex-col gap-2">
-                                            <div 
+                                            <div
                                               className="flex items-center gap-2 cursor-pointer"
                                               onClick={(e) => {
                                                 e.stopPropagation();
@@ -2238,8 +2238,8 @@ export function ComparisonMatrix({
                                               }}
                                             >
                                               <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                                                isSelected 
-                                                  ? 'border-flydubai-blue bg-flydubai-blue' 
+                                                isSelected
+                                                  ? 'border-flydubai-blue bg-flydubai-blue'
                                                   : 'border-gray-300'
                                               }`}>
                                                 {isSelected && (
@@ -2247,8 +2247,8 @@ export function ComparisonMatrix({
                                                 )}
                                               </div>
                                               <span className={`text-sm ${
-                                                isSelected 
-                                                  ? 'text-flydubai-blue font-medium' 
+                                                isSelected
+                                                  ? 'text-flydubai-blue font-medium'
                                                   : 'text-gray-600'
                                               }`}>
                                                 {isSelected ? "Selected" : "Select"}
@@ -3175,7 +3175,7 @@ export function ComparisonMatrix({
                                                               "Dubai",
                                                             origin_code: "LHR",
                                                             flightNumber:
-                                                              "FZ141",
+                                                              "FZ001",
                                                             destination_code:
                                                               "DXB",
                                                           },
