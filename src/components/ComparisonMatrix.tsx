@@ -2863,19 +2863,28 @@ export function ComparisonMatrix({
 
                                                 {/* Current assigned crew status */}
                                                 <div className="p-2 bg-green-50 border border-green-200 rounded">
-                                                  {/* <div className="text-xs text-green-700 font-medium mb-1">
-                                                  Current: {crewMember.name}
-                                                </div> */}
-                                                  <Badge className="bg-green-100 text-green-700 border-green-300 text-xs">
-                                                    {crewMember.isAutoAssigned
-                                                      ? "Auto-Assigned"
-                                                      : "Reassigned"}
-                                                  </Badge>
-                                                  <div className="text-xs text-green-600 mt-1">
-                                                    Assigned at:{" "}
-                                                    {new Date(
-                                                      crewMember.assignedAt,
-                                                    ).toLocaleTimeString()}
+                                                  <div className="flex items-center justify-between mb-2">
+                                                    <Badge className="bg-green-100 text-green-700 border-green-300 text-xs">
+                                                      {crewMember.isAutoAssigned ? "Auto-Assigned" : "Reassigned"}
+                                                    </Badge>
+                                                    <Button
+                                                      size="sm"
+                                                      variant="ghost"
+                                                      className="h-6 w-6 p-0"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setExpandedCrew(
+                                                          expandedCrew === `reassigned-${index}`
+                                                            ? null
+                                                            : `reassigned-${index}`,
+                                                        );
+                                                      }}
+                                                    >
+                                                      <Activity className="h-3 w-3 text-blue-600" />
+                                                    </Button>
+                                                  </div>
+                                                  <div className="text-xs text-green-600">
+                                                    Assigned at: {new Date(crewMember.assignedAt).toLocaleTimeString()}
                                                   </div>
                                                 </div>
                                               </div>
@@ -2994,16 +3003,15 @@ export function ComparisonMatrix({
                                                 onClick={(e) => {
                                                   e.stopPropagation();
                                                   setExpandedCrew(
-                                                    expandedCrew ===
-                                                      `available-${index}`
+                                                    expandedCrew === `affected-${index}`
                                                       ? null
-                                                      : `available-${index}`,
+                                                      : `affected-${index}`,
                                                   );
                                                 }}
                                               >
                                                 <Activity className="h-4 w-4 text-flydubai-blue" />
                                                 <span className="text-xs text-flydubai-blue">
-                                                   Rotation Impact
+                                                  Impact
                                                 </span>
                                               </Button>
                                             )}
@@ -3011,51 +3019,72 @@ export function ComparisonMatrix({
                                         </TableCell>
                                       </TableRow>
 
-                                      {expandedCrew === index && isAffected && (
+                                      {expandedCrew === `affected-${index}` && isAffected && (
                                         <TableRow>
                                           <TableCell
                                             colSpan={4}
                                             className="p-0"
                                           >
                                             <div className="bg-gray-50 border-t border-gray-200">
-                                              <div className="px-4 py-2">
-                                                <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                                              <div className="px-4 py-3">
+                                                <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
                                                   <Activity className="h-4 w-4 text-flydubai-blue" />
-                                                  Rotation Impact for{" "}
-                                                  {crewMember.name}
+                                                  Rotation Impact for {crewMember.name}
                                                 </h4>
-                                                <div className="space-y-2">
-                                                  {crewMember.rotation_impact?.map(
-                                                    (flight, flightIndex) => (
+                                                <div className="space-y-3">
+                                                  {(() => {
+                                                    // Generate rotation impact data for affected crew member
+                                                    const rotationImpact = crewMember.rotation_impact || [
+                                                      {
+                                                        delay: "On Time",
+                                                        impact: "High Impact",
+                                                        origin: "London Heathrow",
+                                                        reason: `Primary ${crewMember.role} — replacement required, flight will be delayed or cancelled without qualified crew.`,
+                                                        status: "On Time",
+                                                        arrival: "2025-09-10T15:30:00+04:00",
+                                                        departure: "2025-09-10T07:30:00+01:00",
+                                                        passengers: 178,
+                                                        destination: "Dubai",
+                                                        origin_code: "LHR",
+                                                        flightNumber: "FZ001",
+                                                        destination_code: "DXB",
+                                                      },
+                                                      {
+                                                        delay: "15 min",
+                                                        impact: "Medium Impact",
+                                                        origin: "Dubai",
+                                                        reason: "Crew replacement delay — brief handover required",
+                                                        status: "Delayed",
+                                                        arrival: "2025-09-10T20:45:00+04:00",
+                                                        departure: "2025-09-10T16:15:00+04:00",
+                                                        passengers: 189,
+                                                        destination: "Mumbai",
+                                                        origin_code: "DXB",
+                                                        flightNumber: "FZ445",
+                                                        destination_code: "BOM",
+                                                      },
+                                                    ];
+
+                                                    return rotationImpact.map((flight, flightIndex) => (
                                                       <div
                                                         key={flightIndex}
-                                                        className="bg-white rounded border p-2"
+                                                        className="bg-white rounded border border-gray-200 p-3"
                                                       >
-                                                        <div className="flex items-center justify-between mb-1">
+                                                        <div className="flex items-center justify-between mb-2">
                                                           <div className="flex items-center gap-2">
-                                                            <Plane className="h-3 w-3 text-flydubai-blue" />
+                                                            <Plane className="h-4 w-4 text-flydubai-blue" />
                                                             <span className="font-medium text-sm">
-                                                              {
-                                                                flight.flightNumber
-                                                              }
+                                                              {flight.flightNumber}
                                                             </span>
                                                             <span className="text-xs text-gray-600">
-                                                              {
-                                                                flight.origin_code
-                                                              }{" "}
-                                                              →{" "}
-                                                              {
-                                                                flight.destination_code
-                                                              }
+                                                              {flight.origin_code} → {flight.destination_code}
                                                             </span>
                                                           </div>
                                                           <Badge
-                                                            className={`text-xs px-2 py-0 ${
-                                                              flight.impact ===
-                                                              "Low Impact"
+                                                            className={`text-xs px-2 py-1 ${
+                                                              flight.impact === "Low Impact"
                                                                 ? "bg-green-100 text-green-700 border-green-200"
-                                                                : flight.impact ===
-                                                                    "Medium Impact"
+                                                                : flight.impact === "Medium Impact"
                                                                   ? "bg-yellow-100 text-yellow-700 border-yellow-200"
                                                                   : "bg-red-100 text-red-700 border-red-200"
                                                             }`}
@@ -3064,71 +3093,37 @@ export function ComparisonMatrix({
                                                           </Badge>
                                                         </div>
 
-                                                        <div className="grid grid-cols-4 gap-2 text-xs">
+                                                        <div className="grid grid-cols-4 gap-3 text-xs mb-2">
                                                           <div>
-                                                            <span className="text-gray-500">
-                                                              Status:
-                                                            </span>
-                                                            <div className="font-medium">
-                                                              {flight.status}
-                                                            </div>
+                                                            <span className="text-gray-500">Status:</span>
+                                                            <div className="font-medium">{flight.status}</div>
                                                           </div>
                                                           <div>
-                                                            <span className="text-gray-500">
-                                                              Delay:
-                                                            </span>
-                                                            <div className="font-medium">
-                                                              {flight.delay}
-                                                            </div>
+                                                            <span className="text-gray-500">Delay:</span>
+                                                            <div className="font-medium">{flight.delay}</div>
                                                           </div>
                                                           <div>
-                                                            <span className="text-gray-500">
-                                                              PAX:
-                                                            </span>
-                                                            <div className="font-medium">
-                                                              {
-                                                                flight.passengers
-                                                              }
-                                                            </div>
+                                                            <span className="text-gray-500">PAX:</span>
+                                                            <div className="font-medium">{flight.passengers}</div>
                                                           </div>
                                                           <div>
-                                                            <span className="text-gray-500">
-                                                              Dept:
-                                                            </span>
+                                                            <span className="text-gray-500">Dept:</span>
                                                             <div className="font-medium">
-                                                              {new Date(
-                                                                flight.departure,
-                                                              ).toLocaleTimeString(
-                                                                "en-US",
-                                                                {
-                                                                  hour: "2-digit",
-                                                                  minute:
-                                                                    "2-digit",
-                                                                },
-                                                              )}
+                                                              {new Date(flight.departure).toLocaleTimeString("en-US", {
+                                                                hour: "2-digit",
+                                                                minute: "2-digit",
+                                                              })}
                                                             </div>
                                                           </div>
                                                         </div>
 
-                                                        <div className="mt-1 text-xs">
-                                                          <span className="text-gray-500">
-                                                            Reason:
-                                                          </span>
-                                                          <span className="ml-1">
-                                                            {flight.reason}
-                                                          </span>
+                                                        <div className="text-xs">
+                                                          <span className="text-gray-500">Reason:</span>
+                                                          <span className="ml-1">{flight.reason}</span>
                                                         </div>
                                                       </div>
-                                                    ),
-                                                  ) || (
-                                                    <div className="text-center py-2 text-gray-500">
-                                                      <Activity className="h-4 w-4 mx-auto mb-1 opacity-50" />
-                                                      <p className="text-xs">
-                                                        No rotation impact data
-                                                        available
-                                                      </p>
-                                                    </div>
-                                                  )}
+                                                    ));
+                                                  })()}
                                                 </div>
                                               </div>
                                             </div>
@@ -3137,179 +3132,114 @@ export function ComparisonMatrix({
                                       )}
 
                                       {/* Rotation Impact Accordion for Reassigned Crew */}
-                                      {expandedCrew === index &&
-                                        hasBeenSwapped && (
-                                          <TableRow>
-                                            <TableCell
-                                              colSpan={4}
-                                              className="p-0"
-                                            >
-                                              <div className="bg-blue-50 border-t border-blue-200">
-                                                <div className="px-4 py-2">
-                                                  <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                                                    <Activity className="h-4 w-4 text-blue-600" />
-                                                    Rotation Impact for{" "}
-                                                    {crewMember.name}{" "}
-                                                    (Reassigned)
-                                                  </h4>
-                                                  <div className="space-y-2">
-                                                    {(() => {
-                                                      // Generate rotation impact for reassigned crew
-                                                      const reassignedRotationImpact =
-                                                        crewMember.rotation_impact || [
-                                                          {
-                                                            delay: "On Time",
-                                                            impact:
-                                                              "High Impact",
-                                                            origin:
-                                                              "London Heathrow",
-                                                            reason:
-                                                              "Primary PIC — replacement required, flight will be delayed or cancelled without a qualified Captain.",
-                                                            status: "On Time",
-                                                            arrival:
-                                                              "2025-09-10T15:30:00+04:00",
-                                                            departure:
-                                                              "2025-09-10T07:30:00+01:00",
-                                                            passengers: 178,
-                                                            destination:
-                                                              "Dubai",
-                                                            origin_code: "LHR",
-                                                            flightNumber:
-                                                              "FZ001",
-                                                            destination_code:
-                                                              "DXB",
-                                                          },
-                                                          {
-                                                            delay: "15 min",
-                                                            impact:
-                                                              "Medium Impact",
-                                                            origin: "Dubai",
-                                                            reason:
-                                                              "Crew reassignment delay — brief handover required",
-                                                            status: "Delayed",
-                                                            arrival:
-                                                              "2025-09-10T20:45:00+04:00",
-                                                            departure:
-                                                              "2025-09-10T16:15:00+04:00",
-                                                            passengers: 189,
-                                                            destination:
-                                                              "Mumbai",
-                                                            origin_code: "DXB",
-                                                            flightNumber:
-                                                              "FZ445",
-                                                            destination_code:
-                                                              "BOM",
-                                                          },
-                                                        ];
+                                      {expandedCrew === `reassigned-${index}` && hasBeenSwapped && (
+                                        <TableRow>
+                                          <TableCell colSpan={4} className="p-0">
+                                            <div className="bg-blue-50 border-t border-blue-200">
+                                              <div className="px-4 py-3">
+                                                <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                                                  <Activity className="h-4 w-4 text-blue-600" />
+                                                  Rotation Impact for {crewMember.name} (Reassigned)
+                                                </h4>
+                                                <div className="space-y-3">
+                                                  {(() => {
+                                                    // Generate rotation impact for reassigned crew
+                                                    const reassignedRotationImpact = crewMember.rotation_impact || [
+                                                      {
+                                                        delay: "On Time",
+                                                        impact: "High Impact",
+                                                        origin: "London Heathrow",
+                                                        reason: `Primary ${crewMember.role} — replacement required, flight will be delayed or cancelled without qualified crew.`,
+                                                        status: "On Time",
+                                                        arrival: "2025-09-10T15:30:00+04:00",
+                                                        departure: "2025-09-10T07:30:00+01:00",
+                                                        passengers: 178,
+                                                        destination: "Dubai",
+                                                        origin_code: "LHR",
+                                                        flightNumber: "FZ001",
+                                                        destination_code: "DXB",
+                                                      },
+                                                      {
+                                                        delay: "15 min",
+                                                        impact: "Medium Impact",
+                                                        origin: "Dubai",
+                                                        reason: "Crew reassignment delay — brief handover required",
+                                                        status: "Delayed",
+                                                        arrival: "2025-09-10T20:45:00+04:00",
+                                                        departure: "2025-09-10T16:15:00+04:00",
+                                                        passengers: 189,
+                                                        destination: "Mumbai",
+                                                        origin_code: "DXB",
+                                                        flightNumber: "FZ445",
+                                                        destination_code: "BOM",
+                                                      },
+                                                    ];
 
-                                                      return reassignedRotationImpact.map(
-                                                        (
-                                                          flight,
-                                                          flightIndex,
-                                                        ) => (
-                                                          <div
-                                                            key={flightIndex}
-                                                            className="bg-white rounded border border-blue-200 p-2"
+                                                    return reassignedRotationImpact.map((flight, flightIndex) => (
+                                                      <div
+                                                        key={flightIndex}
+                                                        className="bg-white rounded border border-blue-200 p-3"
+                                                      >
+                                                        <div className="flex items-center justify-between mb-2">
+                                                          <div className="flex items-center gap-2">
+                                                            <Plane className="h-4 w-4 text-blue-600" />
+                                                            <span className="font-medium text-sm">
+                                                              {flight.flightNumber}
+                                                            </span>
+                                                            <span className="text-xs text-gray-600">
+                                                              {flight.origin_code} → {flight.destination_code}
+                                                            </span>
+                                                          </div>
+                                                          <Badge
+                                                            className={`text-xs px-2 py-1 ${
+                                                              flight.impact === "Low Impact"
+                                                                ? "bg-green-100 text-green-700 border-green-200"
+                                                                : flight.impact === "Medium Impact"
+                                                                  ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                                                  : "bg-red-100 text-red-700 border-red-200"
+                                                            }`}
                                                           >
-                                                            <div className="flex items-center justify-between mb-1">
-                                                              <div className="flex items-center gap-2">
-                                                                <Plane className="h-3 w-3 text-blue-600" />
-                                                                <span className="font-medium text-sm">
-                                                                  {
-                                                                    flight.flightNumber
-                                                                  }
-                                                                </span>
-                                                                <span className="text-xs text-gray-600">
-                                                                  {
-                                                                    flight.origin_code
-                                                                  }{" "}
-                                                                  →{" "}
-                                                                  {
-                                                                    flight.destination_code
-                                                                  }
-                                                                </span>
-                                                              </div>
-                                                              <Badge
-                                                                className={`text-xs px-2 py-0 ${
-                                                                  flight.impact ===
-                                                                  "Low Impact"
-                                                                    ? "bg-green-100 text-green-700 border-green-200"
-                                                                    : flight.impact ===
-                                                                        "Medium Impact"
-                                                                      ? "bg-yellow-100 text-yellow-700 border-yellow-200"
-                                                                      : "bg-red-100 text-red-700 border-red-200"
-                                                                }`}
-                                                              >
-                                                                {flight.impact}
-                                                              </Badge>
-                                                            </div>
+                                                            {flight.impact}
+                                                          </Badge>
+                                                        </div>
 
-                                                            <div className="grid grid-cols-4 gap-2 text-xs">
-                                                              <div>
-                                                                <span className="text-gray-500">
-                                                                  Status:
-                                                                </span>
-                                                                <div className="font-medium">
-                                                                  {
-                                                                    flight.status
-                                                                  }
-                                                                </div>
-                                                              </div>
-                                                              <div>
-                                                                <span className="text-gray-500">
-                                                                  Delay:
-                                                                </span>
-                                                                <div className="font-medium">
-                                                                  {flight.delay}
-                                                                </div>
-                                                              </div>
-                                                              <div>
-                                                                <span className="text-gray-500">
-                                                                  PAX:
-                                                                </span>
-                                                                <div className="font-medium">
-                                                                  {
-                                                                    flight.passengers
-                                                                  }
-                                                                </div>
-                                                              </div>
-                                                              <div>
-                                                                <span className="text-gray-500">
-                                                                  Dept:
-                                                                </span>
-                                                                <div className="font-medium">
-                                                                  {new Date(
-                                                                    flight.departure,
-                                                                  ).toLocaleTimeString(
-                                                                    "en-US",
-                                                                    {
-                                                                      hour: "2-digit",
-                                                                      minute:
-                                                                        "2-digit",
-                                                                    },
-                                                                  )}
-                                                                </div>
-                                                              </div>
-                                                            </div>
-
-                                                            <div className="mt-1 text-xs">
-                                                              <span className="text-gray-500">
-                                                                Reason:
-                                                              </span>
-                                                              <span className="ml-1">
-                                                                {flight.reason}
-                                                              </span>
+                                                        <div className="grid grid-cols-4 gap-3 text-xs mb-2">
+                                                          <div>
+                                                            <span className="text-gray-500">Status:</span>
+                                                            <div className="font-medium">{flight.status}</div>
+                                                          </div>
+                                                          <div>
+                                                            <span className="text-gray-500">Delay:</span>
+                                                            <div className="font-medium">{flight.delay}</div>
+                                                          </div>
+                                                          <div>
+                                                            <span className="text-gray-500">PAX:</span>
+                                                            <div className="font-medium">{flight.passengers}</div>
+                                                          </div>
+                                                          <div>
+                                                            <span className="text-gray-500">Dept:</span>
+                                                            <div className="font-medium">
+                                                              {new Date(flight.departure).toLocaleTimeString("en-US", {
+                                                                hour: "2-digit",
+                                                                minute: "2-digit",
+                                                              })}
                                                             </div>
                                                           </div>
-                                                        ),
-                                                      );
-                                                    })()}
-                                                  </div>
+                                                        </div>
+
+                                                        <div className="text-xs">
+                                                          <span className="text-gray-500">Reason:</span>
+                                                          <span className="ml-1">{flight.reason}</span>
+                                                        </div>
+                                                      </div>
+                                                    ));
+                                                  })()}
                                                 </div>
                                               </div>
-                                            </TableCell>
-                                          </TableRow>
-                                        )}
+                                            </div>
+                                          </TableCell>
+                                        </TableRow>
+                                      )}
                                     </>
                                   );
                                 })}
