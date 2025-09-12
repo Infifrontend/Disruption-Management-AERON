@@ -25,10 +25,12 @@ if (!existsSync(logsDir)) {
 const infoLogPath = join(logsDir, 'info.log');
 const errorLogPath = join(logsDir, 'error.log');
 const exceptionLogPath = join(logsDir, 'exceptions.log');
+const requestLogPath = join(logsDir, 'requests.log');
 
 console.log(`Info log path: ${infoLogPath}`);
 console.log(`Error log path: ${errorLogPath}`);
 console.log(`Exception log path: ${exceptionLogPath}`);
+console.log(`Request log path: ${requestLogPath}`);
 
 // Create logger with multiple destinations using latest Pino transport API
 const transport = pino.transport({
@@ -50,6 +52,12 @@ const transport = pino.transport({
         destination: errorLogPath,
         mkdir: true
       }
+    },
+    // Request log file 
+    {
+      target: 'pino/file',
+      level: 'trace',
+      options: { destination: requestLogPath }
     }
   ]
 });
@@ -107,16 +115,18 @@ const logException = (error, context = 'Unknown') => {
     stack: error.stack,
     timestamp: new Date().toISOString()
   };
-  
+
   console.error(`[EXCEPTION] Unhandled exception in ${context}`, exceptionData); // Console backup
   exceptionLogger.error(exceptionData, `Unhandled exception in ${context}`);
   logger.error(exceptionData, `Unhandled exception in ${context}`);
 };
 
+const requestLogger = logger.child({source: 'http', level: 'trace'});
+
 // Express middleware for request logging
-const requestLogger = (req, res, next) => {
+const requestLoggerMiddleware = (req, res, next) => {
   const start = Date.now();
-  
+
   res.on('finish', () => {
     const duration = Date.now() - start;
     const logData = {
@@ -127,14 +137,9 @@ const requestLogger = (req, res, next) => {
       userAgent: req.get('User-Agent'),
       ip: req.ip || req.connection.remoteAddress
     };
-    
-    if (res.statusCode >= 400) {
-      logError(`${req.method} ${req.url} - ${res.statusCode}`, null, logData);
-    } else {
-      logInfo(`${req.method} ${req.url} - ${res.statusCode}`, logData);
-    }
+    requestLogger.trace(`${req.method} ${req.url} - ${res.statusCode}`, logData);
   });
-  
+
   next();
 };
 
@@ -146,7 +151,7 @@ const logDatabaseOperation = (operation, table, duration, success = true, error 
     duration: `${duration}ms`,
     success
   };
-  
+
   if (success) {
     logInfo(`Database ${operation} on ${table}`, logData);
   } else {
@@ -161,7 +166,7 @@ const logRecoveryOperation = (operation, disruptionId, details = {}) => {
     disruptionId,
     ...details
   };
-  
+
   logInfo(`Recovery operation: ${operation}`, logData);
 };
 
@@ -178,7 +183,7 @@ export {
   logInfo,
   logError,
   logException,
-  requestLogger,
+  requestLoggerMiddleware,
   logDatabaseOperation,
   logRecoveryOperation,
   testLogging

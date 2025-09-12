@@ -2251,13 +2251,13 @@ export function ComparisonMatrix({
                                                   ? 'text-flydubai-blue font-medium' 
                                                   : 'text-gray-600'
                                               }`}>
-                                                {isSelected ? "Selected" : "Change to This"}
+                                                {isSelected ? "Selected" : "Select"}
                                               </span>
                                             </div>
                                             <Button
                                               size="sm"
                                               variant="ghost"
-                                              className="h-8 flex items-center gap-1 px-2 self-start"
+                                              className="h-8 flex items-center gap-1 self-start"
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 setExpandedAircraft(
@@ -2269,7 +2269,7 @@ export function ComparisonMatrix({
                                             >
                                               <Activity className="h-4 w-4 text-flydubai-blue" />
                                               <span className="text-xs text-flydubai-blue">
-                                                Impact
+                                                 Rotation Impact
                                               </span>
                                             </Button>
                                           </div>
