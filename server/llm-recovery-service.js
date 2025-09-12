@@ -4,7 +4,7 @@ import { ChatAnthropic } from "@langchain/anthropic";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { generateRecoveryOptionsForDisruption } from './recovery-generator.js';
-import { logInfo, logError, logException } from './logger.js';
+import logger, { logInfo, logError, logException } from './logger.js';
 import { appendFile } from "fs/promises";
 
 class LLMRecoveryService {
@@ -40,6 +40,7 @@ class LLMRecoveryService {
             model: this.model || 'claude-3-sonnet-20240229',
             temperature: 0.7,
             apiKey: process.env.ANTHROPIC_API_KEY,
+            maxTokens: 4000
           });
           break;
 
@@ -260,6 +261,7 @@ Return only valid JSON with both "options" and "steps" arrays.`;
 
   parseResponse(content) {
     appendFile("./logs/llm-generated-options.log", content)
+    logInfo("LLM Response", content)
     try {
       // Clean the response to extract JSON
       let cleanedContent = content.trim();
