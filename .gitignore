@@ -4,3 +4,4 @@ dist
 # Log files
 logs/*.log
 !logs/.gitkeep
+logs/llm/
