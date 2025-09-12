@@ -33,16 +33,6 @@ console.log(`Exception log path: ${exceptionLogPath}`);
 // Create logger with multiple destinations using latest Pino transport API
 const transport = pino.transport({
   targets: [
-    // Console output
-    {
-      target: 'pino-pretty',
-      level: 'info',
-      options: {
-        colorize: true,
-        translateTime: 'SYS:standard',
-        ignore: 'pid,hostname'
-      }
-    },
     // Info log file
     {
       target: 'pino/file',
@@ -100,13 +90,13 @@ const exceptionLogger = pino({
 
 // Enhanced logging methods
 const logInfo = (message, meta = {}) => {
-  console.log(`[INFO] ${message}`, meta); // Console backup
+  // console.log(`[INFO] ${message}`, meta); // Console backup
   logger.info(meta, message);
 };
 
 const logError = (message, error = null, meta = {}) => {
   const errorMeta = error ? { error: error.message, stack: error.stack, ...meta } : meta;
-  console.error(`[ERROR] ${message}`, errorMeta); // Console backup
+  // console.error(`[ERROR] ${message}`, errorMeta); // Console backup
   logger.error(errorMeta, message);
 };
 
