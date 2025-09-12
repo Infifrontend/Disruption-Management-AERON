@@ -544,8 +544,7 @@ Return only valid JSON. No markdown formatting or extra text.`);
     logInfo(`Using incremental generation for ${config.count} options`, {
       flight_number: disruptionData.flight_number,
       provider: providerInfo.provider,
-      streaming: config.stream,
-      llm_logging: 'enabled'
+      streaming: config.stream
     });
 
     const allOptions = [];
@@ -900,15 +899,6 @@ Return only valid JSON. No markdown formatting or extra text.`);
 
   get llmProvider() {
     return this.modelRouter.getCurrentProviderInfo().provider;
-  }
-
-  // LLM analytics and logging methods
-  async getProviderAnalytics(providerName, timeRange = '24h') {
-    return await this.modelRouter.getProviderAnalytics(providerName, timeRange);
-  }
-
-  getLLMLoggers() {
-    return this.modelRouter.getLLMLoggers();
   }
 }
 
