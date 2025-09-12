@@ -9,6 +9,142 @@ class LLMRecoveryService {
     this.basePrompt = this.createBasePrompt();
   }
 
+  createSingleOptionPrompt() {
+    return ChatPromptTemplate.fromTemplate(`
+You are an expert flight operations recovery specialist. Generate ONE comprehensive recovery option for the following disruption, following industry best practices and regulatory compliance.
+
+Flight Information:
+- Flight: {flightNumber} ({route})
+- Aircraft: {aircraft}
+- Scheduled: {scheduledDeparture}
+- Current Status: {estimatedDeparture}
+- Delay: {delayMinutes} minutes
+- Passengers: {passengers}
+- Crew: {crew}
+- Issue: {disruptionType} - {disruptionReason}
+- Severity: {severity}
+- Category: {categoryName}
+
+Option Priority: {optionPriority} (Generate option #{optionNumber} of recovery plan)
+Previous Options Generated: {previousCount}
+
+Based on the disruption category, focus on this recovery strategy:
+- Aircraft Issues: Aircraft swap, delay for repair, cancellation with rebooking
+- Crew Issues: Standby crew assignment, crew positioning, delay for rest completion  
+- Weather Issues: Delay for clearance, rerouting, cancellation
+- Curfew/Congestion: Aircraft swap for earlier slot, overnight delay, alternative routing
+- Rotation/Maintenance: Alternative aircraft assignment, schedule adjustments
+
+Generate exactly ONE recovery option with realistic costs, timelines, and operational details:
+
+{{
+  "title": "Specific recovery action title",
+  "description": "Detailed operational description with specific actions and procedures",
+  "cost": "AED X,XXX",
+  "timeline": "X hours/minutes",
+  "confidence": 85,
+  "impact": "Low/Medium/High passenger/operational impact",
+  "status": "recommended/caution/warning",
+  "priority": {optionPriority},
+  "advantages": [
+    "Specific operational advantage",
+    "Cost/time efficiency benefit",
+    "Passenger satisfaction benefit"
+  ],
+  "considerations": [
+    "Specific operational constraint",
+    "Resource requirement",
+    "Potential risk factor"
+  ],
+  "impact_area": ["crew", "passenger", "aircraft", "operations"],
+  "impact_summary": "Comprehensive impact analysis for {flightNumber}: Brief summary of how this recovery affects operations, passengers, crew, and network.",
+  "resource_requirements": [
+    {{
+      "title": "Resource Type",
+      "subtitle": "Specific Resource",
+      "availability": "Status",
+      "status": "Confirmed/Pending/Available",
+      "location": "Location details",
+      "eta": "Time estimate",
+      "details": "Additional resource details"
+    }}
+  ],
+  "cost_breakdown": {{
+    "breakdown": [
+      {{
+        "amount": "AED X,XXX",
+        "category": "Category Name",
+        "percentage": 60,
+        "description": "Cost component description"
+      }}
+    ],
+    "total": {{
+      "amount": "AED X,XXX",
+      "title": "Total Estimated Cost",
+      "description": "Overall cost summary"
+    }}
+  }},
+  "timeline_details": [
+    {{
+      "step": "Action description",
+      "status": "completed/in-progress/pending",
+      "details": "Specific step details and requirements",
+      "startTime": "HH:MM",
+      "endTime": "HH:MM",
+      "duration": "X min"
+    }}
+  ],
+  "risk_assessment": [
+    {{
+      "risk": "Specific risk description",
+      "risk_impact": "Low/Medium/High",
+      "mitigation_impact": "Low/Medium/High",
+      "score": 5,
+      "mitigation": "Specific mitigation strategy and actions"
+    }}
+  ],
+  "technical_specs": {{
+    "implementation": {{
+      "title": "Implementation",
+      "details": "Technical implementation approach and procedures"
+    }},
+    "systems_required": {{
+      "title": "Systems required",
+      "details": ["System 1", "System 2", "System 3"]
+    }},
+    "certifications": {{
+      "title": "Certifications",
+      "details": ["Cert 1", "Cert 2", "Cert 3"]
+    }},
+    "operational_requirements": {{
+      "title": "Operational requirements",
+      "details": "Specific operational requirements and constraints"
+    }}
+  }},
+  "metrics": {{
+    "costEfficiency": 85,
+    "timeEfficiency": 90,
+    "passengerSatisfaction": 80,
+    "crewViolations": 0,
+    "aircraftSwaps": 1,
+    "networkImpact": "Low/Medium/High"
+  }}
+}}
+
+Important Guidelines:
+1. Use realistic costs based on operation type and complexity
+2. Provide specific, actionable timeline steps with realistic durations
+3. Include proper system names (AMOS, AIMS, OCC, Recovery Engine)
+4. Consider regulatory compliance (EU261, GCAA, crew duty time limits)
+5. Include specific resource requirements and availability
+6. Provide detailed risk assessments with mitigation strategies
+7. Ensure confidence scores reflect actual feasibility
+8. Use appropriate status indicators (recommended/caution/warning)
+9. Include network impact considerations for downstream flights
+
+Return only valid JSON. No markdown formatting or extra text.`);
+  }
+
   createBasePrompt() {
     return ChatPromptTemplate.fromTemplate(`
 You are an expert flight operations recovery specialist with deep knowledge of airline operations, crew regulations, aircraft maintenance, and passenger rights. Generate {optionsCount} comprehensive recovery options for the following disruption, following industry best practices and regulatory compliance.
@@ -160,6 +296,27 @@ Important Guidelines:
 Return only valid JSON. No markdown formatting or extra text.`);
   }
 
+  buildSingleOptionPromptData(disruptionData, categoryInfo = {}, optionNumber = 1, previousCount = 0) {
+    return {
+      optionNumber: optionNumber,
+      optionPriority: optionNumber,
+      previousCount: previousCount,
+      flightNumber: disruptionData.flight_number || 'Unknown',
+      route: disruptionData.route || `${disruptionData.origin} → ${disruptionData.destination}`,
+      aircraft: disruptionData.aircraft || 'Unknown',
+      scheduledDeparture: disruptionData.scheduled_departure || 'Unknown',
+      estimatedDeparture: disruptionData.estimated_departure || 'Unknown',
+      delayMinutes: disruptionData.delay_minutes || 0,
+      passengers: disruptionData.passengers || 0,
+      crew: disruptionData.crew || 0,
+      disruptionType: disruptionData.disruption_type || 'Unknown',
+      disruptionReason: disruptionData.disruption_reason || 'Unknown',
+      severity: disruptionData.severity || 'Medium',
+      categoryName: categoryInfo.category_name || 'General',
+      timestamp: new Date().toISOString()
+    };
+  }
+
   buildPromptData(disruptionData, categoryInfo = {}, optionsCount = 3) {
     return {
       optionsCount: optionsCount,
@@ -183,6 +340,7 @@ Return only valid JSON. No markdown formatting or extra text.`);
     const config = {
       count: optionsConfig.count || 3,
       maxRetries: 2,
+      stream: optionsConfig.stream || false,
       ...optionsConfig
     };
 
@@ -194,40 +352,16 @@ Return only valid JSON. No markdown formatting or extra text.`);
         flight_number: disruptionData.flight_number,
         provider: providerInfo.provider,
         model: providerInfo.model,
-        options_count: config.count
+        options_count: config.count,
+        streaming: config.stream
       });
 
-      const promptData = this.buildPromptData(disruptionData, categoryInfo, config.count);
-      const chain = this.basePrompt.pipe(llm);
-
-      let attempt = 0;
-      while (attempt < config.maxRetries) {
-        try {
-          const response = await chain.invoke(promptData);
-          const result = this.parseResponse(response.content, disruptionData.flight_number);
-
-          logInfo(`Successfully generated ${result.options.length} recovery options`, {
-            flight_number: disruptionData.flight_number,
-            provider: providerInfo.provider,
-            options_generated: result.options.length,
-            steps_generated: result.steps.length
-          });
-
-          return result;
-        } catch (error) {
-          attempt++;
-          logError(`Attempt ${attempt} failed`, error, {
-            flight_number: disruptionData.flight_number,
-            attempt: attempt
-          });
-
-          if (attempt >= config.maxRetries) {
-            throw error;
-          }
-
-          // Wait before retry
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-        }
+      // Generate options incrementally to avoid token limits
+      if (config.stream || config.count > 2) {
+        return await this.generateOptionsIncrementally(disruptionData, categoryInfo, config);
+      } else {
+        // Use original method for small counts
+        return await this.generateOptionsBatch(disruptionData, categoryInfo, config);
       }
     } catch (error) {
       logError('LLM generation failed, using fallback', error, {
@@ -237,6 +371,256 @@ Return only valid JSON. No markdown formatting or extra text.`);
 
       return this.fallbackToDefaultGenerator(disruptionData, categoryInfo);
     }
+  }
+
+  async generateOptionsIncrementally(disruptionData, categoryInfo, config) {
+    const llm = this.modelRouter.getProvider();
+    const providerInfo = this.modelRouter.getCurrentProviderInfo();
+    
+    logInfo(`Using incremental generation for ${config.count} options`, {
+      flight_number: disruptionData.flight_number,
+      provider: providerInfo.provider,
+      streaming: config.stream
+    });
+
+    const allOptions = [];
+    let steps = [];
+    let successfulGenerations = 0;
+
+    // Generate single option prompt template
+    const singleOptionPrompt = this.createSingleOptionPrompt();
+    const chain = singleOptionPrompt.pipe(llm);
+
+    // Generate steps once (they don't change much between options)
+    steps = this.generateSteps(disruptionData, categoryInfo);
+
+    // Generate each option individually
+    for (let i = 0; i < config.count; i++) {
+      let attempt = 0;
+      let optionGenerated = false;
+
+      while (attempt < config.maxRetries && !optionGenerated) {
+        try {
+          logInfo(`Generating option ${i + 1}/${config.count}`, {
+            flight_number: disruptionData.flight_number,
+            option_number: i + 1,
+            attempt: attempt + 1
+          });
+
+          const promptData = this.buildSingleOptionPromptData(
+            disruptionData, 
+            categoryInfo, 
+            i + 1, 
+            allOptions.length
+          );
+
+          const response = await chain.invoke(promptData);
+          const parsedOption = this.parseSingleOptionResponse(response.content, disruptionData.flight_number, i + 1);
+
+          if (parsedOption) {
+            allOptions.push(parsedOption);
+            successfulGenerations++;
+            optionGenerated = true;
+            
+            logInfo(`Successfully generated option ${i + 1}`, {
+              flight_number: disruptionData.flight_number,
+              option_title: parsedOption.title,
+              total_generated: successfulGenerations
+            });
+
+            // Small delay to avoid rate limiting
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        } catch (error) {
+          attempt++;
+          logError(`Failed to generate option ${i + 1}, attempt ${attempt}`, error, {
+            flight_number: disruptionData.flight_number,
+            option_number: i + 1,
+            attempt: attempt
+          });
+
+          if (attempt >= config.maxRetries) {
+            logError(`Giving up on option ${i + 1} after ${config.maxRetries} attempts`, error, {
+              flight_number: disruptionData.flight_number,
+              option_number: i + 1
+            });
+            break;
+          }
+
+          // Wait before retry with exponential backoff
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+        }
+      }
+    }
+
+    // If we didn't get enough options, try fallback for remaining
+    if (allOptions.length < config.count) {
+      logInfo(`Only generated ${allOptions.length}/${config.count} options, using fallback for remainder`, {
+        flight_number: disruptionData.flight_number,
+        generated: allOptions.length,
+        requested: config.count
+      });
+
+      try {
+        const fallbackResult = this.fallbackToDefaultGenerator(disruptionData, categoryInfo);
+        const remainingCount = config.count - allOptions.length;
+        
+        // Add fallback options to fill the gap
+        for (let i = 0; i < Math.min(remainingCount, fallbackResult.options.length); i++) {
+          allOptions.push({
+            ...fallbackResult.options[i],
+            priority: allOptions.length + 1,
+            status: 'fallback'
+          });
+        }
+      } catch (fallbackError) {
+        logError('Fallback generation also failed', fallbackError, {
+          flight_number: disruptionData.flight_number
+        });
+      }
+    }
+
+    logInfo(`Incremental generation complete`, {
+      flight_number: disruptionData.flight_number,
+      options_generated: allOptions.length,
+      steps_generated: steps.length,
+      llm_success: successfulGenerations,
+      provider: providerInfo.provider
+    });
+
+    return {
+      options: allOptions,
+      steps: steps
+    };
+  }
+
+  async generateOptionsBatch(disruptionData, categoryInfo, config) {
+    const llm = this.modelRouter.getProvider();
+    const promptData = this.buildPromptData(disruptionData, categoryInfo, config.count);
+    const chain = this.basePrompt.pipe(llm);
+
+    let attempt = 0;
+    while (attempt < config.maxRetries) {
+      try {
+        const response = await chain.invoke(promptData);
+        const result = this.parseResponse(response.content, disruptionData.flight_number);
+
+        logInfo(`Successfully generated ${result.options.length} recovery options (batch)`, {
+          flight_number: disruptionData.flight_number,
+          options_generated: result.options.length,
+          steps_generated: result.steps.length
+        });
+
+        return result;
+      } catch (error) {
+        attempt++;
+        logError(`Batch attempt ${attempt} failed`, error, {
+          flight_number: disruptionData.flight_number,
+          attempt: attempt
+        });
+
+        if (attempt >= config.maxRetries) {
+          throw error;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+      }
+    }
+  }
+
+  parseSingleOptionResponse(content, flightNumber, optionNumber) {
+    try {
+      // Clean the response
+      let cleaned = content.trim();
+
+      // Remove markdown code blocks
+      if (cleaned.startsWith('```')) {
+        cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
+      }
+
+      // Find JSON boundaries
+      const jsonStart = cleaned.indexOf('{');
+      const jsonEnd = cleaned.lastIndexOf('}');
+
+      if (jsonStart !== -1 && jsonEnd !== -1) {
+        cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+      }
+
+      const parsed = JSON.parse(cleaned);
+
+      // Normalize single option
+      return {
+        ...parsed,
+        priority: parsed.priority || optionNumber,
+        confidence: parsed.confidence || 80,
+        impact: parsed.impact || 'Medium',
+        status: parsed.status || 'recommended'
+      };
+
+    } catch (error) {
+      logError(`Failed to parse single option response`, error, {
+        flightNumber: flightNumber,
+        optionNumber: optionNumber,
+        contentPreview: content ? content.substring(0, 200) : 'empty'
+      });
+      return null;
+    }
+  }
+
+  generateSteps(disruptionData, categoryInfo) {
+    // Generate standard steps based on disruption type
+    const baseSteps = [
+      {
+        step: 1,
+        title: "Disruption Detection and Analysis",
+        status: "completed",
+        timestamp: new Date().toISOString(),
+        system: "AMOS/AIMS/OCC",
+        details: `${disruptionData.disruption_type} disruption detected for ${disruptionData.flight_number}`,
+        data: {
+          flight_number: disruptionData.flight_number,
+          disruption_type: disruptionData.disruption_type,
+          severity: disruptionData.severity
+        }
+      },
+      {
+        step: 2,
+        title: "Recovery Options Generation",
+        status: "in-progress",
+        timestamp: new Date().toISOString(),
+        system: "Recovery Engine",
+        details: "LLM-powered recovery options generation in progress",
+        data: {
+          options_requested: 3,
+          category: categoryInfo.category_name || 'General'
+        }
+      },
+      {
+        step: 3,
+        title: "Resource Availability Check",
+        status: "pending",
+        timestamp: new Date().toISOString(),
+        system: "Resource Management",
+        details: "Checking crew, aircraft, and ground resource availability",
+        data: {
+          aircraft: disruptionData.aircraft,
+          passengers: disruptionData.passengers
+        }
+      },
+      {
+        step: 4,
+        title: "Implementation Planning",
+        status: "pending",
+        timestamp: new Date().toISOString(),
+        system: "Operations Control",
+        details: "Detailed implementation planning for selected recovery option",
+        data: {
+          estimated_delay: disruptionData.delay_minutes || 0
+        }
+      }
+    ];
+
+    return baseSteps;
   }
 
   parseResponse(content, flightNumber) {
