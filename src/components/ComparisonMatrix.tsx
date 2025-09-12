@@ -2284,31 +2284,29 @@ export function ComparisonMatrix({
                                             className="p-0"
                                           >
                                             <div className="bg-gray-50 border-t border-gray-200">
-                                              <div className="p-4">
-                                                <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                                              <div className="px-4 py-2">
+                                                <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
                                                   <Activity className="h-4 w-4 text-flydubai-blue" />
                                                   Rotation Impact for{" "}
                                                   {aircraft.reg ||
                                                     aircraft.aircraft}
                                                 </h4>
-                                                <div className="space-y-3">
+                                                <div className="space-y-2">
                                                   {rotationImpact.map(
                                                     (flight, flightIndex) => (
                                                       <div
                                                         key={flightIndex}
-                                                        className="bg-white rounded-lg border p-3"
+                                                        className="bg-white rounded border p-2"
                                                       >
-                                                        <div className="flex items-center justify-between mb-2">
-                                                          <div className="flex items-center gap-3">
-                                                            <div className="flex items-center gap-2">
-                                                              <Plane className="h-4 w-4 text-flydubai-blue" />
-                                                              <span className="font-medium">
-                                                                {
-                                                                  flight.flightNumber
-                                                                }
-                                                              </span>
-                                                            </div>
-                                                            <div className="text-sm text-gray-600">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                          <div className="flex items-center gap-2">
+                                                            <Plane className="h-3 w-3 text-flydubai-blue" />
+                                                            <span className="font-medium text-sm">
+                                                              {
+                                                                flight.flightNumber
+                                                              }
+                                                            </span>
+                                                            <span className="text-xs text-gray-600">
                                                               {
                                                                 flight.origin_code
                                                               }{" "}
@@ -2316,10 +2314,10 @@ export function ComparisonMatrix({
                                                               {
                                                                 flight.destination_code
                                                               }
-                                                            </div>
+                                                            </span>
                                                           </div>
                                                           <Badge
-                                                            className={
+                                                            className={`text-xs px-2 py-0 ${
                                                               flight.impact ===
                                                               "Low Impact"
                                                                 ? "bg-green-100 text-green-700 border-green-200"
@@ -2327,13 +2325,13 @@ export function ComparisonMatrix({
                                                                     "Medium Impact"
                                                                   ? "bg-yellow-100 text-yellow-700 border-yellow-200"
                                                                   : "bg-red-100 text-red-700 border-red-200"
-                                                            }
+                                                            }`}
                                                           >
                                                             {flight.impact}
                                                           </Badge>
                                                         </div>
 
-                                                        <div className="grid grid-cols-4 gap-4 text-sm">
+                                                        <div className="grid grid-cols-4 gap-2 text-xs">
                                                           <div>
                                                             <span className="text-gray-500">
                                                               Status:
@@ -2352,7 +2350,7 @@ export function ComparisonMatrix({
                                                           </div>
                                                           <div>
                                                             <span className="text-gray-500">
-                                                              Passengers:
+                                                              PAX:
                                                             </span>
                                                             <div className="font-medium">
                                                               {
@@ -2362,7 +2360,7 @@ export function ComparisonMatrix({
                                                           </div>
                                                           <div>
                                                             <span className="text-gray-500">
-                                                              Departure:
+                                                              Dept:
                                                             </span>
                                                             <div className="font-medium">
                                                               {new Date(
@@ -2379,11 +2377,11 @@ export function ComparisonMatrix({
                                                           </div>
                                                         </div>
 
-                                                        <div className="mt-2 text-sm">
+                                                        <div className="mt-1 text-xs">
                                                           <span className="text-gray-500">
                                                             Reason:
                                                           </span>
-                                                          <span className="ml-2">
+                                                          <span className="ml-1">
                                                             {flight.reason}
                                                           </span>
                                                         </div>
@@ -3039,30 +3037,28 @@ export function ComparisonMatrix({
                                             className="p-0"
                                           >
                                             <div className="bg-gray-50 border-t border-gray-200">
-                                              <div className="p-4">
-                                                <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                                              <div className="px-4 py-2">
+                                                <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
                                                   <Activity className="h-4 w-4 text-flydubai-blue" />
                                                   Rotation Impact for{" "}
                                                   {crewMember.name}
                                                 </h4>
-                                                <div className="space-y-3">
+                                                <div className="space-y-2">
                                                   {crewMember.rotation_impact?.map(
                                                     (flight, flightIndex) => (
                                                       <div
                                                         key={flightIndex}
-                                                        className="bg-white rounded-lg border p-3"
+                                                        className="bg-white rounded border p-2"
                                                       >
-                                                        <div className="flex items-center justify-between mb-2">
-                                                          <div className="flex items-center gap-3">
-                                                            <div className="flex items-center gap-2">
-                                                              <Plane className="h-4 w-4 text-flydubai-blue" />
-                                                              <span className="font-medium">
-                                                                {
-                                                                  flight.flightNumber
-                                                                }
-                                                              </span>
-                                                            </div>
-                                                            <div className="text-sm text-gray-600">
+                                                        <div className="flex items-center justify-between mb-1">
+                                                          <div className="flex items-center gap-2">
+                                                            <Plane className="h-3 w-3 text-flydubai-blue" />
+                                                            <span className="font-medium text-sm">
+                                                              {
+                                                                flight.flightNumber
+                                                              }
+                                                            </span>
+                                                            <span className="text-xs text-gray-600">
                                                               {
                                                                 flight.origin_code
                                                               }{" "}
@@ -3070,10 +3066,10 @@ export function ComparisonMatrix({
                                                               {
                                                                 flight.destination_code
                                                               }
-                                                            </div>
+                                                            </span>
                                                           </div>
                                                           <Badge
-                                                            className={
+                                                            className={`text-xs px-2 py-0 ${
                                                               flight.impact ===
                                                               "Low Impact"
                                                                 ? "bg-green-100 text-green-700 border-green-200"
@@ -3081,13 +3077,13 @@ export function ComparisonMatrix({
                                                                     "Medium Impact"
                                                                   ? "bg-yellow-100 text-yellow-700 border-yellow-200"
                                                                   : "bg-red-100 text-red-700 border-red-200"
-                                                            }
+                                                            }`}
                                                           >
                                                             {flight.impact}
                                                           </Badge>
                                                         </div>
 
-                                                        <div className="grid grid-cols-4 gap-4 text-sm">
+                                                        <div className="grid grid-cols-4 gap-2 text-xs">
                                                           <div>
                                                             <span className="text-gray-500">
                                                               Status:
@@ -3106,7 +3102,7 @@ export function ComparisonMatrix({
                                                           </div>
                                                           <div>
                                                             <span className="text-gray-500">
-                                                              Passengers:
+                                                              PAX:
                                                             </span>
                                                             <div className="font-medium">
                                                               {
@@ -3116,7 +3112,7 @@ export function ComparisonMatrix({
                                                           </div>
                                                           <div>
                                                             <span className="text-gray-500">
-                                                              Departure:
+                                                              Dept:
                                                             </span>
                                                             <div className="font-medium">
                                                               {new Date(
@@ -3133,20 +3129,20 @@ export function ComparisonMatrix({
                                                           </div>
                                                         </div>
 
-                                                        <div className="mt-2 text-sm">
+                                                        <div className="mt-1 text-xs">
                                                           <span className="text-gray-500">
                                                             Reason:
                                                           </span>
-                                                          <span className="ml-2">
+                                                          <span className="ml-1">
                                                             {flight.reason}
                                                           </span>
                                                         </div>
                                                       </div>
                                                     ),
                                                   ) || (
-                                                    <div className="text-center py-4 text-gray-500">
-                                                      <Activity className="h-6 w-6 mx-auto mb-2 opacity-50" />
-                                                      <p>
+                                                    <div className="text-center py-2 text-gray-500">
+                                                      <Activity className="h-4 w-4 mx-auto mb-1 opacity-50" />
+                                                      <p className="text-xs">
                                                         No rotation impact data
                                                         available
                                                       </p>
@@ -3168,14 +3164,14 @@ export function ComparisonMatrix({
                                               className="p-0"
                                             >
                                               <div className="bg-blue-50 border-t border-blue-200">
-                                                <div className="p-4">
-                                                  <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                                                <div className="px-4 py-2">
+                                                  <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
                                                     <Activity className="h-4 w-4 text-blue-600" />
                                                     Rotation Impact for{" "}
                                                     {crewMember.name}{" "}
                                                     (Reassigned)
                                                   </h4>
-                                                  <div className="space-y-3">
+                                                  <div className="space-y-2">
                                                     {(() => {
                                                       // Generate rotation impact for reassigned crew
                                                       const reassignedRotationImpact =
@@ -3232,19 +3228,17 @@ export function ComparisonMatrix({
                                                         ) => (
                                                           <div
                                                             key={flightIndex}
-                                                            className="bg-white rounded-lg border border-blue-200 p-3"
+                                                            className="bg-white rounded border border-blue-200 p-2"
                                                           >
-                                                            <div className="flex items-center justify-between mb-2">
-                                                              <div className="flex items-center gap-3">
-                                                                <div className="flex items-center gap-2">
-                                                                  <Plane className="h-4 w-4 text-blue-600" />
-                                                                  <span className="font-medium">
-                                                                    {
-                                                                      flight.flightNumber
-                                                                    }
-                                                                  </span>
-                                                                </div>
-                                                                <div className="text-sm text-gray-600">
+                                                            <div className="flex items-center justify-between mb-1">
+                                                              <div className="flex items-center gap-2">
+                                                                <Plane className="h-3 w-3 text-blue-600" />
+                                                                <span className="font-medium text-sm">
+                                                                  {
+                                                                    flight.flightNumber
+                                                                  }
+                                                                </span>
+                                                                <span className="text-xs text-gray-600">
                                                                   {
                                                                     flight.origin_code
                                                                   }{" "}
@@ -3252,10 +3246,10 @@ export function ComparisonMatrix({
                                                                   {
                                                                     flight.destination_code
                                                                   }
-                                                                </div>
+                                                                </span>
                                                               </div>
                                                               <Badge
-                                                                className={
+                                                                className={`text-xs px-2 py-0 ${
                                                                   flight.impact ===
                                                                   "Low Impact"
                                                                     ? "bg-green-100 text-green-700 border-green-200"
@@ -3263,13 +3257,13 @@ export function ComparisonMatrix({
                                                                         "Medium Impact"
                                                                       ? "bg-yellow-100 text-yellow-700 border-yellow-200"
                                                                       : "bg-red-100 text-red-700 border-red-200"
-                                                                }
+                                                                }`}
                                                               >
                                                                 {flight.impact}
                                                               </Badge>
                                                             </div>
 
-                                                            <div className="grid grid-cols-4 gap-4 text-sm">
+                                                            <div className="grid grid-cols-4 gap-2 text-xs">
                                                               <div>
                                                                 <span className="text-gray-500">
                                                                   Status:
@@ -3290,7 +3284,7 @@ export function ComparisonMatrix({
                                                               </div>
                                                               <div>
                                                                 <span className="text-gray-500">
-                                                                  Passengers:
+                                                                  PAX:
                                                                 </span>
                                                                 <div className="font-medium">
                                                                   {
@@ -3300,7 +3294,7 @@ export function ComparisonMatrix({
                                                               </div>
                                                               <div>
                                                                 <span className="text-gray-500">
-                                                                  Departure:
+                                                                  Dept:
                                                                 </span>
                                                                 <div className="font-medium">
                                                                   {new Date(
@@ -3317,11 +3311,11 @@ export function ComparisonMatrix({
                                                               </div>
                                                             </div>
 
-                                                            <div className="mt-2 text-sm">
+                                                            <div className="mt-1 text-xs">
                                                               <span className="text-gray-500">
                                                                 Reason:
                                                               </span>
-                                                              <span className="ml-2">
+                                                              <span className="ml-1">
                                                                 {flight.reason}
                                                               </span>
                                                             </div>
@@ -4240,46 +4234,44 @@ export function ComparisonMatrix({
 
                           {/* Rotation Impact Accordion for Available Crew */}
                           {expandedCrew === `available-${index}` && (
-                            <div className="bg-gray-50 border border-gray-200 rounded-lg ml-4 mb-3">
-                              <div className="p-4">
-                                <h4 className="font-medium text-sm mb-3 flex items-center gap-2">
+                            <div className="bg-gray-50 border border-gray-200 rounded ml-4 mb-3">
+                              <div className="px-3 py-2">
+                                <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
                                   <Activity className="h-4 w-4 text-flydubai-blue" />
                                   Rotation Impact for {crew.name}
                                 </h4>
-                                <div className="space-y-3">
+                                <div className="space-y-2">
                                   {rotationImpact.map((flight, flightIndex) => (
                                     <div
                                       key={flightIndex}
-                                      className="bg-white rounded-lg border p-3"
+                                      className="bg-white rounded border p-2"
                                     >
-                                      <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center gap-3">
-                                          <div className="flex items-center gap-2">
-                                            <Plane className="h-4 w-4 text-flydubai-blue" />
-                                            <span className="font-medium">
-                                              {flight.flightNumber}
-                                            </span>
-                                          </div>
-                                          <div className="text-sm text-gray-600">
+                                      <div className="flex items-center justify-between mb-1">
+                                        <div className="flex items-center gap-2">
+                                          <Plane className="h-3 w-3 text-flydubai-blue" />
+                                          <span className="font-medium text-sm">
+                                            {flight.flightNumber}
+                                          </span>
+                                          <span className="text-xs text-gray-600">
                                             {flight.origin_code} →{" "}
                                             {flight.destination_code}
-                                          </div>
+                                          </span>
                                         </div>
                                         <Badge
-                                          className={
+                                          className={`text-xs px-2 py-0 ${
                                             flight.impact === "Low Impact"
                                               ? "bg-green-100 text-green-700 border-green-200"
                                               : flight.impact ===
                                                   "Medium Impact"
                                                 ? "bg-yellow-100 text-yellow-700 border-yellow-200"
                                                 : "bg-red-100 text-red-700 border-red-200"
-                                          }
+                                          }`}
                                         >
                                           {flight.impact}
                                         </Badge>
                                       </div>
 
-                                      <div className="grid grid-cols-4 gap-4 text-sm">
+                                      <div className="grid grid-cols-4 gap-2 text-xs">
                                         <div>
                                           <span className="text-gray-500">
                                             Status:
@@ -4298,7 +4290,7 @@ export function ComparisonMatrix({
                                         </div>
                                         <div>
                                           <span className="text-gray-500">
-                                            Passengers:
+                                            PAX:
                                           </span>
                                           <div className="font-medium">
                                             {flight.passengers}
@@ -4306,7 +4298,7 @@ export function ComparisonMatrix({
                                         </div>
                                         <div>
                                           <span className="text-gray-500">
-                                            Departure:
+                                            Dept:
                                           </span>
                                           <div className="font-medium">
                                             {new Date(
@@ -4319,11 +4311,11 @@ export function ComparisonMatrix({
                                         </div>
                                       </div>
 
-                                      <div className="mt-2 text-sm">
+                                      <div className="mt-1 text-xs">
                                         <span className="text-gray-500">
                                           Reason:
                                         </span>
-                                        <span className="ml-2">
+                                        <span className="ml-1">
                                           {flight.reason}
                                         </span>
                                       </div>
