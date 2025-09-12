@@ -147,7 +147,7 @@ Generate exactly {optionsCount} recovery options with realistic costs, timelines
 }}
 
 Important Guidelines:
-1. Use realistic AED costs based on operation type and complexity
+1. Use realistic costs based on operation type and complexity
 2. Provide specific, actionable timeline steps with realistic durations
 3. Include proper system names (AMOS, AIMS, OCC, Recovery Engine)
 4. Consider regulatory compliance (EU261, GCAA, crew duty time limits)
