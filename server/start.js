@@ -3541,11 +3541,19 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
       category_name: categoryInfo.category_name
     });
 
-    // Generate recovery options using LLM with config
+    // Configure streaming and incremental generation for better token management
+    const enhancedConfig = {
+      ...optionsConfig,
+      stream: true, // Enable streaming for better token management
+      count: optionsConfig.count || 3,
+      maxRetries: 2
+    };
+
+    // Generate recovery options using LLM with enhanced config
     const { options, steps } = await llmRecoveryService.generateRecoveryOptions(
       disruptionData,
       categoryInfo,
-      optionsConfig
+      enhancedConfig
     );
 
     logInfo(`LLM generated recovery data successfully`, {
