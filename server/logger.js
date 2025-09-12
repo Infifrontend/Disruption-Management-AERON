@@ -40,6 +40,7 @@ const transport = pino.transport({
     {
       target: 'pino/file',
       level: 'info',
+      levelOnly: true,
       options: {
         destination: infoLogPath,
         mkdir: true
@@ -60,16 +61,11 @@ const transport = pino.transport({
 const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
   timestamp: pino.stdTimeFunctions.isoTime,
-  formatters: {
-    level: (label) => {
-      return { level: label };
-    }
-  },
-  serializers: {
-    req: pino.stdSerializers.req,
-    res: pino.stdSerializers.res,
-    err: pino.stdSerializers.err
-  }
+  // formatters: {
+  //   level: (label) => {
+  //     return { level: label };
+  //   }
+  // }
 }, transport);
 
 // Create separate request logger

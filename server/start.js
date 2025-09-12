@@ -13,6 +13,10 @@ import {
   logDatabaseOperation,
   logRecoveryOperation 
 } from './logger.js';
+// import { logInfo } from './loggerCheck.js';
+
+logInfo('Hello world from pino', {"name": "logesh", "module": "starting express application"})
+logger.info('Hello world from pino', {"name": "logesh", "module": "starting express application"})
 
 const app = express();
 // Use environment variable for server port, falling back to PORT or 3001
@@ -3548,12 +3552,12 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
       provider: llmRecoveryService.llmProvider
     });
 
-    // Save recovery data efficiently
-    const { optionsCount, stepsCount } = await saveRecoveryData(
-      numericDisruptionId, 
-      options, 
-      steps
-    );
+    // // Save recovery data efficiently
+    // const { optionsCount, stepsCount } = await saveRecoveryData(
+    //   numericDisruptionId, 
+    //   options, 
+    //   steps
+    // );
 
     logInfo("Successfully saved all LLM recovery options and steps", {
       disruption_id: numericDisruptionId,
@@ -3564,9 +3568,10 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
     
     res.json({
       success: true,
-      optionsCount,
-      stepsCount,
-      message: `Generated ${optionsCount} LLM recovery options and ${stepsCount} steps`,
+      // optionsCount,
+      // stepsCount,
+      // message: `Generated ${optionsCount} LLM recovery options and ${stepsCount} steps`,
+      message: `Generated LLM recovery options and steps`,
       source: "llm",
       provider: llmRecoveryService.llmProvider
     });
