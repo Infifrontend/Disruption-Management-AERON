@@ -2912,15 +2912,16 @@ export function ComparisonMatrix({
                                             <Button
                                               size="sm"
                                               variant="ghost"
-                                              className="h-8 w-8 p-0 ml-1"
+                                              className="h-8 flex items-center gap-1 px-2"
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 setExpandedCrew(
-                                                  expandedCrew === index ? null : index
+                                                  expandedCrew === `available-${index}` ? null : `available-${index}`
                                                 );
                                               }}
                                             >
                                               <Activity className="h-4 w-4 text-flydubai-blue" />
+                                              <span className="text-xs text-flydubai-blue">Impact</span>
                                             </Button>
                                           )}
                                         </div>
