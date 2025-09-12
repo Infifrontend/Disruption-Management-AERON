@@ -52,12 +52,6 @@ const transport = pino.transport({
         destination: errorLogPath,
         mkdir: true
       }
-    },
-    // Request log file 
-    {
-      target: 'pino/file',
-      level: 'trace',
-      options: { destination: requestLogPath }
     }
   ]
 });
@@ -76,6 +70,29 @@ const logger = pino({
     err: pino.stdSerializers.err
   }
 }, transport);
+
+// Create separate request logger
+const requestTransport = pino.transport({
+  target: 'pino/file',
+  options: {
+    destination: requestLogPath,
+    mkdir: true
+  }
+});
+
+const requestLogger = pino({
+  level: 'info',
+  timestamp: pino.stdTimeFunctions.isoTime,
+  formatters: {
+    level: (label) => {
+      return { level: label };
+    }
+  },
+  serializers: {
+    req: pino.stdSerializers.req,
+    res: pino.stdSerializers.res
+  }
+}, requestTransport);
 
 // Custom exception logger with dedicated transport
 const exceptionTransport = pino.transport({
@@ -121,8 +138,6 @@ const logException = (error, context = 'Unknown') => {
   logger.error(exceptionData, `Unhandled exception in ${context}`);
 };
 
-const requestLogger = logger.child({source: 'http', level: 'trace'});
-
 // Express middleware for request logging
 const requestLoggerMiddleware = (req, res, next) => {
   const start = Date.now();
@@ -135,9 +150,10 @@ const requestLoggerMiddleware = (req, res, next) => {
       statusCode: res.statusCode,
       duration: `${duration}ms`,
       userAgent: req.get('User-Agent'),
-      ip: req.ip || req.connection.remoteAddress
+      ip: req.ip || req.connection.remoteAddress,
+      timestamp: new Date().toISOString()
     };
-    requestLogger.trace(`${req.method} ${req.url} - ${res.statusCode}`, logData);
+    requestLogger.info(logData, `${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
   });
 
   next();

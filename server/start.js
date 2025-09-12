@@ -95,7 +95,7 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// Add request logging middleware
+// Add request logging middleware (logs to request.log)
 app.use(requestLoggerMiddleware);
 
 // Middleware to check database availability with better handling
