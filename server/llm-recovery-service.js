@@ -11,7 +11,7 @@ class LLMRecoveryService {
 
   createBasePrompt() {
     return ChatPromptTemplate.fromTemplate(`
-You are an expert flight operations recovery specialist. Generate {optionsCount} comprehensive recovery options for the following disruption.
+You are an expert flight operations recovery specialist with deep knowledge of airline operations, crew regulations, aircraft maintenance, and passenger rights. Generate {optionsCount} comprehensive recovery options for the following disruption, following industry best practices and regulatory compliance.
 
 Flight Information:
 - Flight: {flightNumber} ({route})
@@ -25,53 +25,139 @@ Flight Information:
 - Severity: {severity}
 - Category: {categoryName}
 
-Generate exactly {optionsCount} recovery options in this JSON format:
+Based on the disruption category, consider these recovery strategies:
+- Aircraft Issues: Aircraft swap, delay for repair, cancellation with rebooking
+- Crew Issues: Standby crew assignment, crew positioning, delay for rest completion
+- Weather Issues: Delay for clearance, rerouting, cancellation
+- Curfew/Congestion: Aircraft swap for earlier slot, overnight delay, alternative routing
+- Rotation/Maintenance: Alternative aircraft assignment, schedule adjustments
+
+Generate exactly {optionsCount} recovery options with realistic costs, timelines, and operational details:
+
 {{
   "options": [
     {{
-      "title": "Brief title",
-      "description": "Detailed description",
+      "title": "Specific recovery action title",
+      "description": "Detailed operational description with specific actions and procedures",
       "cost": "AED X,XXX",
-      "timeline": "X hours",
+      "timeline": "X hours/minutes",
       "confidence": 85,
-      "impact": "Medium",
-      "status": "recommended",
+      "impact": "Low/Medium/High passenger/operational impact",
+      "status": "recommended/caution/warning",
       "priority": 1,
-      "advantages": ["advantage 1", "advantage 2"],
-      "considerations": ["consideration 1", "consideration 2"],
-      "impact_area": ["crew", "passenger", "aircraft"],
+      "advantages": [
+        "Specific operational advantage",
+        "Cost/time efficiency benefit",
+        "Passenger satisfaction benefit"
+      ],
+      "considerations": [
+        "Specific operational constraint",
+        "Resource requirement",
+        "Potential risk factor"
+      ],
+      "impact_area": ["crew", "passenger", "aircraft", "operations"],
+      "impact_summary": "Comprehensive impact analysis for {flightNumber}: Brief summary of how this recovery affects operations, passengers, crew, and network.",
+      "resource_requirements": [
+        {{
+          "title": "Resource Type",
+          "subtitle": "Specific Resource",
+          "availability": "Status",
+          "status": "Confirmed/Pending/Available",
+          "location": "Location details",
+          "eta": "Time estimate",
+          "details": "Additional resource details"
+        }}
+      ],
       "cost_breakdown": {{
-        "total": {{ "amount": "AED X,XXX", "description": "Total cost" }},
-        "breakdown": [{{ "amount": "AED XXX", "category": "Operations", "percentage": 60 }}]
+        "breakdown": [
+          {{
+            "amount": "AED X,XXX",
+            "category": "Category Name",
+            "percentage": 60,
+            "description": "Cost component description"
+          }}
+        ],
+        "total": {{
+          "amount": "AED X,XXX",
+          "title": "Total Estimated Cost",
+          "description": "Overall cost summary"
+        }}
       }},
-      "timeline_details": [{{
-        "step": "Initial action",
-        "status": "pending",
-        "duration": "30 min",
-        "startTime": "14:00",
-        "endTime": "14:30"
-      }}],
-      "risk_assessment": [{{
-        "risk": "Potential delay risk",
-        "risk_impact": "Medium",
-        "score": 5,
-        "mitigation": "Monitor closely"
-      }}]
+      "timeline_details": [
+        {{
+          "step": "Action description",
+          "status": "completed/in-progress/pending",
+          "details": "Specific step details and requirements",
+          "startTime": "HH:MM",
+          "endTime": "HH:MM",
+          "duration": "X min"
+        }}
+      ],
+      "risk_assessment": [
+        {{
+          "risk": "Specific risk description",
+          "risk_impact": "Low/Medium/High",
+          "mitigation_impact": "Low/Medium/High",
+          "score": 5,
+          "mitigation": "Specific mitigation strategy and actions"
+        }}
+      ],
+      "technical_specs": {{
+        "implementation": {{
+          "title": "Implementation",
+          "details": "Technical implementation approach and procedures"
+        }},
+        "systems_required": {{
+          "title": "Systems required",
+          "details": ["System 1", "System 2", "System 3"]
+        }},
+        "certifications": {{
+          "title": "Certifications",
+          "details": ["Cert 1", "Cert 2", "Cert 3"]
+        }},
+        "operational_requirements": {{
+          "title": "Operational requirements",
+          "details": "Specific operational requirements and constraints"
+        }}
+      }},
+      "metrics": {{
+        "costEfficiency": 85,
+        "timeEfficiency": 90,
+        "passengerSatisfaction": 80,
+        "crewViolations": 0,
+        "aircraftSwaps": 1,
+        "networkImpact": "Low/Medium/High"
+      }}
     }}
   ],
   "steps": [
     {{
       "step": 1,
-      "title": "Step title",
-      "status": "pending",
+      "title": "System/Process notification",
+      "status": "completed/in-progress/pending",
       "timestamp": "{timestamp}",
-      "system": "OPS",
-      "details": "Step details"
+      "system": "AMOS/AIMS/OCC/Recovery Engine",
+      "details": "Detailed step description with specific actions and data",
+      "data": {{
+        "key1": "value1",
+        "key2": "value2"
+      }}
     }}
   ]
 }}
 
-Return only valid JSON. No markdown formatting.`);
+Important Guidelines:
+1. Use realistic AED costs based on operation type and complexity
+2. Provide specific, actionable timeline steps with realistic durations
+3. Include proper system names (AMOS, AIMS, OCC, Recovery Engine)
+4. Consider regulatory compliance (EU261, GCAA, crew duty time limits)
+5. Include specific resource requirements and availability
+6. Provide detailed risk assessments with mitigation strategies
+7. Ensure confidence scores reflect actual feasibility
+8. Use appropriate status indicators (recommended/caution/warning)
+9. Include network impact considerations for downstream flights
+
+Return only valid JSON. No markdown formatting or extra text.`);
   }
 
   buildPromptData(disruptionData, categoryInfo = {}, optionsCount = 3) {
