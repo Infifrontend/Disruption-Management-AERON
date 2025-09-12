@@ -3127,7 +3127,7 @@ export function ComparisonMatrix({
                                                                 </span>
                                                               </div>
                                                               <Badge
-                                                                className={`text-xs px-2 py-1 ${
+                                                                className={`text-xs px-2 py-0 ${
                                                                   flight.impact ===
                                                                   "Low Impact"
                                                                     ? "bg-green-100 text-green-700 border-green-200"
@@ -3141,15 +3141,13 @@ export function ComparisonMatrix({
                                                               </Badge>
                                                             </div>
 
-                                                            <div className="grid grid-cols-4 gap-3 text-xs mb-2">
+                                                            <div className="grid grid-cols-4 gap-2 text-xs">
                                                               <div>
                                                                 <span className="text-gray-500">
                                                                   Status:
                                                                 </span>
                                                                 <div className="font-medium">
-                                                                  {
-                                                                    flight.status
-                                                                  }
+                                                                  {flight.status}
                                                                 </div>
                                                               </div>
                                                               <div>
@@ -4380,7 +4378,7 @@ export function ComparisonMatrix({
                                         </div>
                                       </div>
 
-                                      <div className="mt-1 text-xs">
+                                      <div className="text-xs">
                                         <span className="text-gray-500">
                                           Reason:
                                         </span>
