@@ -2023,6 +2023,14 @@ export function ComparisonMatrix({
                       {selectedOptionDetails?.rotation_plan?.aircraftOptions
                         ?.length > 0 ? (
                         <div className="space-y-4">
+                          <div className="mb-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-start gap-2">
+                              <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                              <div className="text-sm text-blue-800">
+                                <strong>Aircraft Selection Note:</strong> All aircraft options below are feasible for this route based on range, configuration, and operational requirements. Select your preferred aircraft by clicking the radio button in the Actions column.
+                              </div>
+                            </div>
+                          </div>
                           <Table>
                             <TableHeader>
                               <TableRow>
@@ -2220,18 +2228,8 @@ export function ComparisonMatrix({
                                         </TableCell>
                                         <TableCell>
                                           <div className="flex items-center gap-2">
-                                            <Button
-                                              size="sm"
-                                              variant={
-                                                isSelected
-                                                  ? "default"
-                                                  : "outline"
-                                              }
-                                              className={
-                                                isSelected
-                                                  ? "bg-flydubai-blue hover:bg-flydubai-blue/90 text-white"
-                                                  : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                                              }
+                                            <div 
+                                              className="flex items-center gap-2 cursor-pointer"
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 setSelectedAircraftFlight(
@@ -2239,14 +2237,27 @@ export function ComparisonMatrix({
                                                 );
                                               }}
                                             >
-                                              {isSelected
-                                                ? "Selected"
-                                                : "Change to This"}
-                                            </Button>
+                                              <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                                isSelected 
+                                                  ? 'border-flydubai-blue bg-flydubai-blue' 
+                                                  : 'border-gray-300'
+                                              }`}>
+                                                {isSelected && (
+                                                  <div className="w-2 h-2 bg-white rounded-full"></div>
+                                                )}
+                                              </div>
+                                              <span className={`text-sm ${
+                                                isSelected 
+                                                  ? 'text-flydubai-blue font-medium' 
+                                                  : 'text-gray-600'
+                                              }`}>
+                                                {isSelected ? "Selected" : "Change to This"}
+                                              </span>
+                                            </div>
                                             <Button
                                               size="sm"
                                               variant="ghost"
-                                              className="h-8 w-8 p-0"
+                                              className="h-8 w-8 p-0 ml-2"
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 setExpandedAircraft(
