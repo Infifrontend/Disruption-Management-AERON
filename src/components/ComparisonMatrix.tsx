@@ -2227,7 +2227,7 @@ export function ComparisonMatrix({
                                           )}
                                         </TableCell>
                                         <TableCell>
-                                          <div className="flex items-center gap-2">
+                                          <div className="flex flex-col gap-2">
                                             <div 
                                               className="flex items-center gap-2 cursor-pointer"
                                               onClick={(e) => {
@@ -2257,7 +2257,7 @@ export function ComparisonMatrix({
                                             <Button
                                               size="sm"
                                               variant="ghost"
-                                              className="h-8 w-8 p-0 ml-2"
+                                              className="h-8 flex items-center gap-1 px-2 self-start"
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 setExpandedAircraft(
