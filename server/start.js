@@ -3454,7 +3454,7 @@ async function saveRecoveryData(disruptionId, options, steps) {
 app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) => {
   try {
     const { disruptionId } = req.params;
-    const { optionsConfig = {} } = req.body;
+    const { optionsConfig = {} } = req.body || {};
     
     logInfo(`Generating LLM recovery options for disruption ID: ${disruptionId}`, {
       endpoint: '/api/recovery-options/generate-llm',
