@@ -5,14 +5,7 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { generateRecoveryOptionsForDisruption } from './recovery-generator.js';
 import { logInfo, logError, logException } from './logger.js';
-
-// Test logger immediately on import
-console.log('LLM Recovery Service: Testing logger...');
-logInfo('LLM Recovery Service module loaded', { 
-  timestamp: new Date().toISOString(),
-  module: 'llm-recovery-service',
-  status: 'initializing'
-});
+import { appendFile } from "fs/promises";
 
 class LLMRecoveryService {
   constructor() {
@@ -25,13 +18,6 @@ class LLMRecoveryService {
   }
 
   initializeLLM() {
-    console.log(`LLM Recovery Service: Initializing with provider ${this.llmProvider}`);
-    logInfo('Starting LLM initialization', {
-      provider: this.llmProvider,
-      model: this.model,
-      timestamp: new Date().toISOString()
-    });
-    
     try {
       // Initialize LLM based on provider
       switch (this.llmProvider.toLowerCase()) {
@@ -71,14 +57,12 @@ class LLMRecoveryService {
         (response) => this.parseResponse(response.content)
       ]);
 
-      console.log(`LLM Recovery Service initialized with ${this.llmProvider} provider`);
       logInfo(`LLM Recovery Service initialized with ${this.llmProvider} provider`, {
         provider: this.llmProvider,
         model: this.model,
         status: 'initialized'
       });
     } catch (error) {
-      console.error(`Failed to initialize LLM: ${error.message}`, error);
       logError(`Failed to initialize LLM: ${error.message}`, error, {
         provider: this.llmProvider,
         model: this.model,
@@ -275,6 +259,7 @@ Return only valid JSON with both "options" and "steps" arrays.`;
   }
 
   parseResponse(content) {
+    appendFile("./logs/llm-generated-options.log", content)
     try {
       // Clean the response to extract JSON
       let cleanedContent = content.trim();
