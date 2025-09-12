@@ -4168,8 +4168,8 @@ export function ComparisonMatrix({
                                     selectedOptionDetails.rotation_plan
                                   ) {
                                     const updatedCrew = [
-                                      ...(selectedOptionDetails
-                                        .rotation_plan.crew ||
+                                      ...(selectedOptionDetails.rotation_plan
+                                        .crew ||
                                         selectedOptionDetails.rotation_plan
                                           .crewData ||
                                         []),
@@ -4217,12 +4217,11 @@ export function ComparisonMatrix({
                                     );
 
                                     // Capture reassigned crew data for Service Page
-                                    const reassignedCrew =
-                                      updatedCrew.filter(
-                                        (crewMember) =>
-                                          crewMember.replacedCrew &&
-                                          crewMember.assignedAt,
-                                      );
+                                    const reassignedCrew = updatedCrew.filter(
+                                      (crewMember) =>
+                                        crewMember.replacedCrew &&
+                                        crewMember.assignedAt,
+                                    );
 
                                     if (reassignedCrew.length > 0) {
                                       setReassignedCrewData({
@@ -4483,4 +4482,3 @@ export function ComparisonMatrix({
     </div>
   );
 }
-</new_str>
