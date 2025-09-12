@@ -3454,10 +3454,13 @@ async function saveRecoveryData(disruptionId, options, steps) {
 app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) => {
   try {
     const { disruptionId } = req.params;
+    const { optionsConfig = {} } = req.body;
+    
     logInfo(`Generating LLM recovery options for disruption ID: ${disruptionId}`, {
       endpoint: '/api/recovery-options/generate-llm',
       disruption_id: disruptionId,
-      method: 'POST'
+      method: 'POST',
+      options_config: optionsConfig
     });
 
     // Validate disruption ID
@@ -3538,10 +3541,11 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
       category_name: categoryInfo.category_name
     });
 
-    // Generate recovery options using LLM
+    // Generate recovery options using LLM with config
     const { options, steps } = await llmRecoveryService.generateRecoveryOptions(
       disruptionData,
-      categoryInfo
+      categoryInfo,
+      optionsConfig
     );
 
     logInfo(`LLM generated recovery data successfully`, {
@@ -3559,21 +3563,27 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
     //   steps
     // );
 
-    logInfo("Successfully saved all LLM recovery options and steps", {
+    logInfo("Successfully generated LLM recovery options and steps", {
       disruption_id: numericDisruptionId,
       flight_number: disruptionData.flight_number,
-      saved_options: optionsCount,
-      saved_steps: stepsCount
+      options_count: options.length,
+      steps_count: steps.length,
+      requested_count: optionsConfig.count || 3,
+      streaming: optionsConfig.stream || false
     });
     
     res.json({
       success: true,
-      // optionsCount,
-      // stepsCount,
-      // message: `Generated ${optionsCount} LLM recovery options and ${stepsCount} steps`,
-      message: `Generated LLM recovery options and steps`,
+      optionsCount: options.length,
+      stepsCount: steps.length,
+      message: `Generated ${options.length} LLM recovery options and ${steps.length} steps`,
       source: "llm",
-      provider: llmRecoveryService.llmProvider
+      provider: llmRecoveryService.llmProvider,
+      config: {
+        requested: optionsConfig.count || 3,
+        generated: options.length,
+        streaming: optionsConfig.stream || false
+      }
     });
 
   } catch (error) {

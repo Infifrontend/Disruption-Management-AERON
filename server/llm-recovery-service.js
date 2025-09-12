@@ -193,6 +193,181 @@ Return only valid JSON with both "options" and "steps" arrays.`;
     return ChatPromptTemplate.fromTemplate(template);
   }
 
+  createBatchPromptTemplate(batchSize) {
+    const template = `You are an expert flight operations recovery specialist. Generate {requestedCount} recovery options for this flight disruption (batch {batchIndex} of {totalBatches}).
+
+Flight Disruption Information:
+- Flight Number: {flightNumber}
+- Route: {route}
+- Aircraft: {aircraft}
+- Scheduled Departure: {scheduledDeparture}
+- Estimated Departure: {estimatedDeparture}
+- Delay: {delayMinutes} minutes
+- Passengers: {passengers}
+- Crew: {crew}
+- Disruption Type: {disruptionType}
+- Disruption Reason: {disruptionReason}
+- Severity: {severity}
+- Category: {categoryName}
+
+Generate exactly {requestedCount} recovery options in JSON format. Each option should have this structure:
+{{
+  "title": "Brief descriptive title",
+  "description": "Detailed description of the recovery approach",
+  "cost": "Estimated cost (e.g., 'AED 25,000')",
+  "timeline": "Time to implement (e.g., '2-3 hours')",
+  "confidence": number (1-100),
+  "impact": "Low/Medium/High",
+  "status": "recommended/caution/warning",
+  "priority": number,
+  "advantages": ["advantage 1", "advantage 2", "advantage 3"],
+  "considerations": ["consideration 1", "consideration 2", "consideration 3"],
+  "impact_area": ["crew", "passenger", "aircraft"] (select applicable),
+  "impact_summary": "Brief summary of the recovery approach and its impact",
+  "resource_requirements": [
+    {{
+      "title": "Resource Name",
+      "subtitle": "Resource Description", 
+      "availability": "Status",
+      "status": "Current State",
+      "location": "Where it's located",
+      "eta": "Time to availability",
+      "details": "Additional details"
+    }}
+  ],
+  "cost_breakdown": {{
+    "breakdown": [
+      {{
+        "amount": "AED X,XXX",
+        "category": "Category Name",
+        "percentage": number,
+        "description": "Description of cost component"
+      }}
+    ],
+    "total": {{
+      "amount": "AED X,XXX",
+      "title": "Total Estimated Cost",
+      "description": "Brief cost description"
+    }}
+  }},
+  "timeline_details": [
+    {{
+      "step": "Step Name",
+      "status": "completed/in-progress/pending",
+      "details": "Step description",
+      "startTime": "HH:MM",
+      "endTime": "HH:MM", 
+      "duration": "X min"
+    }}
+  ],
+  "risk_assessment": [
+    {{
+      "risk": "Risk description",
+      "risk_impact": "Low/Medium/High",
+      "mitigation_impact": "Low/Medium/High", 
+      "score": number (1-9),
+      "mitigation": "Mitigation strategy"
+    }}
+  ],
+  "technical_specs": {{
+    "implementation": {{
+      "title": "Implementation",
+      "details": "Implementation details"
+    }},
+    "systems_required": {{
+      "title": "Systems required", 
+      "details": ["System 1", "System 2"]
+    }},
+    "certifications": {{
+      "title": "Certifications",
+      "details": ["Cert 1", "Cert 2"]
+    }}
+  }},
+  "metrics": {{
+    "costEfficiency": number (1-100),
+    "timeEfficiency": number (1-100), 
+    "passengerSatisfaction": number (1-100),
+    "crewViolations": number,
+    "aircraftSwaps": number,
+    "networkImpact": "None/Low/Medium/High"
+  }}
+}}
+
+Also generate recovery steps:
+{{
+  "steps": [
+    {{
+      "step": number,
+      "title": "Step title",
+      "status": "completed/in-progress/pending", 
+      "timestamp": "ISO timestamp",
+      "system": "System name",
+      "details": "Step details"
+    }}
+  ]
+}}
+
+Return only valid JSON with both "options" and "steps" arrays.`;
+
+    return ChatPromptTemplate.fromTemplate(template);
+  }
+
+  createSingleOptionPromptTemplate() {
+    const template = `You are an expert flight operations recovery specialist. Generate recovery option {optionNumber} of {totalOptions} for this flight disruption.
+
+Flight Disruption Information:
+- Flight Number: {flightNumber}
+- Route: {route}
+- Aircraft: {aircraft}
+- Scheduled Departure: {scheduledDeparture}
+- Estimated Departure: {estimatedDeparture}
+- Delay: {delayMinutes} minutes
+- Passengers: {passengers}
+- Crew: {crew}
+- Disruption Type: {disruptionType}
+- Disruption Reason: {disruptionReason}
+- Severity: {severity}
+- Category: {categoryName}
+
+Generate exactly 1 comprehensive recovery option with detailed analysis. Focus on making this option unique and well-suited to the specific disruption context.
+
+Return JSON format with exactly one option in "options" array and related steps in "steps" array:
+{{
+  "options": [{{
+    "title": "Brief descriptive title for option {optionNumber}",
+    "description": "Detailed description of the recovery approach",
+    "cost": "Estimated cost (e.g., 'AED 25,000')",
+    "timeline": "Time to implement (e.g., '2-3 hours')",
+    "confidence": number (1-100),
+    "impact": "Low/Medium/High",
+    "status": "recommended/caution/warning",
+    "priority": {optionNumber},
+    "advantages": ["advantage 1", "advantage 2", "advantage 3"],
+    "considerations": ["consideration 1", "consideration 2", "consideration 3"],
+    "impact_area": ["crew", "passenger", "aircraft"],
+    "impact_summary": "Brief summary of the recovery approach and its impact",
+    "resource_requirements": [],
+    "cost_breakdown": {{}},
+    "timeline_details": [],
+    "risk_assessment": [],
+    "technical_specs": {{}},
+    "metrics": {{}}
+  }}],
+  "steps": [
+    {{
+      "step": {optionNumber},
+      "title": "Step title for option {optionNumber}",
+      "status": "pending", 
+      "timestamp": "ISO timestamp",
+      "system": "System name",
+      "details": "Step details"
+    }}
+  ]
+}}`;
+
+    return ChatPromptTemplate.fromTemplate(template);
+  }
+
   buildPromptVariables(disruptionData, categoryInfo = {}) {
     return {
       flightNumber: disruptionData.flight_number || 'Unknown',
@@ -210,7 +385,16 @@ Return only valid JSON with both "options" and "steps" arrays.`;
     };
   }
 
-  async generateRecoveryOptions(disruptionData, categoryInfo = {}) {
+  async generateRecoveryOptions(disruptionData, categoryInfo = {}, optionsConfig = {}) {
+    // Default options config
+    const config = {
+      count: optionsConfig.count || 3,
+      stream: optionsConfig.stream || false,
+      batchSize: optionsConfig.batchSize || 1,
+      maxRetries: optionsConfig.maxRetries || 2,
+      ...optionsConfig
+    };
+
     if (!this.chain) {
       logError('LLM chain not available, falling back to default recovery generator', null, {
         provider: this.llmProvider,
@@ -221,30 +405,21 @@ Return only valid JSON with both "options" and "steps" arrays.`;
     }
 
     try {
-      const promptVariables = this.buildPromptVariables(disruptionData, categoryInfo);
-      
-      logInfo(`Generating LLM recovery options for flight ${disruptionData.flight_number}`, {
+      logInfo(`Generating ${config.count} LLM recovery options for flight ${disruptionData.flight_number}`, {
         flight_number: disruptionData.flight_number,
         provider: this.llmProvider,
         model: this.model,
         disruption_type: disruptionData.disruption_type,
         severity: disruptionData.severity,
-        category: categoryInfo.category_name
+        category: categoryInfo.category_name,
+        options_count: config.count,
+        streaming: config.stream
       });
-      
-      const result = await this.chain.invoke(promptVariables);
-      
-      if (result && result.options && result.steps) {
-        logInfo(`LLM generated recovery options successfully`, {
-          flight_number: disruptionData.flight_number,
-          provider: this.llmProvider,
-          options_count: result.options.length,
-          steps_count: result.steps.length,
-          duration: 'success'
-        });
-        return result;
+
+      if (config.stream) {
+        return await this.generateOptionsWithStreaming(disruptionData, categoryInfo, config);
       } else {
-        throw new Error('Invalid LLM response format');
+        return await this.generateOptionsBatch(disruptionData, categoryInfo, config);
       }
 
     } catch (error) {
@@ -257,6 +432,157 @@ Return only valid JSON with both "options" and "steps" arrays.`;
       });
       return this.fallbackToDefaultGenerator(disruptionData, categoryInfo);
     }
+  }
+
+  async generateOptionsBatch(disruptionData, categoryInfo, config) {
+    const basePromptVariables = this.buildPromptVariables(disruptionData, categoryInfo);
+    const allOptions = [];
+    const allSteps = [];
+    const batchCount = Math.ceil(config.count / config.batchSize);
+
+    // Generate options in batches to handle large counts efficiently
+    for (let batch = 0; batch < batchCount; batch++) {
+      const startIndex = batch * config.batchSize;
+      const endIndex = Math.min(startIndex + config.batchSize, config.count);
+      const batchSize = endIndex - startIndex;
+
+      const batchPromptVariables = {
+        ...basePromptVariables,
+        requestedCount: batchSize,
+        batchIndex: batch + 1,
+        totalBatches: batchCount
+      };
+
+      let retryCount = 0;
+      let batchResult = null;
+
+      while (retryCount <= config.maxRetries && !batchResult) {
+        try {
+          const prompt = this.createBatchPromptTemplate(batchSize);
+          const batchChain = prompt.pipe(this.llm).pipe((response) => this.parseResponse(response.content));
+          
+          batchResult = await batchChain.invoke(batchPromptVariables);
+          
+          if (batchResult && batchResult.options && batchResult.steps) {
+            // Add batch-specific numbering to options
+            batchResult.options.forEach((option, index) => {
+              option.priority = startIndex + index + 1;
+              option.batch = batch + 1;
+            });
+
+            allOptions.push(...batchResult.options);
+            allSteps.push(...batchResult.steps);
+
+            logInfo(`Batch ${batch + 1}/${batchCount} completed successfully`, {
+              flight_number: disruptionData.flight_number,
+              batch_options: batchResult.options.length,
+              batch_steps: batchResult.steps.length,
+              retry_count: retryCount
+            });
+          } else {
+            throw new Error('Invalid batch response format');
+          }
+
+        } catch (error) {
+          retryCount++;
+          logError(`Batch ${batch + 1} attempt ${retryCount} failed`, error, {
+            flight_number: disruptionData.flight_number,
+            batch: batch + 1,
+            retry_count: retryCount,
+            max_retries: config.maxRetries
+          });
+
+          if (retryCount > config.maxRetries) {
+            // Continue with next batch if this one fails completely
+            logError(`Batch ${batch + 1} failed after ${config.maxRetries} retries, skipping`, error, {
+              flight_number: disruptionData.flight_number,
+              batch: batch + 1
+            });
+            break;
+          }
+
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+        }
+      }
+    }
+
+    if (allOptions.length === 0) {
+      throw new Error('No recovery options generated from any batch');
+    }
+
+    logInfo(`LLM generated recovery options successfully`, {
+      flight_number: disruptionData.flight_number,
+      provider: this.llmProvider,
+      total_options: allOptions.length,
+      total_steps: allSteps.length,
+      requested_count: config.count,
+      batches_processed: batchCount
+    });
+
+    return {
+      options: allOptions,
+      steps: allSteps
+    };
+  }
+
+  async generateOptionsWithStreaming(disruptionData, categoryInfo, config) {
+    // For streaming, we'll generate options one by one and yield results
+    const basePromptVariables = this.buildPromptVariables(disruptionData, categoryInfo);
+    const allOptions = [];
+    const allSteps = [];
+
+    for (let i = 0; i < config.count; i++) {
+      try {
+        const optionPromptVariables = {
+          ...basePromptVariables,
+          optionNumber: i + 1,
+          totalOptions: config.count
+        };
+
+        const singleOptionPrompt = this.createSingleOptionPromptTemplate();
+        const streamingChain = singleOptionPrompt.pipe(this.llm).pipe((response) => this.parseResponse(response.content));
+
+        const result = await streamingChain.invoke(optionPromptVariables);
+
+        if (result && result.options && result.options.length > 0) {
+          const option = result.options[0];
+          option.priority = i + 1;
+          allOptions.push(option);
+
+          if (result.steps && result.steps.length > 0) {
+            allSteps.push(...result.steps);
+          }
+
+          logInfo(`Streaming option ${i + 1}/${config.count} generated`, {
+            flight_number: disruptionData.flight_number,
+            option_title: option.title,
+            streaming: true
+          });
+
+          // If callback is provided for streaming, call it
+          if (config.onOptionGenerated) {
+            await config.onOptionGenerated({
+              option,
+              index: i,
+              total: config.count
+            });
+          }
+        }
+
+      } catch (error) {
+        logError(`Error generating streaming option ${i + 1}`, error, {
+          flight_number: disruptionData.flight_number,
+          option_index: i + 1
+        });
+        // Continue with next option
+      }
+    }
+
+    return {
+      options: allOptions,
+      steps: allSteps
+    };
   }
 
   parseResponse(content) {
