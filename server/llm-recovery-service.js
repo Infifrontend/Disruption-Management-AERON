@@ -11,7 +11,7 @@ class LLMRecoveryService {
 
   createSingleOptionPrompt() {
     return ChatPromptTemplate.fromTemplate(`
-You are an expert flight operations recovery specialist. Generate ONE comprehensive recovery option for the following disruption, following industry best practices and regulatory compliance.
+You are an expert flight operations recovery specialist. Generate ONE comprehensive recovery option with associated implementation steps for the following disruption, following industry best practices and regulatory compliance.
 
 Flight Information:
 - Flight: {flightNumber} ({route})
@@ -35,100 +35,262 @@ Based on the disruption category, focus on this recovery strategy:
 - Curfew/Congestion: Aircraft swap for earlier slot, overnight delay, alternative routing
 - Rotation/Maintenance: Alternative aircraft assignment, schedule adjustments
 
-Generate exactly ONE recovery option with realistic costs, timelines, and operational details:
+Generate exactly ONE recovery option with realistic costs, timelines, operational details, and implementation steps:
 
 {{
-  "title": "Specific recovery action title",
-  "description": "Detailed operational description with specific actions and procedures",
-  "cost": "AED X,XXX",
-  "timeline": "X hours/minutes",
-  "confidence": 85,
-  "impact": "Low/Medium/High passenger/operational impact",
-  "status": "recommended/caution/warning",
-  "priority": {optionPriority},
-  "advantages": [
-    "Specific operational advantage",
-    "Cost/time efficiency benefit",
-    "Passenger satisfaction benefit"
-  ],
-  "considerations": [
-    "Specific operational constraint",
-    "Resource requirement",
-    "Potential risk factor"
-  ],
-  "impact_area": ["crew", "passenger", "aircraft", "operations"],
-  "impact_summary": "Comprehensive impact analysis for {flightNumber}: Brief summary of how this recovery affects operations, passengers, crew, and network.",
-  "resource_requirements": [
-    {{
-      "title": "Resource Type",
-      "subtitle": "Specific Resource",
-      "availability": "Status",
-      "status": "Confirmed/Pending/Available",
-      "location": "Location details",
-      "eta": "Time estimate",
-      "details": "Additional resource details"
-    }}
-  ],
-  "cost_breakdown": {{
-    "breakdown": [
+  "option": {{
+    "title": "Specific recovery action title",
+    "description": "Detailed operational description with specific actions and procedures",
+    "cost": "AED X,XXX",
+    "timeline": "X hours/minutes",
+    "confidence": 85,
+    "impact": "Low/Medium/High passenger/operational impact",
+    "status": "recommended/caution/warning",
+    "priority": {optionPriority},
+    "advantages": [
+      "Specific operational advantage",
+      "Cost/time efficiency benefit",
+      "Passenger satisfaction benefit"
+    ],
+    "considerations": [
+      "Specific operational constraint",
+      "Resource requirement",
+      "Potential risk factor"
+    ],
+    "impact_area": ["crew", "passenger", "aircraft", "operations"],
+    "impact_summary": "Comprehensive impact analysis for {flightNumber}: Brief summary of how this recovery affects operations, passengers, crew, and network.",
+    "resource_requirements": [
       {{
-        "amount": "AED X,XXX",
-        "category": "Category Name",
-        "percentage": 60,
-        "description": "Cost component description"
+        "title": "Resource Type",
+        "subtitle": "Specific Resource",
+        "availability": "Status",
+        "status": "Confirmed/Pending/Available",
+        "location": "Location details",
+        "eta": "Time estimate",
+        "details": "Additional resource details"
       }}
     ],
-    "total": {{
-      "amount": "AED X,XXX",
-      "title": "Total Estimated Cost",
-      "description": "Overall cost summary"
+    "cost_breakdown": {{
+      "breakdown": [
+        {{
+          "amount": "AED X,XXX",
+          "category": "Category Name",
+          "percentage": 60,
+          "description": "Cost component description"
+        }}
+      ],
+      "total": {{
+        "amount": "AED X,XXX",
+        "title": "Total Estimated Cost",
+        "description": "Overall cost summary"
+      }}
+    }},
+    "timeline_details": [
+      {{
+        "step": "Action description",
+        "status": "completed/in-progress/pending",
+        "details": "Specific step details and requirements",
+        "startTime": "HH:MM",
+        "endTime": "HH:MM",
+        "duration": "X min"
+      }}
+    ],
+    "risk_assessment": [
+      {{
+        "risk": "Specific risk description",
+        "risk_impact": "Low/Medium/High",
+        "mitigation_impact": "Low/Medium/High",
+        "score": 5,
+        "mitigation": "Specific mitigation strategy and actions"
+      }}
+    ],
+    "technical_specs": {{
+      "implementation": {{
+        "title": "Implementation",
+        "details": "Technical implementation approach and procedures"
+      }},
+      "systems_required": {{
+        "title": "Systems required",
+        "details": ["System 1", "System 2", "System 3"]
+      }},
+      "certifications": {{
+        "title": "Certifications",
+        "details": ["Cert 1", "Cert 2", "Cert 3"]
+      }},
+      "operational_requirements": {{
+        "title": "Operational requirements",
+        "details": "Specific operational requirements and constraints"
+      }}
+    }},
+    "metrics": {{
+      "costEfficiency": 85,
+      "timeEfficiency": 90,
+      "passengerSatisfaction": 80,
+      "crewViolations": 0,
+      "aircraftSwaps": 1,
+      "networkImpact": "Low/Medium/High"
+    }},
+    "crew_available": [
+      {{
+        "name": "Crew Member Name",
+        "role_code": "CAPT/FO/SCC/CC",
+        "role": "Captain/First Officer/Senior Cabin Crew/Cabin Crew",
+        "qualifications": [
+          {{
+            "code": "B737",
+            "name": "Boeing 737 Type Rating"
+          }}
+        ],
+        "status": "available/unavailable/duty_exceeded",
+        "issue": "Optional issue description or null",
+        "experience_years": 10,
+        "base": "DXB",
+        "languages": ["English", "Arabic"]
+      }}
+    ],
+    "rotation_plan": {{
+      "aircraftOptions": [
+        {{
+          "reg": "A6-XXX",
+          "type": "B737-800 (189Y)",
+          "etops": {{
+            "status": "available/none",
+            "value": "180min/None"
+          }},
+          "cabinMatch": {{
+            "status": "exact/similar/reduced",
+            "value": "Exact/Similar/Reduced"
+          }},
+          "availability": "Available Now/Available HH:MM",
+          "assigned": {{
+            "status": "none/assigned",
+            "value": "None/Flight Number"
+          }},
+          "turnaround": "XX min",
+          "maintenance": {{
+            "status": "current/due/aog",
+            "value": "Current/Due A-Check/AOG Issue"
+          }},
+          "option_score": {{
+            "cost_score": "XX%",
+            "delay_score": "XX%",
+            "crew_impact": "XX%",
+            "fuel_score": "XX%",
+            "overall": "XX%"
+          }},
+          "rotation_impact": [
+            {{
+              "flightNumber": "FZXXX",
+              "origin_code": "DXB",
+              "destination_code": "XXX",
+              "origin": "Dubai",
+              "destination": "Destination",
+              "departure": "2025-XX-XXTXX:XX:XX+XX:XX",
+              "arrival": "2025-XX-XXTXX:XX:XX+XX:XX",
+              "delay": "XX min",
+              "passengers": 180,
+              "status": "On Time/Delayed/Cancelled",
+              "impact": "Low/Medium/High Impact",
+              "reason": "Impact reason description"
+            }}
+          ]
+        }}
+      ],
+      "nextSectors": [
+        {{
+          "flight": "FZXXX Origin-Destination",
+          "departure": "Dep: HH:MM → HH:MM (+XX min)/On Time/Cancelled",
+          "impact": "Low/Medium/High Impact",
+          "reason": "Impact reason"
+        }}
+      ],
+      "operationalConstraints": {{
+        "gateCompatibility": {{
+          "status": "Compatible/Coordination Required",
+          "details": "Gate assignment details"
+        }},
+        "slotCapacity": {{
+          "status": "Available/Coordination Required",
+          "details": "Slot coordination details"
+        }},
+        "curfewViolation": {{
+          "status": "No Risk/Risk/Violation",
+          "details": "Curfew status details"
+        }},
+        "passengerConnections": {{
+          "status": "No Impact/Medium Impact/High Impact",
+          "details": "Connection impact details"
+        }}
+      }},
+      "costBreakdown": {{
+        "delayCost": {{
+          "metric_value": "AED X,XXX",
+          "detail": "Cost breakdown detail"
+        }},
+        "fuelEfficiency": {{
+          "metric_value": "+X.X%",
+          "detail": "vs original aircraft"
+        }},
+        "hotelTransport": {{
+          "metric_value": "AED X,XXX/N/A",
+          "detail": "Crew accommodation details"
+        }},
+        "eu261Risk": {{
+          "metric_value": "Low/Medium/High/Critical",
+          "detail": "€XXX per passenger"
+        }}
+      }},
+      "recommended_option": {{
+        "option": "Aircraft Registration/Plan Name",
+        "summary": "Brief recommendation summary with key benefits and confidence level"
+      }}
     }}
   }},
-  "timeline_details": [
+  "steps": [
     {{
-      "step": "Action description",
+      "step": 1,
+      "title": "System/Process notification",
       "status": "completed/in-progress/pending",
-      "details": "Specific step details and requirements",
-      "startTime": "HH:MM",
-      "endTime": "HH:MM",
-      "duration": "X min"
-    }}
-  ],
-  "risk_assessment": [
+      "timestamp": "{timestamp}",
+      "system": "AMOS/AIMS/OCC/Recovery Engine",
+      "details": "Detailed step description with specific actions taken or required for {flightNumber}",
+      "data": {{
+        "flight_number": "{flightNumber}",
+        "disruption_type": "{disruptionType}",
+        "priority": "High/Medium/Low",
+        "resources_allocated": ["Resource 1", "Resource 2"],
+        "estimated_resolution": "XX minutes"
+      }}
+    }},
     {{
-      "risk": "Specific risk description",
-      "risk_impact": "Low/Medium/High",
-      "mitigation_impact": "Low/Medium/High",
-      "score": 5,
-      "mitigation": "Specific mitigation strategy and actions"
+      "step": 2,
+      "title": "Resource Coordination and Allocation",
+      "status": "in-progress/pending",
+      "timestamp": "{timestamp}",
+      "system": "Resource Management/Operations Control",
+      "details": "Coordinate and allocate required resources including crew, aircraft, and ground services",
+      "data": {{
+        "aircraft": "{aircraft}",
+        "passengers": {passengers},
+        "crew_required": "X flight crew + X cabin crew",
+        "ground_services": ["Service 1", "Service 2"]
+      }}
+    }},
+    {{
+      "step": 3,
+      "title": "Implementation Execution",
+      "status": "pending",
+      "timestamp": "{timestamp}",
+      "system": "Ground Operations/Flight Operations",
+      "details": "Execute the selected recovery option with coordinated operational support",
+      "data": {{
+        "recovery_type": "Recovery action type",
+        "expected_completion": "HH:MM",
+        "monitoring_frequency": "X minutes",
+        "escalation_threshold": "XX minutes"
+      }}
     }}
-  ],
-  "technical_specs": {{
-    "implementation": {{
-      "title": "Implementation",
-      "details": "Technical implementation approach and procedures"
-    }},
-    "systems_required": {{
-      "title": "Systems required",
-      "details": ["System 1", "System 2", "System 3"]
-    }},
-    "certifications": {{
-      "title": "Certifications",
-      "details": ["Cert 1", "Cert 2", "Cert 3"]
-    }},
-    "operational_requirements": {{
-      "title": "Operational requirements",
-      "details": "Specific operational requirements and constraints"
-    }}
-  }},
-  "metrics": {{
-    "costEfficiency": 85,
-    "timeEfficiency": 90,
-    "passengerSatisfaction": 80,
-    "crewViolations": 0,
-    "aircraftSwaps": 1,
-    "networkImpact": "Low/Medium/High"
-  }}
+  ]
 }}
 
 Important Guidelines:
@@ -141,6 +303,8 @@ Important Guidelines:
 7. Ensure confidence scores reflect actual feasibility
 8. Use appropriate status indicators (recommended/caution/warning)
 9. Include network impact considerations for downstream flights
+10. Include crew availability and rotation planning details
+11. Generate implementation steps that follow the recovery-generator.js structure
 
 Return only valid JSON. No markdown formatting or extra text.`);
   }
@@ -415,17 +579,29 @@ Return only valid JSON. No markdown formatting or extra text.`);
           );
 
           const response = await chain.invoke(promptData);
-          const parsedOption = this.parseSingleOptionResponse(response.content, disruptionData.flight_number, i + 1);
+          const parsedResult = this.parseSingleOptionResponse(response.content, disruptionData.flight_number, i + 1);
 
-          if (parsedOption) {
-            allOptions.push(parsedOption);
+          if (parsedResult && parsedResult.option) {
+            allOptions.push(parsedResult.option);
+            
+            // Merge steps with existing steps (avoid duplicates)
+            if (parsedResult.steps && parsedResult.steps.length > 0) {
+              parsedResult.steps.forEach(newStep => {
+                const existingStep = steps.find(s => s.step === newStep.step);
+                if (!existingStep) {
+                  steps.push(newStep);
+                }
+              });
+            }
+            
             successfulGenerations++;
             optionGenerated = true;
             
             logInfo(`Successfully generated option ${i + 1}`, {
               flight_number: disruptionData.flight_number,
-              option_title: parsedOption.title,
-              total_generated: successfulGenerations
+              option_title: parsedResult.option.title,
+              total_generated: successfulGenerations,
+              steps_added: parsedResult.steps ? parsedResult.steps.length : 0
             });
 
             // Small delay to avoid rate limiting
@@ -548,13 +724,34 @@ Return only valid JSON. No markdown formatting or extra text.`);
 
       const parsed = JSON.parse(cleaned);
 
-      // Normalize single option
+      // Validate structure - should have option and steps
+      if (!parsed.option) {
+        // Fallback: if it's just an option object without wrapper
+        if (parsed.title && parsed.description) {
+          return {
+            option: {
+              ...parsed,
+              priority: parsed.priority || optionNumber,
+              confidence: parsed.confidence || 80,
+              impact: parsed.impact || 'Medium',
+              status: parsed.status || 'recommended'
+            },
+            steps: []
+          };
+        }
+        throw new Error('Invalid option structure - missing option object');
+      }
+
+      // Normalize the response structure
       return {
-        ...parsed,
-        priority: parsed.priority || optionNumber,
-        confidence: parsed.confidence || 80,
-        impact: parsed.impact || 'Medium',
-        status: parsed.status || 'recommended'
+        option: {
+          ...parsed.option,
+          priority: parsed.option.priority || optionNumber,
+          confidence: parsed.option.confidence || 80,
+          impact: parsed.option.impact || 'Medium',
+          status: parsed.option.status || 'recommended'
+        },
+        steps: parsed.steps || []
       };
 
     } catch (error) {
