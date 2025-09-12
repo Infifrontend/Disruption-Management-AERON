@@ -550,8 +550,6 @@ Return only valid JSON. No markdown formatting or extra text.`);
     const allOptions = [];
     let steps = [];
     let successfulGenerations = 0;
-    let totalTokensUsed = 0;
-    let totalProcessingTime = 0;
 
     // Generate single option prompt template
     const singleOptionPrompt = this.createSingleOptionPrompt();
@@ -566,14 +564,11 @@ Return only valid JSON. No markdown formatting or extra text.`);
       let optionGenerated = false;
 
       while (attempt < config.maxRetries && !optionGenerated) {
-        const startTime = Date.now();
         try {
           logInfo(`Generating option ${i + 1}/${config.count}`, {
             flight_number: disruptionData.flight_number,
             option_number: i + 1,
-            attempt: attempt + 1,
-            provider: providerInfo.provider,
-            model: providerInfo.model
+            attempt: attempt + 1
           });
 
           const promptData = this.buildSingleOptionPromptData(
@@ -584,13 +579,6 @@ Return only valid JSON. No markdown formatting or extra text.`);
           );
 
           const response = await chain.invoke(promptData);
-          const endTime = Date.now();
-          const processingTime = endTime - startTime;
-          totalProcessingTime += processingTime;
-
-          // Log raw LLM response with timing and token information
-          this.logRawLLMResponse(response, disruptionData.flight_number, i + 1, processingTime, providerInfo);
-
           const parsedResult = this.parseSingleOptionResponse(response.content, disruptionData.flight_number, i + 1);
 
           if (parsedResult && parsedResult.option) {
@@ -613,34 +601,24 @@ Return only valid JSON. No markdown formatting or extra text.`);
               flight_number: disruptionData.flight_number,
               option_title: parsedResult.option.title,
               total_generated: successfulGenerations,
-              steps_added: parsedResult.steps ? parsedResult.steps.length : 0,
-              processing_time_ms: processingTime,
-              tokens_used: this.extractTokenInfo(response),
-              provider: providerInfo.provider
+              steps_added: parsedResult.steps ? parsedResult.steps.length : 0
             });
 
             // Small delay to avoid rate limiting
             await new Promise(resolve => setTimeout(resolve, 500));
           }
         } catch (error) {
-          const endTime = Date.now();
-          const processingTime = endTime - startTime;
-          
           attempt++;
           logError(`Failed to generate option ${i + 1}, attempt ${attempt}`, error, {
             flight_number: disruptionData.flight_number,
             option_number: i + 1,
-            attempt: attempt,
-            processing_time_ms: processingTime,
-            provider: providerInfo.provider,
-            error_type: error.constructor.name
+            attempt: attempt
           });
 
           if (attempt >= config.maxRetries) {
             logError(`Giving up on option ${i + 1} after ${config.maxRetries} attempts`, error, {
               flight_number: disruptionData.flight_number,
-              option_number: i + 1,
-              total_processing_time_ms: processingTime
+              option_number: i + 1
             });
             break;
           }
@@ -683,15 +661,7 @@ Return only valid JSON. No markdown formatting or extra text.`);
       options_generated: allOptions.length,
       steps_generated: steps.length,
       llm_success: successfulGenerations,
-      provider: providerInfo.provider,
-      total_processing_time_ms: totalProcessingTime,
-      average_processing_time_ms: successfulGenerations > 0 ? Math.round(totalProcessingTime / successfulGenerations) : 0,
-      total_tokens_estimated: totalTokensUsed,
-      success_rate: `${successfulGenerations}/${config.count}`,
-      performance_metrics: {
-        options_per_second: successfulGenerations > 0 ? (successfulGenerations / (totalProcessingTime / 1000)).toFixed(2) : 0,
-        average_tokens_per_option: successfulGenerations > 0 ? Math.round(totalTokensUsed / successfulGenerations) : 0
-      }
+      provider: providerInfo.provider
     });
 
     return {
@@ -702,57 +672,27 @@ Return only valid JSON. No markdown formatting or extra text.`);
 
   async generateOptionsBatch(disruptionData, categoryInfo, config) {
     const llm = this.modelRouter.getProvider();
-    const providerInfo = this.modelRouter.getCurrentProviderInfo();
     const promptData = this.buildPromptData(disruptionData, categoryInfo, config.count);
     const chain = this.basePrompt.pipe(llm);
 
     let attempt = 0;
-    let totalProcessingTime = 0;
-
     while (attempt < config.maxRetries) {
-      const startTime = Date.now();
       try {
-        logInfo(`Starting batch generation attempt ${attempt + 1}`, {
-          flight_number: disruptionData.flight_number,
-          options_count: config.count,
-          provider: providerInfo.provider,
-          model: providerInfo.model,
-          attempt: attempt + 1
-        });
-
         const response = await chain.invoke(promptData);
-        const endTime = Date.now();
-        const processingTime = endTime - startTime;
-        totalProcessingTime += processingTime;
-
-        // Log raw LLM response with timing and token information
-        this.logRawLLMResponse(response, disruptionData.flight_number, 'batch', processingTime, providerInfo);
-
         const result = this.parseResponse(response.content, disruptionData.flight_number);
 
         logInfo(`Successfully generated ${result.options.length} recovery options (batch)`, {
           flight_number: disruptionData.flight_number,
           options_generated: result.options.length,
-          steps_generated: result.steps.length,
-          processing_time_ms: processingTime,
-          tokens_used: this.extractTokenInfo(response),
-          provider: providerInfo.provider
+          steps_generated: result.steps.length
         });
 
         return result;
       } catch (error) {
-        const endTime = Date.now();
-        const processingTime = endTime - startTime;
-        totalProcessingTime += processingTime;
-        
         attempt++;
         logError(`Batch attempt ${attempt} failed`, error, {
           flight_number: disruptionData.flight_number,
-          attempt: attempt,
-          processing_time_ms: processingTime,
-          total_processing_time_ms: totalProcessingTime,
-          provider: providerInfo.provider,
-          error_type: error.constructor.name
+          attempt: attempt
         });
 
         if (attempt >= config.maxRetries) {
@@ -821,96 +761,6 @@ Return only valid JSON. No markdown formatting or extra text.`);
         contentPreview: content ? content.substring(0, 200) : 'empty'
       });
       return null;
-    }
-  }
-
-  logRawLLMResponse(response, flightNumber, optionNumber, processingTime, providerInfo) {
-    try {
-      const responseLength = response.content ? response.content.length : 0;
-      const tokenInfo = this.extractTokenInfo(response);
-      
-      logInfo(`Raw LLM Response Generated`, {
-        flight_number: flightNumber,
-        option_number: optionNumber,
-        provider: providerInfo.provider,
-        model: providerInfo.model,
-        processing_time_ms: processingTime,
-        response_length_chars: responseLength,
-        tokens: tokenInfo,
-        timestamp: new Date().toISOString(),
-        raw_response_preview: response.content ? response.content.substring(0, 500) + (response.content.length > 500 ? '...' : '') : 'empty',
-        response_metadata: {
-          has_content: !!response.content,
-          content_type: typeof response.content,
-          response_object_keys: Object.keys(response || {}),
-          additional_data: response.additional_kwargs || response.metadata || {}
-        }
-      });
-
-      // Log full raw response in a separate detailed log entry
-      logInfo(`LLM Full Raw Response Detail`, {
-        flight_number: flightNumber,
-        option_number: optionNumber,
-        provider: providerInfo.provider,
-        processing_time_ms: processingTime,
-        full_raw_response: response.content,
-        response_object: {
-          ...response,
-          content: '[CONTENT_LOGGED_SEPARATELY]' // Avoid duplication
-        }
-      });
-
-    } catch (error) {
-      logError('Failed to log raw LLM response', error, {
-        flight_number: flightNumber,
-        option_number: optionNumber,
-        provider: providerInfo.provider,
-        processing_time_ms: processingTime
-      });
-    }
-  }
-
-  extractTokenInfo(response) {
-    try {
-      // Different providers store token information in different places
-      const tokenInfo = {
-        prompt_tokens: null,
-        completion_tokens: null,
-        total_tokens: null,
-        estimated_tokens: null
-      };
-
-      // Check common locations for token usage information
-      if (response.usage) {
-        tokenInfo.prompt_tokens = response.usage.prompt_tokens;
-        tokenInfo.completion_tokens = response.usage.completion_tokens;
-        tokenInfo.total_tokens = response.usage.total_tokens;
-      } else if (response.additional_kwargs && response.additional_kwargs.usage) {
-        tokenInfo.prompt_tokens = response.additional_kwargs.usage.prompt_tokens;
-        tokenInfo.completion_tokens = response.additional_kwargs.usage.completion_tokens;
-        tokenInfo.total_tokens = response.additional_kwargs.usage.total_tokens;
-      } else if (response.metadata && response.metadata.usage) {
-        tokenInfo.prompt_tokens = response.metadata.usage.prompt_tokens;
-        tokenInfo.completion_tokens = response.metadata.usage.completion_tokens;
-        tokenInfo.total_tokens = response.metadata.usage.total_tokens;
-      }
-
-      // If no token info available, estimate based on content length
-      if (!tokenInfo.total_tokens && response.content) {
-        // Rough estimation: ~4 characters per token
-        tokenInfo.estimated_tokens = Math.ceil(response.content.length / 4);
-      }
-
-      return tokenInfo;
-    } catch (error) {
-      logError('Failed to extract token information', error);
-      return {
-        prompt_tokens: null,
-        completion_tokens: null,
-        total_tokens: null,
-        estimated_tokens: response.content ? Math.ceil(response.content.length / 4) : null,
-        extraction_error: error.message
-      };
     }
   }
 
