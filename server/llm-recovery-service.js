@@ -504,33 +504,31 @@ Return only valid JSON. No markdown formatting or extra text.`);
     const config = {
       count: optionsConfig.count || 3,
       maxRetries: 2,
-      stream: optionsConfig.stream || false,
+      stream: true, // Always enable streaming for better token management
       ...optionsConfig
     };
 
     try {
-      const llm = this.modelRouter.getProvider();
       const providerInfo = this.modelRouter.getCurrentProviderInfo();
 
-      logInfo(`Generating ${config.count} recovery options with ${providerInfo.provider}`, {
+      logInfo(`Generating ${config.count} recovery options with streaming enabled`, {
         flight_number: disruptionData.flight_number,
         provider: providerInfo.provider,
         model: providerInfo.model,
         options_count: config.count,
-        streaming: config.stream
+        streaming: config.stream,
+        generation_method: 'incremental_streaming'
       });
 
-      // Generate options incrementally to avoid token limits
-      if (config.stream || config.count > 2) {
-        return await this.generateOptionsIncrementally(disruptionData, categoryInfo, config);
-      } else {
-        // Use original method for small counts
-        return await this.generateOptionsBatch(disruptionData, categoryInfo, config);
-      }
+      // Always use streaming incremental generation for optimal token usage and logging
+      return await this.generateOptionsIncrementally(disruptionData, categoryInfo, config);
+      
     } catch (error) {
-      logError('LLM generation failed, using fallback', error, {
+      logError('LLM streaming generation failed, using fallback', error, {
         flight_number: disruptionData.flight_number,
-        fallback: true
+        fallback: true,
+        streaming_attempted: config.stream,
+        error_type: error.constructor.name
       });
 
       return this.fallbackToDefaultGenerator(disruptionData, categoryInfo);
@@ -538,13 +536,13 @@ Return only valid JSON. No markdown formatting or extra text.`);
   }
 
   async generateOptionsIncrementally(disruptionData, categoryInfo, config) {
-    const llm = this.modelRouter.getProvider();
     const providerInfo = this.modelRouter.getCurrentProviderInfo();
     
-    logInfo(`Using incremental generation for ${config.count} options`, {
+    logInfo(`Using streaming incremental generation for ${config.count} options`, {
       flight_number: disruptionData.flight_number,
       provider: providerInfo.provider,
-      streaming: config.stream
+      streaming: config.stream,
+      options_count: config.count
     });
 
     const allOptions = [];
@@ -552,15 +550,15 @@ Return only valid JSON. No markdown formatting or extra text.`);
     let successfulGenerations = 0;
     let totalTokensUsed = 0;
     let totalProcessingTime = 0;
+    const streamedResponses = [];
 
     // Generate single option prompt template
     const singleOptionPrompt = this.createSingleOptionPrompt();
-    const chain = singleOptionPrompt.pipe(llm);
 
     // Generate steps once (they don't change much between options)
     steps = this.generateSteps(disruptionData, categoryInfo);
 
-    // Generate each option individually
+    // Generate each option individually with streaming
     for (let i = 0; i < config.count; i++) {
       let attempt = 0;
       let optionGenerated = false;
@@ -568,12 +566,13 @@ Return only valid JSON. No markdown formatting or extra text.`);
       while (attempt < config.maxRetries && !optionGenerated) {
         const startTime = Date.now();
         try {
-          logInfo(`Generating option ${i + 1}/${config.count}`, {
+          logInfo(`Generating option ${i + 1}/${config.count} with streaming`, {
             flight_number: disruptionData.flight_number,
             option_number: i + 1,
             attempt: attempt + 1,
             provider: providerInfo.provider,
-            model: providerInfo.model
+            model: providerInfo.model,
+            streaming_enabled: config.stream
           });
 
           const promptData = this.buildSingleOptionPromptData(
@@ -583,15 +582,34 @@ Return only valid JSON. No markdown formatting or extra text.`);
             allOptions.length
           );
 
-          const response = await chain.invoke(promptData);
+          // Stream the LLM response
+          const streamedContent = await this.streamSingleOptionGeneration(
+            singleOptionPrompt, 
+            promptData, 
+            disruptionData.flight_number, 
+            i + 1,
+            startTime
+          );
+
           const endTime = Date.now();
           const processingTime = endTime - startTime;
           totalProcessingTime += processingTime;
 
-          // Log raw LLM response with timing and token information
-          this.logRawLLMResponse(response, disruptionData.flight_number, i + 1, processingTime, providerInfo);
+          // Store the streamed response
+          streamedResponses.push({
+            optionNumber: i + 1,
+            content: streamedContent.fullContent,
+            processingTime: processingTime,
+            tokens: streamedContent.tokens,
+            timestamp: new Date().toISOString()
+          });
 
-          const parsedResult = this.parseSingleOptionResponse(response.content, disruptionData.flight_number, i + 1);
+          // Parse the consolidated response
+          const parsedResult = this.parseSingleOptionResponse(
+            streamedContent.fullContent, 
+            disruptionData.flight_number, 
+            i + 1
+          );
 
           if (parsedResult && parsedResult.option) {
             allOptions.push(parsedResult.option);
@@ -608,14 +626,16 @@ Return only valid JSON. No markdown formatting or extra text.`);
             
             successfulGenerations++;
             optionGenerated = true;
+            totalTokensUsed += streamedContent.tokens.total_tokens || streamedContent.tokens.estimated_tokens || 0;
             
-            logInfo(`Successfully generated option ${i + 1}`, {
+            logInfo(`Successfully generated and streamed option ${i + 1}`, {
               flight_number: disruptionData.flight_number,
               option_title: parsedResult.option.title,
               total_generated: successfulGenerations,
               steps_added: parsedResult.steps ? parsedResult.steps.length : 0,
               processing_time_ms: processingTime,
-              tokens_used: this.extractTokenInfo(response),
+              tokens_used: streamedContent.tokens,
+              stream_chunks_received: streamedContent.chunksReceived,
               provider: providerInfo.provider
             });
 
@@ -633,7 +653,8 @@ Return only valid JSON. No markdown formatting or extra text.`);
             attempt: attempt,
             processing_time_ms: processingTime,
             provider: providerInfo.provider,
-            error_type: error.constructor.name
+            error_type: error.constructor.name,
+            streaming_enabled: config.stream
           });
 
           if (attempt >= config.maxRetries) {
@@ -678,7 +699,8 @@ Return only valid JSON. No markdown formatting or extra text.`);
       }
     }
 
-    logInfo(`Incremental generation complete`, {
+    // Log final consolidation of all streamed responses
+    logInfo(`Incremental streaming generation complete`, {
       flight_number: disruptionData.flight_number,
       options_generated: allOptions.length,
       steps_generated: steps.length,
@@ -686,18 +708,171 @@ Return only valid JSON. No markdown formatting or extra text.`);
       provider: providerInfo.provider,
       total_processing_time_ms: totalProcessingTime,
       average_processing_time_ms: successfulGenerations > 0 ? Math.round(totalProcessingTime / successfulGenerations) : 0,
-      total_tokens_estimated: totalTokensUsed,
+      total_tokens_used: totalTokensUsed,
       success_rate: `${successfulGenerations}/${config.count}`,
+      streamed_responses_count: streamedResponses.length,
       performance_metrics: {
         options_per_second: successfulGenerations > 0 ? (successfulGenerations / (totalProcessingTime / 1000)).toFixed(2) : 0,
-        average_tokens_per_option: successfulGenerations > 0 ? Math.round(totalTokensUsed / successfulGenerations) : 0
+        average_tokens_per_option: successfulGenerations > 0 ? Math.round(totalTokensUsed / successfulGenerations) : 0,
+        total_stream_chunks: streamedResponses.reduce((sum, resp) => sum + (resp.chunksReceived || 0), 0)
+      },
+      consolidated_result: {
+        total_options: allOptions.length,
+        total_steps: steps.length,
+        streaming_successful: config.stream && streamedResponses.length > 0
       }
     });
 
     return {
       options: allOptions,
-      steps: steps
+      steps: steps,
+      streamingMetadata: {
+        responsesStreamed: streamedResponses.length,
+        totalChunks: streamedResponses.reduce((sum, resp) => sum + (resp.chunksReceived || 0), 0),
+        streamingEnabled: config.stream
+      }
     };
+  }
+
+  async streamSingleOptionGeneration(promptTemplate, promptData, flightNumber, optionNumber, startTime) {
+    try {
+      const llm = this.modelRouter.getProvider();
+      const providerInfo = this.modelRouter.getCurrentProviderInfo();
+      
+      logInfo(`Starting streaming generation for option ${optionNumber}`, {
+        flight_number: flightNumber,
+        option_number: optionNumber,
+        provider: providerInfo.provider,
+        model: providerInfo.model
+      });
+
+      let fullContent = '';
+      let chunksReceived = 0;
+      let tokens = {
+        prompt_tokens: null,
+        completion_tokens: null,
+        total_tokens: null,
+        estimated_tokens: null
+      };
+
+      // Configure streaming for the LLM provider
+      const streamingLLM = llm.bind({
+        streaming: true,
+        callbacks: [{
+          handleLLMNewToken: (token) => {
+            fullContent += token;
+            chunksReceived++;
+            
+            // Log streaming progress every 10 chunks to avoid log spam
+            if (chunksReceived % 10 === 0) {
+              logInfo(`Streaming progress for option ${optionNumber}`, {
+                flight_number: flightNumber,
+                option_number: optionNumber,
+                chunks_received: chunksReceived,
+                content_length: fullContent.length,
+                provider: providerInfo.provider,
+                streaming_time_ms: Date.now() - startTime
+              });
+            }
+          },
+          handleLLMEnd: (output) => {
+            // Extract final token information
+            tokens = this.extractTokenInfo(output);
+            
+            logInfo(`Streaming completed for option ${optionNumber}`, {
+              flight_number: flightNumber,
+              option_number: optionNumber,
+              total_chunks: chunksReceived,
+              final_content_length: fullContent.length,
+              tokens: tokens,
+              provider: providerInfo.provider,
+              total_streaming_time_ms: Date.now() - startTime
+            });
+          }
+        }]
+      });
+
+      // Create chain with streaming LLM
+      const chain = promptTemplate.pipe(streamingLLM);
+      
+      // Invoke the chain (this will trigger streaming)
+      const response = await chain.invoke(promptData);
+      
+      // If streaming didn't work (fallback), use the response content
+      if (!fullContent && response.content) {
+        fullContent = response.content;
+        tokens = this.extractTokenInfo(response);
+        chunksReceived = 1;
+        
+        logInfo(`Fallback to non-streaming for option ${optionNumber}`, {
+          flight_number: flightNumber,
+          option_number: optionNumber,
+          content_length: fullContent.length,
+          provider: providerInfo.provider
+        });
+      }
+
+      // Log the complete raw streamed response
+      this.logRawStreamedResponse(fullContent, flightNumber, optionNumber, Date.now() - startTime, chunksReceived, tokens, providerInfo);
+
+      return {
+        fullContent: fullContent,
+        chunksReceived: chunksReceived,
+        tokens: tokens,
+        streamingTime: Date.now() - startTime
+      };
+
+    } catch (error) {
+      logError(`Streaming failed for option ${optionNumber}`, error, {
+        flight_number: flightNumber,
+        option_number: optionNumber,
+        streaming_time_ms: Date.now() - startTime,
+        error_type: error.constructor.name
+      });
+      throw error;
+    }
+  }
+
+  logRawStreamedResponse(content, flightNumber, optionNumber, streamingTime, chunksReceived, tokens, providerInfo) {
+    try {
+      const contentLength = content ? content.length : 0;
+      
+      logInfo(`Raw Streamed LLM Response Generated`, {
+        flight_number: flightNumber,
+        option_number: optionNumber,
+        provider: providerInfo.provider,
+        model: providerInfo.model,
+        streaming_time_ms: streamingTime,
+        chunks_received: chunksReceived,
+        response_length_chars: contentLength,
+        tokens: tokens,
+        timestamp: new Date().toISOString(),
+        streaming_metadata: {
+          chunks_per_second: chunksReceived > 0 ? (chunksReceived / (streamingTime / 1000)).toFixed(2) : 0,
+          chars_per_chunk: chunksReceived > 0 ? Math.round(contentLength / chunksReceived) : 0,
+          streaming_successful: chunksReceived > 1
+        },
+        raw_response_preview: content ? content.substring(0, 500) + (content.length > 500 ? '...' : '') : 'empty'
+      });
+
+      // Log full streamed response in a separate detailed log entry
+      logInfo(`LLM Full Streamed Response Detail`, {
+        flight_number: flightNumber,
+        option_number: optionNumber,
+        provider: providerInfo.provider,
+        streaming_time_ms: streamingTime,
+        chunks_received: chunksReceived,
+        full_streamed_response: content
+      });
+
+    } catch (error) {
+      logError('Failed to log raw streamed LLM response', error, {
+        flight_number: flightNumber,
+        option_number: optionNumber,
+        provider: providerInfo.provider,
+        streaming_time_ms: streamingTime
+      });
+    }
   }
 
   async generateOptionsBatch(disruptionData, categoryInfo, config) {
