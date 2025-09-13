@@ -8,7 +8,12 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "backend:dev": "nodemon --watch server --ext js,json,env server/start.js",
+    "backend:prod": "node server/start.js",
+    "frontend:dev": "vite",
+    "fullstack:dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
+    "start": "npm run backend:prod"
   },
   "keywords": [],
   "author": "",
@@ -85,6 +90,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "@types/pg": "^8.15.5"
+    "@types/pg": "^8.15.5",
+    "concurrently": "^9.2.1"
   }
 }
