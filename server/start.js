@@ -1,10 +1,12 @@
+// Import environment configuration first - this must be the top import
+import './env-config.js';
+
 import express from "express";
 import cors from "cors";
 import pkg from "pg";
 const { Pool } = pkg;
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import dotenv from "dotenv";
 import { 
   logger, 
   logInfo,
@@ -14,9 +16,6 @@ import {
   logDatabaseOperation,
   logRecoveryOperation 
 } from './logger.js';
-
-// Load environment variables from .env file
-dotenv.config();
 
 logInfo('Hello world from pino', {"name": "logesh", "module": "starting express application"})
 logger.info('Hello world from pino', {"name": "logesh", "module": "starting express application"})

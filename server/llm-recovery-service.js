@@ -1,10 +1,6 @@
-import dotenv from 'dotenv';
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { generateRecoveryOptionsForDisruption } from './recovery-generator.js';
 import { logInfo, logError } from './logger.js';
-
-// Load environment variables
-dotenv.config();
 
 // LLM Provider imports
 import { modelRouter } from './model-router.js';
