@@ -2,6 +2,7 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { generateRecoveryOptionsForDisruption } from './recovery-generator.js';
 import { logInfo, logError } from './logger.js';
 import { modelRouter } from './model-router.js';
+import { appendFile } from "fs/promises";
 
 class LLMRecoveryService {
   constructor() {
@@ -738,6 +739,13 @@ Return only valid JSON. No markdown formatting or extra text.`);
     try {
       const llm = this.modelRouter.getProvider();
       const providerInfo = this.modelRouter.getCurrentProviderInfo();
+
+      appendFile("logs/llm-generated-options.log", "generating recovery option =============>")
+      appendFile('logs/llm-generated-options.log', {
+        "prompt":promptTemplate,
+        "promtData": promptData
+
+      });
       
       logInfo(`Starting streaming generation for option ${optionNumber}`, {
         flight_number: flightNumber,
@@ -811,9 +819,10 @@ Return only valid JSON. No markdown formatting or extra text.`);
           provider: providerInfo.provider
         });
       }
-
+      appendFile('logs/llm-generated-options.log', "llm generated option ==========>")
+      appendFile('logs/llm-generated-options.log', fullContent);
       // Log the complete raw streamed response
-      this.logRawStreamedResponse(fullContent, flightNumber, optionNumber, Date.now() - startTime, chunksReceived, tokens, providerInfo);
+      // this.logRawStreamedResponse(fullContent, flightNumber, optionNumber, Date.now() - startTime, chunksReceived, tokens, providerInfo);
 
       return {
         fullContent: fullContent,

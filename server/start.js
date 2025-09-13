@@ -3545,7 +3545,7 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
     const enhancedConfig = {
       ...optionsConfig,
       stream: true, // Enable streaming for better token management
-      count: optionsConfig.count || 3,
+      count: optionsConfig.count || 2,
       maxRetries: 2
     };
 
