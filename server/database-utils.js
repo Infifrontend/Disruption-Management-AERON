@@ -1,10 +1,6 @@
 /**
  * Database utility functions for Neon database connections
  */
-import dotenv from 'dotenv';
-
-// Load environment variables
-dotenv.config();
 
 export function formatNeonConnectionString(connectionString) {
   if (!connectionString) {
