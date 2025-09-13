@@ -1,6 +1,12 @@
+import dotenv from 'dotenv';
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { generateRecoveryOptionsForDisruption } from './recovery-generator.js';
 import { logInfo, logError } from './logger.js';
+
+// Load environment variables
+dotenv.config();
+
+// LLM Provider imports
 import { modelRouter } from './model-router.js';
 import { appendFile } from "fs/promises";
 
@@ -523,7 +529,7 @@ Return only valid JSON. No markdown formatting or extra text.`);
 
       // Always use streaming incremental generation for optimal token usage and logging
       return await this.generateOptionsIncrementally(disruptionData, categoryInfo, config);
-      
+
     } catch (error) {
       logError('LLM streaming generation failed, using fallback', error, {
         flight_number: disruptionData.flight_number,
@@ -538,7 +544,7 @@ Return only valid JSON. No markdown formatting or extra text.`);
 
   async generateOptionsIncrementally(disruptionData, categoryInfo, config) {
     const providerInfo = this.modelRouter.getCurrentProviderInfo();
-    
+
     logInfo(`Using streaming incremental generation for ${config.count} options`, {
       flight_number: disruptionData.flight_number,
       provider: providerInfo.provider,
@@ -577,17 +583,17 @@ Return only valid JSON. No markdown formatting or extra text.`);
           });
 
           const promptData = this.buildSingleOptionPromptData(
-            disruptionData, 
-            categoryInfo, 
-            i + 1, 
+            disruptionData,
+            categoryInfo,
+            i + 1,
             allOptions.length
           );
 
           // Stream the LLM response
           const streamedContent = await this.streamSingleOptionGeneration(
-            singleOptionPrompt, 
-            promptData, 
-            disruptionData.flight_number, 
+            singleOptionPrompt,
+            promptData,
+            disruptionData.flight_number,
             i + 1,
             startTime
           );
@@ -607,14 +613,14 @@ Return only valid JSON. No markdown formatting or extra text.`);
 
           // Parse the consolidated response
           const parsedResult = this.parseSingleOptionResponse(
-            streamedContent.fullContent, 
-            disruptionData.flight_number, 
+            streamedContent.fullContent,
+            disruptionData.flight_number,
             i + 1
           );
 
           if (parsedResult && parsedResult.option) {
             allOptions.push(parsedResult.option);
-            
+
             // Merge steps with existing steps (avoid duplicates)
             if (parsedResult.steps && parsedResult.steps.length > 0) {
               parsedResult.steps.forEach(newStep => {
@@ -624,11 +630,11 @@ Return only valid JSON. No markdown formatting or extra text.`);
                 }
               });
             }
-            
+
             successfulGenerations++;
             optionGenerated = true;
             totalTokensUsed += streamedContent.tokens.total_tokens || streamedContent.tokens.estimated_tokens || 0;
-            
+
             logInfo(`Successfully generated and streamed option ${i + 1}`, {
               flight_number: disruptionData.flight_number,
               option_title: parsedResult.option.title,
@@ -646,7 +652,7 @@ Return only valid JSON. No markdown formatting or extra text.`);
         } catch (error) {
           const endTime = Date.now();
           const processingTime = endTime - startTime;
-          
+
           attempt++;
           logError(`Failed to generate option ${i + 1}, attempt ${attempt}`, error, {
             flight_number: disruptionData.flight_number,
@@ -684,7 +690,7 @@ Return only valid JSON. No markdown formatting or extra text.`);
       try {
         const fallbackResult = this.fallbackToDefaultGenerator(disruptionData, categoryInfo);
         const remainingCount = config.count - allOptions.length;
-        
+
         // Add fallback options to fill the gap
         for (let i = 0; i < Math.min(remainingCount, fallbackResult.options.length); i++) {
           allOptions.push({
@@ -746,7 +752,7 @@ Return only valid JSON. No markdown formatting or extra text.`);
         "promtData": promptData
 
       });
-      
+
       logInfo(`Starting streaming generation for option ${optionNumber}`, {
         flight_number: flightNumber,
         option_number: optionNumber,
@@ -770,7 +776,7 @@ Return only valid JSON. No markdown formatting or extra text.`);
           handleLLMNewToken: (token) => {
             fullContent += token;
             chunksReceived++;
-            
+
             // Log streaming progress every 10 chunks to avoid log spam
             if (chunksReceived % 10 === 0) {
               logInfo(`Streaming progress for option ${optionNumber}`, {
@@ -786,7 +792,7 @@ Return only valid JSON. No markdown formatting or extra text.`);
           handleLLMEnd: (output) => {
             // Extract final token information
             tokens = this.extractTokenInfo(output);
-            
+
             logInfo(`Streaming completed for option ${optionNumber}`, {
               flight_number: flightNumber,
               option_number: optionNumber,
@@ -802,16 +808,16 @@ Return only valid JSON. No markdown formatting or extra text.`);
 
       // Create chain with streaming LLM
       const chain = promptTemplate.pipe(streamingLLM);
-      
+
       // Invoke the chain (this will trigger streaming)
       const response = await chain.invoke(promptData);
-      
+
       // If streaming didn't work (fallback), use the response content
       if (!fullContent && response.content) {
         fullContent = response.content;
         tokens = this.extractTokenInfo(response);
         chunksReceived = 1;
-        
+
         logInfo(`Fallback to non-streaming for option ${optionNumber}`, {
           flight_number: flightNumber,
           option_number: optionNumber,
@@ -845,7 +851,7 @@ Return only valid JSON. No markdown formatting or extra text.`);
   logRawStreamedResponse(content, flightNumber, optionNumber, streamingTime, chunksReceived, tokens, providerInfo) {
     try {
       const contentLength = content ? content.length : 0;
-      
+
       logInfo(`Raw Streamed LLM Response Generated`, {
         flight_number: flightNumber,
         option_number: optionNumber,
@@ -928,7 +934,7 @@ Return only valid JSON. No markdown formatting or extra text.`);
         const endTime = Date.now();
         const processingTime = endTime - startTime;
         totalProcessingTime += processingTime;
-        
+
         attempt++;
         logError(`Batch attempt ${attempt} failed`, error, {
           flight_number: disruptionData.flight_number,
@@ -1012,7 +1018,7 @@ Return only valid JSON. No markdown formatting or extra text.`);
     try {
       const responseLength = response.content ? response.content.length : 0;
       const tokenInfo = this.extractTokenInfo(response);
-      
+
       logInfo(`Raw LLM Response Generated`, {
         flight_number: flightNumber,
         option_number: optionNumber,

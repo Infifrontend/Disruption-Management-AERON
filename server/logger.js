@@ -1,11 +1,14 @@
-
+import dotenv from 'dotenv';
 import pino from 'pino';
-import { dirname, join } from 'path';
+import fs from 'fs';
+import path from 'path';
 import { fileURLToPath } from 'url';
-import { mkdirSync, existsSync } from 'fs';
+
+// Load environment variables
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __dirname = path.dirname(__filename);
 
 // Ensure logs directory exists
 const logsDir = join(__dirname, '../logs');

@@ -1,3 +1,10 @@
+/**
+ * Database utility functions for Neon database connections
+ */
+import dotenv from 'dotenv';
+
+// Load environment variables
+dotenv.config();
 
 export function formatNeonConnectionString(connectionString) {
   if (!connectionString) {
@@ -16,7 +23,7 @@ export function formatNeonConnectionString(connectionString) {
   }
 
   const [, username, password, host, database] = match;
-  
+
   // Check if it's a Neon host (contains endpoint ID)
   const endpointMatch = host.match(/^([^.]+)\.([^.]+)\.(.+)$/);
   if (!endpointMatch) {
@@ -24,13 +31,13 @@ export function formatNeonConnectionString(connectionString) {
   }
 
   const [, endpointId] = endpointMatch;
-  
+
   try {
     // Add the endpoint parameter for Neon
     const url = new URL(connectionString);
     url.searchParams.set('options', `endpoint=${endpointId}`);
     url.searchParams.set('sslmode', 'require');
-    
+
     return url.toString();
   } catch (error) {
     console.error('Error formatting Neon connection string:', error.message);
@@ -40,7 +47,7 @@ export function formatNeonConnectionString(connectionString) {
 
 export function getConnectionConfig() {
   const connectionString = process.env.NEON_DATABASE_URL || process.env.DB_URL;
-  
+
   if (!connectionString) {
     throw new Error('No database connection string provided');
   }
