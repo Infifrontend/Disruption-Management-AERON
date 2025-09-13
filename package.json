@@ -12,8 +12,7 @@
     "backend:dev": "nodemon --watch server --ext js,json,env server/start.js",
     "backend:prod": "node server/start.js",
     "frontend:dev": "vite",
-    "fullstack:dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\"",
-    "start": "npm run backend:prod"
+    "fs:dev": "concurrently \"npm run backend:dev\" \"npm run frontend:dev\""
   },
   "keywords": [],
   "author": "",
@@ -91,6 +90,7 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/pg": "^8.15.5",
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.10"
   }
 }
