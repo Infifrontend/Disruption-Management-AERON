@@ -65,20 +65,38 @@ export function ComparisonMatrix({
 }: ComparisonMatrixProps) {
   const navigate = useNavigate();
   const { setReassignedCrewData } = useAppContext();
+  
+  // All state hooks declared at the top level, unconditionally
   const [loading, setLoading] = useState(false);
-
-  // State for reassigned data, keyed by option ID
   const [reassignedData, setReassignedData] = useState({});
-
-  // State for expanded crew in crew availability tab
-  const [expandedCrew, setExpandedCrew] = useState<number | string | null>(
-    null,
-  );
-
-  // State for storing crew availability and alternate aircraft options
+  const [expandedCrew, setExpandedCrew] = useState<number | string | null>(null);
   const [crewAvailabilityData, setCrewAvailabilityData] = useState({});
-  const [alternateAircraftOptionsData, setAlternateAircraftOptionsData] =
-    useState({});
+  const [alternateAircraftOptionsData, setAlternateAircraftOptionsData] = useState({});
+  const [dynamicRecoveryOptions, setDynamicRecoveryOptions] = useState([]);
+  const [selectedOptionDetails, setSelectedOptionDetails] = useState(null);
+  const [rotationPlanDetails, setRotationPlanDetails] = useState(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [showRotationDialog, setShowRotationDialog] = useState(false);
+  const [loadingFullDetails, setLoadingFullDetails] = useState(null);
+  const [loadingRotationImpact, setLoadingRotationImpact] = useState(null);
+  const [executingOption, setExecutingOption] = useState(null);
+  const [showExecuteConfirmDialog, setShowExecuteConfirmDialog] = useState(false);
+  const [optionToConfirm, setOptionToConfirm] = useState(null);
+  const [selectedAircraftFlight, setSelectedAircraftFlight] = useState(null);
+  const [showCrewSwapDialog, setShowCrewSwapDialog] = useState(false);
+  const [selectedCrewForSwap, setSelectedCrewForSwap] = useState(null);
+  const [availableCrewForSwap, setAvailableCrewForSwap] = useState([]);
+  const [expandedAircraft, setExpandedAircraft] = useState(null);
+  const [alternateAircraftFilters, setAlternateAircraftFilters] = useState({
+    search: "",
+    status: "all",
+    type: "all",
+  });
+  const [crewFilters, setCrewFilters] = useState({
+    search: "",
+    role: "all",
+    status: "all",
+  });
 
   // Function to update reassigned data state
   const updateReassignedData = (optionId, type, data) => {
@@ -121,22 +139,6 @@ export function ComparisonMatrix({
       (keyword) => title.includes(keyword) || description.includes(keyword),
     );
   };
-  const [dynamicRecoveryOptions, setDynamicRecoveryOptions] = useState([]);
-  const [selectedOptionDetails, setSelectedOptionDetails] = useState(null);
-  const [rotationPlanDetails, setRotationPlanDetails] = useState(null);
-  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
-  const [showRotationDialog, setShowRotationDialog] = useState(false);
-  const [loadingFullDetails, setLoadingFullDetails] = useState(null);
-  const [loadingRotationImpact, setLoadingRotationImpact] = useState(null);
-  const [executingOption, setExecutingOption] = useState(null);
-  const [showExecuteConfirmDialog, setShowExecuteConfirmDialog] =
-    useState(false);
-  const [optionToConfirm, setOptionToConfirm] = useState(null);
-  const [selectedAircraftFlight, setSelectedAircraftFlight] = useState(null);
-  const [showCrewSwapDialog, setShowCrewSwapDialog] = useState(false);
-  const [selectedCrewForSwap, setSelectedCrewForSwap] = useState(null);
-  const [availableCrewForSwap, setAvailableCrewForSwap] = useState([]);
-  const [expandedAircraft, setExpandedAircraft] = useState(null);
 
   // Load recovery options from database based on disruption category
   useEffect(() => {
@@ -1374,26 +1376,12 @@ export function ComparisonMatrix({
     }
   };
 
-  // State and handlers for the "Alternate Aircraft Options" tab
-  const [alternateAircraftFilters, setAlternateAircraftFilters] = useState({
-    search: "",
-    status: "all",
-    type: "all",
-  });
-
   const handleAlternateAircraftFilterChange = (newFilters) => {
     setAlternateAircraftFilters((prevFilters) => ({
       ...prevFilters,
       ...newFilters,
     }));
   };
-
-  // State and handlers for the "Crew Availability" tab
-  const [crewFilters, setCrewFilters] = useState({
-    search: "",
-    role: "all",
-    status: "all",
-  });
 
   const handleCrewFilterChange = (newFilters) => {
     setCrewFilters((prevFilters) => ({
