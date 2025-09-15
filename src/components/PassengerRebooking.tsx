@@ -184,9 +184,6 @@ export function PassengerRebooking({ context, onClearContext }) {
   // State to track PNRs that were selected for approval (prevents auto-clearing)
   const [pnrsForApproval, setPnrsForApproval] = useState(new Set());
 
-  // State for preserved selections (e.g., alternate aircraft)
-  const [preservedSelections, setPreservedSelections] = useState({});
-
   // Enhanced default passenger data with PNR grouping
   const defaultPassengers = [
     {
@@ -1650,21 +1647,37 @@ export function PassengerRebooking({ context, onClearContext }) {
           await databaseService.addPendingSolution(solutionData);
 
         if (pendingSolutionSuccess) {
-          let successMessage = "Passenger services have been submitted for approval.";
+          let successMessage = "Services sent for approval successfully!\n";
 
-          if (hasPassenger && confirmedPassengers.length > 0) {
-            successMessage += ` ${confirmedPassengers.length} passenger${confirmedPassengers.length > 1 ? "s" : ""} rebooked successfully.`;
+          if (hasPassenger && !hasCrew) {
+            // Passenger-only scenario
+            const uniquePnrs = new Set(confirmedPassengers.map((p) => p.pnr))
+              .size;
+            successMessage += `${confirmedPassengers.length} passengers across ${uniquePnrs} PNR groups processed.`;
+          } else if (hasCrew && !hasPassenger) {
+            // Crew-only scenario
+            const totalCrewAssigned = Object.values(
+              crewHotelAssignments,
+            ).reduce(
+              (total, assignment) =>
+                total + (assignment as any).crew_member.length,
+              0,
+            );
+            successMessage += `${totalCrewAssigned} crew members assigned to ${Object.keys(crewHotelAssignments).length} hotel(s).`;
+          } else if (hasPassenger && hasCrew) {
+            // Both scenarios
+            const uniquePnrs = new Set(confirmedPassengers.map((p) => p.pnr))
+              .size;
+            const totalCrewAssigned = Object.values(
+              crewHotelAssignments,
+            ).reduce(
+              (total, assignment) =>
+                total + (assignment as any).crew_member.length,
+              0,
+            );
+            successMessage += `${confirmedPassengers.length} passengers across ${uniquePnrs} PNR groups processed.\n`;
+            successMessage += `${totalCrewAssigned} crew members assigned to ${Object.keys(crewHotelAssignments).length} hotel(s).`;
           }
-
-          if (hasCrew && Object.keys(crewHotelAssignments).length > 0) {
-            successMessage += ` ${Object.keys(crewHotelAssignments).length} crew member${Object.keys(crewHotelAssignments).length > 1 ? "s" : ""} assigned to hotels.`;
-          }
-
-          // Updated success message to include aircraft selection confirmation
-          if (preservedSelections?.aircraft) {
-            successMessage += ` Selected aircraft information saved.`;
-          }
-
 
           alertService.success("Submission Successful", successMessage, () => {
             // Clear selections after successful submission
@@ -1675,7 +1688,6 @@ export function PassengerRebooking({ context, onClearContext }) {
             setPnrsForApproval(new Set());
             setSelectedCrewMembers(new Set());
             setSelectedHotelForCrew(null);
-            setPreservedSelections({}); // Clear preserved selections
 
             // Navigate to Affected Flights page
             navigate("/disruption");
@@ -3290,10 +3302,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
                       {Object.entries(filteredPnrGroups).map(
                         ([pnr, groupPassengers]) => (
-                          <div
-                            key={pnr}
-                            className="border rounded-lg bg-white"
-                          >
+                          <div key={pnr} className="border rounded-lg bg-white">
                             <div className="p-4 border-b bg-gray-50">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -3526,8 +3535,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Eye className="h-3 w-3 mr-1" />
                                   View
                                 </Button>
-                                {passenger.status ===
-                                  "Rebooking Required" && (
+                                {passenger.status === "Rebooking Required" && (
                                   <Button
                                     size="sm"
                                     className="btn-flydubai-primary text-xs"
