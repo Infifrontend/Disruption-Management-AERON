@@ -874,9 +874,10 @@ export function PendingSolutions() {
 
     // Extract crew and passenger data
     const crewData =
-      pendingSolutionData?.full_details?.crew_hotel_assignments ||
       pendingSolutionData?.crew_hotel_assignments ||
+      pendingSolutionData?.full_details?.crew_hotel_assignments ||
       recoveryOptionData?.crew_hotel_assignments ||
+      recoveryOptionData?.rotation_plan?.crew ||
       plan.assignedCrew ||
       [];
 

@@ -107,7 +107,12 @@ export function PassengerRebooking({ context, onClearContext }) {
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("passenger-service");
-  const [crewData, setCrewData] = useState(null);
+  const [crewData, setCrewData] = useState({
+    crew: [],
+    crewConstraints: {},
+    operationalConstraints: {},
+  });
+  const [preservedCrewAssignments, setPreservedCrewAssignments] = useState([]);
   const [loading, setLoading] = useState(false);
 
   // Custom alert state
@@ -159,8 +164,8 @@ export function PassengerRebooking({ context, onClearContext }) {
   const contextPassengers = context?.passengers || [];
 
   // Get data from navigation state or context - moved up to be available everywhere
-  const selectedFlight = context?.selectedFlight || context?.flight;
-  const recoveryOption = context?.recoveryOption;
+  const selectedFlight = context?.selectedFlight || selectedFlight;
+  const recoveryOption = context?.recoveryOption || recoveryOption;
   const fromExecution = context?.fromExecution;
 
   // State for generated passengers
@@ -1689,6 +1694,7 @@ export function PassengerRebooking({ context, onClearContext }) {
             setPnrsForApproval(new Set());
             setSelectedCrewMembers(new Set());
             setSelectedHotelForCrew(null);
+            setPreservedCrewAssignments([]); // Clear preserved assignments
 
             // Navigate to Affected Flights page
             navigate("/disruption");
@@ -1757,10 +1763,23 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // Load crew data when crew tab is accessed
   useEffect(() => {
-    if (activeTab === "crew-schedule" && recoveryOption?.id && !crewData) {
+    // Load preserved crew assignments from context or local state
+    if (context?.recoveryOption?.crewHotelAssignments) {
+      setPreservedCrewAssignments(context.recoveryOption.crewHotelAssignments);
+    } else if (context?.recoveryOption?.crewAssignments?.assignedCrew) {
+      setPreservedCrewAssignments(context.recoveryOption.crewAssignments.assignedCrew);
+    } else if (context?.preservedSelections?.crew?.crewData) {
+      setPreservedCrewAssignments(context.preservedSelections.crew.crewData);
+    }
+
+    if (
+      activeTab === "crew-schedule" &&
+      recoveryOption?.id &&
+      !crewData.crew.length
+    ) {
       loadCrewData();
     }
-  }, [activeTab, recoveryOption?.id, crewData]);
+  }, [activeTab, recoveryOption?.id, crewData, context, context?.preservedSelections]);
 
   // Track confirmed PNRs for approval but don't auto-clear selectedPnrs
   useEffect(() => {
@@ -2468,61 +2487,59 @@ export function PassengerRebooking({ context, onClearContext }) {
                               {expandedPnrs.has(pnr) && (
                                 <div className="p-4 border-t">
                                   <div className="grid gap-3">
-                                    {(groupPassengers as any).map(
-                                      (passenger) => (
-                                        <div
-                                          key={passenger.id}
-                                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                                        >
-                                          <div className="flex items-center gap-4">
-                                            <div>
-                                              <div className="font-medium">
-                                                {passenger.name}
-                                              </div>
-                                              <div className="text-sm text-gray-500">
-                                                {passenger.contactInfo}
-                                              </div>
+                                    {(groupPassengers as any).map((passenger) => (
+                                      <div
+                                        key={passenger.id}
+                                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                                      >
+                                        <div className="flex items-center gap-4">
+                                          <div>
+                                            <div className="font-medium">
+                                              {passenger.name}
                                             </div>
-                                            <Badge
-                                              className={getPriorityColor(
-                                                passenger.priority,
-                                              )}
-                                            >
-                                              {passenger.priority}
-                                            </Badge>
-                                            <Badge
-                                              className={getStatusColor(
-                                                passenger.status,
-                                              )}
-                                            >
-                                              {passenger.status}
-                                            </Badge>
-                                            <div className="text-sm text-gray-600">
-                                              Seat: {passenger.seat}
+                                            <div className="text-sm text-gray-500">
+                                              {passenger.contactInfo}
                                             </div>
-                                            {passenger.specialRequirements && (
-                                              <Badge
-                                                variant="outline"
-                                                className="text-xs"
-                                              >
-                                                {passenger.specialRequirements}
-                                              </Badge>
-                                            )}
                                           </div>
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() =>
-                                              handleRebookPassenger(passenger)
-                                            }
-                                            className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                          <Badge
+                                            className={getPriorityColor(
+                                              passenger.priority,
+                                            )}
                                           >
-                                            <Eye className="h-3 w-3 mr-1" />
-                                            View
-                                          </Button>
+                                            {passenger.priority}
+                                          </Badge>
+                                          <Badge
+                                            className={getStatusColor(
+                                              passenger.status,
+                                            )}
+                                          >
+                                            {passenger.status}
+                                          </Badge>
+                                          <div className="text-sm text-gray-600">
+                                            Seat: {passenger.seat}
+                                          </div>
+                                          {passenger.specialRequirements && (
+                                            <Badge
+                                              variant="outline"
+                                              className="text-xs"
+                                            >
+                                              {passenger.specialRequirements}
+                                            </Badge>
+                                          )}
                                         </div>
-                                      ),
-                                    )}
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() =>
+                                            handleRebookPassenger(passenger)
+                                          }
+                                          className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                        >
+                                          <Eye className="h-3 w-3 mr-1" />
+                                          View
+                                        </Button>
+                                      </div>
+                                    ))}
                                   </div>
                                 </div>
                               )}
@@ -3536,7 +3553,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Eye className="h-3 w-3 mr-1" />
                                   View
                                 </Button>
-                                {passenger.status === "Rebooking Required" && (
+                                {passenger.status ===
+                                  "Rebooking Required" && (
                                   <Button
                                     size="sm"
                                     className="btn-flydubai-primary text-xs"
@@ -3999,7 +4017,7 @@ export function PassengerRebooking({ context, onClearContext }) {
         </Card>
       )}
 
-      {/* Enhanced Rebooking Dialog with Additional Services Flow */}
+      {/* Dialogs */}
       <Dialog open={showRebookingDialog} onOpenChange={setShowRebookingDialog}>
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
