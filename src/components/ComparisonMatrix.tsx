@@ -2882,7 +2882,7 @@ export function ComparisonMatrix({
                                                     </Badge>
                                                     <Button
                                                       size="sm"
-                                                      variant="ghost"
+                                                      variant="ghost" title="View Rotation Impact"
                                                       className="h-6 w-6 p-0"
                                                       onClick={(e) => {
                                                         e.stopPropagation();

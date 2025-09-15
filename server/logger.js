@@ -1,13 +1,13 @@
-import pino from 'pino';
-import { existsSync, mkdirSync } from 'fs';
-import { join } from 'path';
-import { fileURLToPath } from 'url';
+import pino from "pino";
+import { existsSync, mkdirSync } from "fs";
+import { join, dirname} from "path";
+import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
 // Ensure logs directory exists
-const logsDir = join(__dirname, '../logs');
+const logsDir = join(__dirname, "../logs");
 try {
   mkdirSync(logsDir, { recursive: true });
   console.log(`Logs directory created/verified at: ${logsDir}`);
@@ -22,10 +22,10 @@ if (!existsSync(logsDir)) {
 }
 
 // Create write streams for different log levels with explicit paths
-const infoLogPath = join(logsDir, 'info.log');
-const errorLogPath = join(logsDir, 'error.log');
-const exceptionLogPath = join(logsDir, 'exceptions.log');
-const requestLogPath = join(logsDir, 'requests.log');
+const infoLogPath = join(logsDir, "info.log");
+const errorLogPath = join(logsDir, "error.log");
+const exceptionLogPath = join(logsDir, "exceptions.log");
+const requestLogPath = join(logsDir, "requests.log");
 
 console.log(`Info log path: ${infoLogPath}`);
 console.log(`Error log path: ${errorLogPath}`);
@@ -37,77 +37,86 @@ const transport = pino.transport({
   targets: [
     // Info log file
     {
-      target: 'pino/file',
-      level: 'info',
+      target: "pino/file",
+      level: "info",
       levelOnly: true,
       options: {
         destination: infoLogPath,
-        mkdir: true
-      }
+        mkdir: true,
+      },
     },
-    // Error log file  
+    // Error log file
     {
-      target: 'pino/file',
-      level: 'error',
+      target: "pino/file",
+      level: "error",
       options: {
         destination: errorLogPath,
-        mkdir: true
-      }
-    }
-  ]
+        mkdir: true,
+      },
+    },
+  ],
 });
 
-const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
-  timestamp: pino.stdTimeFunctions.isoTime,
-  // formatters: {
-  //   level: (label) => {
-  //     return { level: label };
-  //   }
-  // }
-}, transport);
+const logger = pino(
+  {
+    level: process.env.LOG_LEVEL || "info",
+    timestamp: pino.stdTimeFunctions.isoTime,
+    // formatters: {
+    //   level: (label) => {
+    //     return { level: label };
+    //   }
+    // }
+  },
+  transport,
+);
 
 // Create separate request logger
 const requestTransport = pino.transport({
-  target: 'pino/file',
+  target: "pino/file",
   options: {
     destination: requestLogPath,
-    mkdir: true
-  }
+    mkdir: true,
+  },
 });
 
-const requestLogger = pino({
-  level: 'info',
-  timestamp: pino.stdTimeFunctions.isoTime,
-  formatters: {
-    level: (label) => {
-      return { level: label };
-    }
+const requestLogger = pino(
+  {
+    level: "info",
+    timestamp: pino.stdTimeFunctions.isoTime,
+    formatters: {
+      level: (label) => {
+        return { level: label };
+      },
+    },
+    serializers: {
+      req: pino.stdSerializers.req,
+      res: pino.stdSerializers.res,
+    },
   },
-  serializers: {
-    req: pino.stdSerializers.req,
-    res: pino.stdSerializers.res
-  }
-}, requestTransport);
+  requestTransport,
+);
 
 // Custom exception logger with dedicated transport
 const exceptionTransport = pino.transport({
-  target: 'pino/file',
+  target: "pino/file",
   options: {
     destination: exceptionLogPath,
-    mkdir: true
-  }
+    mkdir: true,
+  },
 });
 
-const exceptionLogger = pino({
-  level: 'error',
-  timestamp: pino.stdTimeFunctions.isoTime,
-  formatters: {
-    level: (label) => {
-      return { level: label };
-    }
-  }
-}, exceptionTransport);
+const exceptionLogger = pino(
+  {
+    level: "error",
+    timestamp: pino.stdTimeFunctions.isoTime,
+    formatters: {
+      level: (label) => {
+        return { level: label };
+      },
+    },
+  },
+  exceptionTransport,
+);
 
 // Enhanced logging methods with console fallback
 const logInfo = (message, meta = {}) => {
@@ -115,26 +124,28 @@ const logInfo = (message, meta = {}) => {
     logger.info(meta, message);
   } catch (err) {
     console.log(`[INFO] ${message}`, meta);
-    console.error('Logger error:', err.message);
+    console.error("Logger error:", err.message);
   }
 };
 
 const logError = (message, error = null, meta = {}) => {
-  const errorMeta = error ? { error: error.message, stack: error.stack, ...meta } : meta;
+  const errorMeta = error
+    ? { error: error.message, stack: error.stack, ...meta }
+    : meta;
   try {
     logger.error(errorMeta, message);
   } catch (err) {
     console.error(`[ERROR] ${message}`, errorMeta);
-    console.error('Logger error:', err.message);
+    console.error("Logger error:", err.message);
   }
 };
 
-const logException = (error, context = 'Unknown') => {
+const logException = (error, context = "Unknown") => {
   const exceptionData = {
     context,
     error: error.message,
     stack: error.stack,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   console.error(`[EXCEPTION] Unhandled exception in ${context}`, exceptionData); // Console backup
@@ -146,30 +157,39 @@ const logException = (error, context = 'Unknown') => {
 const requestLoggerMiddleware = (req, res, next) => {
   const start = Date.now();
 
-  res.on('finish', () => {
+  res.on("finish", () => {
     const duration = Date.now() - start;
     const logData = {
       method: req.method,
       url: req.url,
       statusCode: res.statusCode,
       duration: `${duration}ms`,
-      userAgent: req.get('User-Agent'),
+      userAgent: req.get("User-Agent"),
       ip: req.ip || req.connection.remoteAddress,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    requestLogger.info(logData, `${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`);
+    requestLogger.info(
+      logData,
+      `${req.method} ${req.url} - ${res.statusCode} (${duration}ms)`,
+    );
   });
 
   next();
 };
 
 // Database operation logger
-const logDatabaseOperation = (operation, table, duration, success = true, error = null) => {
+const logDatabaseOperation = (
+  operation,
+  table,
+  duration,
+  success = true,
+  error = null,
+) => {
   const logData = {
     operation,
     table,
     duration: `${duration}ms`,
-    success
+    success,
   };
 
   if (success) {
@@ -184,7 +204,7 @@ const logRecoveryOperation = (operation, disruptionId, details = {}) => {
   const logData = {
     operation,
     disruptionId,
-    ...details
+    ...details,
   };
 
   logInfo(`Recovery operation: ${operation}`, logData);
@@ -192,14 +212,20 @@ const logRecoveryOperation = (operation, disruptionId, details = {}) => {
 
 // Test logging function
 const testLogging = () => {
-  console.log('Testing logging functionality...');
-  logInfo('Test info message', { test: true, timestamp: new Date().toISOString() });
-  logError('Test error message', new Error('Test error'), { test: true, timestamp: new Date().toISOString() });
-  console.log('Logging test completed. Check log files in logs/ directory.');
+  console.log("Testing logging functionality...");
+  logInfo("Test info message", {
+    test: true,
+    timestamp: new Date().toISOString(),
+  });
+  logError("Test error message", new Error("Test error"), {
+    test: true,
+    timestamp: new Date().toISOString(),
+  });
+  console.log("Logging test completed. Check log files in logs/ directory.");
 };
 
 // Initialize test to verify logging works on startup
-console.log('Initializing logger and running test...');
+console.log("Initializing logger and running test...");
 testLogging();
 
 export {
@@ -210,7 +236,7 @@ export {
   requestLoggerMiddleware,
   logDatabaseOperation,
   logRecoveryOperation,
-  testLogging
+  testLogging,
 };
 
 export default logger;

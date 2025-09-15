@@ -5,6 +5,7 @@ import { logInfo, logError } from './logger.js';
 // LLM Provider imports
 import { modelRouter } from './model-router.js';
 import { appendFile } from "fs/promises";
+import { json } from "stream/consumers";
 
 class LLMRecoveryService {
   constructor() {
@@ -742,12 +743,12 @@ Return only valid JSON. No markdown formatting or extra text.`);
       const llm = this.modelRouter.getProvider();
       const providerInfo = this.modelRouter.getCurrentProviderInfo();
 
-      appendFile("logs/llm-generated-options.log", "generating recovery option =============>")
-      appendFile('logs/llm-generated-options.log', {
+      appendFile("logs/llm-generated-options.log", "generating recovery option =============>\n")
+      appendFile('logs/llm-generated-options.log', JSON.stringify({
         "prompt":promptTemplate,
         "promtData": promptData
 
-      });
+      }));
 
       logInfo(`Starting streaming generation for option ${optionNumber}`, {
         flight_number: flightNumber,
