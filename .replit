@@ -27,7 +27,7 @@ mode = "parallel"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "node --env-file=.env server/start.js"
+args = "node server/start.js"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"

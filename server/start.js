@@ -1887,6 +1887,7 @@ app.get("/api/disruptions/", async (req, res) => {
     // Calculate 24 hours ago
     const twentyFourHoursAgo = new Date();
     twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+    console.log("querying database")
 
     // Build the base query with JOIN
     let query = `
@@ -1902,6 +1903,7 @@ app.get("/api/disruptions/", async (req, res) => {
       FROM flight_disruptions fd
       LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
     `;
+
 
     // Build WHERE conditions
     const conditions = [];
@@ -3593,7 +3595,9 @@ app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) =>
         requested: optionsConfig.count || 3,
         generated: options.length,
         streaming: optionsConfig.stream || false
-      }
+      },
+      option: options,
+      steps: steps
     });
 
   } catch (error) {
