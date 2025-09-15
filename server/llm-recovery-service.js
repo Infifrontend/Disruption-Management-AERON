@@ -542,68 +542,65 @@ Return only valid JSON. No markdown formatting or extra text.`);
     const providerInfo = this.modelRouter.getCurrentProviderInfo();
     const llm = this.modelRouter.getProvider();
     const promptData = this.buildPromptData(disruptionData, categoryInfo, config.count);
+
+    // Use local variables for streaming state
+    let fullContent = '';
+    let chunksReceived = 0;
+    let tokens = {};
+
     const chain = this.basePrompt.pipe(llm.bind({
       streaming: true,
       callbacks: [{
         handleLLMNewToken: (token) => {
-          this._fullContent = (this._fullContent || '') + token;
-          this._chunksReceived = (this._chunksReceived || 0) + 1;
-          if (this._chunksReceived % 10 === 0) {
-            logInfo('Streaming batch progress', {
+          fullContent += token;
+          chunksReceived++;
+          // Log only every 100 tokens for minimal overhead
+          if (chunksReceived % 100 === 0) {
+            logInfo('LLM streaming progress', {
               flight_number: disruptionData.flight_number,
-              chunks_received: this._chunksReceived,
-              content_length: this._fullContent.length,
-              provider: providerInfo.provider
+              chunks_received: chunksReceived,
+              content_length: fullContent.length
             });
           }
         },
         handleLLMEnd: (output) => {
-          this._tokens = this.extractTokenInfo(output);
-          logInfo('Streaming batch completed', {
-            flight_number: disruptionData.flight_number,
-            total_chunks: this._chunksReceived,
-            final_content_length: this._fullContent.length,
-            tokens: this._tokens,
-            provider: providerInfo.provider
-          });
+          tokens = this.extractTokenInfo(output);
         }
       }]
     }));
 
-    this._fullContent = '';
-    this._chunksReceived = 0;
-    this._tokens = {};
     const startTime = Date.now();
     let response;
     try {
       response = await chain.invoke(promptData);
     } catch (error) {
-      logError('Streaming batch failed', error, {
+      logError('LLM streaming failed', error, {
         flight_number: disruptionData.flight_number,
         error_type: error.constructor.name
       });
       throw error;
     }
     const streamingTime = Date.now() - startTime;
-    let fullContent = this._fullContent || (response && response.content) || '';
-    let tokens = this._tokens || this.extractTokenInfo(response);
-    let chunksReceived = this._chunksReceived || 1;
+    if (!fullContent && response && response.content) {
+      fullContent = response.content;
+      tokens = this.extractTokenInfo(response);
+      chunksReceived = 1;
+    }
 
-    // Log the streamed response
-    logInfo('LLM Full Batch Streamed Response', {
+    // Minimal summary log only after streaming is complete
+    logInfo('LLM streaming complete', {
       flight_number: disruptionData.flight_number,
       streaming_time_ms: streamingTime,
-      chunks_received: chunksReceived
+      chunks_received: chunksReceived,
+      content_length: fullContent.length
     });
-
-    appendFile('logs/llm-generated-options.log', `\n[${new Date().toISOString()}] Flight: ${disruptionData.flight_number}, Provider: ${providerInfo.provider}, Model: ${providerInfo.model}, Streaming Time: ${streamingTime}ms, Chunks: ${chunksReceived}, Tokens: ${JSON.stringify(tokens)}\nResponse:\n${fullContent}\n---\n`);
 
     // Parse the batch response
     let result;
     try {
       result = this.parseResponse(fullContent, disruptionData.flight_number);
     } catch (error) {
-      logError('Failed to parse batch streamed response', error, {
+      logError('Failed to parse LLM response', error, {
         flight_number: disruptionData.flight_number,
         contentPreview: fullContent ? fullContent.substring(0, 200) : 'empty'
       });
