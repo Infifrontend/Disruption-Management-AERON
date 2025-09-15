@@ -593,11 +593,10 @@ Return only valid JSON. No markdown formatting or extra text.`);
     logInfo('LLM Full Batch Streamed Response', {
       flight_number: disruptionData.flight_number,
       streaming_time_ms: streamingTime,
-      chunks_received: chunksReceived,
-      full_streamed_response: fullContent
+      chunks_received: chunksReceived
     });
 
-    appendFile('../logs/llm_responses.log', `\n[${new Date().toISOString()}] Flight: ${disruptionData.flight_number}, Provider: ${providerInfo.provider}, Model: ${providerInfo.model}, Streaming Time: ${streamingTime}ms, Chunks: ${chunksReceived}, Tokens: ${JSON.stringify(tokens)}\nResponse:\n${fullContent}\n---\n`);
+    appendFile('logs/llm-generated-options.log', `\n[${new Date().toISOString()}] Flight: ${disruptionData.flight_number}, Provider: ${providerInfo.provider}, Model: ${providerInfo.model}, Streaming Time: ${streamingTime}ms, Chunks: ${chunksReceived}, Tokens: ${JSON.stringify(tokens)}\nResponse:\n${fullContent}\n---\n`);
 
     // Parse the batch response
     let result;
