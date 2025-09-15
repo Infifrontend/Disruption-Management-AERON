@@ -1303,12 +1303,14 @@ export function ComparisonMatrix({
     const roleNormalized = targetRole.toLowerCase();
     console.log(selectedOptionDetails, "selectedOptionDetails");
 
-    // Ensure crew_available is an array before filtering
+    // Ensure rotation_plan.crew is an array before filtering
     const availableCrewList = Array.isArray(
-      selectedOptionDetails?.crew_available,
+      selectedOptionDetails?.rotation_plan?.crew,
     )
-      ? selectedOptionDetails.crew_available
-      : [];
+      ? selectedOptionDetails.rotation_plan.crew
+      : Array.isArray(selectedOptionDetails?.rotation_plan?.crewData)
+        ? selectedOptionDetails.rotation_plan.crewData
+        : [];
 
     // Group all crew by role
     const crewPools = Object.groupBy(
@@ -2517,7 +2519,8 @@ export function ComparisonMatrix({
                     </CardHeader>
                     <CardContent>
                       {(crewAvailabilityData[selectedOptionDetails?.id] ||
-                        selectedOptionDetails?.crew_available ||
+                        selectedOptionDetails?.rotation_plan?.crew ||
+                        selectedOptionDetails?.rotation_plan?.crewData ||
                         []).length > 0 ? (
                         <div className="space-y-6">
                           {/* Crew Filters */}
@@ -2606,7 +2609,8 @@ export function ComparisonMatrix({
                               <TableBody>
                                 {(
                                   crewAvailabilityData[selectedOptionDetails?.id] ||
-                                  selectedOptionDetails?.crew_available ||
+                                  selectedOptionDetails?.rotation_plan?.crew ||
+                                  selectedOptionDetails?.rotation_plan?.crewData ||
                                   []
                                 )
                                   .filter((crew) => {
@@ -2751,7 +2755,9 @@ export function ComparisonMatrix({
                                                           selectedOptionDetails?.id
                                                         ]
                                                       : selectedOptionDetails
-                                                          ?.crew_available || [];
+                                                          ?.rotation_plan?.crew ||
+                                                        selectedOptionDetails
+                                                          ?.rotation_plan?.crewData || [];
 
                                                   // Filter replacement crew by role and exclude duplicates
                                                   const matchingReplacementCrew =
@@ -2765,7 +2771,9 @@ export function ComparisonMatrix({
                                                               ?.id
                                                           ] ||
                                                           selectedOptionDetails
-                                                            ?.crew_available ||
+                                                            ?.rotation_plan?.crew ||
+                                                          selectedOptionDetails
+                                                            ?.rotation_plan?.crewData ||
                                                           []
                                                         )
                                                           .map((c) => c?.name)
@@ -3529,7 +3537,8 @@ export function ComparisonMatrix({
                                       crewAvailabilityData[
                                         selectedOptionDetails?.id
                                       ] ||
-                                      selectedOptionDetails?.crew_available ||
+                                      selectedOptionDetails?.rotation_plan?.crew ||
+                                      selectedOptionDetails?.rotation_plan?.crewData ||
                                       []
                                     ).filter(
                                       (crew) =>
@@ -3560,7 +3569,8 @@ export function ComparisonMatrix({
                                       crewAvailabilityData[
                                         selectedOptionDetails?.id
                                       ] ||
-                                      selectedOptionDetails?.crew_available ||
+                                      selectedOptionDetails?.rotation_plan?.crew ||
+                                      selectedOptionDetails?.rotation_plan?.crewData ||
                                       []
                                     ).filter(
                                       (crew) =>
@@ -3588,7 +3598,8 @@ export function ComparisonMatrix({
                                       crewAvailabilityData[
                                         selectedOptionDetails?.id
                                       ] ||
-                                      selectedOptionDetails?.crew_available ||
+                                      selectedOptionDetails?.rotation_plan?.crew ||
+                                      selectedOptionDetails?.rotation_plan?.crewData ||
                                       []
                                     ).filter(
                                       (crew) =>
