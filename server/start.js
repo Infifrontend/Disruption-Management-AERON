@@ -1,5 +1,5 @@
 // Import environment configuration first - this must be the top import
-import './env-config.js';
+import "./env-config.js";
 
 import express from "express";
 import cors from "cors";
@@ -7,18 +7,24 @@ import pkg from "pg";
 const { Pool } = pkg;
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { 
-  logger, 
+import {
+  logger,
   logInfo,
-  logError, 
-  logException, 
+  logError,
+  logException,
   requestLoggerMiddleware,
   logDatabaseOperation,
-  logRecoveryOperation 
-} from './logger.js';
+  logRecoveryOperation,
+} from "./logger.js";
 
-logInfo('Hello world from pino', {"name": "logesh", "module": "starting express application"})
-logger.info('Hello world from pino', {"name": "logesh", "module": "starting express application"})
+logInfo("Hello world from pino", {
+  name: "logesh",
+  module: "starting express application",
+});
+logger.info("Hello world from pino", {
+  name: "logesh",
+  module: "starting express application",
+});
 
 const app = express();
 // Use environment variable for server port, falling back to PORT or 3001
@@ -149,7 +155,9 @@ app.use((req, res, next) => {
 
 // PostgreSQL connection with fallback and proper Neon handling
 // Use DB_URL environment variable for the connection string
-console.log('Database URL configured', { dbUrl: process.env.DB_URL ? 'Set' : 'Not set' });
+console.log("Database URL configured", {
+  dbUrl: process.env.DB_URL ? "Set" : "Not set",
+});
 let connectionString =
   process.env.DB_URL || "postgresql://0.0.0.0:5432/aeron_settings";
 
@@ -180,7 +188,9 @@ async function testConnection() {
     // Test the connection with a simple query
     await client.query("SELECT 1");
     const duration = Date.now() - startTime;
-    console.log("PostgreSQL connected successfully", { duration: `${duration}ms` });
+    console.log("PostgreSQL connected successfully", {
+      duration: `${duration}ms`,
+    });
     client.release();
     connectionRetries = 0; // Reset on success
     databaseAvailable = true;
@@ -190,7 +200,7 @@ async function testConnection() {
     logError(
       `PostgreSQL connection failed (attempt ${connectionRetries}/${maxRetries})`,
       err,
-      { attempt: connectionRetries, maxRetries, duration: `${duration}ms` }
+      { attempt: connectionRetries, maxRetries, duration: `${duration}ms` },
     );
     databaseAvailable = false;
 
@@ -201,16 +211,22 @@ async function testConnection() {
       ) ||
       err.message.includes("server closed the connection unexpectedly")
     ) {
-      console.log("Database appears to be in sleep mode, retrying connection...");
+      console.log(
+        "Database appears to be in sleep mode, retrying connection...",
+      );
       // Shorter delay for sleep mode recovery
       setTimeout(testConnection, 1000);
     } else if (connectionRetries < maxRetries) {
       setTimeout(testConnection, 2000 * connectionRetries);
     } else {
-      logError("Max connection retries reached. API will continue without database.", null, {
-        maxRetries,
-        finalAttempt: connectionRetries
-      });
+      logError(
+        "Max connection retries reached. API will continue without database.",
+        null,
+        {
+          maxRetries,
+          finalAttempt: connectionRetries,
+        },
+      );
       databaseAvailable = false;
 
       // Schedule periodic retry attempts
@@ -407,27 +423,31 @@ app.get("/api/debug", (req, res) => {
 // Test logging endpoint
 app.get("/api/test-logging", (req, res) => {
   try {
-    logInfo('Test logging endpoint called', { 
+    logInfo("Test logging endpoint called", {
       timestamp: new Date().toISOString(),
       ip: req.ip,
-      userAgent: req.get('User-Agent')
+      userAgent: req.get("User-Agent"),
     });
-    
-    logError('Test error log from endpoint', new Error('Test error for logging verification'), {
-      endpoint: '/api/test-logging',
-      method: req.method
-    });
-    
-    res.json({ 
-      success: true, 
-      message: 'Logging test completed. Check logs/ directory for log files.',
-      timestamp: new Date().toISOString()
+
+    logError(
+      "Test error log from endpoint",
+      new Error("Test error for logging verification"),
+      {
+        endpoint: "/api/test-logging",
+        method: req.method,
+      },
+    );
+
+    res.json({
+      success: true,
+      message: "Logging test completed. Check logs/ directory for log files.",
+      timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    logError('Error in test logging endpoint', error);
-    res.status(500).json({ 
-      error: 'Failed to test logging', 
-      details: error.message 
+    logError("Error in test logging endpoint", error);
+    res.status(500).json({
+      error: "Failed to test logging",
+      details: error.message,
     });
   }
 });
@@ -1887,7 +1907,7 @@ app.get("/api/disruptions/", async (req, res) => {
     // Calculate 24 hours ago
     const twentyFourHoursAgo = new Date();
     twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
-    console.log("querying database")
+    console.log("querying database");
 
     // Build the base query with JOIN
     let query = `
@@ -1903,7 +1923,6 @@ app.get("/api/disruptions/", async (req, res) => {
       FROM flight_disruptions fd
       LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
     `;
-
 
     // Build WHERE conditions
     const conditions = [];
@@ -1943,12 +1962,18 @@ app.get("/api/disruptions/", async (req, res) => {
 
     // Transform to expected format with city name mapping
     const transformedData = queryResult.rows.map((row) => {
-      const originCity = row.origin_city && row.origin_city !== "Unknown" && row.origin_city !== "unknown"
-        ? row.origin_city
-        : getKnownCityName(row.origin);
-      const destinationCity = row.destination_city && row.destination_city !== "Unknown" && row.destination_city !== "unknown"
-        ? row.destination_city
-        : getKnownCityName(row.destination);
+      const originCity =
+        row.origin_city &&
+        row.origin_city !== "Unknown" &&
+        row.origin_city !== "unknown"
+          ? row.origin_city
+          : getKnownCityName(row.origin);
+      const destinationCity =
+        row.destination_city &&
+        row.destination_city !== "Unknown" &&
+        row.destination_city !== "unknown"
+          ? row.destination_city
+          : getKnownCityName(row.destination);
 
       return {
         id: row.id,
@@ -2630,8 +2655,13 @@ app.get("/api/dashboard-analytics", async (req, res) => {
     const now = new Date();
 
     // Check if it's a custom date range (format: "startDate_endDate")
-    if (dateFilter.includes('_') && dateFilter !== 'this_week' && dateFilter !== 'this_month' && dateFilter !== 'last_month') {
-      const [startDateStr, endDateStr] = dateFilter.split('_');
+    if (
+      dateFilter.includes("_") &&
+      dateFilter !== "this_week" &&
+      dateFilter !== "this_month" &&
+      dateFilter !== "last_month"
+    ) {
+      const [startDateStr, endDateStr] = dateFilter.split("_");
       startDate = new Date(startDateStr);
       startDate.setHours(0, 0, 0, 0);
       endDate = new Date(endDateStr);
@@ -2666,7 +2696,15 @@ app.get("/api/dashboard-analytics", async (req, res) => {
           break;
         case "last_month":
           startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-          endDate = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+          endDate = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            0,
+            23,
+            59,
+            59,
+            999,
+          );
           break;
         case "today":
         default:
@@ -3308,33 +3346,44 @@ app.get("/api/recovery-templates/:categoryId", async (req, res) => {
 });
 
 // Import LLM Recovery Service
-import { llmRecoveryService } from './llm-recovery-service.js';
+import { llmRecoveryService } from "./llm-recovery-service.js";
 
 // Helper function to validate and parse disruption ID
 function validateDisruptionId(disruptionId) {
-  if (!disruptionId || disruptionId === "undefined" || disruptionId === "null") {
+  if (
+    !disruptionId ||
+    disruptionId === "undefined" ||
+    disruptionId === "null"
+  ) {
     return { isValid: false, error: "Invalid disruption ID" };
   }
-  
+
   const numericId = parseInt(disruptionId);
   if (isNaN(numericId)) {
     return { isValid: false, error: "Invalid disruption ID format" };
   }
-  
+
   return { isValid: true, numericId };
 }
 
 // Helper function to check existing recovery data
 async function checkExistingRecoveryData(disruptionId) {
   const [existingOptions, existingSteps] = await Promise.all([
-    pool.query("SELECT COUNT(*) as count FROM recovery_options WHERE disruption_id = $1", [disruptionId]),
-    pool.query("SELECT COUNT(*) as count FROM recovery_steps WHERE disruption_id = $1", [disruptionId])
+    pool.query(
+      "SELECT COUNT(*) as count FROM recovery_options WHERE disruption_id = $1",
+      [disruptionId],
+    ),
+    pool.query(
+      "SELECT COUNT(*) as count FROM recovery_steps WHERE disruption_id = $1",
+      [disruptionId],
+    ),
   ]);
-  
+
   return {
     optionsCount: parseInt(existingOptions.rows[0].count),
     stepsCount: parseInt(existingSteps.rows[0].count),
-    hasExisting: existingOptions.rows[0].count > 0 && existingSteps.rows[0].count > 0
+    hasExisting:
+      existingOptions.rows[0].count > 0 && existingSteps.rows[0].count > 0,
   };
 }
 
@@ -3367,7 +3416,7 @@ async function saveRecoveryData(disruptionId, options, steps) {
           step.system,
           step.details,
           step.data ? JSON.stringify(step.data) : null,
-        ]
+        ],
       );
       stepsCount++;
     } catch (error) {
@@ -3390,7 +3439,7 @@ async function saveRecoveryData(disruptionId, options, steps) {
         }
       };
 
-      const formatArray = (arr) => Array.isArray(arr) ? arr : [];
+      const formatArray = (arr) => (Array.isArray(arr) ? arr : []);
 
       await pool.query(
         `INSERT INTO recovery_options (
@@ -3430,7 +3479,7 @@ async function saveRecoveryData(disruptionId, options, steps) {
           option.confidence || 80,
           option.impact || "Medium",
           option.status || "generated",
-          option.priority || (i + 1),
+          option.priority || i + 1,
           formatArray(option.advantages),
           formatArray(option.considerations),
           safeStringify(option.resource_requirements || {}),
@@ -3441,9 +3490,10 @@ async function saveRecoveryData(disruptionId, options, steps) {
           safeStringify(option.metrics || {}),
           safeStringify({}), // rotation_plan - empty for LLM options
           safeStringify(option.impact_area || []),
-          option.impact_summary || `LLM-generated recovery option: ${option.title}`,
+          option.impact_summary ||
+            `LLM-generated recovery option: ${option.title}`,
           safeStringify({}), // crew_available - empty for LLM options
-        ]
+        ],
       );
       optionsCount++;
     } catch (error) {
@@ -3455,183 +3505,189 @@ async function saveRecoveryData(disruptionId, options, steps) {
 }
 
 // LLM-powered recovery options generation endpoint
-app.post("/api/recovery-options/generate-llm/:disruptionId", async (req, res) => {
-  try {
-    const { disruptionId } = req.params;
-    const { optionsConfig = {} } = req.body || {};
-    
-    logInfo(`Generating LLM recovery options for disruption ID: ${disruptionId}`, {
-      endpoint: '/api/recovery-options/generate-llm',
-      disruption_id: disruptionId,
-      method: 'POST',
-      options_config: optionsConfig
-    });
+app.post(
+  "/api/recovery-options/generate-llm/:disruptionId",
+  async (req, res) => {
+    try {
+      const { disruptionId } = req.params;
+      const { optionsConfig = {} } = req.body || {};
 
-    // Validate disruption ID
-    const validation = validateDisruptionId(disruptionId);
-    if (!validation.isValid) {
-      logError('Invalid disruption ID provided', null, {
-        disruption_id: disruptionId,
-        endpoint: '/api/recovery-options/generate-llm',
-        error: validation.error
-      });
-      return res.status(400).json({
-        error: validation.error,
-        optionsCount: 0,
-        stepsCount: 0,
-      });
-    }
+      logInfo(
+        `Generating LLM recovery options for disruption ID: ${disruptionId}`,
+        {
+          endpoint: "/api/recovery-options/generate-llm",
+          disruption_id: disruptionId,
+          method: "POST",
+          options_config: optionsConfig,
+        },
+      );
 
-    const numericDisruptionId = validation.numericId;
+      // Validate disruption ID
+      const validation = validateDisruptionId(disruptionId);
+      if (!validation.isValid) {
+        logError("Invalid disruption ID provided", null, {
+          disruption_id: disruptionId,
+          endpoint: "/api/recovery-options/generate-llm",
+          error: validation.error,
+        });
+        return res.status(400).json({
+          error: validation.error,
+          optionsCount: 0,
+          stepsCount: 0,
+        });
+      }
 
-    // Check for existing recovery data
-    const existingData = await checkExistingRecoveryData(numericDisruptionId);
-    if (existingData.hasExisting) {
-      logInfo('Recovery options already exist, returning existing data', {
-        disruption_id: numericDisruptionId,
-        options_count: existingData.optionsCount,
-        steps_count: existingData.stepsCount
-      });
-      return res.json({
-        success: true,
-        message: "Recovery options and steps already exist",
-        exists: true,
-        optionsCount: existingData.optionsCount,
-        stepsCount: existingData.stepsCount,
-        source: "existing"
-      });
-    }
+      const numericDisruptionId = validation.numericId;
 
-    // Get disruption details with category information
-    const disruptionResult = await pool.query(
-      `SELECT fd.*, dc.category_code, dc.category_name
+      // Check for existing recovery data
+      const existingData = await checkExistingRecoveryData(numericDisruptionId);
+      if (existingData.hasExisting) {
+        logInfo("Recovery options already exist, returning existing data", {
+          disruption_id: numericDisruptionId,
+          options_count: existingData.optionsCount,
+          steps_count: existingData.stepsCount,
+        });
+        return res.json({
+          success: true,
+          message: "Recovery options and steps already exist",
+          exists: true,
+          optionsCount: existingData.optionsCount,
+          stepsCount: existingData.stepsCount,
+          source: "existing",
+        });
+      }
+
+      // Get disruption details with category information
+      const disruptionResult = await pool.query(
+        `SELECT fd.*, dc.category_code, dc.category_name
        FROM flight_disruptions fd
        LEFT JOIN disruption_categories dc ON fd.category_id = dc.id
        WHERE fd.id = $1`,
-      [numericDisruptionId]
-    );
+        [numericDisruptionId],
+      );
 
-    if (disruptionResult.rows.length === 0) {
-      logError('Disruption not found in database', null, {
+      if (disruptionResult.rows.length === 0) {
+        logError("Disruption not found in database", null, {
+          disruption_id: numericDisruptionId,
+          endpoint: "/api/recovery-options/generate-llm",
+        });
+        return res.status(404).json({
+          error: "Disruption not found",
+          optionsCount: 0,
+          stepsCount: 0,
+        });
+      }
+
+      const disruptionData = disruptionResult.rows[0];
+      logInfo("Found disruption for LLM processing", {
+        flight_number: disruptionData.flight_number,
         disruption_id: numericDisruptionId,
-        endpoint: '/api/recovery-options/generate-llm'
+        disruption_type: disruptionData.disruption_type,
+        severity: disruptionData.severity,
       });
-      return res.status(404).json({
-        error: "Disruption not found",
-        optionsCount: 0,
-        stepsCount: 0,
+
+      // Prepare category information
+      const categoryInfo = {
+        category_code: disruptionData.category_code,
+        category_name: disruptionData.categorization,
+        category_id: disruptionData.category_id,
+      };
+
+      logInfo("Using LLM with category info", {
+        disruption_id: numericDisruptionId,
+        flight_number: disruptionData.flight_number,
+        category_code: categoryInfo.category_code,
+        category_name: categoryInfo.category_name,
+      });
+
+      // Configure streaming and incremental generation for better token management
+      const enhancedConfig = {
+        ...optionsConfig,
+        stream: true, // Enable streaming for better token management
+        count: optionsConfig.count || 3,
+        maxRetries: 2,
+      };
+
+      // Generate recovery options using LLM with enhanced config
+      const { options, steps } =
+        await llmRecoveryService.generateRecoveryOptions(
+          disruptionData,
+          categoryInfo,
+          enhancedConfig,
+        );
+
+      logInfo(`LLM generated recovery data successfully`, {
+        disruption_id: numericDisruptionId,
+        flight_number: disruptionData.flight_number,
+        options_count: options.length,
+        steps_count: steps.length,
+        provider: llmRecoveryService.llmProvider,
+      });
+
+      // // Save recovery data efficiently
+      // const { optionsCount, stepsCount } = await saveRecoveryData(
+      //   numericDisruptionId,
+      //   options,
+      //   steps
+      // );
+
+      logInfo("Successfully generated LLM recovery options and steps", {
+        disruption_id: numericDisruptionId,
+        flight_number: disruptionData.flight_number,
+        options_count: options.length,
+        steps_count: steps.length,
+        requested_count: optionsConfig.count || 3,
+        streaming: optionsConfig.stream || false,
+      });
+
+      res.json({
+        success: true,
+        optionsCount: options.length,
+        stepsCount: steps.length,
+        message: `Generated ${options.length} LLM recovery options and ${steps.length} steps`,
+        source: "llm",
+        provider: llmRecoveryService.llmProvider,
+        config: {
+          requested: optionsConfig.count || 3,
+          generated: options.length,
+          streaming: optionsConfig.stream || false,
+        },
+        option: options,
+        steps: steps,
+      });
+    } catch (error) {
+      logError("Error generating LLM recovery options", error, {
+        disruption_id: req.params.disruptionId,
+        endpoint: "/api/recovery-options/generate-llm",
+        error_type: error.constructor.name,
+        stack: error.stack,
+      });
+      res.status(500).json({
+        error: "Failed to generate LLM recovery options",
+        details: error.message,
       });
     }
-
-    const disruptionData = disruptionResult.rows[0];
-    logInfo("Found disruption for LLM processing", {
-      flight_number: disruptionData.flight_number,
-      disruption_id: numericDisruptionId,
-      disruption_type: disruptionData.disruption_type,
-      severity: disruptionData.severity
-    });
-
-    // Prepare category information
-    const categoryInfo = {
-      category_code: disruptionData.category_code,
-      category_name: disruptionData.categorization,
-      category_id: disruptionData.category_id,
-    };
-
-    logInfo("Using LLM with category info", {
-      disruption_id: numericDisruptionId,
-      flight_number: disruptionData.flight_number,
-      category_code: categoryInfo.category_code,
-      category_name: categoryInfo.category_name
-    });
-
-    // Configure streaming and incremental generation for better token management
-    const enhancedConfig = {
-      ...optionsConfig,
-      stream: true, // Enable streaming for better token management
-      count: optionsConfig.count || 3,
-      maxRetries: 2
-    };
-
-    // Generate recovery options using LLM with enhanced config
-    const { options, steps } = await llmRecoveryService.generateRecoveryOptions(
-      disruptionData,
-      categoryInfo,
-      enhancedConfig
-    );
-
-    logInfo(`LLM generated recovery data successfully`, {
-      disruption_id: numericDisruptionId,
-      flight_number: disruptionData.flight_number,
-      options_count: options.length,
-      steps_count: steps.length,
-      provider: llmRecoveryService.llmProvider
-    });
-
-    // // Save recovery data efficiently
-    // const { optionsCount, stepsCount } = await saveRecoveryData(
-    //   numericDisruptionId, 
-    //   options, 
-    //   steps
-    // );
-
-    logInfo("Successfully generated LLM recovery options and steps", {
-      disruption_id: numericDisruptionId,
-      flight_number: disruptionData.flight_number,
-      options_count: options.length,
-      steps_count: steps.length,
-      requested_count: optionsConfig.count || 3,
-      streaming: optionsConfig.stream || false
-    });
-    
-    res.json({
-      success: true,
-      optionsCount: options.length,
-      stepsCount: steps.length,
-      message: `Generated ${options.length} LLM recovery options and ${steps.length} steps`,
-      source: "llm",
-      provider: llmRecoveryService.llmProvider,
-      config: {
-        requested: optionsConfig.count || 3,
-        generated: options.length,
-        streaming: optionsConfig.stream || false
-      },
-      option: options,
-      steps: steps
-    });
-
-  } catch (error) {
-    logError("Error generating LLM recovery options", error, {
-      disruption_id: req.params.disruptionId,
-      endpoint: '/api/recovery-options/generate-llm',
-      error_type: error.constructor.name,
-      stack: error.stack
-    });
-    res.status(500).json({
-      error: "Failed to generate LLM recovery options",
-      details: error.message,
-    });
-  }
-});
+  },
+);
 
 // LLM service health check endpoint
 app.get("/api/llm-recovery/health", async (req, res) => {
   try {
     const healthStatus = await llmRecoveryService.healthCheck();
-    logInfo('LLM health check performed', {
+    logInfo("LLM health check performed", {
       status: healthStatus.status,
       provider: healthStatus.provider,
-      model: healthStatus.model || 'unknown'
+      model: healthStatus.model || "unknown",
     });
     res.json(healthStatus);
   } catch (error) {
-    logError('LLM health check failed', error, {
-      endpoint: '/api/llm-recovery/health',
-      error_type: error.constructor.name
+    logError("LLM health check failed", error, {
+      endpoint: "/api/llm-recovery/health",
+      error_type: error.constructor.name,
     });
     res.status(500).json({
-      status: 'error',
-      error: error.message
+      status: "error",
+      error: error.message,
     });
   }
 });
@@ -3640,20 +3696,20 @@ app.get("/api/llm-recovery/health", async (req, res) => {
 app.get("/api/llm-recovery/health/all", async (req, res) => {
   try {
     const healthStatus = await llmRecoveryService.healthCheckAll();
-    logInfo('LLM health check all providers performed', {
+    logInfo("LLM health check all providers performed", {
       defaultProvider: healthStatus.defaultProvider,
       totalProviders: healthStatus.summary.total,
-      healthyProviders: healthStatus.summary.healthy
+      healthyProviders: healthStatus.summary.healthy,
     });
     res.json(healthStatus);
   } catch (error) {
-    logError('LLM health check all failed', error, {
-      endpoint: '/api/llm-recovery/health/all',
-      error_type: error.constructor.name
+    logError("LLM health check all failed", error, {
+      endpoint: "/api/llm-recovery/health/all",
+      error_type: error.constructor.name,
     });
     res.status(500).json({
-      status: 'error',
-      error: error.message
+      status: "error",
+      error: error.message,
     });
   }
 });
@@ -3662,19 +3718,19 @@ app.get("/api/llm-recovery/health/all", async (req, res) => {
 app.get("/api/llm-recovery/providers", async (req, res) => {
   try {
     const providers = llmRecoveryService.listProviders();
-    logInfo('LLM providers listed', {
+    logInfo("LLM providers listed", {
       defaultProvider: providers.default,
-      availableCount: providers.available.length
+      availableCount: providers.available.length,
     });
     res.json(providers);
   } catch (error) {
-    logError('Failed to list LLM providers', error, {
-      endpoint: '/api/llm-recovery/providers',
-      error_type: error.constructor.name
+    logError("Failed to list LLM providers", error, {
+      endpoint: "/api/llm-recovery/providers",
+      error_type: error.constructor.name,
     });
     res.status(500).json({
-      status: 'error',
-      error: error.message
+      status: "error",
+      error: error.message,
     });
   }
 });
@@ -3683,36 +3739,36 @@ app.get("/api/llm-recovery/providers", async (req, res) => {
 app.post("/api/llm-recovery/provider/switch", async (req, res) => {
   try {
     const { provider } = req.body;
-    
+
     if (!provider) {
       return res.status(400).json({
-        error: 'Provider name is required',
-        status: 'error'
+        error: "Provider name is required",
+        status: "error",
       });
     }
 
     const result = llmRecoveryService.switchProvider(provider);
-    
-    logInfo('LLM provider switched', {
+
+    logInfo("LLM provider switched", {
       oldProvider: result.old,
       newProvider: result.new,
-      endpoint: '/api/llm-recovery/provider/switch'
+      endpoint: "/api/llm-recovery/provider/switch",
     });
-    
+
     res.json({
-      status: 'success',
+      status: "success",
       message: `Switched from ${result.old} to ${result.new}`,
-      ...result
+      ...result,
     });
   } catch (error) {
-    logError('Failed to switch LLM provider', error, {
-      endpoint: '/api/llm-recovery/provider/switch',
+    logError("Failed to switch LLM provider", error, {
+      endpoint: "/api/llm-recovery/provider/switch",
       requestedProvider: req.body?.provider,
-      error_type: error.constructor.name
+      error_type: error.constructor.name,
     });
     res.status(400).json({
-      status: 'error',
-      error: error.message
+      status: "error",
+      error: error.message,
     });
   }
 });
@@ -5034,6 +5090,7 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
       rotation_impact = {},
       submitted_by = "system",
       approval_required = true,
+      selected_aircraft = null,
     } = req.body;
 
     // Validate required fields
@@ -5252,8 +5309,8 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
       INSERT INTO pending_recovery_solutions (
         disruption_id, option_id, option_title, option_description,
         cost, timeline, confidence, impact, status, full_details,
-        rotation_impact, submitted_by, approval_required
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        rotation_impact, submitted_by, approval_required, selected_aircraft
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
       RETURNING *
     `,
       [
@@ -5278,6 +5335,7 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
         JSON.stringify(rotation_impact),
         created_by || submitted_by,
         approval_required,
+        JSON.stringify(selected_aircraft),
       ],
     );
 
@@ -6717,7 +6775,7 @@ const server = app.listen(port, "0.0.0.0", () => {
     host: "0.0.0.0",
     externalUrl: `https://${process.env.REPL_SLUG}.${process.env.REPLIT_DEV_DOMAIN}:${port}`,
     startTime: new Date().toISOString(),
-    nodeEnv: process.env.NODE_ENV || 'development'
+    nodeEnv: process.env.NODE_ENV || "development",
   });
 });
 
@@ -6727,7 +6785,10 @@ process.on("uncaughtException", (error) => {
 });
 
 process.on("unhandledRejection", (reason, promise) => {
-  logException(reason instanceof Error ? reason : new Error(String(reason)), "Unhandled Rejection");
+  logException(
+    reason instanceof Error ? reason : new Error(String(reason)),
+    "Unhandled Rejection",
+  );
   // Don't exit the process, just log the error
 });
 
