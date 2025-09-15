@@ -520,12 +520,11 @@ Return only valid JSON. No markdown formatting or extra text.`);
         provider: providerInfo.provider,
         model: providerInfo.model,
         options_count: config.count,
-        streaming: config.stream,
-        generation_method: 'incremental_streaming'
+        streaming: config.stream
       });
 
-      // Always use streaming incremental generation for optimal token usage and logging
-      return await this.generateOptionsIncrementally(disruptionData, categoryInfo, config);
+      // Use batch prompt with count in promptData, stream response in one go
+      return await this.generateOptionsBatchStream(disruptionData, categoryInfo, config);
 
     } catch (error) {
       logError('LLM streaming generation failed, using fallback', error, {
@@ -539,476 +538,86 @@ Return only valid JSON. No markdown formatting or extra text.`);
     }
   }
 
-  async generateOptionsIncrementally(disruptionData, categoryInfo, config) {
+  async generateOptionsBatchStream(disruptionData, categoryInfo, config) {
     const providerInfo = this.modelRouter.getCurrentProviderInfo();
-
-    logInfo(`Using streaming incremental generation for ${config.count} options`, {
-      flight_number: disruptionData.flight_number,
-      provider: providerInfo.provider,
-      streaming: config.stream,
-      options_count: config.count
-    });
-
-    const allOptions = [];
-    let steps = [];
-    let successfulGenerations = 0;
-    let totalTokensUsed = 0;
-    let totalProcessingTime = 0;
-    const streamedResponses = [];
-
-    // Generate single option prompt template
-    const singleOptionPrompt = this.createSingleOptionPrompt();
-
-    // Generate steps once (they don't change much between options)
-    steps = this.generateSteps(disruptionData, categoryInfo);
-
-    // Generate each option individually with streaming
-    for (let i = 0; i < config.count; i++) {
-      let attempt = 0;
-      let optionGenerated = false;
-
-      while (attempt < config.maxRetries && !optionGenerated) {
-        const startTime = Date.now();
-        try {
-          logInfo(`Generating option ${i + 1}/${config.count} with streaming`, {
-            flight_number: disruptionData.flight_number,
-            option_number: i + 1,
-            attempt: attempt + 1,
-            provider: providerInfo.provider,
-            model: providerInfo.model,
-            streaming_enabled: config.stream
-          });
-
-          const promptData = this.buildSingleOptionPromptData(
-            disruptionData,
-            categoryInfo,
-            i + 1,
-            allOptions.length
-          );
-
-          // Stream the LLM response
-          const streamedContent = await this.streamSingleOptionGeneration(
-            singleOptionPrompt,
-            promptData,
-            disruptionData.flight_number,
-            i + 1,
-            startTime
-          );
-
-          const endTime = Date.now();
-          const processingTime = endTime - startTime;
-          totalProcessingTime += processingTime;
-
-          // Store the streamed response
-          streamedResponses.push({
-            optionNumber: i + 1,
-            content: streamedContent.fullContent,
-            processingTime: processingTime,
-            tokens: streamedContent.tokens,
-            timestamp: new Date().toISOString()
-          });
-
-          // Parse the consolidated response
-          const parsedResult = this.parseSingleOptionResponse(
-            streamedContent.fullContent,
-            disruptionData.flight_number,
-            i + 1
-          );
-
-          if (parsedResult && parsedResult.option) {
-            allOptions.push(parsedResult.option);
-
-            // Merge steps with existing steps (avoid duplicates)
-            if (parsedResult.steps && parsedResult.steps.length > 0) {
-              parsedResult.steps.forEach(newStep => {
-                const existingStep = steps.find(s => s.step === newStep.step);
-                if (!existingStep) {
-                  steps.push(newStep);
-                }
-              });
-            }
-
-            successfulGenerations++;
-            optionGenerated = true;
-            totalTokensUsed += streamedContent.tokens.total_tokens || streamedContent.tokens.estimated_tokens || 0;
-
-            logInfo(`Successfully generated and streamed option ${i + 1}`, {
+    const llm = this.modelRouter.getProvider();
+    const promptData = this.buildPromptData(disruptionData, categoryInfo, config.count);
+    const chain = this.basePrompt.pipe(llm.bind({
+      streaming: true,
+      callbacks: [{
+        handleLLMNewToken: (token) => {
+          this._fullContent = (this._fullContent || '') + token;
+          this._chunksReceived = (this._chunksReceived || 0) + 1;
+          if (this._chunksReceived % 10 === 0) {
+            logInfo('Streaming batch progress', {
               flight_number: disruptionData.flight_number,
-              option_title: parsedResult.option.title,
-              total_generated: successfulGenerations,
-              steps_added: parsedResult.steps ? parsedResult.steps.length : 0,
-              processing_time_ms: processingTime,
-              tokens_used: streamedContent.tokens,
-              stream_chunks_received: streamedContent.chunksReceived,
+              chunks_received: this._chunksReceived,
+              content_length: this._fullContent.length,
               provider: providerInfo.provider
             });
-
-            // Small delay to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 500));
           }
-        } catch (error) {
-          const endTime = Date.now();
-          const processingTime = endTime - startTime;
-
-          attempt++;
-          logError(`Failed to generate option ${i + 1}, attempt ${attempt}`, error, {
+        },
+        handleLLMEnd: (output) => {
+          this._tokens = this.extractTokenInfo(output);
+          logInfo('Streaming batch completed', {
             flight_number: disruptionData.flight_number,
-            option_number: i + 1,
-            attempt: attempt,
-            processing_time_ms: processingTime,
-            provider: providerInfo.provider,
-            error_type: error.constructor.name,
-            streaming_enabled: config.stream
-          });
-
-          if (attempt >= config.maxRetries) {
-            logError(`Giving up on option ${i + 1} after ${config.maxRetries} attempts`, error, {
-              flight_number: disruptionData.flight_number,
-              option_number: i + 1,
-              total_processing_time_ms: processingTime
-            });
-            break;
-          }
-
-          // Wait before retry with exponential backoff
-          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
-        }
-      }
-    }
-
-    // If we didn't get enough options, try fallback for remaining
-    if (allOptions.length < config.count) {
-      logInfo(`Only generated ${allOptions.length}/${config.count} options, using fallback for remainder`, {
-        flight_number: disruptionData.flight_number,
-        generated: allOptions.length,
-        requested: config.count
-      });
-
-      try {
-        const fallbackResult = this.fallbackToDefaultGenerator(disruptionData, categoryInfo);
-        const remainingCount = config.count - allOptions.length;
-
-        // Add fallback options to fill the gap
-        for (let i = 0; i < Math.min(remainingCount, fallbackResult.options.length); i++) {
-          allOptions.push({
-            ...fallbackResult.options[i],
-            priority: allOptions.length + 1,
-            status: 'fallback'
+            total_chunks: this._chunksReceived,
+            final_content_length: this._fullContent.length,
+            tokens: this._tokens,
+            provider: providerInfo.provider
           });
         }
-      } catch (fallbackError) {
-        logError('Fallback generation also failed', fallbackError, {
-          flight_number: disruptionData.flight_number
-        });
-      }
-    }
+      }]
+    }));
 
-    // Log final consolidation of all streamed responses
-    logInfo(`Incremental streaming generation complete`, {
-      flight_number: disruptionData.flight_number,
-      options_generated: allOptions.length,
-      steps_generated: steps.length,
-      llm_success: successfulGenerations,
-      provider: providerInfo.provider,
-      total_processing_time_ms: totalProcessingTime,
-      average_processing_time_ms: successfulGenerations > 0 ? Math.round(totalProcessingTime / successfulGenerations) : 0,
-      total_tokens_used: totalTokensUsed,
-      success_rate: `${successfulGenerations}/${config.count}`,
-      streamed_responses_count: streamedResponses.length,
-      performance_metrics: {
-        options_per_second: successfulGenerations > 0 ? (successfulGenerations / (totalProcessingTime / 1000)).toFixed(2) : 0,
-        average_tokens_per_option: successfulGenerations > 0 ? Math.round(totalTokensUsed / successfulGenerations) : 0,
-        total_stream_chunks: streamedResponses.reduce((sum, resp) => sum + (resp.chunksReceived || 0), 0)
-      },
-      consolidated_result: {
-        total_options: allOptions.length,
-        total_steps: steps.length,
-        streaming_successful: config.stream && streamedResponses.length > 0
-      }
-    });
-
-    return {
-      options: allOptions,
-      steps: steps,
-      streamingMetadata: {
-        responsesStreamed: streamedResponses.length,
-        totalChunks: streamedResponses.reduce((sum, resp) => sum + (resp.chunksReceived || 0), 0),
-        streamingEnabled: config.stream
-      }
-    };
-  }
-
-  async streamSingleOptionGeneration(promptTemplate, promptData, flightNumber, optionNumber, startTime) {
+    this._fullContent = '';
+    this._chunksReceived = 0;
+    this._tokens = {};
+    const startTime = Date.now();
+    let response;
     try {
-      const llm = this.modelRouter.getProvider();
-      const providerInfo = this.modelRouter.getCurrentProviderInfo();
-
-      appendFile("logs/llm-generated-options.log", "generating recovery option =============>\n")
-      appendFile('logs/llm-generated-options.log', JSON.stringify({
-        "prompt":promptTemplate,
-        "promtData": promptData
-
-      }));
-
-      logInfo(`Starting streaming generation for option ${optionNumber}`, {
-        flight_number: flightNumber,
-        option_number: optionNumber,
-        provider: providerInfo.provider,
-        model: providerInfo.model
-      });
-
-      let fullContent = '';
-      let chunksReceived = 0;
-      let tokens = {
-        prompt_tokens: null,
-        completion_tokens: null,
-        total_tokens: null,
-        estimated_tokens: null
-      };
-
-      // Configure streaming for the LLM provider
-      const streamingLLM = llm.bind({
-        streaming: true,
-        callbacks: [{
-          handleLLMNewToken: (token) => {
-            fullContent += token;
-            chunksReceived++;
-
-            // Log streaming progress every 10 chunks to avoid log spam
-            if (chunksReceived % 10 === 0) {
-              logInfo(`Streaming progress for option ${optionNumber}`, {
-                flight_number: flightNumber,
-                option_number: optionNumber,
-                chunks_received: chunksReceived,
-                content_length: fullContent.length,
-                provider: providerInfo.provider,
-                streaming_time_ms: Date.now() - startTime
-              });
-            }
-          },
-          handleLLMEnd: (output) => {
-            // Extract final token information
-            tokens = this.extractTokenInfo(output);
-
-            logInfo(`Streaming completed for option ${optionNumber}`, {
-              flight_number: flightNumber,
-              option_number: optionNumber,
-              total_chunks: chunksReceived,
-              final_content_length: fullContent.length,
-              tokens: tokens,
-              provider: providerInfo.provider,
-              total_streaming_time_ms: Date.now() - startTime
-            });
-          }
-        }]
-      });
-
-      // Create chain with streaming LLM
-      const chain = promptTemplate.pipe(streamingLLM);
-
-      // Invoke the chain (this will trigger streaming)
-      const response = await chain.invoke(promptData);
-
-      // If streaming didn't work (fallback), use the response content
-      if (!fullContent && response.content) {
-        fullContent = response.content;
-        tokens = this.extractTokenInfo(response);
-        chunksReceived = 1;
-
-        logInfo(`Fallback to non-streaming for option ${optionNumber}`, {
-          flight_number: flightNumber,
-          option_number: optionNumber,
-          content_length: fullContent.length,
-          provider: providerInfo.provider
-        });
-      }
-      appendFile('logs/llm-generated-options.log', "llm generated option ==========>")
-      appendFile('logs/llm-generated-options.log', fullContent);
-      // Log the complete raw streamed response
-      // this.logRawStreamedResponse(fullContent, flightNumber, optionNumber, Date.now() - startTime, chunksReceived, tokens, providerInfo);
-
-      return {
-        fullContent: fullContent,
-        chunksReceived: chunksReceived,
-        tokens: tokens,
-        streamingTime: Date.now() - startTime
-      };
-
+      response = await chain.invoke(promptData);
     } catch (error) {
-      logError(`Streaming failed for option ${optionNumber}`, error, {
-        flight_number: flightNumber,
-        option_number: optionNumber,
-        streaming_time_ms: Date.now() - startTime,
+      logError('Streaming batch failed', error, {
+        flight_number: disruptionData.flight_number,
         error_type: error.constructor.name
       });
       throw error;
     }
-  }
+    const streamingTime = Date.now() - startTime;
+    let fullContent = this._fullContent || (response && response.content) || '';
+    let tokens = this._tokens || this.extractTokenInfo(response);
+    let chunksReceived = this._chunksReceived || 1;
 
-  logRawStreamedResponse(content, flightNumber, optionNumber, streamingTime, chunksReceived, tokens, providerInfo) {
+    // Log the streamed response
+    logInfo('LLM Full Batch Streamed Response', {
+      flight_number: disruptionData.flight_number,
+      streaming_time_ms: streamingTime,
+      chunks_received: chunksReceived,
+      full_streamed_response: fullContent
+    });
+
+    // Parse the batch response
+    let result;
     try {
-      const contentLength = content ? content.length : 0;
-
-      logInfo(`Raw Streamed LLM Response Generated`, {
-        flight_number: flightNumber,
-        option_number: optionNumber,
-        provider: providerInfo.provider,
-        model: providerInfo.model,
-        streaming_time_ms: streamingTime,
-        chunks_received: chunksReceived,
-        response_length_chars: contentLength,
-        tokens: tokens,
-        timestamp: new Date().toISOString(),
-        streaming_metadata: {
-          chunks_per_second: chunksReceived > 0 ? (chunksReceived / (streamingTime / 1000)).toFixed(2) : 0,
-          chars_per_chunk: chunksReceived > 0 ? Math.round(contentLength / chunksReceived) : 0,
-          streaming_successful: chunksReceived > 1
-        },
-        raw_response_preview: content ? content.substring(0, 500) + (content.length > 500 ? '...' : '') : 'empty'
-      });
-
-      // Log full streamed response in a separate detailed log entry
-      logInfo(`LLM Full Streamed Response Detail`, {
-        flight_number: flightNumber,
-        option_number: optionNumber,
-        provider: providerInfo.provider,
-        streaming_time_ms: streamingTime,
-        chunks_received: chunksReceived,
-        full_streamed_response: content
-      });
-
+      result = this.parseResponse(fullContent, disruptionData.flight_number);
     } catch (error) {
-      logError('Failed to log raw streamed LLM response', error, {
-        flight_number: flightNumber,
-        option_number: optionNumber,
-        provider: providerInfo.provider,
-        streaming_time_ms: streamingTime
+      logError('Failed to parse batch streamed response', error, {
+        flight_number: disruptionData.flight_number,
+        contentPreview: fullContent ? fullContent.substring(0, 200) : 'empty'
       });
+      throw new Error('Invalid LLM batch response format');
     }
-  }
 
-  async generateOptionsBatch(disruptionData, categoryInfo, config) {
-    const llm = this.modelRouter.getProvider();
-    const providerInfo = this.modelRouter.getCurrentProviderInfo();
-    const promptData = this.buildPromptData(disruptionData, categoryInfo, config.count);
-    const chain = this.basePrompt.pipe(llm);
-
-    let attempt = 0;
-    let totalProcessingTime = 0;
-
-    while (attempt < config.maxRetries) {
-      const startTime = Date.now();
-      try {
-        logInfo(`Starting batch generation attempt ${attempt + 1}`, {
-          flight_number: disruptionData.flight_number,
-          options_count: config.count,
-          provider: providerInfo.provider,
-          model: providerInfo.model,
-          attempt: attempt + 1
-        });
-
-        const response = await chain.invoke(promptData);
-        const endTime = Date.now();
-        const processingTime = endTime - startTime;
-        totalProcessingTime += processingTime;
-
-        // Log raw LLM response with timing and token information
-        this.logRawLLMResponse(response, disruptionData.flight_number, 'batch', processingTime, providerInfo);
-
-        const result = this.parseResponse(response.content, disruptionData.flight_number);
-
-        logInfo(`Successfully generated ${result.options.length} recovery options (batch)`, {
-          flight_number: disruptionData.flight_number,
-          options_generated: result.options.length,
-          steps_generated: result.steps.length,
-          processing_time_ms: processingTime,
-          tokens_used: this.extractTokenInfo(response),
-          provider: providerInfo.provider
-        });
-
-        return result;
-      } catch (error) {
-        const endTime = Date.now();
-        const processingTime = endTime - startTime;
-        totalProcessingTime += processingTime;
-
-        attempt++;
-        logError(`Batch attempt ${attempt} failed`, error, {
-          flight_number: disruptionData.flight_number,
-          attempt: attempt,
-          processing_time_ms: processingTime,
-          total_processing_time_ms: totalProcessingTime,
-          provider: providerInfo.provider,
-          error_type: error.constructor.name
-        });
-
-        if (attempt >= config.maxRetries) {
-          throw error;
-        }
-
-        await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+    return {
+      ...result,
+      streamingMetadata: {
+        chunksReceived,
+        streamingTime,
+        tokens,
+        streamingEnabled: config.stream
       }
-    }
-  }
-
-  parseSingleOptionResponse(content, flightNumber, optionNumber) {
-    try {
-      // Clean the response
-      let cleaned = content.trim();
-
-      // Remove markdown code blocks
-      if (cleaned.startsWith('```')) {
-        cleaned = cleaned.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '');
-      }
-
-      // Find JSON boundaries
-      const jsonStart = cleaned.indexOf('{');
-      const jsonEnd = cleaned.lastIndexOf('}');
-
-      if (jsonStart !== -1 && jsonEnd !== -1) {
-        cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
-      }
-
-      const parsed = JSON.parse(cleaned);
-
-      // Validate structure - should have option and steps
-      if (!parsed.option) {
-        // Fallback: if it's just an option object without wrapper
-        if (parsed.title && parsed.description) {
-          return {
-            option: {
-              ...parsed,
-              priority: parsed.priority || optionNumber,
-              confidence: parsed.confidence || 80,
-              impact: parsed.impact || 'Medium',
-              status: parsed.status || 'recommended'
-            },
-            steps: []
-          };
-        }
-        throw new Error('Invalid option structure - missing option object');
-      }
-
-      // Normalize the response structure
-      return {
-        option: {
-          ...parsed.option,
-          priority: parsed.option.priority || optionNumber,
-          confidence: parsed.option.confidence || 80,
-          impact: parsed.option.impact || 'Medium',
-          status: parsed.option.status || 'recommended'
-        },
-        steps: parsed.steps || []
-      };
-
-    } catch (error) {
-      logError(`Failed to parse single option response`, error, {
-        flightNumber: flightNumber,
-        optionNumber: optionNumber,
-        contentPreview: content ? content.substring(0, 200) : 'empty'
-      });
-      return null;
-    }
+    };
   }
 
   logRawLLMResponse(response, flightNumber, optionNumber, processingTime, providerInfo) {
@@ -1099,62 +708,6 @@ Return only valid JSON. No markdown formatting or extra text.`);
         extraction_error: error.message
       };
     }
-  }
-
-  generateSteps(disruptionData, categoryInfo) {
-    // Generate standard steps based on disruption type
-    const baseSteps = [
-      {
-        step: 1,
-        title: "Disruption Detection and Analysis",
-        status: "completed",
-        timestamp: new Date().toISOString(),
-        system: "AMOS/AIMS/OCC",
-        details: `${disruptionData.disruption_type} disruption detected for ${disruptionData.flight_number}`,
-        data: {
-          flight_number: disruptionData.flight_number,
-          disruption_type: disruptionData.disruption_type,
-          severity: disruptionData.severity
-        }
-      },
-      {
-        step: 2,
-        title: "Recovery Options Generation",
-        status: "in-progress",
-        timestamp: new Date().toISOString(),
-        system: "Recovery Engine",
-        details: "LLM-powered recovery options generation in progress",
-        data: {
-          options_requested: 3,
-          category: categoryInfo.category_name || 'General'
-        }
-      },
-      {
-        step: 3,
-        title: "Resource Availability Check",
-        status: "pending",
-        timestamp: new Date().toISOString(),
-        system: "Resource Management",
-        details: "Checking crew, aircraft, and ground resource availability",
-        data: {
-          aircraft: disruptionData.aircraft,
-          passengers: disruptionData.passengers
-        }
-      },
-      {
-        step: 4,
-        title: "Implementation Planning",
-        status: "pending",
-        timestamp: new Date().toISOString(),
-        system: "Operations Control",
-        details: "Detailed implementation planning for selected recovery option",
-        data: {
-          estimated_delay: disruptionData.delay_minutes || 0
-        }
-      }
-    ];
-
-    return baseSteps;
   }
 
   parseResponse(content, flightNumber) {
