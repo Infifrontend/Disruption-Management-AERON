@@ -311,40 +311,6 @@
   background-color: #fef2f2 !important;
 }
 
-/* Login page enhancements */
-.login-container {
-  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 50%, #c7d2fe 100%);
-  min-height: 100vh;
-}
-
-@media (max-width: 640px) {
-  .login-container {
-    padding: 1rem;
-  }
-}
-
-.login-card-shadow {
-  box-shadow: 
-    0 25px 50px -12px rgba(0, 0, 0, 0.1),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
-}
-
-.login-input-focus:focus {
-  border-color: var(--flydubai-blue, #0066cc);
-  box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
-  outline: none;
-}
-
-/* Responsive logo animation */
-@keyframes logoFloat {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
-}
-
-.login-logo {
-  animation: logoFloat 3s ease-in-out infinite;
-}
-
 /* Enhanced switch styles for better visibility */
 .switch-flydubai [data-state="checked"] {
   background-color: var(--airline-primary) !important;
