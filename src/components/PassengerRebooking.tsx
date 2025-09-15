@@ -1632,6 +1632,7 @@ export function PassengerRebooking({ context, onClearContext }) {
           approval_status: "pending",
           created_by: "passenger_services",
           notes: `Submitted from passenger services with ${hasPassenger ? confirmedPassengers.length : 0} passengers processed`,
+          selected_aircraft: recoveryOption?.selectedAircraft || null,
         };
 
         // Add optional data only if present

@@ -2144,6 +2144,7 @@ class DatabaseService {
           solution.approval_status || solution.status || "pending",
         created_by: solution.created_by || solution.submitted_by || "system",
         notes: solution.notes,
+        selected_aircraft: solution.selected_aircraft || null,
         // Legacy fields for backward compatibility
         cost: solution.cost,
         timeline: solution.timeline,
