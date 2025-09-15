@@ -6,20 +6,80 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Alert, AlertDescription } from '../components/ui/alert';
+import { Checkbox } from '../components/ui/checkbox';
 import { authService } from '../services/authService';
 import { useAppContext } from '../context/AppContext';
-import { Plane, Lock, Mail } from 'lucide-react';
+import { Plane, Lock, Mail, Eye, EyeOff } from 'lucide-react';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({
+    email: '',
+    password: ''
+  });
   const navigate = useNavigate();
   const { setCurrentUser } = useAppContext();
 
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      return 'Email is required';
+    }
+    if (!emailRegex.test(email)) {
+      return 'Please enter a valid email address';
+    }
+    return '';
+  };
+
+  const validatePassword = (password: string) => {
+    if (!password) {
+      return 'Password is required';
+    }
+    if (password.length < 6) {
+      return 'Password must be at least 6 characters';
+    }
+    return '';
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setEmail(value);
+    setFieldErrors(prev => ({
+      ...prev,
+      email: validateEmail(value)
+    }));
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPassword(value);
+    setFieldErrors(prev => ({
+      ...prev,
+      password: validatePassword(value)
+    }));
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate all fields
+    const emailError = validateEmail(email);
+    const passwordError = validatePassword(password);
+    
+    setFieldErrors({
+      email: emailError,
+      password: passwordError
+    });
+
+    if (emailError || passwordError) {
+      return;
+    }
+
     setIsLoading(true);
     setError('');
 
@@ -41,87 +101,132 @@ export function LoginPage() {
 
   const handleDemoLogin = async (userType: string) => {
     const demoCredentials = {
-      super_admin: { email: 'admin@flydubai.com', password: '' },
-      passenger_manager: { email: 'passenger@flydubai.com', password: '' },
-      crew_manager: { email: 'crew@flydubai.com', password: '' }
+      super_admin: { email: 'admin@flydubai.com', password: 'password123' },
+      passenger_manager: { email: 'passenger@flydubai.com', password: 'password123' },
+      crew_manager: { email: 'crew@flydubai.com', password: 'password123' }
     };
 
     const creds = demoCredentials[userType as keyof typeof demoCredentials];
     if (creds) {
       setEmail(creds.email);
       setPassword(creds.password);
+      setFieldErrors({ email: '', password: '' });
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Logo and Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
-            <div className="w-16 h-16 bg-flydubai-blue rounded-full flex items-center justify-center">
-              <Plane className="w-8 h-8 text-white" />
+            <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+              <Plane className="w-6 h-6 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-flydubai-navy">AERON</h1>
-          <p className="text-gray-600 mt-2">Aircraft Recovery Operations Network</p>
+          <h1 className="text-2xl font-semibold text-gray-800 mb-2">Emirates NBD</h1>
         </div>
 
         {/* Login Form */}
-        <Card className="shadow-xl border-0">
+        <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
           <CardHeader className="pb-4">
-            <CardTitle className="text-center text-xl text-flydubai-navy">
-              Sign In to Your Account
+            <CardTitle className="text-center text-lg font-medium text-gray-700">
+              Log in to Emirates NBD
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <form onSubmit={handleLogin} className="space-y-4">
               {error && (
                 <Alert className="border-red-200 bg-red-50">
-                  <AlertDescription className="text-red-800">
+                  <AlertDescription className="text-red-800 text-sm">
                     {error}
                   </AlertDescription>
                 </Alert>
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="Email or username"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10"
-                    required
+                    onChange={handleEmailChange}
+                    className={`h-12 px-4 bg-gray-50 border-gray-200 text-gray-700 placeholder:text-gray-500 focus:bg-red-50 focus:border-red-300 ${
+                      fieldErrors.email ? 'bg-red-50 border-red-300' : ''
+                    }`}
                   />
                 </div>
+                {fieldErrors.email && (
+                  <p className="text-red-600 text-xs mt-1">{fieldErrors.email}</p>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="password"
-                    type="password"
-                    placeholder="Enter your password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10"
-                    required
+                    onChange={handlePasswordChange}
+                    className={`h-12 px-4 pr-10 bg-gray-50 border-gray-200 text-gray-700 placeholder:text-gray-500 focus:bg-red-50 focus:border-red-300 ${
+                      fieldErrors.password ? 'bg-red-50 border-red-300' : ''
+                    }`}
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
                 </div>
+                {fieldErrors.password && (
+                  <p className="text-red-600 text-xs mt-1">{fieldErrors.password}</p>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="remember"
+                    checked={rememberMe}
+                    onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                  />
+                  <label htmlFor="remember" className="text-gray-600 cursor-pointer">
+                    Remember me
+                  </label>
+                </div>
+                <button
+                  type="button"
+                  className="text-blue-600 hover:text-blue-700 hover:underline"
+                  onClick={() => {
+                    // Handle forgot credentials
+                    alert('Forgot credentials functionality would be implemented here');
+                  }}
+                >
+                  Forgot credentials
+                </button>
               </div>
 
               <Button
                 type="submit"
-                className="w-full bg-flydubai-blue hover:bg-blue-700"
-                disabled={isLoading}
+                className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md"
+                disabled={isLoading || !!fieldErrors.email || !!fieldErrors.password}
               >
-                {isLoading ? 'Signing In...' : 'Sign In'}
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Logging in...
+                  </div>
+                ) : (
+                  'Log in'
+                )}
               </Button>
             </form>
 
@@ -132,7 +237,7 @@ export function LoginPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full text-xs"
+                  className="w-full text-xs h-8 border-gray-200 text-gray-600 hover:bg-gray-50"
                   onClick={() => handleDemoLogin('super_admin')}
                 >
                   Super Admin (SA001)
@@ -140,7 +245,7 @@ export function LoginPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full text-xs"
+                  className="w-full text-xs h-8 border-gray-200 text-gray-600 hover:bg-gray-50"
                   onClick={() => handleDemoLogin('passenger_manager')}
                 >
                   Passenger Manager (PM001)
@@ -148,22 +253,19 @@ export function LoginPage() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full text-xs"
+                  className="w-full text-xs h-8 border-gray-200 text-gray-600 hover:bg-gray-50"
                   onClick={() => handleDemoLogin('crew_manager')}
                 >
                   Crew Manager (CM001)
                 </Button>
               </div>
-              {/* <p className="text-xs text-gray-500 text-center mt-2">
-                Password for all demo accounts: password123
-              </p> */}
             </div>
           </CardContent>
         </Card>
 
         {/* Footer */}
         <div className="text-center mt-6 text-sm text-gray-500">
-          <p>© 2025 INFINITI. All rights reserved.</p>
+          <p>© 2025 Emirates NBD. All rights reserved.</p>
         </div>
       </div>
     </div>
