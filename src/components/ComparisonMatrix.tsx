@@ -75,6 +75,15 @@ export function ComparisonMatrix({
     null,
   );
 
+  // State for alternate aircraft options
+  const [alternateAircraftOptionsData, setAlternateAircraftOptionsData] = useState({});
+
+  // State to store detailed popup data persistently for each option
+  const [optionDetailsStorage, setOptionDetailsStorage] = useState({});
+  const [aircraftSelectionStorage, setAircraftSelectionStorage] = useState({});
+  const [crewAssignmentStorage, setCrewAssignmentStorage] = useState({});
+
+
   // Function to update reassigned data state
   const updateReassignedData = (optionId, type, data) => {
     setReassignedData((prevData) => ({
@@ -132,6 +141,73 @@ export function ComparisonMatrix({
   const [selectedCrewForSwap, setSelectedCrewForSwap] = useState(null);
   const [availableCrewForSwap, setAvailableCrewForSwap] = useState([]);
   const [expandedAircraft, setExpandedAircraft] = useState(null);
+  const [alternateAircraftFilters, setAlternateAircraftFilters] = useState({
+    search: "",
+    status: "all",
+    type: "all",
+  });
+  const [crewFilters, setCrewFilters] = useState({
+    search: "",
+    role: "all",
+    status: "all",
+  });
+
+  // Utility functions for managing persistent option details storage
+  const storeOptionDetails = (optionId, detailsData) => {
+    setOptionDetailsStorage((prev) => ({
+      ...prev,
+      [optionId]: {
+        ...prev[optionId],
+        details: detailsData,
+        lastUpdated: new Date().toISOString(),
+      },
+    }));
+  };
+
+  const storeAircraftSelection = (optionId, aircraftData, selectedIndex = null) => {
+    setAircraftSelectionStorage((prev) => ({
+      ...prev,
+      [optionId]: {
+        aircraftOptions: aircraftData,
+        selectedIndex: selectedIndex,
+        expandedAircraft: null,
+        lastUpdated: new Date().toISOString(),
+      },
+    }));
+  };
+
+  const storeCrewAssignments = (optionId, crewData, expandedCrewState = null) => {
+    setCrewAssignmentStorage((prev) => ({
+      ...prev,
+      [optionId]: {
+        crewData: crewData,
+        expandedCrew: expandedCrewState,
+        crewSwaps: prev[optionId]?.crewSwaps || [],
+        reassignments: prev[optionId]?.reassignments || [],
+        lastUpdated: new Date().toISOString(),
+      },
+    }));
+  };
+
+  const getStoredOptionDetails = (optionId) => {
+    return optionDetailsStorage[optionId] || null;
+  };
+
+  const getStoredAircraftSelection = (optionId) => {
+    return aircraftSelectionStorage[optionId] || null;
+  };
+
+  const getStoredCrewAssignments = (optionId) => {
+    return crewAssignmentStorage[optionId] || null;
+  };
+
+  const handleCrewFilterChange = (newFilters) => {
+    setCrewFilters((prevFilters) => ({
+      ...prevFilters,
+      ...newFilters,
+    }));
+  };
+
 
   // Load recovery options from database based on disruption category
   useEffect(() => {
@@ -202,6 +278,11 @@ export function ComparisonMatrix({
     !loading && dynamicRecoveryOptions.length > 0
       ? dynamicRecoveryOptions.map((option, index) => {
           const optionId = String(option.id || "");
+          // Load stored data if available, otherwise use fetched data
+          const storedDetails = getStoredOptionDetails(optionId);
+          const storedSelection = getStoredAircraftSelection(optionId);
+          const storedCrew = getStoredCrewAssignments(optionId);
+
           return {
             ...option,
             // Ensure all required fields are present for comparison
@@ -276,6 +357,10 @@ export function ComparisonMatrix({
                     ? "Medium"
                     : "High",
             },
+            // Merge stored data if available
+            ...(storedDetails?.details || {}),
+            ...(storedSelection?.aircraftOptions ? { rotation_plan: { ...(option.rotation_plan || {}), aircraftOptions: storedSelection.aircraftOptions } } : {}),
+            ...(storedCrew?.crewData ? { rotation_plan: { ...(option.rotation_plan || {}), crew: storedCrew.crewData } } : {}),
           };
         })
       : [];
@@ -902,6 +987,8 @@ export function ComparisonMatrix({
 
       setSelectedOptionDetails(enrichedDetails);
       setShowDetailsDialog(true);
+      // Store the details data
+      storeOptionDetails(option.id, enrichedDetails);
     } catch (error) {
       console.error("Error processing option details:", error);
       setSelectedOptionDetails(option); // Fallback to option data
@@ -1065,9 +1152,15 @@ export function ComparisonMatrix({
         recommendedOption:
           rotationPlan?.recommendation || rotationPlan?.recommendedOption || {},
       };
-      console.log(optionReassignedData, "reass");
+      console.log(
+        optionReassignedData,
+        "reass",
+      );
       setRotationPlanDetails(enrichedRotationPlan);
       setShowRotationDialog(true);
+      // Store the rotation plan details
+      storeAircraftSelection(option.id, enrichedRotationPlan.aircraftRotations, selectedAircraftFlight);
+      storeCrewAssignments(option.id, enrichedRotationPlan.crew);
     } catch (error) {
       console.error("Error processing rotation plan:", error);
 
@@ -1628,6 +1721,7 @@ export function ComparisonMatrix({
                     )}
                   </Button>
 
+                  {/* Removed Rotation Impact button as it's integrated into the details dialog */}
                   {/* <Button
                     variant="outline"
                     size="sm"
@@ -2440,7 +2534,7 @@ export function ComparisonMatrix({
                                       </p>
                                     </div>
                                     <div>
-                                      <span className="text-blue-700 font-medium">
+                                      <span className="text-blue-700">
                                         Type:
                                       </span>
                                       <p className="text-blue-900">
@@ -2449,7 +2543,7 @@ export function ComparisonMatrix({
                                       </p>
                                     </div>
                                     <div>
-                                      <span className="text-blue-700 font-medium">
+                                      <span className="text-blue-700">
                                         Turnaround Time:
                                       </span>
                                       <p className="text-blue-900">
@@ -2459,7 +2553,7 @@ export function ComparisonMatrix({
                                       </p>
                                     </div>
                                     <div>
-                                      <span className="text-blue-700 font-medium">
+                                      <span className="text-blue-700">
                                         Availability:
                                       </span>
                                       <p className="text-blue-900">
@@ -2586,24 +2680,14 @@ export function ComparisonMatrix({
                                                 <Badge className="bg-orange-100 text-orange-700 border-orange-300 text-xs">
                                                   Changed
                                                 </Badge>
-                                                {/* <Button
-                                                  size="sm"
-                                                  variant="ghost"
-                                                  className="h-6 w-6 p-0"
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setExpandedCrew(
-                                                      expandedCrew === index
-                                                        ? null
-                                                        : index,
-                                                    );
-                                                  }}
-                                                >
-                                                  <Activity className="h-3 w-3 text-flydubai-blue" />
-                                                </Button> */}
+                                                {/* {expandedCrew === `reassigned-${index}` && (
+                                                  <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                                                    <div className="text-xs text-blue-700">Rotation Impact: ...</div>
+                                                  </div>
+                                                )} */}
                                               </div>
                                               <p className="text-sm text-blue-600">
-                                                {crewMember?.role}
+                                                {crewMember.role}
                                               </p>
                                               {crewMember.experience && (
                                                 <p className="text-xs text-blue-600">
@@ -2636,7 +2720,7 @@ export function ComparisonMatrix({
                                                   Array.isArray(
                                                     selectedOptionDetails?.crew_available,
                                                   )
-                                                    ? selectedOptionDetails?.crew_available
+                                                    ? selectedOptionDetails.crew_available
                                                     : [];
 
                                                 // Filter replacement crew by role and exclude duplicates
@@ -2887,8 +2971,7 @@ export function ComparisonMatrix({
                                                       onClick={(e) => {
                                                         e.stopPropagation();
                                                         setExpandedCrew(
-                                                          expandedCrew ===
-                                                            `reassigned-${index}`
+                                                          expandedCrew === `reassigned-${index}`
                                                             ? null
                                                             : `reassigned-${index}`,
                                                         );
@@ -2915,10 +2998,10 @@ export function ComparisonMatrix({
                                                       ? "bg-green-100 text-green-700 border-green-300"
                                                       : (crewMember?.status ||
                                                             crewMember?.availability) ===
-                                                            "Sick" ||
+                                                              "Sick" ||
                                                           (crewMember?.status ||
                                                             crewMember?.availability) ===
-                                                            "Unavailable"
+                                                              "Unavailable"
                                                         ? "bg-red-100 text-red-700 border-red-300"
                                                         : (crewMember?.status ||
                                                               crewMember?.availability) ===
@@ -3108,9 +3191,9 @@ export function ComparisonMatrix({
                                                             key={flightIndex}
                                                             className="bg-white rounded border border-gray-200 p-3"
                                                           >
-                                                            <div className="flex items-center justify-between mb-2">
+                                                            <div className="flex items-center justify-between mb-1">
                                                               <div className="flex items-center gap-2">
-                                                                <Plane className="h-4 w-4 text-flydubai-blue" />
+                                                                <Plane className="h-3 w-3 text-flydubai-blue" />
                                                                 <span className="font-medium text-sm">
                                                                   {
                                                                     flight.flightNumber
@@ -4175,9 +4258,7 @@ export function ComparisonMatrix({
                                         selectedCrewForSwap.originalIndex;
                                       console.log(originalIndex);
 
-                                      // Update the crew member with swap information
-                                      updatedCrew[originalIndex] = {
-                                        ...updatedCrew[originalIndex],
+                                      const newCrewData = {
                                         name: crew.name,
                                         role: crew.role,
                                         qualifications: crew.qualifications,
@@ -4195,10 +4276,12 @@ export function ComparisonMatrix({
                                         isAutoAssigned: false, // Manual assignment
                                         autoAssignedReplacement: undefined,
                                       };
-                                      console.log(
-                                        updatedCrew[originalIndex],
-                                        "Crew map ",
-                                      );
+
+                                      // Update the crew member with swap information
+                                      updatedCrew[originalIndex] = {
+                                        ...updatedCrew[originalIndex],
+                                        ...newCrewData,
+                                      };
 
                                       const updatedOptionDetails = {
                                         ...selectedOptionDetails,
@@ -4212,6 +4295,29 @@ export function ComparisonMatrix({
                                       setSelectedOptionDetails(
                                         updatedOptionDetails,
                                       );
+
+                                      // Store the crew reassignment persistently
+                                      const currentStoredData = getStoredCrewAssignments(selectedOptionDetails.id);
+                                      const newReassignment = {
+                                        originalIndex: originalIndex,
+                                        originalCrew: selectedCrewForSwap,
+                                        newCrew: crew,
+                                        newCrewData: newCrewData,
+                                        timestamp: new Date().toISOString(),
+                                      };
+
+                                      setCrewAssignmentStorage((prev) => ({
+                                        ...prev,
+                                        [selectedOptionDetails.id]: {
+                                          ...currentStoredData,
+                                          crewData: updatedCrew,
+                                          reassignments: [
+                                            ...(currentStoredData?.reassignments || []).filter(r => r.originalIndex !== originalIndex),
+                                            newReassignment,
+                                          ],
+                                          lastUpdated: new Date().toISOString(),
+                                        },
+                                      }));
 
                                       // Capture reassigned crew data for Service Page
                                       const reassignedCrew = updatedCrew.filter(
@@ -4232,11 +4338,6 @@ export function ComparisonMatrix({
                                             reassignedCrew.length,
                                         });
                                       }
-
-                                      console.log(
-                                        selectedOptionDetails,
-                                        "test11",
-                                      );
                                     }
 
                                     // Store the assignment update
