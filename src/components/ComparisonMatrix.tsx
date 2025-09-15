@@ -1229,10 +1229,10 @@ export function ComparisonMatrix({
         // Prepare selected aircraft information
         let selectedAircraftInfo = null;
         if (storedAircraftSelection && storedAircraftSelection.aircraftOptions) {
-          const selectedIndex = storedAircraftSelection.selectedIndex !== null
-            ? storedAircraftSelection.selectedIndex
+          const selectedIndex = storedAircraftSelection.selectedIndex !== null 
+            ? storedAircraftSelection.selectedIndex 
             : (selectedAircraftFlight !== null ? selectedAircraftFlight : 0);
-
+          
           if (storedAircraftSelection.aircraftOptions[selectedIndex]) {
             selectedAircraftInfo = {
               ...storedAircraftSelection.aircraftOptions[selectedIndex],
@@ -1276,10 +1276,6 @@ export function ComparisonMatrix({
             // Include selected aircraft and crew information
             selectedAircraft: selectedAircraftInfo,
             crewAssignments: crewAssignmentInfo,
-            // Store crew hotel assignments from rotation plan
-            crewHotelAssignments: option.rotation_plan?.crew ||
-                                 option.crew_hotel_assignments ||
-                                 storedCrewAssignments?.crewData || [],
           },
           fromExecution: true, // Flag to indicate this came from execution
           executionContext: {
@@ -3121,9 +3117,9 @@ export function ComparisonMatrix({
                                                   filteredCrew,
                                                 );
                                                 setShowCrewSwapDialog(true);
-
+                                                
                                                 // Store current crew assignments
-                                                const currentCrewData = selectedOptionDetails.rotation_plan.crew ||
+                                                const currentCrewData = selectedOptionDetails.rotation_plan.crew || 
                                                                        selectedOptionDetails.rotation_plan.crewData || [];
                                                 storeCrewAssignments(
                                                   selectedOptionDetails.id,
