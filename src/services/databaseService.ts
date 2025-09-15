@@ -2058,6 +2058,60 @@ class DatabaseService {
     }
   }
 
+  // Add pending solution for approval
+  async addPendingSolution(solutionData: any): Promise<boolean> {
+    try {
+      console.log("Adding pending solution:", solutionData);
+      
+      const response = await fetch(`${this.baseUrl}/pending-recovery-solutions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(solutionData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to add pending solution:", response.status, errorText);
+        throw new Error(`HTTP ${response.status}: ${errorText}`);
+      }
+
+      const result = await response.json();
+      console.log("Successfully added pending solution:", result);
+      return true;
+    } catch (error) {
+      console.error("Failed to add pending solution:", error);
+      return false;
+    }
+  }
+
+  // Update flight recovery status
+  async updateFlightRecoveryStatus(flightId: string, status: string): Promise<boolean> {
+    try {
+      console.log(`Updating recovery status for flight ${flightId} to ${status}`);
+      
+      const response = await fetch(`${this.baseUrl}/disruptions/${flightId}/recovery-status`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ recovery_status: status }),
+      });
+
+      if (response.ok) {
+        console.log(`Successfully updated recovery status for flight ${flightId}`);
+        return true;
+      } else {
+        console.error(`Failed to update recovery status: ${response.status}`);
+        return false;
+      }
+    } catch (error) {
+      console.error("Error updating flight recovery status:", error);
+      return false;
+    }
+  }
+
   // Legacy method for backward compatibility
   async storeRebookedPassengers(
     passengersByPnr: any,
