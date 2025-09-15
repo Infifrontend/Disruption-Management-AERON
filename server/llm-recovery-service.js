@@ -597,6 +597,8 @@ Return only valid JSON. No markdown formatting or extra text.`);
       full_streamed_response: fullContent
     });
 
+    appendFile('../logs/llm_responses.log', `\n[${new Date().toISOString()}] Flight: ${disruptionData.flight_number}, Provider: ${providerInfo.provider}, Model: ${providerInfo.model}, Streaming Time: ${streamingTime}ms, Chunks: ${chunksReceived}, Tokens: ${JSON.stringify(tokens)}\nResponse:\n${fullContent}\n---\n`);
+
     // Parse the batch response
     let result;
     try {
