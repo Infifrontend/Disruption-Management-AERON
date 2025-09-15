@@ -3524,7 +3524,6 @@ export function ComparisonMatrix({
                               </TableBody>
                             </Table>
                           </div>
-                          )}
 
                           {/* Summary Section */}
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
