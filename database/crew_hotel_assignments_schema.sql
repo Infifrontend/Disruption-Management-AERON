@@ -40,3 +40,13 @@ CREATE TRIGGER update_crew_hotel_assignments_updated_at
 COMMENT ON TABLE crew_hotel_assignments IS 'Stores crew hotel assignment information for flight disruptions';
 COMMENT ON COLUMN crew_hotel_assignments.crew_member IS 'JSON array containing crew member details (employee_id, name, rank, base, contact_number)';
 COMMENT ON COLUMN crew_hotel_assignments.transport_details IS 'JSON object containing pickup/dropoff details, vehicle type, and vendor information';
+-- Add crew_hotel_assignments column to pending_recovery_solutions table
+ALTER TABLE pending_recovery_solutions 
+ADD COLUMN IF NOT EXISTS crew_hotel_assignments JSONB DEFAULT '[]';
+
+-- Add index for better performance
+CREATE INDEX IF NOT EXISTS idx_pending_recovery_solutions_crew_assignments 
+ON pending_recovery_solutions USING GIN (crew_hotel_assignments);
+
+-- Add comment
+COMMENT ON COLUMN pending_recovery_solutions.crew_hotel_assignments IS 'Stores crew assignment and hotel accommodation details from recovery option analysis';
