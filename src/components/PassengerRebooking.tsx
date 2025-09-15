@@ -1008,15 +1008,6 @@ export function PassengerRebooking({ context, onClearContext }) {
     }
   };
 
-  const getServiceIcon = (serviceKey) => {
-    const service = additionalServicesOptions.find((s) => s.key === serviceKey);
-    if (service) {
-      const Icon = service.icon;
-      return <Icon className="h-4 w-4" />;
-    }
-    return <Shield className="h-4 w-4" />;
-  };
-
   const getReaccommodationType = () => {
     if (!context?.reaccommodationType) return null;
 
@@ -1295,18 +1286,6 @@ export function PassengerRebooking({ context, onClearContext }) {
   };
 
   // Logic to handle crew assignment confirmation
-  const handleCrewSelection = (memberIdentifier) => {
-    setSelectedCrewMembers((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(memberIdentifier)) {
-        newSet.delete(memberIdentifier);
-      } else {
-        newSet.add(memberIdentifier);
-      }
-      return newSet;
-    });
-  };
-
   const handleConfirmCrewAssignment = async () => {
     try {
       if (selectedCrewMembers.size === 0) {
@@ -1481,6 +1460,9 @@ export function PassengerRebooking({ context, onClearContext }) {
       );
       return;
     }
+
+    // Placeholder for preservedSelections, assuming it might hold data related to the selected recovery option
+    const preservedSelections = context?.preservedSelections || {};
 
     const impactArea = recoveryOption?.impact_area || [];
     const hasPassenger = impactArea.includes("passenger");
@@ -3535,7 +3517,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Eye className="h-3 w-3 mr-1" />
                                   View
                                 </Button>
-                                {passenger.status === "Rebooking Required" && (
+                                {passenger.status ===
+                                  "Rebooking Required" && (
                                   <Button
                                     size="sm"
                                     className="btn-flydubai-primary text-xs"
@@ -3819,8 +3802,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                     </h4>
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="text-sm text-gray-600 mb-2">
-                        Selected crew members will be assigned to chosen hotels
-                        automatically based on:
+                        Selected crew members will be assigned to chosen
+                        hotels automatically based on:
                       </div>
                       <ul className="text-xs text-gray-500 space-y-1 ml-4">
                         <li>• Crew rank and seniority</li>
