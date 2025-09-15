@@ -2966,8 +2966,8 @@ export function ComparisonMatrix({
                                                     </Badge>
                                                     <Button
                                                       size="sm"
-                                                      variant="ghost"
-                                                      className="h-8 w-8 p-0"
+                                                      variant="ghost" title="View Rotation Impact"
+                                                      className="h-6 w-6 p-0"
                                                       onClick={(e) => {
                                                         e.stopPropagation();
                                                         setExpandedCrew(
@@ -2977,7 +2977,7 @@ export function ComparisonMatrix({
                                                         );
                                                       }}
                                                     >
-                                                      <Activity className="h-4 w-4 text-flydubai-blue" />
+                                                      <Activity className="h-3 w-3 text-blue-600" />
                                                     </Button>
                                                   </div>
                                                   <div className="text-xs text-green-600">
@@ -3071,14 +3071,6 @@ export function ComparisonMatrix({
                                                   filteredCrew,
                                                 );
                                                 setShowCrewSwapDialog(true);
-                                                // Store crew data immediately when swap dialog opens
-                                                storeCrewAssignments(
-                                                  selectedOptionDetails.id,
-                                                  selectedOptionDetails.rotation_plan.crew ||
-                                                  selectedOptionDetails.rotation_plan.crewData ||
-                                                  [],
-                                                  expandedCrew
-                                                );
                                               }}
                                             >
                                               {hasBeenSwapped ||
@@ -3999,123 +3991,535 @@ export function ComparisonMatrix({
 
       {/* Crew Swap Dialog */}
       <Dialog open={showCrewSwapDialog} onOpenChange={setShowCrewSwapDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <UserCheck className="h-5 w-5 text-flydubai-blue" />
-              {selectedCrewForSwap?.isEditing ? "Edit" : "Assign"} Crew Member
+              <Users className="h-5 w-5 text-flydubai-blue" />
+              Swap Crew Member
+              {selectedCrewForSwap &&
+                ` - ${selectedCrewForSwap.type || selectedCrewForSwap.role || selectedCrewForSwap?.position}`}
             </DialogTitle>
+            <div className="text-sm text-muted-foreground">
+              Role: {selectedCrewForSwap?.role}
+              {selectedCrewForSwap && selectedCrewForSwap.isEditing && (
+                <Badge className="ml-2 bg-orange-100 text-orange-700 border-orange-300">
+                  Editing Assignment
+                </Badge>
+              )}
+            </div>
           </DialogHeader>
 
           {selectedCrewForSwap && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Current/Previous Crew */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm">
-                      {selectedCrewForSwap.isEditing ? "Current Assignment" : "Original Crew"}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
+              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="font-medium text-blue-800 mb-2 flex items-center gap-2">
+                  {selectedCrewForSwap.isEditing
+                    ? "Current Assignment"
+                    : "Assignment to Replace"}
+                  {selectedCrewForSwap.isAutoAssigned && (
+                    <Badge className="bg-blue-100 text-blue-700 border-blue-300 text-xs">
+                      Auto-Assigned
+                    </Badge>
+                  )}
+                </h4>
+
+                {selectedCrewForSwap.isAutoAssigned && (
+                  <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                    <h5 className="text-sm font-medium text-yellow-800 mb-2">
+                      Original Crew (Violated)
+                    </h5>
+                    <div className="grid grid-cols-2 gap-3 text-xs">
                       <div>
-                        <span className="font-medium">
-                          {selectedCrewForSwap.replacedCrew || selectedCrewForSwap.name}
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        {selectedCrewForSwap.role}
-                      </div>
-                      {selectedCrewForSwap.issue && (
-                        <div className="text-sm text-red-600 bg-red-50 p-2 rounded">
-                          Issue: {selectedCrewForSwap.issue}
+                        <span className="text-yellow-700">Name:</span>
+                        <div className="font-medium">
+                          {selectedCrewForSwap.replacedCrew}
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                {/* Available Replacement Crew */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-sm">Available Replacement Crew</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3 max-h-60 overflow-y-auto">
-                      {availableCrewForSwap.length > 0 ? (
-                        availableCrewForSwap.map((crew, index) => (
-                          <div
-                            key={index}
-                            className="p-3 border rounded cursor-pointer hover:bg-blue-50 transition-colors"
-                            onClick={() => {
-                              // Update the crew assignment in the dialog data
-                              if (selectedOptionDetails && selectedOptionDetails.rotation_plan) {
-                                const updatedCrew = [
-                                  ...(selectedOptionDetails.rotation_plan.crew ||
-                                    selectedOptionDetails.rotation_plan.crewData ||
-                                    []),
-                                ];
-
-                                // Update the crew member at the selected index
-                                if (updatedCrew[selectedCrewForSwap.originalIndex]) {
-                                  updatedCrew[selectedCrewForSwap.originalIndex] = {
-                                    ...updatedCrew[selectedCrewForSwap.originalIndex],
-                                    name: crew.name,
-                                    replacedCrew: selectedCrewForSwap.replacedCrew || selectedCrewForSwap.name,
-                                    assignedAt: new Date().toISOString(),
-                                    isAutoAssigned: false,
-                                    status: crew.status,
-                                    experience_years: crew.experience_years,
-                                  };
-
-                                  // Update the dialog state
-                                  setSelectedOptionDetails({
-                                    ...selectedOptionDetails,
-                                    rotation_plan: {
-                                      ...selectedOptionDetails.rotation_plan,
-                                      crew: updatedCrew,
-                                      crewData: updatedCrew,
-                                    },
-                                  });
-
-                                  // Store the updated crew data
-                                  storeCrewAssignments(selectedOptionDetails.id, updatedCrew, expandedCrew);
-                                }
-                              }
-                              setShowCrewSwapDialog(false);
-                            }}
-                          >
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <div className="font-medium">{crew.name}</div>
-                                <div className="text-sm text-gray-600">{crew.role}</div>
-                                {crew.experience_years && (
-                                  <div className="text-xs text-gray-500">
-                                    Experience: {crew.experience_years} years
-                                  </div>
-                                )}
-                              </div>
-                              <Badge className="bg-green-100 text-green-700 border-green-300">
-                                {crew.status}
-                              </Badge>
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-center text-gray-500 py-4">
-                          No available crew for this role
+                      </div>
+                      <div>
+                        <span className="text-yellow-700">Issue:</span>
+                        <div className="font-medium text-red-600">
+                          {selectedCrewForSwap.issue || "Duty violation"}
                         </div>
-                      )}
+                      </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-blue-700">
+                      {selectedCrewForSwap.isEditing
+                        ? "Current Crew:"
+                        : "Crew to Replace:"}
+                    </span>
+                    <div className="font-medium">
+                      {selectedCrewForSwap.name}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-blue-700">Role:</span>
+                    <div className="font-medium">
+                      {selectedCrewForSwap.role}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-blue-700">Status:</span>
+                    <Badge
+                      className={
+                        selectedCrewForSwap.status === "Available" ||
+                        selectedCrewForSwap.status === "Reassigned"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-red-100 text-red-700"
+                      }
+                    >
+                      {selectedCrewForSwap.status ||
+                        selectedCrewForSwap.availability}
+                    </Badge>
+                  </div>
+                  <div>
+                    <span className="text-blue-700">Location:</span>
+                    <div className="font-medium">
+                      {selectedCrewForSwap.location || "N/A"}
+                    </div>
+                  </div>
+                  {selectedCrewForSwap.experience && (
+                    <div>
+                      <span className="text-blue-700">Experience:</span>
+                      <div className="font-medium">
+                        {selectedCrewForSwap.experience}
+                      </div>
+                    </div>
+                  )}
+                  {selectedCrewForSwap.score && (
+                    <div>
+                      <span className="text-blue-700">Performance Score:</span>
+                      <div className="font-medium">
+                        {selectedCrewForSwap.score}/100
+                      </div>
+                    </div>
+                  )}
+                  {selectedCrewForSwap.isAutoAssigned &&
+                    selectedCrewForSwap.assignedAt && (
+                      <div className="col-span-2">
+                        <span className="text-blue-700">Auto-assigned at:</span>
+                        <div className="font-medium text-xs">
+                          {new Date(
+                            selectedCrewForSwap.assignedAt,
+                          ).toLocaleString()}
+                        </div>
+                      </div>
+                    )}
+                </div>
+                {/* {selectedCrewForSwap.qualifications &&
+                  Array.isArray(selectedCrewForSwap.qualifications) && (
+                    <div className="mt-3">
+                      <span className="text-sm text-blue-700 font-medium">
+                        Qualifications:
+                      </span>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selectedCrewForSwap.qualifications.map(
+                          (qual, qIndex) => (
+                            <Badge
+                              key={qIndex}
+                              variant="outline"
+                              className="text-xs bg-white"
+                            >
+                              {qual.name}
+                            </Badge>
+                          ),
+                        )}
+                      </div>
+                    </div>
+                  )} */}
               </div>
 
-              <div className="flex gap-2 justify-end">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-gray-800 flex items-center gap-2">
+                    <UserCheck className="h-4 w-4" />
+                    Available Crew Members ({selectedCrewForSwap.role})
+                  </h4>
+                  <Badge variant="outline" className="text-xs">
+                    {availableCrewForSwap.length} matches found
+                  </Badge>
+                </div>
+
+                {availableCrewForSwap.length > 0 ? (
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {availableCrewForSwap.map((crew, index) => {
+                      // Generate rotation impact data for this crew member
+                      const rotationImpact = crew.rotation_impact || [
+                        {
+                          delay: "On Time",
+                          impact: "Low Impact",
+                          origin: "Dubai",
+                          reason:
+                            "Standard crew rotation — no violations expected",
+                          status: "On Time",
+                          arrival: "2025-09-10T15:30:00+04:00",
+                          departure: "2025-09-10T07:30:00+04:00",
+                          passengers: 167,
+                          destination: "London Heathrow",
+                          origin_code: "DXB",
+                          flightNumber: "FZ001",
+                          destination_code: "LHR",
+                        },
+                        {
+                          delay: "5 min",
+                          impact: "Low Impact",
+                          origin: "London Heathrow",
+                          reason:
+                            "Brief crew handover — minimal delay expected",
+                          status: "On Time",
+                          arrival: "2025-09-10T20:45:00+04:00",
+                          departure: "2025-09-10T16:15:00+01:00",
+                          passengers: 189,
+                          destination: "Dubai",
+                          origin_code: "LHR",
+                          flightNumber: "FZ002",
+                          destination_code: "DXB",
+                        },
+                      ];
+
+                      return (
+                        <React.Fragment key={index}>
+                          <div className="relative p-4 border rounded-lg hover:bg-gray-50 transition-colors">
+                            {/* Available Badge - Top Right Corner */}
+                            <Badge
+                              className={`absolute top-3 right-3 text-xs ${
+                                crew?.availability === "Available"
+                                  ? "bg-green-100 text-green-700 border-green-300"
+                                  : "bg-yellow-100 text-yellow-700 border-yellow-300"
+                              }`}
+                            >
+                              {crew?.status}
+                            </Badge>
+
+                            {/* Main Content Grid */}
+                            <div className="grid grid-cols-5 gap-5 pr-20">
+                              <div>
+                                <h5 className="font-medium text-gray-900">
+                                  {crew?.name}
+                                </h5>
+                                <p className="text-sm text-gray-600">
+                                  {crew?.role}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-500">
+                                  Experience
+                                </span>
+                                <p className="text-sm font-medium text-gray-700">
+                                  {crew?.experience_years}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-500">
+                                  Location
+                                </span>
+                                <p className="text-sm font-medium text-gray-700">
+                                  {crew?.location || "-"}
+                                </p>
+                              </div>
+                              <div>
+                                <span className="text-xs text-gray-500">
+                                  Score
+                                </span>
+                                <div className="flex items-center gap-2 mt-1">
+                                  <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-16">
+                                    <div
+                                      className="bg-flydubai-blue h-2 rounded-full"
+                                      style={{ width: `${crew?.score || 90}%` }}
+                                    ></div>
+                                  </div>
+                                  <span className="text-sm font-medium text-flydubai-blue">
+                                    {crew?.score || 90}
+                                  </span>
+                                </div>
+                              </div>
+                              <div>
+                                <Button
+                                  size="sm"
+                                  className="bg-flydubai-orange hover:bg-flydubai-orange/90 text-white w-full"
+                                  onClick={() => {
+                                    // Update the crew assignment in the selected option details
+                                    if (
+                                      selectedOptionDetails &&
+                                      selectedOptionDetails.rotation_plan
+                                    ) {
+                                      const updatedCrew = [
+                                        ...(selectedOptionDetails.rotation_plan
+                                          .crew ||
+                                          selectedOptionDetails.rotation_plan
+                                            .crewData ||
+                                          []),
+                                      ];
+                                      const originalIndex =
+                                        selectedCrewForSwap.originalIndex;
+                                      console.log(originalIndex);
+
+                                      const newCrewData = {
+                                        name: crew.name,
+                                        role: crew.role,
+                                        qualifications: crew.qualifications,
+                                        experience: crew.experience,
+                                        score: crew.score,
+                                        location: crew.location,
+                                        status: "Reassigned",
+                                        availability: "Reassigned",
+                                        replacedCrew:
+                                          selectedCrewForSwap.replacedCrew ||
+                                          (selectedCrewForSwap.isAutoAssigned
+                                            ? selectedCrewForSwap.replacedCrew
+                                            : selectedCrewForSwap.name),
+                                        assignedAt: new Date().toISOString(),
+                                        isAutoAssigned: false, // Manual assignment
+                                        autoAssignedReplacement: undefined,
+                                      };
+
+                                      // Update the crew member with swap information
+                                      updatedCrew[originalIndex] = {
+                                        ...updatedCrew[originalIndex],
+                                        ...newCrewData,
+                                      };
+
+                                      const updatedOptionDetails = {
+                                        ...selectedOptionDetails,
+                                        rotation_plan: {
+                                          ...selectedOptionDetails.rotation_plan,
+                                          crew: updatedCrew,
+                                          crewData: updatedCrew,
+                                        },
+                                      };
+
+                                      setSelectedOptionDetails(
+                                        updatedOptionDetails,
+                                      );
+
+                                      // Store the crew reassignment persistently
+                                      const currentStoredData = getStoredCrewAssignments(selectedOptionDetails.id);
+                                      const newReassignment = {
+                                        originalIndex: originalIndex,
+                                        originalCrew: selectedCrewForSwap,
+                                        newCrew: crew,
+                                        newCrewData: newCrewData,
+                                        timestamp: new Date().toISOString(),
+                                      };
+
+                                      setCrewAssignmentStorage((prev) => ({
+                                        ...prev,
+                                        [selectedOptionDetails.id]: {
+                                          ...currentStoredData,
+                                          crewData: updatedCrew,
+                                          reassignments: [
+                                            ...(currentStoredData?.reassignments || []).filter(r => r.originalIndex !== originalIndex),
+                                            newReassignment,
+                                          ],
+                                          lastUpdated: new Date().toISOString(),
+                                        },
+                                      }));
+
+                                      // Capture reassigned crew data for Service Page
+                                      const reassignedCrew = updatedCrew.filter(
+                                        (crewMember) =>
+                                          crewMember.replacedCrew &&
+                                          crewMember.assignedAt,
+                                      );
+
+                                      if (reassignedCrew.length > 0) {
+                                        setReassignedCrewData({
+                                          flightId: selectedFlight?.id,
+                                          optionId: selectedOptionDetails?.id,
+                                          optionTitle:
+                                            selectedOptionDetails?.title,
+                                          reassignedCrew: reassignedCrew,
+                                          timestamp: new Date().toISOString(),
+                                          totalReassignments:
+                                            reassignedCrew.length,
+                                        });
+                                      }
+                                    }
+
+                                    // Store the assignment update
+                                    const assignmentUpdate = {
+                                      optionId: selectedOptionDetails?.id,
+                                      originalCrew: selectedCrewForSwap,
+                                      newCrew: crew,
+                                      timestamp: new Date().toISOString(),
+                                      reason: selectedCrewForSwap.isEditing
+                                        ? "Crew assignment edited via interface"
+                                        : "Manual crew swap via interface",
+                                      isEdit: selectedCrewForSwap.isEditing,
+                                    };
+
+                                    setShowCrewSwapDialog(false);
+                                    setSelectedCrewForSwap(null);
+                                  }}
+                                >
+                                  <UserCheck className="h-4 w-4 mr-2" />
+                                  {selectedCrewForSwap.isEditing
+                                    ? "Update"
+                                    : "Assign"}
+                                </Button>
+                              </div>
+                            </div>
+
+                            {/* Action Buttons - Vertical Layout */}
+                            <div className="flex flex-col gap-2 mt-4">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="w-full flex items-center justify-center gap-2"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setExpandedCrew(
+                                    expandedCrew === `available-${index}`
+                                      ? null
+                                      : `available-${index}`,
+                                  );
+                                }}
+                              >
+                                <Activity className="h-4 w-4 text-flydubai-blue" />
+                                <span className="text-sm text-flydubai-blue">
+                                  Rotation Impact
+                                </span>
+                                <svg
+                                  className={`h-4 w-4 text-flydubai-blue transition-transform ${
+                                    expandedCrew === `available-${index}`
+                                      ? "rotate-180"
+                                      : ""
+                                  }`}
+                                  fill="none"
+                                  stroke="currentColor"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M19 9l-7 7-7-7"
+                                  />
+                                </svg>
+                              </Button>
+                            </div>
+                          </div>
+
+                          {/* Rotation Impact Accordion for Available Crew */}
+                          {expandedCrew === `available-${index}` && (
+                            <div className="bg-gray-50 border border-gray-200 rounded ml-4 mb-3">
+                              <div className="px-3 py-2">
+                                <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                                  <Activity className="h-4 w-4 text-flydubai-blue" />
+                                  Rotation Impact for {crew.name}
+                                </h4>
+                                <div className="space-y-2">
+                                  {rotationImpact.map((flight, flightIndex) => (
+                                    <div
+                                      key={flightIndex}
+                                      className="bg-white rounded border p-2"
+                                    >
+                                      <div className="flex items-center justify-between mb-1">
+                                        <div className="flex items-center gap-2">
+                                          <Plane className="h-3 w-3 text-flydubai-blue" />
+                                          <span className="font-medium text-sm">
+                                            {flight.flightNumber}
+                                          </span>
+                                          <span className="text-xs text-gray-600">
+                                            {flight.origin_code} →{" "}
+                                            {flight.destination_code}
+                                          </span>
+                                        </div>
+                                        <Badge
+                                          className={`text-xs px-2 py-0 ${
+                                            flight.impact === "Low Impact"
+                                              ? "bg-green-100 text-green-700 border-green-200"
+                                              : flight.impact ===
+                                                  "Medium Impact"
+                                                ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                                : "bg-red-100 text-red-700 border-red-200"
+                                          }`}
+                                        >
+                                          {flight.impact}
+                                        </Badge>
+                                      </div>
+
+                                      <div className="grid grid-cols-4 gap-2 text-xs">
+                                        <div>
+                                          <span className="text-gray-500">
+                                            Status:
+                                          </span>
+                                          <div className="font-medium">
+                                            {flight.status}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <span className="text-gray-500">
+                                            Delay:
+                                          </span>
+                                          <div className="font-medium">
+                                            {flight.delay}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <span className="text-gray-500">
+                                            PAX:
+                                          </span>
+                                          <div className="font-medium">
+                                            {flight.passengers}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <span className="text-gray-500">
+                                            Dept:
+                                          </span>
+                                          <div className="font-medium">
+                                            {new Date(
+                                              flight.departure,
+                                            ).toLocaleTimeString("en-US", {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                            })}
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <div className="text-xs">
+                                        <span className="text-gray-500">
+                                          Reason:
+                                        </span>
+                                        <span className="ml-1">
+                                          {flight.reason}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </React.Fragment>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Users className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                    <p>No available crew found for this role</p>
+                    <p className="text-xs mt-1">
+                      All qualified crew members are currently assigned
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t">
                 <Button
                   variant="outline"
-                  onClick={() => setShowCrewSwapDialog(false)}
+                  onClick={() => {
+                    setShowCrewSwapDialog(false);
+                    setSelectedCrewForSwap(null);
+                    setAvailableCrewForSwap([]);
+                  }}
                 >
                   Cancel
                 </Button>
