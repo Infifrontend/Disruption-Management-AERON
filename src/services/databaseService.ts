@@ -2126,6 +2126,74 @@ class DatabaseService {
     }
   }
 
+  // Aircraft Swap operations
+  async saveAircraftSwap(aircraftSwapData: {
+    disruption_id: string;
+    original_aircraft: string;
+    replacement_aircraft: string;
+    swap_reason?: string;
+    swap_initiated_by?: string;
+    estimated_swap_time?: number;
+    cost_impact?: number;
+    passenger_impact_count?: number;
+    crew_reassignment_required?: boolean;
+    maintenance_approval_required?: boolean;
+    ground_ops_coordination?: string;
+    swap_details?: any;
+  }): Promise<boolean> {
+    try {
+      console.log("Saving aircraft swap:", aircraftSwapData);
+      const response = await fetch(`${this.baseUrl}/aircraft-swaps`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(aircraftSwapData),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Failed to save aircraft swap:", response.status, errorText);
+        return false;
+      }
+
+      const result = await response.json();
+      console.log("Successfully saved aircraft swap:", result);
+      return true;
+    } catch (error) {
+      console.error("Failed to save aircraft swap:", error);
+      return false;
+    }
+  }
+
+  async getAircraftSwapsByDisruption(disruptionId: string): Promise<any[]> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/aircraft-swaps/${disruptionId}`,
+      );
+      if (!response.ok) return [];
+      return await response.json();
+    } catch (error) {
+      console.error("Failed to fetch aircraft swaps:", error);
+      return [];
+    }
+  }
+
+  async approveAircraftSwap(swapId: string, approvedBy: string, notes?: string): Promise<boolean> {
+    try {
+      const response = await fetch(
+        `${this.baseUrl}/aircraft-swaps/${swapId}/approve`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ approved_by: approvedBy, notes }),
+        },
+      );
+      return response.ok;
+    } catch (error) {
+      console.error("Failed to approve aircraft swap:", error);
+      return false;
+    }
+  }
+
   // Pending Recovery Solutions
   async addPendingSolution(solution: any): Promise<boolean> {
     try {
