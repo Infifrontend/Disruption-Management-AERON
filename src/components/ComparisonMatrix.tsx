@@ -1221,6 +1221,39 @@ export function ComparisonMatrix({
     try {
       // Check if option requires execution based on impact_area
       if (requiresExecution(option)) {
+        // Retrieve stored selections from the popup tabs
+        const storedAircraftSelection = getStoredAircraftSelection(option.id);
+        const storedCrewAssignments = getStoredCrewAssignments(option.id);
+        const storedOptionDetails = getStoredOptionDetails(option.id);
+
+        // Prepare selected aircraft information
+        let selectedAircraftInfo = null;
+        if (storedAircraftSelection && storedAircraftSelection.aircraftOptions) {
+          const selectedIndex = storedAircraftSelection.selectedIndex !== null 
+            ? storedAircraftSelection.selectedIndex 
+            : (selectedAircraftFlight !== null ? selectedAircraftFlight : 0);
+          
+          if (storedAircraftSelection.aircraftOptions[selectedIndex]) {
+            selectedAircraftInfo = {
+              ...storedAircraftSelection.aircraftOptions[selectedIndex],
+              selectedIndex,
+              selectionTimestamp: storedAircraftSelection.lastUpdated,
+            };
+          }
+        }
+
+        // Prepare crew assignment information
+        let crewAssignmentInfo = null;
+        if (storedCrewAssignments && storedCrewAssignments.crewData) {
+          crewAssignmentInfo = {
+            assignedCrew: storedCrewAssignments.crewData,
+            crewSwaps: storedCrewAssignments.crewSwaps || [],
+            reassignments: storedCrewAssignments.reassignments || [],
+            expandedCrewState: storedCrewAssignments.expandedCrew,
+            assignmentTimestamp: storedCrewAssignments.lastUpdated,
+          };
+        }
+
         // Create comprehensive passenger services context with all necessary data
         const passengerContext = {
           selectedFlight: flight,
@@ -1240,12 +1273,21 @@ export function ComparisonMatrix({
               technicalSpecs: option.technical_specs || {},
               rotationPlan: option.rotation_plan || {},
             },
+            // Include selected aircraft and crew information
+            selectedAircraft: selectedAircraftInfo,
+            crewAssignments: crewAssignmentInfo,
           },
           fromExecution: true, // Flag to indicate this came from execution
           executionContext: {
             comparisonData: comparisonOptions,
             flightContext: flight,
             timestamp: new Date().toISOString(),
+          },
+          // Include all stored selection data for Service page
+          storedSelections: {
+            aircraft: storedAircraftSelection,
+            crew: storedCrewAssignments,
+            optionDetails: storedOptionDetails,
           },
         };
 
@@ -2331,8 +2373,12 @@ export function ComparisonMatrix({
                                               className="flex items-center gap-2 cursor-pointer"
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                setSelectedAircraftFlight(
-                                                  index,
+                                                setSelectedAircraftFlight(index);
+                                                // Store the aircraft selection immediately
+                                                storeAircraftSelection(
+                                                  selectedOptionDetails.id,
+                                                  selectedOptionDetails.rotation_plan.aircraftOptions,
+                                                  index
                                                 );
                                               }}
                                             >
@@ -3071,6 +3117,15 @@ export function ComparisonMatrix({
                                                   filteredCrew,
                                                 );
                                                 setShowCrewSwapDialog(true);
+                                                
+                                                // Store current crew assignments
+                                                const currentCrewData = selectedOptionDetails.rotation_plan.crew || 
+                                                                       selectedOptionDetails.rotation_plan.crewData || [];
+                                                storeCrewAssignments(
+                                                  selectedOptionDetails.id,
+                                                  currentCrewData,
+                                                  expandedCrew
+                                                );
                                               }}
                                             >
                                               {hasBeenSwapped ||
