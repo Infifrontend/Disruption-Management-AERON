@@ -86,10 +86,11 @@ export function PassengerServicesPage() {
 
             {/* Crew Assignment Info */}
             {recoveryOption?.crewAssignments &&
+              recoveryOption.crewAssignments.assignedCrew &&
               recoveryOption.crewAssignments.assignedCrew.length > 0 && (
                 <div className="flex items-center gap-4 p-3 bg-white rounded border border-blue-200">
                   <Users className="h-5 w-5 text-blue-600" />
-                  <div>
+                  <div className="flex-1">
                     <h4 className="font-medium text-blue-900">
                       Crew Assignments
                     </h4>
@@ -97,21 +98,41 @@ export function PassengerServicesPage() {
                       {recoveryOption.crewAssignments.assignedCrew.length} crew
                       members assigned
                     </p>
-                    <div className="flex gap-2 mt-1">
-                      {recoveryOption.crewAssignments.crewSwaps.length > 0 && (
+                    
+                    {/* Display crew names */}
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {recoveryOption.crewAssignments.assignedCrew.slice(0, 3).map((crew, index) => (
+                        <Badge key={index} className="bg-blue-100 text-blue-700 text-xs">
+                          {crew.name} ({crew.role || crew.rank || 'Crew'})
+                        </Badge>
+                      ))}
+                      {recoveryOption.crewAssignments.assignedCrew.length > 3 && (
+                        <Badge className="bg-gray-100 text-gray-700 text-xs">
+                          +{recoveryOption.crewAssignments.assignedCrew.length - 3} more
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2 mt-2">
+                      {recoveryOption.crewAssignments.crewSwaps && recoveryOption.crewAssignments.crewSwaps.length > 0 && (
                         <Badge className="bg-orange-100 text-orange-700 text-xs">
                           {recoveryOption.crewAssignments.crewSwaps.length} crew
                           swaps
                         </Badge>
                       )}
-                      {recoveryOption.crewAssignments.reassignments.length >
-                        0 && (
+                      {recoveryOption.crewAssignments.reassignments && recoveryOption.crewAssignments.reassignments.length > 0 && (
                         <Badge className="bg-purple-100 text-purple-700 text-xs">
                           {recoveryOption.crewAssignments.reassignments.length}{" "}
                           reassignments
                         </Badge>
                       )}
                     </div>
+                    
+                    {recoveryOption.crewAssignments.assignmentTimestamp && (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Assigned: {new Date(recoveryOption.crewAssignments.assignmentTimestamp).toLocaleString()}
+                      </p>
+                    )}
                   </div>
                 </div>
               )}

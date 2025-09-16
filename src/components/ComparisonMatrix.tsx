@@ -49,6 +49,7 @@ import { databaseService } from "../services/databaseService";
 import { useNavigate } from "react-router-dom";
 import { alertService } from "../services/alertService";
 import { useAppContext } from "../context/AppContext";
+import { toast } from "react-toastify";
 
 interface ComparisonMatrixProps {
   selectedFlight: any;
@@ -176,18 +177,19 @@ export function ComparisonMatrix({
     }));
   };
 
-  const storeCrewAssignments = (optionId, crewData, expandedCrewState = null) => {
+  const storeCrewAssignments = (optionId, crewData, expandedCrewState = null, crewSwaps = [], reassignments = []) => {
     setCrewAssignmentStorage((prev) => ({
       ...prev,
       [optionId]: {
         crewData: crewData,
         expandedCrew: expandedCrewState,
-        crewSwaps: prev[optionId]?.crewSwaps || [],
-        reassignments: prev[optionId]?.reassignments || [],
+        crewSwaps: crewSwaps,
+        reassignments: reassignments,
         lastUpdated: new Date().toISOString(),
       },
     }));
   };
+
 
   const getStoredOptionDetails = (optionId) => {
     return optionDetailsStorage[optionId] || null;
@@ -989,7 +991,7 @@ export function ComparisonMatrix({
       setShowDetailsDialog(true);
       // Store the details data
       storeOptionDetails(option.id, enrichedDetails);
-      
+
       // Store default aircraft selection if aircraft options are available
       if (enrichedDetails.rotation_plan?.aircraftOptions?.length > 0) {
         // Default to first aircraft (index 0) if no selection exists
@@ -1172,7 +1174,7 @@ export function ComparisonMatrix({
       );
       setRotationPlanDetails(enrichedRotationPlan);
       setShowRotationDialog(true);
-      
+
       // Store the rotation plan details with proper defaults
       const currentAircraftIndex = selectedAircraftFlight !== null ? selectedAircraftFlight : 0;
       storeAircraftSelection(option.id, enrichedRotationPlan.aircraftRotations, currentAircraftIndex);
@@ -1246,10 +1248,10 @@ export function ComparisonMatrix({
         let selectedAircraftInfo = null;
         if (storedAircraftSelection && storedAircraftSelection.aircraftOptions) {
           // Use stored selection index, or current local state, or default to 0
-          const selectedIndex = storedAircraftSelection.selectedIndex !== null 
-            ? storedAircraftSelection.selectedIndex 
+          const selectedIndex = storedAircraftSelection.selectedIndex !== null
+            ? storedAircraftSelection.selectedIndex
             : (selectedAircraftFlight !== null ? selectedAircraftFlight : 0);
-          
+
           if (storedAircraftSelection.aircraftOptions[selectedIndex]) {
             selectedAircraftInfo = {
               ...storedAircraftSelection.aircraftOptions[selectedIndex],
@@ -2871,8 +2873,6 @@ export function ComparisonMatrix({
                                                             rotation_plan: {
                                                               ...selectedOptionDetails.rotation_plan,
                                                               crew: updatedCrew,
-                                                              crewData:
-                                                                updatedCrew,
                                                             },
                                                           },
                                                         );
@@ -3144,9 +3144,9 @@ export function ComparisonMatrix({
                                                   filteredCrew,
                                                 );
                                                 setShowCrewSwapDialog(true);
-                                                
+
                                                 // Store current crew assignments
-                                                const currentCrewData = selectedOptionDetails.rotation_plan.crew || 
+                                                const currentCrewData = selectedOptionDetails.rotation_plan.crew ||
                                                                        selectedOptionDetails.rotation_plan.crewData || [];
                                                 storeCrewAssignments(
                                                   selectedOptionDetails.id,
@@ -3516,14 +3516,10 @@ export function ComparisonMatrix({
                                                                 <div className="font-medium">
                                                                   {new Date(
                                                                     flight.departure,
-                                                                  ).toLocaleTimeString(
-                                                                    "en-US",
-                                                                    {
-                                                                      hour: "2-digit",
-                                                                      minute:
-                                                                        "2-digit",
-                                                                    },
-                                                                  )}
+                                                                  ).toLocaleTimeString("en-US", {
+                                                                    hour: "2-digit",
+                                                                    minute: "2-digit",
+                                                                  })}
                                                                 </div>
                                                               </div>
                                                             </div>
@@ -4436,6 +4432,7 @@ export function ComparisonMatrix({
 
                                     setShowCrewSwapDialog(false);
                                     setSelectedCrewForSwap(null);
+                                    toast.success("Crew swap completed successfully");
                                   }}
                                 >
                                   <UserCheck className="h-4 w-4 mr-2" />
