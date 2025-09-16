@@ -1,18 +1,10 @@
 
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
 from .models import (
-    CustomUser, Settings, ScreenSettings, CustomRules, 
+    Settings, ScreenSettings, CustomRules, 
     DisruptionCategory, FlightDisruption, RecoveryOption,
     Passenger, CrewMember, Aircraft, AnalyticsMetric
 )
-
-@admin.register(CustomUser)
-class CustomUserAdmin(UserAdmin):
-    list_display = ('email', 'username', 'full_name', 'user_type', 'is_active')
-    list_filter = ('user_type', 'is_active', 'date_joined')
-    search_fields = ('email', 'username', 'full_name')
-    ordering = ('email',)
 
 @admin.register(Settings)
 class SettingsAdmin(admin.ModelAdmin):

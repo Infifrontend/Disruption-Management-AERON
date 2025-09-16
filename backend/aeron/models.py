@@ -1,20 +1,10 @@
 
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 import json
 
-class CustomUser(AbstractUser):
-    """Custom user model to match existing database schema"""
-    email = models.EmailField(unique=True)
-    user_type = models.CharField(max_length=50, default='operator')
-    user_code = models.CharField(max_length=20, blank=True, null=True)
-    full_name = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+User = get_user_model()
 
 class Settings(models.Model):
     """Settings management model"""
@@ -24,7 +14,7 @@ class Settings(models.Model):
     type = models.CharField(max_length=50, default='string')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    updated_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
+    updated_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     
     class Meta:
@@ -71,7 +61,7 @@ class CustomRules(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Draft')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, null=True, blank=True)
+    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
 class DisruptionCategory(models.Model):
     """Disruption categories model"""

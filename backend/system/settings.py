@@ -1,4 +1,3 @@
-
 import os
 import dj_database_url
 from pathlib import Path
@@ -190,3 +189,6 @@ LOGGING = {
 
 # Create logs directory
 os.makedirs(os.path.join(BASE_DIR, 'logs'), exist_ok=True)
+
+# Custom user model
+AUTH_USER_MODEL = 'system.User'

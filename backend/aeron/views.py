@@ -2,9 +2,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.contrib.auth import authenticate
-from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, get_user_model
 import logging
+
+User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
