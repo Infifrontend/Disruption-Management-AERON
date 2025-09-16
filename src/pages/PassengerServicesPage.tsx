@@ -81,8 +81,8 @@ export function PassengerServicesPage() {
           <CardContent className="space-y-4">
             {/* Aircraft Selection Info */}
             {recoveryOption?.selectedAircraft &&
-                             typeof recoveryOption.selectedAircraft === 'object' &&
-                             recoveryOption.selectedAircraft !== null && (
+                             typeof recoveryOption?.selectedAircraft === 'object' &&
+                             recoveryOption?.selectedAircraft !== null && (
                               <div className="flex items-center gap-4 p-3 bg-white rounded border border-blue-200">
                                 <Plane className="h-5 w-5 text-blue-600" />
                                 <div>
@@ -90,26 +90,26 @@ export function PassengerServicesPage() {
                                     Selected Aircraft
                                   </h4>
                                   <p className="text-sm text-blue-700">
-                                    {String(recoveryOption.selectedAircraft.reg ||
-                                      recoveryOption.selectedAircraft.aircraft ||
+                                    {String(recoveryOption?.selectedAircraft.reg ||
+                                      recoveryOption?.selectedAircraft.aircraft ||
                                       "N/A")}{" "}
-                                    ({String(recoveryOption.selectedAircraft.type || "B737-800")})
+                                    ({String(recoveryOption?.selectedAircraft.type || "B737-800")})
                                   </p>
                                   <div className="flex gap-2 mt-1">
                                     <Badge className="bg-blue-100 text-blue-700 text-xs">
                                       Turnaround:{" "}
-                                      {String(recoveryOption.selectedAircraft.turnaround ||
-                                        recoveryOption.selectedAircraft.turnaroundTime ||
+                                      {String(recoveryOption?.selectedAircraft.turnaround ||
+                                        recoveryOption?.selectedAircraft.turnaroundTime ||
                                         "45 min")}
                                     </Badge>
                                     <Badge className="bg-green-100 text-green-700 text-xs">
-                                      {String(recoveryOption.selectedAircraft.availability ||
+                                      {String(recoveryOption?.selectedAircraft.availability ||
                                         "Available")}
                                     </Badge>
-                                    {typeof recoveryOption.selectedAircraft.selectedIndex === 'number' && (
+                                    {typeof recoveryOption?.selectedAircraft.selectedIndex === 'number' && (
                                       <Badge className="bg-purple-100 text-purple-700 text-xs">
                                         Option{" "}
-                                        {recoveryOption.selectedAircraft.selectedIndex + 1}
+                                        {recoveryOption?.selectedAircraft.selectedIndex + 1}
                                       </Badge>
                                     )}
                                   </div>
