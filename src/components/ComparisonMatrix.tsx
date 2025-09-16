@@ -1319,8 +1319,7 @@ export function ComparisonMatrix({
           },
           // Include reassigned crew data from AppContext
           reassignedCrewData: reassignedData[option.id]?.crew || null,
-            optionDetails: storedOptionDetails,
-          },
+          optionDetails: storedOptionDetails,
         };
 
         // Use the app context to set the passenger services context
