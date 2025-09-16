@@ -80,119 +80,125 @@ export function PassengerServicesPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Aircraft Selection Info */}
-            {recoveryOption?.selectedAircraft && (
-              <div className="flex items-center gap-4 p-3 bg-white rounded border border-blue-200">
-                <Plane className="h-5 w-5 text-blue-600" />
-                <div>
-                  <h4 className="font-medium text-blue-900">
-                    Selected Aircraft
-                  </h4>
-                  <p className="text-sm text-blue-700">
-                    {recoveryOption.selectedAircraft.reg ||
-                      recoveryOption.selectedAircraft.aircraft}{" "}
-                    ({recoveryOption.selectedAircraft.type || "B737-800"})
-                  </p>
-                  <div className="flex gap-2 mt-1">
-                    <Badge className="bg-blue-100 text-blue-700 text-xs">
-                      Turnaround:{" "}
-                      {recoveryOption.selectedAircraft.turnaround ||
-                        recoveryOption.selectedAircraft.turnaroundTime ||
-                        "45 min"}
-                    </Badge>
-                    <Badge className="bg-green-100 text-green-700 text-xs">
-                      {recoveryOption.selectedAircraft.availability ||
-                        "Available"}
-                    </Badge>
-                    {recoveryOption.selectedAircraft.selectedIndex !==
-                      undefined && (
-                      <Badge className="bg-purple-100 text-purple-700 text-xs">
-                        Option{" "}
-                        {recoveryOption.selectedAircraft.selectedIndex + 1}
-                      </Badge>
-                    )}
-                  </div>
-                  {recoveryOption.selectedAircraft.selectionTimestamp && (
-                    <p className="text-xs text-gray-500 mt-1">
-                      Selected:{" "}
-                      {new Date(
-                        recoveryOption.selectedAircraft.selectionTimestamp,
-                      ).toLocaleString()}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )}
+            {recoveryOption?.selectedAircraft &&
+                             typeof recoveryOption.selectedAircraft === 'object' &&
+                             recoveryOption.selectedAircraft !== null && (
+                              <div className="flex items-center gap-4 p-3 bg-white rounded border border-blue-200">
+                                <Plane className="h-5 w-5 text-blue-600" />
+                                <div>
+                                  <h4 className="font-medium text-blue-900">
+                                    Selected Aircraft
+                                  </h4>
+                                  <p className="text-sm text-blue-700">
+                                    {recoveryOption.selectedAircraft.reg ||
+                                      recoveryOption.selectedAircraft.aircraft ||
+                                      "N/A"}{" "}
+                                    ({recoveryOption.selectedAircraft.type || "B737-800"})
+                                  </p>
+                                  <div className="flex gap-2 mt-1">
+                                    <Badge className="bg-blue-100 text-blue-700 text-xs">
+                                      Turnaround:{" "}
+                                      {recoveryOption.selectedAircraft.turnaround ||
+                                        recoveryOption.selectedAircraft.turnaroundTime ||
+                                        "45 min"}
+                                    </Badge>
+                                    <Badge className="bg-green-100 text-green-700 text-xs">
+                                      {recoveryOption.selectedAircraft.availability ||
+                                        "Available"}
+                                    </Badge>
+                                    {typeof recoveryOption.selectedAircraft.selectedIndex === 'number' && (
+                                      <Badge className="bg-purple-100 text-purple-700 text-xs">
+                                        Option{" "}
+                                        {recoveryOption.selectedAircraft.selectedIndex + 1}
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  {recoveryOption.selectedAircraft.selectionTimestamp && (
+                                    <p className="text-xs text-gray-500 mt-1">
+                                      Selected:{" "}
+                                      {new Date(
+                                        recoveryOption.selectedAircraft.selectionTimestamp,
+                                      ).toLocaleString()}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
 
             {/* Crew Assignment Info */}
             {recoveryOption?.crewAssignments &&
-              recoveryOption.crewAssignments.assignedCrew &&
-              recoveryOption.crewAssignments.assignedCrew.length > 0 && (
-                <div className="flex items-center gap-4 p-3 bg-white rounded border border-blue-200">
-                  <Users className="h-5 w-5 text-blue-600" />
-                  <div className="flex-1">
-                    <h4 className="font-medium text-blue-900">
-                      Crew Assignments
-                    </h4>
-                    <p className="text-sm text-blue-700">
-                      {recoveryOption.crewAssignments.assignedCrew.length} crew
-                      members assigned
-                    </p>
+                              typeof recoveryOption.crewAssignments === 'object' &&
+                              recoveryOption.crewAssignments.assignedCrew &&
+                              Array.isArray(recoveryOption.crewAssignments.assignedCrew) &&
+                              recoveryOption.crewAssignments.assignedCrew.length > 0 && (
+                                <div className="flex items-center gap-4 p-3 bg-white rounded border border-blue-200">
+                                  <Users className="h-5 w-5 text-blue-600" />
+                                  <div className="flex-1">
+                                    <h4 className="font-medium text-blue-900">
+                                      Crew Assignments
+                                    </h4>
+                                    <p className="text-sm text-blue-700">
+                                      {recoveryOption.crewAssignments.assignedCrew.length} crew
+                                      members assigned
+                                    </p>
 
-                    {/* Display crew names */}
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {recoveryOption.crewAssignments.assignedCrew
-                        .slice(0, 3)
-                        .map((crew, index) => (
-                          <Badge
-                            key={index}
-                            className="bg-blue-100 text-blue-700 text-xs"
-                          >
-                            {crew.name} ({crew.role || crew.rank || "Crew"})
-                          </Badge>
-                        ))}
-                      {recoveryOption.crewAssignments.assignedCrew.length >
-                        3 && (
-                        <Badge className="bg-gray-100 text-gray-700 text-xs">
-                          +
-                          {recoveryOption.crewAssignments.assignedCrew.length -
-                            3}{" "}
-                          more
-                        </Badge>
-                      )}
-                    </div>
+                                    {/* Display crew names */}
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                      {recoveryOption.crewAssignments.assignedCrew
+                                        .slice(0, 3)
+                                        .map((crew, index) => (
+                                          <Badge
+                                            key={index}
+                                            className="bg-blue-100 text-blue-700 text-xs"
+                                          >
+                                            {(crew?.name || "Unknown")} ({crew?.role || crew?.rank || "Crew"})
+                                          </Badge>
+                                        ))}
+                                      {recoveryOption.crewAssignments.assignedCrew.length >
+                                        3 && (
+                                        <Badge className="bg-gray-100 text-gray-700 text-xs">
+                                          +
+                                          {recoveryOption.crewAssignments.assignedCrew.length -
+                                            3}{" "}
+                                          more
+                                        </Badge>
+                                      )}
+                                    </div>
 
-                    <div className="flex gap-2 mt-2">
-                      {recoveryOption.crewAssignments.crewSwaps &&
-                        recoveryOption.crewAssignments.crewSwaps.length > 0 && (
-                          <Badge className="bg-orange-100 text-orange-700 text-xs">
-                            {recoveryOption.crewAssignments.crewSwaps.length}{" "}
-                            crew swaps
-                          </Badge>
-                        )}
-                      {recoveryOption.crewAssignments.reassignments &&
-                        recoveryOption.crewAssignments.reassignments.length >
-                          0 && (
-                          <Badge className="bg-purple-100 text-purple-700 text-xs">
-                            {
-                              recoveryOption.crewAssignments.reassignments
-                                .length
-                            }{" "}
-                            reassignments
-                          </Badge>
-                        )}
-                    </div>
+                                    <div className="flex gap-2 mt-2">
+                                      {recoveryOption.crewAssignments.crewSwaps &&
+                                        Array.isArray(recoveryOption.crewAssignments.crewSwaps) &&
+                                        recoveryOption.crewAssignments.crewSwaps.length > 0 && (
+                                          <Badge className="bg-orange-100 text-orange-700 text-xs">
+                                            {recoveryOption.crewAssignments.crewSwaps.length}{" "}
+                                            crew swaps
+                                          </Badge>
+                                        )}
+                                      {recoveryOption.crewAssignments.reassignments &&
+                                        Array.isArray(recoveryOption.crewAssignments.reassignments) &&
+                                        recoveryOption.crewAssignments.reassignments.length >
+                                          0 && (
+                                          <Badge className="bg-purple-100 text-purple-700 text-xs">
+                                            {
+                                              recoveryOption.crewAssignments.reassignments
+                                                .length
+                                            }{" "}
+                                            reassignments
+                                          </Badge>
+                                        )}
+                                    </div>
 
-                    {recoveryOption.crewAssignments.assignmentTimestamp && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Assigned:{" "}
-                        {new Date(
-                          recoveryOption.crewAssignments.assignmentTimestamp,
-                        ).toLocaleString()}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
+                                    {recoveryOption.crewAssignments.assignmentTimestamp && (
+                                      <p className="text-xs text-gray-500 mt-1">
+                                        Assigned:{" "}
+                                        {new Date(
+                                          recoveryOption.crewAssignments.assignmentTimestamp,
+                                        ).toLocaleString()}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
 
             <div className="text-xs text-blue-600">
               ✓ All selections from the recovery option analysis have been
