@@ -1316,6 +1316,9 @@ export function ComparisonMatrix({
           storedSelections: {
             aircraft: storedAircraftSelection,
             crew: storedCrewAssignments,
+          },
+          // Include reassigned crew data from AppContext
+          reassignedCrewData: reassignedData[option.id]?.crew || null,
             optionDetails: storedOptionDetails,
           },
         };

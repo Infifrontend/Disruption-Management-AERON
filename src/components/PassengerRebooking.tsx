@@ -162,10 +162,10 @@ export function PassengerRebooking({ context, onClearContext }) {
   const selectedFlight = context?.selectedFlight || context?.flight;
   const recoveryOption = context?.recoveryOption;
   const fromExecution = context?.fromExecution;
-  
+
   // Extract preserved selections for easier access
-  const preservedAircraftSelection = context?.storedSelections?.aircraft || recoveryOption?.selectedAircraft;
-  const preservedCrewAssignments = context?.storedSelections?.crew || recoveryOption?.crewAssignments;
+  const preservedSelections = context?.storedSelections; // Renamed for clarity
+  const activeContext = context; // Use a distinct name for context
 
   // State for generated passengers
   const [generatedPassengers, setGeneratedPassengers] = useState([]);
@@ -896,8 +896,7 @@ export function PassengerRebooking({ context, onClearContext }) {
             selectedPriority === "all-priorities" ||
             passenger.priority === selectedPriority;
           const matchesStatus =
-            selectedStatus === "all-statuses" ||
-            passenger.status === selectedStatus;
+            selectedStatus === "all-statuses" || passenger.status === selectedStatus;
 
           return matchesSearch && matchesPriority && matchesStatus;
         },
@@ -2071,6 +2070,101 @@ export function PassengerRebooking({ context, onClearContext }) {
         </Card>
       )}
 
+      {/* Debug: Show reassigned crew data if available */}
+      {reassignedCrewData && (
+        <Card className="bg-purple-50 border-purple-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-purple-800">
+              <Users className="h-5 w-5" />
+              Reassigned Crew Data from Comparison Page
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <div className="text-sm">
+                <strong>Flight ID:</strong> {reassignedCrewData.flightId}
+              </div>
+              <div className="text-sm">
+                <strong>Option ID:</strong> {reassignedCrewData.optionId}
+              </div>
+              <div className="text-sm">
+                <strong>Total Reassignments:</strong> {reassignedCrewData.totalReassignments}
+              </div>
+              <div className="text-sm">
+                <strong>Timestamp:</strong> {new Date(reassignedCrewData.timestamp).toLocaleString()}
+              </div>
+
+              {reassignedCrewData.reassignedCrew && reassignedCrewData.reassignedCrew.length > 0 && (
+                <div className="mt-4">
+                  <h4 className="font-medium text-purple-900 mb-2">Reassigned Crew Members:</h4>
+                  <div className="space-y-2">
+                    {reassignedCrewData.reassignedCrew.map((crew, index) => (
+                      <div key={index} className="bg-white p-3 rounded border border-purple-200">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="font-medium">{crew.name} ({crew.role})</div>
+                            {crew.replacedCrew && (
+                              <div className="text-sm text-purple-600">
+                                Replaced: {crew.replacedCrew}
+                              </div>
+                            )}
+                            {crew.issue && (
+                              <div className="text-sm text-red-600">
+                                Issue: {crew.issue}
+                              </div>
+                            )}
+                          </div>
+                          <Badge className={
+                            crew.status === "Available"
+                              ? "bg-green-100 text-green-800 border-green-300"
+                              : "bg-red-100 text-red-800 border-red-300"
+                          }>
+                            {crew.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Display preserved selections if available */}
+      {preservedSelections && activeContext?.fromExecution && (
+        <Card className="border-gray-200 bg-gray-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Copy className="h-5 w-5 text-gray-600" />
+              Preserved Selections
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              {preservedSelections.aircraft && (
+                <div>
+                  <div className="font-medium text-gray-700">Aircraft</div>
+                  <div className="text-gray-900">{preservedSelections.aircraft}</div>
+                </div>
+              )}
+              {preservedSelections.crew &&
+                Array.isArray(preservedSelections.crew) &&
+                preservedSelections.crew.length > 0 && (
+                  <div>
+                    <div className="font-medium text-gray-700">Crew</div>
+                    <div className="text-gray-900">
+                      {preservedSelections.crew.join(", ")}
+                    </div>
+                  </div>
+                )}
+              {/* Add other preserved selections here */}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Tabs for Passenger Service and Crew Schedule */}
       {(() => {
         const impactArea = recoveryOption?.impact_area || [];
@@ -2472,61 +2566,59 @@ export function PassengerRebooking({ context, onClearContext }) {
                               {expandedPnrs.has(pnr) && (
                                 <div className="p-4 border-t">
                                   <div className="grid gap-3">
-                                    {(groupPassengers as any).map(
-                                      (passenger) => (
-                                        <div
-                                          key={passenger.id}
-                                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                                        >
-                                          <div className="flex items-center gap-4">
-                                            <div>
-                                              <div className="font-medium">
-                                                {passenger.name}
-                                              </div>
-                                              <div className="text-sm text-gray-500">
-                                                {passenger.contactInfo}
-                                              </div>
+                                    {(groupPassengers as any).map((passenger) => (
+                                      <div
+                                        key={passenger.id}
+                                        className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                                      >
+                                        <div className="flex items-center gap-4">
+                                          <div>
+                                            <div className="font-medium">
+                                              {passenger.name}
                                             </div>
-                                            <Badge
-                                              className={getPriorityColor(
-                                                passenger.priority,
-                                              )}
-                                            >
-                                              {passenger.priority}
-                                            </Badge>
-                                            <Badge
-                                              className={getStatusColor(
-                                                passenger.status,
-                                              )}
-                                            >
-                                              {passenger.status}
-                                            </Badge>
-                                            <div className="text-sm text-gray-600">
-                                              Seat: {passenger.seat}
+                                            <div className="text-sm text-gray-500">
+                                              {passenger.contactInfo}
                                             </div>
-                                            {passenger.specialRequirements && (
-                                              <Badge
-                                                variant="outline"
-                                                className="text-xs"
-                                              >
-                                                {passenger.specialRequirements}
-                                              </Badge>
-                                            )}
                                           </div>
-                                          <Button
-                                            size="sm"
-                                            variant="outline"
-                                            onClick={() =>
-                                              handleRebookPassenger(passenger)
-                                            }
-                                            className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                          <Badge
+                                            className={getPriorityColor(
+                                              passenger.priority,
+                                            )}
                                           >
-                                            <Eye className="h-3 w-3 mr-1" />
-                                            View
-                                          </Button>
+                                            {passenger.priority}
+                                          </Badge>
+                                          <Badge
+                                            className={getStatusColor(
+                                              passenger.status,
+                                            )}
+                                          >
+                                            {passenger.status}
+                                          </Badge>
+                                          <div className="text-sm text-gray-600">
+                                            Seat: {passenger.seat}
+                                          </div>
+                                          {passenger.specialRequirements && (
+                                            <Badge
+                                              variant="outline"
+                                              className="text-xs"
+                                            >
+                                              {passenger.specialRequirements}
+                                            </Badge>
+                                          )}
                                         </div>
-                                      ),
-                                    )}
+                                        <Button
+                                          size="sm"
+                                          variant="outline"
+                                          onClick={() =>
+                                            handleRebookPassenger(passenger)
+                                          }
+                                          className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                                        >
+                                          <Eye className="h-3 w-3 mr-1" />
+                                          View
+                                        </Button>
+                                      </div>
+                                    ))}
                                   </div>
                                 </div>
                               )}
@@ -3540,7 +3632,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   <Eye className="h-3 w-3 mr-1" />
                                   View
                                 </Button>
-                                {passenger.status === "Rebooking Required" && (
+                                {passenger.status ===
+                                  "Rebooking Required" && (
                                   <Button
                                     size="sm"
                                     className="btn-flydubai-primary text-xs"
@@ -3765,8 +3858,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 </div>
                                 <div className="text-right">
                                   <div className="font-bold text-flydubai-orange text-sm">
-                                    {hotel.pricePerNight}
-                                  </div>
+                                    {hotel.pricePerNight}                                  </div>
                                   <div className="text-xs text-gray-500">
                                     per night
                                   </div>

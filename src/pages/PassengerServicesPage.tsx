@@ -12,7 +12,7 @@ import { Badge } from "../components/ui/badge";
 import { Plane, Users, Info } from "lucide-react";
 
 export function PassengerServicesPage() {
-  const { passengerServicesContext, setPassengerServicesContext } =
+  const { passengerServicesContext, setPassengerServicesContext, reassignedCrewData } =
     useAppContext();
   const location = useLocation();
   const [preservedSelections, setPreservedSelections] = useState(null);
@@ -36,8 +36,28 @@ export function PassengerServicesPage() {
 
   return (
     <div className="space-y-6">
+      {/* Debug: Display reassigned crew data if available */}
+      {reassignedCrewData && (
+        <Card className="bg-yellow-50 border-yellow-200">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-yellow-800">
+              <Info className="h-5 w-5" />
+              Reassigned Crew Data (Debug Info)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm space-y-1">
+              <div><strong>Flight ID:</strong> {reassignedCrewData.flightId}</div>
+              <div><strong>Option:</strong> {reassignedCrewData.optionTitle}</div>
+              <div><strong>Reassignments:</strong> {reassignedCrewData.totalReassignments}</div>
+              <div><strong>Crew Count:</strong> {reassignedCrewData.reassignedCrew?.length || 0}</div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Display preserved selections if available */}
-      {preservedSelections && activeContext?.fromExecution && (
+      {preservedSelections && activeContext?.fromExecution && (</old_str>
         <Card className="bg-blue-50 border-blue-200">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-800">
