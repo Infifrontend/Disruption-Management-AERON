@@ -2070,69 +2070,6 @@ export function PassengerRebooking({ context, onClearContext }) {
         </Card>
       )}
 
-      {/* Debug: Show reassigned crew data if available */}
-      {reassignedCrewData && (
-        <Card className="bg-purple-50 border-purple-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-purple-800">
-              <Users className="h-5 w-5" />
-              Reassigned Crew Data from Comparison Page
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="text-sm">
-                <strong>Flight ID:</strong> {reassignedCrewData.flightId}
-              </div>
-              <div className="text-sm">
-                <strong>Option ID:</strong> {reassignedCrewData.optionId}
-              </div>
-              <div className="text-sm">
-                <strong>Total Reassignments:</strong> {reassignedCrewData.totalReassignments}
-              </div>
-              <div className="text-sm">
-                <strong>Timestamp:</strong> {new Date(reassignedCrewData.timestamp).toLocaleString()}
-              </div>
-
-              {reassignedCrewData.reassignedCrew && reassignedCrewData.reassignedCrew.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="font-medium text-purple-900 mb-2">Reassigned Crew Members:</h4>
-                  <div className="space-y-2">
-                    {reassignedCrewData.reassignedCrew.map((crew, index) => (
-                      <div key={index} className="bg-white p-3 rounded border border-purple-200">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium">{crew.name} ({crew.role})</div>
-                            {crew.replacedCrew && (
-                              <div className="text-sm text-purple-600">
-                                Replaced: {crew.replacedCrew}
-                              </div>
-                            )}
-                            {crew.issue && (
-                              <div className="text-sm text-red-600">
-                                Issue: {crew.issue}
-                              </div>
-                            )}
-                          </div>
-                          <Badge className={
-                            crew.status === "Available"
-                              ? "bg-green-100 text-green-800 border-green-300"
-                              : "bg-red-100 text-red-800 border-red-300"
-                          }>
-                            {crew.status}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-     
 
       {/* Tabs for Passenger Service and Crew Schedule */}
       {(() => {
