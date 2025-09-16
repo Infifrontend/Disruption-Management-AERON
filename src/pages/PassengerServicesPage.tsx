@@ -35,9 +35,21 @@ export function PassengerServicesPage() {
   // Use context from app state or navigation state
   const activeContext = passengerServicesContext || location.state;
   const recoveryOption = activeContext?.recoveryOption;
-  console.log(activeContext, "recoveryOption");
-  console.log(recoveryOption, "recoveryOptionattasdtastd");
-  console.log(reassignedCrewData, "recoveryOptionattasdtastd");
+  console.log("activeContext:", activeContext);
+  console.log("recoveryOption:", recoveryOption);
+  console.log("reassignedCrewData:", reassignedCrewData);
+
+  // Safety check to ensure we don't render objects directly
+  const getSafeStringValue = (value: any): string => {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "string" || typeof value === "number") return String(value);
+    if (typeof value === "object") {
+      // If it's an object, we need to extract meaningful string representation
+      if (Array.isArray(value)) return `${value.length} items`;
+      return "[Object]";
+    }
+    return String(value);
+  };
 
   return (
     <div className="space-y-6">
@@ -53,18 +65,18 @@ export function PassengerServicesPage() {
           <CardContent>
             <div className="text-sm space-y-1">
               <div>
-                <strong>Flight ID:</strong> {reassignedCrewData.flightId}
+                <strong>Flight ID:</strong> {getSafeStringValue(reassignedCrewData.flightId)}
               </div>
               <div>
-                <strong>Option:</strong> {reassignedCrewData.optionTitle}
+                <strong>Option:</strong> {getSafeStringValue(reassignedCrewData.optionTitle)}
               </div>
               <div>
                 <strong>Reassignments:</strong>{" "}
-                {reassignedCrewData.totalReassignments}
+                {getSafeStringValue(reassignedCrewData.totalReassignments)}
               </div>
               <div>
                 <strong>Crew Count:</strong>{" "}
-                {reassignedCrewData.reassignedCrew?.length || 0}
+                {getSafeStringValue(reassignedCrewData.reassignedCrew?.length || 0)}
               </div>
             </div>
           </CardContent>
@@ -95,9 +107,12 @@ export function PassengerServicesPage() {
                     <p className="text-sm text-blue-700">
                       {(() => {
                         const aircraft = recoveryOption.selectedAircraft;
-                        const reg = aircraft?.reg || aircraft?.aircraft || "N/A";
-                        const type = aircraft?.type || "B737-800";
-                        return `${String(reg)} (${String(type)})`;
+                        if (typeof aircraft === 'object' && aircraft !== null) {
+                          const reg = aircraft.reg || aircraft.aircraft || "N/A";
+                          const type = aircraft.type || "B737-800";
+                          return `${String(reg)} (${String(type)})`;
+                        }
+                        return "N/A";
                       })()}
                     </p>
                     <div className="flex gap-2 mt-1">
@@ -156,8 +171,11 @@ export function PassengerServicesPage() {
                     <p className="text-sm text-blue-700">
                       {(() => {
                         const crewAssignments = recoveryOption.crewAssignments;
-                        const assignedCrew = crewAssignments?.assignedCrew || [];
-                        return `${String(assignedCrew.length)} crew members assigned`;
+                        if (typeof crewAssignments === 'object' && crewAssignments !== null) {
+                          const assignedCrew = Array.isArray(crewAssignments.assignedCrew) ? crewAssignments.assignedCrew : [];
+                          return `${String(assignedCrew.length)} crew members assigned`;
+                        }
+                        return "No crew information available";
                       })()}
                     </p>
 
