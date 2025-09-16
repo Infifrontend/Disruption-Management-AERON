@@ -1644,9 +1644,15 @@ export function PassengerRebooking({ context, onClearContext }) {
         }
 
         if (crewHotelAssignmentsData.length > 0) {
-          (solutionData as any).crew_hotel_assignments =
-            crewHotelAssignmentsData;
+          (solutionData as any).crew_hotel_assignments = crewHotelAssignmentsData;
         }
+
+        // Ensure crew information is included in full_details for proper storage
+        (solutionData as any).full_details = {
+          ...((solutionData as any).full_details || {}),
+          passenger_rebooking: passengerRebookingData,
+          crew_hotel_assignments: crewHotelAssignmentsData,
+        };
         const pendingSolutionSuccess =
           await databaseService.addPendingSolution(solutionData);
 
