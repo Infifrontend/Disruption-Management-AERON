@@ -90,21 +90,21 @@ export function PassengerServicesPage() {
                                     Selected Aircraft
                                   </h4>
                                   <p className="text-sm text-blue-700">
-                                    {recoveryOption.selectedAircraft.reg ||
+                                    {String(recoveryOption.selectedAircraft.reg ||
                                       recoveryOption.selectedAircraft.aircraft ||
-                                      "N/A"}{" "}
-                                    ({recoveryOption.selectedAircraft.type || "B737-800"})
+                                      "N/A")}{" "}
+                                    ({String(recoveryOption.selectedAircraft.type || "B737-800")})
                                   </p>
                                   <div className="flex gap-2 mt-1">
                                     <Badge className="bg-blue-100 text-blue-700 text-xs">
                                       Turnaround:{" "}
-                                      {recoveryOption.selectedAircraft.turnaround ||
+                                      {String(recoveryOption.selectedAircraft.turnaround ||
                                         recoveryOption.selectedAircraft.turnaroundTime ||
-                                        "45 min"}
+                                        "45 min")}
                                     </Badge>
                                     <Badge className="bg-green-100 text-green-700 text-xs">
-                                      {recoveryOption.selectedAircraft.availability ||
-                                        "Available"}
+                                      {String(recoveryOption.selectedAircraft.availability ||
+                                        "Available")}
                                     </Badge>
                                     {typeof recoveryOption.selectedAircraft.selectedIndex === 'number' && (
                                       <Badge className="bg-purple-100 text-purple-700 text-xs">
@@ -151,7 +151,7 @@ export function PassengerServicesPage() {
                                             key={index}
                                             className="bg-blue-100 text-blue-700 text-xs"
                                           >
-                                            {(crew?.name || "Unknown")} ({crew?.role || crew?.rank || "Crew"})
+                                            {String(crew?.name || "Unknown")} ({String(crew?.role || crew?.rank || "Crew")})
                                           </Badge>
                                         ))}
                                       {recoveryOption.crewAssignments.assignedCrew.length >
