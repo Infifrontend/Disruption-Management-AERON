@@ -37,6 +37,7 @@ export function PassengerServicesPage() {
   const recoveryOption = activeContext?.recoveryOption;
   console.log(activeContext, "recoveryOption");
   console.log(recoveryOption, "recoveryOptionattasdtastd");
+  console.log(reassignedCrewData, "recoveryOptionattasdtastd");
 
   return (
     <div className="space-y-6">
