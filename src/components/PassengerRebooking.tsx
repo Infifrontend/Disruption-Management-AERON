@@ -2132,38 +2132,7 @@ export function PassengerRebooking({ context, onClearContext }) {
         </Card>
       )}
 
-      {/* Display preserved selections if available */}
-      {preservedSelections && activeContext?.fromExecution && (
-        <Card className="border-gray-200 bg-gray-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Copy className="h-5 w-5 text-gray-600" />
-              Preserved Selections
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              {preservedSelections.aircraft && (
-                <div>
-                  <div className="font-medium text-gray-700">Aircraft</div>
-                  <div className="text-gray-900">{preservedSelections.aircraft}</div>
-                </div>
-              )}
-              {preservedSelections.crew &&
-                Array.isArray(preservedSelections.crew) &&
-                preservedSelections.crew.length > 0 && (
-                  <div>
-                    <div className="font-medium text-gray-700">Crew</div>
-                    <div className="text-gray-900">
-                      {preservedSelections.crew.join(", ")}
-                    </div>
-                  </div>
-                )}
-              {/* Add other preserved selections here */}
-            </div>
-          </CardContent>
-        </Card>
-      )}
+     
 
       {/* Tabs for Passenger Service and Crew Schedule */}
       {(() => {
