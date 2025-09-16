@@ -989,6 +989,20 @@ export function ComparisonMatrix({
       setShowDetailsDialog(true);
       // Store the details data
       storeOptionDetails(option.id, enrichedDetails);
+      
+      // Store default aircraft selection if aircraft options are available
+      if (enrichedDetails.rotation_plan?.aircraftOptions?.length > 0) {
+        // Default to first aircraft (index 0) if no selection exists
+        const storedSelection = getStoredAircraftSelection(option.id);
+        if (!storedSelection) {
+          storeAircraftSelection(option.id, enrichedDetails.rotation_plan.aircraftOptions, 0);
+          // Set the local state as well
+          setSelectedAircraftFlight(0);
+        } else {
+          // Restore the previous selection
+          setSelectedAircraftFlight(storedSelection.selectedIndex);
+        }
+      }
     } catch (error) {
       console.error("Error processing option details:", error);
       setSelectedOptionDetails(option); // Fallback to option data
@@ -1158,9 +1172,11 @@ export function ComparisonMatrix({
       );
       setRotationPlanDetails(enrichedRotationPlan);
       setShowRotationDialog(true);
-      // Store the rotation plan details
-      storeAircraftSelection(option.id, enrichedRotationPlan.aircraftRotations, selectedAircraftFlight);
-      storeCrewAssignments(option.id, enrichedRotationPlan.crew);
+      
+      // Store the rotation plan details with proper defaults
+      const currentAircraftIndex = selectedAircraftFlight !== null ? selectedAircraftFlight : 0;
+      storeAircraftSelection(option.id, enrichedRotationPlan.aircraftRotations, currentAircraftIndex);
+      storeCrewAssignments(option.id, enrichedRotationPlan.crew, expandedCrew);
     } catch (error) {
       console.error("Error processing rotation plan:", error);
 
@@ -1229,6 +1245,7 @@ export function ComparisonMatrix({
         // Prepare selected aircraft information
         let selectedAircraftInfo = null;
         if (storedAircraftSelection && storedAircraftSelection.aircraftOptions) {
+          // Use stored selection index, or current local state, or default to 0
           const selectedIndex = storedAircraftSelection.selectedIndex !== null 
             ? storedAircraftSelection.selectedIndex 
             : (selectedAircraftFlight !== null ? selectedAircraftFlight : 0);
@@ -1240,6 +1257,16 @@ export function ComparisonMatrix({
               selectionTimestamp: storedAircraftSelection.lastUpdated,
             };
           }
+        } else if (option.rotation_plan?.aircraftOptions?.length > 0) {
+          // Fallback: use the first aircraft as default if no stored selection
+          const defaultIndex = selectedAircraftFlight !== null ? selectedAircraftFlight : 0;
+          selectedAircraftInfo = {
+            ...option.rotation_plan.aircraftOptions[defaultIndex],
+            selectedIndex: defaultIndex,
+            selectionTimestamp: new Date().toISOString(),
+          };
+          // Store this default selection for consistency
+          storeAircraftSelection(option.id, option.rotation_plan.aircraftOptions, defaultIndex);
         }
 
         // Prepare crew assignment information

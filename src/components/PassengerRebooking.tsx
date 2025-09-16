@@ -162,6 +162,10 @@ export function PassengerRebooking({ context, onClearContext }) {
   const selectedFlight = context?.selectedFlight || context?.flight;
   const recoveryOption = context?.recoveryOption;
   const fromExecution = context?.fromExecution;
+  
+  // Extract preserved selections for easier access
+  const preservedAircraftSelection = context?.storedSelections?.aircraft || recoveryOption?.selectedAircraft;
+  const preservedCrewAssignments = context?.storedSelections?.crew || recoveryOption?.crewAssignments;
 
   // State for generated passengers
   const [generatedPassengers, setGeneratedPassengers] = useState([]);

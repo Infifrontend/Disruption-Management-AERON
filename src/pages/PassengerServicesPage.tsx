@@ -57,18 +57,29 @@ export function PassengerServicesPage() {
                   <p className="text-sm text-blue-700">
                     {recoveryOption.selectedAircraft.reg ||
                       recoveryOption.selectedAircraft.aircraft}
-                    ({recoveryOption.selectedAircraft.type || "B737-800"})
+                    {" "}({recoveryOption.selectedAircraft.type || "B737-800"})
                   </p>
                   <div className="flex gap-2 mt-1">
                     <Badge className="bg-blue-100 text-blue-700 text-xs">
                       Turnaround:{" "}
-                      {recoveryOption.selectedAircraft.turnaround || "45 min"}
+                      {recoveryOption.selectedAircraft.turnaround || 
+                       recoveryOption.selectedAircraft.turnaroundTime || "45 min"}
                     </Badge>
                     <Badge className="bg-green-100 text-green-700 text-xs">
                       {recoveryOption.selectedAircraft.availability ||
                         "Available"}
                     </Badge>
+                    {recoveryOption.selectedAircraft.selectedIndex !== undefined && (
+                      <Badge className="bg-purple-100 text-purple-700 text-xs">
+                        Option {recoveryOption.selectedAircraft.selectedIndex + 1}
+                      </Badge>
+                    )}
                   </div>
+                  {recoveryOption.selectedAircraft.selectionTimestamp && (
+                    <p className="text-xs text-gray-500 mt-1">
+                      Selected: {new Date(recoveryOption.selectedAircraft.selectionTimestamp).toLocaleString()}
+                    </p>
+                  )}
                 </div>
               </div>
             )}
