@@ -2748,7 +2748,7 @@ export function ComparisonMatrix({
 
                                         {/* Assigned Crew Column */}
                                         <TableCell className="p-4">
-                                          {has           BeenSwapped ? (
+                                          {hasBeenSwapped ? (
                                             <div className="space-y-2">
                                               <div className="flex items-center gap-2">
                                                 <h5 className="font-medium text-blue-900">
