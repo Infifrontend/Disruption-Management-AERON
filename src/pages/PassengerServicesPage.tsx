@@ -93,50 +93,48 @@ export function PassengerServicesPage() {
                       Selected Aircraft
                     </h4>
                     <p className="text-sm text-blue-700">
-                      {String(
-                        recoveryOption.selectedAircraft.reg ||
-                          recoveryOption.selectedAircraft.aircraft ||
-                          "N/A",
-                      )}{" "}
-                      (
-                      {String(
-                        recoveryOption.selectedAircraft.type || "B737-800",
-                      )}
-                      )
+                      {(() => {
+                        const aircraft = recoveryOption.selectedAircraft;
+                        const reg = aircraft?.reg || aircraft?.aircraft || "N/A";
+                        const type = aircraft?.type || "B737-800";
+                        return `${String(reg)} (${String(type)})`;
+                      })()}
                     </p>
                     <div className="flex gap-2 mt-1">
                       <Badge className="bg-blue-100 text-blue-700 text-xs">
                         Turnaround:{" "}
-                        {String(
-                          recoveryOption.selectedAircraft.turnaround ||
-                            recoveryOption.selectedAircraft.turnaroundTime ||
-                            "45 min",
-                        )}
+                        {(() => {
+                          const aircraft = recoveryOption.selectedAircraft;
+                          const turnaround = aircraft?.turnaround || aircraft?.turnaroundTime || "45 min";
+                          return String(turnaround);
+                        })()}
                       </Badge>
                       <Badge className="bg-green-100 text-green-700 text-xs">
-                        {String(
-                          recoveryOption.selectedAircraft.availability ||
-                            "Available",
-                        )}
+                        {(() => {
+                          const aircraft = recoveryOption.selectedAircraft;
+                          const availability = aircraft?.availability || "Available";
+                          return String(availability);
+                        })()}
                       </Badge>
-                      {typeof recoveryOption.selectedAircraft.selectedIndex ===
-                        "number" && (
-                        <Badge className="bg-purple-100 text-purple-700 text-xs">
-                          Option{" "}
-                          {String(
-                            recoveryOption.selectedAircraft.selectedIndex + 1,
-                          )}
-                        </Badge>
-                      )}
+                      {(() => {
+                        const aircraft = recoveryOption.selectedAircraft;
+                        const selectedIndex = aircraft?.selectedIndex;
+                        return typeof selectedIndex === "number" ? (
+                          <Badge className="bg-purple-100 text-purple-700 text-xs">
+                            Option {String(selectedIndex + 1)}
+                          </Badge>
+                        ) : null;
+                      })()}
                     </div>
-                    {recoveryOption.selectedAircraft.selectionTimestamp && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Selected:{" "}
-                        {new Date(
-                          recoveryOption.selectedAircraft.selectionTimestamp,
-                        ).toLocaleString()}
-                      </p>
-                    )}
+                    {(() => {
+                      const aircraft = recoveryOption.selectedAircraft;
+                      const timestamp = aircraft?.selectionTimestamp;
+                      return timestamp ? (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Selected: {new Date(timestamp).toLocaleString()}
+                        </p>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               )}
@@ -156,17 +154,19 @@ export function PassengerServicesPage() {
                       Crew Assignments
                     </h4>
                     <p className="text-sm text-blue-700">
-                      {String(
-                        recoveryOption.crewAssignments.assignedCrew.length,
-                      )}{" "}
-                      crew members assigned
+                      {(() => {
+                        const crewAssignments = recoveryOption.crewAssignments;
+                        const assignedCrew = crewAssignments?.assignedCrew || [];
+                        return `${String(assignedCrew.length)} crew members assigned`;
+                      })()}
                     </p>
 
                     {/* Display crew names */}
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {recoveryOption.crewAssignments.assignedCrew
-                        .slice(0, 3)
-                        .map((crew, index) => (
+                      {(() => {
+                        const crewAssignments = recoveryOption.crewAssignments;
+                        const assignedCrew = crewAssignments?.assignedCrew || [];
+                        return assignedCrew.slice(0, 3).map((crew, index) => (
                           <Badge
                             key={index}
                             className="bg-blue-100 text-blue-700 text-xs"
@@ -174,57 +174,49 @@ export function PassengerServicesPage() {
                             {String(crew?.name || "Unknown")} (
                             {String(crew?.role || crew?.rank || "Crew")})
                           </Badge>
-                        ))}
-                      {recoveryOption.crewAssignments.assignedCrew.length >
-                        3 && (
-                        <Badge className="bg-gray-100 text-gray-700 text-xs">
-                          +
-                          {String(
-                            recoveryOption.crewAssignments.assignedCrew.length -
-                              3,
-                          )}{" "}
-                          more
-                        </Badge>
-                      )}
+                        ));
+                      })()}
+                      {(() => {
+                        const crewAssignments = recoveryOption.crewAssignments;
+                        const assignedCrew = crewAssignments?.assignedCrew || [];
+                        return assignedCrew.length > 3 ? (
+                          <Badge className="bg-gray-100 text-gray-700 text-xs">
+                            +{String(assignedCrew.length - 3)} more
+                          </Badge>
+                        ) : null;
+                      })()}
                     </div>
 
                     <div className="flex gap-2 mt-2">
-                      {recoveryOption.crewAssignments.crewSwaps &&
-                        Array.isArray(
-                          recoveryOption.crewAssignments.crewSwaps,
-                        ) &&
-                        recoveryOption.crewAssignments.crewSwaps.length > 0 && (
+                      {(() => {
+                        const crewAssignments = recoveryOption.crewAssignments;
+                        const crewSwaps = crewAssignments?.crewSwaps || [];
+                        return Array.isArray(crewSwaps) && crewSwaps.length > 0 ? (
                           <Badge className="bg-orange-100 text-orange-700 text-xs">
-                            {String(
-                              recoveryOption.crewAssignments.crewSwaps.length,
-                            )}{" "}
-                            crew swaps
+                            {String(crewSwaps.length)} crew swaps
                           </Badge>
-                        )}
-                      {recoveryOption.crewAssignments.reassignments &&
-                        Array.isArray(
-                          recoveryOption.crewAssignments.reassignments,
-                        ) &&
-                        recoveryOption.crewAssignments.reassignments.length >
-                          0 && (
+                        ) : null;
+                      })()}
+                      {(() => {
+                        const crewAssignments = recoveryOption.crewAssignments;
+                        const reassignments = crewAssignments?.reassignments || [];
+                        return Array.isArray(reassignments) && reassignments.length > 0 ? (
                           <Badge className="bg-purple-100 text-purple-700 text-xs">
-                            {String(
-                              recoveryOption.crewAssignments.reassignments
-                                .length,
-                            )}{" "}
-                            reassignments
+                            {String(reassignments.length)} reassignments
                           </Badge>
-                        )}
+                        ) : null;
+                      })()}
                     </div>
 
-                    {recoveryOption.crewAssignments.assignmentTimestamp && (
-                      <p className="text-xs text-gray-500 mt-1">
-                        Assigned:{" "}
-                        {new Date(
-                          recoveryOption.crewAssignments.assignmentTimestamp,
-                        ).toLocaleString()}
-                      </p>
-                    )}
+                    {(() => {
+                      const crewAssignments = recoveryOption.crewAssignments;
+                      const timestamp = crewAssignments?.assignmentTimestamp;
+                      return timestamp ? (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Assigned: {new Date(timestamp).toLocaleString()}
+                        </p>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               )}
