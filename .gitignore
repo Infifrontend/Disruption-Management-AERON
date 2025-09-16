@@ -88,3 +88,9 @@ docker-data/
 
 # Ignore Docker build cache
 *.tar
+
+# ───────────────
+# Python Virtual Environment
+# ───────────────
+backend/.venv/
+.venv/
