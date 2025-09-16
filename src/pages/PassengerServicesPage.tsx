@@ -172,83 +172,171 @@ export function PassengerServicesPage() {
             {recoveryOption?.crewAssignments &&
               typeof recoveryOption.crewAssignments === "object" &&
               recoveryOption.crewAssignments !== null &&
-              !Array.isArray(recoveryOption.crewAssignments) &&
-              recoveryOption.crewAssignments.assignedCrew &&
-              Array.isArray(recoveryOption.crewAssignments.assignedCrew) &&
-              recoveryOption.crewAssignments.assignedCrew.length > 0 && (
-                <div className="flex items-center gap-4 p-3 bg-white rounded border border-blue-200">
-                  <Users className="h-5 w-5 text-blue-600" />
-                  <div className="flex-1">
-                    <h4 className="font-medium text-blue-900">
-                      Crew Assignments
-                    </h4>
-                    <p className="text-sm text-blue-700">
-                      {(() => {
-                        const crewAssignments = recoveryOption.crewAssignments;
-                        if (typeof crewAssignments === 'object' && crewAssignments !== null) {
-                          const assignedCrew = Array.isArray(crewAssignments.assignedCrew) ? crewAssignments.assignedCrew : [];
-                          return `${assignedCrew.length} crew members assigned`;
-                        }
-                        return "No crew information available";
-                      })()}
-                    </p>
+              !Array.isArray(recoveryOption.crewAssignments) && (
+                <div className="space-y-4">
+                  {/* Original/Current Crew */}
+                  {recoveryOption.crewAssignments.originalCrew &&
+                    Array.isArray(recoveryOption.crewAssignments.originalCrew) &&
+                    recoveryOption.crewAssignments.originalCrew.length > 0 && (
+                      <div className="flex items-center gap-4 p-3 bg-white rounded border border-blue-200">
+                        <Users className="h-5 w-5 text-blue-600" />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-blue-900">
+                            Original Crew Assignment
+                          </h4>
+                          <p className="text-sm text-blue-700">
+                            {recoveryOption.crewAssignments.originalCrew.length} original crew members
+                          </p>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {recoveryOption.crewAssignments.originalCrew.map((crew, index) => (
+                              <Badge
+                                key={index}
+                                className="bg-gray-100 text-gray-700 text-xs"
+                              >
+                                {getSafeStringValue(crew?.name || "Unknown")} ({getSafeStringValue(crew?.role || crew?.rank || "Crew")})
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-                    {/* Display crew names */}
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {(() => {
-                        const crewAssignments = recoveryOption.crewAssignments;
-                        const assignedCrew = crewAssignments?.assignedCrew || [];
-                        return assignedCrew.slice(0, 3).map((crew, index) => (
-                          <Badge
-                            key={index}
-                            className="bg-blue-100 text-blue-700 text-xs"
-                          >
-                            {getSafeStringValue(crew?.name || "Unknown")} ({getSafeStringValue(crew?.role || crew?.rank || "Crew")})
-                          </Badge>
-                        ));
-                      })()}
-                      {(() => {
-                        const crewAssignments = recoveryOption.crewAssignments;
-                        const assignedCrew = crewAssignments?.assignedCrew || [];
-                        return assignedCrew.length > 3 ? (
-                          <Badge className="bg-gray-100 text-gray-700 text-xs">
-                            +{assignedCrew.length - 3} more
-                          </Badge>
-                        ) : null;
-                      })()}
-                    </div>
+                  {/* Reassigned Crew */}
+                  {recoveryOption.crewAssignments.reassignedCrew &&
+                    Array.isArray(recoveryOption.crewAssignments.reassignedCrew) &&
+                    recoveryOption.crewAssignments.reassignedCrew.length > 0 && (
+                      <div className="flex items-center gap-4 p-3 bg-white rounded border border-green-200">
+                        <Users className="h-5 w-5 text-green-600" />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-green-900">
+                            Reassigned Crew
+                          </h4>
+                          <p className="text-sm text-green-700">
+                            {recoveryOption.crewAssignments.reassignedCrew.length} crew members reassigned
+                          </p>
+                          <div className="space-y-2 mt-2">
+                            {recoveryOption.crewAssignments.reassignedCrew.map((crew, index) => (
+                              <div key={index} className="flex items-center justify-between p-2 bg-green-25 rounded border">
+                                <div className="flex items-center gap-3">
+                                  <Badge className="bg-green-100 text-green-700">
+                                    {getSafeStringValue(crew?.role || crew?.rank || "Crew")}
+                                  </Badge>
+                                  <span className="font-medium">
+                                    {getSafeStringValue(crew?.name || "Unknown")}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {crew?.isReplacement && (
+                                    <Badge className="bg-orange-100 text-orange-700 text-xs">
+                                      Replacement
+                                    </Badge>
+                                  )}
+                                  {crew?.replacedCrew && (
+                                    <span className="text-xs text-gray-500">
+                                      (replacing: {getSafeStringValue(crew.replacedCrew)})
+                                    </span>
+                                  )}
+                                  {crew?.issue && (
+                                    <Badge className="bg-red-100 text-red-700 text-xs">
+                                      Issue: {getSafeStringValue(crew.issue)}
+                                    </Badge>
+                                  )}
+                                  <Badge className={`text-xs ${
+                                    crew?.status === 'Available' ? 'bg-green-100 text-green-700' :
+                                    crew?.status === 'Assigned' ? 'bg-blue-100 text-blue-700' :
+                                    'bg-gray-100 text-gray-700'
+                                  }`}>
+                                    {getSafeStringValue(crew?.status || "Unknown")}
+                                  </Badge>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
-                    <div className="flex gap-2 mt-2">
-                      {(() => {
-                        const crewAssignments = recoveryOption.crewAssignments;
-                        const crewSwaps = crewAssignments?.crewSwaps || [];
-                        return Array.isArray(crewSwaps) && crewSwaps.length > 0 ? (
-                          <Badge className="bg-orange-100 text-orange-700 text-xs">
-                            {crewSwaps.length} crew swaps
-                          </Badge>
-                        ) : null;
-                      })()}
-                      {(() => {
-                        const crewAssignments = recoveryOption.crewAssignments;
-                        const reassignments = crewAssignments?.reassignments || [];
-                        return Array.isArray(reassignments) && reassignments.length > 0 ? (
-                          <Badge className="bg-purple-100 text-purple-700 text-xs">
-                            {reassignments.length} reassignments
-                          </Badge>
-                        ) : null;
-                      })()}
-                    </div>
+                  {/* Regular Assigned Crew (fallback if no reassigned crew) */}
+                  {(!recoveryOption.crewAssignments.reassignedCrew || recoveryOption.crewAssignments.reassignedCrew.length === 0) &&
+                    recoveryOption.crewAssignments.assignedCrew &&
+                    Array.isArray(recoveryOption.crewAssignments.assignedCrew) &&
+                    recoveryOption.crewAssignments.assignedCrew.length > 0 && (
+                      <div className="flex items-center gap-4 p-3 bg-white rounded border border-blue-200">
+                        <Users className="h-5 w-5 text-blue-600" />
+                        <div className="flex-1">
+                          <h4 className="font-medium text-blue-900">
+                            Crew Assignments
+                          </h4>
+                          <p className="text-sm text-blue-700">
+                            {recoveryOption.crewAssignments.assignedCrew.length} crew members assigned
+                          </p>
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {recoveryOption.crewAssignments.assignedCrew.slice(0, 3).map((crew, index) => (
+                              <Badge
+                                key={index}
+                                className="bg-blue-100 text-blue-700 text-xs"
+                              >
+                                {getSafeStringValue(crew?.name || "Unknown")} ({getSafeStringValue(crew?.role || crew?.rank || "Crew")})
+                              </Badge>
+                            ))}
+                            {recoveryOption.crewAssignments.assignedCrew.length > 3 && (
+                              <Badge className="bg-gray-100 text-gray-700 text-xs">
+                                +{recoveryOption.crewAssignments.assignedCrew.length - 3} more
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
 
+                  {/* Crew Swaps and Reassignments Summary */}
+                  <div className="flex gap-2 mt-2">
                     {(() => {
                       const crewAssignments = recoveryOption.crewAssignments;
-                      const timestamp = crewAssignments?.assignmentTimestamp;
-                      return timestamp ? (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Assigned: {new Date(timestamp).toLocaleString()}
-                        </p>
+                      const crewSwaps = crewAssignments?.crewSwaps || [];
+                      return Array.isArray(crewSwaps) && crewSwaps.length > 0 ? (
+                        <Badge className="bg-orange-100 text-orange-700 text-xs">
+                          {crewSwaps.length} crew swaps
+                        </Badge>
+                      ) : null;
+                    })()}
+                    {(() => {
+                      const crewAssignments = recoveryOption.crewAssignments;
+                      const reassignments = crewAssignments?.reassignments || [];
+                      return Array.isArray(reassignments) && reassignments.length > 0 ? (
+                        <Badge className="bg-purple-100 text-purple-700 text-xs">
+                          {reassignments.length} reassignments
+                        </Badge>
                       ) : null;
                     })()}
                   </div>
+
+                  {/* Rotation Impact */}
+                  {recoveryOption.crewAssignments.rotationImpact &&
+                    typeof recoveryOption.crewAssignments.rotationImpact === "object" &&
+                    Object.keys(recoveryOption.crewAssignments.rotationImpact).length > 0 && (
+                      <div className="p-3 bg-yellow-50 rounded border border-yellow-200">
+                        <h5 className="font-medium text-yellow-900 mb-2">Rotation Impact</h5>
+                        <div className="text-sm text-yellow-800">
+                          {Object.entries(recoveryOption.crewAssignments.rotationImpact).map(([key, value]) => (
+                            <div key={key} className="flex justify-between">
+                              <span>{key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:</span>
+                              <span>{getSafeStringValue(value)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                  {(() => {
+                    const crewAssignments = recoveryOption.crewAssignments;
+                    const timestamp = crewAssignments?.assignmentTimestamp;
+                    return timestamp ? (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Assigned: {new Date(timestamp).toLocaleString()}
+                      </p>
+                    ) : null;
+                  })()}
                 </div>
               )}
 

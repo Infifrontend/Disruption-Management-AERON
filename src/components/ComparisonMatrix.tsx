@@ -518,7 +518,7 @@ export function ComparisonMatrix({
     title: "Weather Delay Recovery Options",
     options: [
       {
-        id: "ROUTE_OPTIMIZE",
+        id: "ROUTE_OPTIMIZATION",
         title: "Route Optimization",
         description: "Alternative routing to avoid weather",
         cost: "AED 12,000",
@@ -1272,16 +1272,16 @@ export function ComparisonMatrix({
         }
 
         // Prepare crew assignment information
-        let crewAssignmentInfo = null;
-        if (storedCrewAssignments && storedCrewAssignments.crewData) {
-          crewAssignmentInfo = {
-            assignedCrew: storedCrewAssignments.crewData,
-            crewSwaps: storedCrewAssignments.crewSwaps || [],
-            reassignments: storedCrewAssignments.reassignments || [],
-            expandedCrewState: storedCrewAssignments.expandedCrew,
-            assignmentTimestamp: storedCrewAssignments.lastUpdated,
-          };
-        }
+        // Extract crew assignment information if available
+        const crewAssignmentInfo = storedCrewAssignments ? {
+          assignedCrew: storedCrewAssignments.assignedCrew || [],
+          crewSwaps: storedCrewAssignments.crewSwaps || [],
+          reassignments: storedCrewAssignments.reassignments || [],
+          reassignedCrew: storedCrewAssignments.reassignedCrew || [],
+          originalCrew: storedCrewAssignments.originalCrew || [],
+          rotationImpact: storedCrewAssignments.rotationImpact || {},
+          assignmentTimestamp: storedCrewAssignments.timestamp || new Date().toISOString()
+        } : null;
 
         // Create comprehensive passenger services context with all necessary data
         const passengerContext = {
@@ -2748,7 +2748,7 @@ export function ComparisonMatrix({
 
                                         {/* Assigned Crew Column */}
                                         <TableCell className="p-4">
-                                          {hasBeenSwapped ? (
+                                          {has           BeenSwapped ? (
                                             <div className="space-y-2">
                                               <div className="flex items-center gap-2">
                                                 <h5 className="font-medium text-blue-900">
