@@ -3617,7 +3617,7 @@ export function PassengerRebooking({ context, onClearContext }) {
             <TabsContent value="crew-schedule" className="space-y-6">
               {/* Display Preserved Crew Assignments */}
               {recoveryOption?.crewAssignments && (
-                
+                <>
                 <Card className="bg-blue-50 border-blue-200">
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-blue-800">
@@ -3697,7 +3697,6 @@ export function PassengerRebooking({ context, onClearContext }) {
                     </div>
                   </CardContent>
                 </Card>
-
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-flydubai-navy">
@@ -4041,7 +4040,9 @@ export function PassengerRebooking({ context, onClearContext }) {
                     </div>
                   </CardContent>
                 </Card>
-                
+                  </>
+                )}
+
               </TabsContent>
 
               {/* Crew HOTAC Tab */}
