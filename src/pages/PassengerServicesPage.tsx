@@ -12,8 +12,11 @@ import { Badge } from "../components/ui/badge";
 import { Plane, Users, Info } from "lucide-react";
 
 export function PassengerServicesPage() {
-  const { passengerServicesContext, setPassengerServicesContext, reassignedCrewData } =
-    useAppContext();
+  const {
+    passengerServicesContext,
+    setPassengerServicesContext,
+    reassignedCrewData,
+  } = useAppContext();
   const location = useLocation();
   const [preservedSelections, setPreservedSelections] = useState(null);
 
@@ -47,17 +50,27 @@ export function PassengerServicesPage() {
           </CardHeader>
           <CardContent>
             <div className="text-sm space-y-1">
-              <div><strong>Flight ID:</strong> {reassignedCrewData.flightId}</div>
-              <div><strong>Option:</strong> {reassignedCrewData.optionTitle}</div>
-              <div><strong>Reassignments:</strong> {reassignedCrewData.totalReassignments}</div>
-              <div><strong>Crew Count:</strong> {reassignedCrewData.reassignedCrew?.length || 0}</div>
+              <div>
+                <strong>Flight ID:</strong> {reassignedCrewData.flightId}
+              </div>
+              <div>
+                <strong>Option:</strong> {reassignedCrewData.optionTitle}
+              </div>
+              <div>
+                <strong>Reassignments:</strong>{" "}
+                {reassignedCrewData.totalReassignments}
+              </div>
+              <div>
+                <strong>Crew Count:</strong>{" "}
+                {reassignedCrewData.reassignedCrew?.length || 0}
+              </div>
             </div>
           </CardContent>
         </Card>
       )}
 
       {/* Display preserved selections if available */}
-      {preservedSelections && activeContext?.fromExecution && (</old_str>
+      {preservedSelections && activeContext?.fromExecution && (
         <Card className="bg-blue-50 border-blue-200">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-blue-800">
@@ -76,28 +89,34 @@ export function PassengerServicesPage() {
                   </h4>
                   <p className="text-sm text-blue-700">
                     {recoveryOption.selectedAircraft.reg ||
-                      recoveryOption.selectedAircraft.aircraft}
-                    {" "}({recoveryOption.selectedAircraft.type || "B737-800"})
+                      recoveryOption.selectedAircraft.aircraft}{" "}
+                    ({recoveryOption.selectedAircraft.type || "B737-800"})
                   </p>
                   <div className="flex gap-2 mt-1">
                     <Badge className="bg-blue-100 text-blue-700 text-xs">
                       Turnaround:{" "}
-                      {recoveryOption.selectedAircraft.turnaround || 
-                       recoveryOption.selectedAircraft.turnaroundTime || "45 min"}
+                      {recoveryOption.selectedAircraft.turnaround ||
+                        recoveryOption.selectedAircraft.turnaroundTime ||
+                        "45 min"}
                     </Badge>
                     <Badge className="bg-green-100 text-green-700 text-xs">
                       {recoveryOption.selectedAircraft.availability ||
                         "Available"}
                     </Badge>
-                    {recoveryOption.selectedAircraft.selectedIndex !== undefined && (
+                    {recoveryOption.selectedAircraft.selectedIndex !==
+                      undefined && (
                       <Badge className="bg-purple-100 text-purple-700 text-xs">
-                        Option {recoveryOption.selectedAircraft.selectedIndex + 1}
+                        Option{" "}
+                        {recoveryOption.selectedAircraft.selectedIndex + 1}
                       </Badge>
                     )}
                   </div>
                   {recoveryOption.selectedAircraft.selectionTimestamp && (
                     <p className="text-xs text-gray-500 mt-1">
-                      Selected: {new Date(recoveryOption.selectedAircraft.selectionTimestamp).toLocaleString()}
+                      Selected:{" "}
+                      {new Date(
+                        recoveryOption.selectedAircraft.selectionTimestamp,
+                      ).toLocaleString()}
                     </p>
                   )}
                 </div>
@@ -118,39 +137,57 @@ export function PassengerServicesPage() {
                       {recoveryOption.crewAssignments.assignedCrew.length} crew
                       members assigned
                     </p>
-                    
+
                     {/* Display crew names */}
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {recoveryOption.crewAssignments.assignedCrew.slice(0, 3).map((crew, index) => (
-                        <Badge key={index} className="bg-blue-100 text-blue-700 text-xs">
-                          {crew.name} ({crew.role || crew.rank || 'Crew'})
-                        </Badge>
-                      ))}
-                      {recoveryOption.crewAssignments.assignedCrew.length > 3 && (
+                      {recoveryOption.crewAssignments.assignedCrew
+                        .slice(0, 3)
+                        .map((crew, index) => (
+                          <Badge
+                            key={index}
+                            className="bg-blue-100 text-blue-700 text-xs"
+                          >
+                            {crew.name} ({crew.role || crew.rank || "Crew"})
+                          </Badge>
+                        ))}
+                      {recoveryOption.crewAssignments.assignedCrew.length >
+                        3 && (
                         <Badge className="bg-gray-100 text-gray-700 text-xs">
-                          +{recoveryOption.crewAssignments.assignedCrew.length - 3} more
+                          +
+                          {recoveryOption.crewAssignments.assignedCrew.length -
+                            3}{" "}
+                          more
                         </Badge>
                       )}
                     </div>
 
                     <div className="flex gap-2 mt-2">
-                      {recoveryOption.crewAssignments.crewSwaps && recoveryOption.crewAssignments.crewSwaps.length > 0 && (
-                        <Badge className="bg-orange-100 text-orange-700 text-xs">
-                          {recoveryOption.crewAssignments.crewSwaps.length} crew
-                          swaps
-                        </Badge>
-                      )}
-                      {recoveryOption.crewAssignments.reassignments && recoveryOption.crewAssignments.reassignments.length > 0 && (
-                        <Badge className="bg-purple-100 text-purple-700 text-xs">
-                          {recoveryOption.crewAssignments.reassignments.length}{" "}
-                          reassignments
-                        </Badge>
-                      )}
+                      {recoveryOption.crewAssignments.crewSwaps &&
+                        recoveryOption.crewAssignments.crewSwaps.length > 0 && (
+                          <Badge className="bg-orange-100 text-orange-700 text-xs">
+                            {recoveryOption.crewAssignments.crewSwaps.length}{" "}
+                            crew swaps
+                          </Badge>
+                        )}
+                      {recoveryOption.crewAssignments.reassignments &&
+                        recoveryOption.crewAssignments.reassignments.length >
+                          0 && (
+                          <Badge className="bg-purple-100 text-purple-700 text-xs">
+                            {
+                              recoveryOption.crewAssignments.reassignments
+                                .length
+                            }{" "}
+                            reassignments
+                          </Badge>
+                        )}
                     </div>
-                    
+
                     {recoveryOption.crewAssignments.assignmentTimestamp && (
                       <p className="text-xs text-gray-500 mt-1">
-                        Assigned: {new Date(recoveryOption.crewAssignments.assignmentTimestamp).toLocaleString()}
+                        Assigned:{" "}
+                        {new Date(
+                          recoveryOption.crewAssignments.assignmentTimestamp,
+                        ).toLocaleString()}
                       </p>
                     )}
                   </div>
