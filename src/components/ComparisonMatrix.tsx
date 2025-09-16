@@ -49,7 +49,7 @@ import { databaseService } from "../services/databaseService";
 import { useNavigate } from "react-router-dom";
 import { alertService } from "../services/alertService";
 import { useAppContext } from "../context/AppContext";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 interface ComparisonMatrixProps {
   selectedFlight: any;
