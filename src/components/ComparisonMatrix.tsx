@@ -136,11 +136,11 @@ export function ComparisonMatrix({
   const [showExecuteConfirmDialog, setShowExecuteConfirmDialog] =
     useState(false);
   const [optionToConfirm, setOptionToConfirm] = useState(null);
-  const [selectedAircraftFlight, setSelectedAircraftFlight] = useState<number | null>(null);
+  const [selectedAircraftFlight, setSelectedAircraftFlight] = useState(null);
   const [showCrewSwapDialog, setShowCrewSwapDialog] = useState(false);
   const [selectedCrewForSwap, setSelectedCrewForSwap] = useState(null);
   const [availableCrewForSwap, setAvailableCrewForSwap] = useState([]);
-  const [expandedAircraft, setExpandedAircraft] = useState<number | null>(null);
+  const [expandedAircraft, setExpandedAircraft] = useState(null);
   const [alternateAircraftFilters, setAlternateAircraftFilters] = useState({
     search: "",
     status: "all",
@@ -283,10 +283,6 @@ export function ComparisonMatrix({
           const storedSelection = getStoredAircraftSelection(optionId);
           const storedCrew = getStoredCrewAssignments(optionId);
 
-          // Provide default aircraft and crew info if not available in stored data
-          const currentAircraftInfo = option.rotation_plan?.aircraftOptions?.[0] ? [option.rotation_plan.aircraftOptions[0]] : [];
-          const currentCrewInfo = option.rotation_plan?.crew?.[0] ? [option.rotation_plan.crew[0]] : [];
-
           return {
             ...option,
             // Ensure all required fields are present for comparison
@@ -361,18 +357,10 @@ export function ComparisonMatrix({
                     ? "Medium"
                     : "High",
             },
-            // Merge stored data if available, otherwise use fetched data
-            // If stored data exists, it takes precedence. Otherwise, use fetched data.
-            // This ensures that selections made in the popup are retained.
-            // For aircraft and crew, if there's no stored selection, use the first available default from the fetched data.
-            rotation_plan: {
-              ...(option.rotation_plan || {}),
-              aircraftOptions: storedSelection?.aircraftOptions || currentAircraftInfo,
-              crew: storedCrew?.crewData || currentCrewInfo,
-              // Ensure default aircraft and crew data is always available if nothing else is found
-              defaultAircraft: currentAircraftInfo,
-              defaultCrew: currentCrewInfo,
-            },
+            // Merge stored data if available
+            ...(storedDetails?.details || {}),
+            ...(storedSelection?.aircraftOptions ? { rotation_plan: { ...(option.rotation_plan || {}), aircraftOptions: storedSelection.aircraftOptions } } : {}),
+            ...(storedCrew?.crewData ? { rotation_plan: { ...(option.rotation_plan || {}), crew: storedCrew.crewData } } : {}),
           };
         })
       : [];
@@ -404,78 +392,6 @@ export function ComparisonMatrix({
           confidenceScore: 95,
           networkImpact: "Minimal",
         },
-        rotation_plan: {
-          aircraftOptions: [
-            {
-              reg: "A6-FDC", aircraft: "A320", type: "A320-200 (180Y)",
-              etops: { status: "available", value: "ETOPS-180" },
-              cabinMatch: { status: "exact" },
-              availability: "Available",
-              assigned: { status: "none" },
-              turnaround: "45 min",
-              turnaroundTime: "45 min",
-              maintenance: { status: "current" },
-              recommended: true,
-              optionScore: { overall: "92%" },
-              rotation_impact: [
-                { delay: "10 min", impact: "Low Impact", origin: "Dubai", reason: "Nominal operations", status: "On Time", arrival: "2025-09-10T09:30:00+04:00", departure: "2025-09-10T08:45:00+04:00", passengers: 152, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" },
-                { delay: "25 min", impact: "Medium Impact", origin: "Muscat", reason: "Aircraft swap delay", status: "Delayed", arrival: "2025-09-10T14:20:00+04:00", departure: "2025-09-10T11:15:00+04:00", passengers: 189, destination: "Dubai", origin_code: "MCT", flightNumber: "FZ142", destination_code: "DXB" }
-              ]
-            },
-            {
-              reg: "A6-FDP", aircraft: "A320", type: "A320-200 (180Y)",
-              etops: { status: "available", value: "ETOPS-180" },
-              cabinMatch: { status: "similar" },
-              availability: "Available",
-              assigned: { status: "FZ892", value: "FZ892" },
-              turnaround: "50 min",
-              turnaroundTime: "50 min",
-              maintenance: { status: "due", value: "Due A-Check" },
-              recommended: false,
-              optionScore: { overall: "75%" },
-              rotation_impact: [
-                { delay: "On Time", impact: "Low Impact", origin: "Dubai", reason: "Nominal operations", status: "On Time", arrival: "2025-09-10T09:30:00+04:00", departure: "2025-09-10T08:45:00+04:00", passengers: 152, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" },
-                { delay: "30 min", impact: "Medium Impact", origin: "Muscat", reason: "Maintenance delay", status: "Delayed", arrival: "2025-09-10T14:30:00+04:00", departure: "2025-09-10T11:15:00+04:00", passengers: 189, destination: "Dubai", origin_code: "MCT", flightNumber: "FZ142", destination_code: "DXB" }
-              ]
-            },
-            {
-              reg: "A6-FDR", aircraft: "A321", type: "A321-200 (220Y)",
-              etops: { status: "reduced", value: "ETOPS-120" },
-              cabinMatch: { status: "exact" },
-              availability: "Available",
-              assigned: { status: "none" },
-              turnaround: "45 min",
-              turnaroundTime: "45 min",
-              maintenance: { status: "current" },
-              recommended: false,
-              optionScore: { overall: "85%" },
-              rotation_impact: [
-                { delay: "On Time", impact: "Low Impact", origin: "Dubai", reason: "Nominal operations", status: "On Time", arrival: "2025-09-10T09:30:00+04:00", departure: "2025-09-10T08:45:00+04:00", passengers: 178, destination: "London Heathrow", origin_code: "DXB", flightNumber: "FZ001", destination_code: "LHR" },
-                { delay: "5 min", impact: "Low Impact", origin: "London Heathrow", reason: "Brief crew handover — minimal delay expected", status: "On Time", arrival: "2025-09-10T20:45:00+04:00", departure: "2025-09-10T16:15:00+01:00", passengers: 189, destination: "Dubai", origin_code: "LHR", flightNumber: "FZ002", destination_code: "DXB" }
-              ]
-            }
-          ],
-          crew: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, location: "Dubai", score: 95, rotation_impact: [
-              { delay: "On Time", impact: "Low Impact", origin: "Dubai", reason: "Nominal operations", status: "On Time", arrival: "2025-09-10T09:30:00+04:00", departure: "2025-09-10T08:45:00+04:00", passengers: 152, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-            ]},
-            { name: "F/O Fatima Ali", role: "First Officer", role_code: "first_officer", qualifications: [{ name: "Frozen ATPL"}], status: "Available", experience_years: 7, location: "Dubai", score: 92, rotation_impact: [
-              { delay: "10 min", impact: "Low Impact", origin: "Dubai", reason: "Nominal operations", status: "On Time", arrival: "2025-09-10T09:30:00+04:00", departure: "2025-09-10T08:45:00+04:00", passengers: 152, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-            ]},
-            { name: "Attendant Sara Hassan", role: "Cabin Crew", role_code: "cabin_crew", qualifications: [{ name: "Cabin Crew License"}], status: "Available", experience_years: 3, location: "Dubai", score: 88, rotation_impact: [
-              { delay: "On Time", impact: "Low Impact", origin: "Dubai", reason: "Nominal operations", status: "On Time", arrival: "2025-09-10T09:30:00+04:00", departure: "2025-09-10T08:45:00+04:00", passengers: 152, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-            ]}
-          ],
-          crew_available: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, location: "Dubai", score: 95 },
-            { name: "Capt. Omar Abdullah", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 15, location: "Sharjah", score: 98 },
-            { name: "F/O Fatima Ali", role: "First Officer", role_code: "first_officer", qualifications: [{ name: "Frozen ATPL"}], status: "Available", experience_years: 7, location: "Dubai", score: 92 },
-            { name: "F/O Layla Ibrahim", role: "First Officer", role_code: "first_officer", qualifications: [{ name: "Frozen ATPL"}], status: "Available", experience_years: 6, location: "Abu Dhabi", score: 90 },
-            { name: "Attendant Sara Hassan", role: "Cabin Crew", role_code: "cabin_crew", qualifications: [{ name: "Cabin Crew License"}], status: "Available", experience_years: 3, location: "Dubai", score: 88 },
-            { name: "Attendant Yasmin Omar", role: "Cabin Crew", role_code: "cabin_crew", qualifications: [{ name: "Cabin Crew License"}], status: "Available", experience_years: 4, location: "Dubai", score: 91 },
-            { name: "Senior Attendant Alia Mohammed", role: "Senior Cabin Crew", role_code: "senior_cabin_crew", qualifications: [{ name: "Cabin Crew Lead"}], status: "Available", experience_years: 8, location: "Dubai", score: 96 },
-          ]
-        }
       },
       {
         id: "DELAY_REPAIR",
@@ -498,36 +414,6 @@ export function ComparisonMatrix({
           confidenceScore: 45,
           networkImpact: "High",
         },
-        rotation_plan: {
-          aircraftOptions: [
-            {
-              reg: "A6-FDB", aircraft: "B737-800", type: "B737-800 (189Y)",
-              etops: { status: "available", value: "ETOPS-180" },
-              cabinMatch: { status: "exact" },
-              availability: "Available",
-              assigned: { status: "none" },
-              turnaround: "45 min",
-              turnaroundTime: "45 min",
-              maintenance: { status: "current" },
-              recommended: true,
-              optionScore: { overall: "92%" },
-              rotation_impact: [
-                { delay: "30 min", impact: "Medium Impact", origin: "Dubai", reason: "Hydraulics repair delay", status: "Delayed", arrival: "2025-09-10T10:15:00+04:00", departure: "2025-09-10T09:00:00+04:00", passengers: 167, destination: "Jeddah", origin_code: "DXB", flightNumber: "FZ711", destination_code: "JED" },
-                { delay: "60 min", impact: "High Impact", origin: "Jeddah", reason: "Crew duty time impact", status: "Delayed", arrival: "2025-09-10T14:00:00+04:00", departure: "2025-09-10T11:00:00+04:00", passengers: 167, destination: "Dubai", origin_code: "JED", flightNumber: "FZ712", destination_code: "DXB" }
-              ]
-            }
-          ],
-          crew: [
-            { name: "Capt. Bilal Hassan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Sick", issue: "Sudden illness", experience_years: 10, rotation_impact: [
-              { delay: "60 min", impact: "High Impact", origin: "Jeddah", reason: "Crew duty time impact", status: "Delayed", arrival: "2025-09-10T14:00:00+04:00", departure: "2025-09-10T11:00:00+04:00", passengers: 167, destination: "Dubai", origin_code: "JED", flightNumber: "FZ712", destination_code: "DXB" }
-            ]}
-          ],
-          crew_available: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, location: "Dubai", score: 95 },
-            { name: "F/O Fatima Ali", role: "First Officer", role_code: "first_officer", qualifications: [{ name: "Frozen ATPL"}], status: "Available", experience_years: 7, location: "Dubai", score: 92 },
-            { name: "Attendant Sara Hassan", role: "Cabin Crew", role_code: "cabin_crew", qualifications: [{ name: "Cabin Crew License"}], status: "Available", experience_years: 3, location: "Dubai", score: 88 },
-          ]
-        }
       },
       {
         id: "CANCEL_REBOOK",
@@ -550,11 +436,6 @@ export function ComparisonMatrix({
           confidenceScore: 75,
           networkImpact: "None",
         },
-        rotation_plan: {
-          aircraftOptions: [],
-          crew: [],
-          crew_available: [],
-        }
       },
     ],
   });
@@ -583,17 +464,6 @@ export function ComparisonMatrix({
           confidenceScore: 92,
           networkImpact: "None",
         },
-        rotation_plan: {
-          crew: [
-            { name: "Capt. Mohammed Al-Zaabi", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Standby", experience_years: 18, rotation_impact: [
-              { delay: "30 min", impact: "Low Impact", origin: "Dubai", reason: "Standby crew assignment", status: "On Time", arrival: "2025-09-10T08:15:00+04:00", departure: "2025-09-10T07:45:00+04:00", passengers: 167, destination: "Riyadh", origin_code: "DXB", flightNumber: "FZ701", destination_code: "RUH" }
-            ]}
-          ],
-          crew_available: [
-            { name: "Capt. Mohammed Al-Zaabi", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Standby", experience_years: 18, location: "Dubai", score: 98 },
-            { name: "Capt. Ali Hussein", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 14, location: "Dubai", score: 96 },
-          ]
-        }
       },
       {
         id: "DEADHEAD_CREW",
@@ -616,16 +486,6 @@ export function ComparisonMatrix({
           confidenceScore: 85,
           networkImpact: "Low",
         },
-        rotation_plan: {
-          crew: [
-            { name: "Capt. Omar Abdullah", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Deadhead", experience_years: 15, location: "Abu Dhabi", rotation_impact: [
-              { delay: "120 min", impact: "Medium Impact", origin: "Abu Dhabi", reason: "Crew deadhead from AUH", status: "On Time", arrival: "2025-09-10T09:45:00+04:00", departure: "2025-09-10T07:45:00+04:00", passengers: 167, destination: "Dubai", origin_code: "AUH", flightNumber: "FZ901", destination_code: "DXB" }
-            ]}
-          ],
-          crew_available: [
-            { name: "Capt. Omar Abdullah", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 15, location: "Abu Dhabi", score: 98 },
-          ]
-        }
       },
       {
         id: "DELAY_COMPLIANCE",
@@ -648,14 +508,6 @@ export function ComparisonMatrix({
           confidenceScore: 65,
           networkImpact: "Medium",
         },
-        rotation_plan: {
-          crew: [
-            { name: "Capt. Bilal Hassan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "On Duty", issue: "Approaching duty time limit", experience_years: 10, rotation_impact: [
-              { delay: "180 min", impact: "High Impact", origin: "Dubai", reason: "Mandatory crew rest period", status: "Delayed", arrival: "2025-09-10T10:45:00+04:00", departure: "2025-09-10T07:45:00+04:00", passengers: 167, destination: "Riyadh", origin_code: "DXB", flightNumber: "FZ701", destination_code: "RUH" }
-            ]}
-          ],
-          crew_available: []
-        }
       },
     ],
   });
@@ -684,16 +536,6 @@ export function ComparisonMatrix({
           confidenceScore: 88,
           networkImpact: "None",
         },
-        rotation_plan: {
-          crew: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, rotation_impact: [
-              { delay: "45 min", impact: "Low Impact", origin: "Dubai", reason: "Weather diversion", status: "On Time", arrival: "2025-09-10T09:30:00+04:00", departure: "2025-09-10T08:45:00+04:00", passengers: 167, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-            ]}
-          ],
-          crew_available: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, location: "Dubai", score: 95 },
-          ]
-        }
       },
       {
         id: "WEATHER_DELAY",
@@ -716,16 +558,6 @@ export function ComparisonMatrix({
           confidenceScore: 70,
           networkImpact: "Low",
         },
-        rotation_plan: {
-          crew: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, rotation_impact: [
-              { delay: "150 min", impact: "Medium Impact", origin: "Dubai", reason: "Weather delay", status: "Delayed", arrival: "2025-09-10T10:30:00+04:00", departure: "2025-09-10T07:45:00+04:00", passengers: 167, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-            ]}
-          ],
-          crew_available: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, location: "Dubai", score: 95 },
-          ]
-        }
       },
       {
         id: "ALTERNATE_AIRPORT",
@@ -748,16 +580,6 @@ export function ComparisonMatrix({
           confidenceScore: 90,
           networkImpact: "Medium",
         },
-        rotation_plan: {
-          crew: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, rotation_impact: [
-              { delay: "60 min", impact: "Medium Impact", origin: "Dubai", reason: "Alternate airport landing", status: "On Time", arrival: "2025-09-10T09:00:00+04:00", departure: "2025-09-10T07:45:00+04:00", passengers: 167, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-            ]}
-          ],
-          crew_available: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, location: "Dubai", score: 95 },
-          ]
-        }
       },
     ],
   });
@@ -786,16 +608,6 @@ export function ComparisonMatrix({
           confidenceScore: 80,
           networkImpact: "None",
         },
-        rotation_plan: {
-          crew: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, rotation_impact: [
-              { delay: "60 min", impact: "Low Impact", origin: "Dubai", reason: "Priority slot request", status: "On Time", arrival: "2025-09-10T09:00:00+04:00", departure: "2025-09-10T08:00:00+04:00", passengers: 167, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-            ]}
-          ],
-          crew_available: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, location: "Dubai", score: 95 },
-          ]
-        }
       },
       {
         id: "OVERNIGHT_DELAY",
@@ -818,16 +630,6 @@ export function ComparisonMatrix({
           confidenceScore: 95,
           networkImpact: "High",
         },
-        rotation_plan: {
-          crew: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, rotation_impact: [
-              { delay: "720 min", impact: "High Impact", origin: "Dubai", reason: "Overnight delay", status: "Delayed", arrival: "2025-09-10T16:00:00+04:00", departure: "2025-09-10T08:00:00+04:00", passengers: 167, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-            ]}
-          ],
-          crew_available: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, location: "Dubai", score: 95 },
-          ]
-        }
       },
       {
         id: "REROUTE_HUB",
@@ -850,16 +652,6 @@ export function ComparisonMatrix({
           confidenceScore: 85,
           networkImpact: "Medium",
         },
-        rotation_plan: {
-          crew: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, rotation_impact: [
-              { delay: "180 min", impact: "Medium Impact", origin: "Dubai", reason: "Reroute via hub", status: "On Time", arrival: "2025-09-10T10:45:00+04:00", departure: "2025-09-10T07:45:00+04:00", passengers: 167, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-            ]}
-          ],
-          crew_available: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, location: "Dubai", score: 95 },
-          ]
-        }
       },
     ],
   });
@@ -888,33 +680,6 @@ export function ComparisonMatrix({
           confidenceScore: 88,
           networkImpact: "Low",
         },
-        rotation_plan: {
-          aircraftOptions: [
-            {
-              reg: "A6-FDC", aircraft: "A320", type: "A320-200 (180Y)",
-              etops: { status: "available", value: "ETOPS-180" },
-              cabinMatch: { status: "exact" },
-              availability: "Available",
-              assigned: { status: "none" },
-              turnaround: "45 min",
-              turnaroundTime: "45 min",
-              maintenance: { status: "current" },
-              recommended: true,
-              optionScore: { overall: "92%" },
-              rotation_impact: [
-                { delay: "90 min", impact: "Low Impact", origin: "Dubai", reason: "Rotation resequence", status: "On Time", arrival: "2025-09-10T09:30:00+04:00", departure: "2025-09-10T08:00:00+04:00", passengers: 152, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-              ]
-            }
-          ],
-          crew: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, rotation_impact: [
-              { delay: "90 min", impact: "Low Impact", origin: "Dubai", reason: "Rotation resequence", status: "On Time", arrival: "2025-09-10T09:30:00+04:00", departure: "2025-09-10T08:00:00+04:00", passengers: 152, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-            ]}
-          ],
-          crew_available: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, location: "Dubai", score: 95 },
-          ]
-        }
       },
       {
         id: "MAINTENANCE_DEFER",
@@ -937,33 +702,6 @@ export function ComparisonMatrix({
           confidenceScore: 75,
           networkImpact: "None",
         },
-        rotation_plan: {
-          aircraftOptions: [
-            {
-              reg: "A6-FDB", aircraft: "B737-800", type: "B737-800 (189Y)",
-              etops: { status: "available", value: "ETOPS-180" },
-              cabinMatch: { status: "exact" },
-              availability: "Available",
-              assigned: { status: "none" },
-              turnaround: "45 min",
-              turnaroundTime: "45 min",
-              maintenance: { status: "due", value: "Due A-Check" },
-              recommended: true,
-              optionScore: { overall: "92%" },
-              rotation_impact: [
-                { delay: "30 min", impact: "Low Impact", origin: "Dubai", reason: "Maintenance deferred", status: "On Time", arrival: "2025-09-10T09:15:00+04:00", departure: "2025-09-10T08:45:00+04:00", passengers: 167, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-              ]
-            }
-          ],
-          crew: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, rotation_impact: [
-              { delay: "30 min", impact: "Low Impact", origin: "Dubai", reason: "Maintenance deferred", status: "On Time", arrival: "2025-09-10T09:15:00+04:00", departure: "2025-09-10T08:45:00+04:00", passengers: 167, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-            ]}
-          ],
-          crew_available: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, location: "Dubai", score: 95 },
-          ]
-        }
       },
       {
         id: "ALTERNATIVE_AIRCRAFT",
@@ -986,33 +724,6 @@ export function ComparisonMatrix({
           confidenceScore: 92,
           networkImpact: "Low",
         },
-        rotation_plan: {
-          aircraftOptions: [
-            {
-              reg: "A6-FDC", aircraft: "A320", type: "A320-200 (180Y)",
-              etops: { status: "available", value: "ETOPS-180" },
-              cabinMatch: { status: "exact" },
-              availability: "Available",
-              assigned: { status: "none" },
-              turnaround: "45 min",
-              turnaroundTime: "45 min",
-              maintenance: { status: "current" },
-              recommended: true,
-              optionScore: { overall: "92%" },
-              rotation_impact: [
-                { delay: "120 min", impact: "Low Impact", origin: "Dubai", reason: "Aircraft swap", status: "On Time", arrival: "2025-09-10T09:30:00+04:00", departure: "2025-09-10T07:30:00+04:00", passengers: 152, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-              ]
-            }
-          ],
-          crew: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, rotation_impact: [
-              { delay: "120 min", impact: "Low Impact", origin: "Dubai", reason: "Aircraft swap", status: "On Time", arrival: "2025-09-10T09:30:00+04:00", departure: "2025-09-10T07:30:00+04:00", passengers: 152, destination: "Muscat", origin_code: "DXB", flightNumber: "FZ141", destination_code: "MCT" }
-            ]}
-          ],
-          crew_available: [
-            { name: "Capt. Ahmed Khan", role: "Captain", role_code: "captain", qualifications: [{ name: "ATPL"}], status: "Available", experience_years: 12, location: "Dubai", score: 95 },
-          ]
-        }
       },
     ],
   });
@@ -1518,10 +1229,10 @@ export function ComparisonMatrix({
         // Prepare selected aircraft information
         let selectedAircraftInfo = null;
         if (storedAircraftSelection && storedAircraftSelection.aircraftOptions) {
-          const selectedIndex = storedAircraftSelection.selectedIndex !== null
-            ? storedAircraftSelection.selectedIndex
+          const selectedIndex = storedAircraftSelection.selectedIndex !== null 
+            ? storedAircraftSelection.selectedIndex 
             : (selectedAircraftFlight !== null ? selectedAircraftFlight : 0);
-
+          
           if (storedAircraftSelection.aircraftOptions[selectedIndex]) {
             selectedAircraftInfo = {
               ...storedAircraftSelection.aircraftOptions[selectedIndex],
@@ -3406,9 +3117,9 @@ export function ComparisonMatrix({
                                                   filteredCrew,
                                                 );
                                                 setShowCrewSwapDialog(true);
-
+                                                
                                                 // Store current crew assignments
-                                                const currentCrewData = selectedOptionDetails.rotation_plan.crew ||
+                                                const currentCrewData = selectedOptionDetails.rotation_plan.crew || 
                                                                        selectedOptionDetails.rotation_plan.crewData || [];
                                                 storeCrewAssignments(
                                                   selectedOptionDetails.id,
@@ -3778,11 +3489,14 @@ export function ComparisonMatrix({
                                                                 <div className="font-medium">
                                                                   {new Date(
                                                                     flight.departure,
-                                                                  ).toLocaleTimeString("en-US", {
-                                                                    hour: "2-digit",
-                                                                    minute:
-                                                                      "2-digit",
-                                                                  })}
+                                                                  ).toLocaleTimeString(
+                                                                    "en-US",
+                                                                    {
+                                                                      hour: "2-digit",
+                                                                      minute:
+                                                                        "2-digit",
+                                                                    },
+                                                                  )}
                                                                 </div>
                                                               </div>
                                                             </div>
