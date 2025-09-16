@@ -1,4 +1,4 @@
-modules = ["web", "nodejs-24"]
+modules = ["nodejs-24", "python-3.11", "web"]
 run = "npm run dev"
 
 [nix]
@@ -78,6 +78,15 @@ waitForPort = 3001
 
 [workflows.workflow.metadata]
 outputType = "console"
+
+[[workflows.workflow]]
+name = "Django Backend"
+author = 45149410
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python manage.py runserver 0.0.0.0:3001"
 
 [[ports]]
 localPort = 3001
