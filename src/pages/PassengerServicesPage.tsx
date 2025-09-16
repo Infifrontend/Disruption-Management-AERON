@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAppContext } from "../context/AppContext";
@@ -40,15 +41,26 @@ export function PassengerServicesPage() {
   console.log("reassignedCrewData:", reassignedCrewData);
 
   // Safety check to ensure we don't render objects directly
-  const getSafeStringValue = (value: any): string => {
+  const getSafeStringValue = (value) => {
     if (value === null || value === undefined) return "";
-    if (typeof value === "string" || typeof value === "number") return String(value);
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return String(value);
+    if (typeof value === "boolean") return String(value);
+    if (Array.isArray(value)) return `${value.length} items`;
     if (typeof value === "object") {
-      // If it's an object, we need to extract meaningful string representation
-      if (Array.isArray(value)) return `${value.length} items`;
-      return "[Object]";
+      // Handle specific object types
+      if (value.toString && typeof value.toString === "function" && value.toString() !== "[object Object]") {
+        return value.toString();
+      }
+      return "Object data";
     }
     return String(value);
+  };
+
+  // Safe render function for complex objects
+  const renderSafeValue = (value) => {
+    const safeValue = getSafeStringValue(value);
+    return <span>{safeValue}</span>;
   };
 
   return (
@@ -65,18 +77,16 @@ export function PassengerServicesPage() {
           <CardContent>
             <div className="text-sm space-y-1">
               <div>
-                <strong>Flight ID:</strong> {getSafeStringValue(reassignedCrewData.flightId)}
+                <strong>Flight ID:</strong> {renderSafeValue(reassignedCrewData.flightId)}
               </div>
               <div>
-                <strong>Option:</strong> {getSafeStringValue(reassignedCrewData.optionTitle)}
+                <strong>Option:</strong> {renderSafeValue(reassignedCrewData.optionTitle)}
               </div>
               <div>
-                <strong>Reassignments:</strong>{" "}
-                {getSafeStringValue(reassignedCrewData.totalReassignments)}
+                <strong>Reassignments:</strong> {renderSafeValue(reassignedCrewData.totalReassignments)}
               </div>
               <div>
-                <strong>Crew Count:</strong>{" "}
-                {getSafeStringValue(reassignedCrewData.reassignedCrew?.length || 0)}
+                <strong>Crew Count:</strong> {renderSafeValue(reassignedCrewData.reassignedCrew?.length || 0)}
               </div>
             </div>
           </CardContent>
@@ -108,27 +118,26 @@ export function PassengerServicesPage() {
                       {(() => {
                         const aircraft = recoveryOption.selectedAircraft;
                         if (typeof aircraft === 'object' && aircraft !== null) {
-                          const reg = aircraft.reg || aircraft.aircraft || "N/A";
-                          const type = aircraft.type || "B737-800";
-                          return `${String(reg)} (${String(type)})`;
+                          const reg = getSafeStringValue(aircraft.reg || aircraft.aircraft || "N/A");
+                          const type = getSafeStringValue(aircraft.type || "B737-800");
+                          return `${reg} (${type})`;
                         }
                         return "N/A";
                       })()}
                     </p>
                     <div className="flex gap-2 mt-1">
                       <Badge className="bg-blue-100 text-blue-700 text-xs">
-                        Turnaround:{" "}
-                        {(() => {
+                        Turnaround: {(() => {
                           const aircraft = recoveryOption.selectedAircraft;
-                          const turnaround = aircraft?.turnaround || aircraft?.turnaroundTime || "45 min";
-                          return String(turnaround);
+                          const turnaround = getSafeStringValue(aircraft?.turnaround || aircraft?.turnaroundTime || "45 min");
+                          return turnaround;
                         })()}
                       </Badge>
                       <Badge className="bg-green-100 text-green-700 text-xs">
                         {(() => {
                           const aircraft = recoveryOption.selectedAircraft;
-                          const availability = aircraft?.availability || "Available";
-                          return String(availability);
+                          const availability = getSafeStringValue(aircraft?.availability || "Available");
+                          return availability;
                         })()}
                       </Badge>
                       {(() => {
@@ -136,7 +145,7 @@ export function PassengerServicesPage() {
                         const selectedIndex = aircraft?.selectedIndex;
                         return typeof selectedIndex === "number" ? (
                           <Badge className="bg-purple-100 text-purple-700 text-xs">
-                            Option {String(selectedIndex + 1)}
+                            Option {selectedIndex + 1}
                           </Badge>
                         ) : null;
                       })()}
@@ -173,7 +182,7 @@ export function PassengerServicesPage() {
                         const crewAssignments = recoveryOption.crewAssignments;
                         if (typeof crewAssignments === 'object' && crewAssignments !== null) {
                           const assignedCrew = Array.isArray(crewAssignments.assignedCrew) ? crewAssignments.assignedCrew : [];
-                          return `${String(assignedCrew.length)} crew members assigned`;
+                          return `${assignedCrew.length} crew members assigned`;
                         }
                         return "No crew information available";
                       })()}
@@ -189,8 +198,7 @@ export function PassengerServicesPage() {
                             key={index}
                             className="bg-blue-100 text-blue-700 text-xs"
                           >
-                            {String(crew?.name || "Unknown")} (
-                            {String(crew?.role || crew?.rank || "Crew")})
+                            {getSafeStringValue(crew?.name || "Unknown")} ({getSafeStringValue(crew?.role || crew?.rank || "Crew")})
                           </Badge>
                         ));
                       })()}
@@ -199,7 +207,7 @@ export function PassengerServicesPage() {
                         const assignedCrew = crewAssignments?.assignedCrew || [];
                         return assignedCrew.length > 3 ? (
                           <Badge className="bg-gray-100 text-gray-700 text-xs">
-                            +{String(assignedCrew.length - 3)} more
+                            +{assignedCrew.length - 3} more
                           </Badge>
                         ) : null;
                       })()}
@@ -211,7 +219,7 @@ export function PassengerServicesPage() {
                         const crewSwaps = crewAssignments?.crewSwaps || [];
                         return Array.isArray(crewSwaps) && crewSwaps.length > 0 ? (
                           <Badge className="bg-orange-100 text-orange-700 text-xs">
-                            {String(crewSwaps.length)} crew swaps
+                            {crewSwaps.length} crew swaps
                           </Badge>
                         ) : null;
                       })()}
@@ -220,7 +228,7 @@ export function PassengerServicesPage() {
                         const reassignments = crewAssignments?.reassignments || [];
                         return Array.isArray(reassignments) && reassignments.length > 0 ? (
                           <Badge className="bg-purple-100 text-purple-700 text-xs">
-                            {String(reassignments.length)} reassignments
+                            {reassignments.length} reassignments
                           </Badge>
                         ) : null;
                       })()}
