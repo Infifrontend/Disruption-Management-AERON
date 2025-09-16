@@ -36,6 +36,7 @@ export function PassengerServicesPage() {
   const activeContext = passengerServicesContext || location.state;
   const recoveryOption = activeContext?.recoveryOption;
   console.log(activeContext, "recoveryOption");
+  console.log(recoveryOption, "recoveryOptionattasdtastd");
 
   return (
     <div className="space-y-6">
@@ -121,7 +122,9 @@ export function PassengerServicesPage() {
                         "number" && (
                         <Badge className="bg-purple-100 text-purple-700 text-xs">
                           Option{" "}
-                          {String(recoveryOption.selectedAircraft.selectedIndex + 1)}
+                          {String(
+                            recoveryOption.selectedAircraft.selectedIndex + 1,
+                          )}
                         </Badge>
                       )}
                     </div>
@@ -152,8 +155,10 @@ export function PassengerServicesPage() {
                       Crew Assignments
                     </h4>
                     <p className="text-sm text-blue-700">
-                      {String(recoveryOption.crewAssignments.assignedCrew.length)} crew
-                      members assigned
+                      {String(
+                        recoveryOption.crewAssignments.assignedCrew.length,
+                      )}{" "}
+                      crew members assigned
                     </p>
 
                     {/* Display crew names */}
@@ -173,8 +178,10 @@ export function PassengerServicesPage() {
                         3 && (
                         <Badge className="bg-gray-100 text-gray-700 text-xs">
                           +
-                          {String(recoveryOption.crewAssignments.assignedCrew.length -
-                            3)}{" "}
+                          {String(
+                            recoveryOption.crewAssignments.assignedCrew.length -
+                              3,
+                          )}{" "}
                           more
                         </Badge>
                       )}
@@ -187,7 +194,9 @@ export function PassengerServicesPage() {
                         ) &&
                         recoveryOption.crewAssignments.crewSwaps.length > 0 && (
                           <Badge className="bg-orange-100 text-orange-700 text-xs">
-                            {String(recoveryOption.crewAssignments.crewSwaps.length)}{" "}
+                            {String(
+                              recoveryOption.crewAssignments.crewSwaps.length,
+                            )}{" "}
                             crew swaps
                           </Badge>
                         )}
@@ -200,7 +209,7 @@ export function PassengerServicesPage() {
                           <Badge className="bg-purple-100 text-purple-700 text-xs">
                             {String(
                               recoveryOption.crewAssignments.reassignments
-                                .length
+                                .length,
                             )}{" "}
                             reassignments
                           </Badge>
