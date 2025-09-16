@@ -81,8 +81,9 @@ export function PassengerServicesPage() {
           <CardContent className="space-y-4">
             {/* Aircraft Selection Info */}
             {recoveryOption?.selectedAircraft &&
-              typeof recoveryOption?.selectedAircraft === "object" &&
-              recoveryOption?.selectedAircraft !== null && (
+              typeof recoveryOption.selectedAircraft === "object" &&
+              recoveryOption.selectedAircraft !== null &&
+              !Array.isArray(recoveryOption.selectedAircraft) && (
                 <div className="flex items-center gap-4 p-3 bg-white rounded border border-blue-200">
                   <Plane className="h-5 w-5 text-blue-600" />
                   <div>
@@ -91,13 +92,13 @@ export function PassengerServicesPage() {
                     </h4>
                     <p className="text-sm text-blue-700">
                       {String(
-                        recoveryOption?.selectedAircraft.reg ||
-                          recoveryOption?.selectedAircraft.aircraft ||
+                        recoveryOption.selectedAircraft.reg ||
+                          recoveryOption.selectedAircraft.aircraft ||
                           "N/A",
                       )}{" "}
                       (
                       {String(
-                        recoveryOption?.selectedAircraft.type || "B737-800",
+                        recoveryOption.selectedAircraft.type || "B737-800",
                       )}
                       )
                     </p>
@@ -105,30 +106,30 @@ export function PassengerServicesPage() {
                       <Badge className="bg-blue-100 text-blue-700 text-xs">
                         Turnaround:{" "}
                         {String(
-                          recoveryOption?.selectedAircraft.turnaround ||
-                            recoveryOption?.selectedAircraft.turnaroundTime ||
+                          recoveryOption.selectedAircraft.turnaround ||
+                            recoveryOption.selectedAircraft.turnaroundTime ||
                             "45 min",
                         )}
                       </Badge>
                       <Badge className="bg-green-100 text-green-700 text-xs">
                         {String(
-                          recoveryOption?.selectedAircraft.availability ||
+                          recoveryOption.selectedAircraft.availability ||
                             "Available",
                         )}
                       </Badge>
-                      {typeof recoveryOption?.selectedAircraft.selectedIndex ===
+                      {typeof recoveryOption.selectedAircraft.selectedIndex ===
                         "number" && (
                         <Badge className="bg-purple-100 text-purple-700 text-xs">
                           Option{" "}
-                          {recoveryOption?.selectedAircraft.selectedIndex + 1}
+                          {String(recoveryOption.selectedAircraft.selectedIndex + 1)}
                         </Badge>
                       )}
                     </div>
-                    {recoveryOption?.selectedAircraft.selectionTimestamp && (
+                    {recoveryOption.selectedAircraft.selectionTimestamp && (
                       <p className="text-xs text-gray-500 mt-1">
                         Selected:{" "}
                         {new Date(
-                          recoveryOption?.selectedAircraft.selectionTimestamp,
+                          recoveryOption.selectedAircraft.selectionTimestamp,
                         ).toLocaleString()}
                       </p>
                     )}
@@ -139,6 +140,8 @@ export function PassengerServicesPage() {
             {/* Crew Assignment Info */}
             {recoveryOption?.crewAssignments &&
               typeof recoveryOption.crewAssignments === "object" &&
+              recoveryOption.crewAssignments !== null &&
+              !Array.isArray(recoveryOption.crewAssignments) &&
               recoveryOption.crewAssignments.assignedCrew &&
               Array.isArray(recoveryOption.crewAssignments.assignedCrew) &&
               recoveryOption.crewAssignments.assignedCrew.length > 0 && (
@@ -149,7 +152,7 @@ export function PassengerServicesPage() {
                       Crew Assignments
                     </h4>
                     <p className="text-sm text-blue-700">
-                      {recoveryOption.crewAssignments.assignedCrew.length} crew
+                      {String(recoveryOption.crewAssignments.assignedCrew.length)} crew
                       members assigned
                     </p>
 
@@ -170,8 +173,8 @@ export function PassengerServicesPage() {
                         3 && (
                         <Badge className="bg-gray-100 text-gray-700 text-xs">
                           +
-                          {recoveryOption.crewAssignments.assignedCrew.length -
-                            3}{" "}
+                          {String(recoveryOption.crewAssignments.assignedCrew.length -
+                            3)}{" "}
                           more
                         </Badge>
                       )}
@@ -184,7 +187,7 @@ export function PassengerServicesPage() {
                         ) &&
                         recoveryOption.crewAssignments.crewSwaps.length > 0 && (
                           <Badge className="bg-orange-100 text-orange-700 text-xs">
-                            {recoveryOption.crewAssignments.crewSwaps.length}{" "}
+                            {String(recoveryOption.crewAssignments.crewSwaps.length)}{" "}
                             crew swaps
                           </Badge>
                         )}
@@ -195,10 +198,10 @@ export function PassengerServicesPage() {
                         recoveryOption.crewAssignments.reassignments.length >
                           0 && (
                           <Badge className="bg-purple-100 text-purple-700 text-xs">
-                            {
+                            {String(
                               recoveryOption.crewAssignments.reassignments
                                 .length
-                            }{" "}
+                            )}{" "}
                             reassignments
                           </Badge>
                         )}
