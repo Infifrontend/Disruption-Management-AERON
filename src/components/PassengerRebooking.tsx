@@ -162,7 +162,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   const selectedFlight = context?.selectedFlight || context?.flight;
   const recoveryOption = context?.recoveryOption;
   const fromExecution = context?.fromExecution;
-
+  
   // Extract preserved selections for easier access
   const preservedAircraftSelection = context?.storedSelections?.aircraft || recoveryOption?.selectedAircraft;
   const preservedCrewAssignments = context?.storedSelections?.crew || recoveryOption?.crewAssignments;
@@ -1768,17 +1768,17 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // Track confirmed PNRs for approval but don't auto-clear selectedPnrs
   useEffect(() => {
-    const confirmedPnrSet = new Set();
+    const confirmedPnrs = new Set();
     Object.entries(filteredPnrGroups).forEach(([pnr, groupPassengers]) => {
       if (isPnrGroupConfirmed(groupPassengers)) {
-        confirmedPnrSet.add(pnr);
+        confirmedPnrs.add(pnr);
       }
     });
 
     // Add confirmed PNRs to approval tracking
-    if (confirmedPnrSet.size > 0) {
+    if (confirmedPnrs.size > 0) {
       setPnrsForApproval((prev) => {
-        const newSet = new Set([...prev, ...confirmedPnrSet]);
+        const newSet = new Set([...prev, ...confirmedPnrs]);
         // Only update if there are actually new items
         if (newSet.size !== prev.size) {
           return newSet;
@@ -1964,7 +1964,19 @@ export function PassengerRebooking({ context, onClearContext }) {
               : "Manage passenger rebooking, accommodations, and special services"}
           </p>
         </div>
-        {/* Removed export and bulk upload buttons from here */}
+        {/* <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Export Report
+          </Button>
+          <Button className="btn-flydubai-primary">
+            <Upload className="h-4 w-4 mr-2" />
+            Bulk Upload
+          </Button>
+        </div> */}
       </div>
 
       {/* Flight Information Display */}
@@ -2087,7 +2099,19 @@ export function PassengerRebooking({ context, onClearContext }) {
                       {/* Passenger Services */}
                     </h2>
                   </div>
-                  {/* Removed export and bulk upload buttons from here */}
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Report
+                    </Button>
+                    <Button className="btn-flydubai-primary">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Bulk Upload
+                    </Button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <Card className="border-green-200 bg-green-50">
@@ -2633,242 +2657,158 @@ export function PassengerRebooking({ context, onClearContext }) {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="crew-schedule" className="space-y-6">
-                {/* Display Preserved Crew Assignments */}
-                {recoveryOption?.crewAssignments && (
-                  <Card className="bg-blue-50 border-blue-200">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-blue-800">
-                        <Info className="h-5 w-5" />
-                        Preserved Crew Assignments from Recovery Option
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* Assigned Crew */}
-                      {recoveryOption.crewAssignments.assignedCrew.length > 0 && (
-                        <div>
-                          <h4 className="font-medium text-blue-900 mb-3">Assigned Crew Members</h4>
-                          <div className="grid gap-3">
-                            {recoveryOption.crewAssignments.assignedCrew.map((crew, index) => (
-                              <div key={index} className="flex items-center gap-4 p-3 bg-white rounded border border-blue-200">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <span className="font-medium">{crew.name}</span>
-                                    <Badge className="bg-blue-100 text-blue-700 text-xs">
-                                      {crew.role || crew.rank || 'Crew Member'}
-                                    </Badge>
-                                    {crew.isReassigned && (
-                                      <Badge className="bg-orange-100 text-orange-700 text-xs">
-                                        Reassigned
-                                      </Badge>
-                                    )}
-                                  </div>
-                                  <div className="text-sm text-gray-600 mt-1">
-                                    {crew.qualifications && (
-                                      <span>Qualified: {crew.qualifications} | </span>
-                                    )}
-                                    Status: {crew.status || 'Available'}
-                                    {crew.originalName && (
-                                      <span> | Originally: {crew.originalName}</span>
-                                    )}
-                                  </div>
-                                  {crew.reassignedAt && (
-                                    <p className="text-xs text-gray-500 mt-1">
-                                      Reassigned: {new Date(crew.reassignedAt).toLocaleString()}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Crew Swaps */}
-                      {recoveryOption.crewAssignments.crewSwaps.length > 0 && (
-                        <div>
-                          <h4 className="font-medium text-blue-900 mb-3">Crew Swaps Performed</h4>
-                          <div className="space-y-2">
-                            {recoveryOption.crewAssignments.crewSwaps.map((swap, index) => (
-                              <div key={index} className="p-3 bg-white rounded border border-orange-200">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <span className="font-medium">{swap.originalCrew?.name || 'Unknown'}</span>
-                                    <span className="mx-2">→</span>
-                                    <span className="font-medium">{swap.newCrew?.name || 'Unknown'}</span>
-                                  </div>
-                                  <Badge className="bg-orange-100 text-orange-700 text-xs">
-                                    Swapped
-                                  </Badge>
-                                </div>
-                                <p className="text-xs text-gray-500 mt-1">
-                                  {swap.reason} | {new Date(swap.timestamp).toLocaleString()}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="text-xs text-blue-600">
-                        ✓ All crew assignments from the recovery option analysis have been preserved and will be applied to the passenger services.
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-
+                {/* Crew Assignment Status */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-flydubai-navy">
-                      <UserCheck className="h-5 w-5" />
-                      Crew Schedule Management
+                    <CardTitle className="flex items-center gap-2">
+                      <UserCheck className="h-5 w-5 text-flydubai-blue" />
+                      Crew Schedule Information
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {loading ? (
                       <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue"></div>
-                        <span className="ml-2">Loading crew data...</span>
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue mr-4"></div>
+                        <span>Loading crew information...</span>
                       </div>
-                    ) : crewData?.crew && crewData.crew.length > 0 ? (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Select</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Rank</TableHead>
-                            <TableHead>Status</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {(() => {
-                            // Get violated crew from reassigned crew data in app context
-                            const { reassignedCrewData } = useAppContext();
-                            let violatedCrewList = [];
-
-                            if (
-                              reassignedCrewData?.reassignedCrew?.length > 0
-                            ) {
-                              // Filter for violated crew (those who had issues and were replaced)
-                              violatedCrewList =
-                                reassignedCrewData.reassignedCrew
-                                  .filter(
-                                    (crew) =>
-                                      crew.replacedCrew &&
-                                      (crew.issue ||
-                                        crew.status === "Sick" ||
-                                        crew.status === "Unavailable"),
-                                  )
-                                  .map((crew) => ({
-                                    name: crew.replacedCrew,
-                                    rank: crew.role,
-                                    status: crew.issue
-                                      ? "Duty Violation"
-                                      : crew.status,
-                                    issue: crew.issue,
-                                  }));
-                            }
-
-                            // If no violated crew from context, check if there's crew data from the context
-                            if (
-                              violatedCrewList.length === 0 &&
-                              context?.recoveryOption?.fullDetails
-                                ?.rotationPlan?.crew
-                            ) {
-                              violatedCrewList =
-                                context.recoveryOption.fullDetails.rotationPlan.crew
-                                  .filter(
-                                    (crew) =>
-                                      crew.status === "Sick" ||
-                                      crew.status === "Unavailable" ||
-                                      crew.issue,
-                                  )
-                                  .map((crew) => ({
-                                    name: crew.name,
-                                    rank: crew.role,
-                                    status: crew.issue
-                                      ? "Duty Violation"
-                                      : crew.status,
-                                    issue: crew.issue,
-                                  }));
-                            }
-
-                            // If still no data, fall back to mock data for demonstration
-                            if (violatedCrewList.length === 0) {
-                              violatedCrewList = [
-                                {
-                                  name: "No violated crew data found",
-                                  rank: "-",
-                                  status: "No Data",
-                                  issue: null,
-                                },
-                              ];
-                            }
-
-                            return violatedCrewList.map((crew, index) => (
-                              <TableRow key={index}>
-                                <TableCell>
-                                  <input
-                                    type="checkbox"
-                                    className="h-4 w-4 text-flydubai-blue focus:ring-flydubai-blue border-gray-300 rounded"
-                                    disabled={crew.status === "No Data"}
-                                    onChange={(e) => {
-                                      if (e.target.checked) {
-                                        setSelectedCrewMembers((prev) => {
-                                          const newSet = new Set(prev);
-                                          newSet.add(crew.name);
-                                          return newSet;
-                                        });
-                                        setSelectedCrewForHotel((prev) => [
-                                          ...prev,
-                                          crew,
-                                        ]);
-                                      } else {
-                                        setSelectedCrewMembers((prev) => {
-                                          const newSet = new Set(prev);
-                                          newSet.delete(crew.name);
-                                          return newSet;
-                                        });
-                                        setSelectedCrewForHotel((prev) =>
-                                          prev.filter(
-                                            (c) => c.name !== crew.name,
-                                          ),
-                                        );
-                                      }
-                                    }}
-                                  />
-                                </TableCell>
-                                <TableCell className="font-medium">
-                                  {crew.name}
-                                </TableCell>
-                                <TableCell>{crew.rank}</TableCell>
-                                <TableCell>
-                                  <Badge
-                                    className={
-                                      crew.status === "Available"
-                                        ? "bg-green-100 text-green-800 border-green-300"
-                                        : crew.status === "Duty Violation"
-                                          ? "bg-red-100 text-red-800 border-red-300"
-                                          : crew.status === "No Data"
-                                            ? "bg-gray-100 text-gray-800 border-gray-300"
-                                            : "bg-yellow-100 text-yellow-800 border-yellow-300"
-                                    }
-                                  >
-                                    {crew.status}
-                                  </Badge>
-                                  {crew.issue && (
-                                    <div className="text-xs text-red-600 mt-1">
-                                      {crew.issue}
-                                    </div>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ));
-                          })()}
-                        </TableBody>
-                      </Table>
                     ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        No crew data available for this recovery option.
+                      <div>
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Select</TableHead>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Rank</TableHead>
+                              <TableHead>Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {(() => {
+                              // Get violated crew from reassigned crew data in app context
+                              const { reassignedCrewData } = useAppContext();
+                              let violatedCrewList = [];
+
+                              if (
+                                reassignedCrewData?.reassignedCrew?.length > 0
+                              ) {
+                                // Filter for violated crew (those who had issues and were replaced)
+                                violatedCrewList =
+                                  reassignedCrewData.reassignedCrew
+                                    .filter(
+                                      (crew) =>
+                                        crew.replacedCrew &&
+                                        (crew.issue ||
+                                          crew.status === "Sick" ||
+                                          crew.status === "Unavailable"),
+                                    )
+                                    .map((crew) => ({
+                                      name: crew.replacedCrew,
+                                      rank: crew.role,
+                                      status: crew.issue
+                                        ? "Duty Violation"
+                                        : crew.status,
+                                      issue: crew.issue,
+                                    }));
+                              }
+
+                              // If no violated crew from context, check if there's crew data from the context
+                              if (
+                                violatedCrewList.length === 0 &&
+                                context?.recoveryOption?.fullDetails
+                                  ?.rotationPlan?.crew
+                              ) {
+                                violatedCrewList =
+                                  context.recoveryOption.fullDetails.rotationPlan.crew
+                                    .filter(
+                                      (crew) =>
+                                        crew.status === "Sick" ||
+                                        crew.status === "Unavailable" ||
+                                        crew.issue,
+                                    )
+                                    .map((crew) => ({
+                                      name: crew.name,
+                                      rank: crew.role,
+                                      status: crew.issue
+                                        ? "Duty Violation"
+                                        : crew.status,
+                                      issue: crew.issue,
+                                    }));
+                              }
+
+                              // If still no data, fall back to mock data for demonstration
+                              if (violatedCrewList.length === 0) {
+                                violatedCrewList = [
+                                  {
+                                    name: "No violated crew data found",
+                                    rank: "-",
+                                    status: "No Data",
+                                    issue: null,
+                                  },
+                                ];
+                              }
+
+                              return violatedCrewList.map((crew, index) => (
+                                <TableRow key={index}>
+                                  <TableCell>
+                                    <input
+                                      type="checkbox"
+                                      className="h-4 w-4 text-flydubai-blue focus:ring-flydubai-blue border-gray-300 rounded"
+                                      disabled={crew.status === "No Data"}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setSelectedCrewMembers((prev) => {
+                                            const newSet = new Set(prev);
+                                            newSet.add(crew.name);
+                                            return newSet;
+                                          });
+                                          setSelectedCrewForHotel((prev) => [
+                                            ...prev,
+                                            crew,
+                                          ]);
+                                        } else {
+                                          setSelectedCrewMembers((prev) => {
+                                            const newSet = new Set(prev);
+                                            newSet.delete(crew.name);
+                                            return newSet;
+                                          });
+                                          setSelectedCrewForHotel((prev) =>
+                                            prev.filter(
+                                              (c) => c.name !== crew.name,
+                                            ),
+                                          );
+                                        }
+                                      }}
+                                    />
+                                  </TableCell>
+                                  <TableCell className="font-medium">
+                                    {crew.name}
+                                  </TableCell>
+                                  <TableCell>{crew.rank}</TableCell>
+                                  <TableCell>
+                                    <Badge
+                                      className={
+                                        crew.status === "Available"
+                                          ? "bg-green-100 text-green-800 border-green-300"
+                                          : crew.status === "Duty Violation"
+                                            ? "bg-red-100 text-red-800 border-red-300"
+                                            : crew.status === "No Data"
+                                              ? "bg-gray-100 text-gray-800 border-gray-300"
+                                              : "bg-yellow-100 text-yellow-800 border-yellow-300"
+                                      }
+                                    >
+                                      {crew.status}
+                                    </Badge>
+                                    {crew.issue && (
+                                      <div className="text-xs text-red-600 mt-1">
+                                        {crew.issue}
+                                      </div>
+                                    )}
+                                  </TableCell>
+                                </TableRow>
+                              ));
+                            })()}
+                          </TableBody>
+                        </Table>
                       </div>
                     )}
                   </CardContent>
@@ -3083,1001 +3023,19 @@ export function PassengerRebooking({ context, onClearContext }) {
                     {/* Passenger Services */}
                   </h2>
                 </div>
-                {/* Removed export and bulk upload buttons from here */}
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="border-green-200 bg-green-50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-green-600 text-sm font-medium">
-                          Confirmed
-                        </p>
-                        <p className="text-2xl font-bold text-green-700">
-                          {context ? confirmed : "3,247"}
-                        </p>
-                      </div>
-                      <CheckCircle className="h-8 w-8 text-green-600" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-red-200 bg-red-50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-red-600 text-sm font-medium">
-                          Rebooking Required
-                        </p>
-                        <p className="text-2xl font-bold text-red-700">
-                          {context ? rebookingRequired : "89"}
-                        </p>
-                      </div>
-                      <RefreshCw className="h-8 w-8 text-red-600" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-yellow-200 bg-yellow-50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-yellow-600 text-sm font-medium">
-                          Accommodation
-                        </p>
-                        <p className="text-2xl font-bold text-yellow-700">
-                          {context ? accommodationNeeded : "45"}
-                        </p>
-                      </div>
-                      <Clock className="h-8 w-8 text-yellow-600" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="border-blue-200 bg-blue-50">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-blue-600 text-sm font-medium">
-                          VIP Passengers
-                        </p>
-                        <p className="text-2xl font-bold text-blue-700">
-                          {context
-                            ? passengers.filter((p) => p.priority === "VIP")
-                                .length
-                            : "12"}
-                        </p>
-                      </div>
-                      <Star className="h-8 w-8 text-blue-600" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Filters and View Toggle */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-2">
-                      <Filter className="h-5 w-5 text-flydubai-blue" />
-                      {context
-                        ? `Filter Affected Passengers (${passengers.length})`
-                        : "Passenger Filters"}
-                    </CardTitle>
-                    <div className="flex gap-2">
-                      <Button
-                        variant={groupView ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setGroupView(true)}
-                        className={
-                          groupView
-                            ? "btn-flydubai-primary"
-                            : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                        }
-                      >
-                        <Group className="h-4 w-4 mr-2" />
-                        PNR Groups
-                      </Button>
-                      <Button
-                        variant={!groupView ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setGroupView(false)}
-                        className={
-                          !groupView
-                            ? "btn-flydubai-primary"
-                            : "border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                        }
-                      >
-                        <Users className="h-4 w-4 mr-2" />
-                        Individual
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        Search
-                      </label>
-                      <div className="relative">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                          placeholder="Name or PNR"
-                          value={searchTerm}
-                          onChange={(e) => setSearchTerm(e.target.value)}
-                          className="pl-10"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        Priority
-                      </label>
-                      <Select
-                        value={selectedPriority}
-                        onValueChange={setSelectedPriority}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="All Priorities" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all-priorities">
-                            All Priorities
-                          </SelectItem>
-                          <SelectItem value="VIP">VIP</SelectItem>
-                          <SelectItem value="Premium">Premium</SelectItem>
-                          <SelectItem value="Standard">Standard</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        Status
-                      </label>
-                      <Select
-                        value={selectedStatus}
-                        onValueChange={setSelectedStatus}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="All Statuses" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all-statuses">
-                            All Statuses
-                          </SelectItem>
-                          <SelectItem value="Confirmed">Confirmed</SelectItem>
-                          <SelectItem value="Rebooking Required">
-                            Rebooking Required
-                          </SelectItem>
-                          <SelectItem value="Accommodation Needed">
-                            Accommodation Needed
-                          </SelectItem>
-                          <SelectItem value="Alternative Flight">
-                            Alternative Flight
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex items-end">
-                      <Button
-                        variant="outline"
-                        className="w-full border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                        onClick={() => {
-                          setSearchTerm("");
-                          setSelectedPriority("all-priorities");
-                          setSelectedStatus("all-statuses");
-                        }}
-                      >
-                        Clear Filters
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Passenger List */}
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="text-flydubai-navy">
-                        {context
-                          ? `Affected Passengers - ${context.flight?.flightNumber}`
-                          : "Passenger List"}
-                      </CardTitle>
-                      <p className="text-sm text-muted-foreground">
-                        {groupView
-                          ? `Showing ${Object.keys(filteredPnrGroups).length} PNR groups with ${Object.values(filteredPnrGroups).flat().length} passengers`
-                          : `Showing ${filteredPassengers.length} of ${passengers.length} passengers`}
-                      </p>
-                    </div>
-                    {groupView && (
-                      <div className="flex gap-2">
-                        {selectedPnrs.size > 0 && (
-                          <>
-                            <Button
-                              size="sm"
-                              className="btn-flydubai-primary"
-                              onClick={handleBulkRebookSelectedPnrs}
-                            >
-                              <RefreshCw className="h-3 w-3 mr-1" />
-                              Rebook {selectedPnrs.size} PNR(s)
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                              onClick={() => setSelectedPnrs(new Set())}
-                            >
-                              Clear Selection
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {groupView ? (
-                    // PNR Group View
-                    <div className="space-y-4">
-                      {/* Select All Header */}
-                      {Object.keys(filteredPnrGroups).length > 0 && (
-                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
-                          <Checkbox
-                            checked={
-                              selectedPnrs.size ===
-                                Object.keys(filteredPnrGroups).filter(
-                                  (pnr) =>
-                                    !isPnrGroupConfirmed(
-                                      filteredPnrGroups[pnr],
-                                    ),
-                                ).length && selectedPnrs.size > 0
-                            }
-                            onCheckedChange={handleSelectAll}
-                            disabled={Object.keys(filteredPnrGroups).every(
-                              (pnr) =>
-                                isPnrGroupConfirmed(filteredPnrGroups[pnr]),
-                            )}
-                          />
-                          <span className="font-medium text-gray-700">
-                            Select All ({Object.keys(filteredPnrGroups).length}{" "}
-                            PNR groups)
-                          </span>
-                          {selectedPnrs.size > 0 && (
-                            <Badge variant="outline" className="ml-auto">
-                              {selectedPnrs.size} selected
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-
-                      {Object.entries(filteredPnrGroups).map(
-                        ([pnr, groupPassengers]) => (
-                          <div
-                            key={pnr}
-                            className="border rounded-lg bg-white"
-                          >
-                            <div className="p-4 border-b bg-gray-50">
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                  <Checkbox
-                                    checked={selectedPnrs.has(pnr)}
-                                    onCheckedChange={() =>
-                                      handlePnrSelection(pnr)
-                                    }
-                                    disabled={isPnrGroupConfirmed(
-                                      groupPassengers,
-                                    )}
-                                    className="border-flydubai-blue data-[state=checked]:bg-flydubai-blue disabled:opacity-50 disabled:cursor-not-allowed"
-                                  />
-                                  <div>
-                                    <div className="flex items-center gap-2">
-                                      <Users className="h-4 w-4 text-flydubai-blue" />
-                                      <span className="font-semibold">
-                                        PNR: {pnr}
-                                      </span>
-                                      <Badge
-                                        variant="secondary"
-                                        className="bg-blue-100 text-blue-800"
-                                      >
-                                        {(groupPassengers as any).length}{" "}
-                                        passenger
-                                        {(groupPassengers as any).length > 1
-                                          ? "s"
-                                          : ""}
-                                      </Badge>
-                                      {isPnrGroupConfirmed(
-                                        groupPassengers,
-                                      ) && (
-                                        <Badge className="bg-green-100 text-green-800 border-green-200">
-                                          <CheckCircle className="h-3 w-3 mr-1" />
-                                          Confirmed
-                                        </Badge>
-                                      )}
-                                    </div>
-                                    <div className="text-sm text-gray-600 mt-1">
-                                      Group Priority:{" "}
-                                      {groupPassengers[0]?.priority ||
-                                        "Standard"}
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleExpandPnr(pnr)}
-                                    className="text-flydubai-blue hover:bg-blue-50"
-                                  >
-                                    {expandedPnrs.has(pnr) ? (
-                                      <ChevronDown className="h-4 w-4" />
-                                    ) : (
-                                      <ChevronRight className="h-4 w-4" />
-                                    )}
-                                    {expandedPnrs.has(pnr)
-                                      ? "Collapse"
-                                      : "Expand"}
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    onClick={() =>
-                                      handleRebookPnrGroup(
-                                        pnr,
-                                        groupPassengers,
-                                      )
-                                    }
-                                    disabled={isPnrGroupConfirmed(
-                                      groupPassengers,
-                                    )}
-                                    className="btn-flydubai-primary disabled:opacity-50 disabled:cursor-not-allowed"
-                                  >
-                                    <RefreshCw className="h-4 w-4 mr-2" />
-                                    {isPnrGroupConfirmed(groupPassengers)
-                                      ? "Rebooking Complete"
-                                      : "Rebook Group"}
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                            {expandedPnrs.has(pnr) && (
-                              <div className="p-4 border-t">
-                                <div className="grid gap-3">
-                                  {(groupPassengers as any).map((passenger) => (
-                                    <div
-                                      key={passenger.id}
-                                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                                    >
-                                      <div className="flex items-center gap-4">
-                                        <div>
-                                          <div className="font-medium">
-                                            {passenger.name}
-                                          </div>
-                                          <div className="text-sm text-gray-500">
-                                            {passenger.contactInfo}
-                                          </div>
-                                        </div>
-                                        <Badge
-                                          className={getPriorityColor(
-                                            passenger.priority,
-                                          )}
-                                        >
-                                          {passenger.priority}
-                                        </Badge>
-                                        <Badge
-                                          className={getStatusColor(
-                                            passenger.status,
-                                          )}
-                                        >
-                                          {passenger.status}
-                                        </Badge>
-                                        <div className="text-sm text-gray-600">
-                                          Seat: {passenger.seat}
-                                        </div>
-                                        {passenger.specialRequirements && (
-                                          <Badge
-                                            variant="outline"
-                                            className="text-xs"
-                                          >
-                                            {passenger.specialRequirements}
-                                          </Badge>
-                                        )}
-                                      </div>
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        onClick={() =>
-                                          handleRebookPassenger(passenger)
-                                        }
-                                        className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                                      >
-                                        <Eye className="h-3 w-3 mr-1" />
-                                        View
-                                      </Button>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        ),
-                      )}
-                    </div>
-                  ) : (
-                    // Individual Passenger View
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Passenger</TableHead>
-                          <TableHead>PNR</TableHead>
-                          <TableHead>Priority</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Seat</TableHead>
-                          <TableHead>Special Requirements</TableHead>
-                          <TableHead>Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {filteredPassengers.map((passenger) => (
-                          <TableRow
-                            key={passenger.id}
-                            className="hover:bg-blue-50"
-                          >
-                            <TableCell>
-                              <div>
-                                <div className="font-medium">
-                                  {passenger.name}
-                                </div>
-                                <div className="text-sm text-gray-500">
-                                  {passenger.contactInfo}
-                                </div>
-                                {passenger.rebookedFlight && (
-                                  <div className="text-xs text-green-600 mt-1">
-                                    Rebooked to: {passenger.rebookedFlight} (
-                                    {passenger.rebookedCabin})
-                                  </div>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div>
-                                <Badge className="badge-flydubai-outline mb-1">
-                                  {passenger.pnr}
-                                </Badge>
-                                {passenger.rebookedFlight && (
-                                  <div className="text-xs text-gray-500">
-                                    New Seat: {passenger.rebookedSeat}
-                                  </div>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                className={getPriorityColor(
-                                  passenger.priority,
-                                )}
-                              >
-                                {passenger.priority}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <Badge
-                                className={getStatusColor(passenger.status)}
-                              >
-                                {passenger.status}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{passenger.seat}</TableCell>
-                            <TableCell>
-                              {passenger.specialRequirements ? (
-                                <Badge variant="outline" className="text-xs">
-                                  {passenger.specialRequirements}
-                                </Badge>
-                              ) : (
-                                <span className="text-gray-400">None</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() =>
-                                    handleRebookPassenger(passenger)
-                                  }
-                                  className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
-                                >
-                                  <Eye className="h-3 w-3 mr-1" />
-                                  View
-                                </Button>
-                                {passenger.status === "Rebooking Required" && (
-                                  <Button
-                                    size="sm"
-                                    className="btn-flydubai-primary text-xs"
-                                    onClick={() =>
-                                      handleRebookPassenger(passenger)
-                                    }
-                                  >
-                                    <Edit className="h-3 w-3 mr-1" />
-                                    Rebook
-                                  </Button>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="crew-schedule" className="space-y-6">
-              {/* Display Preserved Crew Assignments */}
-              {recoveryOption?.crewAssignments && (
-                
-                <Card className="bg-blue-50 border-blue-200">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-blue-800">
-                      <Info className="h-5 w-5" />
-                      Preserved Crew Assignments from Recovery Option
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Assigned Crew */}
-                    {recoveryOption.crewAssignments.assignedCrew.length > 0 && (
-                      <div>
-                        <h4 className="font-medium text-blue-900 mb-3">Assigned Crew Members</h4>
-                        <div className="grid gap-3">
-                          {recoveryOption.crewAssignments.assignedCrew.map((crew, index) => (
-                            <div key={index} className="flex items-center gap-4 p-3 bg-white rounded border border-blue-200">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">{crew.name}</span>
-                                  <Badge className="bg-blue-100 text-blue-700 text-xs">
-                                    {crew.role || crew.rank || 'Crew Member'}
-                                  </Badge>
-                                  {crew.isReassigned && (
-                                    <Badge className="bg-orange-100 text-orange-700 text-xs">
-                                      Reassigned
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="text-sm text-gray-600 mt-1">
-                                  {crew.qualifications && (
-                                    <span>Qualified: {crew.qualifications} | </span>
-                                  )}
-                                  Status: {crew.status || 'Available'}
-                                  {crew.originalName && (
-                                    <span> | Originally: {crew.originalName}</span>
-                                  )}
-                                </div>
-                                {crew.reassignedAt && (
-                                  <p className="text-xs text-gray-500 mt-1">
-                                    Reassigned: {new Date(crew.reassignedAt).toLocaleString()}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Crew Swaps */}
-                    {recoveryOption.crewAssignments.crewSwaps.length > 0 && (
-                      <div>
-                        <h4 className="font-medium text-blue-900 mb-3">Crew Swaps Performed</h4>
-                        <div className="space-y-2">
-                          {recoveryOption.crewAssignments.crewSwaps.map((swap, index) => (
-                            <div key={index} className="p-3 bg-white rounded border border-orange-200">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <span className="font-medium">{swap.originalCrew?.name || 'Unknown'}</span>
-                                  <span className="mx-2">→</span>
-                                  <span className="font-medium">{swap.newCrew?.name || 'Unknown'}</span>
-                                </div>
-                                <Badge className="bg-orange-100 text-orange-700 text-xs">
-                                  Swapped
-                                </Badge>
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1">
-                                {swap.reason} | {new Date(swap.timestamp).toLocaleString()}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="text-xs text-blue-600">
-                      ✓ All crew assignments from the recovery option analysis have been preserved and will be applied to the passenger services.
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-flydubai-navy">
-                      <UserCheck className="h-5 w-5" />
-                      Crew Schedule Management
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {loading ? (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue"></div>
-                        <span className="ml-2">Loading crew data...</span>
-                      </div>
-                    ) : crewData?.crew && crewData.crew.length > 0 ? (
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Select</TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Rank</TableHead>
-                            <TableHead>Status</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {(() => {
-                            // Get violated crew from reassigned crew data in app context
-                            const { reassignedCrewData } = useAppContext();
-                            let violatedCrewList = [];
-
-                            if (
-                              reassignedCrewData?.reassignedCrew?.length > 0
-                            ) {
-                              // Filter for violated crew (those who had issues and were replaced)
-                              violatedCrewList =
-                                reassignedCrewData.reassignedCrew
-                                  .filter(
-                                    (crew) =>
-                                      crew.replacedCrew &&
-                                      (crew.issue ||
-                                        crew.status === "Sick" ||
-                                        crew.status === "Unavailable"),
-                                  )
-                                  .map((crew) => ({
-                                    name: crew.replacedCrew,
-                                    rank: crew.role,
-                                    status: crew.issue
-                                      ? "Duty Violation"
-                                      : crew.status,
-                                    issue: crew.issue,
-                                  }));
-                            }
-
-                            // If no violated crew from context, check if there's crew data from the context
-                            if (
-                              violatedCrewList.length === 0 &&
-                              context?.recoveryOption?.fullDetails
-                                ?.rotationPlan?.crew
-                            ) {
-                              violatedCrewList =
-                                context.recoveryOption.fullDetails.rotationPlan.crew
-                                  .filter(
-                                    (crew) =>
-                                      crew.status === "Sick" ||
-                                      crew.status === "Unavailable" ||
-                                      crew.issue,
-                                  )
-                                  .map((crew) => ({
-                                    name: crew.name,
-                                    rank: crew.role,
-                                    status: crew.issue
-                                      ? "Duty Violation"
-                                      : crew.status,
-                                    issue: crew.issue,
-                                  }));
-                            }
-
-                            // If still no data, fall back to mock data for demonstration
-                            if (violatedCrewList.length === 0) {
-                              violatedCrewList = [
-                                {
-                                  name: "No violated crew data found",
-                                  rank: "-",
-                                  status: "No Data",
-                                  issue: null,
-                                },
-                              ];
-                            }
-
-                            return violatedCrewList.map((crew, index) => (
-                              <TableRow key={index}>
-                                <TableCell>
-                                  <input
-                                    type="checkbox"
-                                    className="h-4 w-4 text-flydubai-blue focus:ring-flydubai-blue border-gray-300 rounded"
-                                    disabled={crew.status === "No Data"}
-                                    onChange={(e) => {
-                                      if (e.target.checked) {
-                                        setSelectedCrewMembers((prev) => {
-                                          const newSet = new Set(prev);
-                                          newSet.add(crew.name);
-                                          return newSet;
-                                        });
-                                        setSelectedCrewForHotel((prev) => [
-                                          ...prev,
-                                          crew,
-                                        ]);
-                                      } else {
-                                        setSelectedCrewMembers((prev) => {
-                                          const newSet = new Set(prev);
-                                          newSet.delete(crew.name);
-                                          return newSet;
-                                        });
-                                        setSelectedCrewForHotel((prev) =>
-                                          prev.filter(
-                                            (c) => c.name !== crew.name,
-                                          ),
-                                        );
-                                      }
-                                    }}
-                                  />
-                                </TableCell>
-                                <TableCell className="font-medium">
-                                  {crew.name}
-                                </TableCell>
-                                <TableCell>{crew.rank}</TableCell>
-                                <TableCell>
-                                  <Badge
-                                    className={
-                                      crew.status === "Available"
-                                        ? "bg-green-100 text-green-800 border-green-300"
-                                        : crew.status === "Duty Violation"
-                                          ? "bg-red-100 text-red-800 border-red-300"
-                                          : crew.status === "No Data"
-                                            ? "bg-gray-100 text-gray-800 border-gray-300"
-                                            : "bg-yellow-100 text-yellow-800 border-yellow-300"
-                                    }
-                                  >
-                                    {crew.status}
-                                  </Badge>
-                                  {crew.issue && (
-                                    <div className="text-xs text-red-600 mt-1">
-                                      {crew.issue}
-                                    </div>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            ));
-                          })()}
-                        </TableBody>
-                      </Table>
-                    ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        No crew data available for this recovery option.
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                {/* Hotel Selection for Crew */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Hotel className="h-5 w-5 text-flydubai-blue" />
-                      Hotel Selection for Crew Accommodation
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Select hotels for crew members based on the disrupted
-                      flight's location
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {availableHotels.slice(0, 4).map((hotel) => (
-                        <Card
-                          key={hotel.id}
-                          className={`hover:shadow-md transition-shadow cursor-pointer border-2 ${
-                            selectedHotelForCrew?.id === hotel.id
-                              ? "border-flydubai-blue bg-blue-50"
-                              : "hover:border-flydubai-blue"
-                          }`}
-                          onClick={() => setSelectedHotelForCrew(hotel)}
-                        >
-                          <CardContent className="p-4">
-                            <div className="flex items-start gap-4">
-                              <img
-                                src={hotel.image}
-                                alt={hotel.name}
-                                className="w-20 h-14 object-cover rounded"
-                              />
-                              <div className="flex-1">
-                                <div className="flex items-start justify-between mb-2">
-                                  <div>
-                                    <h3 className="font-semibold text-flydubai-navy text-sm">
-                                      {hotel.name}
-                                    </h3>
-                                    <p className="text-xs text-gray-600">
-                                      {hotel.category} • {hotel.distance}
-                                    </p>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="font-bold text-flydubai-orange text-sm">
-                                      {hotel.pricePerNight}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      per night
-                                    </div>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-2 mb-2">
-                                  <div className="flex">
-                                    {[...Array(5)].map((_, i) => (
-                                      <Star
-                                        key={i}
-                                        className={`h-3 w-3 ${i < Math.floor(hotel.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
-                                      />
-                                    ))}
-                                  </div>
-                                  <span className="text-xs text-gray-600">
-                                    {hotel.rating}
-                                  </span>
-                                  <Badge
-                                    className={
-                                      hotel.availability === "Available"
-                                        ? "bg-green-100 text-green-700 border-green-200"
-                                        : "bg-yellow-100 text-yellow-700 border-yellow-200"
-                                    }
-                                  >
-                                    {hotel.availability}
-                                  </Badge>
-                                </div>
-
-                                <p className="text-xs text-gray-600 mb-3">
-                                  {hotel.description}
-                                </p>
-
-                                <div className="flex items-center gap-2">
-                                  <Checkbox
-                                    checked={selectedHotelForCrew?.id === hotel.id}
-                                    onChange={() => setSelectedHotelForCrew(hotel)}
-                                  />
-                                  <span className="text-xs font-medium">
-                                    Select for crew
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-
-                    {/* Crew to Hotel Mapping */}
-                    <div className="mt-6 pt-6 border-t">
-                      <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
-                        <Users2 className="h-4 w-4 text-flydubai-blue" />
-                        Crew Assignment to Selected Hotels
-                      </h4>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="text-sm text-gray-600 mb-2">
-                          Selected crew members will be assigned to chosen
-                          hotels automatically based on:
-                        </div>
-                        <ul className="text-xs text-gray-500 space-y-1 ml-4">
-                          <li>• Crew rank and seniority</li>
-                          <li>• Hotel proximity to airport</li>
-                          <li>• Room availability</li>
-                          <li>• Company policies</li>
-                        </ul>
-                      </div>
-                      <div className="mt-4 flex gap-2">
-                        <Button
-                          size="sm"
-                          className="btn-flydubai-primary"
-                          onClick={handleConfirmCrewAssignment}
-                          disabled={
-                            selectedCrewMembers.size === 0 ||
-                            !selectedHotelForCrew
-                          }
-                        >
-                          {selectedCrewMembers.size === 0
-                            ? "Select Crew Members"
-                            : !selectedHotelForCrew
-                              ? "Select Hotel"
-                              : `Confirm Assignment (${selectedCrewMembers.size} crew)`}
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          View Assignment Details (
-                          {Object.keys(crewHotelAssignments).length})
-                        </Button>
-                      </div>
-
-                      {/* Current Assignments Display */}
-                      {Object.keys(crewHotelAssignments).length > 0 && (
-                        <div className="mt-6 pt-6 border-t">
-                          <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            Current Crew-Hotel Assignments (
-                            {Object.keys(crewHotelAssignments).length})
-                          </h4>
-                          <div className="space-y-3">
-                            {Object.values(crewHotelAssignments).map(
-                              (assignment, index) => (
-                                <div
-                                  key={index}
-                                  className="bg-green-50 border border-green-200 rounded-lg p-3"
-                                >
-                                  <div className="flex items-start justify-between mb-2">
-                                    <div>
-                                      <div className="font-medium text-green-800">
-                                        {(assignment as any).hotel_name}
-                                      </div>
-                                      <div className="text-sm text-green-700">
-                                        Booking:{" "}
-                                        {(assignment as any).booking_reference}
-                                      </div>
-                                    </div>
-                                    <Badge className="bg-green-100 text-green-700">
-                                      {(assignment as any).assignment_status}
-                                    </Badge>
-                                  </div>
-                                  <div className="text-sm text-green-700">
-                                    Crew:{" "}
-                                    {(assignment as any).crew_member
-                                      .map((c) => c.name)
-                                      .join(", ")}
-                                  </div>
-                                  <div className="text-sm text-green-600 mt-1">
-                                    Check-in:{" "}
-                                    {new Date(
-                                      (assignment as any).check_in_date,
-                                    ).toLocaleDateString()}{" "}
-                                    | Cost: AED {(assignment as any).total_cost}
-                                  </div>
-                                </div>
-                              ),
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-                
-
-              </TabsContent>
-
-              {/* Crew HOTAC Tab */}
-              <TabsContent value="crew-hotac" className="space-y-6">
-                {/* Content for Crew HOTAC tab remains here */}
-              </TabsContent>
-
-              {/* Audit & Reports Tab */}
-              <TabsContent value="audit" className="space-y-6">
-                {/* Content for Audit & Reports tab remains here */}
-              </TabsContent>
-            </Tabs>
-          );
-        }
-
-        // Default case: Show both tabs if no specific impact area is defined
-        return (
-          <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="passenger-service">
-                Passenger Service
-              </TabsTrigger>
-              <TabsTrigger value="crew-schedule">
-                Crew Schedule Information
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="passenger-service" className="space-y-6">
-              {/* Stats Cards - moved inside passenger service tab */}
-              <div className="flex items-center justify-between pt-5">
-                <div>
-                  <h2 className="text-2xl font-semibold text-flydubai-navy">
-                    {/* Passenger Services */}
-                  </h2>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    className="border-flydubai-blue text-flydubai-blue hover:bg-blue-50"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Report
+                  </Button>
+                  <Button className="btn-flydubai-primary">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Bulk Upload
+                  </Button>
                 </div>
-                {/* Removed export and bulk upload buttons from here */}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Card className="border-green-200 bg-green-50">
@@ -4349,10 +3307,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
                       {Object.entries(filteredPnrGroups).map(
                         ([pnr, groupPassengers]) => (
-                          <div
-                            key={pnr}
-                            className="border rounded-lg bg-white"
-                          >
+                          <div key={pnr} className="border rounded-lg bg-white">
                             <div className="p-4 border-b bg-gray-50">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -4609,102 +3564,23 @@ export function PassengerRebooking({ context, onClearContext }) {
             </TabsContent>
 
             <TabsContent value="crew-schedule" className="space-y-6">
-              {/* Display Preserved Crew Assignments */}
-              {recoveryOption?.crewAssignments && (
-                <Card className="bg-blue-50 border-blue-200">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-blue-800">
-                      <Info className="h-5 w-5" />
-                      Preserved Crew Assignments from Recovery Option
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* Assigned Crew */}
-                    {recoveryOption.crewAssignments.assignedCrew.length > 0 && (
-                      <div>
-                        <h4 className="font-medium text-blue-900 mb-3">Assigned Crew Members</h4>
-                        <div className="grid gap-3">
-                          {recoveryOption.crewAssignments.assignedCrew.map((crew, index) => (
-                            <div key={index} className="flex items-center gap-4 p-3 bg-white rounded border border-blue-200">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2">
-                                  <span className="font-medium">{crew.name}</span>
-                                  <Badge className="bg-blue-100 text-blue-700 text-xs">
-                                    {crew.role || crew.rank || 'Crew Member'}
-                                  </Badge>
-                                  {crew.isReassigned && (
-                                    <Badge className="bg-orange-100 text-orange-700 text-xs">
-                                      Reassigned
-                                    </Badge>
-                                  )}
-                                </div>
-                                <div className="text-sm text-gray-600 mt-1">
-                                  {crew.qualifications && (
-                                    <span>Qualified: {crew.qualifications} | </span>
-                                  )}
-                                  Status: {crew.status || 'Available'}
-                                  {crew.originalName && (
-                                    <span> | Originally: {crew.originalName}</span>
-                                  )}
-                                </div>
-                                {crew.reassignedAt && (
-                                  <p className="text-xs text-gray-500 mt-1">
-                                    Reassigned: {new Date(crew.reassignedAt).toLocaleString()}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Crew Swaps */}
-                    {recoveryOption.crewAssignments.crewSwaps.length > 0 && (
-                      <div>
-                        <h4 className="font-medium text-blue-900 mb-3">Crew Swaps Performed</h4>
-                        <div className="space-y-2">
-                          {recoveryOption.crewAssignments.crewSwaps.map((swap, index) => (
-                            <div key={index} className="p-3 bg-white rounded border border-orange-200">
-                              <div className="flex items-center justify-between">
-                                <div>
-                                  <span className="font-medium">{swap.originalCrew?.name || 'Unknown'}</span>
-                                  <span className="mx-2">→</span>
-                                  <span className="font-medium">{swap.newCrew?.name || 'Unknown'}</span>
-                                </div>
-                                <Badge className="bg-orange-100 text-orange-700 text-xs">
-                                  Swapped
-                                </Badge>
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1">
-                                {swap.reason} | {new Date(swap.timestamp).toLocaleString()}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="text-xs text-blue-600">
-                      ✓ All crew assignments from the recovery option analysis have been preserved and will be applied to the passenger services.
+              {/* Crew Schedule Information Tab */}
+              {/* Crew Assignment Status */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserCheck className="h-5 w-5 text-flydubai-blue" />
+                    Crew Schedule Information
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {loading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue mr-4"></div>
+                      <span>Loading crew information...</span>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-flydubai-navy">
-                      <UserCheck className="h-5 w-5" />
-                      Crew Schedule Management
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {loading ? (
-                      <div className="flex items-center justify-center py-8">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-flydubai-blue"></div>
-                        <span className="ml-2">Loading crew data...</span>
-                      </div>
-                    ) : crewData?.crew && crewData.crew.length > 0 ? (
+                  ) : (
+                    <div>
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -4841,213 +3717,209 @@ export function PassengerRebooking({ context, onClearContext }) {
                           })()}
                         </TableBody>
                       </Table>
-                    ) : (
-                      <div className="text-center py-8 text-gray-500">
-                        No crew data available for this recovery option.
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-                {/* Hotel Selection for Crew */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Hotel className="h-5 w-5 text-flydubai-blue" />
-                      Hotel Selection for Crew Accommodation
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Select hotels for crew members based on the disrupted
-                      flight's location
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {availableHotels.slice(0, 4).map((hotel) => (
-                        <Card
-                          key={hotel.id}
-                          className={`hover:shadow-md transition-shadow cursor-pointer border-2 ${
-                            selectedHotelForCrew?.id === hotel.id
-                              ? "border-flydubai-blue bg-blue-50"
-                              : "hover:border-flydubai-blue"
-                          }`}
-                          onClick={() => setSelectedHotelForCrew(hotel)}
-                        >
-                          <CardContent className="p-4">
-                            <div className="flex items-start gap-4">
-                              <img
-                                src={hotel.image}
-                                alt={hotel.name}
-                                className="w-20 h-14 object-cover rounded"
-                              />
-                              <div className="flex-1">
-                                <div className="flex items-start justify-between mb-2">
-                                  <div>
-                                    <h3 className="font-semibold text-flydubai-navy text-sm">
-                                      {hotel.name}
-                                    </h3>
-                                    <p className="text-xs text-gray-600">
-                                      {hotel.category} • {hotel.distance}
-                                    </p>
-                                  </div>
-                                  <div className="text-right">
-                                    <div className="font-bold text-flydubai-orange text-sm">
-                                      {hotel.pricePerNight}
-                                    </div>
-                                    <div className="text-xs text-gray-500">
-                                      per night
-                                    </div>
-                                  </div>
+              {/* Hotel Selection for Crew */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Hotel className="h-5 w-5 text-flydubai-blue" />
+                    Hotel Selection for Crew Accommodation
+                  </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Select hotels for crew members based on the disrupted
+                    flight's location
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {availableHotels.slice(0, 4).map((hotel) => (
+                      <Card
+                        key={hotel.id}
+                        className={`hover:shadow-md transition-shadow cursor-pointer border-2 ${
+                          selectedHotelForCrew?.id === hotel.id
+                            ? "border-flydubai-blue bg-blue-50"
+                            : "hover:border-flydubai-blue"
+                        }`}
+                        onClick={() => setSelectedHotelForCrew(hotel)}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start gap-4">
+                            <img
+                              src={hotel.image}
+                              alt={hotel.name}
+                              className="w-20 h-14 object-cover rounded"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-start justify-between mb-2">
+                                <div>
+                                  <h3 className="font-semibold text-flydubai-navy text-sm">
+                                    {hotel.name}
+                                  </h3>
+                                  <p className="text-xs text-gray-600">
+                                    {hotel.category} • {hotel.distance}
+                                  </p>
                                 </div>
-
-                                <div className="flex items-center gap-2 mb-2">
-                                  <div className="flex">
-                                    {[...Array(5)].map((_, i) => (
-                                      <Star
-                                        key={i}
-                                        className={`h-3 w-3 ${i < Math.floor(hotel.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
-                                      />
-                                    ))}
+                                <div className="text-right">
+                                  <div className="font-bold text-flydubai-orange text-sm">
+                                    {hotel.pricePerNight}
                                   </div>
-                                  <span className="text-xs text-gray-600">
-                                    {hotel.rating}
-                                  </span>
-                                  <Badge
-                                    className={
-                                      hotel.availability === "Available"
-                                        ? "bg-green-100 text-green-700 border-green-200"
-                                        : "bg-yellow-100 text-yellow-700 border-yellow-200"
-                                    }
-                                  >
-                                    {hotel.availability}
-                                  </Badge>
-                                </div>
-
-                                <p className="text-xs text-gray-600 mb-3">
-                                  {hotel.description}
-                                </p>
-
-                                <div className="flex items-center gap-2">
-                                  <Checkbox
-                                    checked={selectedHotelForCrew?.id === hotel.id}
-                                    onChange={() => setSelectedHotelForCrew(hotel)}
-                                  />
-                                  <span className="text-xs font-medium">
-                                    Select for crew
-                                  </span>
+                                  <div className="text-xs text-gray-500">
+                                    per night
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
 
-                    {/* Crew to Hotel Mapping */}
-                    <div className="mt-6 pt-6 border-t">
-                      <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
-                        <Users2 className="h-4 w-4 text-flydubai-blue" />
-                        Crew Assignment to Selected Hotels
-                      </h4>
-                      <div className="bg-gray-50 rounded-lg p-4">
-                        <div className="text-sm text-gray-600 mb-2">
-                          Selected crew members will be assigned to chosen
-                          hotels automatically based on:
-                        </div>
-                        <ul className="text-xs text-gray-500 space-y-1 ml-4">
-                          <li>• Crew rank and seniority</li>
-                          <li>• Hotel proximity to airport</li>
-                          <li>• Room availability</li>
-                          <li>• Company policies</li>
-                        </ul>
-                      </div>
-                      <div className="mt-4 flex gap-2">
-                        <Button
-                          size="sm"
-                          className="btn-flydubai-primary"
-                          onClick={handleConfirmCrewAssignment}
-                          disabled={
-                            selectedCrewMembers.size === 0 ||
-                            !selectedHotelForCrew
-                          }
-                        >
-                          {selectedCrewMembers.size === 0
-                            ? "Select Crew Members"
-                            : !selectedHotelForCrew
-                              ? "Select Hotel"
-                              : `Confirm Assignment (${selectedCrewMembers.size} crew)`}
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          View Assignment Details (
-                          {Object.keys(crewHotelAssignments).length})
-                        </Button>
-                      </div>
-
-                      {/* Current Assignments Display */}
-                      {Object.keys(crewHotelAssignments).length > 0 && (
-                        <div className="mt-6 pt-6 border-t">
-                          <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600" />
-                            Current Crew-Hotel Assignments (
-                            {Object.keys(crewHotelAssignments).length})
-                          </h4>
-                          <div className="space-y-3">
-                            {Object.values(crewHotelAssignments).map(
-                              (assignment, index) => (
-                                <div
-                                  key={index}
-                                  className="bg-green-50 border border-green-200 rounded-lg p-3"
-                                >
-                                  <div className="flex items-start justify-between mb-2">
-                                    <div>
-                                      <div className="font-medium text-green-800">
-                                        {(assignment as any).hotel_name}
-                                      </div>
-                                      <div className="text-sm text-green-700">
-                                        Booking:{" "}
-                                        {(assignment as any).booking_reference}
-                                      </div>
-                                    </div>
-                                    <Badge className="bg-green-100 text-green-700">
-                                      {(assignment as any).assignment_status}
-                                    </Badge>
-                                  </div>
-                                  <div className="text-sm text-green-700">
-                                    Crew:{" "}
-                                    {(assignment as any).crew_member
-                                      .map((c) => c.name)
-                                      .join(", ")}
-                                  </div>
-                                  <div className="text-sm text-green-600 mt-1">
-                                    Check-in:{" "}
-                                    {new Date(
-                                      (assignment as any).check_in_date,
-                                    ).toLocaleDateString()}{" "}
-                                    | Cost: AED {(assignment as any).total_cost}
-                                  </div>
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="flex">
+                                  {[...Array(5)].map((_, i) => (
+                                    <Star
+                                      key={i}
+                                      className={`h-3 w-3 ${i < Math.floor(hotel.rating) ? "text-yellow-400 fill-current" : "text-gray-300"}`}
+                                    />
+                                  ))}
                                 </div>
-                              ),
-                            )}
+                                <span className="text-xs text-gray-600">
+                                  {hotel.rating}
+                                </span>
+                                <Badge
+                                  className={
+                                    hotel.availability === "Available"
+                                      ? "bg-green-100 text-green-700 border-green-200"
+                                      : "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                  }
+                                >
+                                  {hotel.availability}
+                                </Badge>
+                              </div>
+
+                              <p className="text-xs text-gray-600 mb-3">
+                                {hotel.description}
+                              </p>
+
+                              <div className="flex items-center gap-2">
+                                <Checkbox
+                                  checked={selectedHotelForCrew?.id === hotel.id}
+                                  onChange={() => setSelectedHotelForCrew(hotel)}
+                                />
+                                <span className="text-xs font-medium">
+                                  Select for crew
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                        </div>
-                      )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+
+                  {/* Crew to Hotel Mapping */}
+                  <div className="mt-6 pt-6 border-t">
+                    <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
+                      <Users2 className="h-4 w-4 text-flydubai-blue" />
+                      Crew Assignment to Selected Hotels
+                    </h4>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="text-sm text-gray-600 mb-2">
+                        Selected crew members will be assigned to chosen hotels
+                        automatically based on:
+                      </div>
+                      <ul className="text-xs text-gray-500 space-y-1 ml-4">
+                        <li>• Crew rank and seniority</li>
+                        <li>• Hotel proximity to airport</li>
+                        <li>• Room availability</li>
+                        <li>• Company policies</li>
+                      </ul>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                    <div className="mt-4 flex gap-2">
+                      <Button
+                        size="sm"
+                        className="btn-flydubai-primary"
+                        onClick={handleConfirmCrewAssignment}
+                        disabled={
+                          selectedCrewMembers.size === 0 ||
+                          !selectedHotelForCrew
+                        }
+                      >
+                        {selectedCrewMembers.size === 0
+                          ? "Select Crew Members"
+                          : !selectedHotelForCrew
+                            ? "Select Hotel"
+                            : `Confirm Assignment (${selectedCrewMembers.size} crew)`}
+                      </Button>
+                      <Button size="sm" variant="outline">
+                        View Assignment Details (
+                        {Object.keys(crewHotelAssignments).length})
+                      </Button>
+                    </div>
 
-              {/* Crew HOTAC Tab */}
-              <TabsContent value="crew-hotac" className="space-y-6">
-                {/* Content for Crew HOTAC tab remains here */}
-              </TabsContent>
+                    {/* Current Assignments Display */}
+                    {Object.keys(crewHotelAssignments).length > 0 && (
+                      <div className="mt-6 pt-6 border-t">
+                        <h4 className="font-medium text-sm mb-4 flex items-center gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-600" />
+                          Current Crew-Hotel Assignments (
+                          {Object.keys(crewHotelAssignments).length})
+                        </h4>
+                        <div className="space-y-3">
+                          {Object.values(crewHotelAssignments).map(
+                            (assignment, index) => (
+                              <div
+                                key={index}
+                                className="bg-green-50 border border-green-200 rounded-lg p-3"
+                              >
+                                <div className="flex items-start justify-between mb-2">
+                                  <div>
+                                    <div className="font-medium text-green-800">
+                                      {(assignment as any).hotel_name}
+                                    </div>
+                                    <div className="text-sm text-green-700">
+                                      Booking:{" "}
+                                      {(assignment as any).booking_reference}
+                                    </div>
+                                  </div>
+                                  <Badge className="bg-green-100 text-green-700">
+                                    {(assignment as any).assignment_status}
+                                  </Badge>
+                                </div>
+                                <div className="text-sm text-green-700">
+                                  Crew:{" "}
+                                  {(assignment as any).crew_member
+                                    .map((c) => c.name)
+                                    .join(", ")}
+                                </div>
+                                <div className="text-sm text-green-600 mt-1">
+                                  Check-in:{" "}
+                                  {new Date(
+                                    (assignment as any).check_in_date,
+                                  ).toLocaleDateString()}{" "}
+                                  | Cost: AED {(assignment as any).total_cost}
+                                </div>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
-              {/* Audit & Reports Tab */}
-              <TabsContent value="audit" className="space-y-6">
-                {/* Content for Audit & Reports tab remains here */}
-              </TabsContent>
-            </Tabs>
-          );
-        }
+            {/* Crew HOTAC Tab */}
+            <TabsContent value="crew-hotac" className="space-y-6">
+              {/* Content for Crew HOTAC tab remains here */}
+            </TabsContent>
+
+            {/* Audit & Reports Tab */}
+            <TabsContent value="audit" className="space-y-6">
+              {/* Content for Audit & Reports tab remains here */}
+            </TabsContent>
+          </Tabs>
+        );
       })()}
 
       {/* Common Execute Section - Always Visible */}
@@ -5749,7 +4621,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                         </div>
 
                                         {!isAvailable && selectedPnrGroup && (
-                                          <div className="text-xs text-red-660">
+                                          <div className="text-xs text-red-600 mt-1">
                                             Insufficient seats for group of{" "}
                                             {groupSize}
                                           </div>
