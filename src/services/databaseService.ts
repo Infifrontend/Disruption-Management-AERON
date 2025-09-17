@@ -2199,7 +2199,6 @@ class DatabaseService {
         created_by: solution.created_by || solution.submitted_by || "system",
         notes: solution.notes,
         selected_aircraft: solution.selected_aircraft || null,
-        reassigned_crew: solution.reassigned_crew || null,
         // Legacy fields for backward compatibility
         cost: solution.cost,
         timeline: solution.timeline,

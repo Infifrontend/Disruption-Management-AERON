@@ -1602,90 +1602,63 @@ export function PassengerRebooking({ context, onClearContext }) {
           );
         }
 
-        // Include reassigned crew data from context if available
-        let reassignedCrewInfo = null;
-        if (reassignedCrewData && reassignedCrewData.flightId === disruptionFlightId) {
-          reassignedCrewInfo = {
-            optionId: reassignedCrewData.optionId,
-            optionTitle: reassignedCrewData.optionTitle,
-            reassignedCrew: reassignedCrewData.reassignedCrew || [],
-            timestamp: reassignedCrewData.timestamp,
-            totalReassignments: reassignedCrewData.totalReassignments || 0,
-          };
-          console.log("Including reassigned crew data from context:", reassignedCrewInfo);
-        }
-
-        // Prepare the solution data for approval
+        // Build unified payload for addPendingSolution
         const solutionData = {
           disruption_id: disruptionFlightId,
-          option_id: recoveryOption.id,
-          option_title: recoveryOption.title,
-          option_description: recoveryOption.description,
-          estimated_cost: recoveryOption.cost || "0",
-          estimated_delay: recoveryOption.delay || "0",
-          passenger_impact: confirmedPassengers.length.toString(),
-          operational_complexity: "Medium",
-          resource_requirements: JSON.stringify({
-            crew: Object.keys(crewHotelAssignments).length,
-            hotels: Object.keys(crewHotelAssignments).length,
-            passengers: confirmedPassengers.length,
-          }),
-          timeline_details: JSON.stringify({
-            rebooking_duration: "30-45 minutes",
-            crew_assignment_duration: "15-20 minutes",
-          }),
+          option_id: recoveryOption?.id || `SERVICES_${Date.now()}`,
+          option_title:
+            recoveryOption?.title || "Comprehensive Services Recovery",
+          estimated_cost:
+            typeof recoveryOption?.cost === "string"
+              ? recoveryOption.cost
+              : recoveryOption?.cost
+                ? `AED ${recoveryOption.cost.toLocaleString()}`
+                : "AED 75,000",
+          estimated_delay: recoveryOption?.delay || 0,
+          passenger_impact: {
+            affected: hasPassenger ? confirmedPassengers.length : 0,
+            reaccommodated: hasPassenger ? confirmedPassengers.length : 0,
+            compensated: 0,
+            missingConnections: hasPassenger
+              ? confirmedPassengers.filter(
+                  (p) => p.connectedFlights && p.connectedFlights.length > 0,
+                ).length
+              : 0,
+          },
+          operational_complexity: recoveryOption?.complexity || "medium",
+          resource_requirements: JSON.stringify(
+            recoveryOption?.requirements || {},
+          ),
+          timeline_details: JSON.stringify(
+            recoveryOption?.timeline || "3 hours total",
+          ),
           approval_status: "pending",
-          created_by: "operations_user",
-          notes: `Solution includes ${
-            hasPassenger ? "passenger rebooking" : ""
-          }${hasPassenger && hasCrew ? " and " : ""}${
-            hasCrew ? "crew hotel assignments" : ""
-          }${reassignedCrewInfo ? " with crew reassignments" : ""}`,
-          reassigned_crew: reassignedCrewInfo,
-          passenger_rebooking: hasPassenger
-            ? confirmedPassengers.map((p) => ({
-                pnr: p.pnr,
-                passenger_id: p.id,
-                passenger_name: p.name,
-                original_flight: p.originalFlight || selectedFlight?.flightNumber,
-                original_seat: p.seat,
-                rebooked_flight: confirmedRebookings[p.id]?.flight || "TBD",
-                rebooked_cabin: confirmedRebookings[p.id]?.cabin || "Economy",
-                rebooked_seat: confirmedRebookings[p.id]?.seat || "TBD",
-                additional_services: confirmedRebookings[p.id]?.services || [],
-                status: "Confirmed",
-                rebooking_cost: 0,
-                notes: `Rebooked for disruption ${disruptionFlightId}`,
-              }))
-            : [],
-          crew_hotel_assignments: hasCrew
-            ? Object.entries(crewHotelAssignments).map(
-                ([hotelName, assignment]) => ({
-                  hotel_name: hotelName,
-                  hotel_id: assignment.hotel_id,
-                  crew_members: assignment.crew_member.map((crew) => ({
-                    crew_id: crew.id,
-                    crew_name: crew.name,
-                    crew_role: crew.role,
-                    check_in: assignment.check_in_date,
-                    check_out: assignment.check_out_date,
-                    room_type: "Standard",
-                    assignment_status: "Confirmed",
-                    cost_per_night: assignment.rate_per_night || 150,
-                    total_nights: 1,
-                    total_cost: assignment.rate_per_night || 150,
-                  })),
-                  total_crew: assignment.crew_member.length,
-                  total_cost:
-                    (assignment.rate_per_night || 150) *
-                    assignment.crew_member.length,
-                  booking_reference: assignment.booking_reference,
-                  assignment_status: "Confirmed",
-                }),
-              )
-            : [],
+          created_by: "passenger_services",
+          notes: `Submitted from passenger services with ${hasPassenger ? confirmedPassengers.length : 0} passengers processed`,
+          selected_aircraft: recoveryOption?.selectedAircraft || null,
         };
 
+        // Add optional data only if present
+        if (passengerRebookingData.length > 0) {
+          (solutionData as any).passenger_rebooking = passengerRebookingData;
+        }
+
+        if (crewHotelAssignmentsData.length > 0) {
+          (solutionData as any).crew_hotel_assignments = crewHotelAssignmentsData;
+        }
+
+        // Include reassigned crew data from app context
+        if (reassignedCrewData) {
+          (solutionData as any).reassigned_crew = reassignedCrewData;
+        }
+
+        // Ensure crew information is included in full_details for proper storage
+        (solutionData as any).full_details = {
+          ...((solutionData as any).full_details || {}),
+          passenger_rebooking: passengerRebookingData,
+          crew_hotel_assignments: crewHotelAssignmentsData,
+          reassigned_crew: reassignedCrewData,
+        };
         const pendingSolutionSuccess =
           await databaseService.addPendingSolution(solutionData);
 
@@ -3803,8 +3776,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 </div>
                                 <div className="text-right">
                                   <div className="font-bold text-flydubai-orange text-sm">
-                                    {hotel.pricePerNight}
-                                  </div>
+                                    {hotel.pricePerNight}                                  </div>
                                   <div className="text-xs text-gray-500">
                                     per night
                                   </div>
@@ -3947,6 +3919,7 @@ export function PassengerRebooking({ context, onClearContext }) {
               </Card>
             </TabsContent>
 
+            {/* Crew HOTAC Tab */}
             <TabsContent value="crew-hotac" className="space-y-6">
               {/* Content for Crew HOTAC tab remains here */}
             </TabsContent>
@@ -4039,18 +4012,6 @@ export function PassengerRebooking({ context, onClearContext }) {
           </CardContent>
         </Card>
       )}
-
-      {/* Custom Alert Dialog */}
-      <CustomAlertDialog
-        isOpen={alertState.isOpen}
-        onOpenChange={hideAlert}
-        title={alertState.title}
-        message={alertState.message}
-        type={alertState.type}
-        onConfirm={handleConfirm}
-        onCancel={handleCancel}
-        showCancel={alertState.showCancel}
-      />
 
       {/* Enhanced Rebooking Dialog with Additional Services Flow */}
       <Dialog open={showRebookingDialog} onOpenChange={setShowRebookingDialog}>
