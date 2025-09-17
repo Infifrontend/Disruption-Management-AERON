@@ -4295,6 +4295,19 @@ app.get("/api/recovery-option/:optionId/rotation-plan", async (req, res) => {
     });
   }
 });
+app.get("/api/disruption-categories", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT * FROM disruption_categories
+      WHERE is_active = true
+      ORDER BY priority_level ASC
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching disruption categories:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 // Get detailed cost analysis for a recovery option
 app.get("/api/recovery-option/:optionId/cost-analysis", async (req, res) => {
