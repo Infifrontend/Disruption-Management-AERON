@@ -169,21 +169,10 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // Load reassigned crew data from context if available
   useEffect(() => {
-    // Check multiple sources for reassigned crew data
-    const contextCrewData = context?.reassignedCrewData || 
-                           context?.recoveryOption?.fullDetails?.reassigned_crew ||
-                           recoveryOption?.fullDetails?.reassigned_crew;
-    
-    if (contextCrewData && !reassignedCrewData) {
-      setReassignedCrewData(contextCrewData);
+    if (context?.reassignedCrewData && !reassignedCrewData) {
+      setReassignedCrewData(context.reassignedCrewData);
     }
-  }, [
-    context?.reassignedCrewData, 
-    context?.recoveryOption?.fullDetails?.reassigned_crew,
-    recoveryOption?.fullDetails?.reassigned_crew,
-    reassignedCrewData, 
-    setReassignedCrewData
-  ]);
+  }, [context?.reassignedCrewData, reassignedCrewData, setReassignedCrewData]);
 
   // State for generated passengers
   const [generatedPassengers, setGeneratedPassengers] = useState([]);
@@ -1664,10 +1653,9 @@ export function PassengerRebooking({ context, onClearContext }) {
           (solutionData as any).crew_hotel_assignments = crewHotelAssignmentsData;
         }
 
-        // Include reassigned crew data from multiple sources with priority order
+        // Include reassigned crew data from multiple sources
         const finalReassignedCrewData = reassignedCrewData ||
                                        context?.reassignedCrewData ||
-                                       context?.recoveryOption?.fullDetails?.reassigned_crew ||
                                        recoveryOption?.fullDetails?.reassigned_crew ||
                                        null;
 
