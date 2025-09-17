@@ -113,7 +113,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   // Custom alert state
   const { alertState, showAlert, hideAlert, handleConfirm, handleCancel } =
     useCustomAlert();
-  const { reassignedCrewData } = useAppContext();
+  const { reassignedCrewData, setReassignedCrewData } = useAppContext();
 
   // States for the original PassengerRebooking component
   const [searchTerm, setSearchTerm] = useState("");
@@ -1602,7 +1602,6 @@ export function PassengerRebooking({ context, onClearContext }) {
               special_requests: (assignment as any).special_requests,
               assignment_status: (assignment as any).assignment_status,
               total_cost: (assignment as any).total_cost,
-              booking_reference: (assignment as any).booking_reference,
               transport_details: (assignment as any).transport_details,
               created_by: (assignment as any).created_by,
             }),
@@ -1655,11 +1654,11 @@ export function PassengerRebooking({ context, onClearContext }) {
         }
 
         // Include reassigned crew data from multiple sources
-        const finalReassignedCrewData = reassignedCrewData || 
-                                       context?.reassignedCrewData || 
+        const finalReassignedCrewData = reassignedCrewData ||
+                                       context?.reassignedCrewData ||
                                        recoveryOption?.fullDetails?.reassigned_crew ||
                                        null;
-        
+
         if (finalReassignedCrewData) {
           (solutionData as any).reassigned_crew = finalReassignedCrewData;
         }
@@ -3788,7 +3787,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                                 </div>
                                 <div className="text-right">
                                   <div className="font-bold text-flydubai-orange text-sm">
-                                    {hotel.pricePerNight}                                  </div>
+                                    {hotel.pricePerNight}
+                                  </div>
                                   <div className="text-xs text-gray-500">
                                     per night
                                   </div>
@@ -3846,8 +3846,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                     </h4>
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="text-sm text-gray-600 mb-2">
-                        Selected crew members will be assigned to chosen hotels
-                        automatically based on:
+                        Selected crew members will be assigned to chosen
+                        hotels automatically based on:
                       </div>
                       <ul className="text-xs text-gray-500 space-y-1 ml-4">
                         <li>• Crew rank and seniority</li>
