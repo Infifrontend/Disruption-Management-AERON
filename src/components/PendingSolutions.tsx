@@ -1260,8 +1260,8 @@ export function PendingSolutions() {
                             [];
 
                           // Ensure currentPassengerData is always an array
-                          const currentPassengerData = Array.isArray(rawPassengerData) 
-                            ? rawPassengerData 
+                          const currentPassengerData = Array.isArray(rawPassengerData)
+                            ? rawPassengerData
                             : [];
 
                           if (
@@ -2931,8 +2931,8 @@ export function PendingSolutions() {
                                 [];
 
                               // Ensure currentPassengerData is always an array
-                              const currentPassengerData = Array.isArray(rawPassengerData) 
-                                ? rawPassengerData 
+                              const currentPassengerData = Array.isArray(rawPassengerData)
+                                ? rawPassengerData
                                 : [];
 
                               if (
@@ -3454,7 +3454,7 @@ export function PendingSolutions() {
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.rotation_impact ||
                               selectedOptionForDetails?.recoveryOptionData?.rotation_plan ||
-                              pendingSolutionData?.rotation_impact ||
+                              selectedPlan?.rotationImpact ||
                               {};
 
                             const aircraftOptions = rotationData?.aircraftOptions ||
@@ -3558,13 +3558,14 @@ export function PendingSolutions() {
                         </h4>
                         <div className="space-y-4">
                           {(() => {
+                            // Get rotation impact data from API or generate default data
                             const rotationData =
                               selectedOptionForDetails?.matchingOption
                                 ?.rotation_plan ||
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.rotation_impact ||
                               selectedOptionForDetails?.recoveryOptionData?.rotation_plan ||
-                              pendingSolutionData?.rotation_impact ||
+                              selectedPlan?.rotationImpact ||
                               {};
 
                             const crewImpact = rotationData?.crew ||
@@ -3745,7 +3746,7 @@ export function PendingSolutions() {
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.rotation_impact ||
                               selectedOptionForDetails?.recoveryOptionData?.rotation_plan ||
-                              pendingSolutionData?.rotation_impact ||
+                              selectedPlan?.rotationImpact ||
                               {};
 
                             const metrics = rotationData?.metrics || rotationData?.impact_metrics || {};
@@ -3786,45 +3787,6 @@ export function PendingSolutions() {
                 </Card>
               </TabsContent>
             </Tabs>
-
-            <div className="flex justify-end gap-2 pt-4 border-t">
-              <Button variant="outline" onClick={() => setSelectedPlan(null)}>
-                Close
-              </Button>
-              {selectedPlan &&
-                selectedPlan.status &&
-                ["Pending Approval", "Under Review", "Pending"].includes(
-                  selectedPlan.status,
-                ) && (
-                  <>
-                    <Button
-                      onClick={async () => {
-                        if (selectedPlan && selectedPlan.id) {
-                          await handleApprove(selectedPlan.id);
-                          setSelectedPlan(null);
-                        }
-                      }}
-                      className="bg-green-600 hover:bg-green-700"
-                    >
-                      <ThumbsUp className="h-4 w-4 mr-2" />
-                      Approve
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={async () => {
-                        if (selectedPlan && selectedPlan.id) {
-                          await handleReject(selectedPlan.id);
-                          setSelectedPlan(null);
-                        }
-                      }}
-                      className="text-red-600 border-red-200 hover:bg-red-50"
-                    >
-                      <ThumbsDown className="h-4 w-4 mr-2" />
-                      Reject
-                    </Button>
-                  </>
-                )}
-            </div>
           </DialogContent>
         </Dialog>
       )}
@@ -4265,8 +4227,8 @@ export function PendingSolutions() {
                             [];
 
                           // Ensure currentPassengerData is always an array
-                          const currentPassengerData = Array.isArray(rawPassengerData) 
-                            ? rawPassengerData 
+                          const currentPassengerData = Array.isArray(rawPassengerData)
+                            ? rawPassengerData
                             : [];
 
                           if (
@@ -4489,7 +4451,7 @@ export function PendingSolutions() {
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.rotation_impact ||
                               selectedOptionForDetails?.recoveryOptionData?.rotation_plan ||
-                              pendingSolutionData?.rotation_impact ||
+                              selectedPlan?.rotationImpact ||
                               {};
 
                             const aircraftOptions = rotationData?.aircraftOptions ||
@@ -4599,7 +4561,7 @@ export function PendingSolutions() {
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.rotation_impact ||
                               selectedOptionForDetails?.recoveryOptionData?.rotation_plan ||
-                              pendingSolutionData?.rotation_impact ||
+                              selectedPlan?.rotationImpact ||
                               {};
 
                             const crewImpact = rotationData?.crew ||
@@ -4780,7 +4742,7 @@ export function PendingSolutions() {
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.rotation_impact ||
                               selectedOptionForDetails?.recoveryOptionData?.rotation_plan ||
-                              pendingSolutionData?.rotation_impact ||
+                              selectedPlan?.rotationImpact ||
                               {};
 
                             const metrics = rotationData?.metrics || rotationData?.impact_metrics || {};
