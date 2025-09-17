@@ -4958,7 +4958,7 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
         submitted_by || "operations",
         approval_required || true,
         created_by || submitted_by || "Operations Manager",
-        cost_analysis ? JSON.stringify(cost_analysis) : null,
+        req.body.cost_analysis ? JSON.stringify(req.body.cost_analysis) : null,
         new Date().toISOString(),
         new Date().toISOString(),
         new Date().toISOString(),
