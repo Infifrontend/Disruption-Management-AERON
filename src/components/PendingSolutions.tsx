@@ -682,7 +682,7 @@ export function PendingSolutions() {
           matchingOption: selectedOption || matchingOption,
           // Store the option_id from the pending solution for matching
           optionId: finalOptionId,
-          // Store flags for conditional tab display
+          // Store flags for conditional display
           hasCrewData: !!(
             crewData &&
             (Array.isArray(crewData)
@@ -920,6 +920,7 @@ export function PendingSolutions() {
               <TabsTrigger value="passengers">Passengers</TabsTrigger>
             )}
             <TabsTrigger value="resources">Resources</TabsTrigger>
+            <TabsTrigger value="rotation-impact">Rotation Impact</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4">
@@ -2361,6 +2362,7 @@ export function PendingSolutions() {
                     Passenger Re-accommodation
                   </TabsTrigger>
                 )}
+                <TabsTrigger value="rotation-impact">Rotation Impact</TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="space-y-4">
@@ -2850,9 +2852,7 @@ export function PendingSolutions() {
                             </div>
                           </div>
                           <div className="text-center p-4 bg-red-50 rounded-lg">
-                            <div className="text-3xl font-bold text-red-600">
-                              0
-                            </div>
+                            <div className="text-3xl font-bold text-red-600">0</div>
                             <div className="text-sm text-red-700">
                               Other Flights
                             </div>
@@ -3221,6 +3221,363 @@ export function PendingSolutions() {
                     </CardContent>
                   </Card>
                 </div>
+              </TabsContent>
+
+              <TabsContent value="rotation-impact" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="h-5 w-5" />
+                      Impacted Flights - Cancel and Rebook
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-6">
+                      {/* Alternate Aircraft Choices Impact */}
+                      <div>
+                        <h4 className="font-medium mb-3 flex items-center gap-2">
+                          <Plane className="h-4 w-4 text-blue-600" />
+                          Alternate Aircraft Choices Impact
+                        </h4>
+                        <div className="space-y-4">
+                          {(() => {
+                            // Get rotation impact data from API or generate default data
+                            const rotationData =
+                              selectedOptionForDetails?.matchingOption
+                                ?.rotation_plan ||
+                              selectedOptionForDetails?.rotationImpact ||
+                              selectedOptionForDetails?.pending_recovery_solutions
+                                ?.rotation_impact ||
+                              {};
+
+                            const aircraftOptions = rotationData?.aircraftOptions ||
+                              rotationData?.aircraft_options ||
+                              rotationData?.alternate_aircraft ||
+                              [];
+
+                            if (!aircraftOptions || aircraftOptions.length === 0) {
+                              return (
+                                <div className="text-center py-8 text-gray-500">
+                                  <Plane className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                  <p>No alternate aircraft impact data available</p>
+                                </div>
+                              );
+                            }
+
+                            return aircraftOptions.map((aircraft, index) => (
+                              <Card key={index} className="border border-blue-200 bg-blue-50">
+                                <CardContent className="p-4">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                      <Plane className="h-4 w-4 text-blue-600" />
+                                      <span className="font-semibold text-blue-800">
+                                        {aircraft.reg || aircraft.registration || `Aircraft ${index + 1}`}
+                                      </span>
+                                      <Badge className="bg-blue-100 text-blue-700">
+                                        {aircraft.type || aircraft.aircraft_type || 'Type N/A'}
+                                      </Badge>
+                                    </div>
+                                    <Badge
+                                      className={
+                                        aircraft.availability === 'Available' || aircraft.status === 'available'
+                                          ? 'bg-green-100 text-green-700'
+                                          : aircraft.availability === 'Limited' || aircraft.status === 'limited'
+                                            ? 'bg-yellow-100 text-yellow-700'
+                                            : 'bg-red-100 text-red-700'
+                                      }
+                                    >
+                                      {aircraft.availability || aircraft.status || 'Unknown'}
+                                    </Badge>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                    <div>
+                                      <Label className="text-xs text-blue-600">ETOPS Status</Label>
+                                      <p className="font-medium">{aircraft.etops?.value || aircraft.etops_status || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-blue-600">Cabin Match</Label>
+                                      <p className="font-medium">{aircraft.cabinMatch?.value || aircraft.cabin_match || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-blue-600">Turnaround Time</Label>
+                                      <p className="font-medium">{aircraft.turnaround || aircraft.turnaround_time || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-blue-600">Maintenance Status</Label>
+                                      <p className="font-medium">{aircraft.maintenance?.value || aircraft.maintenance_status || 'N/A'}</p>
+                                    </div>
+                                  </div>
+
+                                  {aircraft.option_score && (
+                                    <div className="mt-3 p-3 bg-white rounded border">
+                                      <Label className="text-xs text-gray-600 mb-2 block">Impact Scores</Label>
+                                      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+                                        <div className="text-center">
+                                          <div className="font-medium text-green-600">{aircraft.option_score.cost_score || 'N/A'}</div>
+                                          <div className="text-gray-500">Cost</div>
+                                        </div>
+                                        <div className="text-center">
+                                          <div className="font-medium text-blue-600">{aircraft.option_score.delay_score || 'N/A'}</div>
+                                          <div className="text-gray-500">Delay</div>
+                                        </div>
+                                        <div className="text-center">
+                                          <div className="font-medium text-purple-600">{aircraft.option_score.crew_impact || 'N/A'}</div>
+                                          <div className="text-gray-500">Crew</div>
+                                        </div>
+                                        <div className="text-center">
+                                          <div className="font-medium text-orange-600">{aircraft.option_score.fuel_score || 'N/A'}</div>
+                                          <div className="text-gray-500">Fuel</div>
+                                        </div>
+                                        <div className="text-center">
+                                          <div className="font-medium text-flydubai-orange">{aircraft.option_score.overall || 'N/A'}</div>
+                                          <div className="text-gray-500">Overall</div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            ));
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Crew Reassignment Impact */}
+                      <div>
+                        <h4 className="font-medium mb-3 flex items-center gap-2">
+                          <Users className="h-4 w-4 text-purple-600" />
+                          Crew Reassignment Impact
+                        </h4>
+                        <div className="space-y-4">
+                          {(() => {
+                            const rotationData =
+                              selectedOptionForDetails?.matchingOption
+                                ?.rotation_plan ||
+                              selectedOptionForDetails?.pending_recovery_solutions
+                                ?.rotation_impact ||
+                              recoveryOptionData?.rotation_plan ||
+                              pendingSolutionData?.rotation_impact ||
+                              {};
+
+                            const crewImpact = rotationData?.crew ||
+                              rotationData?.crew_impact ||
+                              rotationData?.crew_reassignments ||
+                              [];
+
+                            const reassignedCrewData =
+                              selectedOptionForDetails?.pending_recovery_solutions
+                                ?.reassigned_crew ||
+                              selectedOptionForDetails?.pending_recovery_solutions
+                                ?.full_details?.reassigned_crew ||
+                              pendingSolutionData?.reassigned_crew ||
+                              null;
+
+                            // Combine crew impact and reassigned crew data
+                            const allCrewData = [];
+
+                            // Add crew impact data
+                            if (Array.isArray(crewImpact)) {
+                              allCrewData.push(...crewImpact);
+                            }
+
+                            // Add reassigned crew data
+                            if (reassignedCrewData && reassignedCrewData.reassignedCrew) {
+                              allCrewData.push(...reassignedCrewData.reassignedCrew.map(crew => ({
+                                ...crew,
+                                isReassigned: true,
+                                reassignmentSource: 'Service Page'
+                              })));
+                            }
+
+                            if (allCrewData.length === 0) {
+                              return (
+                                <div className="text-center py-8 text-gray-500">
+                                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                  <p>No crew reassignment impact data available</p>
+                                </div>
+                              );
+                            }
+
+                            return allCrewData.map((crewMember, index) => (
+                              <Card key={index} className="border border-purple-200 bg-purple-50">
+                                <CardContent className="p-4">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                      <UserCheck className="h-4 w-4 text-purple-600" />
+                                      <span className="font-semibold text-purple-800">
+                                        {crewMember.name || `Crew Member ${index + 1}`}
+                                      </span>
+                                      <Badge className="bg-purple-100 text-purple-700">
+                                        {crewMember.role || crewMember.role_code || 'Role N/A'}
+                                      </Badge>
+                                      {crewMember.isReassigned && (
+                                        <Badge className="bg-orange-100 text-orange-700">
+                                          Reassigned
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <Badge
+                                      className={
+                                        crewMember.status === 'Available'
+                                          ? 'bg-green-100 text-green-700'
+                                          : crewMember.status === 'Limited' || crewMember.status === 'Near Limit'
+                                            ? 'bg-yellow-100 text-yellow-700'
+                                            : 'bg-red-100 text-red-700'
+                                      }
+                                    >
+                                      {crewMember.status || 'Unknown'}
+                                    </Badge>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                    <div>
+                                      <Label className="text-xs text-purple-600">Base Location</Label>
+                                      <p className="font-medium">{crewMember.base || crewMember.base_location || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-purple-600">Experience</Label>
+                                      <p className="font-medium">{crewMember.experience_years || crewMember.experience || 'N/A'} years</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-purple-600">Duty Time Remaining</Label>
+                                      <p className="font-medium">{crewMember.duty_time_remaining || crewMember.dutyTimeRemaining || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-purple-600">Last Flight</Label>
+                                      <p className="font-medium">{crewMember.last_flight_days || crewMember.lastFlight || 'N/A'}</p>
+                                    </div>
+                                  </div>
+
+                                  {/* Qualifications */}
+                                  {crewMember.qualifications && crewMember.qualifications.length > 0 && (
+                                    <div className="mt-3">
+                                      <Label className="text-xs text-purple-600 mb-2 block">Qualifications</Label>
+                                      <div className="flex flex-wrap gap-1">
+                                        {crewMember.qualifications.map((qual, qualIndex) => (
+                                          <Badge key={qualIndex} variant="outline" className="text-xs">
+                                            {typeof qual === 'object' ? qual.name || qual.code : qual}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Rotation Impact for this crew member */}
+                                  {crewMember.rotation_impact && crewMember.rotation_impact.length > 0 && (
+                                    <div className="mt-3 p-3 bg-white rounded border">
+                                      <Label className="text-xs text-gray-600 mb-2 block">Rotation Impact</Label>
+                                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                                        {crewMember.rotation_impact.map((impact, impactIndex) => (
+                                          <div key={impactIndex} className="text-xs p-2 bg-gray-50 rounded">
+                                            <div className="flex justify-between items-center">
+                                              <span className="font-medium">
+                                                {impact.flightNumber || 'Flight N/A'}
+                                              </span>
+                                              <Badge
+                                                className={
+                                                  impact.impact === 'Low Impact' || impact.impact === 'Minimal'
+                                                    ? 'bg-green-100 text-green-600 text-xs'
+                                                    : impact.impact === 'Medium Impact' || impact.impact === 'Moderate'
+                                                      ? 'bg-yellow-100 text-yellow-600 text-xs'
+                                                      : 'bg-red-100 text-red-600 text-xs'
+                                                }
+                                              >
+                                                {impact.impact || 'Unknown Impact'}
+                                              </Badge>
+                                            </div>
+                                            <p className="text-gray-600 mt-1">
+                                              {impact.reason || 'No details available'}
+                                            </p>
+                                            {impact.delay && impact.delay !== 'On Time' && (
+                                              <p className="text-orange-600 font-medium">
+                                                Delay: {impact.delay}
+                                              </p>
+                                            )}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Reassignment details */}
+                                  {crewMember.isReassigned && (
+                                    <div className="mt-3 p-3 bg-orange-50 rounded border border-orange-200">
+                                      <Label className="text-xs text-orange-700 mb-1 block">Reassignment Details</Label>
+                                      <div className="text-xs text-orange-800">
+                                        {crewMember.replacedCrew && (
+                                          <p>Replaced: {crewMember.replacedCrew.name} ({crewMember.replacedCrew.reason})</p>
+                                        )}
+                                        {crewMember.assignedAt && (
+                                          <p>Assigned: {new Date(crewMember.assignedAt).toLocaleString()}</p>
+                                        )}
+                                        {crewMember.reassignmentSource && (
+                                          <p>Source: {crewMember.reassignmentSource}</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            ));
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Summary Impact Metrics */}
+                      <Separator />
+                      <div>
+                        <h4 className="font-medium mb-3 flex items-center gap-2">
+                          <BarChart3 className="h-4 w-4 text-flydubai-orange" />
+                          Overall Rotation Impact Summary
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                          {(() => {
+                            const rotationData =
+                              selectedOptionForDetails?.matchingOption
+                                ?.rotation_plan ||
+                              selectedOptionForDetails?.pending_recovery_solutions
+                                ?.rotation_impact ||
+                              recoveryOptionData?.rotation_plan ||
+                              pendingSolutionData?.rotation_impact ||
+                              {};
+
+                            const metrics = rotationData?.metrics || rotationData?.impact_metrics || {};
+
+                            return (
+                              <>
+                                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                                  <div className="text-2xl font-bold text-blue-600">
+                                    {metrics.aircraftSwaps || metrics.aircraft_swaps || rotationData.aircraftOptions?.length || 0}
+                                  </div>
+                                  <div className="text-sm text-blue-700">Aircraft Options</div>
+                                </div>
+                                <div className="text-center p-3 bg-purple-50 rounded-lg">
+                                  <div className="text-2xl font-bold text-purple-600">
+                                    {metrics.crewViolations || metrics.crew_violations || rotationData.crew?.length || 0}
+                                  </div>
+                                  <div className="text-sm text-purple-700">Crew Changes</div>
+                                </div>
+                                <div className="text-center p-3 bg-orange-50 rounded-lg">
+                                  <div className="text-2xl font-bold text-orange-600">
+                                    {metrics.networkImpact || metrics.network_impact || 'Low'}
+                                  </div>
+                                  <div className="text-sm text-orange-700">Network Impact</div>
+                                </div>
+                                <div className="text-center p-3 bg-green-50 rounded-lg">
+                                  <div className="text-2xl font-bold text-green-600">
+                                    {metrics.overallScore || metrics.overall_score || selectedPlan?.confidence || '85'}%
+                                  </div>
+                                  <div className="text-sm text-green-700">Success Rate</div>
+                                </div>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </TabsContent>
             </Tabs>
 
@@ -3793,7 +4150,7 @@ export function PendingSolutions() {
                                             </span>
                                             <span>
                                               {passenger.original_flight ||
-                                                (plans as any).flightNumber}
+                                                plan.flightNumber}
                                             </span>
                                           </div>
                                           <div className="flex justify-between">
@@ -3903,317 +4260,357 @@ export function PendingSolutions() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Activity className="h-5 w-5" />
-                      Impacted Flights - Cancel and Rebook
+                      Rotation Impact Analysis
+                      {loadingPendingData && (
+                        <RefreshCw className="h-4 w-4 animate-spin ml-2" />
+                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {(() => {
-                      // Get rotation impact data from API or generate default data
-                      const rotationData =
-                        selectedOptionForDetails?.matchingOption
-                          ?.rotation_plan ||
-                        selectedOptionForDetails?.rotationImpact ||
-                        selectedOptionForDetails?.pending_recovery_solutions
-                          ?.rotation_impact ||
-                        {};
-
-                      // Generate detailed flight impact data based on the screenshot format
-                      const detailedFlightImpacts = rotationData?.nextSectors ||
-                        rotationData?.impactedFlights || [
-                          {
-                            flightNumber: "FZ456",
-                            route: "DXB-BOM",
-                            status: "Cancelled",
-                            impact: "High Impact",
-                            reason: "Flight cancellation",
-                            departureStatus: "Cancelled",
-                          },
-                          {
-                            flightNumber: "FZ457",
-                            route: "BOM-DXB",
-                            status: "Cancelled",
-                            impact: "High Impact",
-                            reason: "Route cancellation",
-                            departureStatus: "Cancelled",
-                          },
-                          {
-                            flightNumber: "FZ890",
-                            route: "DXB-DEL",
-                            status: "Scheduled",
-                            impact: "No Impact",
-                            reason: "Different aircraft",
-                            departureStatus: "Dep: 08:30 (Next Day)",
-                          },
-                        ];
-
-                      return (
+                    <div className="space-y-6">
+                      {/* Alternate Aircraft Choices Impact */}
+                      <div>
+                        <h4 className="font-medium mb-3 flex items-center gap-2">
+                          <Plane className="h-4 w-4 text-blue-600" />
+                          Alternate Aircraft Choices Impact
+                        </h4>
                         <div className="space-y-4">
-                          {detailedFlightImpacts.map((flight, index) => (
-                            <Card
-                              key={index}
-                              className={`border-l-4 ${
-                                flight.impact === "High Impact"
-                                  ? "border-red-500 bg-red-50"
-                                  : flight.impact === "Medium Impact"
-                                    ? "border-yellow-500 bg-yellow-50"
-                                    : "border-green-500 bg-green-50"
-                              }`}
-                            >
-                              <CardContent className="p-4">
-                                <div className="flex justify-between items-start">
-                                  <div className="flex-1">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
-                                      {flight.flightNumber} {flight.route}
-                                    </h3>
-                                    <p className="text-sm text-gray-600 mb-1">
-                                      <span className="font-medium">
-                                        Departure:
-                                      </span>{" "}
-                                      {flight.departureStatus}
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                      {flight.reason}
-                                    </p>
-                                  </div>
-                                  <div className="ml-4">
+                          {(() => {
+                            // Get rotation impact data from API or generate default data
+                            const rotationData =
+                              selectedOptionForDetails?.matchingOption
+                                ?.rotation_plan ||
+                              selectedOptionForDetails?.rotationImpact ||
+                              selectedOptionForDetails?.pending_recovery_solutions
+                                ?.rotation_impact ||
+                              {};
+
+                            const aircraftOptions = rotationData?.aircraftOptions ||
+                              rotationData?.aircraft_options ||
+                              rotationData?.alternate_aircraft ||
+                              [];
+
+                            if (!aircraftOptions || aircraftOptions.length === 0) {
+                              return (
+                                <div className="text-center py-8 text-gray-500">
+                                  <Plane className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                  <p>No alternate aircraft impact data available</p>
+                                </div>
+                              );
+                            }
+
+                            return aircraftOptions.map((aircraft, index) => (
+                              <Card key={index} className="border border-blue-200 bg-blue-50">
+                                <CardContent className="p-4">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                      <Plane className="h-4 w-4 text-blue-600" />
+                                      <span className="font-semibold text-blue-800">
+                                        {aircraft.reg || aircraft.registration || `Aircraft ${index + 1}`}
+                                      </span>
+                                      <Badge className="bg-blue-100 text-blue-700">
+                                        {aircraft.type || aircraft.aircraft_type || 'Type N/A'}
+                                      </Badge>
+                                    </div>
                                     <Badge
                                       className={
-                                        flight.impact === "High Impact"
-                                          ? "bg-red-100 text-red-700 border-red-200"
-                                          : flight.impact === "Medium Impact"
-                                            ? "bg-yellow-100 text-yellow-700 border-yellow-200"
-                                            : "bg-green-100 text-green-700 border-green-200"
+                                        aircraft.availability === 'Available' || aircraft.status === 'available'
+                                          ? 'bg-green-100 text-green-700'
+                                          : aircraft.availability === 'Limited' || aircraft.status === 'limited'
+                                            ? 'bg-yellow-100 text-yellow-700'
+                                            : 'bg-red-100 text-red-700'
                                       }
                                     >
-                                      {flight.impact}
+                                      {aircraft.availability || aircraft.status || 'Unknown'}
                                     </Badge>
                                   </div>
+
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                    <div>
+                                      <Label className="text-xs text-blue-600">ETOPS Status</Label>
+                                      <p className="font-medium">{aircraft.etops?.value || aircraft.etops_status || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-blue-600">Cabin Match</Label>
+                                      <p className="font-medium">{aircraft.cabinMatch?.value || aircraft.cabin_match || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-blue-600">Turnaround Time</Label>
+                                      <p className="font-medium">{aircraft.turnaround || aircraft.turnaround_time || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-blue-600">Maintenance Status</Label>
+                                      <p className="font-medium">{aircraft.maintenance?.value || aircraft.maintenance_status || 'N/A'}</p>
+                                    </div>
+                                  </div>
+
+                                  {aircraft.option_score && (
+                                    <div className="mt-3 p-3 bg-white rounded border">
+                                      <Label className="text-xs text-gray-600 mb-2 block">Impact Scores</Label>
+                                      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
+                                        <div className="text-center">
+                                          <div className="font-medium text-green-600">{aircraft.option_score.cost_score || 'N/A'}</div>
+                                          <div className="text-gray-500">Cost</div>
+                                        </div>
+                                        <div className="text-center">
+                                          <div className="font-medium text-blue-600">{aircraft.option_score.delay_score || 'N/A'}</div>
+                                          <div className="text-gray-500">Delay</div>
+                                        </div>
+                                        <div className="text-center">
+                                          <div className="font-medium text-purple-600">{aircraft.option_score.crew_impact || 'N/A'}</div>
+                                          <div className="text-gray-500">Crew</div>
+                                        </div>
+                                        <div className="text-center">
+                                          <div className="font-medium text-orange-600">{aircraft.option_score.fuel_score || 'N/A'}</div>
+                                          <div className="text-gray-500">Fuel</div>
+                                        </div>
+                                        <div className="text-center">
+                                          <div className="font-medium text-flydubai-orange">{aircraft.option_score.overall || 'N/A'}</div>
+                                          <div className="text-gray-500">Overall</div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            ));
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Crew Reassignment Impact */}
+                      <div>
+                        <h4 className="font-medium mb-3 flex items-center gap-2">
+                          <Users className="h-4 w-4 text-purple-600" />
+                          Crew Reassignment Impact
+                        </h4>
+                        <div className="space-y-4">
+                          {(() => {
+                            const rotationData =
+                              selectedOptionForDetails?.matchingOption
+                                ?.rotation_plan ||
+                              selectedOptionForDetails?.pending_recovery_solutions
+                                ?.rotation_impact ||
+                              recoveryOptionData?.rotation_plan ||
+                              pendingSolutionData?.rotation_impact ||
+                              {};
+
+                            const crewImpact = rotationData?.crew ||
+                              rotationData?.crew_impact ||
+                              rotationData?.crew_reassignments ||
+                              [];
+
+                            const reassignedCrewData =
+                              selectedOptionForDetails?.pending_recovery_solutions
+                                ?.reassigned_crew ||
+                              selectedOptionForDetails?.pending_recovery_solutions
+                                ?.full_details?.reassigned_crew ||
+                              pendingSolutionData?.reassigned_crew ||
+                              null;
+
+                            // Combine crew impact and reassigned crew data
+                            const allCrewData = [];
+
+                            // Add crew impact data
+                            if (Array.isArray(crewImpact)) {
+                              allCrewData.push(...crewImpact);
+                            }
+
+                            // Add reassigned crew data
+                            if (reassignedCrewData && reassignedCrewData.reassignedCrew) {
+                              allCrewData.push(...reassignedCrewData.reassignedCrew.map(crew => ({
+                                ...crew,
+                                isReassigned: true,
+                                reassignmentSource: 'Service Page'
+                              })));
+                            }
+
+                            if (allCrewData.length === 0) {
+                              return (
+                                <div className="text-center py-8 text-gray-500">
+                                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                                  <p>No crew reassignment impact data available</p>
                                 </div>
-                              </CardContent>
-                            </Card>
-                          ))}
+                              );
+                            }
 
-                          {/* Crew Impact Section */}
-                          <Separator className="my-6" />
+                            return allCrewData.map((crewMember, index) => (
+                              <Card key={index} className="border border-purple-200 bg-purple-50">
+                                <CardContent className="p-4">
+                                  <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center gap-2">
+                                      <UserCheck className="h-4 w-4 text-purple-600" />
+                                      <span className="font-semibold text-purple-800">
+                                        {crewMember.name || `Crew Member ${index + 1}`}
+                                      </span>
+                                      <Badge className="bg-purple-100 text-purple-700">
+                                        {crewMember.role || crewMember.role_code || 'Role N/A'}
+                                      </Badge>
+                                      {crewMember.isReassigned && (
+                                        <Badge className="bg-orange-100 text-orange-700">
+                                          Reassigned
+                                        </Badge>
+                                      )}
+                                    </div>
+                                    <Badge
+                                      className={
+                                        crewMember.status === 'Available'
+                                          ? 'bg-green-100 text-green-700'
+                                          : crewMember.status === 'Limited' || crewMember.status === 'Near Limit'
+                                            ? 'bg-yellow-100 text-yellow-700'
+                                            : 'bg-red-100 text-red-700'
+                                      }
+                                    >
+                                      {crewMember.status || 'Unknown'}
+                                    </Badge>
+                                  </div>
 
-                          <Card>
-                            <CardHeader>
-                              <CardTitle className="flex items-center gap-2">
-                                <Users className="h-5 w-5" />
-                                Violated Crew Details
-                              </CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                              {(() => {
-                                const crewImpacts = rotationData?.crew ||
-                                  rotationData?.crewData || [
-                                    {
-                                      name: "SSCC Lisa Martinez",
-                                      experience: "8 years",
-                                      location: "DXB",
-                                      score: "85/100",
-                                      status: "Reassigned",
-                                    },
-                                  ];
+                                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                                    <div>
+                                      <Label className="text-xs text-purple-600">Base Location</Label>
+                                      <p className="font-medium">{crewMember.base || crewMember.base_location || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-purple-600">Experience</Label>
+                                      <p className="font-medium">{crewMember.experience_years || crewMember.experience || 'N/A'} years</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-purple-600">Duty Time Remaining</Label>
+                                      <p className="font-medium">{crewMember.duty_time_remaining || crewMember.dutyTimeRemaining || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-purple-600">Last Flight</Label>
+                                      <p className="font-medium">{crewMember.last_flight_days || crewMember.lastFlight || 'N/A'}</p>
+                                    </div>
+                                  </div>
 
-                                return (
-                                  <div className="space-y-4">
-                                    {crewImpacts.map((crew, index) => (
-                                      <Card
-                                        key={index}
-                                        className="bg-red-50 border-red-200"
-                                      >
-                                        <CardContent className="p-4">
-                                          <div className="grid grid-cols-5 gap-4 text-sm">
-                                            <div>
-                                              <span className="text-red-600 font-medium">
-                                                Name:
+                                  {/* Qualifications */}
+                                  {crewMember.qualifications && crewMember.qualifications.length > 0 && (
+                                    <div className="mt-3">
+                                      <Label className="text-xs text-purple-600 mb-2 block">Qualifications</Label>
+                                      <div className="flex flex-wrap gap-1">
+                                        {crewMember.qualifications.map((qual, qualIndex) => (
+                                          <Badge key={qualIndex} variant="outline" className="text-xs">
+                                            {typeof qual === 'object' ? qual.name || qual.code : qual}
+                                          </Badge>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Rotation Impact for this crew member */}
+                                  {crewMember.rotation_impact && crewMember.rotation_impact.length > 0 && (
+                                    <div className="mt-3 p-3 bg-white rounded border">
+                                      <Label className="text-xs text-gray-600 mb-2 block">Rotation Impact</Label>
+                                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                                        {crewMember.rotation_impact.map((impact, impactIndex) => (
+                                          <div key={impactIndex} className="text-xs p-2 bg-gray-50 rounded">
+                                            <div className="flex justify-between items-center">
+                                              <span className="font-medium">
+                                                {impact.flightNumber || 'Flight N/A'}
                                               </span>
-                                              <div className="font-medium text-gray-900">
-                                                {crew.name}
-                                              </div>
-                                            </div>
-                                            <div>
-                                              <span className="text-red-600 font-medium">
-                                                Experience:
-                                              </span>
-                                              <div className="font-medium text-gray-900">
-                                                {crew.experience}
-                                              </div>
-                                            </div>
-                                            <div>
-                                              <span className="text-red-600 font-medium">
-                                                Location:
-                                              </span>
-                                              <div className="font-medium text-gray-900">
-                                                {crew.location}
-                                              </div>
-                                            </div>
-                                            <div>
-                                              <span className="text-red-600 font-medium">
-                                                Score:
-                                              </span>
-                                              <div className="font-medium text-gray-900">
-                                                {crew.score}
-                                              </div>
-                                            </div>
-                                            <div>
-                                              <span className="text-red-600 font-medium">
-                                                Status:
-                                              </span>
-                                              <Badge className="bg-red-100 text-red-700">
-                                                {crew.status}
+                                              <Badge
+                                                className={
+                                                  impact.impact === 'Low Impact' || impact.impact === 'Minimal'
+                                                    ? 'bg-green-100 text-green-600 text-xs'
+                                                    : impact.impact === 'Medium Impact' || impact.impact === 'Moderate'
+                                                      ? 'bg-yellow-100 text-yellow-600 text-xs'
+                                                      : 'bg-red-100 text-red-600 text-xs'
+                                                }
+                                              >
+                                                {impact.impact || 'Unknown Impact'}
                                               </Badge>
                                             </div>
-                                          </div>
-
-                                          <div className="mt-4">
-                                            <p className="text-xs text-red-600 font-medium mb-2">
-                                              Affected Pairing Information
+                                            <p className="text-gray-600 mt-1">
+                                              {impact.reason || 'No details available'}
                                             </p>
-
-                                            <div className="space-y-2">
-                                              {/* High Priority Pairing */}
-                                              <div className="border border-red-200 rounded overflow-hidden">
-                                                <div className="bg-red-100 p-2 flex items-center justify-between cursor-pointer hover:bg-red-150 transition-colors">
-                                                  <div className="flex items-center gap-2">
-                                                    <span className="text-xs text-red-800 font-medium">
-                                                      High Priority
-                                                    </span>
-                                                    <span className="text-xs text-red-700">
-                                                      Critical Pairing Impact
-                                                    </span>
-                                                  </div>
-                                                  <ChevronRight className="h-3 w-3 text-red-600" />
-                                                </div>
-                                                <div className="bg-white p-3 border-t border-red-100">
-                                                  <div className="grid grid-cols-3 gap-4 text-xs">
-                                                    <div>
-                                                      <span className="text-gray-600">
-                                                        Pairing Number:
-                                                      </span>
-                                                      <div className="font-medium text-gray-900">
-                                                        FZ-P-001
-                                                      </div>
-                                                    </div>
-                                                    <div>
-                                                      <span className="text-gray-600">
-                                                        Date:
-                                                      </span>
-                                                      <div className="font-medium text-gray-900">
-                                                        8/20/2025
-                                                      </div>
-                                                    </div>
-                                                    <div>
-                                                      <span className="text-gray-600">
-                                                        Sector:
-                                                      </span>
-                                                      <div className="font-medium text-gray-900">
-                                                        DXB → BOM → DXB
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              </div>
-
-                                              {/* Medium Priority Pairing */}
-                                              <div className="border border-yellow-200 rounded overflow-hidden">
-                                                <div className="bg-yellow-100 p-2 flex items-center justify-between cursor-pointer hover:bg-yellow-150 transition-colors">
-                                                  <div className="flex items-center gap-2">
-                                                    <span className="text-xs text-yellow-800 font-medium">
-                                                      Medium Priority
-                                                    </span>
-                                                    <span className="text-xs text-yellow-700">
-                                                      Moderate Pairing Impact
-                                                    </span>
-                                                  </div>
-                                                  <ChevronRight className="h-3 w-3 text-yellow-600" />
-                                                </div>
-                                                <div className="bg-white p-3 border-t border-yellow-100">
-                                                  <div className="grid grid-cols-3 gap-4 text-xs">
-                                                    <div>
-                                                      <span className="text-gray-600">
-                                                        Pairing Number:
-                                                      </span>
-                                                      <div className="font-medium text-gray-900">
-                                                        FZ-P-002
-                                                      </div>
-                                                    </div>
-                                                    <div>
-                                                      <span className="text-gray-600">
-                                                        Date:
-                                                      </span>
-                                                      <div className="font-medium text-gray-900">
-                                                        8/21/2025
-                                                      </div>
-                                                    </div>
-                                                    <div>
-                                                      <span className="text-gray-600">
-                                                        Sector:
-                                                      </span>
-                                                      <div className="font-medium text-gray-900">
-                                                        DXB → KWI → DXB
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              </div>
-
-                                              {/* Low Priority Pairing */}
-                                              <div className="border border-green-200 rounded overflow-hidden">
-                                                <div className="bg-green-100 p-2 flex items-center justify-between cursor-pointer hover:bg-green-150 transition-colors">
-                                                  <div className="flex items-center gap-2">
-                                                    <span className="text-xs text-green-800 font-medium">
-                                                      Low Priority
-                                                    </span>
-                                                    <span className="text-xs text-green-700">
-                                                      Minor Pairing Impact
-                                                    </span>
-                                                  </div>
-                                                  <ChevronRight className="h-3 w-3 text-green-600" />
-                                                </div>
-                                                <div className="bg-white p-3 border-t border-green-100">
-                                                  <div className="grid grid-cols-3 gap-4 text-xs">
-                                                    <div>
-                                                      <span className="text-gray-600">
-                                                        Pairing Number:
-                                                      </span>
-                                                      <div className="font-medium text-gray-900">
-                                                        FZ-P-003
-                                                      </div>
-                                                    </div>
-                                                    <div>
-                                                      <span className="text-gray-600">
-                                                        Date:
-                                                      </span>
-                                                      <div className="font-medium text-gray-900">
-                                                        8/22/2025
-                                                      </div>
-                                                    </div>
-                                                    <div>
-                                                      <span className="text-gray-600">
-                                                        Sector:
-                                                      </span>
-                                                      <div className="font-medium text-gray-900">
-                                                        DXB → MCT → DXB
-                                                      </div>
-                                                    </div>
-                                                  </div>
-                                                </div>
-                                              </div>
-                                            </div>
+                                            {impact.delay && impact.delay !== 'On Time' && (
+                                              <p className="text-orange-600 font-medium">
+                                                Delay: {impact.delay}
+                                              </p>
+                                            )}
                                           </div>
-                                        </CardContent>
-                                      </Card>
-                                    ))}
-                                  </div>
-                                );
-                              })()}
-                            </CardContent>
-                          </Card>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Reassignment details */}
+                                  {crewMember.isReassigned && (
+                                    <div className="mt-3 p-3 bg-orange-50 rounded border border-orange-200">
+                                      <Label className="text-xs text-orange-700 mb-1 block">Reassignment Details</Label>
+                                      <div className="text-xs text-orange-800">
+                                        {crewMember.replacedCrew && (
+                                          <p>Replaced: {crewMember.replacedCrew.name} ({crewMember.replacedCrew.reason})</p>
+                                        )}
+                                        {crewMember.assignedAt && (
+                                          <p>Assigned: {new Date(crewMember.assignedAt).toLocaleString()}</p>
+                                        )}
+                                        {crewMember.reassignmentSource && (
+                                          <p>Source: {crewMember.reassignmentSource}</p>
+                                        )}
+                                      </div>
+                                    </div>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            ));
+                          })()}
                         </div>
-                      );
-                    })()}
+                      </div>
+
+                      {/* Summary Impact Metrics */}
+                      <Separator />
+                      <div>
+                        <h4 className="font-medium mb-3 flex items-center gap-2">
+                          <BarChart3 className="h-4 w-4 text-flydubai-orange" />
+                          Overall Rotation Impact Summary
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                          {(() => {
+                            const rotationData =
+                              selectedOptionForDetails?.matchingOption
+                                ?.rotation_plan ||
+                              selectedOptionForDetails?.pending_recovery_solutions
+                                ?.rotation_impact ||
+                              recoveryOptionData?.rotation_plan ||
+                              pendingSolutionData?.rotation_impact ||
+                              {};
+
+                            const metrics = rotationData?.metrics || rotationData?.impact_metrics || {};
+
+                            return (
+                              <>
+                                <div className="text-center p-3 bg-blue-50 rounded-lg">
+                                  <div className="text-2xl font-bold text-blue-600">
+                                    {metrics.aircraftSwaps || metrics.aircraft_swaps || rotationData.aircraftOptions?.length || 0}
+                                  </div>
+                                  <div className="text-sm text-blue-700">Aircraft Options</div>
+                                </div>
+                                <div className="text-center p-3 bg-purple-50 rounded-lg">
+                                  <div className="text-2xl font-bold text-purple-600">
+                                    {metrics.crewViolations || metrics.crew_violations || rotationData.crew?.length || 0}
+                                  </div>
+                                  <div className="text-sm text-purple-700">Crew Changes</div>
+                                </div>
+                                <div className="text-center p-3 bg-orange-50 rounded-lg">
+                                  <div className="text-2xl font-bold text-orange-600">
+                                    {metrics.networkImpact || metrics.network_impact || 'Low'}
+                                  </div>
+                                  <div className="text-sm text-orange-700">Network Impact</div>
+                                </div>
+                                <div className="text-center p-3 bg-green-50 rounded-lg">
+                                  <div className="text-2xl font-bold text-green-600">
+                                    {metrics.overallScore || metrics.overall_score || selectedPlan?.confidence || '85'}%
+                                  </div>
+                                  <div className="text-sm text-green-700">Success Rate</div>
+                                </div>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
