@@ -60,7 +60,7 @@
       "ring": "#8e2157"
     }
   },
-  "FZ": {
+  "IN": {
     "code": "IN",
     "name": "infiniti",
     "displayName": "Infiniti",
@@ -74,8 +74,8 @@
       "warning": "#f59e0b",
       "error": "#ef4444"
     },
-    "logo": "/airlines/FZ/logo.png",
-    "favicon": "/airlines/FZ/favicon.ico",
+    "logo": "/airlines/IN/logo.png",
+    "favicon": "/airlines/IN/favicon.ico",
     "theme": {
       "background": "#ffffff",
       "foreground": "#1a1a1a",

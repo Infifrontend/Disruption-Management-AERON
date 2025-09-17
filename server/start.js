@@ -3496,6 +3496,8 @@ async function saveRecoveryData(disruptionId, options, steps) {
         ],
       );
       optionsCount++;
+    } catch (error) {
+      console.error("Error saving recovery option:", error);
     }
   }
 
@@ -4935,9 +4937,7 @@ app.post("/api/pending-recovery-solutions", async (req, res) => {
         impact || "Medium",
         status || "pending",
         passenger_rebooking ? JSON.stringify(passenger_rebooking) : null,
-        crew_hotel_assignments
-          ? JSON.stringify(crew_hotel_assignments)
-          : null,
+        crew_hotel_assignments ? JSON.stringify(crew_hotel_assignments) : null,
         reassigned_crew ? JSON.stringify(reassigned_crew) : null,
         selected_aircraft ? JSON.stringify(selected_aircraft) : null,
         full_details ? JSON.stringify(full_details) : null,
@@ -6315,7 +6315,7 @@ app.post("/api/documents", async (req, res) => {
     });
   } catch (error) {
     console.error("Error uploading document:", error);
-    res.status(500).json    ({
+    res.status(500).json({
       error: "Failed to upload document",
       details: error.message,
     });
