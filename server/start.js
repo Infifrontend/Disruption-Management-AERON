@@ -5486,9 +5486,6 @@ app.get("/api/past-recovery-logs", async (req, res) => {
       console.error("Fallback query also failed:", fallbackError);
       res.json(getMockPastRecoveryData());
     }
-  } catch (error) {
-    console.error("Error fetching past recovery logs:", error);
-    res.json(getMockPastRecoveryData());
   }
 });
 
