@@ -2063,6 +2063,11 @@ class DatabaseService {
     try {
       console.log("Adding pending solution:", solutionData);
       
+      // Ensure reassigned crew data is properly formatted
+      if (solutionData.reassigned_crew) {
+        console.log("Including reassigned crew data:", solutionData.reassigned_crew);
+      }
+      
       const response = await fetch(`${this.baseUrl}/pending-recovery-solutions`, {
         method: "POST",
         headers: {
@@ -2078,7 +2083,7 @@ class DatabaseService {
       }
 
       const result = await response.json();
-      console.log("Successfully added pending solution:", result);
+      console.log("Successfully added pending solution with reassigned crew:", result);
       return true;
     } catch (error) {
       console.error("Failed to add pending solution:", error);

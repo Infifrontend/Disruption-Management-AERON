@@ -54,6 +54,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   const [screenSettings, setScreenSettings] = useState<screenSettings[]>([]);
 
+  // Persist reassigned crew data when passenger services context changes
+  useEffect(() => {
+    if (passengerServicesContext?.reassignedCrewData && !reassignedCrewData) {
+      setReassignedCrewData(passengerServicesContext.reassignedCrewData);
+    }
+  }, [passengerServicesContext, reassignedCrewData]);
+
   // Load screen settings from API on component mount
   useEffect(() => {
     const loadScreenSettings = async () => {

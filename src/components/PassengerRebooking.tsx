@@ -167,6 +167,13 @@ export function PassengerRebooking({ context, onClearContext }) {
   const preservedSelections = context?.storedSelections; // Renamed for clarity
   const activeContext = context; // Use a distinct name for context
 
+  // Load reassigned crew data from context if available
+  useEffect(() => {
+    if (context?.reassignedCrewData && !reassignedCrewData) {
+      setReassignedCrewData(context.reassignedCrewData);
+    }
+  }, [context?.reassignedCrewData, reassignedCrewData, setReassignedCrewData]);
+
   // State for generated passengers
   const [generatedPassengers, setGeneratedPassengers] = useState([]);
 
@@ -1647,9 +1654,14 @@ export function PassengerRebooking({ context, onClearContext }) {
           (solutionData as any).crew_hotel_assignments = crewHotelAssignmentsData;
         }
 
-        // Include reassigned crew data from app context
-        if (reassignedCrewData) {
-          (solutionData as any).reassigned_crew = reassignedCrewData;
+        // Include reassigned crew data from multiple sources
+        const finalReassignedCrewData = reassignedCrewData || 
+                                       context?.reassignedCrewData || 
+                                       recoveryOption?.fullDetails?.reassigned_crew ||
+                                       null;
+        
+        if (finalReassignedCrewData) {
+          (solutionData as any).reassigned_crew = finalReassignedCrewData;
         }
 
         // Ensure crew information is included in full_details for proper storage
@@ -1657,7 +1669,7 @@ export function PassengerRebooking({ context, onClearContext }) {
           ...((solutionData as any).full_details || {}),
           passenger_rebooking: passengerRebookingData,
           crew_hotel_assignments: crewHotelAssignmentsData,
-          reassigned_crew: reassignedCrewData,
+          reassigned_crew: finalReassignedCrewData,
         };
         const pendingSolutionSuccess =
           await databaseService.addPendingSolution(solutionData);
