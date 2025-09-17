@@ -59,5 +59,35 @@
       "input": "#ffffff",
       "ring": "#8e2157"
     }
+  },
+  "FZ": {
+    "code": "IN",
+    "name": "infiniti",
+    "displayName": "Infiniti",
+    "colors": {
+      "primary": "#0066CC",
+      "secondary": "#ff8200",
+      "navy": "#001f3f",
+      "links": "#0066CC",
+      "accent": "#e6f3ff",
+      "success": "#22c55e",
+      "warning": "#f59e0b",
+      "error": "#ef4444"
+    },
+    "logo": "/airlines/FZ/logo.png",
+    "favicon": "/airlines/FZ/favicon.ico",
+    "theme": {
+      "background": "#ffffff",
+      "foreground": "#1a1a1a",
+      "card": "#ffffff",
+      "cardForeground": "#1a1a1a",
+      "popover": "#ffffff",
+      "popoverForeground": "#1a1a1a",
+      "muted": "#f1f5f9",
+      "mutedForeground": "#64748b",
+      "border": "#f1f3f4",
+      "input": "#ffffff",
+      "ring": "#0066CC"
+    }
   }
 }
