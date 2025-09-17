@@ -169,10 +169,17 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // Load reassigned crew data from context if available
   useEffect(() => {
-    if (context?.reassignedCrewData && !reassignedCrewData) {
-      setReassignedCrewData(context.reassignedCrewData);
+    // Check multiple sources for reassigned crew data
+    const contextReassignedCrew = context?.reassignedCrewData || 
+                                  context?.recoveryOption?.fullDetails?.reassigned_crew ||
+                                  recoveryOption?.fullDetails?.reassigned_crew;
+    
+    if (contextReassignedCrew && !reassignedCrewData) {
+      console.log('Loading reassigned crew data from context:', contextReassignedCrew);
+      setReassignedCrewData(contextReassignedCrew);
     }
-  }, [context?.reassignedCrewData, reassignedCrewData, setReassignedCrewData]);
+  }, [context?.reassignedCrewData, context?.recoveryOption?.fullDetails?.reassigned_crew, 
+      recoveryOption?.fullDetails?.reassigned_crew, reassignedCrewData, setReassignedCrewData]);
 
   // State for generated passengers
   const [generatedPassengers, setGeneratedPassengers] = useState([]);

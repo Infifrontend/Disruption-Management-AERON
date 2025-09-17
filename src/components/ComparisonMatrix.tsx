@@ -185,6 +185,7 @@ export function ComparisonMatrix({
         expandedCrew: expandedCrewState,
         crewSwaps: crewSwaps,
         reassignments: reassignments,
+        reassignedCrew: reassignments.length > 0 ? reassignments[0] : null,
         lastUpdated: new Date().toISOString(),
       },
     }));
@@ -1005,6 +1006,45 @@ export function ComparisonMatrix({
           setSelectedAircraftFlight(storedSelection.selectedIndex);
         }
       }
+
+      // Store default crew assignments if available, including any default reassignments
+      if (enrichedDetails.rotation_plan?.crew?.length > 0) {
+        const storedCrew = getStoredCrewAssignments(option.id);
+        if (!storedCrew) {
+          // Check for default crew reassignments in the rotation plan
+          const defaultReassignedCrew = enrichedDetails.rotation_plan.crew.filter(crew => 
+            crew.isReassigned || crew.replacedCrew || crew.isAutoAssigned
+          );
+          
+          if (defaultReassignedCrew.length > 0) {
+            // Store the default reassigned crew data
+            const reassignmentData = {
+              flightId: selectedFlight?.id,
+              optionId: option.id,
+              optionTitle: option.title,
+              reassignedCrew: defaultReassignedCrew.map(crew => ({
+                originalName: crew.replacedCrew || crew.name,
+                newName: crew.name,
+                role: crew.role,
+                reason: crew.isAutoAssigned ? 'Auto-assigned replacement' : 'Manual reassignment',
+                timestamp: crew.assignedAt || new Date().toISOString(),
+                isAutoAssigned: crew.isAutoAssigned || false
+              })),
+              timestamp: new Date().toISOString(),
+              totalReassignments: defaultReassignedCrew.length
+            };
+            
+            // Update the reassigned data state immediately
+            updateReassignedData(option.id, 'crew', reassignmentData);
+            
+            // Store crew assignments with reassignment data
+            storeCrewAssignments(option.id, enrichedDetails.rotation_plan.crew, null, [], [reassignmentData]);
+          } else {
+            // Store normal crew data without reassignments
+            storeCrewAssignments(option.id, enrichedDetails.rotation_plan.crew, null);
+          }
+        }
+      }
     } catch (error) {
       console.error("Error processing option details:", error);
       setSelectedOptionDetails(option); // Fallback to option data
@@ -1283,8 +1323,12 @@ export function ComparisonMatrix({
           assignmentTimestamp: storedCrewAssignments.timestamp || new Date().toISOString()
         } : null;
 
-        // Get reassigned crew data from stored state
+        // Get reassigned crew data from multiple sources
         const reassignedCrewFromState = reassignedData[option.id]?.crew || null;
+        const reassignedCrewFromStorage = storedCrewAssignments?.reassignedCrew || null;
+        
+        // Prioritize stored crew reassignment data, then state data
+        const finalReassignedCrewData = reassignedCrewFromStorage || reassignedCrewFromState;
 
         // Create comprehensive passenger services context with all necessary data
         const passengerContext = {
@@ -1304,6 +1348,8 @@ export function ComparisonMatrix({
               riskAssessment: option.risk_assessment || [],
               technicalSpecs: option.technical_specs || {},
               rotationPlan: option.rotation_plan || {},
+              // Ensure reassigned crew is included in full details
+              reassigned_crew: finalReassignedCrewData,
             },
             // Include selected aircraft and crew information
             selectedAircraft: selectedAircraftInfo,
@@ -1320,14 +1366,14 @@ export function ComparisonMatrix({
             aircraft: storedAircraftSelection,
             crew: storedCrewAssignments,
           },
-          // Include reassigned crew data from both AppContext and stored state
-          reassignedCrewData: reassignedCrewFromState,
+          // Include reassigned crew data from all sources
+          reassignedCrewData: finalReassignedCrewData,
           optionDetails: storedOptionDetails,
         };
 
         // Set the reassigned crew data in the app context for persistence
-        if (reassignedCrewFromState) {
-          setReassignedCrewData(reassignedCrewFromState);
+        if (finalReassignedCrewData) {
+          setReassignedCrewData(finalReassignedCrewData);
         }
 
         // Use the app context to set the passenger services context
