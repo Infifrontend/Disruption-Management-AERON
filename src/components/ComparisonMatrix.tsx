@@ -1286,6 +1286,18 @@ export function ComparisonMatrix({
         // Get reassigned crew data from stored state
         const reassignedCrewFromState = reassignedData[option.id]?.crew || null;
 
+        // Get reassigned crew data from rotation plan if available
+        const rotationPlanCrewData = option.rotation_plan?.crew || option.rotation_plan?.crewData || [];
+        const reassignedCrewInfo = rotationPlanCrewData.length > 0 ? {
+          reassignedCrew: rotationPlanCrewData.map(crew => ({
+            ...crew,
+            isReassigned: !!crew.replacedCrew || !!crew.autoAssignedReplacement,
+            originalName: crew.replacedCrew,
+            reassignedAt: crew.assignedAt,
+            isAutoAssigned: crew.isAutoAssigned
+          }))
+        } : null;
+
         // Create comprehensive passenger services context with all necessary data
         const passengerContext = {
           selectedFlight: flight,
@@ -1304,6 +1316,8 @@ export function ComparisonMatrix({
               riskAssessment: option.risk_assessment || [],
               technicalSpecs: option.technical_specs || {},
               rotationPlan: option.rotation_plan || {},
+              // Include reassigned crew in full details
+              reassigned_crew: reassignedCrewInfo,
             },
             // Include selected aircraft and crew information
             selectedAircraft: selectedAircraftInfo,
@@ -1320,14 +1334,16 @@ export function ComparisonMatrix({
             aircraft: storedAircraftSelection,
             crew: storedCrewAssignments,
           },
-          // Include reassigned crew data from both AppContext and stored state
-          reassignedCrewData: reassignedCrewFromState,
+          // Include reassigned crew data from multiple sources with priority
+          reassignedCrewData: reassignedCrewInfo || reassignedCrewFromState,
           optionDetails: storedOptionDetails,
         };
 
         // Set the reassigned crew data in the app context for persistence
-        if (reassignedCrewFromState) {
-          setReassignedCrewData(reassignedCrewFromState);
+        // Priority: rotation plan crew data > stored state > existing context
+        const finalReassignedCrewData = reassignedCrewInfo || reassignedCrewFromState;
+        if (finalReassignedCrewData) {
+          setReassignedCrewData(finalReassignedCrewData);
         }
 
         // Use the app context to set the passenger services context
