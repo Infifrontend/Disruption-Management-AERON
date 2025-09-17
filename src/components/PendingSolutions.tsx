@@ -723,8 +723,8 @@ export function PendingSolutions() {
               matches:
                 opt.id === transformedPlan.optionId ||
                 opt.option_id === transformedPlan.optionId ||
-                String(opt.id) === String(transformedPlan.optionId) ||
-                String(opt.option_id) === String(transformedPlan.optionId),
+                opt.id === parseInt(transformedPlan.optionId) ||
+                opt.option_id === parseInt(transformedPlan.optionId),
             });
           });
         }
@@ -1777,7 +1777,7 @@ export function PendingSolutions() {
                                                           "[object",
                                                         )
                                                       ? value
-                                                      : "N/A"}
+                                                      : `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
                                               </span>
                                             </div>
                                           </div>
@@ -3577,7 +3577,6 @@ export function PendingSolutions() {
                                 ?.reassigned_crew ||
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.full_details?.reassigned_crew ||
-                              pendingSolutionData?.reassigned_crew ||
                               null;
 
                             // Combine crew impact and reassigned crew data
@@ -4613,7 +4612,6 @@ export function PendingSolutions() {
                                 ?.reassigned_crew ||
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.full_details?.reassigned_crew ||
-                              pendingSolutionData?.reassigned_crew ||
                               null;
 
                             // Combine crew impact and reassigned crew data
