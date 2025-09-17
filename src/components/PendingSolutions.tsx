@@ -1772,8 +1772,7 @@ export function PendingSolutions() {
                                                   ? `AED ${(value as any).amount.toLocaleString()}`
                                                   : typeof value === "number"
                                                     ? `AED ${value.toLocaleString()}`
-                                                    : typeof value ===
-                                                          "string" &&
+                                                    : typeof value === "string" &&
                                                         !value.includes(
                                                           "[object",
                                                         )
@@ -3030,8 +3029,7 @@ export function PendingSolutions() {
                                                   ? `AED ${(value as any).amount.toLocaleString()}`
                                                   : typeof value === "number"
                                                     ? `AED ${value.toLocaleString()}`
-                                                    : typeof value ===
-                                                          "string" &&
+                                                    : typeof value === "string" &&
                                                         !value.includes(
                                                           "[object",
                                                         )
@@ -3356,7 +3354,7 @@ export function PendingSolutions() {
                                 ?.rotation_plan ||
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.rotation_impact ||
-                              recoveryOptionData?.rotation_plan ||
+                              selectedOptionForDetails?.recoveryOptionData?.rotation_plan ||
                               pendingSolutionData?.rotation_impact ||
                               {};
 
@@ -3538,7 +3536,7 @@ export function PendingSolutions() {
                                 ?.rotation_plan ||
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.rotation_impact ||
-                              recoveryOptionData?.rotation_plan ||
+                              selectedOptionForDetails?.recoveryOptionData?.rotation_plan ||
                               pendingSolutionData?.rotation_impact ||
                               {};
 
@@ -3816,7 +3814,7 @@ export function PendingSolutions() {
                           {crewData.map((assignment, index) => (
                             <div key={index} className="space-y-6">
                               {/* Hotel Overview */}
-                              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                                 <h3 className="text-lg font-semibold">
                                   {assignment.hotel_name}
                                 </h3>
@@ -4280,9 +4278,10 @@ export function PendingSolutions() {
                             const rotationData =
                               selectedOptionForDetails?.matchingOption
                                 ?.rotation_plan ||
-                              selectedOptionForDetails?.rotationImpact ||
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.rotation_impact ||
+                              selectedOptionForDetails?.recoveryOptionData?.rotation_plan ||
+                              pendingSolutionData?.rotation_impact ||
                               {};
 
                             const aircraftOptions = rotationData?.aircraftOptions ||
@@ -4391,7 +4390,7 @@ export function PendingSolutions() {
                                 ?.rotation_plan ||
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.rotation_impact ||
-                              recoveryOptionData?.rotation_plan ||
+                              selectedOptionForDetails?.recoveryOptionData?.rotation_plan ||
                               pendingSolutionData?.rotation_impact ||
                               {};
 
@@ -4573,7 +4572,7 @@ export function PendingSolutions() {
                                 ?.rotation_plan ||
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.rotation_impact ||
-                              recoveryOptionData?.rotation_plan ||
+                              selectedOptionForDetails?.recoveryOptionData?.rotation_plan ||
                               pendingSolutionData?.rotation_impact ||
                               {};
 
