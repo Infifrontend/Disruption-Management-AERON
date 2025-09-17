@@ -1771,12 +1771,13 @@ export function PendingSolutions() {
                                                   ? `AED ${(value as any).amount.toLocaleString()}`
                                                   : typeof value === "number"
                                                     ? `AED ${value.toLocaleString()}`
-                                                    : typeof value === "string" &&
+                                                    : typeof value ===
+                                                          "string" &&
                                                         !value.includes(
                                                           "[object",
                                                         )
                                                       ? value
-                                                      : `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
+                                                      : "N/A"}
                                               </span>
                                             </div>
                                           </div>
@@ -3029,7 +3030,8 @@ export function PendingSolutions() {
                                                   ? `AED ${(value as any).amount.toLocaleString()}`
                                                   : typeof value === "number"
                                                     ? `AED ${value.toLocaleString()}`
-                                                    : typeof value === "string" &&
+                                                    : typeof value ===
+                                                          "string" &&
                                                         !value.includes(
                                                           "[object",
                                                         )
@@ -3268,31 +3270,994 @@ export function PendingSolutions() {
         open={showDetailedOptionAnalysis}
         onOpenChange={setShowDetailedOptionAnalysis}
       >
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-flydubai-navy">
-              {selectedOptionForDetails?.title || "Recovery Option Details"}
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Detailed Recovery Option Analysis
             </DialogTitle>
             <DialogDescription>
-              Comprehensive analysis of the selected recovery option including
-              timeline, costs, and impact assessment.
+              Comprehensive view of {selectedOptionForDetails?.title} •{" "}
+              {selectedOptionForDetails?.id || "A321-007"} for{" "}
+              {selectedOptionForDetails?.flightNumber}
             </DialogDescription>
           </DialogHeader>
 
           {selectedOptionForDetails && (
-            <DetailedRecoveryOptionView 
-              plan={{
-                ...selectedOptionForDetails,
-                // Ensure rotation impact data is passed through
-                selectedAircraft: selectedOptionForDetails.selectedAircraft,
-                reassignedCrew: selectedOptionForDetails.reassignedCrew,
-                rotationImpact: selectedOptionForDetails.rotationImpact,
-                // Also include the original plan data for context
-                disruptionId: selectedPlan?.disruptionId,
-                optionId: selectedOptionForDetails.id,
-              }} 
-            />
+            <Tabs defaultValue="option-details" className="w-full">
+              <TabsList
+                className={`grid w-full ${
+                  selectedPlan?.hasCrewData && selectedPlan?.hasPassengerData
+                    ? "grid-cols-5"
+                    : selectedPlan?.hasCrewData ||
+                        selectedPlan?.hasPassengerData
+                      ? "grid-cols-4"
+                      : "grid-cols-4"
+                }`}
+              >
+                <TabsTrigger value="option-details">Option Details</TabsTrigger>
+                {Object.keys(
+                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
+                ).length > 0 &&
+                  selectedOptionForDetails?.pending_recovery_solutions
+                    ?.full_details?.crew_hotel_assignments && (
+                    <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
+                  )}
+
+                {Object.keys(
+                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
+                ).length > 0 &&
+                  selectedOptionForDetails?.pending_recovery_solutions
+                    ?.full_details?.passenger_rebooking && (
+                    <TabsTrigger value="passenger-reaccommodation">
+                      Passenger Re-accommodation
+                    </TabsTrigger>
+                  )}
+                <TabsTrigger value="rotation-impact">
+                  Rotation Impact
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="option-details" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="h-5 w-5" />
+                      Option Overview
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-6">
+                        <div>
+                          <h4 className="font-medium mb-2">
+                            {selectedOptionForDetails.title}
+                          </h4>
+                          <p className="text-sm text-muted-foreground mb-4">
+                            {selectedOptionForDetails.description}
+                          </p>
+                          <div className="space-y-2">
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">
+                                Total Cost:
+                              </span>
+                              <span className="font-medium text-flydubai-orange">
+                                {selectedOptionForDetails.cost}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">
+                                Timeline:
+                              </span>
+                              <span className="font-medium">
+                                {selectedOptionForDetails.timeline}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">
+                                Confidence:
+                              </span>
+                              <span className="font-medium">
+                                {selectedOptionForDetails.confidence}%
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-sm text-muted-foreground">
+                                Impact:
+                              </span>
+                              <span className="font-medium">
+                                {selectedOptionForDetails.impact}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-2">
+                            Key Performance Indicators
+                          </h4>
+                          <div className="space-y-3">
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Success Rate</span>
+                                <span>
+                                  {selectedOptionForDetails.confidence}%
+                                </span>
+                              </div>
+                              <Progress
+                                value={selectedOptionForDetails.confidence}
+                                className="h-2"
+                              />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Customer Satisfaction</span>
+                                <span>88%</span>
+                              </div>
+                              <Progress value={88} className="h-2" />
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Operational Risk</span>
+                                <span className="text-green-600">Low</span>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Easy
+                              </div>
+                            </div>
+                            <div>
+                              <div className="flex justify-between text-sm mb-1">
+                                <span>Operational Risk</span>
+                                <span className="text-red-600">High</span>
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Easy
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="crew-hotac" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Crew & HOTAC Management
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {(() => {
+                      // Get crew data from selected option details
+                      const crewData =
+                        selectedOptionForDetails?.pending_recovery_solutions
+                          ?.full_details?.crew_hotel_assignments;
+                      const hasCrewData =
+                        crewData && Object.keys(crewData).length > 0;
+                      if (!hasCrewData) {
+                        return (
+                          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <span className="font-medium text-green-800">
+                                No crew changes required.
+                              </span>
+                            </div>
+                            <p className="text-sm text-green-700">
+                              Current crew certified for{" "}
+                              {selectedOptionForDetails?.id || "A321-007"}
+                            </p>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div className="space-y-6">
+                          {crewData.map((assignment, index) => (
+                            <div key={index} className="space-y-6">
+                              {/* Hotel Overview */}
+                              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                                <h3 className="text-lg font-semibold">
+                                  {assignment.hotel_name}
+                                </h3>
+                                <p className="text-sm text-gray-600">
+                                  {assignment.hotel_location}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  Room: {assignment.room_number}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  Booking Ref: {assignment.booking_reference}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                  Status: {assignment.assignment_status}
+                                </p>
+                              </div>
+
+                              {/* Crew Members Table */}
+                              <div>
+                                <h4 className="font-medium mb-3">
+                                  Crew Assignment Details
+                                </h4>
+                                <div className="overflow-x-auto">
+                                  <table className="w-full border-collapse border border-gray-200 text-sm">
+                                    <thead>
+                                      <tr className="bg-gray-50">
+                                        <th className="border border-gray-200 p-3 text-left">
+                                          Name
+                                        </th>
+                                        <th className="border border-gray-200 p-3 text-left">
+                                          Rank
+                                        </th>
+                                        <th className="border border-gray-200 p-3 text-left">
+                                          Base
+                                        </th>
+                                        <th className="border border-gray-200 p-3 text-left">
+                                          Employee ID
+                                        </th>
+                                        <th className="border border-gray-200 p-3 text-left">
+                                          Contact
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {assignment.crew_member.map(
+                                        (crew, crewIndex) => (
+                                          <tr
+                                            key={crewIndex}
+                                            className={
+                                              crewIndex % 2 === 0
+                                                ? "bg-white"
+                                                : "bg-gray-50"
+                                            }
+                                          >
+                                            <td className="border border-gray-200 p-3">
+                                              {crew.name}
+                                            </td>
+                                            <td className="border border-gray-200 p-3">
+                                              {crew.rank}
+                                            </td>
+                                            <td className="border border-gray-200 p-3">
+                                              {crew.base}
+                                            </td>
+                                            <td className="border border-gray-200 p-3">
+                                              {crew.employee_id}
+                                            </td>
+                                            <td className="border border-gray-200 p-3">
+                                              {crew.contact_number}
+                                            </td>
+                                          </tr>
+                                        ),
+                                      )}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+
+                              {/* Transport Info */}
+                              {assignment.transport_details && (
+                                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                  <h4 className="font-medium mb-2">
+                                    Transport Details
+                                  </h4>
+                                  <p className="text-sm">
+                                    Vendor:{" "}
+                                    {assignment.transport_details.vendor}
+                                  </p>
+                                  <p className="text-sm">
+                                    Pickup:{" "}
+                                    {
+                                      assignment.transport_details
+                                        .pickup_location
+                                    }{" "}
+                                    at{" "}
+                                    {new Date(
+                                      assignment.transport_details.pickup_time,
+                                    ).toLocaleString()}
+                                  </p>
+                                  <p className="text-sm">
+                                    Dropoff:{" "}
+                                    {
+                                      assignment.transport_details
+                                        .dropoff_location
+                                    }{" "}
+                                    at{" "}
+                                    {new Date(
+                                      assignment.transport_details.dropoff_time,
+                                    ).toLocaleString()}
+                                  </p>
+                                  <p className="text-sm">
+                                    Vehicle:{" "}
+                                    {assignment.transport_details.vehicle_type}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent
+                value="passenger-reaccommodation"
+                className="space-y-6"
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Passenger Re-accommodation Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-4 mb-6">
+                      <div className="text-center p-4 bg-blue-50 rounded-lg">
+                        <div className="text-3xl font-bold text-blue-600">
+                          {
+                            selectedOptionForDetails
+                              ?.pending_recovery_solutions?.full_details
+                              ?.passenger_impact?.affected
+                          }
+                        </div>
+                        <div className="text-sm text-blue-700">
+                          Total Affected
+                        </div>
+                      </div>
+                      <div className="text-center p-4 bg-green-50 rounded-lg">
+                        <div className="text-3xl font-bold text-green-600">
+                          {
+                            selectedOptionForDetails
+                              ?.pending_recovery_solutions?.full_details
+                              ?.passenger_impact?.reaccommodated
+                          }
+                        </div>
+                        <div className="text-sm text-green-700">
+                          Same Flight
+                        </div>
+                      </div>
+                      <div className="text-center p-4 bg-red-50 rounded-lg">
+                        <div className="text-3xl font-bold text-red-600">0</div>
+                        <div className="text-sm text-red-700">
+                          Other Flights
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-6">
+                      <div>
+                        <h4 className="font-medium mb-3">
+                          Accommodation Breakdown
+                        </h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm">Meal Vouchers:</span>
+                            <span className="font-medium">0 passengers</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">
+                              Hotel Accommodation:
+                            </span>
+                            <span className="font-medium">0 passengers</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <h4 className="font-medium mb-3">Compensation</h4>
+                        <div className="space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-sm">
+                              AED{" "}
+                              {
+                                selectedOptionForDetails
+                                  ?.pending_recovery_solutions?.full_details
+                                  ?.passenger_impact?.affected
+                              }{" "}
+                              per passenger (AED261):
+                            </span>
+                            <span className="font-medium">
+                              AED{" "}
+                              {
+                                selectedOptionForDetails
+                                  .pending_recovery_solutions?.full_details
+                                  ?.passenger_impact?.affected
+                              }{" "}
+                              per passenger (AED261):
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Info className="h-4 w-4 text-blue-600" />
+                        <span className="font-medium text-blue-800">
+                          Re-accommodation Details:
+                        </span>
+                      </div>
+                      <p className="text-sm text-blue-700">
+                        All passengers accommodated on same aircraft with 65min
+                        delay.
+                      </p>
+                    </div>
+
+                    {/* PNR Grouped Passenger Details */}
+                    <div className="mt-6">
+                      <h4 className="font-medium mb-3">
+                        Passenger Rebookings by PNR
+                      </h4>
+                      <div className="space-y-4 max-h-64 overflow-y-auto">
+                        {(() => {
+                          const rawPassengerData =
+                            selectedOptionForDetails?.pending_recovery_solutions
+                              ?.full_details?.passenger_rebooking ||
+                            selectedOptionForDetails?.pending_recovery_solutions
+                              ?.passenger_rebooking ||
+                            [];
+
+                          // Ensure currentPassengerData is always an array
+                          const currentPassengerData = Array.isArray(rawPassengerData) 
+                            ? rawPassengerData 
+                            : [];
+
+                          if (
+                            !currentPassengerData ||
+                            currentPassengerData.length === 0
+                          ) {
+                            return (
+                              <div className="text-center py-8 text-gray-500">
+                                No passenger rebooking data available
+                              </div>
+                            );
+                          }
+
+                          // Group passengers by PNR
+                          const passengersByPnr = currentPassengerData.reduce(
+                            (acc, passenger) => {
+                              const pnr = passenger.pnr || "Unknown";
+                              if (!acc[pnr]) {
+                                acc[pnr] = [];
+                              }
+                              acc[pnr].push(passenger);
+                              return acc;
+                            },
+                            {},
+                          );
+
+                          return Object.entries(passengersByPnr)
+                            .slice(0, 8)
+                            .map(([pnr, passengers], groupIndex) => (
+                              <Card
+                                key={groupIndex}
+                                className="border border-gray-200"
+                              >
+                                <div className="p-3 bg-gray-50 border-b">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <Users className="h-4 w-4 text-blue-600" />
+                                      <span className="font-semibold text-gray-900">
+                                        PNR: {pnr}
+                                      </span>
+                                      <Badge
+                                        variant="secondary"
+                                        className="bg-blue-100 text-blue-800"
+                                      >
+                                        {(passengers as any).length} passenger
+                                        {(passengers as any).length > 1
+                                          ? "s"
+                                          : ""}
+                                      </Badge>
+                                    </div>
+                                    <div className="text-sm text-muted-foreground">
+                                      Group Booking
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="p-3 space-y-3">
+                                  {(passengers as any).map(
+                                    (passenger, passengerIndex) => (
+                                      <div
+                                        key={passengerIndex}
+                                        className="border-l-2 border-blue-200 pl-3"
+                                      >
+                                        <div className="flex items-center justify-between mb-2">
+                                          <div className="font-medium text-gray-900">
+                                            {passenger.passenger_name ||
+                                              `Passenger ${passengerIndex + 1}`}
+                                          </div>
+                                          <Badge
+                                            className={
+                                              passenger.rebooking_status ===
+                                              "confirmed"
+                                                ? "bg-green-100 text-green-700"
+                                                : passenger.rebooking_status ===
+                                                    "pending"
+                                                  ? "bg-yellow-100 text-yellow-700"
+                                                  : "bg-gray-100 text-gray-700"
+                                            }
+                                          >
+                                            {passenger.rebooking_status ||
+                                              "Unknown"}
+                                          </Badge>
+                                        </div>
+                                        <div className="text-sm space-y-1">
+                                          <div className="flex justify-between">
+                                            <span className="text-muted-foreground">
+                                              Original Flight:
+                                            </span>
+                                            <span>
+                                              {passenger.original_flight ||
+                                                (plans as any).flightNumber}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="text-muted-foreground">
+                                              Rebooked Flight:
+                                            </span>
+                                            <span>
+                                              {passenger.rebooked_flight ||
+                                                "TBD"}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between">
+                                            <span className="text-muted-foreground">
+                                              Seat Change:
+                                            </span>
+                                            <span>
+                                              {passenger.original_seat &&
+                                              passenger.rebooked_seat
+                                                ? `${passenger.original_seat} → ${passenger.rebooked_seat}`
+                                                : "N/A"}
+                                            </span>
+                                          </div>
+                                          {passenger.rebooking_cost > 0 && (
+                                            <div className="flex justify-between">
+                                              <span className="text-muted-foreground">
+                                                Cost:
+                                              </span>
+                                              <span className="text-flydubai-orange">
+                                                AED {passenger.rebooking_cost}
+                                              </span>
+                                            </div>
+                                          )}
+                                          {passenger.additional_services &&
+                                            passenger.additional_services
+                                              .length > 0 && (
+                                              <div className="flex justify-between">
+                                                <span className="text-muted-foreground">
+                                                  Services:
+                                                </span>
+                                                <span className="text-xs">
+                                                  {passenger.additional_services.map(
+                                                    (service, serviceIndex) => (
+                                                      <Badge
+                                                        key={serviceIndex}
+                                                        variant="outline"
+                                                        className="mr-1 text-xs"
+                                                      >
+                                                        {service.service_type ||
+                                                          service}
+                                                      </Badge>
+                                                    ),
+                                                  )}
+                                                </span>
+                                              </div>
+                                            )}
+                                          {passenger.notes && (
+                                            <div className="text-xs text-muted-foreground mt-2">
+                                              Notes: {passenger.notes}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ),
+                                  )}
+                                </div>
+                              </Card>
+                            ));
+                        })()}
+                        {(() => {
+                          const rawPassengerData =
+                            selectedOptionForDetails?.pending_recovery_solutions
+                              ?.full_details?.passenger_rebooking ||
+                            selectedOptionForDetails?.pending_recovery_solutions
+                              ?.passenger_rebooking ||
+                            [];
+
+                          const groupCount = Array.isArray(rawPassengerData)
+                            ? Object.keys(
+                                rawPassengerData.reduce(
+                                  (acc, passenger) => {
+                                    const pnr = passenger.pnr || "UNKNOWN";
+                                    if (!acc[pnr]) acc[pnr] = [];
+                                    acc[pnr].push(passenger);
+                                    return acc;
+                                  },
+                                  {},
+                                ),
+                              ).length
+                            : 0;
+
+                          return (
+                            groupCount > 8 && (
+                              <div className="text-center text-sm text-muted-foreground p-2">
+                                ... and {groupCount - 8} more PNR groups
+                              </div>
+                            )
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="rotation-impact" className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Activity className="h-5 w-5" />
+                      Impacted Flights - Cancel and Rebook
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {(() => {
+                      // Get rotation impact data from API or generate default data
+                      const rotationData =
+                        selectedOptionForDetails?.matchingOption
+                          ?.rotation_plan ||
+                        selectedOptionForDetails?.rotationImpact ||
+                        selectedOptionForDetails?.pending_recovery_solutions
+                          ?.rotation_impact ||
+                        {};
+
+                      // Generate detailed flight impact data based on the screenshot format
+                      const detailedFlightImpacts = rotationData?.nextSectors ||
+                        rotationData?.impactedFlights || [
+                          {
+                            flightNumber: "FZ456",
+                            route: "DXB-BOM",
+                            status: "Cancelled",
+                            impact: "High Impact",
+                            reason: "Flight cancellation",
+                            departureStatus: "Cancelled",
+                          },
+                          {
+                            flightNumber: "FZ457",
+                            route: "BOM-DXB",
+                            status: "Cancelled",
+                            impact: "High Impact",
+                            reason: "Route cancellation",
+                            departureStatus: "Cancelled",
+                          },
+                          {
+                            flightNumber: "FZ890",
+                            route: "DXB-DEL",
+                            status: "Scheduled",
+                            impact: "No Impact",
+                            reason: "Different aircraft",
+                            departureStatus: "Dep: 08:30 (Next Day)",
+                          },
+                        ];
+
+                      return (
+                        <div className="space-y-4">
+                          {detailedFlightImpacts.map((flight, index) => (
+                            <Card
+                              key={index}
+                              className={`border-l-4 ${
+                                flight.impact === "High Impact"
+                                  ? "border-red-500 bg-red-50"
+                                  : flight.impact === "Medium Impact"
+                                    ? "border-yellow-500 bg-yellow-50"
+                                    : "border-green-500 bg-green-50"
+                              }`}
+                            >
+                              <CardContent className="p-4">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                                      {flight.flightNumber} {flight.route}
+                                    </h3>
+                                    <p className="text-sm text-gray-600 mb-1">
+                                      <span className="font-medium">
+                                        Departure:
+                                      </span>{" "}
+                                      {flight.departureStatus}
+                                    </p>
+                                    <p className="text-xs text-gray-500">
+                                      {flight.reason}
+                                    </p>
+                                  </div>
+                                  <div className="ml-4">
+                                    <Badge
+                                      className={
+                                        flight.impact === "High Impact"
+                                          ? "bg-red-100 text-red-700 border-red-200"
+                                          : flight.impact === "Medium Impact"
+                                            ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                            : "bg-green-100 text-green-700 border-green-200"
+                                      }
+                                    >
+                                      {flight.impact}
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+
+                          {/* Crew Impact Section */}
+                          <Separator className="my-6" />
+
+                          <Card>
+                            <CardHeader>
+                              <CardTitle className="flex items-center gap-2">
+                                <Users className="h-5 w-5" />
+                                Violated Crew Details
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                              {(() => {
+                                const crewImpacts = rotationData?.crew ||
+                                  rotationData?.crewData || [
+                                    {
+                                      name: "SSCC Lisa Martinez",
+                                      experience: "8 years",
+                                      location: "DXB",
+                                      score: "85/100",
+                                      status: "Reassigned",
+                                    },
+                                  ];
+
+                                return (
+                                  <div className="space-y-4">
+                                    {crewImpacts.map((crew, index) => (
+                                      <Card
+                                        key={index}
+                                        className="bg-red-50 border-red-200"
+                                      >
+                                        <CardContent className="p-4">
+                                          <div className="grid grid-cols-5 gap-4 text-sm">
+                                            <div>
+                                              <span className="text-red-600 font-medium">
+                                                Name:
+                                              </span>
+                                              <div className="font-medium text-gray-900">
+                                                {crew.name}
+                                              </div>
+                                            </div>
+                                            <div>
+                                              <span className="text-red-600 font-medium">
+                                                Experience:
+                                              </span>
+                                              <div className="font-medium text-gray-900">
+                                                {crew.experience}
+                                              </div>
+                                            </div>
+                                            <div>
+                                              <span className="text-red-600 font-medium">
+                                                Location:
+                                              </span>
+                                              <div className="font-medium text-gray-900">
+                                                {crew.location}
+                                              </div>
+                                            </div>
+                                            <div>
+                                              <span className="text-red-600 font-medium">
+                                                Score:
+                                              </span>
+                                              <div className="font-medium text-gray-900">
+                                                {crew.score}
+                                              </div>
+                                            </div>
+                                            <div>
+                                              <span className="text-red-600 font-medium">
+                                                Status:
+                                              </span>
+                                              <Badge className="bg-red-100 text-red-700">
+                                                {crew.status}
+                                              </Badge>
+                                            </div>
+                                          </div>
+
+                                          <div className="mt-4">
+                                            <p className="text-xs text-red-600 font-medium mb-2">
+                                              Affected Pairing Information
+                                            </p>
+
+                                            <div className="space-y-2">
+                                              {/* High Priority Pairing */}
+                                              <div className="border border-red-200 rounded overflow-hidden">
+                                                <div className="bg-red-100 p-2 flex items-center justify-between cursor-pointer hover:bg-red-150 transition-colors">
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-red-800 font-medium">
+                                                      High Priority
+                                                    </span>
+                                                    <span className="text-xs text-red-700">
+                                                      Critical Pairing Impact
+                                                    </span>
+                                                  </div>
+                                                  <ChevronRight className="h-3 w-3 text-red-600" />
+                                                </div>
+                                                <div className="bg-white p-3 border-t border-red-100">
+                                                  <div className="grid grid-cols-3 gap-4 text-xs">
+                                                    <div>
+                                                      <span className="text-gray-600">
+                                                        Pairing Number:
+                                                      </span>
+                                                      <div className="font-medium text-gray-900">
+                                                        FZ-P-001
+                                                      </div>
+                                                    </div>
+                                                    <div>
+                                                      <span className="text-gray-600">
+                                                        Date:
+                                                      </span>
+                                                      <div className="font-medium text-gray-900">
+                                                        8/20/2025
+                                                      </div>
+                                                    </div>
+                                                    <div>
+                                                      <span className="text-gray-600">
+                                                        Sector:
+                                                      </span>
+                                                      <div className="font-medium text-gray-900">
+                                                        DXB → BOM → DXB
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+
+                                              {/* Medium Priority Pairing */}
+                                              <div className="border border-yellow-200 rounded overflow-hidden">
+                                                <div className="bg-yellow-100 p-2 flex items-center justify-between cursor-pointer hover:bg-yellow-150 transition-colors">
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-yellow-800 font-medium">
+                                                      Medium Priority
+                                                    </span>
+                                                    <span className="text-xs text-yellow-700">
+                                                      Moderate Pairing Impact
+                                                    </span>
+                                                  </div>
+                                                  <ChevronRight className="h-3 w-3 text-yellow-600" />
+                                                </div>
+                                                <div className="bg-white p-3 border-t border-yellow-100">
+                                                  <div className="grid grid-cols-3 gap-4 text-xs">
+                                                    <div>
+                                                      <span className="text-gray-600">
+                                                        Pairing Number:
+                                                      </span>
+                                                      <div className="font-medium text-gray-900">
+                                                        FZ-P-002
+                                                      </div>
+                                                    </div>
+                                                    <div>
+                                                      <span className="text-gray-600">
+                                                        Date:
+                                                      </span>
+                                                      <div className="font-medium text-gray-900">
+                                                        8/21/2025
+                                                      </div>
+                                                    </div>
+                                                    <div>
+                                                      <span className="text-gray-600">
+                                                        Sector:
+                                                      </span>
+                                                      <div className="font-medium text-gray-900">
+                                                        DXB → KWI → DXB
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+
+                                              {/* Low Priority Pairing */}
+                                              <div className="border border-green-200 rounded overflow-hidden">
+                                                <div className="bg-green-100 p-2 flex items-center justify-between cursor-pointer hover:bg-green-150 transition-colors">
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="text-xs text-green-800 font-medium">
+                                                      Low Priority
+                                                    </span>
+                                                    <span className="text-xs text-green-700">
+                                                      Minor Pairing Impact
+                                                    </span>
+                                                  </div>
+                                                  <ChevronRight className="h-3 w-3 text-green-600" />
+                                                </div>
+                                                <div className="bg-white p-3 border-t border-green-100">
+                                                  <div className="grid grid-cols-3 gap-4 text-xs">
+                                                    <div>
+                                                      <span className="text-gray-600">
+                                                        Pairing Number:
+                                                      </span>
+                                                      <div className="font-medium text-gray-900">
+                                                        FZ-P-003
+                                                      </div>
+                                                    </div>
+                                                    <div>
+                                                      <span className="text-gray-600">
+                                                        Date:
+                                                      </span>
+                                                      <div className="font-medium text-gray-900">
+                                                        8/22/2025
+                                                      </div>
+                                                    </div>
+                                                    <div>
+                                                      <span className="text-gray-600">
+                                                        Sector:
+                                                      </span>
+                                                      <div className="font-medium text-gray-900">
+                                                        DXB → MCT → DXB
+                                                      </div>
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </CardContent>
+                                      </Card>
+                                    ))}
+                                  </div>
+                                );
+                              })()}
+                            </CardContent>
+                          </Card>
+                        </div>
+                      );
+                    })()}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
           )}
+
+          <div className="flex justify-end gap-2 pt-4 border-t">
+            <Button variant="outline" onClick={() => setSelectedPlan(null)}>
+              Close
+            </Button>
+            {selectedPlan &&
+              selectedPlan.status &&
+              ["Pending Approval", "Under Review", "Pending"].includes(
+                selectedPlan.status,
+              ) && (
+                <>
+                  <Button
+                    onClick={async () => {
+                      if (selectedPlan && selectedPlan.id) {
+                        await handleApprove(selectedPlan.id);
+                        setSelectedPlan(null);
+                      }
+                    }}
+                    className="bg-green-600 hover:bg-green-700"
+                  >
+                    <ThumbsUp className="h-4 w-4 mr-2" />
+                    Approve
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={async () => {
+                      if (selectedPlan && selectedPlan.id) {
+                        await handleReject(selectedPlan.id);
+                        setSelectedPlan(null);
+                      }
+                    }}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    <ThumbsDown className="h-4 w-4 mr-2" />
+                    Reject
+                  </Button>
+                </>
+              )}
+          </div>
         </DialogContent>
       </Dialog>
     </div>
