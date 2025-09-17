@@ -2915,6 +2915,214 @@ export function PendingSolutions() {
                             65min delay.
                           </p>
                         </div>
+
+                        {/* PNR Grouped Passenger Details */}
+                        <div className="mt-6">
+                          <h4 className="font-medium mb-3">
+                            Passenger Rebookings by PNR
+                          </h4>
+                          <div className="space-y-4 max-h-64 overflow-y-auto">
+                            {(() => {
+                              const rawPassengerData =
+                                selectedOptionForDetails?.pending_recovery_solutions
+                                  ?.full_details?.passenger_rebooking ||
+                                selectedOptionForDetails?.pending_recovery_solutions
+                                  ?.passenger_rebooking ||
+                                [];
+
+                              // Ensure currentPassengerData is always an array
+                              const currentPassengerData = Array.isArray(rawPassengerData) 
+                                ? rawPassengerData 
+                                : [];
+
+                              if (
+                                !currentPassengerData ||
+                                currentPassengerData.length === 0
+                              ) {
+                                return (
+                                  <div className="text-center py-8 text-gray-500">
+                                    No passenger rebooking data available
+                                  </div>
+                                );
+                              }
+
+                              // Group passengers by PNR
+                              const passengersByPnr = currentPassengerData.reduce(
+                                (acc, passenger) => {
+                                  const pnr = passenger.pnr || "Unknown";
+                                  if (!acc[pnr]) {
+                                    acc[pnr] = [];
+                                  }
+                                  acc[pnr].push(passenger);
+                                  return acc;
+                                },
+                                {},
+                              );
+
+                              return Object.entries(passengersByPnr)
+                                .slice(0, 8)
+                                .map(([pnr, passengers], groupIndex) => (
+                                  <Card
+                                    key={groupIndex}
+                                    className="border border-gray-200"
+                                  >
+                                    <div className="p-3 bg-gray-50 border-b">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                          <Users className="h-4 w-4 text-blue-600" />
+                                          <span className="font-semibold text-gray-900">
+                                            PNR: {pnr}
+                                          </span>
+                                          <Badge
+                                            variant="secondary"
+                                            className="bg-blue-100 text-blue-800"
+                                          >
+                                            {(passengers as any).length} passenger
+                                            {(passengers as any).length > 1
+                                              ? "s"
+                                              : ""}
+                                          </Badge>
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">
+                                          Group Booking
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <div className="p-3 space-y-3">
+                                      {(passengers as any).map(
+                                        (passenger, passengerIndex) => (
+                                          <div
+                                            key={passengerIndex}
+                                            className="border-l-2 border-blue-200 pl-3"
+                                          >
+                                            <div className="flex items-center justify-between mb-2">
+                                              <div className="font-medium text-gray-900">
+                                                {passenger.passenger_name ||
+                                                  `Passenger ${passengerIndex + 1}`}
+                                              </div>
+                                              <Badge
+                                                className={
+                                                  passenger.rebooking_status ===
+                                                  "confirmed"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : passenger.rebooking_status ===
+                                                        "pending"
+                                                      ? "bg-yellow-100 text-yellow-700"
+                                                      : "bg-gray-100 text-gray-700"
+                                                }
+                                              >
+                                                {passenger.rebooking_status ||
+                                                  "Unknown"}
+                                              </Badge>
+                                            </div>
+                                            <div className="text-sm space-y-1">
+                                              <div className="flex justify-between">
+                                                <span className="text-muted-foreground">
+                                                  Original Flight:
+                                                </span>
+                                                <span>
+                                                  {passenger.original_flight ||
+                                                    plan.flightNumber}
+                                                </span>
+                                              </div>
+                                              <div className="flex justify-between">
+                                                <span className="text-muted-foreground">
+                                                  Rebooked Flight:
+                                                </span>
+                                                <span>
+                                                  {passenger.rebooked_flight ||
+                                                    "TBD"}
+                                                </span>
+                                              </div>
+                                              <div className="flex justify-between">
+                                                <span className="text-muted-foreground">
+                                                  Seat Change:
+                                                </span>
+                                                <span>
+                                                  {passenger.original_seat &&
+                                                  passenger.rebooked_seat
+                                                    ? `${passenger.original_seat} → ${passenger.rebooked_seat}`
+                                                    : "N/A"}
+                                                </span>
+                                              </div>
+                                              {passenger.rebooking_cost > 0 && (
+                                                <div className="flex justify-between">
+                                                  <span className="text-muted-foreground">
+                                                    Cost:
+                                                  </span>
+                                                  <span className="text-flydubai-orange">
+                                                    AED {passenger.rebooking_cost}
+                                                  </span>
+                                                </div>
+                                              )}
+                                              {passenger.additional_services &&
+                                                passenger.additional_services
+                                                  .length > 0 && (
+                                                  <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">
+                                                      Services:
+                                                    </span>
+                                                    <span className="text-xs">
+                                                      {passenger.additional_services.map(
+                                                        (service, serviceIndex) => (
+                                                          <Badge
+                                                            key={serviceIndex}
+                                                            variant="outline"
+                                                            className="mr-1 text-xs"
+                                                          >
+                                                            {service.service_type ||
+                                                              service}
+                                                          </Badge>
+                                                        ),
+                                                      )}
+                                                    </span>
+                                                  </div>
+                                                )}
+                                              {passenger.notes && (
+                                                <div className="text-xs text-muted-foreground mt-2">
+                                                  Notes: {passenger.notes}
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        ),
+                                      )}
+                                    </div>
+                                  </Card>
+                                ));
+                            })()}
+                            {(() => {
+                              const rawPassengerData =
+                                selectedOptionForDetails?.pending_recovery_solutions
+                                  ?.full_details?.passenger_rebooking ||
+                                selectedOptionForDetails?.pending_recovery_solutions
+                                  ?.passenger_rebooking ||
+                                [];
+
+                              const groupCount = Array.isArray(rawPassengerData)
+                                ? Object.keys(
+                                    rawPassengerData.reduce(
+                                      (acc, passenger) => {
+                                        const pnr = passenger.pnr || "UNKNOWN";
+                                        if (!acc[pnr]) acc[pnr] = [];
+                                        acc[pnr].push(passenger);
+                                        return acc;
+                                      },
+                                      {},
+                                    ),
+                                  ).length
+                                : 0;
+
+                              return (
+                                groupCount > 8 && (
+                                  <div className="text-center text-sm text-muted-foreground p-2">
+                                    ... and {groupCount - 8} more PNR groups
+                                  </div>
+                                )
+                              );
+                            })()}
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
                   </TabsContent>
@@ -3243,9 +3451,10 @@ export function PendingSolutions() {
                             const rotationData =
                               selectedOptionForDetails?.matchingOption
                                 ?.rotation_plan ||
-                              selectedOptionForDetails?.rotationImpact ||
                               selectedOptionForDetails?.pending_recovery_solutions
                                 ?.rotation_impact ||
+                              selectedOptionForDetails?.recoveryOptionData?.rotation_plan ||
+                              pendingSolutionData?.rotation_impact ||
                               {};
 
                             const aircraftOptions = rotationData?.aircraftOptions ||
