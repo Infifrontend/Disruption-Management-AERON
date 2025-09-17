@@ -1647,11 +1647,17 @@ export function PassengerRebooking({ context, onClearContext }) {
           (solutionData as any).crew_hotel_assignments = crewHotelAssignmentsData;
         }
 
+        // Include reassigned crew data from app context
+        if (reassignedCrewData) {
+          (solutionData as any).reassigned_crew = reassignedCrewData;
+        }
+
         // Ensure crew information is included in full_details for proper storage
         (solutionData as any).full_details = {
           ...((solutionData as any).full_details || {}),
           passenger_rebooking: passengerRebookingData,
           crew_hotel_assignments: crewHotelAssignmentsData,
+          reassigned_crew: reassignedCrewData,
         };
         const pendingSolutionSuccess =
           await databaseService.addPendingSolution(solutionData);
