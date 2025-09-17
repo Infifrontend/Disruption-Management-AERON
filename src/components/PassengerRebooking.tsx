@@ -1656,18 +1656,7 @@ export function PassengerRebooking({ context, onClearContext }) {
         // Include reassigned crew data from multiple sources
         const finalReassignedCrewData = reassignedCrewData ||
                                        context?.reassignedCrewData ||
-                                       context?.recoveryOption?.fullDetails?.reassigned_crew ||
                                        recoveryOption?.fullDetails?.reassigned_crew ||
-                                       // Check rotation plan crew data as backup
-                                       (context?.recoveryOption?.rotation_plan?.crew ? {
-                                         reassignedCrew: context.recoveryOption.rotation_plan.crew.map(crew => ({
-                                           ...crew,
-                                           isReassigned: !!crew.replacedCrew || !!crew.autoAssignedReplacement || crew.isAutoAssigned,
-                                           originalName: crew.replacedCrew,
-                                           reassignedAt: crew.assignedAt,
-                                           isAutoAssigned: crew.isAutoAssigned || false
-                                         }))
-                                       } : null) ||
                                        null;
 
         if (finalReassignedCrewData) {
@@ -3339,10 +3328,7 @@ export function PassengerRebooking({ context, onClearContext }) {
 
                       {Object.entries(filteredPnrGroups).map(
                         ([pnr, groupPassengers]) => (
-                          <div
-                            key={pnr}
-                            className="border rounded-lg bg-white"
-                          >
+                          <div key={pnr} className="border rounded-lg bg-white">
                             <div className="p-4 border-b bg-gray-50">
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
@@ -3945,6 +3931,7 @@ export function PassengerRebooking({ context, onClearContext }) {
               </Card>
             </TabsContent>
 
+            {/* Crew HOTAC Tab */}
             <TabsContent value="crew-hotac" className="space-y-6">
               {/* Content for Crew HOTAC tab remains here */}
             </TabsContent>
