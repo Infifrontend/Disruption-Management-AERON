@@ -4429,9 +4429,6 @@ export function PendingSolutions() {
                     <CardTitle className="flex items-center gap-2">
                       <Activity className="h-5 w-5" />
                       Rotation Impact Analysis
-                      {loadingPendingData && (
-                        <RefreshCw className="h-4 w-4 animate-spin ml-2" />
-                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
