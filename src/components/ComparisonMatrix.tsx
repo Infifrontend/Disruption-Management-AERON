@@ -1244,6 +1244,10 @@ export function ComparisonMatrix({
         const storedCrewAssignments = getStoredCrewAssignments(option.id);
         const storedOptionDetails = getStoredOptionDetails(option.id);
 
+        // Get reassigned crew data from stored state or default reassignments
+        const reassignedCrewFromState = reassignedData[option.id]?.crew || null;
+        const defaultCrewReassignments = option.rotation_plan?.crew?.filter(crew => crew.isReassigned) || []; // Get default reassignments from option data
+
         // Prepare selected aircraft information
         let selectedAircraftInfo = null;
         if (storedAircraftSelection && storedAircraftSelection.aircraftOptions) {
@@ -1283,9 +1287,6 @@ export function ComparisonMatrix({
           assignmentTimestamp: storedCrewAssignments.timestamp || new Date().toISOString()
         } : null;
 
-        // Get reassigned crew data from stored state
-        const reassignedCrewFromState = reassignedData[option.id]?.crew || null;
-
         // Create comprehensive passenger services context with all necessary data
         const passengerContext = {
           selectedFlight: flight,
@@ -1320,20 +1321,17 @@ export function ComparisonMatrix({
             aircraft: storedAircraftSelection,
             crew: storedCrewAssignments,
           },
-          // Include reassigned crew data from both AppContext and stored state
-          reassignedCrewData: reassignedCrewFromState,
+          // Include reassigned crew data from multiple sources with priority
+          // Priority: default crew reassignments > manual reassignments > stored state
+          reassignedCrewData: defaultCrewReassignments || reassignedCrewFromState,
           optionDetails: storedOptionDetails,
         };
 
         // Set the reassigned crew data in the app context for persistence
-        if (reassignedCrewFromState) {
-          setReassignedCrewData(reassignedCrewFromState);
-        }
-
-        // Use the app context to set the passenger services context
-        // This ensures the data is available when the page loads
-        if (typeof onSelectPlan === "function") {
-          onSelectPlan(passengerContext);
+        // Priority: default crew reassignments > manual reassignments > stored state
+        const finalReassignedCrewData = defaultCrewReassignments || reassignedCrewFromState;
+        if (finalReassignedCrewData) {
+          setReassignedCrewData(finalReassignedCrewData);
         }
 
         // Navigate to passenger services with option data
@@ -3060,7 +3058,7 @@ export function ComparisonMatrix({
                                                         );
                                                       }}
                                                     >
-                                                      <Activity className="h-3 w-3 text-blue-600" />
+                                                      <Activity className="h-4 w-4 text-blue-600" />
                                                     </Button>
                                                   </div>
                                                   <div className="text-xs text-green-600">
