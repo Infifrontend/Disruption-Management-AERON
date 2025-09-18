@@ -167,7 +167,7 @@ export function PassengerRebooking({ context, onClearContext }) {
  
   
   // Extract preserved selections for easier access
-  const preservedSelections = context?.storedSelections; // Renamed for clarity
+  const preservedSelections:any = context?.storedSelections; // Renamed for clarity
   
   const activeContext = context; // Use a distinct name for context
   console.log(context, "Context information");
