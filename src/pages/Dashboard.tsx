@@ -46,9 +46,8 @@ import {
 } from "lucide-react";
 import { useAirlineTheme } from "./../hooks/useAirlineTheme";
 
-const { airlineConfig } = useAirlineTheme();
-
 export function Dashboard() {
+  const { airlineConfig } = useAirlineTheme();
   const navigate = useNavigate();
   const { filters, setFilters, screenSettings } = useAppContext();
   const [analytics, setAnalytics] = useState<DashboardAnalytics | null>(null);
