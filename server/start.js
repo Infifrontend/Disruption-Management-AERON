@@ -13,12 +13,8 @@ import {
   logError,
   logException,
   requestLoggerMiddleware,
-  logDatabaseOperation,
-  logRecoveryOperation,
 } from "./logger.js";
 import config from "./config/airlineConfig.js"
-
-console.log("loaded config ===>",config)
 
 const app = express();
 

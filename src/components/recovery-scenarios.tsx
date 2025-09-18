@@ -1355,6 +1355,6 @@ export const getScenarioData = (categorization) => {
     case "Rotation misalignment or maintenance hold":
       return getRotationMisalignmentRecovery();
     default:
-      return getAircraftIssueRecovery(); // Default fallback
+    // return getAircraftIssueRecovery(); // Default fallback
   }
 };

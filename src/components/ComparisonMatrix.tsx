@@ -77,13 +77,13 @@ export function ComparisonMatrix({
   );
 
   // State for alternate aircraft options
-  const [alternateAircraftOptionsData, setAlternateAircraftOptionsData] = useState({});
+  const [alternateAircraftOptionsData, setAlternateAircraftOptionsData] =
+    useState({});
 
   // State to store detailed popup data persistently for each option
   const [optionDetailsStorage, setOptionDetailsStorage] = useState({});
   const [aircraftSelectionStorage, setAircraftSelectionStorage] = useState({});
   const [crewAssignmentStorage, setCrewAssignmentStorage] = useState({});
-
 
   // Function to update reassigned data state
   const updateReassignedData = (optionId, type, data) => {
@@ -165,7 +165,11 @@ export function ComparisonMatrix({
     }));
   };
 
-  const storeAircraftSelection = (optionId, aircraftData, selectedIndex = null) => {
+  const storeAircraftSelection = (
+    optionId,
+    aircraftData,
+    selectedIndex = null,
+  ) => {
     setAircraftSelectionStorage((prev) => ({
       ...prev,
       [optionId]: {
@@ -177,7 +181,13 @@ export function ComparisonMatrix({
     }));
   };
 
-  const storeCrewAssignments = (optionId, crewData, expandedCrewState = null, crewSwaps = [], reassignments = []) => {
+  const storeCrewAssignments = (
+    optionId,
+    crewData,
+    expandedCrewState = null,
+    crewSwaps = [],
+    reassignments = [],
+  ) => {
     setCrewAssignmentStorage((prev) => ({
       ...prev,
       [optionId]: {
@@ -189,7 +199,6 @@ export function ComparisonMatrix({
       },
     }));
   };
-
 
   const getStoredOptionDetails = (optionId) => {
     return optionDetailsStorage[optionId] || null;
@@ -209,7 +218,6 @@ export function ComparisonMatrix({
       ...newFilters,
     }));
   };
-
 
   // Load recovery options from database based on disruption category
   useEffect(() => {
@@ -361,8 +369,22 @@ export function ComparisonMatrix({
             },
             // Merge stored data if available
             ...(storedDetails?.details || {}),
-            ...(storedSelection?.aircraftOptions ? { rotation_plan: { ...(option.rotation_plan || {}), aircraftOptions: storedSelection.aircraftOptions } } : {}),
-            ...(storedCrew?.crewData ? { rotation_plan: { ...(option.rotation_plan || {}), crew: storedCrew.crewData } } : {}),
+            ...(storedSelection?.aircraftOptions
+              ? {
+                  rotation_plan: {
+                    ...(option.rotation_plan || {}),
+                    aircraftOptions: storedSelection.aircraftOptions,
+                  },
+                }
+              : {}),
+            ...(storedCrew?.crewData
+              ? {
+                  rotation_plan: {
+                    ...(option.rotation_plan || {}),
+                    crew: storedCrew.crewData,
+                  },
+                }
+              : {}),
           };
         })
       : [];
@@ -997,7 +1019,11 @@ export function ComparisonMatrix({
         // Default to first aircraft (index 0) if no selection exists
         const storedSelection = getStoredAircraftSelection(option.id);
         if (!storedSelection) {
-          storeAircraftSelection(option.id, enrichedDetails.rotation_plan.aircraftOptions, 0);
+          storeAircraftSelection(
+            option.id,
+            enrichedDetails.rotation_plan.aircraftOptions,
+            0,
+          );
           // Set the local state as well
           setSelectedAircraftFlight(0);
         } else {
@@ -1069,22 +1095,7 @@ export function ComparisonMatrix({
           // Add reassigned aircraft information
           reassigned:
             selectedAircraftFlight !== null && selectedAircraftFlight !== 0,
-        })) || [
-          {
-            reg: selectedFlight?.aircraft || "A6-FDB",
-            aircraft: selectedFlight?.aircraft || "A6-FDB",
-            type: "B737-800 (189Y)",
-            etops: { status: "available", value: "ETOPS-180" },
-            cabinMatch: { status: "exact" },
-            availability: "Available",
-            assigned: { status: "none" },
-            turnaround: "45 min",
-            turnaroundTime: "45 min",
-            maintenance: { status: "current" },
-            recommended: true,
-            reassigned: false,
-          },
-        ],
+        })),
 
         // Impacted flights from API (nextSectors array) - include reassigned flight data
         impactedFlights: (
@@ -1103,19 +1114,7 @@ export function ComparisonMatrix({
           reassigned: sector.reassigned || false,
           originalDeparture: sector.originalDeparture,
           newDeparture: sector.newDeparture,
-        })) || [
-          {
-            flight: "FZ446",
-            flightNumber: "FZ446",
-            departure: "16:30",
-            delay: "45 min",
-            passengers: 156,
-            status: "Delayed",
-            impact: "Medium Impact",
-            reason: "Aircraft swap delay",
-            reassigned: false,
-          },
-        ],
+        })),
 
         // Crew data from API - handle both crewData and crew arrays, include reassigned crew info
         crew:
@@ -1168,16 +1167,18 @@ export function ComparisonMatrix({
         recommendedOption:
           rotationPlan?.recommendation || rotationPlan?.recommendedOption || {},
       };
-      console.log(
-        optionReassignedData,
-        "reass",
-      );
+      console.log(optionReassignedData, "reass");
       setRotationPlanDetails(enrichedRotationPlan);
       setShowRotationDialog(true);
 
       // Store the rotation plan details with proper defaults
-      const currentAircraftIndex = selectedAircraftFlight !== null ? selectedAircraftFlight : 0;
-      storeAircraftSelection(option.id, enrichedRotationPlan.aircraftRotations, currentAircraftIndex);
+      const currentAircraftIndex =
+        selectedAircraftFlight !== null ? selectedAircraftFlight : 0;
+      storeAircraftSelection(
+        option.id,
+        enrichedRotationPlan.aircraftRotations,
+        currentAircraftIndex,
+      );
       storeCrewAssignments(option.id, enrichedRotationPlan.crew, expandedCrew);
     } catch (error) {
       console.error("Error processing rotation plan:", error);
@@ -1246,11 +1247,17 @@ export function ComparisonMatrix({
 
         // Prepare selected aircraft information
         let selectedAircraftInfo = null;
-        if (storedAircraftSelection && storedAircraftSelection.aircraftOptions) {
+        if (
+          storedAircraftSelection &&
+          storedAircraftSelection.aircraftOptions
+        ) {
           // Use stored selection index, or current local state, or default to 0
-          const selectedIndex = storedAircraftSelection.selectedIndex !== null
-            ? storedAircraftSelection.selectedIndex
-            : (selectedAircraftFlight !== null ? selectedAircraftFlight : 0);
+          const selectedIndex =
+            storedAircraftSelection.selectedIndex !== null
+              ? storedAircraftSelection.selectedIndex
+              : selectedAircraftFlight !== null
+                ? selectedAircraftFlight
+                : 0;
 
           if (storedAircraftSelection.aircraftOptions[selectedIndex]) {
             selectedAircraftInfo = {
@@ -1261,27 +1268,35 @@ export function ComparisonMatrix({
           }
         } else if (option.rotation_plan?.aircraftOptions?.length > 0) {
           // Fallback: use the first aircraft as default if no stored selection
-          const defaultIndex = selectedAircraftFlight !== null ? selectedAircraftFlight : 0;
+          const defaultIndex =
+            selectedAircraftFlight !== null ? selectedAircraftFlight : 0;
           selectedAircraftInfo = {
             ...option.rotation_plan.aircraftOptions[defaultIndex],
             selectedIndex: defaultIndex,
             selectionTimestamp: new Date().toISOString(),
           };
           // Store this default selection for consistency
-          storeAircraftSelection(option.id, option.rotation_plan.aircraftOptions, defaultIndex);
+          storeAircraftSelection(
+            option.id,
+            option.rotation_plan.aircraftOptions,
+            defaultIndex,
+          );
         }
 
         // Prepare crew assignment information
         // Extract crew assignment information if available
-        const crewAssignmentInfo = storedCrewAssignments ? {
-          assignedCrew: storedCrewAssignments.assignedCrew || [],
-          crewSwaps: storedCrewAssignments.crewSwaps || [],
-          reassignments: storedCrewAssignments.reassignments || [],
-          reassignedCrew: storedCrewAssignments.reassignedCrew || [],
-          originalCrew: storedCrewAssignments.originalCrew || [],
-          rotationImpact: storedCrewAssignments.rotationImpact || {},
-          assignmentTimestamp: storedCrewAssignments.timestamp || new Date().toISOString()
-        } : null;
+        const crewAssignmentInfo = storedCrewAssignments
+          ? {
+              assignedCrew: storedCrewAssignments.assignedCrew || [],
+              crewSwaps: storedCrewAssignments.crewSwaps || [],
+              reassignments: storedCrewAssignments.reassignments || [],
+              reassignedCrew: storedCrewAssignments.reassignedCrew || [],
+              originalCrew: storedCrewAssignments.originalCrew || [],
+              rotationImpact: storedCrewAssignments.rotationImpact || {},
+              assignmentTimestamp:
+                storedCrewAssignments.timestamp || new Date().toISOString(),
+            }
+          : null;
 
         // Get reassigned crew data from stored state
         const reassignedCrewFromState = reassignedData[option.id]?.crew || null;
@@ -2412,12 +2427,16 @@ export function ComparisonMatrix({
                                               className="flex items-center gap-2 cursor-pointer"
                                               onClick={(e) => {
                                                 e.stopPropagation();
-                                                setSelectedAircraftFlight(index);
+                                                setSelectedAircraftFlight(
+                                                  index,
+                                                );
                                                 // Store the aircraft selection immediately
                                                 storeAircraftSelection(
                                                   selectedOptionDetails.id,
-                                                  selectedOptionDetails.rotation_plan.aircraftOptions,
-                                                  index
+                                                  selectedOptionDetails
+                                                    .rotation_plan
+                                                    .aircraftOptions,
+                                                  index,
                                                 );
                                               }}
                                             >
@@ -3049,12 +3068,14 @@ export function ComparisonMatrix({
                                                     </Badge>
                                                     <Button
                                                       size="sm"
-                                                      variant="ghost" title="View Rotation Impact"
+                                                      variant="ghost"
+                                                      title="View Rotation Impact"
                                                       className="h-6 w-6 p-0"
                                                       onClick={(e) => {
                                                         e.stopPropagation();
                                                         setExpandedCrew(
-                                                          expandedCrew === `reassigned-${index}`
+                                                          expandedCrew ===
+                                                            `reassigned-${index}`
                                                             ? null
                                                             : `reassigned-${index}`,
                                                         );
@@ -3081,10 +3102,10 @@ export function ComparisonMatrix({
                                                       ? "bg-green-100 text-green-700 border-green-300"
                                                       : (crewMember?.status ||
                                                             crewMember?.availability) ===
-                                                              "Sick" ||
+                                                            "Sick" ||
                                                           (crewMember?.status ||
                                                             crewMember?.availability) ===
-                                                              "Unavailable"
+                                                            "Unavailable"
                                                         ? "bg-red-100 text-red-700 border-red-300"
                                                         : (crewMember?.status ||
                                                               crewMember?.availability) ===
@@ -3156,12 +3177,16 @@ export function ComparisonMatrix({
                                                 setShowCrewSwapDialog(true);
 
                                                 // Store current crew assignments
-                                                const currentCrewData = selectedOptionDetails.rotation_plan.crew ||
-                                                                       selectedOptionDetails.rotation_plan.crewData || [];
+                                                const currentCrewData =
+                                                  selectedOptionDetails
+                                                    .rotation_plan.crew ||
+                                                  selectedOptionDetails
+                                                    .rotation_plan.crewData ||
+                                                  [];
                                                 storeCrewAssignments(
                                                   selectedOptionDetails.id,
                                                   currentCrewData,
-                                                  expandedCrew
+                                                  expandedCrew,
                                                 );
                                               }}
                                             >
@@ -3526,10 +3551,14 @@ export function ComparisonMatrix({
                                                                 <div className="font-medium">
                                                                   {new Date(
                                                                     flight.departure,
-                                                                  ).toLocaleTimeString("en-US", {
-                                                                    hour: "2-digit",
-                                                                    minute: "2-digit",
-                                                                  })}
+                                                                  ).toLocaleTimeString(
+                                                                    "en-US",
+                                                                    {
+                                                                      hour: "2-digit",
+                                                                      minute:
+                                                                        "2-digit",
+                                                                    },
+                                                                  )}
                                                                 </div>
                                                               </div>
                                                             </div>
@@ -4385,7 +4414,10 @@ export function ComparisonMatrix({
                                       );
 
                                       // Store the crew reassignment persistently
-                                      const currentStoredData = getStoredCrewAssignments(selectedOptionDetails.id);
+                                      const currentStoredData =
+                                        getStoredCrewAssignments(
+                                          selectedOptionDetails.id,
+                                        );
                                       const newReassignment = {
                                         originalIndex: originalIndex,
                                         originalCrew: selectedCrewForSwap,
@@ -4400,7 +4432,14 @@ export function ComparisonMatrix({
                                           ...currentStoredData,
                                           crewData: updatedCrew,
                                           reassignments: [
-                                            ...(currentStoredData?.reassignments || []).filter(r => r.originalIndex !== originalIndex),
+                                            ...(
+                                              currentStoredData?.reassignments ||
+                                              []
+                                            ).filter(
+                                              (r) =>
+                                                r.originalIndex !==
+                                                originalIndex,
+                                            ),
                                             newReassignment,
                                           ],
                                           lastUpdated: new Date().toISOString(),
@@ -4442,7 +4481,9 @@ export function ComparisonMatrix({
 
                                     setShowCrewSwapDialog(false);
                                     setSelectedCrewForSwap(null);
-                                    toast.success("Crew swap completed successfully");
+                                    toast.success(
+                                      "Crew swap completed successfully",
+                                    );
                                   }}
                                 >
                                   <UserCheck className="h-4 w-4 mr-2" />
