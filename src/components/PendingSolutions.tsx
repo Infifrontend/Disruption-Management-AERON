@@ -2673,13 +2673,13 @@ export function PendingSolutions() {
                       </CardContent>
                     </Card>
                   </div>
-                </div>
-              </TabsContent>
+                </TabsContent>
+             )}
+
             </Tabs>
           </DialogContent>
         </Dialog>
       )}
-
       <Dialog
         open={showDetailedOptionAnalysis}
         onOpenChange={setShowDetailedOptionAnalysis}
