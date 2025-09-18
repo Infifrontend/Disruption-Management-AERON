@@ -104,13 +104,7 @@ import { CustomAlertDialog } from "./CustomAlertDialog";
 import { useAppContext } from "../context/AppContext";
 import { useAirlineTheme } from "../hooks/useAirlineTheme";
 
-interface PassengerRebookingProps {
-  context: any;
-  onClearContext: any;
-  preservedSelections?: any;
-}
-
-export function PassengerRebooking({ context, onClearContext, preservedSelections }: PassengerRebookingProps) {
+export function PassengerRebooking({ context, onClearContext }) {
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -786,7 +780,8 @@ export function PassengerRebooking({ context, onClearContext, preservedSelection
       availability: "Available",
       image:
         "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=400&h=250&fit=crop",
-      description: "Elegant hotel with excellent conference facilities and dining options",
+      description:
+        "Elegant hotel with excellent conference facilities and dining options",
     },
     {
       id: "HTL-003",
@@ -934,7 +929,8 @@ export function PassengerRebooking({ context, onClearContext, preservedSelection
             selectedPriority === "all-priorities" ||
             passenger.priority === selectedPriority;
           const matchesStatus =
-            selectedStatus === "all-statuses" || passenger.status === selectedStatus;
+            selectedStatus === "all-statuses" ||
+            passenger.status === selectedStatus;
 
           return matchesSearch && matchesPriority && matchesStatus;
         },
@@ -1336,6 +1332,18 @@ export function PassengerRebooking({ context, onClearContext, preservedSelection
   };
 
   // Logic to handle crew assignment confirmation
+  const handleCrewSelection = (memberIdentifier) => {
+    setSelectedCrewMembers((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(memberIdentifier)) {
+        newSet.delete(memberIdentifier);
+      } else {
+        newSet.add(memberIdentifier);
+      }
+      return newSet;
+    });
+  };
+
   const handleConfirmCrewAssignment = async () => {
     try {
       if (selectedCrewMembers.size === 0) {
@@ -3548,9 +3556,7 @@ export function PassengerRebooking({ context, onClearContext, preservedSelection
                             </TableCell>
                             <TableCell>
                               <Badge
-                                className={getPriorityColor(
-                                  passenger.priority,
-                                )}
+                                className={getPriorityColor(passenger.priority)}
                               >
                                 {passenger.priority}
                               </Badge>
@@ -3585,8 +3591,7 @@ export function PassengerRebooking({ context, onClearContext, preservedSelection
                                   <Eye className="h-3 w-3 mr-1" />
                                   View
                                 </Button>
-                                {passenger.status ===
-                                  "Rebooking Required" && (
+                                {passenger.status === "Rebooking Required" && (
                                   <Button
                                     size="sm"
                                     className="btn-flydubai-primary text-xs"
@@ -3668,8 +3673,8 @@ export function PassengerRebooking({ context, onClearContext, preservedSelection
                             // If no violated crew from context, check if there's crew data from the context
                             if (
                               violatedCrewList.length === 0 &&
-                              context?.recoveryOption?.fullDetails
-                                ?.rotationPlan?.crew
+                              context?.recoveryOption?.fullDetails?.rotationPlan
+                                ?.crew
                             ) {
                               violatedCrewList =
                                 context.recoveryOption.fullDetails.rotationPlan.crew
@@ -3959,6 +3964,7 @@ export function PassengerRebooking({ context, onClearContext, preservedSelection
               </Card>
             </TabsContent>
 
+            {/* Crew HOTAC Tab */}
             <TabsContent value="crew-hotac" className="space-y-6">
               {/* Content for Crew HOTAC tab remains here */}
             </TabsContent>
