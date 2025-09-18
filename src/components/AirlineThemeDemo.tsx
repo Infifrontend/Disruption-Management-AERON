@@ -87,7 +87,7 @@ export function AirlineThemeDemo() {
 
           {isFlydubai && (
             <div className="mt-6 p-4 bg-gradient-to-r from-blue-50 to-orange-50 rounded-lg border border-airline-primary/20">
-              <h3 className="font-semibold text-airline-primary mb-2">Flydubai Configuration Active</h3>
+              <h3 className="font-semibold text-airline-primary mb-2">Flydubai.bg-flydubai-orange Configuration Active</h3>
               <p className="text-sm text-muted-foreground">
                 The system is configured for flydubai operations with the classic blue and orange color scheme.
               </p>

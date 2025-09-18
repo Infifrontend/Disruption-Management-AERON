@@ -68,6 +68,7 @@
   }
 }
 
+
 @layer base {
   * {
     @apply border-border;
@@ -97,7 +98,9 @@
 
 .bg-flydubai-orange {
   background-color: #ff8200;
+
 }
+
 
 .bg-flydubai-navy {
   background-color: #001f3f;
@@ -643,6 +646,19 @@ body {
 .border-airline-primary {
   border-color: color-mix(in srgb, var(--airline-primary) 90%, black);
 }
+
 .switch-flydubai [data-state=unchecked] {
-    background-color: #e2e8f0 !important;
+  background-color: #e2e8f0 !important;
+}
+
+.airline-ju .text-flydubai-orange {
+  color: #e3001f;
+}
+
+.airline-ju .bg-flydubai-orange {
+  background-color: #0059c2;
+}
+
+.airline-ju .border-flydubai-orange {
+  border-color: #e3001f;
 }

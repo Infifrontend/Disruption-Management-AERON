@@ -67,7 +67,7 @@ export default function App() {
   return (
     <AppProvider>
       <Router basename={import.meta.env.VITE_FRONTEND_BASE_URL || "/"}>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-backgroundairline-">
           <Suspense fallback={<LoadingSpinner airlineConfig={airlineConfig} />}>
             <Routes>
               <Route path="/login" element={<LoginPage />} />

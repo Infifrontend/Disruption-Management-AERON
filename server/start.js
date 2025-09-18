@@ -16,11 +16,12 @@ import {
   logDatabaseOperation,
   logRecoveryOperation,
 } from "./logger.js";
-import airlineTheme from '../src/config/airlineThemes.json' assert { type: 'json' };
+// import config from "./config/airlineConfig.js"
 
-console.log("airline config ===>",airlineTheme)
+// console.log("loaded config",config)
 
 const app = express();
+
 // Use environment variable for server port, falling back to PORT or 3001
 const port = process.env.BACKEND_PORT || 3001;
 
