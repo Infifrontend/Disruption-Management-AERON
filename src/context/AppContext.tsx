@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import { User } from '../services/authService'
-import { getAirlineConfig, type AirlineTheme } from '../config/airlineConfig'
+import { getAirlineConfig, getCurrentAirlineCurrency, type AirlineTheme } from '../config/airlineConfig'
 import { databaseService } from '../services/databaseService'
 
 interface AppContextType {

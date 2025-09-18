@@ -71,6 +71,10 @@ export function AirlineThemeDemo() {
                   <span className="text-muted-foreground">Secondary:</span> 
                   <span className="font-mono ml-2">{airlineConfig.colors.secondary}</span>
                 </div>
+                <div>
+                  <span className="text-muted-foreground">Currency:</span> 
+                  <span className="font-mono ml-2">{airlineConfig.currency}</span>
+                </div>
               </div>
             </AirlineBrandedCard>
           </div>

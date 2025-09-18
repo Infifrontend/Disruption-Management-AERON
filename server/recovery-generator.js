@@ -1,4 +1,4 @@
-import config from "./config/airlineConfig.js"
+import config, { getCurrency } from "./config/airlineConfig.js"
 // File system imports removed - using embedded data instead
 // available crew dummy information
 const availableDummyCrew = [

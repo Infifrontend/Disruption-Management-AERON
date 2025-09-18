@@ -42,6 +42,12 @@ export function getAirlineContent() {
     shortName: config.name,
     code: config.code,
     operationsCenter: `${config.displayName} Operations Center`,
-    recoverySystem: `${config.displayName} Airline Recovery Operations Network`
+    recoverySystem: `${config.displayName} Airline Recovery Operations Network`,
+    currency: config.currency || 'USD'
   };
+}
+
+export function getCurrency(): string {
+  const config = getAirlineConfig();
+  return config.currency || 'USD';
 }

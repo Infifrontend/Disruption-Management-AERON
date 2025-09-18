@@ -5,6 +5,7 @@ export interface AirlineTheme {
   code: string;
   name: string;
   displayName: string;
+  currency: string;
   colors: {
     primary: string;
     secondary: string;
@@ -42,6 +43,11 @@ export function getAirlineConfig(): AirlineTheme {
 export function getCurrentAirlineColors() {
   const config = getAirlineConfig();
   return config.colors;
+}
+
+export function getCurrentAirlineCurrency() {
+  const config = getAirlineConfig();
+  return config.currency || 'USD';
 }
 
 // Dynamic CSS variable injection

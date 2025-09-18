@@ -33,5 +33,6 @@ export function useAirlineTheme() {
     isQatarAirways: airlineConfig.code === "QR",
     isInfinti: airlineConfig.code === "IN",
     isAirserbic: airlineConfig.code === "JU",
+    currency: airlineConfig.currency || 'USD',
   };
 }
