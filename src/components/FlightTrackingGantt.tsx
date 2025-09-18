@@ -55,23 +55,26 @@ import {
 
 import { useAirlineTheme } from "../hooks/useAirlineTheme";
 
-// Enhanced mock aircraft data for Flydubai with 25+ aircraft and comprehensive flight schedules
-const aircraftFleet = [
-  {
-    id: "AC001",
-    tailNumber: "A6-FDX",
-    type: "B737-800",
-    capacity: 189,
-    currentLocation: "DXB",
-    status: "active",
-    utilization: 87,
-    nextMaintenance: "2025-01-15",
-    age: 8.5,
-    crew: "Crew Alpha",
-    gate: "T2-B12",
-    flights: [
-      {
-        id: `${airlineConfig.code}215`,
+export function FlightTrackingGantt() {
+  const { airlineConfig } = useAirlineTheme();
+
+  // Enhanced mock aircraft data for Flydubai with 25+ aircraft and comprehensive flight schedules
+  const aircraftFleet = [
+    {
+      id: "AC001",
+      tailNumber: "A6-FDX",
+      type: "B737-800",
+      capacity: 189,
+      currentLocation: "DXB",
+      status: "active",
+      utilization: 87,
+      nextMaintenance: "2025-01-15",
+      age: 8.5,
+      crew: "Crew Alpha",
+      gate: "T2-B12",
+      flights: [
+        {
+          id: `${airlineConfig.code}215`,
         departure: { time: "08:30", airport: "DXB" },
         arrival: { time: "13:15", airport: "BOM" },
         duration: 4.75,
@@ -729,11 +732,7 @@ const aircraftFleet = [
         priority: "medium",
       },
     ],
-  },
-];
-
-export function FlightTrackingGantt() {
-  const { airlineConfig } = useAirlineTheme();
+  ];
 
   // State management
   const [selectedDate, setSelectedDate] = useState(
