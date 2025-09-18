@@ -1257,6 +1257,11 @@ export function PendingSolutions() {
                 </TabsTrigger>
                 <TabsTrigger value="flight">Flight Details</TabsTrigger>
                 <TabsTrigger value="impact">Impact Analysis</TabsTrigger>
+                {selectedPlan?.hasPassengerData && (
+                  <TabsTrigger value="passenger-reaccommodation">
+                    Passenger Re-accommodation
+                  </TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="overview" className="space-y-4">
@@ -2052,7 +2057,9 @@ export function PendingSolutions() {
                               {
                                 selectedOptionForDetails
                                   ?.pending_recovery_solutions?.full_details
-                                  ?.passenger_impact?.affected
+                                  ?.passenger_impact?.affected ||
+                                selectedOptionForDetails?.passenger_impact?.affected ||
+                                "N/A"
                               }
                             </div>
                             <div className="text-sm text-blue-700">
@@ -2064,7 +2071,9 @@ export function PendingSolutions() {
                               {
                                 selectedOptionForDetails
                                   ?.pending_recovery_solutions?.full_details
-                                  ?.passenger_impact?.reaccommodated
+                                  ?.passenger_impact?.reaccommodated ||
+                                selectedOptionForDetails?.passenger_impact?.reaccommodated ||
+                                "N/A"
                               }
                             </div>
                             <div className="text-sm text-green-700">
@@ -2072,9 +2081,7 @@ export function PendingSolutions() {
                             </div>
                           </div>
                           <div className="text-center p-4 bg-red-50 rounded-lg">
-                            <div className="text-3xl font-bold text-red-600">
-                              0
-                            </div>
+                            <div className="text-3xl font-bold text-red-600">0</div>
                             <div className="text-sm text-red-700">
                               Other Flights
                             </div>
@@ -2108,22 +2115,17 @@ export function PendingSolutions() {
                             <div className="space-y-2">
                               <div className="flex justify-between">
                                 <span className="text-sm">
-                                  AED{" "}
-                                  {
-                                    selectedOptionForDetails
-                                      ?.pending_recovery_solutions?.full_details
-                                      ?.passenger_impact?.affected
-                                  }{" "}
-                                  per passenger (AED261):
+                                  Compensation per passenger:
                                 </span>
                                 <span className="font-medium">
                                   AED{" "}
                                   {
                                     selectedOptionForDetails
-                                      .pending_recovery_solutions?.full_details
-                                      ?.passenger_impact?.affected
-                                  }{" "}
-                                  per passenger (AED261):
+                                      ?.pending_recovery_solutions?.full_details
+                                      ?.passenger_impact?.affected ||
+                                    selectedOptionForDetails?.passenger_impact?.affected ||
+                                    "261"
+                                  }
                                 </span>
                               </div>
                             </div>
@@ -2154,9 +2156,9 @@ export function PendingSolutions() {
                                 selectedOptionForDetails
                                   ?.pending_recovery_solutions?.full_details
                                   ?.passenger_rebooking ||
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions
+                                selectedOptionForDetails?.pending_recovery_solutions
                                   ?.passenger_rebooking ||
+                                selectedOptionForDetails?.passenger_rebooking ||
                                 [];
 
                               // Ensure currentPassengerData is always an array
@@ -2333,9 +2335,9 @@ export function PendingSolutions() {
                                 selectedOptionForDetails
                                   ?.pending_recovery_solutions?.full_details
                                   ?.passenger_rebooking ||
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions
+                                selectedOptionForDetails?.pending_recovery_solutions
                                   ?.passenger_rebooking ||
+                                selectedOptionForDetails?.passenger_rebooking ||
                                 [];
 
                               const groupCount = Array.isArray(rawPassengerData)
@@ -2671,8 +2673,8 @@ export function PendingSolutions() {
                       </CardContent>
                     </Card>
                   </div>
-                </TabsContent>
-               )}
+                </div>
+              </TabsContent>
             </Tabs>
           </DialogContent>
         </Dialog>
@@ -2722,7 +2724,7 @@ export function PendingSolutions() {
                    Object.keys(selectedOptionForDetails?.pending_recovery_solutions
                     ?.full_details?.passenger_rebooking).length > 0 && (
                     <TabsTrigger value="passenger-reaccommodation">
-                      Passenger Re-accommodation 
+                      Passenger Re-accommodation
                     </TabsTrigger>
                   )}
                 <TabsTrigger value="rotation-impact">
@@ -3014,7 +3016,9 @@ export function PendingSolutions() {
                           {
                             selectedOptionForDetails
                               ?.pending_recovery_solutions?.full_details
-                              ?.passenger_impact?.affected
+                              ?.passenger_impact?.affected ||
+                            selectedOptionForDetails?.passenger_impact?.affected ||
+                            "N/A"
                           }
                         </div>
                         <div className="text-sm text-blue-700">
@@ -3026,7 +3030,9 @@ export function PendingSolutions() {
                           {
                             selectedOptionForDetails
                               ?.pending_recovery_solutions?.full_details
-                              ?.passenger_impact?.reaccommodated
+                              ?.passenger_impact?.reaccommodated ||
+                            selectedOptionForDetails?.passenger_impact?.reaccommodated ||
+                            "N/A"
                           }
                         </div>
                         <div className="text-sm text-green-700">
@@ -3064,22 +3070,17 @@ export function PendingSolutions() {
                         <div className="space-y-2">
                           <div className="flex justify-between">
                             <span className="text-sm">
-                              AED{" "}
-                              {
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions?.full_details
-                                  ?.passenger_impact?.affected
-                              }{" "}
-                              per passenger (AED261):
+                              Compensation per passenger:
                             </span>
                             <span className="font-medium">
                               AED{" "}
                               {
                                 selectedOptionForDetails
-                                  .pending_recovery_solutions?.full_details
-                                  ?.passenger_impact?.affected
-                              }{" "}
-                              per passenger (AED261):
+                                  ?.pending_recovery_solutions?.full_details
+                                  ?.passenger_impact?.affected ||
+                                selectedOptionForDetails?.passenger_impact?.affected ||
+                                "261"
+                              }
                             </span>
                           </div>
                         </div>
@@ -3107,10 +3108,12 @@ export function PendingSolutions() {
                       <div className="space-y-4 max-h-64 overflow-y-auto">
                         {(() => {
                           const rawPassengerData =
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.full_details?.passenger_rebooking ||
+                            selectedOptionForDetails
+                              ?.pending_recovery_solutions?.full_details
+                              ?.passenger_rebooking ||
                             selectedOptionForDetails?.pending_recovery_solutions
                               ?.passenger_rebooking ||
+                            selectedOptionForDetails?.passenger_rebooking ||
                             [];
 
                           // Ensure currentPassengerData is always an array
@@ -3251,7 +3254,10 @@ export function PendingSolutions() {
                                                 </span>
                                                 <span className="text-xs">
                                                   {passenger.additional_services.map(
-                                                    (service, serviceIndex) => (
+                                                    (
+                                                      service,
+                                                      serviceIndex,
+                                                    ) => (
                                                       <Badge
                                                         key={serviceIndex}
                                                         variant="outline"
@@ -3285,6 +3291,7 @@ export function PendingSolutions() {
                               ?.passenger_rebooking ||
                             selectedOptionForDetails?.pending_recovery_solutions
                               ?.passenger_rebooking ||
+                            selectedOptionForDetails?.passenger_rebooking ||
                             [];
 
                           const groupCount = Array.isArray(rawPassengerData)
@@ -3310,346 +3317,292 @@ export function PendingSolutions() {
                     </div>
                   </CardContent>
                 </Card>
-              </TabsContent>
 
-              <TabsContent value="rotation-impact" className="space-y-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Activity className="h-5 w-5" />
-                      Rotation Impact Analysis
-                    </CardTitle>
+                    <CardTitle>Cost Impact Analysis</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <Alert className="border-blue-200 bg-blue-50 mb-4">
-                      <Info className="h-4 w-4 text-blue-600" />
-                      <AlertDescription className="text-blue-800">
-                        This analysis shows how the recovery option affects
-                        subsequent flights, aircraft rotations, and crew
-                        assignments.
-                      </AlertDescription>
-                    </Alert>
+                    <div className="space-y-4">
+                      {(() => {
+                        // Try to get cost breakdown from multiple sources
+                        const costBreakdown =
+                          selectedOptionForDetails?.costBreakdown?.breakdown ||
+                          selectedOptionForDetails?.cost_breakdown?.breakdown ||
+                          selectedOptionForDetails?.pending_recovery_solutions
+                            ?.cost_analysis?.breakdown ||
+                          selectedOptionForDetails?.pending_recovery_solutions
+                            ?.full_details?.costBreakdown ||
+                          {};
 
-                    <div className="space-y-6">
-                      {/* Alternate Aircraft Rotation Impact */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2 text-lg">
-                            <Plane className="h-5 w-5 text-blue-600" />
-                            Alternate Aircraft Rotation Impact
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {(() => {
-                            // Get rotation impact from API data
-                            const rotationImpact =
-                              selectedOptionForDetails?.matchingOption
-                                ?.rotation_impact ||
-                              selectedOptionForDetails?.rotationImpact
-                                ?.rotation_impact ||
-                              selectedPlan?.matchingOption?.rotation_impact ||
-                              selectedPlan?.rotationImpact?.rotation_impact;
+                        const costTotal =
+                          selectedOptionForDetails?.costTotal ||
+                          selectedOptionForDetails?.cost_breakdown?.total ||
+                          selectedOptionForDetails?.pending_recovery_solutions
+                            ?.cost_analysis?.total ||
+                          selectedOptionForDetails?.pending_recovery_solutions
+                            ?.full_details?.costBreakdown?.total;
 
-                            if (
-                              !Array.isArray(rotationImpact) ||
-                              rotationImpact.length === 0
-                            ) {
-                              return (
-                                <div className="text-center py-6">
-                                  <Plane className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                                  <p className="text-muted-foreground">
-                                    No alternate aircraft impact data available
-                                  </p>
+                        if (
+                          costBreakdown &&
+                          Object.keys(costBreakdown).length > 0
+                        ) {
+                          return (
+                            <div className="space-y-4">
+                              {/* Display total if available */}
+                              {costTotal && (
+                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                  <div className="flex justify-between items-center">
+                                    <span className="font-medium text-blue-800">
+                                      {costTotal.title || "Total Cost"}:
+                                    </span>
+                                    <span className="text-lg font-semibold text-blue-900">
+                                      {costTotal.amount ||
+                                        `AED ${(
+                                          selectedOptionForDetails.estimatedCost || 0
+                                        ).toLocaleString()}`}
+                                    </span>
+                                  </div>
+                                  {costTotal.description && (
+                                    <p className="text-sm text-blue-700 mt-1">
+                                      {costTotal.description}
+                                    </p>
+                                  )}
+                                </div>
+                              )}
+
+                              {/* Display breakdown items */}
+                              <div className="space-y-3">
+                                <h4 className="font-medium text-gray-900">
+                                  Cost Breakdown:
+                                </h4>
+                                {Array.isArray(costBreakdown)
+                                  ? costBreakdown.map((item, index) => (
+                                      <div
+                                        key={index}
+                                        className="space-y-2 p-3 border rounded-lg"
+                                      >
+                                        <div className="flex justify-between items-center">
+                                          <span className="text-sm font-medium">
+                                            {item.category ||
+                                              `Cost Item ${index + 1}`}
+                                          </span>
+                                          <span className="font-semibold text-flydubai-orange">
+                                            {item.amount}
+                                          </span>
+                                        </div>
+                                        {item.percentage && (
+                                          <div className="w-full bg-gray-200 rounded-full h-2">
+                                            <div
+                                              className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
+                                              style={{
+                                                width: `${item.percentage}%`,
+                                              }}
+                                            ></div>
+                                          </div>
+                                        )}
+                                        <div className="flex justify-between items-center text-xs">
+                                          {item.percentage && (
+                                            <span className="text-gray-600">
+                                              {item.percentage}% of total
+                                              cost
+                                            </span>
+                                          )}
+                                          {item.description && (
+                                            <span className="text-blue-600">
+                                              {item.description}
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+                                    ))
+                                  : Object.entries(costBreakdown).map(
+                                      ([key, value]) => (
+                                        <div
+                                          key={key}
+                                          className="space-y-2 p-3 border rounded-lg"
+                                        >
+                                          <div className="flex justify-between items-center">
+                                            <span className="text-sm font-medium capitalize">
+                                              {key.replace(
+                                                /([A-Z])/g,
+                                                " $1",
+                                              )}
+                                            </span>
+                                            <span className="font-semibold text-flydubai-orange">
+                                              {typeof value === "object" &&
+                                              value &&
+                                              typeof (value as any)
+                                                .amount === "number"
+                                                ? `AED ${(value as any).amount.toLocaleString()}`
+                                                : typeof value === "number"
+                                                  ? `AED ${value.toLocaleString()}`
+                                                  : typeof value ===
+                                                        "string" &&
+                                                        !value.includes(
+                                                          "[object",
+                                                        )
+                                                    ? value
+                                                    : `AED ${(
+                                                        selectedOptionForDetails.estimatedCost || 0
+                                                      ).toLocaleString()}`}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
                                 </div>
                               );
-                            }
-
-                            return rotationImpact.map((flight, index) => (
-                              <div
-                                key={index}
-                                className="p-4 border rounded-lg bg-white space-y-3 mb-4"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <Plane className="h-4 w-4 text-blue-600" />
-                                    <span className="font-semibold">
-                                      {flight.flightNumber}
-                                    </span>
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs"
-                                    >
-                                      {flight.origin_code} →{" "}
-                                      {flight.destination_code}
-                                    </Badge>
-                                  </div>
-                                  <Badge
-                                    className={
-                                      flight.impact === "High Impact"
-                                        ? "bg-red-100 text-red-700"
-                                        : flight.impact === "Medium Impact"
-                                          ? "bg-yellow-100 text-yellow-700"
-                                          : "bg-green-100 text-green-700"
-                                    }
-                                  >
-                                    {flight.impact}
-                                  </Badge>
-                                </div>
-
+                            } else {
+                              // Default breakdown when no data available
+                              return (
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                   <div>
-                                    <Label className="text-xs text-muted-foreground">
-                                      Route
-                                    </Label>
-                                    <p className="font-medium">
-                                      {flight.origin} → {flight.destination}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs text-muted-foreground">
-                                      Delay
-                                    </Label>
-                                    <p className="font-medium text-red-600">
-                                      {flight.delay}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs text-muted-foreground">
-                                      Departure
-                                    </Label>
-                                    <p className="font-medium">
-                                      {new Date(
-                                        flight.departure,
-                                      ).toLocaleString("en-IN", {
-                                        timeZone: "Asia/Kolkata",
-                                        hour12: true,
-                                      })}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs text-muted-foreground">
-                                      Passengers Affected
-                                    </Label>
-                                    <p className="font-medium">
-                                      {flight.passengers}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                <div className="p-3 bg-gray-50 rounded">
-                                  <Label className="text-xs text-muted-foreground">
-                                    Impact Reason
-                                  </Label>
-                                  <p className="text-sm mt-1">
-                                    {flight.reason}
-                                  </p>
-                                </div>
-                              </div>
-                            ));
-                          })()}
-                        </CardContent>
-                      </Card>
-
-                      {/* Crew Reassignment Rotation Impact */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2 text-lg">
-                            <Users className="h-5 w-5 text-purple-600" />
-                            Crew Reassignment Rotation Impact
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {(() => {
-                            // Get crew data from API - check multiple possible locations
-                            const crewData =
-                              selectedOptionForDetails
-                                ?.pending_recovery_solutions?.full_details
-                                ?.crew_hotel_assignments ||
-                              selectedOptionForDetails?.assignedCrew ||
-                              selectedPlan?.assignedCrew ||
-                              [];
-
-                            // If we have crew hotel assignments, extract crew members
-                            let crewMembers = [];
-                            if (
-                              Array.isArray(crewData) &&
-                              crewData.length > 0 &&
-                              crewData[0].crew_member
-                            ) {
-                              // Extract from crew hotel assignments
-                              crewMembers = crewData.flatMap((assignment) =>
-                                assignment.crew_member.map((crew) => ({
-                                  name: crew.name,
-                                  role: crew.rank,
-                                  base: crew.base,
-                                  status: "Reassigned",
-                                  employeeId: crew.employee_id,
-                                  contact: crew.contact_number,
-                                })),
-                              );
-                            } else if (Array.isArray(crewData)) {
-                              // Use direct crew data
-                              crewMembers = crewData;
-                            }
-
-                            // Fallback crew data if no API data
-                            if (crewMembers.length === 0) {
-                              crewMembers = [
-                                {
-                                  name: "Capt. Ahmed Hassan",
-                                  role: "Captain",
-                                  base: "DXB",
-                                  status: "Reassigned",
-                                  employeeId: `${airlineConfig.code}001234`,
-                                },
-                                {
-                                  name: "F/O Sarah Khan",
-                                  role: "First Officer",
-                                  base: "DXB",
-                                  status: "Reassigned",
-                                  employeeId:  `${airlineConfig.code}001114`,
-                                },
-                              ];
-                            }
-
-                            return (
-                              <div className="space-y-4">
-                                {crewMembers.map((crewMember, index) => {
-                                  // Generate rotation impact for each crew member based on role with safe handling
-                                  const crewRotationImpact = Array.isArray(crewMember.rotation_impact)
-                                    ? crewMember.rotation_impact
-                                    : [
-                                        {
-                                          flightNumber: `${airlineConfig.code}${Math.floor(Math.random() * 900) + 100}`,
-                                          origin_code: "DXB",
-                                          destination_code: "BEY",
-                                          impact: "Low Impact",
-                                          delay: "15 min",
-                                          dutyTime: "8h 30m",
-                                          restPeriod: "12h 45m",
-                                          reason: `${crewMember.role} reassignment completed successfully`
-                                        }
-                                      ];
-
-                                  return (
-                                    <div
-                                      key={index}
-                                      className="border rounded-lg p-4 space-y-3"
-                                    >
-                                      <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-3">
-                                          <div className="p-2 bg-purple-100 rounded">
-                                            <UserCheck className="h-4 w-4 text-purple-600" />
-                                          </div>
-                                          <div>
-                                            <h4 className="font-semibold">
-                                              {crewMember.name}
-                                            </h4>
-                                            <Badge
-                                              variant="outline"
-                                              className="text-xs"
-                                            >
-                                              {crewMember.role}
-                                            </Badge>
-                                          </div>
-                                        </div>
-                                        <div className="text-right text-sm">
-                                          <p className="text-muted-foreground">
-                                            Base: {crewMember.base || "DXB"}
-                                          </p>
-                                          <p className="text-muted-foreground">
-                                            Status:{" "}
-                                            {crewMember.status || "Available"}
-                                          </p>
-                                        </div>
-                                      </div>
-
-                                      <div className="space-y-3">
-                                        {crewRotationImpact.map(
-                                          (flight, flightIndex) => (
-                                            <div
-                                              key={flightIndex}
-                                              className="p-3 border rounded bg-purple-50 space-y-2"
-                                            >
-                                              <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                  <Plane className="h-4 w-4 text-purple-600" />
-                                                  <span className="font-medium">
-                                                    {flight.flightNumber}
-                                                  </span>
-                                                  <Badge
-                                                    variant="outline"
-                                                    className="text-xs"
-                                                  >
-                                                    {flight.origin_code} →{" "}
-                                                    {flight.destination_code}
-                                                  </Badge>
-                                                </div>
-                                                <Badge
-                                                  className={
-                                                    flight.impact ===
-                                                    "High Impact"
-                                                      ? "bg-red-100 text-red-700 border-red-200"
-                                                      : flight.impact ===
-                                                          "Medium Impact"
-                                                        ? "bg-yellow-100 text-yellow-700 border-yellow-200"
-                                                        : "bg-green-100 text-green-700 border-green-200"
-                                                  }
-                                                >
-                                                  {flight.impact}
-                                                </Badge>
-                                              </div>
-
-                                              <div className="grid grid-cols-3 gap-3 text-xs">
-                                                <div>
-                                                  <Label className="text-muted-foreground">
-                                                    Delay
-                                                  </Label>
-                                                  <p className="font-medium">
-                                                    {flight.delay}
-                                                  </p>
-                                                </div>
-                                                <div>
-                                                  <Label className="text-muted-foreground">
-                                                    Duty Time
-                                                  </Label>
-                                                  <p className="font-medium">
-                                                    {flight.dutyTime}
-                                                  </p>
-                                                </div>
-                                                <div>
-                                                  <Label className="text-muted-foreground">
-                                                    Rest Period
-                                                  </Label>
-                                                  <p className="font-medium">
-                                                    {flight.restPeriod}
-                                                  </p>
-                                                </div>
-                                              </div>
-
-                                              <div className="p-2 bg-white rounded text-xs">
-                                                <Label className="text-muted-foreground">
-                                                  Reason
-                                                </Label>
-                                                <p className="mt-1">
-                                                  {flight.reason}
-                                                </p>
-                                              </div>
-                                            </div>
-                                          ),
-                                        )}
-                                      </div>
+                                    <span className="text-gray-600">
+                                      Direct Costs:
+                                    </span>
+                                    <div className="font-medium">
+                                      AED{" "}
+                                      {(
+                                        (selectedOptionForDetails.estimatedCost || 50000) *
+                                        0.6
+                                      ).toLocaleString()}
                                     </div>
-                                  );
-                                })}
-                              </div>
-                            );
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">
+                                      Indirect Costs:
+                                    </span>
+                                    <div className="font-medium">
+                                      AED{" "}
+                                      {(
+                                        (selectedOptionForDetails.estimatedCost || 50000) *
+                                        0.4
+                                      ).toLocaleString()}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">
+                                      Passenger Compensation:
+                                    </span>
+                                    <div className="font-medium">
+                                      AED{" "}
+                                      {(
+                                        (selectedOptionForDetails.estimatedCost || 50000) *
+                                        0.3
+                                      ).toLocaleString()}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-600">
+                                      Operational Costs:
+                                    </span>
+                                    <div className="font-medium">
+                                      AED{" "}
+                                      {(
+                                        (selectedOptionForDetails.estimatedCost || 50000) *
+                                        0.7
+                                      ).toLocaleString()}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            }
                           })()}
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </CardContent>
-                </Card>
+
+                          <Separator />
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">
+                              Total Estimated Cost:
+                            </span>
+                            <span className="text-lg font-semibold text-flydubai-orange">
+                              {(() => {
+                                const costTotal =
+                                  selectedOptionForDetails.costTotal ||
+                                  selectedOptionForDetails.cost_breakdown
+                                    ?.total ||
+                                  selectedOptionForDetails.pending_recovery_solutions
+                                    ?.cost_analysis?.total ||
+                                  selectedOptionForDetails.pending_recovery_solutions
+                                    ?.full_details?.costBreakdown?.total;
+
+                                if (costTotal && costTotal.amount) {
+                                  return costTotal.amount;
+                                }
+                                return `AED ${(selectedOptionForDetails.estimatedCost || 50000).toLocaleString()}`;
+                              })()}
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Operational Impact</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 gap-3">
+                            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Clock className="h-4 w-4 text-yellow-600" />
+                                <span className="font-medium text-yellow-800">
+                                  Schedule Impact
+                                </span>
+                              </div>
+                              <p className="text-sm text-yellow-700">
+                                {selectedOptionForDetails.estimatedDelay || 0}{" "}
+                                minute delay expected
+                              </p>
+                            </div>
+
+                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Users className="h-4 w-4 text-blue-600" />
+                                <span className="font-medium text-blue-800">
+                                  Passenger Impact
+                                </span>
+                              </div>
+                              <p className="text-sm text-blue-700">
+                                {selectedOptionForDetails.passengers || "N/A"}{" "}
+                                passengers affected
+                              </p>
+                            </div>
+
+                            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                              <div className="flex items-center gap-2 mb-1">
+                                <TrendingUp className="h-4 w-4 text-green-600" />
+                                <span className="font-medium text-green-800">
+                                  Success Probability
+                                </span>
+                              </div>
+                              <p className="text-sm text-green-700">
+                                {selectedOptionForDetails.confidence || 80}%
+                                confidence in successful resolution
+                              </p>
+                            </div>
+
+                            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Target className="h-4 w-4 text-purple-600" />
+                                <span className="font-medium text-purple-800">
+                                  Network Impact
+                                </span>
+                              </div>
+                              <p className="text-sm text-purple-700">
+                                {selectedOptionForDetails.networkImpact ||
+                                  selectedOptionForDetails.impact ||
+                                  "Assessment pending"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           )}
