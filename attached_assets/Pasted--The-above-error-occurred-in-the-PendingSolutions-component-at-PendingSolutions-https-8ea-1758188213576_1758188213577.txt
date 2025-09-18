@@ -1,0 +1,35 @@
+ The above error occurred in the <PendingSolutions> component:
+
+    at PendingSolutions (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/components/PendingSolutions.tsx:79:29)
+    at PendingSolutionsPage
+    at div
+    at div
+    at div
+    at div
+    at Layout (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/components/Layout.tsx:70:26)
+    at ProtectedRoute (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/components/ProtectedRoute.tsx:22:34)
+    at RenderedRoute (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=f1e1a504:5525:26)
+    at Routes (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=f1e1a504:6261:3)
+    at Suspense
+    at div
+    at Router (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=f1e1a504:6204:13)
+    at BrowserRouter (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/node_modules/.vite/deps/react-router-dom.js?v=f1e1a504:9273:3)
+    at AppProvider (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/context/AppContext.tsx:22:31)
+    at App (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/App.tsx:78:29)
+    at ErrorBoundary (https://8ea35467-5600-43ff-858c-2e298cca61ce-00-31pdcboub79sj.pike.replit.dev/src/main.tsx:10:5)
+
+React will try to recreate this component tree from scratch using the error boundary you provided, ErrorBoundary.
+
+ Application Error: TypeError: Cannot read properties of undefined (reading 'map')
+    at src/components/Pendi…utions.tsx:5889:116
+    at Array.map (<anonymous>)
+    at src/components/Pendi…utions.tsx:5811:108
+    at PendingSolutions (src/components/Pendi…lutions.tsx:6055:23)
+    at renderWithHooks (chunk-PJEEZAML.js:11548:26)
+    at updateFunctionComponent (chunk-PJEEZAML.js:14582:28)
+    at beginWork (chunk-PJEEZAML.js:15924:22)
+    at beginWork$1 (chunk-PJEEZAML.js:19753:22)
+    at performUnitOfWork (chunk-PJEEZAML.js:19198:20)
+    at workLoopSync (chunk-PJEEZAML.js:19137:13) 
+Object
+componentDidCatch	@	src/main.tsx:17
