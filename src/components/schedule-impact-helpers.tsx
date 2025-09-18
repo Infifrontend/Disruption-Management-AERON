@@ -130,7 +130,7 @@ export const calculateTotalPassengers = (originalPlan, flight) => {
 export const calculateRevenueAtRisk = (originalPlan) => {
   const avgRevenue = 125000 // Per flight in airline currency
   const flightCount = originalPlan?.length || 1
-  return `${currency} ${(avgRevenue * flightCount).toLocaleString()}`
+  return ` ${(avgRevenue * flightCount).toLocaleString()}`
 }
 
 export const countCriticalConflicts = (newPlan) => {

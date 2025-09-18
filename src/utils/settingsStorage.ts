@@ -1,5 +1,7 @@
 // Settings storage utility with PostgreSQL database integration and localStorage fallback
 import { databaseService } from "../services/databaseService";
+import { useAirlineTheme } from "../hooks/useAirlineTheme";
+
 
 
 export interface SettingsData {
@@ -986,12 +988,12 @@ class SettingsStorage {
         {
           key: "autoApprovalThreshold",
           displayLabel: "Auto Approval Threshold",
-          description: "Cost threshold for automatic approval (AED)",
+          description:"Cost threshold for automatic approval (EUR)",
           type: "number",
           min: 0,
           max: 100000,
           step: 1000,
-          unit: "AED",
+          unit: "EUR",
           defaultValue: 25000,
         },
         {

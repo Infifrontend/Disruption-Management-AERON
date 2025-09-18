@@ -439,7 +439,6 @@ export function PassengerRebooking({ context, onClearContext }) {
 
   // Enhanced Available Flights with detailed information
   const getAvailableFlights = (passengerOrGroup) => {
-    const { airlineConfig } = useAirlineTheme();
     const passengersCount = Array.isArray(passengerOrGroup)
       ? passengerOrGroup.length
       : 1;

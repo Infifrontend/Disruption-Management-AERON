@@ -46,6 +46,8 @@ import {
   YAxis,
   Label as RechartsLabel,
 } from "recharts";
+import { useAirlineTheme } from "../hooks/useAirlineTheme";
+
 
 interface RecoveryLog {
   solution_id: string;
@@ -107,6 +109,7 @@ interface TrendData {
 }
 
 export function PastRecoveryLogs() {
+   const { airlineConfig } = useAirlineTheme();
   const [recoveryLogs, setRecoveryLogs] = useState<RecoveryLog[]>([]);
   const [kpiData, setKpiData] = useState<KPIData | null>(null);
   const [trendData, setTrendData] = useState<TrendData[]>([]);
@@ -481,10 +484,10 @@ export function PastRecoveryLogs() {
   };
 
   const formatCurrency = (amount: number | undefined) => {
-    if (amount === undefined) return "AED 0";
+    if (amount === undefined) return airlineConfig.currency+" 0";
     return new Intl.NumberFormat("en-AE", {
       style: "currency",
-      currency: "AED",
+      currency: airlineConfig.currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);

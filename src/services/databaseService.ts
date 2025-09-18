@@ -141,8 +141,8 @@ class DatabaseService {
     } else {
       // Fallback to current domain logic only if VITE_API_URL is not set
       const currentDomain = window.location.hostname;
-      if (currentDomain === 'localhost' || currentDomain === '127.0.0.1') {
-        this.baseUrl = 'http://localhost:3001/api';
+      if (currentDomain === "localhost" || currentDomain === "127.0.0.1") {
+        this.baseUrl = "http://localhost:3001/api";
       } else {
         // For Replit production environment
         this.baseUrl = `https://${currentDomain}:3001/api`;
@@ -150,8 +150,8 @@ class DatabaseService {
     }
 
     // Ensure baseUrl doesn't end with slash to prevent double slashes
-    this.baseUrl = this.baseUrl.replace(/\/$/, '');
-    console.log('Database service initialized with base URL:', this.baseUrl);
+    this.baseUrl = this.baseUrl.replace(/\/$/, "");
+    console.log("Database service initialized with base URL:", this.baseUrl);
   }
 
   // Getter for baseUrl to allow other services to access it
@@ -160,7 +160,11 @@ class DatabaseService {
   }
 
   // Helper method to retry API calls when database is unavailable
-  private async retryApiCall<T>(operation: () => Promise<T>, fallbackValue: T, maxRetries?: number): Promise<T> {
+  private async retryApiCall<T>(
+    operation: () => Promise<T>,
+    fallbackValue: T,
+    maxRetries?: number,
+  ): Promise<T> {
     const retries = maxRetries ?? 3;
     let lastError: any = null;
 
@@ -174,14 +178,16 @@ class DatabaseService {
         lastError = error;
 
         // Check if it's a 503 error (database unavailable)
-        if (error.message?.includes('503')) {
-          console.log(`API call failed (attempt ${attempt + 1}/${retries}): Database unavailable`);
+        if (error.message?.includes("503")) {
+          console.log(
+            `API call failed (attempt ${attempt + 1}/${retries}): Database unavailable`,
+          );
 
           // Wait before retry, with exponential backoff
           if (attempt < retries - 1) {
             const delay = Math.min(1000 * Math.pow(2, attempt), 5000);
             console.log(`Retrying in ${delay}ms...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
+            await new Promise((resolve) => setTimeout(resolve, delay));
 
             // Check health before retry
             const isHealthy = await this.healthCheck();
@@ -201,13 +207,9 @@ class DatabaseService {
     return fallbackValue;
   }
 
-
-
   private getTimeout(): number {
     return parseInt(import.meta.env.VITE_API_TIMEOUT || "10000", 10);
   }
-
-
 
   // Helper method to format URLs correctly for the current backend
   private formatUrl(endpoint: string): string {
@@ -294,7 +296,7 @@ class DatabaseService {
         recoveryOptions: {},
         nlp: {},
         notifications: {},
-        system: {}
+        system: {},
       };
     }
   }
@@ -452,7 +454,7 @@ class DatabaseService {
   // Batch save custom rules
   async batchSaveCustomRules(
     rules: Array<Omit<CustomRule, "id" | "created_at" | "updated_at">>,
-    userId: string = "system"
+    userId: string = "system",
   ): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/custom-rules/batch`, {
@@ -602,8 +604,8 @@ class DatabaseService {
           "Content-Type": "application/json",
         },
         signal: controller.signal,
-        mode: 'cors',
-        credentials: 'include'
+        mode: "cors",
+        credentials: "include",
       });
 
       clearTimeout(timeoutId);
@@ -616,8 +618,8 @@ class DatabaseService {
           isHealthy = data.status === "healthy";
 
           // Special handling for database sleep/wake cycles
-          if (data.database === 'sleeping') {
-            console.log('Database is sleeping, will retry shortly...');
+          if (data.database === "sleeping") {
+            console.log("Database is sleeping, will retry shortly...");
             // Don't cache sleeping state, allow immediate retry
             this.healthCheckCache = {
               status: false,
@@ -627,15 +629,17 @@ class DatabaseService {
           }
 
           if (isHealthy) {
-            console.log('Database health check successful:', data);
+            console.log("Database health check successful:", data);
           }
         } catch (jsonError) {
-          console.warn('Health check JSON parse error:', jsonError);
+          console.warn("Health check JSON parse error:", jsonError);
           // If JSON parsing fails but response is ok, consider it healthy
           isHealthy = response.status === 200;
         }
       } else {
-        console.warn(`Health check HTTP error: ${response.status} ${response.statusText}`);
+        console.warn(
+          `Health check HTTP error: ${response.status} ${response.statusText}`,
+        );
       }
 
       // Cache the result
@@ -656,11 +660,11 @@ class DatabaseService {
       return isHealthy;
     } catch (error) {
       if (error instanceof Error) {
-        if (error.name === 'AbortError') {
+        if (error.name === "AbortError") {
           console.warn("Health check timed out");
-        } else if (error.message.includes('CORS')) {
+        } else if (error.message.includes("CORS")) {
           console.warn("Health check CORS error:", error.message);
-        } else if (error.message.includes('fetch')) {
+        } else if (error.message.includes("fetch")) {
           console.warn("Health check network error:", error.message);
         } else {
           console.warn("Health check failed:", error.message);
@@ -745,19 +749,22 @@ class DatabaseService {
   async saveScreenSetting(
     screenId: string,
     enabled: boolean,
-    userId: string = "system"
+    userId: string = "system",
   ): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/screen-settings/${screenId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
+      const response = await fetch(
+        `${this.baseUrl}/screen-settings/${screenId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            enabled,
+            updated_by: userId,
+          }),
         },
-        body: JSON.stringify({
-          enabled,
-          updated_by: userId,
-        }),
-      });
+      );
 
       return response.ok;
     } catch (error) {
@@ -768,7 +775,7 @@ class DatabaseService {
 
   async batchSaveScreenSettings(
     screenSettings: any[],
-    userId: string = "system"
+    userId: string = "system",
   ): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/screen-settings/batch`, {
@@ -787,7 +794,9 @@ class DatabaseService {
       }
 
       const result = await response.json();
-      console.log(`Batch saved ${screenSettings.length} screen settings to database`);
+      console.log(
+        `Batch saved ${screenSettings.length} screen settings to database`,
+      );
       return true;
     } catch (error) {
       console.error("Failed to batch save screen settings:", error);
@@ -803,7 +812,7 @@ class DatabaseService {
       value: any;
       type: SettingsData["type"];
     }>,
-    userId: string = "system"
+    userId: string = "system",
   ): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/settings/batch`, {
@@ -914,12 +923,18 @@ class DatabaseService {
           : flight.flight_number;
 
         // Clean city names - ensure we don't return "Unknown"
-        const cleanOriginCity = flight.origin_city && flight.origin_city !== "Unknown" && flight.origin_city !== "unknown"
-          ? flight.origin_city
-          : flight.origin || "N/A";
-        const cleanDestinationCity = flight.destination_city && flight.destination_city !== "Unknown" && flight.destination_city !== "unknown"
-          ? flight.destination_city
-          : flight.destination || "N/A";
+        const cleanOriginCity =
+          flight.origin_city &&
+          flight.origin_city !== "Unknown" &&
+          flight.origin_city !== "unknown"
+            ? flight.origin_city
+            : flight.origin || "N/A";
+        const cleanDestinationCity =
+          flight.destination_city &&
+          flight.destination_city !== "Unknown" &&
+          flight.destination_city !== "unknown"
+            ? flight.destination_city
+            : flight.destination || "N/A";
 
         return {
           id: flight.id,
@@ -1555,21 +1570,26 @@ class DatabaseService {
   }> {
     try {
       console.log("Updating expired disruptions...");
-      
-      const response = await fetch(`${this.baseUrl}/disruptions/update-expired`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+
+      const response = await fetch(
+        `${this.baseUrl}/disruptions/update-expired`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const result = await response.json();
-      console.log(`Updated ${result.updatedCount} disruptions to expired status`);
-      
+      console.log(
+        `Updated ${result.updatedCount} disruptions to expired status`,
+      );
+
       return {
         success: result.success,
         updatedCount: result.updatedCount,
@@ -2059,63 +2079,87 @@ class DatabaseService {
   }
 
   // Add pending solution for approval
-  async addPendingSolution(solutionData: any): Promise<boolean> {
-    try {
-      console.log("Adding pending solution:", solutionData);
-      
-      // Ensure reassigned crew data is properly formatted
-      if (solutionData.reassigned_crew) {
-        console.log("Including reassigned crew data:", solutionData.reassigned_crew);
-      }
-      
-      const response = await fetch(`${this.baseUrl}/pending-recovery-solutions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(solutionData),
-      });
+  // async addPendingSolution(solutionData: any): Promise<boolean> {
+  //   console.log("Adding pending solution:1111", solutionData);
+  //   try {
+  //     console.log("Adding pending solution:", solutionData);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Failed to add pending solution:", response.status, errorText);
-        throw new Error(`HTTP ${response.status}: ${errorText}`);
-      }
+  //     // Ensure reassigned crew data is properly formatted
+  //     if (solutionData.reassigned_crew) {
+  //       console.log(
+  //         "Including reassigned crew data:",
+  //         solutionData.reassigned_crew,
+  //       );
+  //     }
 
-      const result = await response.json();
-      console.log("Successfully added pending solution with reassigned crew:", result);
-      return true;
-    } catch (error) {
-      console.error("Failed to add pending solution:", error);
-      return false;
-    }
-  }
+  //     const response = await fetch(
+  //       `${this.baseUrl}/pending-recovery-solutions`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(solutionData),
+  //       },
+  //     );
+
+  //     if (!response.ok) {
+  //       const errorText = await response.text();
+  //       console.error(
+  //         "Failed to add pending solution:",
+  //         response.status,
+  //         errorText,
+  //       );
+  //       throw new Error(`HTTP ${response.status}: ${errorText}`);
+  //     }
+
+  //     const result = await response.json();
+  //     console.log(
+  //       "Successfully added pending solution with reassigned crew:",
+  //       result,
+  //     );
+  //     return true;
+  //   } catch (error) {
+  //     console.error("Failed to add pending solution:", error);
+  //     return false;
+  //   }
+  // }
 
   // Update flight recovery status
-  async updateFlightRecoveryStatus(flightId: string, status: string): Promise<boolean> {
-    try {
-      console.log(`Updating recovery status for flight ${flightId} to ${status}`);
-      
-      const response = await fetch(`${this.baseUrl}/disruptions/${flightId}/recovery-status`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ recovery_status: status }),
-      });
+  // async updateFlightRecoveryStatus(
+  //   flightId: string,
+  //   status: string,
+  // ): Promise<boolean> {
+  //   try {
+  //     console.log(
+  //       `Updating recovery status for flight ${flightId} to ${status}`,
+  //     );
 
-      if (response.ok) {
-        console.log(`Successfully updated recovery status for flight ${flightId}`);
-        return true;
-      } else {
-        console.error(`Failed to update recovery status: ${response.status}`);
-        return false;
-      }
-    } catch (error) {
-      console.error("Error updating flight recovery status:", error);
-      return false;
-    }
-  }
+  //     const response = await fetch(
+  //       `${this.baseUrl}/disruptions/${flightId}/recovery-status`,
+  //       {
+  //         method: "PUT",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({ recovery_status: status }),
+  //       },
+  //     );
+
+  //     if (response.ok) {
+  //       console.log(
+  //         `Successfully updated recovery status for flight ${flightId}`,
+  //       );
+  //       return true;
+  //     } else {
+  //       console.error(`Failed to update recovery status: ${response.status}`);
+  //       return false;
+  //     }
+  //   } catch (error) {
+  //     console.error("Error updating flight recovery status:", error);
+  //     return false;
+  //   }
+  // }
 
   // Legacy method for backward compatibility
   async storeRebookedPassengers(
@@ -2187,6 +2231,7 @@ class DatabaseService {
 
   // Pending Recovery Solutions
   async addPendingSolution(solution: any): Promise<boolean> {
+    console.log("Adding pending solution22:", solution);
     try {
       const payload = {
         disruption_id: solution.disruption_id,
@@ -2423,7 +2468,11 @@ class DatabaseService {
     reassignedData: any,
   ): Promise<boolean> {
     try {
-      console.log("Saving reassigned data for option:", optionId, reassignedData);
+      console.log(
+        "Saving reassigned data for option:",
+        optionId,
+        reassignedData,
+      );
       const response = await fetch(
         `${this.baseUrl}/recovery-option/${optionId}/reassigned-data`,
         {
@@ -2518,7 +2567,7 @@ class DatabaseService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error fetching manual knowledge entries:', error);
+      console.error("Error fetching manual knowledge entries:", error);
       return [];
     }
   }
@@ -2530,9 +2579,9 @@ class DatabaseService {
   async saveManualKnowledgeEntry(entryData: any): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/manual-knowledge-entries`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(entryData),
       });
@@ -2544,16 +2593,19 @@ class DatabaseService {
       const result = await response.json();
       return true;
     } catch (error) {
-      console.error('Error saving manual knowledge entry:', error);
+      console.error("Error saving manual knowledge entry:", error);
       return false;
     }
   }
 
   async deleteManualKnowledgeEntry(entryId: string): Promise<boolean> {
     try {
-      const response = await fetch(`${this.baseUrl}/manual-knowledge-entries/${entryId}`, {
-        method: 'DELETE',
-      });
+      const response = await fetch(
+        `${this.baseUrl}/manual-knowledge-entries/${entryId}`,
+        {
+          method: "DELETE",
+        },
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -2561,7 +2613,7 @@ class DatabaseService {
 
       return true;
     } catch (error) {
-      console.error('Error deleting manual knowledge entry:', error);
+      console.error("Error deleting manual knowledge entry:", error);
       return false;
     }
   }
@@ -2570,9 +2622,9 @@ class DatabaseService {
   async saveDocument(documentData: any): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/documents`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(documentData),
       });
@@ -2584,7 +2636,7 @@ class DatabaseService {
       const result = await response.json();
       return result.success || true;
     } catch (error) {
-      console.error('Error saving document:', error);
+      console.error("Error saving document:", error);
       return false;
     }
   }
@@ -2599,7 +2651,7 @@ class DatabaseService {
 
       return await response.json();
     } catch (error) {
-      console.error('Error fetching documents:', error);
+      console.error("Error fetching documents:", error);
       return [];
     }
   }
@@ -2611,7 +2663,7 @@ class DatabaseService {
   async deleteDocument(documentId: string): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/documents/${documentId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (!response.ok) {
@@ -2621,7 +2673,7 @@ class DatabaseService {
       const result = await response.json();
       return result.success || true;
     } catch (error) {
-      console.error('Error deleting document:', error);
+      console.error("Error deleting document:", error);
       return false;
     }
   }
@@ -2646,7 +2698,7 @@ class DatabaseService {
   // Batch save documents for document repository
   async batchSaveDocuments(
     documents: any[],
-    userId: string = "system"
+    userId: string = "system",
   ): Promise<boolean> {
     try {
       const response = await fetch(`${this.baseUrl}/documents/batch`, {
@@ -2665,7 +2717,9 @@ class DatabaseService {
       }
 
       const result = await response.json();
-      console.log(`Batch saved ${result.saved_documents} documents to database`);
+      console.log(
+        `Batch saved ${result.saved_documents} documents to database`,
+      );
       return true;
     } catch (error) {
       console.error("Failed to batch save documents:", error);

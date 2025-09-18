@@ -662,7 +662,7 @@ export const generateAffectedPassengers = (flight, option) => {
   if (remainingPassengers > 0) {
     const individualTemplates = getIndividualPNRTemplates(airlineConfig); // Use the function that now accepts airlineConfig
     for (let i = 0; i < remainingPassengers && i < individualTemplates.length; i++) {
-      const template = individualTemplates[i];
+      const template:any = individualTemplates[i];
       if (passengerCounter > totalPassengers) break;
 
       const passengerTemplate = template.passengers[0]; // Assuming one passenger per individual template

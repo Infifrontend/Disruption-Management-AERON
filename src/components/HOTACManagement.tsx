@@ -88,8 +88,10 @@ import {
   Copy,
   ExternalLink,
 } from "lucide-react";
+import { useAirlineTheme } from "../hooks/useAirlineTheme";
 
 export function HOTACManagement() {
+  const { airlineConfig } = useAirlineTheme();
   const [activeTab, setActiveTab] = useState("all-records");
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -107,7 +109,7 @@ export function HOTACManagement() {
       id: "HOTAC001",
 
       // Basic Flight Information
-      flightNumber: "FZ445",
+      flightNumber: airlineConfig.code + "445",
       dateOfDisruption: "2025-01-11",
       rosteredDate: "2025-01-11 06:30",
 
@@ -130,7 +132,10 @@ export function HOTACManagement() {
         pairingEndDate: "2025-01-12 20:30",
         totalPairingDuration: "39h 30m",
         numberOfFlights: 2,
-        flightSequence: ["FZ445 DXB-BOM", "FZ446 BOM-DXB"],
+        flightSequence: [
+          airlineConfig.code + "445 DXB-BOM",
+          airlineConfig.code + "446 BOM-DXB",
+        ],
         layoverCount: 1,
         homeBaseReturn: true,
         pairingStatus: "Active",
@@ -163,7 +168,7 @@ export function HOTACManagement() {
       transportStatus: "Confirmed",
 
       // Additional Details
-      totalCost: "USD 285",
+      totalCost: airlineConfig.currency + " 285",
       specialRequests: "Vegetarian meals, Early check-in",
       lastUpdated: "2025-01-10 18:30",
       priority: "Standard",
@@ -173,7 +178,7 @@ export function HOTACManagement() {
       id: "HOTAC002",
 
       // Basic Flight Information
-      flightNumber: "FZ789",
+      flightNumber: airlineConfig.code + "789",
       dateOfDisruption: "2025-01-11",
       rosteredDate: "2025-01-11 14:20",
 
@@ -195,7 +200,10 @@ export function HOTACManagement() {
         pairingEndDate: "2025-01-13 03:00",
         totalPairingDuration: "38h 00m",
         numberOfFlights: 2,
-        flightSequence: ["FZ789 DXB-IST", "FZ790 IST-DXB"],
+        flightSequence: [
+          airlineConfig.code + "789 DXB-IST",
+          airlineConfig.code + "790 IST-DXB",
+        ],
         layoverCount: 1,
         homeBaseReturn: true,
         pairingStatus: "Active",
@@ -228,7 +236,7 @@ export function HOTACManagement() {
       transportStatus: "Confirmed",
 
       // Additional Details
-      totalCost: "USD 440",
+      totalCost: airlineConfig.currency + " 440",
       specialRequests: "Airport shuttle required",
       lastUpdated: "2025-01-10 19:15",
       priority: "High",
@@ -238,7 +246,7 @@ export function HOTACManagement() {
       id: "HOTAC003",
 
       // Basic Flight Information
-      flightNumber: "FZ567",
+      flightNumber: airlineConfig.code + "567",
       dateOfDisruption: "2025-01-12",
       rosteredDate: "2025-01-12 22:30",
 
@@ -261,7 +269,10 @@ export function HOTACManagement() {
         pairingEndDate: "2025-01-14 08:00",
         totalPairingDuration: "59h 00m",
         numberOfFlights: 2,
-        flightSequence: ["FZ567 DXB-KHI", "FZ568 KHI-DXB"],
+        flightSequence: [
+          airlineConfig.code + "567 DXB-KHI",
+          airlineConfig.code + "568 KHI-DXB",
+        ],
         layoverCount: 1,
         homeBaseReturn: true,
         pairingStatus: "Disrupted",
@@ -278,7 +289,7 @@ export function HOTACManagement() {
       hotelCategory: "4-Star",
       hotelLocation: "KHI Terminal Building",
       checkInDateTime: "2025-01-13 02:00",
-      checkOutDateTime: "2025-01-14 01:00",
+    checkOutDateTime: "2025-01-14 01:00",
       numberOfRooms: 3,
       bookingStatus: "Pending",
       confirmationNumber: "HTL-KHI-20250113-567",
@@ -294,7 +305,7 @@ export function HOTACManagement() {
       transportStatus: "Pending",
 
       // Additional Details
-      totalCost: "USD 225",
+      totalCost: airlineConfig.currency + " 225",
       specialRequests: "Late arrival accommodation",
       lastUpdated: "2025-01-10 20:45",
       priority: "Urgent",
@@ -691,8 +702,7 @@ export function HOTACManagement() {
     });
   }, [filteredRecords, sortConfig]);
 
-  const handleBulkAction = (action) => {
-  };
+  const handleBulkAction = (action) => {};
 
   const exportToCSV = () => {
     const headers = [
