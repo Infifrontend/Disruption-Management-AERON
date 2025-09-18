@@ -1,5 +1,6 @@
 // Helper functions for generating detailed recovery option information
-import { getCurrency, getCurrencySymbol } from '../utils/currencyUtils'
+import { getCurrency } from '../utils/airlineThemeUtils'
+import { getCurrencySymbol } from '../utils/currencyUtils'
 
 const currency = getCurrency()
 const currencySymbol = getCurrencySymbol()
