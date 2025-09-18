@@ -1,6 +1,7 @@
 // Settings storage utility with PostgreSQL database integration and localStorage fallback
 import { databaseService } from "../services/databaseService";
 
+
 export interface SettingsData {
   id: string;
   category: string;
