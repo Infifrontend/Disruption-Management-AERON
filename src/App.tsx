@@ -1,45 +1,54 @@
-import React, { Suspense } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { Layout } from './components/Layout'
-import { Dashboard } from './pages/Dashboard'
-import { FlightTracking } from './pages/FlightTracking'
-import { DisruptionPage } from './pages/DisruptionPage'
-import { RecoveryOptions } from './pages/RecoveryOptions'
-import { ComparisonPage } from './pages/ComparisonPage'
-import { DetailedPlan } from './pages/DetailedPlan'
-import { PredictionDashboard } from './pages/PredictionDashboard'
-import { PredictionAnalyticsPage } from './pages/PredictionAnalyticsPage'
-import { RiskAssessmentPage } from './pages/RiskAssessmentPage'
-import { PendingSolutionsPage } from './pages/PendingSolutionsPage'
-import { PastLogsPage } from './pages/PastLogsPage'
-import { MaintenancePage } from './pages/MaintenancePage'
-import { PassengerServicesPage } from './pages/PassengerServicesPage'
-import { HOTACPage } from './pages/HOTACPage'
-import { FuelOptimizationPage } from './pages/FuelOptimizationPage'
-import { ReportsPage } from './pages/ReportsPage'
-import { SettingsPage } from './pages/SettingsPage'
-import { AppProvider } from './context/AppContext'
-import { useCustomAlert } from './hooks/useCustomAlert'
-import { alertService } from './services/alertService';
-import { CustomAlertDialog } from './components/CustomAlertDialog'
-import './styles/globals.css'
-import { LoginPage } from './pages/LoginPage' // Assuming LoginPage component is created
-import { ProtectedRoute } from './components/ProtectedRoute' // Assuming ProtectedRoute component is created
-import { useAirlineTheme } from './hooks/useAirlineTheme'
+import React, { Suspense } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { Layout } from "./components/Layout";
+import { Dashboard } from "./pages/Dashboard";
+import { FlightTracking } from "./pages/FlightTracking";
+import { DisruptionPage } from "./pages/DisruptionPage";
+import { RecoveryOptions } from "./pages/RecoveryOptions";
+import { ComparisonPage } from "./pages/ComparisonPage";
+import { DetailedPlan } from "./pages/DetailedPlan";
+import { PredictionDashboard } from "./pages/PredictionDashboard";
+import { PredictionAnalyticsPage } from "./pages/PredictionAnalyticsPage";
+import { RiskAssessmentPage } from "./pages/RiskAssessmentPage";
+import { PendingSolutionsPage } from "./pages/PendingSolutionsPage";
+import { PastLogsPage } from "./pages/PastLogsPage";
+import { MaintenancePage } from "./pages/MaintenancePage";
+import { PassengerServicesPage } from "./pages/PassengerServicesPage";
+import { HOTACPage } from "./pages/HOTACPage";
+import { FuelOptimizationPage } from "./pages/FuelOptimizationPage";
+import { ReportsPage } from "./pages/ReportsPage";
+import { SettingsPage } from "./pages/SettingsPage";
+import { AppProvider } from "./context/AppContext";
+import { useCustomAlert } from "./hooks/useCustomAlert";
+import { alertService } from "./services/alertService";
+import { CustomAlertDialog } from "./components/CustomAlertDialog";
+import "./styles/globals.css";
+import { LoginPage } from "./pages/LoginPage"; // Assuming LoginPage component is created
+import { ProtectedRoute } from "./components/ProtectedRoute"; // Assuming ProtectedRoute component is created
+import { useAirlineTheme } from "./hooks/useAirlineTheme";
 
+const { airlineConfig } = useAirlineTheme();
 // Loading component
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
     <div className="text-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-      <p className="text-gray-600">Loading Flydubai AERON...</p>
+      <p className="text-gray-600">
+        Loading ${airlineConfig.displayName} AERON...
+      </p>
     </div>
   </div>
-)
+);
 
 export default function App() {
-  const { alertState, showAlert, hideAlert, handleConfirm, handleCancel } = useCustomAlert();
-  const { airlineConfig } = useAirlineTheme();
+  const { alertState, showAlert, hideAlert, handleConfirm, handleCancel } =
+    useCustomAlert();
+  console.log(airlineConfig, "test");
 
   // Initialize alert service
   React.useEffect(() => {
@@ -50,14 +59,14 @@ export default function App() {
   React.useEffect(() => {
     document.title = `${airlineConfig.displayName} AERON - Airline Recovery Operations Network`;
     // Force theme injection to ensure variables are set
-    import('./config/airlineConfig').then(({ injectAirlineTheme }) => {
+    import("./config/airlineConfig").then(({ injectAirlineTheme }) => {
       injectAirlineTheme();
     });
   }, [airlineConfig]);
 
   return (
     <AppProvider>
-      <Router basename={import.meta.env.VITE_FRONTEND_BASE_URL || '/'}>
+      <Router basename={import.meta.env.VITE_FRONTEND_BASE_URL || "/"}>
         <div className="min-h-screen bg-background">
           <Suspense fallback={<LoadingSpinner />}>
             <Routes>
@@ -258,5 +267,5 @@ export default function App() {
         showCancel={alertState.showCancel}
       />
     </AppProvider>
-  )
+  );
 }

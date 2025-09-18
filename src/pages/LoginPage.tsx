@@ -1,39 +1,43 @@
-
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Alert, AlertDescription } from '../components/ui/alert';
-import { authService } from '../services/authService';
-import { useAppContext } from '../context/AppContext';
-import { Plane, Lock, Mail } from 'lucide-react';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { authService } from "../services/authService";
+import { useAppContext } from "../context/AppContext";
+import { Plane, Lock, Mail } from "lucide-react";
 
 export function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const { setCurrentUser } = useAppContext();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    setError('');
+    setError("");
 
     try {
       const result = await authService.login(email, password);
-      
+
       if (result.success && result.user) {
         setCurrentUser(result.user);
-        navigate('/dashboard');
+        navigate("/dashboard");
       } else {
-        setError(result.error || 'Login failed');
+        setError(result.error || "Login failed");
       }
     } catch (error) {
-      setError('Network error. Please try again.');
+      setError("Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -41,9 +45,9 @@ export function LoginPage() {
 
   const handleDemoLogin = async (userType: string) => {
     const demoCredentials = {
-      super_admin: { email: 'admin@flydubai.com', password: '' },
-      passenger_manager: { email: 'passenger@flydubai.com', password: '' },
-      crew_manager: { email: 'crew@flydubai.com', password: '' }
+      super_admin: { email: "admin@flydubai.com", password: "" },
+      passenger_manager: { email: "passenger@flydubai.com", password: "" },
+      crew_manager: { email: "crew@flydubai.com", password: "" },
     };
 
     const creds = demoCredentials[userType as keyof typeof demoCredentials];
@@ -64,7 +68,9 @@ export function LoginPage() {
             </div>
           </div>
           <h1 className="text-3xl font-bold text-flydubai-navy">AERON</h1>
-          <p className="text-gray-600 mt-2">Aircraft Recovery Operations Network</p>
+          <p className="text-gray-600 mt-2">
+            Aircraft Recovery Operations Network
+          </p>
         </div>
 
         {/* Login Form */}
@@ -121,12 +127,12 @@ export function LoginPage() {
                 className="w-full bg-flydubai-blue hover:bg-blue-700"
                 disabled={isLoading}
               >
-                {isLoading ? 'Signing In...' : 'Sign In'}
+                {isLoading ? "Signing In..." : "Sign In"}
               </Button>
             </form>
 
             {/* Demo Accounts */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
+            {/* <div className="mt-6 pt-6 border-t border-gray-200">
               <p className="text-sm text-gray-600 text-center mb-3">Demo Accounts:</p>
               <div className="space-y-2">
                 <Button
@@ -154,10 +160,10 @@ export function LoginPage() {
                   Crew Manager (CM001)
                 </Button>
               </div>
-              {/* <p className="text-xs text-gray-500 text-center mt-2">
+              <p className="text-xs text-gray-500 text-center mt-2">
                 Password for all demo accounts: password123
-              </p> */}
-            </div>
+              </p>
+            </div> */}
           </CardContent>
         </Card>
 

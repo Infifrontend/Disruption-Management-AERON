@@ -44,6 +44,9 @@ import {
   Radar,
   Calendar,
 } from "lucide-react";
+import { useAirlineTheme } from "./../hooks/useAirlineTheme";
+
+const { airlineConfig } = useAirlineTheme();
 
 export function Dashboard() {
   const navigate = useNavigate();
@@ -53,7 +56,7 @@ export function Dashboard() {
   const [dateFilter, setDateFilter] = useState<string>("today");
   const [customDateRange, setCustomDateRange] = useState({
     startDate: "",
-    endDate: new Date().toISOString().split('T')[0] // Current date as default end date
+    endDate: new Date().toISOString().split("T")[0], // Current date as default end date
   });
   const [showDateRangePicker, setShowDateRangePicker] = useState(false);
 
@@ -110,10 +113,13 @@ export function Dashboard() {
   };
 
   // Handle custom date range change
-  const handleCustomDateRangeChange = (field: 'startDate' | 'endDate', value: string) => {
-    setCustomDateRange(prev => ({
+  const handleCustomDateRangeChange = (
+    field: "startDate" | "endDate",
+    value: string,
+  ) => {
+    setCustomDateRange((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -131,10 +137,18 @@ export function Dashboard() {
     try {
       setLoading(true);
       const data = await dashboardAnalytics.getDashboardAnalytics(dateRange);
-      console.log("Dashboard analytics loaded for custom range", dateRange, ":", data);
+      console.log(
+        "Dashboard analytics loaded for custom range",
+        dateRange,
+        ":",
+        data,
+      );
       setAnalytics(data);
     } catch (error) {
-      console.error("Failed to fetch dashboard analytics for custom range:", error);
+      console.error(
+        "Failed to fetch dashboard analytics for custom range:",
+        error,
+      );
     } finally {
       setLoading(false);
     }
@@ -176,27 +190,38 @@ export function Dashboard() {
               ))}
             </SelectContent>
           </Select>
-          
+
           {showDateRangePicker && (
             <div className="flex items-center gap-2 p-3 bg-white border border-gray-200 rounded-lg shadow-lg">
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-gray-600">Start Date</label>
+                <label className="text-xs font-medium text-gray-600">
+                  Start Date
+                </label>
                 <Input
                   type="date"
                   value={customDateRange.startDate}
-                  onChange={(e) => handleCustomDateRangeChange('startDate', e.target.value)}
-                  max={customDateRange.endDate || new Date().toISOString().split('T')[0]}
+                  onChange={(e) =>
+                    handleCustomDateRangeChange("startDate", e.target.value)
+                  }
+                  max={
+                    customDateRange.endDate ||
+                    new Date().toISOString().split("T")[0]
+                  }
                   className="w-36 text-sm"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-medium text-gray-600">End Date</label>
+                <label className="text-xs font-medium text-gray-600">
+                  End Date
+                </label>
                 <Input
                   type="date"
                   value={customDateRange.endDate}
-                  onChange={(e) => handleCustomDateRangeChange('endDate', e.target.value)}
+                  onChange={(e) =>
+                    handleCustomDateRangeChange("endDate", e.target.value)
+                  }
                   min={customDateRange.startDate}
-                  max={new Date().toISOString().split('T')[0]}
+                  max={new Date().toISOString().split("T")[0]}
                   className="w-36 text-sm"
                 />
               </div>
@@ -204,7 +229,9 @@ export function Dashboard() {
                 <Button
                   size="sm"
                   onClick={applyCustomDateRange}
-                  disabled={!customDateRange.startDate || !customDateRange.endDate}
+                  disabled={
+                    !customDateRange.startDate || !customDateRange.endDate
+                  }
                   className="bg-flydubai-blue hover:bg-blue-700 text-white text-xs px-3"
                 >
                   Apply
@@ -249,7 +276,7 @@ export function Dashboard() {
               </div>
               <div>
                 <h3 className="font-medium text-flydubai-navy">
-                  Flydubai AERON Performance Today
+                  ${airlineConfig.displayName} AERON Performance Today
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {loading

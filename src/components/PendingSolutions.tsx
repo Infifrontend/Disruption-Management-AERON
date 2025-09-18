@@ -1905,10 +1905,13 @@ export function PendingSolutions() {
 
               {/* Conditional Passenger Re-accommodation Tab */}
               {selectedPlan?.hasPassengerData && (
+            
                 <TabsContent
                   value="passenger-reaccommodation"
                   className="space-y-4"
                 >
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
                   <Card>
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
@@ -2235,309 +2238,309 @@ export function PendingSolutions() {
                       </div>
                     </CardContent>
                   </Card>
-                </TabsContent>
-              )}
+               
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Cost Impact Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {(() => {
-                        // Try to get cost breakdown from multiple sources
-                        const costBreakdown =
-                          selectedPlan.costAnalysis?.breakdown ||
-                          selectedPlan.costBreakdown?.breakdown ||
-                          selectedPlan.matchingOption?.cost_breakdown
-                            ?.breakdown ||
-                          selectedPlan.fullDetails?.cost_breakdown?.breakdown;
-
-                        const costTotal =
-                          selectedPlan.costAnalysis?.total ||
-                          selectedPlan.costBreakdown?.total ||
-                          selectedPlan.matchingOption?.cost_breakdown?.total;
-
-                        if (
-                          costBreakdown &&
-                          Array.isArray(costBreakdown) &&
-                          costBreakdown.length > 0
-                        ) {
-                          return (
-                            <div className="space-y-4">
-                              {/* Display total if available */}
-                              {costTotal && (
-                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                  <div className="flex justify-between items-center">
-                                    <span className="font-medium text-blue-800">
-                                      {costTotal.title || "Total Cost"}:
-                                    </span>
-                                    <span className="text-lg font-semibold text-blue-900">
-                                      {costTotal.amount ||
-                                        `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                    </span>
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Cost Impact Analysis</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {(() => {
+                          // Try to get cost breakdown from multiple sources
+                          const costBreakdown =
+                            selectedPlan.costAnalysis?.breakdown ||
+                            selectedPlan.costBreakdown?.breakdown ||
+                            selectedPlan.matchingOption?.cost_breakdown
+                              ?.breakdown ||
+                            selectedPlan.fullDetails?.cost_breakdown?.breakdown;
+  
+                          const costTotal =
+                            selectedPlan.costAnalysis?.total ||
+                            selectedPlan.costBreakdown?.total ||
+                            selectedPlan.matchingOption?.cost_breakdown?.total;
+  
+                          if (
+                            costBreakdown &&
+                            Array.isArray(costBreakdown) &&
+                            costBreakdown.length > 0
+                          ) {
+                            return (
+                              <div className="space-y-4">
+                                {/* Display total if available */}
+                                {costTotal && (
+                                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                    <div className="flex justify-between items-center">
+                                      <span className="font-medium text-blue-800">
+                                        {costTotal.title || "Total Cost"}:
+                                      </span>
+                                      <span className="text-lg font-semibold text-blue-900">
+                                        {costTotal.amount ||
+                                          `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
+                                      </span>
+                                    </div>
+                                    {costTotal.description && (
+                                      <p className="text-sm text-blue-700 mt-1">
+                                        {costTotal.description}
+                                      </p>
+                                    )}
                                   </div>
-                                  {costTotal.description && (
-                                    <p className="text-sm text-blue-700 mt-1">
-                                      {costTotal.description}
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-
-                              {/* Display breakdown items */}
-                              <div className="space-y-3">
-                                <h4 className="font-medium text-gray-900">
-                                  Cost Breakdown:
-                                </h4>
-                                {Array.isArray(costBreakdown)
-                                  ? costBreakdown.map((item, index) => (
-                                      <div
-                                        key={index}
-                                        className="space-y-2 p-3 border rounded-lg"
-                                      >
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-sm font-medium">
-                                            {item.category ||
-                                              `Cost Item ${index + 1}`}
-                                          </span>
-                                          <span className="font-semibold text-flydubai-orange">
-                                            {item.amount}
-                                          </span>
-                                        </div>
-                                        {item.percentage && (
-                                          <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div
-                                              className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
-                                              style={{
-                                                width: `${item.percentage}%`,
-                                              }}
-                                            ></div>
-                                          </div>
-                                        )}
-                                        <div className="flex justify-between items-center text-xs">
-                                          {item.percentage && (
-                                            <span className="text-gray-600">
-                                              {item.percentage}% of total cost
-                                            </span>
-                                          )}
-                                          {item.description && (
-                                            <span className="text-blue-600">
-                                              {item.description}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))
-                                  : Object.entries(costBreakdown).map(
-                                      ([key, value]) => (
+                                )}
+  
+                                {/* Display breakdown items */}
+                                <div className="space-y-3">
+                                  <h4 className="font-medium text-gray-900">
+                                    Cost Breakdown:
+                                  </h4>
+                                  {Array.isArray(costBreakdown)
+                                    ? costBreakdown.map((item, index) => (
                                         <div
-                                          key={key}
+                                          key={index}
                                           className="space-y-2 p-3 border rounded-lg"
                                         >
                                           <div className="flex justify-between items-center">
-                                            <span className="text-sm font-medium capitalize">
-                                              {key.replace(/([A-Z])/g, " $1")}
+                                            <span className="text-sm font-medium">
+                                              {item.category ||
+                                                `Cost Item ${index + 1}`}
                                             </span>
                                             <span className="font-semibold text-flydubai-orange">
-                                              {typeof value === "object" &&
-                                              value &&
-                                              typeof (value as any).amount ===
-                                                "number"
-                                                ? `AED ${(value as any).amount.toLocaleString()}`
-                                                : typeof value === "number"
-                                                  ? `AED ${value.toLocaleString()}`
-                                                  : typeof value === "string" &&
-                                                      !value.includes(
-                                                        "[object",
-                                                      )
-                                                    ? value
-                                                    : `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
+                                              {item.amount}
                                             </span>
                                           </div>
+                                          {item.percentage && (
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                              <div
+                                                className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
+                                                style={{
+                                                  width: `${item.percentage}%`,
+                                                }}
+                                              ></div>
+                                            </div>
+                                          )}
+                                          <div className="flex justify-between items-center text-xs">
+                                            {item.percentage && (
+                                              <span className="text-gray-600">
+                                                {item.percentage}% of total cost
+                                              </span>
+                                            )}
+                                            {item.description && (
+                                              <span className="text-blue-600">
+                                                {item.description}
+                                              </span>
+                                            )}
+                                          </div>
                                         </div>
-                                      ),
-                                    )}
+                                      ))
+                                    : Object.entries(costBreakdown).map(
+                                        ([key, value]) => (
+                                          <div
+                                            key={key}
+                                            className="space-y-2 p-3 border rounded-lg"
+                                          >
+                                            <div className="flex justify-between items-center">
+                                              <span className="text-sm font-medium capitalize">
+                                                {key.replace(/([A-Z])/g, " $1")}
+                                              </span>
+                                              <span className="font-semibold text-flydubai-orange">
+                                                {typeof value === "object" &&
+                                                value &&
+                                                typeof (value as any).amount ===
+                                                  "number"
+                                                  ? `AED ${(value as any).amount.toLocaleString()}`
+                                                  : typeof value === "number"
+                                                    ? `AED ${value.toLocaleString()}`
+                                                    : typeof value === "string" &&
+                                                        !value.includes(
+                                                          "[object",
+                                                        )
+                                                      ? value
+                                                      : `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
+                                              </span>
+                                            </div>
+                                          </div>
+                                        ),
+                                      )}
+                                </div>
                               </div>
-                            </div>
-                          );
-                        } else if (
-                          selectedPlan.costBreakdown &&
-                          Object.keys(selectedPlan.costBreakdown).length > 0
-                        ) {
-                          // Fallback to old format
-                          return (
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              {Object.entries(selectedPlan.costBreakdown).map(
-                                ([key, value]) => (
-                                  <div key={key}>
-                                    <span className="text-gray-600 capitalize">
-                                      {key.replace(/([A-Z])/g, " $1")}:
-                                    </span>
-                                    <div className="font-medium">
-                                      {typeof value === "object" &&
-                                      value &&
-                                      (value as any).amount
-                                        ? (value as any).amount
-                                        : typeof value === "number"
-                                          ? `AED ${value.toLocaleString()}`
-                                          : typeof value === "string" &&
-                                              !value.includes("[object")
-                                            ? value
-                                            : `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
+                            );
+                          } else if (
+                            selectedPlan.costBreakdown &&
+                            Object.keys(selectedPlan.costBreakdown).length > 0
+                          ) {
+                            // Fallback to old format
+                            return (
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                {Object.entries(selectedPlan.costBreakdown).map(
+                                  ([key, value]) => (
+                                    <div key={key}>
+                                      <span className="text-gray-600 capitalize">
+                                        {key.replace(/([A-Z])/g, " $1")}:
+                                      </span>
+                                      <div className="font-medium">
+                                        {typeof value === "object" &&
+                                        value &&
+                                        (value as any).amount
+                                          ? (value as any).amount
+                                          : typeof value === "number"
+                                            ? `AED ${value.toLocaleString()}`
+                                            : typeof value === "string" &&
+                                                !value.includes("[object")
+                                              ? value
+                                              : `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
+                                      </div>
                                     </div>
+                                  ),
+                                )}
+                              </div>
+                            );
+                          } else {
+                            // Default breakdown when no data available
+                            return (
+                              <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                  <span className="text-gray-600">
+                                    Direct Costs:
+                                  </span>
+                                  <div className="font-medium">
+                                    AED{" "}
+                                    {(
+                                      (selectedPlan.estimatedCost || 50000) *
+                                      0.6
+                                    ).toLocaleString()}
                                   </div>
-                                ),
-                              )}
-                            </div>
-                          );
-                        } else {
-                          // Default breakdown when no data available
-                          return (
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <span className="text-gray-600">
-                                  Direct Costs:
-                                </span>
-                                <div className="font-medium">
-                                  AED{" "}
-                                  {(
-                                    (selectedPlan.estimatedCost || 50000) *
-                                    0.6
-                                  ).toLocaleString()}
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">
+                                    Indirect Costs:
+                                  </span>
+                                  <div className="font-medium">
+                                    AED{" "}
+                                    {(
+                                      (selectedPlan.estimatedCost || 50000) *
+                                      0.4
+                                    ).toLocaleString()}
+                                  </div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">
+                                    Passenger Compensation:
+                                  </span>
+                                  <div className="font-medium">
+                                    AED{" "}
+                                    {(
+                                      (selectedPlan.estimatedCost || 50000) *
+                                      0.3
+                                    ).toLocaleString()}
+                                  </div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">
+                                    Operational Costs:
+                                  </span>
+                                  <div className="font-medium">
+                                    AED{" "}
+                                    {(
+                                      (selectedPlan.estimatedCost || 50000) *
+                                      0.7
+                                    ).toLocaleString()}
+                                  </div>
                                 </div>
                               </div>
-                              <div>
-                                <span className="text-gray-600">
-                                  Indirect Costs:
-                                </span>
-                                <div className="font-medium">
-                                  AED{" "}
-                                  {(
-                                    (selectedPlan.estimatedCost || 50000) *
-                                    0.4
-                                  ).toLocaleString()}
-                                </div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">
-                                  Passenger Compensation:
-                                </span>
-                                <div className="font-medium">
-                                  AED{" "}
-                                  {(
-                                    (selectedPlan.estimatedCost || 50000) *
-                                    0.3
-                                  ).toLocaleString()}
-                                </div>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">
-                                  Operational Costs:
-                                </span>
-                                <div className="font-medium">
-                                  AED{" "}
-                                  {(
-                                    (selectedPlan.estimatedCost || 50000) *
-                                    0.7
-                                  ).toLocaleString()}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        }
-                      })()}
-
-                      <Separator />
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium">
-                          Total Estimated Cost:
-                        </span>
-                        <span className="text-lg font-semibold text-flydubai-orange">
-                          {(() => {
-                            const costTotal =
-                              selectedPlan.costAnalysis?.total ||
-                              selectedPlan.costBreakdown?.total ||
-                              selectedPlan.matchingOption?.cost_breakdown
-                                ?.total;
-
-                            if (costTotal && costTotal.amount) {
-                              return costTotal.amount;
-                            }
-                            return `AED ${(selectedPlan.estimatedCost || 50000).toLocaleString()}`;
-                          })()}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Operational Impact</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 gap-3">
-                        <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Clock className="h-4 w-4 text-yellow-600" />
-                            <span className="font-medium text-yellow-800">
-                              Schedule Impact
-                            </span>
-                          </div>
-                          <p className="text-sm text-yellow-700">
-                            {selectedPlan.estimatedDelay || 0} minute delay
-                            expected
-                          </p>
-                        </div>
-
-                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Users className="h-4 w-4 text-blue-600" />
-                            <span className="font-medium text-blue-800">
-                              Passenger Impact
-                            </span>
-                          </div>
-                          <p className="text-sm text-blue-700">
-                            {selectedPlan.affectedPassengers || "N/A"}{" "}
-                            passengers affected
-                          </p>
-                        </div>
-
-                        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                          <div className="flex items-center gap-2 mb-1">
-                            <TrendingUp className="h-4 w-4 text-green-600" />
-                            <span className="font-medium text-green-800">
-                              Success Probability
-                            </span>
-                          </div>
-                          <p className="text-sm text-green-700">
-                            {selectedPlan.confidence || 80}% confidence in
-                            successful resolution
-                          </p>
-                        </div>
-
-                        <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Target className="h-4 w-4 text-purple-600" />
-                            <span className="font-medium text-purple-800">
-                              Network Impact
-                            </span>
-                          </div>
-                          <p className="text-sm text-purple-700">
-                            {selectedPlan.rotationImpact?.networkImpact ||
-                              selectedPlan.matchingOption?.rotation_plan
-                                ?.networkImpact ||
-                              "Assessment pending"}
-                          </p>
+                            );
+                          }
+                        })()}
+  
+                        <Separator />
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium">
+                            Total Estimated Cost:
+                          </span>
+                          <span className="text-lg font-semibold text-flydubai-orange">
+                            {(() => {
+                              const costTotal =
+                                selectedPlan.costAnalysis?.total ||
+                                selectedPlan.costBreakdown?.total ||
+                                selectedPlan.matchingOption?.cost_breakdown
+                                  ?.total;
+  
+                              if (costTotal && costTotal.amount) {
+                                return costTotal.amount;
+                              }
+                              return `AED ${(selectedPlan.estimatedCost || 50000).toLocaleString()}`;
+                            })()}
+                          </span>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                </div>
-              </TabsContent>
+  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Operational Impact</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-1 gap-3">
+                          <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Clock className="h-4 w-4 text-yellow-600" />
+                              <span className="font-medium text-yellow-800">
+                                Schedule Impact
+                              </span>
+                            </div>
+                            <p className="text-sm text-yellow-700">
+                              {selectedPlan.estimatedDelay || 0} minute delay
+                              expected
+                            </p>
+                          </div>
+  
+                          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Users className="h-4 w-4 text-blue-600" />
+                              <span className="font-medium text-blue-800">
+                                Passenger Impact
+                              </span>
+                            </div>
+                            <p className="text-sm text-blue-700">
+                              {selectedPlan.affectedPassengers || "N/A"}{" "}
+                              passengers affected
+                            </p>
+                          </div>
+  
+                          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <TrendingUp className="h-4 w-4 text-green-600" />
+                              <span className="font-medium text-green-800">
+                                Success Probability
+                              </span>
+                            </div>
+                            <p className="text-sm text-green-700">
+                              {selectedPlan.confidence || 80}% confidence in
+                              successful resolution
+                            </p>
+                          </div>
+  
+                          <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Target className="h-4 w-4 text-purple-600" />
+                              <span className="font-medium text-purple-800">
+                                Network Impact
+                              </span>
+                            </div>
+                            <p className="text-sm text-purple-700">
+                              {selectedPlan.rotationImpact?.networkImpact ||
+                                selectedPlan.matchingOption?.rotation_plan
+                                  ?.networkImpact ||
+                                "Assessment pending"}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      </CardContent>
+                  </Card>
+                  </div>
+                </TabsContent>
+               )}
             </Tabs>
           </DialogContent>
         </Dialog>
@@ -3479,9 +3482,10 @@ export function PendingSolutions() {
                 </Card>
               </TabsContent>
             </Tabs>
-          </DialogContent>
-        </Dialog>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
+     
     </div>
   );
 }
