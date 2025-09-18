@@ -2031,727 +2031,293 @@ export function PendingSolutions() {
                 </div>
               </TabsContent>
 
-              {/* Conditional Passenger Re-accommodation Tab */}
-              {selectedPlan?.hasPassengerData && (
-                <TabsContent
-                  value="passenger-reaccommodation"
-                  className="space-y-4"
-                >
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Users className="h-5 w-5" />
-                          Passenger Re-accommodation Summary
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-3 gap-4 mb-6">
-                          <div className="text-center p-4 bg-blue-50 rounded-lg">
-                            <div className="text-3xl font-bold text-blue-600">
-                              {(() => {
-                                // Try to get passenger count from multiple sources
-                                const passengerData = selectedOptionForDetails?.passenger_rebooking || 
-                                                     selectedOptionForDetails?.passenger_information ||
-                                                     selectedOptionForDetails?.passengers ||
-                                                     selectedPlan?.affectedPassengers;
-                                
-                                if (Array.isArray(passengerData)) {
-                                  return passengerData.length;
-                                }
-                                
-                                if (typeof passengerData === 'number') {
-                                  return passengerData;
-                                }
-                                
-                                return selectedPlan?.affectedPassengers || 167;
-                              })()}
+              {/* Passenger Re-accommodation Tab */}
+              <TabsContent
+                value="passenger-reaccommodation"
+                className="space-y-6"
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-5 w-5" />
+                      Passenger Re-accommodation Details
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {selectedPlan?.hasPassengerData ? (
+                      <div className="space-y-6">
+                        {/* Total Affected and Same Flight Statistics */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                          <div className="bg-blue-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Users className="h-4 w-4 text-blue-600" />
+                              <span className="font-medium text-blue-800">
+                                Total Affected
+                              </span>
                             </div>
-                            <div className="text-sm text-blue-700">
-                              Total Affected
+                            <p className="text-2xl font-bold text-blue-900">
+                              {selectedPlan.affectedPassengers ||
+                                (Array.isArray(selectedPlan.passengerInformation) ? selectedPlan.passengerInformation.length : 0)}
+                            </p>
+                            <p className="text-xs text-blue-600">passengers</p>
+                          </div>
+
+                          <div className="bg-purple-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Plane className="h-4 w-4 text-purple-600" />
+                              <span className="font-medium text-purple-800">
+                                Same Flight
+                              </span>
+                            </div>
+                            <p className="text-2xl font-bold text-purple-900">
+                              {Array.isArray(selectedPlan.passengerInformation)
+                                ? selectedPlan.passengerInformation.filter(
+                                    (p) => p.rebooked_flight === selectedPlan.flightNumber || p.same_flight === true,
+                                  ).length
+                                : 0}
+                            </p>
+                            <p className="text-xs text-purple-600">rebooked on same flight</p>
+                          </div>
+
+                          <div className="bg-green-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <span className="font-medium text-green-800">
+                                Successfully Rebooked
+                              </span>
+                            </div>
+                            <p className="text-2xl font-bold text-green-900">
+                              {Array.isArray(selectedPlan.passengerInformation)
+                                ? selectedPlan.passengerInformation.filter(
+                                    (p) => p.status === "confirmed" || p.status === "rebooked",
+                                  ).length
+                                : 0}
+                            </p>
+                            <p className="text-xs text-green-600">confirmed</p>
+                          </div>
+
+                          <div className="bg-orange-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Clock className="h-4 w-4 text-orange-600" />
+                              <span className="font-medium text-orange-800">
+                                Pending Rebooking
+                              </span>
+                            </div>
+                            <p className="text-2xl font-bold text-orange-900">
+                              {Array.isArray(selectedPlan.passengerInformation)
+                                ? selectedPlan.passengerInformation.filter(
+                                    (p) =>
+                                      p.status === "pending" ||
+                                      p.status === "processing" ||
+                                      p.status === "waiting",
+                                  ).length
+                                : 0}
+                            </p>
+                            <p className="text-xs text-orange-600">in progress</p>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        {/* Accommodation Breakdown Section */}
+                        <div>
+                          <h4 className="font-medium mb-4 flex items-center gap-2">
+                            <Hotel className="h-4 w-4" />
+                            Accommodation Breakdown
+                          </h4>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div className="border rounded-lg p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Hotel className="h-4 w-4 text-blue-600" />
+                                <span className="font-medium">Hotel Accommodation</span>
+                              </div>
+                              <p className="text-2xl font-bold text-blue-900">
+                                {Array.isArray(selectedPlan.passengerInformation)
+                                  ? selectedPlan.passengerInformation.filter(
+                                      (p) => p.hotel_required === true || (p.additional_services && p.additional_services.includes('hotel')),
+                                    ).length
+                                  : Math.floor((selectedPlan.affectedPassengers || 0) * 0.3)}
+                              </p>
+                              <p className="text-sm text-muted-foreground">passengers requiring hotel</p>
+                            </div>
+
+                            <div className="border rounded-lg p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <UtensilsCrossed className="h-4 w-4 text-green-600" />
+                                <span className="font-medium">Meal Vouchers</span>
+                              </div>
+                              <p className="text-2xl font-bold text-green-900">
+                                {Array.isArray(selectedPlan.passengerInformation)
+                                  ? selectedPlan.passengerInformation.filter(
+                                      (p) => p.meal_voucher === true || (p.additional_services && p.additional_services.includes('meal')),
+                                    ).length
+                                  : Math.floor((selectedPlan.affectedPassengers || 0) * 0.8)}
+                              </p>
+                              <p className="text-sm text-muted-foreground">meal vouchers issued</p>
+                            </div>
+
+                            <div className="border rounded-lg p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Car className="h-4 w-4 text-orange-600" />
+                                <span className="font-medium">Ground Transport</span>
+                              </div>
+                              <p className="text-2xl font-bold text-orange-900">
+                                {Array.isArray(selectedPlan.passengerInformation)
+                                  ? selectedPlan.passengerInformation.filter(
+                                      (p) => p.transport_required === true || (p.additional_services && p.additional_services.includes('transport')),
+                                    ).length
+                                  : Math.floor((selectedPlan.affectedPassengers || 0) * 0.4)}
+                              </p>
+                              <p className="text-sm text-muted-foreground">transport arrangements</p>
                             </div>
                           </div>
-                          <div className="text-center p-4 bg-green-50 rounded-lg">
-                            <div className="text-3xl font-bold text-green-600">
-                              {(() => {
-                                // Count passengers staying on same flight
-                                const passengerData = selectedOptionForDetails?.passenger_rebooking || 
-                                                     selectedOptionForDetails?.passenger_information ||
-                                                     [];
-                                
-                                if (Array.isArray(passengerData)) {
-                                  const sameFlightCount = passengerData.filter(p => 
-                                    p.rebooked_flight === p.original_flight ||
-                                    p.rebooking_status === 'same_flight' ||
-                                    !p.rebooked_flight
-                                  ).length;
-                                  return sameFlightCount || passengerData.length;
-                                }
-                                
-                                return selectedPlan?.affectedPassengers || 167;
-                              })()}
-                            </div>
-                            <div className="text-sm text-green-700">
-                              Same Flight
-                            </div>
-                          </div>
-                          <div className="text-center p-4 bg-red-50 rounded-lg">
-                            <div className="text-3xl font-bold text-red-600">
-                              {(() => {
-                                // Count passengers moved to other flights
-                                const passengerData = selectedOptionForDetails?.passenger_rebooking || 
-                                                     selectedOptionForDetails?.passenger_information ||
-                                                     [];
-                                
-                                if (Array.isArray(passengerData)) {
-                                  const otherFlightCount = passengerData.filter(p => 
-                                    p.rebooked_flight && 
-                                    p.rebooked_flight !== p.original_flight &&
-                                    p.rebooking_status !== 'same_flight'
-                                  ).length;
-                                  return otherFlightCount;
-                                }
-                                
-                                return 0;
-                              })()}
-                            </div>
-                            <div className="text-sm text-red-700">
-                              Other Flights
+
+                          {/* Cost Breakdown for Accommodation */}
+                          <div className="border rounded-lg p-4 bg-gray-50">
+                            <h5 className="font-medium mb-3">Accommodation Cost Breakdown</h5>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Hotel Costs:</span>
+                                <p className="font-semibold">AED {(
+                                  Math.floor((selectedPlan.affectedPassengers || 0) * 0.3) * 450
+                                ).toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Meal Vouchers:</span>
+                                <p className="font-semibold">AED {(
+                                  Math.floor((selectedPlan.affectedPassengers || 0) * 0.8) * 75
+                                ).toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Transport:</span>
+                                <p className="font-semibold">AED {(
+                                  Math.floor((selectedPlan.affectedPassengers || 0) * 0.4) * 80
+                                ).toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Total Accommodation:</span>
+                                <p className="font-semibold text-blue-600">AED {(
+                                  Math.floor((selectedPlan.affectedPassengers || 0) * 0.3) * 450 +
+                                  Math.floor((selectedPlan.affectedPassengers || 0) * 0.8) * 75 +
+                                  Math.floor((selectedPlan.affectedPassengers || 0) * 0.4) * 80
+                                ).toLocaleString()}</p>
+                              </div>
                             </div>
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-6">
+                        <Separator />
+
+                        {Array.isArray(selectedPlan.passengerInformation) &&
+                        selectedPlan.passengerInformation.length > 0 ? (
                           <div>
                             <h4 className="font-medium mb-3">
-                              Accommodation Breakdown
+                              Passenger Rebooking Details
                             </h4>
-                            <div className="space-y-2">
-                              <div className="flex justify-between">
-                                <span className="text-sm">Meal Vouchers:</span>
-                                <span className="font-medium">
-                                  {(() => {
-                                    const passengerData = selectedOptionForDetails?.passenger_rebooking || [];
-                                    if (Array.isArray(passengerData)) {
-                                      const mealVoucherCount = passengerData.filter(p => 
-                                        p.additional_services?.some(s => 
-                                          typeof s === 'string' ? s.toLowerCase().includes('meal') : 
-                                          s.service_type?.toLowerCase().includes('meal')
-                                        )
-                                      ).length;
-                                      return `${mealVoucherCount} passengers`;
-                                    }
-                                    return "0 passengers";
-                                  })()}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm">
-                                  Hotel Accommodation:
-                                </span>
-                                <span className="font-medium">
-                                  {(() => {
-                                    const passengerData = selectedOptionForDetails?.passenger_rebooking || [];
-                                    if (Array.isArray(passengerData)) {
-                                      const hotelCount = passengerData.filter(p => 
-                                        p.additional_services?.some(s => 
-                                          typeof s === 'string' ? s.toLowerCase().includes('hotel') : 
-                                          s.service_type?.toLowerCase().includes('hotel')
-                                        )
-                                      ).length;
-                                      return `${hotelCount} passengers`;
-                                    }
-                                    return "0 passengers";
-                                  })()}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          <div>
-                            <h4 className="font-medium mb-3">Compensation</h4>
-                            <div className="space-y-2">
-                              <div className="flex justify-between">
-                                <span className="text-sm">
-                                  Compensation per passenger:
-                                </span>
-                                <span className="font-medium">
-                                  {(() => {
-                                    const passengerData = selectedOptionForDetails?.passenger_rebooking || [];
-                                    if (Array.isArray(passengerData) && passengerData.length > 0) {
-                                      const avgCompensation = passengerData.reduce((sum, p) => 
-                                        sum + (p.rebooking_cost || 261), 0
-                                      ) / passengerData.length;
-                                      return `AED ${Math.round(avgCompensation)}`;
-                                    }
-                                    return "AED 261";
-                                  })()}
-                                </span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className="text-sm">
-                                  Total compensation:
-                                </span>
-                                <span className="font-medium">
-                                  {(() => {
-                                    const passengerData = selectedOptionForDetails?.passenger_rebooking || [];
-                                    if (Array.isArray(passengerData) && passengerData.length > 0) {
-                                      const totalCompensation = passengerData.reduce((sum, p) => 
-                                        sum + (p.rebooking_cost || 261), 0
-                                      );
-                                      return `AED ${totalCompensation.toLocaleString()}`;
-                                    }
-                                    const affected = selectedPlan?.affectedPassengers || 167;
-                                    return `AED ${(affected * 261).toLocaleString()}`;
-                                  })()}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Info className="h-4 w-4 text-blue-600" />
-                            <span className="font-medium text-blue-800">
-                              Re-accommodation Details:
-                            </span>
-                          </div>
-                          <p className="text-sm text-blue-700">
-                            All passengers accommodated on same aircraft with
-                            65min delay.
-                          </p>
-                        </div>
-
-                        {/* PNR Grouped Passenger Details */}
-                        <div className="mt-6">
-                          <h4 className="font-medium mb-3">
-                            Passenger Rebookings by PNR
-                          </h4>
-                          <div className="space-y-4 max-h-64 overflow-y-auto">
-                            {(() => {
-                              const rawPassengerData =
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions?.full_details
-                                  ?.passenger_rebooking ||
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions
-                                  ?.passenger_rebooking ||
-                                [];
-
-                              // Ensure currentPassengerData is always an array
-                              const currentPassengerData = Array.isArray(
-                                rawPassengerData,
-                              )
-                                ? rawPassengerData
-                                : [];
-
-                              if (
-                                !currentPassengerData ||
-                                currentPassengerData.length === 0
-                              ) {
-                                return (
-                                  <div className="text-center py-8 text-gray-500">
-                                    No passenger rebooking data available
-                                  </div>
-                                );
-                              }
-
-                              // Group passengers by PNR
-                              const passengersByPnr =
-                                currentPassengerData.reduce(
-                                  (acc, passenger) => {
-                                    const pnr = passenger.pnr || "Unknown";
-                                    if (!acc[pnr]) {
-                                      acc[pnr] = [];
-                                    }
-                                    acc[pnr].push(passenger);
-                                    return acc;
-                                  },
-                                  {},
-                                );
-
-                              return Object.entries(passengersByPnr)
-                                .slice(0, 8)
-                                .map(([pnr, passengers], groupIndex) => (
-                                  <Card
-                                    key={groupIndex}
-                                    className="border border-gray-200"
-                                  >
-                                    <div className="p-3 bg-gray-50 border-b">
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                          <Users className="h-4 w-4 text-blue-600" />
-                                          <span className="font-semibold text-gray-900">
-                                            PNR: {pnr}
-                                          </span>
-                                          <Badge
-                                            variant="secondary"
-                                            className="bg-blue-100 text-blue-800"
-                                          >
-                                            {(passengers as any).length}{" "}
-                                            passenger
-                                            {(passengers as any).length > 1
-                                              ? "s"
-                                              : ""}
-                                          </Badge>
-                                        </div>
-                                        <div className="text-sm text-muted-foreground">
-                                          Group Booking
-                                        </div>
-                                      </div>
-                                    </div>
-                                    <div className="p-3 space-y-3">
-                                      {(passengers as any).map(
-                                        (passenger, passengerIndex) => (
-                                          <div
-                                            key={passengerIndex}
-                                            className="border-l-2 border-blue-200 pl-3"
-                                          >
-                                            <div className="flex items-center justify-between mb-2">
-                                              <div className="font-medium text-gray-900">
-                                                {passenger.passenger_name ||
-                                                  `Passenger ${passengerIndex + 1}`}
-                                              </div>
-                                              <Badge
-                                                className={
-                                                  passenger.rebooking_status ===
-                                                  "confirmed"
-                                                    ? "bg-green-100 text-green-700"
-                                                    : passenger.rebooking_status ===
-                                                        "pending"
-                                                      ? "bg-yellow-100 text-yellow-700"
-                                                      : "bg-gray-100 text-gray-700"
-                                                }
-                                              >
-                                                {passenger.rebooking_status ||
-                                                  "Unknown"}
+                            <div className="border rounded-lg overflow-hidden">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Passenger Name</TableHead>
+                                    <TableHead>PNR</TableHead>
+                                    <TableHead>Original Flight</TableHead>
+                                    <TableHead>New Flight</TableHead>
+                                    <TableHead>Accommodation</TableHead>
+                                    <TableHead>Status</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {selectedPlan.passengerInformation
+                                    .slice(0, 10)
+                                    .map((passenger, index) => (
+                                      <TableRow key={index}>
+                                        <TableCell className="font-medium">
+                                          {passenger.passenger_name ||
+                                            passenger.name ||
+                                            `Passenger ${index + 1}`}
+                                        </TableCell>
+                                        <TableCell>
+                                          {passenger.pnr || "N/A"}
+                                        </TableCell>
+                                        <TableCell>
+                                          {passenger.original_flight ||
+                                            selectedPlan.flightNumber}
+                                        </TableCell>
+                                        <TableCell>
+                                          {passenger.rebooked_flight ||
+                                            passenger.new_flight ||
+                                            "TBD"}
+                                        </TableCell>
+                                        <TableCell>
+                                          <div className="flex gap-1">
+                                            {(passenger.hotel_required || (passenger.additional_services && passenger.additional_services.includes('hotel'))) && (
+                                              <Badge variant="outline" className="text-xs">
+                                                <Hotel className="h-3 w-3 mr-1" />
+                                                Hotel
                                               </Badge>
-                                            </div>
-                                            <div className="text-sm space-y-1">
-                                              <div className="flex justify-between">
-                                                <span className="text-muted-foreground">
-                                                  Original Flight:
-                                                </span>
-                                                <span>
-                                                  {passenger.original_flight ||
-                                                    plan.flightNumber}
-                                                </span>
-                                              </div>
-                                              <div className="flex justify-between">
-                                                <span className="text-muted-foreground">
-                                                  Rebooked Flight:
-                                                </span>
-                                                <span>
-                                                  {passenger.rebooked_flight ||
-                                                    "TBD"}
-                                                </span>
-                                              </div>
-                                              <div className="flex justify-between">
-                                                <span className="text-muted-foreground">
-                                                  Seat Change:
-                                                </span>
-                                                <span>
-                                                  {passenger.original_seat &&
-                                                  passenger.rebooked_seat
-                                                    ? `${passenger.original_seat} → ${passenger.rebooked_seat}`
-                                                    : "N/A"}
-                                                </span>
-                                              </div>
-                                              {passenger.rebooking_cost > 0 && (
-                                                <div className="flex justify-between">
-                                                  <span className="text-muted-foreground">
-                                                    Cost:
-                                                  </span>
-                                                  <span className="text-flydubai-orange">
-                                                    AED{" "}
-                                                    {passenger.rebooking_cost}
-                                                  </span>
-                                                </div>
-                                              )}
-                                              {passenger.additional_services &&
-                                                passenger.additional_services
-                                                  .length > 0 && (
-                                                  <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">
-                                                      Services:
-                                                    </span>
-                                                    <span className="text-xs">
-                                                      {passenger.additional_services.map(
-                                                        (
-                                                          service,
-                                                          serviceIndex,
-                                                        ) => (
-                                                          <Badge
-                                                            key={serviceIndex}
-                                                            variant="outline"
-                                                            className="mr-1 text-xs"
-                                                          >
-                                                            {service.service_type ||
-                                                              service}
-                                                          </Badge>
-                                                        ),
-                                                      )}
-                                                    </span>
-                                                  </div>
-                                                )}
-                                              {passenger.notes && (
-                                                <div className="text-xs text-muted-foreground mt-2">
-                                                  Notes: {passenger.notes}
-                                                </div>
-                                              )}
-                                            </div>
-                                          </div>
-                                        ),
-                                      )}
-                                    </div>
-                                  </Card>
-                                ));
-                            })()}
-                            {(() => {
-                              const rawPassengerData =
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions?.full_details
-                                  ?.passenger_rebooking ||
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions
-                                  ?.passenger_rebooking ||
-                                [];
-
-                              const groupCount = Array.isArray(rawPassengerData)
-                                ? Object.keys(
-                                    rawPassengerData.reduce(
-                                      (acc, passenger) => {
-                                        const pnr = passenger.pnr || "UNKNOWN";
-                                        if (!acc[pnr]) acc[pnr] = [];
-                                        acc[pnr].push(passenger);
-                                        return acc;
-                                      },
-                                      {},
-                                    ),
-                                  ).length
-                                : 0;
-
-                              return (
-                                groupCount > 8 && (
-                                  <div className="text-center text-sm text-muted-foreground p-2">
-                                    ... and {groupCount - 8} more PNR groups
-                                  </div>
-                                )
-                              );
-                            })()}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Cost Impact Analysis</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          {(() => {
-                            // Try to get cost breakdown from multiple sources
-                            const costBreakdown =
-                              selectedPlan.costAnalysis?.breakdown ||
-                              selectedPlan.costBreakdown?.breakdown ||
-                              selectedPlan.matchingOption?.cost_breakdown
-                                ?.breakdown ||
-                              selectedPlan.fullDetails?.cost_breakdown
-                                ?.breakdown;
-
-                            const costTotal =
-                              selectedPlan.costAnalysis?.total ||
-                              selectedPlan.costBreakdown?.total ||
-                              selectedPlan.matchingOption?.cost_breakdown
-                                ?.total;
-
-                            if (
-                              costBreakdown &&
-                              Array.isArray(costBreakdown) &&
-                              costBreakdown.length > 0
-                            ) {
-                              return (
-                                <div className="space-y-4">
-                                  {/* Display total if available */}
-                                  {costTotal && (
-                                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                      <div className="flex justify-between items-center">
-                                        <span className="font-medium text-blue-800">
-                                          {costTotal.title || "Total Cost"}:
-                                        </span>
-                                        <span className="text-lg font-semibold text-blue-900">
-                                          {costTotal.amount ||
-                                            `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                        </span>
-                                      </div>
-                                      {costTotal.description && (
-                                        <p className="text-sm text-blue-700 mt-1">
-                                          {costTotal.description}
-                                        </p>
-                                      )}
-                                    </div>
-                                  )}
-
-                                  {/* Display breakdown items */}
-                                  <div className="space-y-3">
-                                    <h4 className="font-medium text-gray-900">
-                                      Cost Breakdown:
-                                    </h4>
-                                    {Array.isArray(costBreakdown)
-                                      ? costBreakdown.map((item, index) => (
-                                          <div
-                                            key={index}
-                                            className="space-y-2 p-3 border rounded-lg"
-                                          >
-                                            <div className="flex justify-between items-center">
-                                              <span className="text-sm font-medium">
-                                                {item.category ||
-                                                  `Cost Item ${index + 1}`}
-                                              </span>
-                                              <span className="font-semibold text-flydubai-orange">
-                                                {item.amount}
-                                              </span>
-                                            </div>
-                                            {item.percentage && (
-                                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                                <div
-                                                  className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
-                                                  style={{
-                                                    width: `${item.percentage}%`,
-                                                  }}
-                                                ></div>
-                                              </div>
                                             )}
-                                            <div className="flex justify-between items-center text-xs">
-                                              {item.percentage && (
-                                                <span className="text-gray-600">
-                                                  {item.percentage}% of total
-                                                  cost
-                                                </span>
-                                              )}
-                                              {item.description && (
-                                                <span className="text-blue-600">
-                                                  {item.description}
-                                                </span>
-                                              )}
-                                            </div>
+                                            {(passenger.meal_voucher || (passenger.additional_services && passenger.additional_services.includes('meal'))) && (
+                                              <Badge variant="outline" className="text-xs">
+                                                <UtensilsCrossed className="h-3 w-3 mr-1" />
+                                                Meal
+                                              </Badge>
+                                            )}
+                                            {(passenger.transport_required || (passenger.additional_services && passenger.additional_services.includes('transport'))) && (
+                                              <Badge variant="outline" className="text-xs">
+                                                <Car className="h-3 w-3 mr-1" />
+                                                Transport
+                                              </Badge>
+                                            )}
                                           </div>
-                                        ))
-                                      : Object.entries(costBreakdown).map(
-                                          ([key, value]) => (
-                                            <div
-                                              key={key}
-                                              className="space-y-2 p-3 border rounded-lg"
-                                            >
-                                              <div className="flex justify-between items-center">
-                                                <span className="text-sm font-medium capitalize">
-                                                  {key.replace(
-                                                    /([A-Z])/g,
-                                                    " $1",
-                                                  )}
-                                                </span>
-                                                <span className="font-semibold text-flydubai-orange">
-                                                  {typeof value === "object" &&
-                                                  value &&
-                                                  typeof (value as any)
-                                                    .amount === "number"
-                                                    ? `AED ${(value as any).amount.toLocaleString()}`
-                                                    : typeof value === "number"
-                                                      ? `AED ${value.toLocaleString()}`
-                                                      : typeof value ===
-                                                            "string" &&
-                                                          !value.includes(
-                                                            "[object",
-                                                          )
-                                                        ? value
-                                                        : `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                                </span>
-                                              </div>
-                                            </div>
-                                          ),
-                                        )}
-                                  </div>
-                                </div>
-                              );
-                            } else if (
-                              selectedPlan.costBreakdown &&
-                              Object.keys(selectedPlan.costBreakdown).length > 0
-                            ) {
-                              // Fallback to old format
-                              return (
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  {Object.entries(
-                                    selectedPlan.costBreakdown,
-                                  ).map(([key, value]) => (
-                                    <div key={key}>
-                                      <span className="text-gray-600 capitalize">
-                                        {key.replace(/([A-Z])/g, " $1")}:
-                                      </span>
-                                      <div className="font-medium">
-                                        {typeof value === "object" &&
-                                        value &&
-                                        (value as any).amount
-                                          ? (value as any).amount
-                                          : typeof value === "number"
-                                            ? `AED ${value.toLocaleString()}`
-                                            : typeof value === "string" &&
-                                                !value.includes("[object")
-                                              ? value
-                                              : `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              );
-                            } else {
-                              // Default breakdown when no data available
-                              return (
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Direct Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      AED{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.6
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Indirect Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      AED{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.4
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Passenger Compensation:
-                                    </span>
-                                    <div className="font-medium">
-                                      AED{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.3
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Operational Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      AED{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.7
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            }
-                          })()}
-
-                          <Separator />
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">
-                              Total Estimated Cost:
-                            </span>
-                            <span className="text-lg font-semibold text-flydubai-orange">
-                              {(() => {
-                                const costTotal =
-                                  selectedPlan.costAnalysis?.total ||
-                                  selectedPlan.costBreakdown?.total ||
-                                  selectedPlan.matchingOption?.cost_breakdown
-                                    ?.total;
-
-                                if (costTotal && costTotal.amount) {
-                                  return costTotal.amount;
-                                }
-                                return `AED ${(selectedPlan.estimatedCost || 50000).toLocaleString()}`;
-                              })()}
-                            </span>
+                                        </TableCell>
+                                        <TableCell>
+                                          <Badge
+                                            className={
+                                              passenger.status === "confirmed" || passenger.status === "rebooked"
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-orange-100 text-orange-700"
+                                            }
+                                          >
+                                            {passenger.status || "Processing"}
+                                          </Badge>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                            {selectedPlan.passengerInformation.length > 10 && (
+                              <p className="text-sm text-muted-foreground mt-2">
+                                Showing 10 of{" "}
+                                {selectedPlan.passengerInformation.length}{" "}
+                                passengers
+                              </p>
+                            )}
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Operational Impact</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 gap-3">
-                            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Clock className="h-4 w-4 text-yellow-600" />
-                                <span className="font-medium text-yellow-800">
-                                  Schedule Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-yellow-700">
-                                {selectedPlan.estimatedDelay || 0} minute delay
-                                expected
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Users className="h-4 w-4 text-blue-600" />
-                                <span className="font-medium text-blue-800">
-                                  Passenger Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-blue-700">
-                                {selectedPlan.affectedPassengers || "N/A"}{" "}
-                                passengers affected
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <TrendingUp className="h-4 w-4 text-green-600" />
-                                <span className="font-medium text-green-800">
-                                  Success Probability
-                                </span>
-                              </div>
-                              <p className="text-sm text-green-700">
-                                {selectedPlan.confidence || 80}% confidence in
-                                successful resolution
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Target className="h-4 w-4 text-purple-600" />
-                                <span className="font-medium text-purple-800">
-                                  Network Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-purple-700">
-                                {selectedPlan.rotationImpact?.networkImpact ||
-                                  selectedPlan.matchingOption?.rotation_plan
-                                    ?.networkImpact ||
-                                  "Assessment pending"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-               )}
+                        ) : (
+                          <Alert>
+                            <Info className="h-4 w-4" />
+                            <AlertDescription>
+                              Detailed passenger rebooking information is being
+                              processed and will be available shortly.
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                      </div>
+                    ) : (
+                      <Alert>
+                        <Info className="h-4 w-4" />
+                        <AlertDescription>
+                          No passenger re-accommodation data is available for
+                          this recovery plan. This may be a crew-only or
+                          maintenance-focused solution.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
             </Tabs>
           </DialogContent>
         </Dialog>
@@ -3083,650 +2649,281 @@ export function PendingSolutions() {
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
                       <Users className="h-5 w-5" />
-                      Passenger Re-accommodation Summary
+                      Passenger Re-accommodation Details
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <div className="text-3xl font-bold text-blue-600">
-                          {
-                            selectedOptionForDetails
-                              ?.pending_recovery_solutions?.full_details
-                              ?.passenger_impact?.affected
-                          }
-                        </div>
-                        <div className="text-sm text-blue-700">
-                          Total Affected
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <div className="text-3xl font-bold text-green-600">
-                          {
-                            selectedOptionForDetails
-                              ?.pending_recovery_solutions?.full_details
-                              ?.passenger_impact?.reaccommodated
-                          }
-                        </div>
-                        <div className="text-sm text-green-700">
-                          Same Flight
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-3xl font-bold text-red-600">0</div>
-                        <div className="text-sm text-red-700">
-                          Other Flights
-                        </div>
-                      </div>
-                    </div>
+                    {selectedPlan?.hasPassengerData ? (
+                      <div className="space-y-6">
+                        {/* Total Affected and Same Flight Statistics */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                          <div className="bg-blue-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Users className="h-4 w-4 text-blue-600" />
+                              <span className="font-medium text-blue-800">
+                                Total Affected
+                              </span>
+                            </div>
+                            <p className="text-2xl font-bold text-blue-900">
+                              {selectedPlan.affectedPassengers ||
+                                (Array.isArray(selectedPlan.passengerInformation) ? selectedPlan.passengerInformation.length : 0)}
+                            </p>
+                            <p className="text-xs text-blue-600">passengers</p>
+                          </div>
 
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium mb-3">
-                          Accommodation Breakdown
-                        </h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">Meal Vouchers:</span>
-                            <span className="font-medium">0 passengers</span>
+                          <div className="bg-purple-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Plane className="h-4 w-4 text-purple-600" />
+                              <span className="font-medium text-purple-800">
+                                Same Flight
+                              </span>
+                            </div>
+                            <p className="text-2xl font-bold text-purple-900">
+                              {Array.isArray(selectedPlan.passengerInformation)
+                                ? selectedPlan.passengerInformation.filter(
+                                    (p) => p.rebooked_flight === selectedPlan.flightNumber || p.same_flight === true,
+                                  ).length
+                                : 0}
+                            </p>
+                            <p className="text-xs text-purple-600">rebooked on same flight</p>
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">
-                              Hotel Accommodation:
-                            </span>
-                            <span className="font-medium">0 passengers</span>
+
+                          <div className="bg-green-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <CheckCircle className="h-4 w-4 text-green-600" />
+                              <span className="font-medium text-green-800">
+                                Successfully Rebooked
+                              </span>
+                            </div>
+                            <p className="text-2xl font-bold text-green-900">
+                              {Array.isArray(selectedPlan.passengerInformation)
+                                ? selectedPlan.passengerInformation.filter(
+                                    (p) => p.status === "confirmed" || p.status === "rebooked",
+                                  ).length
+                                : 0}
+                            </p>
+                            <p className="text-xs text-green-600">confirmed</p>
                           </div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-3">Compensation</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">
-                              AED{" "}
-                              {
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions?.full_details
-                                  ?.passenger_impact?.affected
-                              }{" "}
-                              per passenger (AED261):
-                            </span>
-                            <span className="font-medium">
-                              AED{" "}
-                              {
-                                selectedOptionForDetails
-                                  .pending_recovery_solutions?.full_details
-                                  ?.passenger_impact?.affected
-                              }{" "}
-                              per passenger (AED261):
-                            </span>
+
+                          <div className="bg-orange-50 p-4 rounded-lg">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Clock className="h-4 w-4 text-orange-600" />
+                              <span className="font-medium text-orange-800">
+                                Pending Rebooking
+                              </span>
+                            </div>
+                            <p className="text-2xl font-bold text-orange-900">
+                              {Array.isArray(selectedPlan.passengerInformation)
+                                ? selectedPlan.passengerInformation.filter(
+                                    (p) =>
+                                      p.status === "pending" ||
+                                      p.status === "processing" ||
+                                      p.status === "waiting",
+                                  ).length
+                                : 0}
+                            </p>
+                            <p className="text-xs text-orange-600">in progress</p>
                           </div>
                         </div>
-                      </div>
-                    </div>
 
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Info className="h-4 w-4 text-blue-600" />
-                        <span className="font-medium text-blue-800">
-                          Re-accommodation Details:
-                        </span>
-                      </div>
-                      <p className="text-sm text-blue-700">
-                        All passengers accommodated on same aircraft with 65min
-                        delay.
-                      </p>
-                    </div>
+                        <Separator />
 
-                    {/* PNR Grouped Passenger Details */}
-                    <div className="mt-6">
-                      <h4 className="font-medium mb-3">
-                        Passenger Rebookings by PNR
-                      </h4>
-                      <div className="space-y-4 max-h-64 overflow-y-auto">
-                        {(() => {
-                          const rawPassengerData =
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.full_details?.passenger_rebooking ||
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.passenger_rebooking ||
-                            [];
+                        {/* Accommodation Breakdown Section */}
+                        <div>
+                          <h4 className="font-medium mb-4 flex items-center gap-2">
+                            <Hotel className="h-4 w-4" />
+                            Accommodation Breakdown
+                          </h4>
 
-                          // Ensure currentPassengerData is always an array
-                          const currentPassengerData = Array.isArray(
-                            rawPassengerData,
-                          )
-                            ? rawPassengerData
-                            : [];
-
-                          if (
-                            !currentPassengerData ||
-                            currentPassengerData.length === 0
-                          ) {
-                            return (
-                              <div className="text-center py-8 text-gray-500">
-                                No passenger rebooking data available
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div className="border rounded-lg p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Hotel className="h-4 w-4 text-blue-600" />
+                                <span className="font-medium">Hotel Accommodation</span>
                               </div>
-                            );
-                          }
+                              <p className="text-2xl font-bold text-blue-900">
+                                {Array.isArray(selectedPlan.passengerInformation)
+                                  ? selectedPlan.passengerInformation.filter(
+                                      (p) => p.hotel_required === true || (p.additional_services && p.additional_services.includes('hotel')),
+                                    ).length
+                                  : Math.floor((selectedPlan.affectedPassengers || 0) * 0.3)}
+                              </p>
+                              <p className="text-sm text-muted-foreground">passengers requiring hotel</p>
+                            </div>
 
-                          // Group passengers by PNR
-                          const passengersByPnr =
-                            currentPassengerData.reduce(
-                              (acc, passenger) => {
-                                const pnr = passenger.pnr || "Unknown";
-                                if (!acc[pnr]) {
-                                  acc[pnr] = [];
-                                }
-                                acc[pnr].push(passenger);
-                                return acc;
-                              },
-                              {},
-                            );
+                            <div className="border rounded-lg p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <UtensilsCrossed className="h-4 w-4 text-green-600" />
+                                <span className="font-medium">Meal Vouchers</span>
+                              </div>
+                              <p className="text-2xl font-bold text-green-900">
+                                {Array.isArray(selectedPlan.passengerInformation)
+                                  ? selectedPlan.passengerInformation.filter(
+                                      (p) => p.meal_voucher === true || (p.additional_services && p.additional_services.includes('meal')),
+                                    ).length
+                                  : Math.floor((selectedPlan.affectedPassengers || 0) * 0.8)}
+                              </p>
+                              <p className="text-sm text-muted-foreground">meal vouchers issued</p>
+                            </div>
 
-                          return Object.entries(passengersByPnr)
-                            .slice(0, 8)
-                            .map(([pnr, passengers], groupIndex) => (
-                              <Card
-                                key={groupIndex}
-                                className="border border-gray-200"
-                              >
-                                <div className="p-3 bg-gray-50 border-b">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                      <Users className="h-4 w-4 text-blue-600" />
-                                      <span className="font-semibold text-gray-900">
-                                        PNR: {pnr}
-                                      </span>
-                                      <Badge
-                                        variant="secondary"
-                                        className="bg-blue-100 text-blue-800"
-                                      >
-                                        {(passengers as any).length}{" "}
-                                        passenger
-                                        {(passengers as any).length > 1
-                                          ? "s"
-                                          : ""}
-                                      </Badge>
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                      Group Booking
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="p-3 space-y-3">
-                                  {(passengers as any).map(
-                                    (passenger, passengerIndex) => (
-                                      <div
-                                        key={passengerIndex}
-                                        className="border-l-2 border-blue-200 pl-3"
-                                      >
-                                        <div className="flex items-center justify-between mb-2">
-                                          <div className="font-medium text-gray-900">
-                                            {passenger.passenger_name ||
-                                              `Passenger ${passengerIndex + 1}`}
+                            <div className="border rounded-lg p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Car className="h-4 w-4 text-orange-600" />
+                                <span className="font-medium">Ground Transport</span>
+                              </div>
+                              <p className="text-2xl font-bold text-orange-900">
+                                {Array.isArray(selectedPlan.passengerInformation)
+                                  ? selectedPlan.passengerInformation.filter(
+                                      (p) => p.transport_required === true || (p.additional_services && p.additional_services.includes('transport')),
+                                    ).length
+                                  : Math.floor((selectedPlan.affectedPassengers || 0) * 0.4)}
+                              </p>
+                              <p className="text-sm text-muted-foreground">transport arrangements</p>
+                            </div>
+                          </div>
+
+                          {/* Cost Breakdown for Accommodation */}
+                          <div className="border rounded-lg p-4 bg-gray-50">
+                            <h5 className="font-medium mb-3">Accommodation Cost Breakdown</h5>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                              <div>
+                                <span className="text-muted-foreground">Hotel Costs:</span>
+                                <p className="font-semibold">AED {(
+                                  Math.floor((selectedPlan.affectedPassengers || 0) * 0.3) * 450
+                                ).toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Meal Vouchers:</span>
+                                <p className="font-semibold">AED {(
+                                  Math.floor((selectedPlan.affectedPassengers || 0) * 0.8) * 75
+                                ).toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Transport:</span>
+                                <p className="font-semibold">AED {(
+                                  Math.floor((selectedPlan.affectedPassengers || 0) * 0.4) * 80
+                                ).toLocaleString()}</p>
+                              </div>
+                              <div>
+                                <span className="text-muted-foreground">Total Accommodation:</span>
+                                <p className="font-semibold text-blue-600">AED {(
+                                  Math.floor((selectedPlan.affectedPassengers || 0) * 0.3) * 450 +
+                                  Math.floor((selectedPlan.affectedPassengers || 0) * 0.8) * 75 +
+                                  Math.floor((selectedPlan.affectedPassengers || 0) * 0.4) * 80
+                                ).toLocaleString()}</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <Separator />
+
+                        {Array.isArray(selectedPlan.passengerInformation) &&
+                        selectedPlan.passengerInformation.length > 0 ? (
+                          <div>
+                            <h4 className="font-medium mb-3">
+                              Passenger Rebooking Details
+                            </h4>
+                            <div className="border rounded-lg overflow-hidden">
+                              <Table>
+                                <TableHeader>
+                                  <TableRow>
+                                    <TableHead>Passenger Name</TableHead>
+                                    <TableHead>PNR</TableHead>
+                                    <TableHead>Original Flight</TableHead>
+                                    <TableHead>New Flight</TableHead>
+                                    <TableHead>Accommodation</TableHead>
+                                    <TableHead>Status</TableHead>
+                                  </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                  {selectedPlan.passengerInformation
+                                    .slice(0, 10)
+                                    .map((passenger, index) => (
+                                      <TableRow key={index}>
+                                        <TableCell className="font-medium">
+                                          {passenger.passenger_name ||
+                                            passenger.name ||
+                                            `Passenger ${index + 1}`}
+                                        </TableCell>
+                                        <TableCell>
+                                          {passenger.pnr || "N/A"}
+                                        </TableCell>
+                                        <TableCell>
+                                          {passenger.original_flight ||
+                                            selectedPlan.flightNumber}
+                                        </TableCell>
+                                        <TableCell>
+                                          {passenger.rebooked_flight ||
+                                            passenger.new_flight ||
+                                            "TBD"}
+                                        </TableCell>
+                                        <TableCell>
+                                          <div className="flex gap-1">
+                                            {(passenger.hotel_required || (passenger.additional_services && passenger.additional_services.includes('hotel'))) && (
+                                              <Badge variant="outline" className="text-xs">
+                                                <Hotel className="h-3 w-3 mr-1" />
+                                                Hotel
+                                              </Badge>
+                                            )}
+                                            {(passenger.meal_voucher || (passenger.additional_services && passenger.additional_services.includes('meal'))) && (
+                                              <Badge variant="outline" className="text-xs">
+                                                <UtensilsCrossed className="h-3 w-3 mr-1" />
+                                                Meal
+                                              </Badge>
+                                            )}
+                                            {(passenger.transport_required || (passenger.additional_services && passenger.additional_services.includes('transport'))) && (
+                                              <Badge variant="outline" className="text-xs">
+                                                <Car className="h-3 w-3 mr-1" />
+                                                Transport
+                                              </Badge>
+                                            )}
                                           </div>
+                                        </TableCell>
+                                        <TableCell>
                                           <Badge
                                             className={
-                                              passenger.rebooking_status ===
-                                              "confirmed"
+                                              passenger.status === "confirmed" || passenger.status === "rebooked"
                                                 ? "bg-green-100 text-green-700"
-                                                : passenger.rebooking_status ===
-                                                    "pending"
-                                                  ? "bg-yellow-100 text-yellow-700"
-                                                  : "bg-gray-100 text-gray-700"
+                                                : "bg-orange-100 text-orange-700"
                                             }
                                           >
-                                            {passenger.rebooking_status ||
-                                              "Unknown"}
+                                            {passenger.status || "Processing"}
                                           </Badge>
-                                        </div>
-                                        <div className="text-sm space-y-1">
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Original Flight:
-                                            </span>
-                                            <span>
-                                              {passenger.original_flight ||
-                                                plan.flightNumber}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Rebooked Flight:
-                                            </span>
-                                            <span>
-                                              {passenger.rebooked_flight ||
-                                                "TBD"}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Seat Change:
-                                            </span>
-                                            <span>
-                                              {passenger.original_seat &&
-                                              passenger.rebooked_seat
-                                                ? `${passenger.original_seat} → ${passenger.rebooked_seat}`
-                                                : "N/A"}
-                                            </span>
-                                          </div>
-                                          {passenger.rebooking_cost > 0 && (
-                                            <div className="flex justify-between">
-                                              <span className="text-muted-foreground">
-                                                Cost:
-                                              </span>
-                                              <span className="text-flydubai-orange">
-                                                AED {passenger.rebooking_cost}
-                                              </span>
-                                            </div>
-                                          )}
-                                          {passenger.additional_services &&
-                                            passenger.additional_services
-                                              .length > 0 && (
-                                              <div className="flex justify-between">
-                                                <span className="text-muted-foreground">
-                                                  Services:
-                                                </span>
-                                                <span className="text-xs">
-                                                  {passenger.additional_services.map(
-                                                    (service, serviceIndex) => (
-                                                      <Badge
-                                                        key={serviceIndex}
-                                                        variant="outline"
-                                                        className="mr-1 text-xs"
-                                                      >
-                                                        {service.service_type ||
-                                                          service}
-                                                      </Badge>
-                                                    ),
-                                                  )}
-                                                </span>
-                                              </div>
-                                            )}
-                                          {passenger.notes && (
-                                            <div className="text-xs text-muted-foreground mt-2">
-                                              Notes: {passenger.notes}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ),
-                                  )}
-                                </div>
-                              </Card>
-                            ));
-                        })()}
-                        {(() => {
-                          const rawPassengerData =
-                            selectedOptionForDetails
-                              ?.pending_recovery_solutions?.full_details
-                              ?.passenger_rebooking ||
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.passenger_rebooking ||
-                            [];
-
-                          const groupCount = Array.isArray(rawPassengerData)
-                            ? Object.keys(
-                                rawPassengerData.reduce((acc, passenger) => {
-                                  const pnr = passenger.pnr || "UNKNOWN";
-                                  if (!acc[pnr]) acc[pnr] = [];
-                                  acc[pnr].push(passenger);
-                                  return acc;
-                                }, {}),
-                              ).length
-                            : 0;
-
-                          return (
-                            groupCount > 8 && (
-                              <div className="text-center text-sm text-muted-foreground p-2">
-                                ... and {groupCount - 8} more PNR groups
-                              </div>
-                            )
-                          );
-                        })()}
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                </TableBody>
+                              </Table>
+                            </div>
+                            {selectedPlan.passengerInformation.length > 10 && (
+                              <p className="text-sm text-muted-foreground mt-2">
+                                Showing 10 of{" "}
+                                {selectedPlan.passengerInformation.length}{" "}
+                                passengers
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <Alert>
+                            <Info className="h-4 w-4" />
+                            <AlertDescription>
+                              Detailed passenger rebooking information is being
+                              processed and will be available shortly.
+                            </AlertDescription>
+                          </Alert>
+                        )}
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="rotation-impact" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Activity className="h-5 w-5" />
-                      Rotation Impact Analysis
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Alert className="border-blue-200 bg-blue-50 mb-4">
-                      <Info className="h-4 w-4 text-blue-600" />
-                      <AlertDescription className="text-blue-800">
-                        This analysis shows how the recovery option affects
-                        subsequent flights, aircraft rotations, and crew
-                        assignments.
-                      </AlertDescription>
-                    </Alert>
-
-                    <div className="space-y-6">
-                      {/* Alternate Aircraft Rotation Impact */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2 text-lg">
-                            <Plane className="h-5 w-5 text-blue-600" />
-                            Alternate Aircraft Rotation Impact
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {(() => {
-                            // Get rotation impact from API data
-                            const rotationImpact =
-                              selectedOptionForDetails?.matchingOption
-                                ?.rotation_impact ||
-                              selectedOptionForDetails?.rotationImpact
-                                ?.rotation_impact ||
-                              selectedPlan?.matchingOption?.rotation_impact ||
-                              selectedPlan?.rotationImpact?.rotation_impact;
-
-                            if (
-                              !Array.isArray(rotationImpact) ||
-                              rotationImpact.length === 0
-                            ) {
-                              return (
-                                <div className="text-center py-6">
-                                  <Plane className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                                  <p className="text-muted-foreground">
-                                    No alternate aircraft impact data available
-                                  </p>
-                                </div>
-                              );
-                            }
-
-                            return rotationImpact.map((flight, index) => (
-                              <div
-                                key={index}
-                                className="p-4 border rounded-lg bg-white space-y-3 mb-4"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <Plane className="h-4 w-4 text-blue-600" />
-                                    <span className="font-semibold">
-                                      {flight.flightNumber}
-                                    </span>
-                                    <Badge
-                                      variant="outline"
-                                      className="text-xs"
-                                    >
-                                      {flight.origin_code} →{" "}
-                                      {flight.destination_code}
-                                    </Badge>
-                                  </div>
-                                  <Badge
-                                    className={
-                                      flight.impact === "High Impact"
-                                        ? "bg-red-100 text-red-700"
-                                        : flight.impact === "Medium Impact"
-                                          ? "bg-yellow-100 text-yellow-700"
-                                          : "bg-green-100 text-green-700"
-                                    }
-                                  >
-                                    {flight.impact}
-                                  </Badge>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div>
-                                    <Label className="text-xs text-muted-foreground">
-                                      Route
-                                    </Label>
-                                    <p className="font-medium">
-                                      {flight.origin} → {flight.destination}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs text-muted-foreground">
-                                      Delay
-                                    </Label>
-                                    <p className="font-medium text-red-600">
-                                      {flight.delay}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs text-muted-foreground">
-                                      Departure
-                                    </Label>
-                                    <p className="font-medium">
-                                      {new Date(
-                                        flight.departure,
-                                      ).toLocaleString("en-IN", {
-                                        timeZone: "Asia/Kolkata",
-                                        hour12: true,
-                                      })}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs text-muted-foreground">
-                                      Passengers Affected
-                                    </Label>
-                                    <p className="font-medium">
-                                      {flight.passengers}
-                                    </p>
-                                  </div>
-                                </div>
-
-                                <div className="p-3 bg-gray-50 rounded">
-                                  <Label className="text-xs text-muted-foreground">
-                                    Impact Reason
-                                  </Label>
-                                  <p className="text-sm mt-1">
-                                    {flight.reason}
-                                  </p>
-                                </div>
-                              </div>
-                            ));
-                          })()}
-                        </CardContent>
-                      </Card>
-
-                      {/* Crew Reassignment Rotation Impact */}
-                      <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2 text-lg">
-                            <Users className="h-5 w-5 text-purple-600" />
-                            Crew Reassignment Rotation Impact
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          {(() => {
-                            // Get crew data from API - check multiple possible locations
-                            const crewData =
-                              selectedOptionForDetails
-                                ?.pending_recovery_solutions?.full_details
-                                ?.crew_hotel_assignments ||
-                              selectedOptionForDetails?.assignedCrew ||
-                              selectedPlan?.assignedCrew ||
-                              [];
-
-                            // If we have crew hotel assignments, extract crew members
-                            let crewMembers = [];
-                            if (
-                              Array.isArray(crewData) &&
-                              crewData.length > 0 &&
-                              crewData[0].crew_member
-                            ) {
-                              // Extract from crew hotel assignments
-                              crewMembers = crewData.flatMap((assignment) =>
-                                assignment.crew_member.map((crew) => ({
-                                  name: crew.name,
-                                  role: crew.rank,
-                                  base: crew.base,
-                                  status: "Reassigned",
-                                  employeeId: crew.employee_id,
-                                  contact: crew.contact_number,
-                                })),
-                              );
-                            } else if (Array.isArray(crewData)) {
-                              // Use direct crew data
-                              crewMembers = crewData;
-                            }
-
-                            // Fallback crew data if no API data
-                            if (crewMembers.length === 0) {
-                              crewMembers = [
-                                {
-                                  name: "Capt. Ahmed Hassan",
-                                  role: "Captain",
-                                  base: "DXB",
-                                  status: "Reassigned",
-                                  employeeId: `${airlineConfig.code}001234`,
-                                },
-                                {
-                                  name: "F/O Sarah Khan",
-                                  role: "First Officer",
-                                  base: "DXB",
-                                  status: "Reassigned",
-                                  employeeId:  `${airlineConfig.code}001114`,
-                                },
-                              ];
-                            }
-
-                            return (
-                              <div className="space-y-4">
-                                {crewMembers.map((crewMember, index) => {
-                                  // Generate rotation impact for each crew member based on role with safe handling
-                                  const crewRotationImpact = Array.isArray(crewMember.rotation_impact)
-                                    ? crewMember.rotation_impact
-                                    : [
-                                        {
-                                          flightNumber: `${airlineConfig.code}${Math.floor(Math.random() * 900) + 100}`,
-                                          origin_code: "DXB",
-                                          destination_code: "BEY",
-                                          impact: "Low Impact",
-                                          delay: "15 min",
-                                          dutyTime: "8h 30m",
-                                          restPeriod: "12h 45m",
-                                          reason: `${crewMember.role} reassignment completed successfully`
-                                        }
-                                      ];
-
-                                  return (
-                                    <div
-                                      key={index}
-                                      className="border rounded-lg p-4 space-y-3"
-                                    >
-                                      <div className="flex items-center justify-between mb-3">
-                                        <div className="flex items-center gap-3">
-                                          <div className="p-2 bg-purple-100 rounded">
-                                            <UserCheck className="h-4 w-4 text-purple-600" />
-                                          </div>
-                                          <div>
-                                            <h4 className="font-semibold">
-                                              {crewMember.name}
-                                            </h4>
-                                            <Badge
-                                              variant="outline"
-                                              className="text-xs"
-                                            >
-                                              {crewMember.role}
-                                            </Badge>
-                                          </div>
-                                        </div>
-                                        <div className="text-right text-sm">
-                                          <p className="text-muted-foreground">
-                                            Base: {crewMember.base || "DXB"}
-                                          </p>
-                                          <p className="text-muted-foreground">
-                                            Status:{" "}
-                                            {crewMember.status || "Available"}
-                                          </p>
-                                        </div>
-                                      </div>
-
-                                      <div className="space-y-3">
-                                        {crewRotationImpact.map(
-                                          (flight, flightIndex) => (
-                                            <div
-                                              key={flightIndex}
-                                              className="p-3 border rounded bg-purple-50 space-y-2"
-                                            >
-                                              <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                  <Plane className="h-4 w-4 text-purple-600" />
-                                                  <span className="font-medium">
-                                                    {flight.flightNumber}
-                                                  </span>
-                                                  <Badge
-                                                    variant="outline"
-                                                    className="text-xs"
-                                                  >
-                                                    {flight.origin_code} →{" "}
-                                                    {flight.destination_code}
-                                                  </Badge>
-                                                </div>
-                                                <Badge
-                                                  className={
-                                                    flight.impact ===
-                                                    "High Impact"
-                                                      ? "bg-red-100 text-red-700 border-red-200"
-                                                      : flight.impact ===
-                                                          "Medium Impact"
-                                                        ? "bg-yellow-100 text-yellow-700 border-yellow-200"
-                                                        : "bg-green-100 text-green-700 border-green-200"
-                                                  }
-                                                >
-                                                  {flight.impact}
-                                                </Badge>
-                                              </div>
-
-                                              <div className="grid grid-cols-3 gap-3 text-xs">
-                                                <div>
-                                                  <Label className="text-muted-foreground">
-                                                    Delay
-                                                  </Label>
-                                                  <p className="font-medium">
-                                                    {flight.delay}
-                                                  </p>
-                                                </div>
-                                                <div>
-                                                  <Label className="text-muted-foreground">
-                                                    Duty Time
-                                                  </Label>
-                                                  <p className="font-medium">
-                                                    {flight.dutyTime}
-                                                  </p>
-                                                </div>
-                                                <div>
-                                                  <Label className="text-muted-foreground">
-                                                    Rest Period
-                                                  </Label>
-                                                  <p className="font-medium">
-                                                    {flight.restPeriod}
-                                                  </p>
-                                                </div>
-                                              </div>
-
-                                              <div className="p-2 bg-white rounded text-xs">
-                                                <Label className="text-muted-foreground">
-                                                  Reason
-                                                </Label>
-                                                <p className="mt-1">
-                                                  {flight.reason}
-                                                </p>
-                                              </div>
-                                            </div>
-                                          ),
-                                        )}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            );
-                          })()}
-                        </CardContent>
-                      </Card>
-                    </div>
+                    ) : (
+                      <Alert>
+                        <Info className="h-4 w-4" />
+                        <AlertDescription>
+                          No passenger re-accommodation data is available for
+                          this recovery plan. This may be a crew-only or
+                          maintenance-focused solution.
+                        </AlertDescription>
+                      </Alert>
+                    )}
                   </CardContent>
                 </Card>
               </TabsContent>
