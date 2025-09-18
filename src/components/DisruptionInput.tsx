@@ -352,25 +352,24 @@ export function DisruptionInput({
   // State for generating recovery options
   const [isGeneratingOptions, setIsGeneratingOptions] = useState(false);
   const [loadingRecovery, setLoadingRecovery] = useState({});
-  // Fetch disruption airportdetails from database
-  let airportDetails : airportsHubs |{};// define with type
- 
-  const fetchAirportdetails = async (): Promise<airportsHubs | {}> => {
-    try {
-      const data = await databaseService.airportDetails(airlineConfig.code);
-      return data;
-    } catch (error) {
-      console.error("Error fetching disruption categories:", error);
-      return {};
-    }
-  };
+  // State for airport details
+  const [airportDetails, setAirportDetails] = useState<airportsHubs | null>(null);
 
-  fetchAirportdetails().then((data) => {
-    if(data){
-        airportDetails = data; 
-    } 
-    console.log(airportDetails, "stored airportDetails");
-  });
+  // Fetch airport details on component mount
+  useEffect(() => {
+    const fetchAirportDetails = async () => {
+      try {
+        const data = await databaseService.airportDetails(airlineConfig.code);
+        if (data) {
+          setAirportDetails(data);
+        }
+      } catch (error) {
+        console.error("Error fetching airport details:", error);
+      }
+    };
+
+    fetchAirportDetails();
+  }, [airlineConfig.code]);
 
   // Fetch flights from database
   useEffect(() => {
@@ -1222,7 +1221,8 @@ export function DisruptionInput({
                           <SelectValue placeholder="Select origin" />
                         </SelectTrigger>
                         <SelectContent className="max-h-60 overflow-y-auto z-50">
-                          {airportDetails &&  airportDetails.airports
+                          {airportDetails && airportDetails.airports &&
+                            airportDetails.airports
                             .filter(
                               (airport) =>
                                 airport.code !== newDisruption.destination,
@@ -1251,7 +1251,8 @@ export function DisruptionInput({
                           <SelectValue placeholder="Select destination" />
                         </SelectTrigger>
                         <SelectContent className="max-h-60 overflow-y-auto z-50">
-                          { airportDetails && airportDetails.airports.filter(
+                          {airportDetails && airportDetails.airports &&
+                            airportDetails.airports.filter(
                               (airport) =>
                                 airport.code !== newDisruption.origin,
                             )
