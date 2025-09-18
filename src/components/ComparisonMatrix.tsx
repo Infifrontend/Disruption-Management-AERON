@@ -58,18 +58,6 @@ interface ComparisonMatrixProps {
   onSelectPlan: (plan: any) => void;
 }
 
-// Helper function to get the current airline's currency code
-// In a real application, this would likely come from context or a configuration store
-const getCurrentAirlineCurrency = () => {
-  // Placeholder: In a real app, fetch this dynamically based on airline context
-  // For now, it defaults to AED as per the original code's context
-  // You would integrate with your theme/airline configuration here.
-  // Example:
-  // const { airlineConfig } = useAppContext();
-  // return airlineConfig?.currencyCode || 'AED';
-  return "AED"; // Defaulting to AED as per original code
-};
-
 export function ComparisonMatrix({
   selectedFlight,
   recoveryOptions = [],
@@ -411,7 +399,7 @@ export function ComparisonMatrix({
         id: "SWAP_A6FDC",
         title: "Aircraft Swap - A6-FDC",
         description: "Immediate tail swap with available A320",
-        cost: `${getCurrentAirlineCurrency()} 45,000`,
+        cost: "AED 45,000",
         timeline: "75 minutes",
         confidence: 95,
         impact: "Minimal passenger disruption",
@@ -433,7 +421,7 @@ export function ComparisonMatrix({
         id: "DELAY_REPAIR",
         title: "Delay for Repair Completion",
         description: "Wait for A6-FDB hydraulics system repair",
-        cost: `${getCurrentAirlineCurrency()} 180,000`,
+        cost: "AED 180,000",
         timeline: "4-6 hours",
         confidence: 45,
         impact: "Significant passenger disruption",
@@ -455,7 +443,7 @@ export function ComparisonMatrix({
         id: "CANCEL_REBOOK",
         title: "Cancel and Rebook",
         description: "Cancel FZ445 and rebook on partner airlines",
-        cost: `${getCurrentAirlineCurrency()} 520,000`,
+        cost: "AED 520,000",
         timeline: "Immediate",
         confidence: 75,
         impact: "Complete route cancellation",
@@ -483,7 +471,7 @@ export function ComparisonMatrix({
         id: "STANDBY_CREW",
         title: "Assign Standby Crew",
         description: "Capt. Mohammed Al-Zaabi from standby roster",
-        cost: `${getCurrentAirlineCurrency()} 8,500`,
+        cost: "AED 8,500",
         timeline: "30 minutes",
         confidence: 92,
         impact: "Minimal operational disruption",
@@ -505,7 +493,7 @@ export function ComparisonMatrix({
         id: "DEADHEAD_CREW",
         title: "Deadhead Crew from AUH",
         description: "Position qualified Captain from Abu Dhabi",
-        cost: `${getCurrentAirlineCurrency()} 25,000`,
+        cost: "AED 25,000",
         timeline: "120 minutes",
         confidence: 85,
         impact: "Moderate schedule delay",
@@ -527,7 +515,7 @@ export function ComparisonMatrix({
         id: "DELAY_COMPLIANCE",
         title: "Delay for Crew Rest",
         description: "Wait for original crew mandatory rest period",
-        cost: `${getCurrentAirlineCurrency()} 45,000`,
+        cost: "AED 45,000",
         timeline: "3 hours",
         confidence: 65,
         impact: "Major schedule disruption",
@@ -555,7 +543,7 @@ export function ComparisonMatrix({
         id: "ROUTE_OPTIMIZATION",
         title: "Route Optimization",
         description: "Alternative routing to avoid weather",
-        cost: `${getCurrentAirlineCurrency()} 12,000`,
+        cost: "AED 12,000",
         timeline: "45 minutes",
         confidence: 88,
         impact: "Minimal delay with fuel cost",
@@ -577,7 +565,7 @@ export function ComparisonMatrix({
         id: "WEATHER_DELAY",
         title: "Hold for Weather Improvement",
         description: "Wait for favorable weather conditions",
-        cost: `${getCurrentAirlineCurrency()} 35,000`,
+        cost: "AED 35,000",
         timeline: "2-3 hours",
         confidence: 70,
         impact: "Schedule delay with passenger services",
@@ -599,7 +587,7 @@ export function ComparisonMatrix({
         id: "ALTERNATE_AIRPORT",
         title: "Divert to Alternate Airport",
         description: "Land at nearby airport with ground transport",
-        cost: `${getCurrentAirlineCurrency()} 85,000`,
+        cost: "AED 85,000",
         timeline: "Normal flight time",
         confidence: 90,
         impact: "Ground transport arrangement required",
@@ -627,7 +615,7 @@ export function ComparisonMatrix({
         id: "PRIORITY_SLOT",
         title: "Request Priority Slot",
         description: "ATC coordination for earlier departure",
-        cost: `${getCurrentAirlineCurrency()} 15,000`,
+        cost: "AED 15,000",
         timeline: "60 minutes",
         confidence: 80,
         impact: "Moderate delay with slot fees",
@@ -649,7 +637,7 @@ export function ComparisonMatrix({
         id: "OVERNIGHT_DELAY",
         title: "Overnight Delay",
         description: "Delay until next available slot",
-        cost: `${getCurrentAirlineCurrency()} 95,000`,
+        cost: "AED 95,000",
         timeline: "Next day",
         confidence: 95,
         impact: "Full passenger accommodation required",
@@ -671,7 +659,7 @@ export function ComparisonMatrix({
         id: "REROUTE_HUB",
         title: "Reroute via Alternative Hub",
         description: "Route through different airport hub",
-        cost: `${getCurrentAirlineCurrency()} 45,000`,
+        cost: "AED 45,000",
         timeline: "3 hours",
         confidence: 85,
         impact: "Extended travel time",
@@ -699,7 +687,7 @@ export function ComparisonMatrix({
         id: "ROTATION_RESEQUENCE",
         title: "Resequence Rotation",
         description: "Adjust aircraft rotation sequence",
-        cost: `${getCurrentAirlineCurrency()} 18,000`,
+        cost: "AED 18,000",
         timeline: "90 minutes",
         confidence: 88,
         impact: "Minor schedule adjustments",
@@ -721,7 +709,7 @@ export function ComparisonMatrix({
         id: "MAINTENANCE_DEFER",
         title: "Defer Maintenance",
         description: "Postpone non-critical maintenance",
-        cost: `${getCurrentAirlineCurrency()} 8,000`,
+        cost: "AED 8,000",
         timeline: "30 minutes",
         confidence: 75,
         impact: "Minimal operational impact",
@@ -743,7 +731,7 @@ export function ComparisonMatrix({
         id: "ALTERNATIVE_AIRCRAFT",
         title: "Use Alternative Aircraft",
         description: "Swap to maintenance-ready aircraft",
-        cost: `${getCurrentAirlineCurrency()} 35,000`,
+        cost: "AED 35,000",
         timeline: "2 hours",
         confidence: 92,
         impact: "Aircraft swap with passenger transfer",
@@ -903,7 +891,7 @@ export function ComparisonMatrix({
               totalCost = 25000; // Default reasonable cost
             }
 
-            row[key] = `${getCurrentAirlineCurrency()} ${totalCost.toLocaleString()}`;
+            row[key] = `AED ${totalCost.toLocaleString()}`;
             break;
           case "OTP Score":
             row[key] =

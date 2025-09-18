@@ -22,8 +22,12 @@ import {
   Utensils
 } from 'lucide-react'
 
-// Import airline configuration and currency utilities
-import { useAirlineTheme } from '../hooks/useAirlineTheme'
+// Assume this data is fetched or passed down from a configuration context
+// For demonstration, we'll hardcode a sample configuration.
+const airlineConfig = {
+  currency: 'AED', // This would typically come from your airline's theme configuration
+  currencySymbol: 'د.إ' // Corresponding symbol for AED
+};
 
 const voucherTypes = [
   {
@@ -110,16 +114,10 @@ export function VoucherManagement({ selectedPassengers }: { selectedPassengers: 
   const [useCustomAmount, setUseCustomAmount] = useState(false)
   const [bulkIssue, setBulkIssue] = useState(false)
 
-  // Get airline configuration
-  const { airlineConfig } = useAirlineTheme()
-  
   // const selectedPassengerData = passengers.filter(p => selectedPassengers.includes(p.id))
   const selectedVoucherTypeData = voucherTypes.find(vt => vt.id === selectedVoucherType)
   const currency = airlineConfig.currency;
-  
-  // Get currency symbol using the currency utils
-  import { getCurrencySymbol } from '../utils/currencyUtils'
-  const currencySymbol = getCurrencySymbol(currency);
+  const currencySymbol = airlineConfig.currencySymbol;
 
   const getTotalCost = () => {
     const amount = useCustomAmount ? parseFloat(customAmount) || 0 : voucherAmount

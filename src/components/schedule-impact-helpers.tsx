@@ -30,7 +30,7 @@ export const calculatePassengerImpact = (rotationPlan, option, flight) => {
       totalAffected: estimatedPassengers,
       delayDuration: option.timeline,
       accommodationRequired: delayHours >= 3,
-      compensationLiability: delayHours >= 3 ? `${getCurrency()} ${(estimatedPassengers * 200).toLocaleString()}` : `${getCurrency()} 0`,
+      compensationLiability: delayHours >= 3 ? `AED ${(estimatedPassengers * 200).toLocaleString()}` : 'AED 0',
       connectionsMissed: Math.ceil(estimatedPassengers * 0.15), // Estimate 15% connecting
       rebookingRequired: false
     }
@@ -42,7 +42,7 @@ export const calculatePassengerImpact = (rotationPlan, option, flight) => {
       totalAffected: estimatedPassengers,
       rebookingRequired: true,
       accommodationRequired: true,
-      compensationLiability: `${getCurrency()} ${(estimatedPassengers * 600).toLocaleString()}`,
+      compensationLiability: `AED ${(estimatedPassengers * 600).toLocaleString()}`,
       connectionsMissed: estimatedPassengers,
       alternativeFlights: 'Partner airlines and next-day options'
     }
@@ -53,7 +53,7 @@ export const calculatePassengerImpact = (rotationPlan, option, flight) => {
     totalAffected: estimatedPassengers,
     delayDuration: option.timeline,
     accommodationRequired: false,
-    compensationLiability: `${getCurrency()} 0 - Minimal delay`,
+    compensationLiability: 'AED 0 - Minimal delay',
     connectionsMissed: 0,
     rebookingRequired: false
   }
@@ -130,7 +130,7 @@ export const calculateTotalPassengers = (originalPlan, flight) => {
 export const calculateRevenueAtRisk = (originalPlan) => {
   const avgRevenue = 125000 // Per flight in airline currency
   const flightCount = originalPlan?.length || 1
-  return `${getCurrency()} ${(avgRevenue * flightCount).toLocaleString()}`
+  return `${currency} ${(avgRevenue * flightCount).toLocaleString()}`
 }
 
 export const countCriticalConflicts = (newPlan) => {
@@ -177,7 +177,7 @@ export const generateRecommendedMitigations = (option, rotationPlan) => {
       priority: 2,
       action: 'Monitor crew schedule impacts',
       impact: 'Prevents secondary disruptions',
-      cost: `${getCurrency()} 0`,
+      cost: 'AED 0',
       timeline: 'Ongoing monitoring'
     })
   }
@@ -187,7 +187,7 @@ export const generateRecommendedMitigations = (option, rotationPlan) => {
       priority: 3,
       action: 'Coordinate aircraft positioning',
       impact: 'Ensures smooth transition',
-      cost: `${getCurrency()} 5,000`,
+      cost: 'AED 5,000',
       timeline: '45 minutes'
     })
   }
@@ -281,7 +281,7 @@ export const calculateSavings = (selectedOption, allOptions) => {
   const selectedCost = parseInt(selectedOption.cost.replace(/[^0-9]/g, ''))
   const maxCost = Math.max(...costs)
   const savings = maxCost - selectedCost
-  return savings > 0 ? `${getCurrency()} ${savings.toLocaleString()}` : 'No savings vs alternatives'
+  return savings > 0 ? `AED ${savings.toLocaleString()}` : 'No savings vs alternatives'
 }
 
 export const calculateROI = (selectedOption, allOptions) => {
