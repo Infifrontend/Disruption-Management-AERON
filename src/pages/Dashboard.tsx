@@ -720,7 +720,7 @@ export function Dashboard() {
                 Flight Number
               </label>
               <Input
-                placeholder="FZ123"
+                placeholder={`${airlineConfig.code}332`}
                 value={filters.flightNumber}
                 onChange={(e) =>
                   setFilters({ ...filters, flightNumber: e.target.value })

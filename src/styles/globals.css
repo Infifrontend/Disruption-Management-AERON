@@ -30,8 +30,8 @@
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
     /* Airline-specific dynamic colors - will be injected by JavaScript */
-    --airline-primary: #0066CC;
-    --airline-secondary: #ff8200;
+    --airline-primary: #0e2040;
+    --airline-secondary: #e3001f;
     --airline-navy: #001f3f;
     --airline-links: #0066CC;
     --airline-accent: #e6f3ff;

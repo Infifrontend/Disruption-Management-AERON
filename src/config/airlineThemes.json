@@ -2,6 +2,7 @@
   "FZ": {
     "code": "FZ",
     "name": "flydubai",
+    "currency": "AED",
     "displayName": "flydubai",
     "colors": {
       "primary": "#0066CC",
@@ -33,6 +34,7 @@
     "code": "QR",
     "name": "qatar-airways",
     "displayName": "Qatar Airways",
+     "currency": "USD",
     "colors": {
       "primary": "#8e2157",
       "secondary": "#120c80",
@@ -63,6 +65,7 @@
     "code": "IN",
     "name": "infiniti",
     "displayName": "Infiniti",
+    "currency": "INR",
     "colors": {
       "primary": "#ff8200",
       "secondary": "#ff8200",
@@ -93,6 +96,7 @@
     "code": "JU",
     "name": "Air Serbia",
     "displayName": "Air Serbia",
+     "currency": "EUR",
     "colors": {
       "primary": "#0e2040",
       "secondary": "#e3001f",

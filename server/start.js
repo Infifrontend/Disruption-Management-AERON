@@ -15,6 +15,7 @@ import {
   requestLoggerMiddleware,
 } from "./logger.js";
 import config from "./config/airlineConfig.js"
+console.log("airline config loaded ==>",config)
 
 const app = express();
 

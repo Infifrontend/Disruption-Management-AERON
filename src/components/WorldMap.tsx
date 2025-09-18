@@ -23,7 +23,7 @@ import {
 import { useAirlineTheme } from "./../hooks/useAirlineTheme";
 
 export function WorldMap() {
-   const { airlineConfig } = useAirlineTheme();
+  const { airlineConfig } = useAirlineTheme();
   const [selectedView, setSelectedView] = useState("routes");
   const [isRealtime, setIsRealtime] = useState(true);
   const [_lastUpdate, setLastUpdate] = useState(new Date());
@@ -46,43 +46,48 @@ export function WorldMap() {
         setLoading(true);
         const analytics = await dashboardAnalytics.getDashboardAnalytics();
         setRealFlightData(analytics);
-        
+
         // Update live data from real analytics
         setLiveData({
           activeFlights: analytics.networkOverview.activeFlights || 0,
-          onSchedule: Math.round((analytics.networkOverview.activeFlights || 0) * (parseFloat(analytics.networkOverview.otpPerformance) / 100) || 0),
-          delayed: (analytics.networkOverview.disruptions || 0) - (analytics.operationalInsights.criticalPriority || 0),
+          onSchedule: Math.round(
+            (analytics.networkOverview.activeFlights || 0) *
+              (parseFloat(analytics.networkOverview.otpPerformance) / 100) || 0,
+          ),
+          delayed:
+            (analytics.networkOverview.disruptions || 0) -
+            (analytics.operationalInsights.criticalPriority || 0),
           disrupted: analytics.operationalInsights.criticalPriority || 0,
         });
         setLastUpdate(new Date());
       } catch (error) {
-        console.error('Failed to fetch flight data:', error);
+        console.error("Failed to fetch flight data:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchFlightData();
-    
+
     let intervalId: any;
     if (isRealtime) {
       intervalId = setInterval(fetchFlightData, 30000); // Update every 30 seconds
     }
-    
+
     return () => {
       if (intervalId) clearInterval(intervalId);
     };
   }, [isRealtime]);
 
   // Helper function to convert lat/lng to SVG coordinates
-  const latLngToXY = (lat:any, lng:any) => {
+  const latLngToXY = (lat: any, lng: any) => {
     const x = ((lng + 180) / 360) * 1000;
     const y = ((90 - lat) / 180) * 500;
     return { x, y };
   };
 
   // Helper function for status colors
-  const getStatusColor = (status :any) => {
+  const getStatusColor = (status: any) => {
     switch (status) {
       case "on-time":
         return "text-green-600";
@@ -161,7 +166,7 @@ export function WorldMap() {
   // Sample active flights
   const activeFlights = [
     {
-      id: "FZ215",
+      id: `${airlineConfig.code}215`,
       route: "DXB-BOM",
       lat: 22.5,
       lng: 64.0,
@@ -170,7 +175,7 @@ export function WorldMap() {
       progress: 65,
     },
     {
-      id: "FZ561",
+      id: `${airlineConfig.code}561`,
       route: "DXB-DEL",
       lat: 26.8,
       lng: 66.2,
@@ -179,7 +184,7 @@ export function WorldMap() {
       progress: 45,
     },
     {
-      id: "FZ789",
+      id: `${airlineConfig.code}789`,
       route: "DXB-IST",
       lat: 33.4,
       lng: 44.3,
@@ -188,7 +193,7 @@ export function WorldMap() {
       progress: 78,
     },
     {
-      id: "FZ134",
+      id: `${airlineConfig.code}134`,
       route: "DXB-KHI",
       lat: 25.0,
       lng: 61.5,
@@ -197,7 +202,7 @@ export function WorldMap() {
       progress: 82,
     },
     {
-      id: "FZ892",
+      id: `${airlineConfig.code}892`,
       route: "DXB-COK",
       lat: 18.2,
       lng: 68.1,
@@ -733,7 +738,7 @@ export function WorldMap() {
                     <div className="relative flex-shrink-0">
                       <div className="w-4 h-4 rounded-full bg-flydubai-blue border-2 border-white shadow-sm flex items-center justify-center">
                         <span className="text-white text-[8px] font-bold">
-                          FZ
+                          {airlineConfig.code}
                         </span>
                       </div>
                       <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-green-500 rounded-full border border-white"></div>

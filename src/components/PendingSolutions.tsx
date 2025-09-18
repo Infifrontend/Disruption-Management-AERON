@@ -78,8 +78,10 @@ import {
   Activity,
 } from "lucide-react";
 import { databaseService } from "../services/databaseService";
+import { useAirlineTheme } from "./../hooks/useAirlineTheme";
 
 export function PendingSolutions() {
+  const { airlineConfig } = useAirlineTheme();
   const [activeTab, setActiveTab] = useState("all");
   const [selectedPlan, setSelectedPlan] = useState(null);
 
@@ -3495,14 +3497,14 @@ export function PendingSolutions() {
                                   role: "Captain",
                                   base: "DXB",
                                   status: "Reassigned",
-                                  employeeId: "FZ001234",
+                                  employeeId: `${airlineConfig.code}001234`,
                                 },
                                 {
                                   name: "F/O Sarah Khan",
                                   role: "First Officer",
                                   base: "DXB",
                                   status: "Reassigned",
-                                  employeeId: "FZ005678",
+                                  employeeId:  `${airlineConfig.code}001114`,
                                 },
                               ];
                             }
