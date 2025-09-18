@@ -3535,10 +3535,10 @@ export function PendingSolutions() {
                             </span>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
+                  </CardContent>
+                </Card>
 
-                    <Card>
+                <Card>
                       <CardHeader>
                         <CardTitle>Operational Impact</CardTitle>
                       </CardHeader>
@@ -3601,8 +3601,7 @@ export function PendingSolutions() {
                         </div>
                       </CardContent>
                     </Card>
-                  </div>
-                </div>
+                  
               </TabsContent>
             </Tabs>
           )}
