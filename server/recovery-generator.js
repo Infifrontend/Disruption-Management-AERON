@@ -4228,7 +4228,6 @@ const generateCrewIssueRecovery = (flight) => {
       },
     },
   ];
-
   
   const crewIssuesRecoveryData = getCrewIssuesRecoveryData();
 
@@ -4883,7 +4882,6 @@ export function generateRecoveryOptionsForDisruption(
 
 export {
   mapDisruptionTypeToCategory,
-  getCrewIssuesRecoveryData,
   getWeatherIssuesRecoveryData,
   getAircraftIssuesRecoveryData,
   generateAircraftIssueRecovery,
