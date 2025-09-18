@@ -1,4 +1,4 @@
-import config from "./config/airlineConfig.js"
+import config, { getCurrency } from "./config/airlineConfig.js"
 // File system imports removed - using embedded data instead
 // available crew dummy information
 const availableDummyCrew = [
@@ -471,7 +471,7 @@ const getAircraftIssuesRecoveryData = () => {
     {
       title: "Aircraft Swap - Immediate",
       description: "Replace with available standby aircraft",
-      cost: "AED 22,800",
+      cost: `${getCurrency()} 22,800`,
       timeline: "1.5-2 hours",
       confidence: 88,
       impact: "Minimal passenger disruption",
@@ -543,26 +543,26 @@ const getAircraftIssuesRecoveryData = () => {
       cost_breakdown: {
         breakdown: [
           {
-            amount: "AED 15,000",
+            amount: `${getCurrency()} 15,000`,
             category: "Delay Costs",
             percentage: 66,
             description: "Passenger compensation and handling",
           },
           {
-            amount: "AED 5,000",
+            amount: `${getCurrency()} 5,000`,
             category: "Aircraft Swap",
             percentage: 22,
             description: "Cost of mobilizing standby aircraft",
           },
           {
-            amount: "AED 2,800",
+            amount: `${getCurrency()} 2,800`,
             category: "Logistics",
             percentage: 12,
             description: "Ground handling and coordination",
           },
         ],
         total: {
-          amount: "AED 22,800",
+          amount: `${getCurrency()} 22,800`,
           title: "Total Estimated Cost",
           description: "Ground handling and coordination",
         },
@@ -1079,7 +1079,7 @@ const getAircraftIssuesRecoveryData = () => {
         },
         costBreakdown: {
           delayCost: {
-            metric_value: "AED 34,200",
+            metric_value: `${getCurrency()} 34,200`,
             detail: "Including compensation",
           },
           fuelEfficiency: {
@@ -1087,12 +1087,12 @@ const getAircraftIssuesRecoveryData = () => {
             detail: "vs original aircraft",
           },
           hotelTransport: {
-            metric_value: "AED 8,450",
+            metric_value: `${getCurrency()} 8,450`,
             detail: "Crew accommodation",
           },
           eu261Risk: {
             metric_value: "Medium",
-            detail: "€600 per passenger",
+            detail: `${getCurrency()} 600 per passenger`,
           },
         },
         recommended_option: {
@@ -1109,7 +1109,7 @@ const getAircraftIssuesRecoveryData = () => {
       id: "DELAY_REPAIR_002",
       title: "Delay for Repair Completion",
       description: "Wait for hydraulics system repair",
-      cost: "AED 48,960",
+      cost: `${getCurrency()} 48,960`,
       timeline: "4-6 hours",
       confidence: 45,
       impact: "Significant passenger disruption",
@@ -1180,26 +1180,26 @@ const getAircraftIssuesRecoveryData = () => {
       cost_breakdown: {
         breakdown: [
           {
-            amount: "AED 30,000",
+            amount: `${getCurrency()} 30,000`,
             category: "Delay Costs",
             percentage: 61,
             description: "Passenger compensation and accommodation",
           },
           {
-            amount: "AED 15,000",
+            amount: `${getCurrency()} 15,000`,
             category: "Maintenance",
             percentage: 31,
             description: "Hydraulics system repair costs",
           },
           {
-            amount: "AED3,960",
+            amount: `${getCurrency()} 3,960`,
             category: "Crew Overtime",
             percentage: 8,
             description: "Extended crew duty compensation",
           },
         ],
         total: {
-          amount: "AED 48,960",
+          amount: `${getCurrency()} 48,960`,
           title: "Total Estimated Cost",
           description: "Maintenance and operational costs",
         },
@@ -1496,7 +1496,7 @@ const getAircraftIssuesRecoveryData = () => {
         },
         costBreakdown: {
           delayCost: {
-            metric_value: "AED 12,880",
+            metric_value: `${getCurrency()} 12,880`,
             detail: "Including compensation",
           },
           fuelEfficiency: {
@@ -1509,7 +1509,7 @@ const getAircraftIssuesRecoveryData = () => {
           },
           eu261Risk: {
             metric_value: "Low",
-            detail: "€600 per passenger",
+            detail: `${getCurrency()} 600 per passenger`,
           },
         },
         recommended_option: {
@@ -1526,7 +1526,7 @@ const getAircraftIssuesRecoveryData = () => {
       id: "CANCEL_REBOOK_003",
       title: "Cancel and Rebook",
       description: "Cancel and rebook on partner airlines",
-      cost: "AED 141,440",
+      cost: `${getCurrency()} 141,440`,
       timeline: "0-1 hours",
       confidence: 75,
       impact: "Complete route cancellation",
@@ -1580,26 +1580,26 @@ const getAircraftIssuesRecoveryData = () => {
       cost_breakdown: {
         breakdown: [
           {
-            amount: "AED 100,000",
+            amount: `${getCurrency()} 100,000`,
             category: "Rebooking Costs",
             percentage: 71,
             description: "Cost of rebooking on partner airlines",
           },
           {
-            amount: "AED 30,000",
+            amount: `${getCurrency()} 30,000`,
             category: "Passenger Compensation",
             percentage: 21,
             description: "Compensation for cancellation",
           },
           {
-            amount: "AED 11,440",
+            amount: `${getCurrency()} 11,440`,
             category: "Logistics",
             percentage: 8,
             description: "Coordination and communication costs",
           },
         ],
         total: {
-          amount: "AED 141,440",
+          amount: `${getCurrency()} 141,440`,
           title: "Total Estimated Cost",
           description: "Rebooking and compensation costs",
         },
@@ -1883,7 +1883,7 @@ const getAircraftIssuesRecoveryData = () => {
         },
         costBreakdown: {
           delayCost: {
-            metric_value: "AED 89,200",
+            metric_value: `${getCurrency()} 89,200`,
             detail: "Including compensation",
           },
           fuelEfficiency: {
@@ -1891,12 +1891,12 @@ const getAircraftIssuesRecoveryData = () => {
             detail: "vs original aircraft",
           },
           hotelTransport: {
-            metric_value: "AED 24,500",
+            metric_value: `${getCurrency()} 24,500`,
             detail: "Crew accommodation",
           },
           eu261Risk: {
             metric_value: "Critical",
-            detail: "€600 per passenger",
+            detail: `${getCurrency()} 600 per passenger`,
           },
         },
         recommended_option: {
@@ -1918,7 +1918,7 @@ const getWeatherIssuesRecoveryData = () => {
     {
       title: "Delay for Weather Clearance",
       description: "Wait for weather improvement at DEL",
-      cost: "AED 25,000",
+      cost: `${getCurrency()} 25,000`,
       timeline: "2-3 hours",
       confidence: 90,
       impact: "Managed schedule delay",
@@ -1977,32 +1977,32 @@ const getWeatherIssuesRecoveryData = () => {
       cost_breakdown: {
         breakdown: [
           {
-            amount: "AED 10,000",
+            amount: `${getCurrency()} 10,000`,
             category: "Delay Coordination",
             percentage: 40,
             description: "Operational delay management",
           },
           {
-            amount: "AED 8,750",
+            amount: `${getCurrency()} 8,750`,
             category: "Passenger Services",
             percentage: 35,
             description: "Terminal amenities and refreshments",
           },
           {
-            amount: "AED 3,750",
+            amount: `${getCurrency()} 3,750`,
             category: "Crew Overtime",
             percentage: 15,
             description: "Extended crew duty time",
           },
           {
-            amount: "AED 2,500",
+            amount: `${getCurrency()} 2,500`,
             category: "Administrative Costs",
             percentage: 10,
             description: "Documentation and notifications",
           },
         ],
         total: {
-          amount: "AED 25,000",
+          amount: `${getCurrency()} 25,000`,
           title: "Total Estimated Cost",
           description: "Ground handling and coordination",
         },
@@ -2315,7 +2315,7 @@ const getWeatherIssuesRecoveryData = () => {
         },
         costBreakdown: {
           delayCost: {
-            metric_value: "AED 6,440",
+            metric_value: `${getCurrency()} 6,440`,
             detail: "Including compensation",
           },
           fuelEfficiency: {
@@ -2328,7 +2328,7 @@ const getWeatherIssuesRecoveryData = () => {
           },
           eu261Risk: {
             metric_value: "Low",
-            detail: "€600 per passenger",
+            detail: `${getCurrency()} 600 per passenger`,
           },
         },
         recommended_option: {
@@ -2341,7 +2341,7 @@ const getWeatherIssuesRecoveryData = () => {
     {
       title: "Rerouting the aircraft",
       description: "Divert to PNQ with ground transport",
-      cost: "AED 45,000",
+      cost: `${getCurrency()} 45,000`,
       timeline: "4 hours total",
       confidence: 75,
       impact: "Extended travel time",
@@ -2391,32 +2391,32 @@ const getWeatherIssuesRecoveryData = () => {
       cost_breakdown: {
         breakdown: [
           {
-            amount: "AED 26,100",
+            amount: `${getCurrency()} 26,100`,
             category: "Alternative Route Costs",
             percentage: 58,
             description: "Additional fuel and navigation fees",
           },
           {
-            amount: "AED 11,700",
+            amount: `${getCurrency()} 11,700`,
             category: "Ground Transportation",
             percentage: 26,
             description: "Passenger transport between airports",
           },
           {
-            amount: "AED 4,500",
+            amount: `${getCurrency()} 4,500`,
             category: "Airport Coordination Fees",
             percentage: 10,
             description: "Alternative airport slot and handling",
           },
           {
-            amount: "AED 2,700",
+            amount: `${getCurrency()} 2,700`,
             category: "Passenger Services",
             percentage: 6,
             description: "Transit support and refreshments",
           },
         ],
         total: {
-          amount: "AED 45,000",
+          amount: `${getCurrency()} 45,000`,
           title: "Total Estimated Cost",
           description: "Rerouting and passenger transfer costs",
         },
@@ -2714,19 +2714,19 @@ const getWeatherIssuesRecoveryData = () => {
         },
         nextSectors: [
           {
-            flight: `${config.code || 'FZ'}456 DXB-BOM`,
+            flight: "FZ456 DXB-BOM",
             departure: "Cancelled",
             impact: "High Impact",
             reason: "Flight cancellation",
           },
           {
-            flight: `${config.code || 'FZ'}457 BOM-DXB`,
+            flight: "FZ457 BOM-DXB",
             departure: "Cancelled",
             impact: "High Impact",
             reason: "Route cancellation",
           },
           {
-            flight: `${config.code || 'FZ'}890 DXB-DEL`,
+            flight: "FZ890 DXB-DEL",
             departure: "Dep: 08:30 (Next Day)",
             impact: "No Impact",
             reason: "Different aircraft",
@@ -2752,7 +2752,7 @@ const getWeatherIssuesRecoveryData = () => {
         },
         costBreakdown: {
           delayCost: {
-            metric_value: "AED 5,200",
+            metric_value: `${getCurrency()} 5,200`,
             detail: "Including compensation",
           },
           fuelEfficiency: {
@@ -2765,7 +2765,7 @@ const getWeatherIssuesRecoveryData = () => {
           },
           eu261Risk: {
             metric_value: "Low",
-            detail: "€600 per passenger",
+            detail: `${getCurrency()} 600 per passenger`,
           },
         },
         recommended_option: {
@@ -2787,7 +2787,7 @@ const getCrewIssuesRecoveryData = () => {
     {
       title: "Assign Standby Crew",
       description: "Capt. Mohammed Al-Zaabi from standby roster",
-      cost: "AED 8,500",
+      cost: `${getCurrency()} 8,500`,
       timeline: "30 minutes",
       confidence: 92,
       impact: "Minimal operational disruption",
@@ -2846,32 +2846,32 @@ const getCrewIssuesRecoveryData = () => {
       cost_breakdown: {
         breakdown: [
           {
-            amount: "AED 5,525",
+            amount: `${getCurrency()} 5,525`,
             category: "Standby Crew Activation",
             percentage: 65,
             description: "Call-out pay for replacement crew",
           },
           {
-            amount: "AED 1,360",
+            amount: `${getCurrency()} 1,360`,
             category: "Extended Briefing Costs",
             percentage: 16,
             description: "Training coordinator and materials",
           },
           {
-            amount: "AED 850",
+            amount: `${getCurrency()} 850`,
             category: "Crew Transportation",
             percentage: 10,
             description: "Transport to airport",
           },
           {
-            amount: "AED 765",
+            amount: `${getCurrency()} 765`,
             category: "Administrative Processing",
             percentage: 9,
             description: "Duty time documentation, roster changes",
           },
         ],
         total: {
-          amount: "AED 8,500",
+          amount: `${getCurrency()} 8,500`,
           title: "Total Estimated Cost",
           description: "Ground handling and coordination",
         },
@@ -3171,7 +3171,7 @@ const getCrewIssuesRecoveryData = () => {
         },
         costBreakdown: {
           delayCost: {
-            metric_value: "AED 5,200",
+            metric_value: `${getCurrency()} 5,200`,
             detail: "Including compensation",
           },
           fuelEfficiency: {
@@ -3184,7 +3184,7 @@ const getCrewIssuesRecoveryData = () => {
           },
           eu261Risk: {
             metric_value: "Low",
-            detail: "€600 per passenger",
+            detail: `${getCurrency()} 600 per passenger`,
           },
         },
         recommended_option: {
@@ -3200,7 +3200,7 @@ const getCrewIssuesRecoveryData = () => {
     {
       title: "Deadhead Crew",
       description: "Position qualified Captain from Abu Dhabi",
-      cost: "AED 25,000",
+      cost: `${getCurrency()} 25,000`,
       timeline: "120 minutes",
       confidence: 85,
       impact: "Moderate schedule delay",
@@ -3259,36 +3259,36 @@ const getCrewIssuesRecoveryData = () => {
       cost_breakdown: {
         breakdown: [
           {
-            amount: "AED 16,250",
+            amount: `${getCurrency()} 16,250`,
             category: "Standby Crew Activation",
             percentage: 65,
             description: "Call-out pay for replacement crew",
           },
           {
-            amount: "AED 4,000",
+            amount: `${getCurrency()} 4,000`,
             category: "Extended Briefing Costs",
             percentage: 16,
             description: "Training coordinator and materials",
           },
           {
-            amount: "AED 2,500",
+            amount: `${getCurrency()} 2,500`,
             category: "Crew Transportation",
             percentage: 10,
             description: "Transport to airport",
           },
           {
-            amount: "AED 2,250",
+            amount: `${getCurrency()} 2,250`,
             category: "Administrative Processing",
             percentage: 9,
             description: "Duty time documentation, roster changes",
           },
         ],
         total: {
-          amount: "AED 25,000",
+          amount: `${getCurrency()} 25,000`,
           title: "Total Estimated Cost",
           description: "Ground handling and coordination",
         },
-      },
+      ],
       timeline_details: [
         {
           step: "Standby Crew Activation",
@@ -3617,7 +3617,7 @@ const getCrewIssuesRecoveryData = () => {
         },
         costBreakdown: {
           delayCost: {
-            metric_value: "AED 5,200",
+            metric_value: `${getCurrency()} 5,200`,
             detail: "Including compensation",
           },
           fuelEfficiency: {
@@ -3630,7 +3630,7 @@ const getCrewIssuesRecoveryData = () => {
           },
           eu261Risk: {
             metric_value: "Low",
-            detail: "€600 per passenger",
+            detail: `${getCurrency()} 600 per passenger`,
           },
         },
         recommended_option: {
@@ -3646,7 +3646,7 @@ const getCrewIssuesRecoveryData = () => {
     {
       title: "Delay for Crew Rest Completion",
       description: "Wait for original crew mandatory rest period",
-      cost: "AED 45,000",
+      cost: `${getCurrency()} 45,000`,
       timeline: "3 hours",
       confidence: 65,
       impact: "Significant passenger disruption",
@@ -3705,36 +3705,36 @@ const getCrewIssuesRecoveryData = () => {
       cost_breakdown: {
         breakdown: [
           {
-            amount: "AED 18,000",
+            amount: `${getCurrency()} 18,000`,
             category: "Delay Coordination",
             percentage: 40,
             description: "Operational delay management",
           },
           {
-            amount: "AED 15,750",
+            amount: `${getCurrency()} 15,750`,
             category: "Passenger Services",
             percentage: 35,
             description: "Terminal amenities and refreshments",
           },
           {
-            amount: "AED 6,750",
+            amount: `${getCurrency()} 6,750`,
             category: "Crew Overtime",
             percentage: 15,
             description: "Extended crew duty time",
           },
           {
-            amount: "AED 4,500",
+            amount: `${getCurrency()} 4,500`,
             category: "Administrative Costs",
             percentage: 10,
             description: "Documentation and notifications",
           },
         ],
         total: {
-          amount: "AED 45,000",
+          amount: `${getCurrency()} 45,000`,
           title: "Total Estimated Cost",
           description: "Ground handling and coordination",
         },
-      },
+      ],
       timeline_details: [
         {
           step: "Passenger Notification",
@@ -4064,7 +4064,7 @@ const getCrewIssuesRecoveryData = () => {
           },
           eu261Risk: {
             metric_value: "Low",
-            detail: "€600 per passenger",
+            detail: `${getCurrency()} 600 per passenger`,
           },
         },
         recommended_option: {
@@ -4391,7 +4391,7 @@ const generateCurfewCongestionRecovery = (flight) => {
       id: "SWAP_EARLY",
       title: "Aircraft Swap for Earlier Departure",
       description: "Swap with earlier flight for 22:15 departure",
-      cost: "AED 45,000",
+      cost: `${getCurrency()} 45,000`,
       timeline: "45 minutes",
       confidence: 92,
       impact: "Beat curfew timing",
@@ -4423,7 +4423,7 @@ const generateCurfewCongestionRecovery = (flight) => {
       id: "OVERNIGHT_DELAY",
       title: "Overnight Delay",
       description: "Delay until 06:00 curfew end",
-      cost: "AED 320,000",
+      cost: `${getCurrency()} 320,000`,
       timeline: "7 hours",
       confidence: 65,
       impact: "Overnight accommodation",
@@ -4473,7 +4473,7 @@ const generateRotationMisalignmentRecovery = (flight) => {
       id: "SWAP_ALTERNATIVE",
       title: "Aircraft Swap with Alternative",
       description: "Assign alternative aircraft to maintain schedule",
-      cost: "AED 75,000",
+      cost: `${getCurrency()} 75,000`,
       timeline: "90 minutes",
       confidence: 88,
       impact: "Minimal network disruption",
@@ -4504,7 +4504,7 @@ const generateRotationMisalignmentRecovery = (flight) => {
       id: "ACCEPT_DELAYS",
       title: "Accept Cascade Delays",
       description: "Wait for aircraft maintenance completion",
-      cost: "AED 150,000",
+      cost: `${getCurrency()} 150,000`,
       timeline: "3 hours",
       confidence: 70,
       impact: "Multiple flight delays",
@@ -4631,7 +4631,7 @@ export function generateRecoveryOptionsForDisruption(
         {
           title: "Immediate Recovery Action",
           description: `Address ${safeDisruption.disruption_type} disruption with priority response for ${safeDisruption.flight_number}`,
-          cost: "AED 25,000",
+          cost: `${getCurrency()} 25,000`,
           timeline: "60 minutes",
           confidence: 85,
           impact: "Low",
@@ -4693,7 +4693,7 @@ export function generateRecoveryOptionsForDisruption(
         {
           title: "Alternative Recovery Approach",
           description: `Secondary recovery option for ${safeDisruption.flight_number} with resource optimization`,
-          cost: "AED 18,000",
+          cost: `${getCurrency()} 18,000`,
           timeline: "90 minutes",
           confidence: 80,
           impact: "Medium",
@@ -4748,7 +4748,7 @@ export function generateRecoveryOptionsForDisruption(
         {
           title: "Contingency Recovery Plan",
           description: `Backup recovery solution for ${safeDisruption.flight_number} if primary options fail`,
-          cost: "AED 35,000",
+          cost: `${getCurrency()} 35,000`,
           timeline: "120 minutes",
           confidence: 95,
           impact: "High",

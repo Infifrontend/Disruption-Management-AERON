@@ -2672,7 +2672,7 @@ export function PendingSolutions() {
                     </Card>
                   </div>
                 </TabsContent>
-              </TabsContent>
+               )}
             </Tabs>
           </DialogContent>
         </Dialog>
@@ -2719,10 +2719,10 @@ export function PendingSolutions() {
                 {Object.keys(
                   selectedOptionForDetails?.pending_recovery_solutions ?? {},
                 ).length > 0 &&
-                  selectedOptionForDetails?.pending_recovery_solutions
-                    ?.full_details?.passenger_rebooking && (
+                   Object.keys(selectedOptionForDetails?.pending_recovery_solutions
+                    ?.full_details?.passenger_rebooking).length > 0 && (
                     <TabsTrigger value="passenger-reaccommodation">
-                      Passenger Re-accommodation
+                      Passenger Re-accommodation 
                     </TabsTrigger>
                   )}
                 <TabsTrigger value="rotation-impact">

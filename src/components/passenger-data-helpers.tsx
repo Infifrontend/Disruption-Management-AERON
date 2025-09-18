@@ -1,5 +1,6 @@
 // Helper functions for generating affected passenger data
-
+import { useAirlineTheme } from "../hooks/useAirlineTheme";
+ const { airlineConfig } = useAirlineTheme();
 export const requiresPassengerReaccommodation = (option) => {
   // Define option IDs that require passenger reaccommodation
   const reaccommodationOptions = [
@@ -17,9 +18,10 @@ export const requiresPassengerReaccommodation = (option) => {
 
 // PNR group templates for realistic passenger data with 5-10 passengers per PNR
 export const getPNRGroupTemplates = () => [
+
   // Large Family - Al-Rashid Extended Family (8 passengers)
   {
-    pnr: 'FZ8M5K',
+    pnr: airlineConfig.code +'8M5K',
     baseContactName: 'Al-Rashid',
     baseContactEmail: 'omar.alrashid@emirates.ae',
     baseContactPhone: '+971 50 123 4567',
@@ -102,7 +104,7 @@ export const getPNRGroupTemplates = () => [
   },
   // Business Group - Dubai Construction Corp (7 passengers)
   {
-    pnr: 'FZ9B7C',
+    pnr: airlineConfig.code +'9B7C',
     baseContactName: 'Dubai Construction Corp',
     baseContactEmail: 'travel@dubaiconst.com',
     baseContactPhone: '+971 4 567 8901',
@@ -176,7 +178,7 @@ export const getPNRGroupTemplates = () => [
   },
   // Extended Family - Thompson Group (6 passengers)
   {
-    pnr: 'FZ4F9T',
+    pnr: airlineConfig.code+'4F9T',
     baseContactName: 'Thompson',
     baseContactEmail: 'james.thompson@outlook.com',
     baseContactPhone: '+44 7700 900123',
@@ -241,7 +243,7 @@ export const getPNRGroupTemplates = () => [
   },
   // Travel Group - Wilson Extended (5 passengers)
   {
-    pnr: 'FZ6W2L',
+    pnr: airlineConfig.code+'6W2L',
     baseContactName: 'Wilson',
     baseContactEmail: 'margaret.wilson@gmail.com',
     baseContactPhone: '+1 555 123 4567',
@@ -297,7 +299,7 @@ export const getPNRGroupTemplates = () => [
   },
   // Corporate Group - Patel Tech Team (9 passengers)
   {
-    pnr: 'FZ7P8R',
+    pnr: airlineConfig.code+'7P8R',
     baseContactName: 'Patel Tech Solutions',
     baseContactEmail: 'raj.patel@techcorp.in',
     baseContactPhone: '+91 98765 43210',
@@ -389,7 +391,7 @@ export const getPNRGroupTemplates = () => [
   },
   // VIP Family - Al-Mansoori Extended (10 passengers)
   {
-    pnr: 'FZ3M9A',
+    pnr: airlineConfig.code+'3M9A',
     baseContactName: 'Al-Mansoori',
     baseContactEmail: 'khalid.almansoori@adnoc.ae',
     baseContactPhone: '+971 50 987 6543',
@@ -492,7 +494,7 @@ export const getPNRGroupTemplates = () => [
 
 export const getIndividualPNRTemplates = () => [
   {
-    pnr: 'FZ5X1Q',
+    pnr: airlineConfig.code+'5X1Q',
     passengers: [{
       name: 'Michael Chen',
       relationship: 'individual',
@@ -507,7 +509,7 @@ export const getIndividualPNRTemplates = () => [
     }]
   },
   {
-    pnr: 'FZ8L4K',
+    pnr: airlineConfig.code+'8L4K',
     passengers: [{
       name: 'Sophie Mueller',
       relationship: 'individual',
@@ -522,7 +524,7 @@ export const getIndividualPNRTemplates = () => [
     }]
   },
   {
-    pnr: 'FZ2N7H',
+    pnr: airlineConfig.code+'2N7H',
     passengers: [{
       name: 'Carlos Rodriguez',
       relationship: 'individual',
@@ -537,7 +539,7 @@ export const getIndividualPNRTemplates = () => [
     }]
   },
   {
-    pnr: 'FZ9K6M',
+    pnr: airlineConfig.code+'9K6M',
     passengers: [{
       name: 'Yuki Tanaka',
       relationship: 'individual',
@@ -585,7 +587,7 @@ export const generateAffectedPassengers = (flight, option) => {
       } else {
         const middleIndex = groupIndex % middleLetters.length
         const lastChar = String.fromCharCode(65 + ((cycle + groupIndex) % 26)) // A-Z
-        newPnr = `FZ${middleLetters[middleIndex]}${lastChar}`
+        newPnr = `${airlineConfig.code}{middleLetters[middleIndex]}${lastChar}`
       }
       
       templateGroup.passengers.forEach((passengerTemplate, passengerIndex) => {

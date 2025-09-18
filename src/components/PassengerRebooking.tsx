@@ -202,7 +202,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     {
       id: "PAX-001",
       name: "Ahmed Al-Mansoori",
-      pnr: "FZ8K9L",
+      pnr: `${airlineConfig.code}8K9L`,
       priority: "VIP",
       status: "Rebooking Required",
       seat: "1A",
@@ -214,12 +214,15 @@ export function PassengerRebooking({ context, onClearContext }) {
         classPreference: "Business",
         loyaltyTier: "Platinum",
       },
-      connectedFlights: ["FZ567", "FZ892"],
+      connectedFlights: [
+        `${airlineConfig.code}567`,
+        `${airlineConfig.code}892`,
+      ],
     },
     {
       id: "PAX-002",
       name: "Fatima Al-Mansoori",
-      pnr: "FZ8K9L", // Same PNR as Ahmed - family booking
+      pnr: `${airlineConfig.code}8K9L`, // Same PNR as Ahmed - family booking
       priority: "VIP",
       status: "Rebooking Required",
       seat: "1B",
@@ -230,12 +233,15 @@ export function PassengerRebooking({ context, onClearContext }) {
         classPreference: "Business",
         loyaltyTier: "Platinum",
       },
-      connectedFlights: ["FZ567", "FZ892"],
+      connectedFlights: [
+        `${airlineConfig.code}567`,
+        `${airlineConfig.code}892`,
+      ],
     },
     {
       id: "PAX-003",
       name: "Omar Al-Mansoori",
-      pnr: "FZ8K9L", // Same PNR - child
+      pnr: `${airlineConfig.code}8K9L`, // Same PNR - child
       priority: "VIP",
       status: "Rebooking Required",
       seat: "1C",
@@ -247,12 +253,15 @@ export function PassengerRebooking({ context, onClearContext }) {
         classPreference: "Business",
         loyaltyTier: null,
       },
-      connectedFlights: ["FZ567", "FZ892"],
+      connectedFlights: [
+        `${airlineConfig.code}567`,
+        `${airlineConfig.code}892`,
+      ],
     },
     {
       id: "PAX-004",
       name: "Sarah Johnson",
-      pnr: "FZ7M2N",
+      pnr: `${airlineConfig.code}7M2N`,
       priority: "Premium",
       status: "Rebooking Required",
       seat: "3C",
@@ -269,7 +278,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     {
       id: "PAX-005",
       name: "John Johnson",
-      pnr: "FZ7M2N", // Same PNR as Sarah - couple booking
+      pnr: `${airlineConfig.code}7M2N`, // Same PNR as Sarah - couple booking
       priority: "Premium",
       status: "Rebooking Required",
       seat: "3D",
@@ -286,7 +295,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     {
       id: "PAX-006",
       name: "Mohammed Al-Zaabi",
-      pnr: "FZ5P8Q",
+      pnr: `${airlineConfig.code}5P8Q`,
       priority: "Standard",
       status: "Accommodation Needed",
       seat: "12F",
@@ -298,12 +307,12 @@ export function PassengerRebooking({ context, onClearContext }) {
         classPreference: "Economy",
         loyaltyTier: "Silver",
       },
-      connectedFlights: ["FZ445"],
+      connectedFlights: [`${airlineConfig.code}445`],
     },
     {
       id: "PAX-007",
       name: "Emma Thompson",
-      pnr: "FZ3R6S",
+      pnr: `${airlineConfig.code}3R6S`,
       priority: "Premium",
       status: "Alternative Flight",
       seat: "5B",
@@ -320,7 +329,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     {
       id: "PAX-008",
       name: "Robert Thompson",
-      pnr: "FZ3R6S", // Same PNR as Emma - family with infant
+      pnr: `${airlineConfig.code}3R6S`, // Same PNR as Emma - family with infant
       priority: "Premium",
       status: "Alternative Flight",
       seat: "5A",
@@ -337,7 +346,7 @@ export function PassengerRebooking({ context, onClearContext }) {
     {
       id: "PAX-009",
       name: "Ali Hassan",
-      pnr: "FZ9T4U",
+      pnr: `${airlineConfig.code}9T4U`,
       priority: "Standard",
       status: "Confirmed",
       seat: "8D",
@@ -434,8 +443,8 @@ export function PassengerRebooking({ context, onClearContext }) {
       : 1;
     const baseFlights = [
       {
-        id: "FZ567",
-        flightNumber: "FZ567",
+        id: `${airlineConfig.code}567`,
+        flightNumber: `${airlineConfig.code}567`,
         airline: airlineConfig.displayName,
         departure: "Tomorrow 08:00",
         arrival: "Tomorrow 12:30",
@@ -447,13 +456,19 @@ export function PassengerRebooking({ context, onClearContext }) {
           premiumEconomy: { total: 24, available: 16, price: "AED 1,200" },
           economy: { total: 150, available: 89, price: "AED 800" },
         },
-        suitabilityScore: calculateGroupFlightScore(passengerOrGroup, "FZ567"),
+        suitabilityScore: calculateGroupFlightScore(
+          passengerOrGroup,
+          `${airlineConfig.code}567`,
+        ),
         amenities: ["WiFi", "Meals", "Entertainment", "USB Charging"],
         onTimePerformance: 94,
-        cascadeImpact: analyzeGroupCascadeImpact(passengerOrGroup, "FZ567"),
+        cascadeImpact: analyzeGroupCascadeImpact(
+          passengerOrGroup,
+          `${airlineConfig.code}567`,
+        ),
         recommendations: generateGroupRecommendations(
           passengerOrGroup,
-          "FZ567",
+          `${airlineConfig.code}567`,
         ),
       },
       {
@@ -486,8 +501,8 @@ export function PassengerRebooking({ context, onClearContext }) {
         ),
       },
       {
-        id: "FZ789",
-        flightNumber: "FZ789",
+        id: `${airlineConfig.code}789`,
+        flightNumber: `${airlineConfig.code}789`,
         airline: airlineConfig.displayName,
         departure: "Tomorrow 14:20",
         arrival: "Tomorrow 18:50",
@@ -499,13 +514,19 @@ export function PassengerRebooking({ context, onClearContext }) {
           premiumEconomy: { total: 24, available: 18, price: "AED 1,400" },
           economy: { total: 150, available: 67, price: "AED 900" },
         },
-        suitabilityScore: calculateGroupFlightScore(passengerOrGroup, "FZ789"),
+        suitabilityScore: calculateGroupFlightScore(
+          passengerOrGroup,
+          `${airlineConfig.code}789`,
+        ),
         amenities: ["WiFi", "Meals", "Streaming Entertainment", "USB Charging"],
         onTimePerformance: 91,
-        cascadeImpact: analyzeGroupCascadeImpact(passengerOrGroup, "FZ789"),
+        cascadeImpact: analyzeGroupCascadeImpact(
+          passengerOrGroup,
+          `${airlineConfig.code}789`,
+        ),
         recommendations: generateGroupRecommendations(
           passengerOrGroup,
-          "FZ789",
+          `${airlineConfig.code}789`,
         ),
       },
       {
@@ -570,7 +591,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       else if (passenger?.priority === "Standard") score += 5;
 
       // Airline preference (flydubai gets bonus)
-      if (flightId.startsWith("FZ")) score += 10;
+      if (flightId.startsWith(`${airlineConfig.code}`)) score += 10;
 
       // Special requirements accommodation
       if (passenger?.specialRequirements) {
@@ -600,7 +621,8 @@ export function PassengerRebooking({ context, onClearContext }) {
       // Slight penalty for large groups on smaller aircraft
       if (
         passengers.length >= 3 &&
-        (flightId === "FZ567" || flightId === "FZ789")
+        (flightId === `${airlineConfig.code}567` ||
+          flightId === `${airlineConfig.code}789`)
       ) {
         return Math.max(avgScore - 3, 0);
       }
