@@ -76,6 +76,8 @@ import {
 import { databaseService, FlightDisruption } from "../services/databaseService";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
+import { useAirlineTheme } from "../hooks/useAirlineTheme";
+
 
 // Define interface for disruption categories
 interface DisruptionCategory {
@@ -295,6 +297,8 @@ export function DisruptionInput({
   onSelectFlight,
   onNavigateToComparison,
 }: DisruptionInputProps) {
+  const { airlineConfig } = useAirlineTheme();
+
   const navigate = useNavigate();
   const { toast } = useToast();
   const [selectedFlight, setSelectedFlight] = useState(null);
@@ -1158,7 +1162,7 @@ export function DisruptionInput({
                       <Label htmlFor="flightNumber">Flight Number*</Label>
                       <Input
                         id="flightNumber"
-                        placeholder="FZ123"
+                        placeholder={`${airlineConfig.code}23`}
                         value={newDisruption.flightNumber}
                         onChange={(e) =>
                           handleInputChange("flightNumber", e.target.value)

@@ -3288,7 +3288,7 @@ const getCrewIssuesRecoveryData = () => {
           title: "Total Estimated Cost",
           description: "Ground handling and coordination",
         },
-      ],
+      },
       timeline_details: [
         {
           step: "Standby Crew Activation",
@@ -3734,7 +3734,7 @@ const getCrewIssuesRecoveryData = () => {
           title: "Total Estimated Cost",
           description: "Ground handling and coordination",
         },
-      ],
+      },
       timeline_details: [
         {
           step: "Passenger Notification",
