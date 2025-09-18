@@ -21,7 +21,7 @@ const availableDummyCrew = [
     ],
     rotation_impact: [
       {
-        flightNumber: `${config.code}141`,
+        flightNumber: `${config.code || 'FZ'}141`,
         origin_code: "LHR",
         destination_code: "DXB",
         origin: "London Heathrow",
@@ -56,7 +56,7 @@ const availableDummyCrew = [
     ],
     rotation_impact: [
       {
-        flightNumber: `${config.code}431`,
+        flightNumber: `${config.code || 'FZ'}431`,
         origin_code: "DEL",
         destination_code: "DXB",
         origin: "Delhi",
@@ -91,7 +91,7 @@ const availableDummyCrew = [
     ],
     rotation_impact: [
       {
-        flightNumber: `${config.code}178`,
+        flightNumber: `${config.code || 'FZ'}178`,
         origin_code: "JFK",
         destination_code: "DXB",
         origin: "New York JFK",
@@ -126,7 +126,7 @@ const availableDummyCrew = [
     ],
     rotation_impact: [
       {
-        flightNumber: `${config.code}523`,
+        flightNumber: `${config.code || 'FZ'}523`,
         origin_code: "DXB",
         destination_code: "DOH",
         origin: "Dubai",
@@ -140,7 +140,7 @@ const availableDummyCrew = [
         reason: "Primary FO removed — flight cannot legally depart without a qualified First Officer unless a reserve is available at origin."
       },
       {
-        flightNumber: `${config.code}524`,
+        flightNumber: `${config.code || 'FZ'}524`,
         origin_code: "DOH",
         destination_code: "DXB",
         origin: "Doha",
@@ -175,7 +175,7 @@ const availableDummyCrew = [
     ],
     rotation_impact: [
       {
-        flightNumber: `${config.code}821`,
+        flightNumber: `${config.code || 'FZ'}821`,
         origin_code: "HND",
         destination_code: "DXB",
         origin: "Tokyo Haneda",
@@ -210,7 +210,7 @@ const availableDummyCrew = [
     ],
     rotation_impact: [
       {
-        flightNumber: `${config.code}523`,
+        flightNumber: `${config.code || 'FZ'}523`,
         origin_code: "DXB",
         destination_code: "DOH",
         origin: "Dubai",
@@ -224,7 +224,7 @@ const availableDummyCrew = [
         reason: "Primary FO removed — replacement required at origin, immediate impact to departure."
       },
       {
-        flightNumber: `${config.code}524`,
+        flightNumber: `${config.code || 'FZ'}524`,
         origin_code: "DOH",
         destination_code: "DXB",
         origin: "Doha",
@@ -259,7 +259,7 @@ const availableDummyCrew = [
     ],
     rotation_impact: [
       {
-        flightNumber: `${config.code}141`,
+        flightNumber: `${config.code || 'FZ'}141`,
         origin_code: "LHR",
         destination_code: "DXB",
         origin: "London Heathrow",
@@ -294,7 +294,7 @@ const availableDummyCrew = [
     ],
     rotation_impact: [
       {
-        flightNumber: `${config.code}144`,
+        flightNumber: `${config.code || 'FZ'}144`,
         origin_code: "MAD",
         destination_code: "DXB",
         origin: "Madrid",
@@ -330,7 +330,7 @@ const availableDummyCrew = [
     ],
     rotation_impact: [
       {
-        flightNumber: `${config.code}523`,
+        flightNumber: `${config.code || 'FZ'}523`,
         origin_code: "DXB",
         destination_code: "DOH",
         origin: "Dubai",
@@ -344,7 +344,7 @@ const availableDummyCrew = [
         reason: "Senior cabin crew absent — service/COMPLIANCE impact, replacement required."
       },
       {
-        flightNumber: `${config.code}524`,
+        flightNumber: `${config.code || 'FZ'}524`,
         origin_code: "DOH",
         destination_code: "DXB",
         origin: "Doha",
@@ -378,7 +378,7 @@ const availableDummyCrew = [
     ],
     rotation_impact: [
       {
-        flightNumber: `${config.code}451`,
+        flightNumber: `${config.code || 'FZ'}451`,
         origin_code: "SYD",
         destination_code: "DXB",
         origin: "Sydney",
@@ -413,7 +413,7 @@ const availableDummyCrew = [
     ],
     rotation_impact: [
       {
-        flightNumber: `${config.code}134`,
+        flightNumber: `${config.code || 'FZ'}134`,
         origin_code: "ACC",
         destination_code: "DXB",
         origin: "Accra",
@@ -448,7 +448,7 @@ const availableDummyCrew = [
     ],
     rotation_impact: [
       {
-        flightNumber: `${config.code}821`,
+        flightNumber: `${config.code || 'FZ'}821`,
         origin_code: "HND",
         destination_code: "DXB",
         origin: "Tokyo Haneda",
@@ -491,7 +491,7 @@ const getAircraftIssuesRecoveryData = () => {
         "Passenger transfer logistics",
       ],
       impact_area: ["crew"],
-      impact_summary: `Aircraft issue recovery for ${config.code}147: Technical disruption requiring aircraft substitution with minimal passenger impact through efficient swap procedures.`,
+      impact_summary: `Aircraft issue recovery for ${config.code || 'FZ'}147: Technical disruption requiring aircraft substitution with minimal passenger impact through efficient swap procedures.`,
       resource_requirements: [
         {
           title: "Replacement Aircraft",
@@ -701,7 +701,7 @@ const getAircraftIssuesRecoveryData = () => {
         timeEfficiency: 90,
         passengerSatisfaction: 85,
         recovery_analysis:
-          `Aircraft Swap Recovery for ${config.code}147 (IST→DXB): Replace B737 MAX 8 A6-FDU with available replacement aircraft at IST. The replacement aircraft has been selected based on availability and route certification for IST-DXB. Estimated passenger transfer time: 35-45 minutes. All cargo and baggage will be transferred with priority handling. This solution maintains schedule integrity with minimal passenger disruption. Current disruption: Engine maintenance check.`,
+          `Aircraft Swap Recovery for ${config.code || 'FZ'}147 (IST→DXB): Replace B737 MAX 8 A6-FDU with available replacement aircraft at IST. The replacement aircraft has been selected based on availability and route certification for IST-DXB. Estimated passenger transfer time: 35-45 minutes. All cargo and baggage will be transferred with priority handling. This solution maintains schedule integrity with minimal passenger disruption. Current disruption: Engine maintenance check.`,
         crewViolations: 1,
         aircraftSwaps: 1,
         networkImpact: "Minimal",
@@ -738,7 +738,7 @@ const getAircraftIssuesRecoveryData = () => {
             },
             rotation_impact: [
               {
-                flightNumber: `${config.code}141`,
+                flightNumber: `${config.code || 'FZ'}141`,
                 origin_code: "DXB",
                 destination_code: "MCT",
                 origin: "Dubai",
@@ -752,7 +752,7 @@ const getAircraftIssuesRecoveryData = () => {
                 reason: "Nominal operations"
               },
               {
-                flightNumber: `${config.code}142`,
+                flightNumber: `${config.code || 'FZ'}142`,
                 origin_code: "MCT",
                 destination_code: "DXB",
                 origin: "Muscat",
@@ -766,7 +766,7 @@ const getAircraftIssuesRecoveryData = () => {
                 reason: "Turnaround buffer"
               },
               {
-                flightNumber: `${config.code}737`,
+                flightNumber: `${config.code || 'FZ'}737`,
                 origin_code: "DXB",
                 destination_code: "KWI",
                 origin: "Dubai",
@@ -780,7 +780,7 @@ const getAircraftIssuesRecoveryData = () => {
                 reason: "Busy apron slot"
               },
               {
-                flightNumber: `${config.code}738`,
+                flightNumber: `${config.code || 'FZ'}738`,
                 origin_code: "KWI",
                 destination_code: "DXB",
                 origin: "Kuwait",
@@ -794,7 +794,7 @@ const getAircraftIssuesRecoveryData = () => {
                 reason: "Smooth turnaround"
               },
               {
-                flightNumber: `${config.code}851`,
+                flightNumber: `${config.code || 'FZ'}851`,
                 origin_code: "DXB",
                 destination_code: "BKK",
                 origin: "Dubai",
@@ -823,7 +823,7 @@ const getAircraftIssuesRecoveryData = () => {
             availability: "Available 14:30",
             assigned: {
               status: "assigned",
-              value: `${config.code}892`
+              value: `${config.code || 'FZ'}892`
             },
             turnaround: "60 min",
             maintenance: {
@@ -839,7 +839,7 @@ const getAircraftIssuesRecoveryData = () => {
             },
             rotation_impact: [
               {
-                flightNumber: `${config.code}892`,
+                flightNumber: `${config.code || 'FZ'}892`,
                 origin_code: "DXB",
                 destination_code: "IST",
                 origin: "Dubai",
@@ -853,7 +853,7 @@ const getAircraftIssuesRecoveryData = () => {
                 reason: "Gate congestion"
               },
               {
-                flightNumber: `${config.code}893`,
+                flightNumber: `${config.code || 'FZ'}893`,
                 origin_code: "IST",
                 destination_code: "DXB",
                 origin: "Istanbul",
@@ -898,7 +898,7 @@ const getAircraftIssuesRecoveryData = () => {
             },
             rotation_impact: [
               {
-                flightNumber: `${config.code}523`,
+                flightNumber: `${config.code || 'FZ'}523`,
                 origin_code: "DXB",
                 destination_code: "DOH",
                 origin: "Dubai",
@@ -912,7 +912,7 @@ const getAircraftIssuesRecoveryData = () => {
                 reason: "Normal ops"
               },
               {
-                flightNumber: `${config.code}524`,
+                flightNumber: `${config.code || 'FZ'}524`,
                 origin_code: "DOH",
                 destination_code: "DXB",
                 origin: "Doha",
@@ -941,7 +941,7 @@ const getAircraftIssuesRecoveryData = () => {
             availability: "Available 18:00",
             assigned: {
               status: "assigned",
-              value: `${config.code}445`
+              value: `${config.code || 'FZ'}445`
             },
             turnaround: "75 min",
             maintenance: {
@@ -957,7 +957,7 @@ const getAircraftIssuesRecoveryData = () => {
             },
             rotation_impact: [
               {
-                flightNumber: `${config.code}445`,
+                flightNumber: `${config.code || 'FZ'}445`,
                 origin_code: "DXB",
                 destination_code: "LHE",
                 origin: "Dubai",
@@ -1041,19 +1041,19 @@ const getAircraftIssuesRecoveryData = () => {
         },
         nextSectors: [
           {
-            flight: `${config.code}456 DXB-BOM`,
+            flight: `${config.code || 'FZ'}456 DXB-BOM`,
             departure: "Dep: 18:30 → 19:45 (+75min)",
             impact: "High Impact",
             reason: "Aircraft swap delay",
           },
           {
-            flight: `${config.code}457 BOM-DXB`,
+            flight: `${config.code || 'FZ'}457 BOM-DXB`,
             departure: "Dep: 22:15 → 23:00 (+45min)",
             impact: "Medium Impact",
             reason: "Knock-on delay",
           },
           {
-            flight: `${config.code}890 DXB-DEL`,
+            flight: `${config.code || 'FZ'}890 DXB-DEL`,
             departure: "Dep: 08:30 (Next Day)",
             impact: "Low Impact",
             reason: "Overnight recovery",
@@ -1129,7 +1129,7 @@ const getAircraftIssuesRecoveryData = () => {
         "Potential downstream flight disruptions",
       ],
       impact_area: ["passenger"],
-      impact_summary: `Aircraft issue recovery for ${config.code}181: Technical disruption requiring aircraft substitution with minimal passenger impact through efficient swap procedures.`,
+      impact_summary: `Aircraft issue recovery for ${config.code || 'FZ'}181: Technical disruption requiring aircraft substitution with minimal passenger impact through efficient swap procedures.`,
       resource_requirements: [
         {
           title: "Accommodation",
@@ -1458,19 +1458,19 @@ const getAircraftIssuesRecoveryData = () => {
         },
         nextSectors: [
           {
-            flight: `${config.code}456 DXB-BOM`,
+            flight: `${config.code || 'FZ'}456 DXB-BOM`,
             departure: "Dep: 18:30 → 22:30 (+4-6 hours)",
             impact: "Medium Impact",
             reason: "Direct delay impact",
           },
           {
-            flight: `${config.code}457 BOM-DXB`,
+            flight: `${config.code || 'FZ'}457 BOM-DXB`,
             departure: "Dep: 22:15 (On Time)",
             impact: "Low Impact",
             reason: "Sufficient turnaround",
           },
           {
-            flight: `${config.code}890 DXB-DEL`,
+            flight: `${config.code || 'FZ'}890 DXB-DEL`,
             departure: "Dep: 08:30 (Next Day)",
             impact: "No Impact",
             reason: "Overnight recovery",
@@ -1546,7 +1546,7 @@ const getAircraftIssuesRecoveryData = () => {
         "Complex rebooking coordination required",
       ],
       impact_area: ["passenger", "crew"],
-      impact_summary: `Aircraft issue recovery for ${config.code}147: Technical disruption requiring aircraft substitution with minimal passenger impact through efficient swap procedures.`,
+      impact_summary: `Aircraft issue recovery for ${config.code || 'FZ'}147: Technical disruption requiring aircraft substitution with minimal passenger impact through efficient swap procedures.`,
       resource_requirements: [
         {
           title: "Operational Resources",
@@ -1845,19 +1845,19 @@ const getAircraftIssuesRecoveryData = () => {
         },
         nextSectors: [
           {
-            flight: `${config.code}456 DXB-BOM`,
+            flight: `${config.code || 'FZ'}456 DXB-BOM`,
             departure: "Cancelled",
             impact: "High Impact",
             reason: "Flight cancellation",
           },
           {
-            flight: `${config.code}457 BOM-DXB`,
+            flight: `${config.code || 'FZ'}457 BOM-DXB`,
             departure: "Cancelled",
             impact: "High Impact",
             reason: "Route cancellation",
           },
           {
-            flight: `${config.code}890 DXB-DEL`,
+            flight: `${config.code || 'FZ'}890 DXB-DEL`,
             departure: "Dep: 08:30 (Next Day)",
             impact: "No Impact",
             reason: "Different aircraft",
@@ -2277,19 +2277,19 @@ const getWeatherIssuesRecoveryData = () => {
         },
         nextSectors: [
           {
-            flight: `${config.code}456 DXB-BOM`,
+            flight: `${config.code || 'FZ'}456 DXB-BOM`,
             departure: "Dep: 18:30 → 23:42 (+2-3 hours)",
             impact: "Medium Impact",
             reason: "Direct delay impact",
           },
           {
-            flight: `${config.code}457 BOM-DXB`,
+            flight: `${config.code || 'FZ'}457 BOM-DXB`,
             departure: "Dep: 22:15 (On Time)",
             impact: "Low Impact",
             reason: "Sufficient turnaround",
           },
           {
-            flight: `${config.code}890 DXB-DEL`,
+            flight: `${config.code || 'FZ'}890 DXB-DEL`,
             departure: "Dep: 08:30 (Next Day)",
             impact: "No Impact",
             reason: "Overnight recovery",
@@ -2714,19 +2714,19 @@ const getWeatherIssuesRecoveryData = () => {
         },
         nextSectors: [
           {
-            flight: `${config.code}456 DXB-BOM`,
+            flight: `${config.code || 'FZ'}456 DXB-BOM`,
             departure: "Cancelled",
             impact: "High Impact",
             reason: "Flight cancellation",
           },
           {
-            flight: `${config.code}457 BOM-DXB`,
+            flight: `${config.code || 'FZ'}457 BOM-DXB`,
             departure: "Cancelled",
             impact: "High Impact",
             reason: "Route cancellation",
           },
           {
-            flight: `${config.code}890 DXB-DEL`,
+            flight: `${config.code || 'FZ'}890 DXB-DEL`,
             departure: "Dep: 08:30 (Next Day)",
             impact: "No Impact",
             reason: "Different aircraft",
