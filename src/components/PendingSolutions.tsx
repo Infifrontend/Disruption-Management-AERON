@@ -1601,306 +1601,300 @@ export function PendingSolutions() {
               </TabsContent>
 
               <TabsContent value="impact" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Activity className="h-5 w-5" />
-                      Rotation Impact Analysis
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <Alert className="border-blue-200 bg-blue-50 mb-4">
-                      <Info className="h-4 w-4 text-blue-600" />
-                      <AlertDescription className="text-blue-800">
-                        This analysis shows how the recovery option affects
-                        subsequent flights, aircraft rotations, and crew assignments.
-                      </AlertDescription>
-                    </Alert>
-
-                    <div className="space-y-6">
-                      {/* Alternate Aircraft Impact */}
-                      {selectedPlan?.matchingOption?.rotation_plan?.aircraft ||
-                      selectedPlan?.rotationImpact?.aircraft ? (
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-lg">
-                              <Plane className="h-5 w-5 text-blue-600" />
-                              Alternate Aircraft Rotation Impact
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            {(() => {
-                              const aircraftData = selectedPlan?.matchingOption?.rotation_plan?.aircraft || 
-                                                 selectedPlan?.rotationImpact?.aircraft || [];
-
-                              const rotationImpact = selectedPlan?.matchingOption?.rotation_impact || [
-                                {
-                                  delay: "15 min",
-                                  impact: "Medium Impact",
-                                  origin: "Dubai",
-                                  reason: "Aircraft swap coordination delay",
-                                  status: "Delayed",
-                                  arrival: "2025-01-12T14:30:00+04:00",
-                                  departure: "2025-01-12T09:15:00+04:00",
-                                  passengers: 167,
-                                  destination: "Mumbai",
-                                  origin_code: "DXB",
-                                  flightNumber: selectedPlan.flightNumber || "FZ445",
-                                  destination_code: "BOM",
-                                },
-                                {
-                                  delay: "30 min",
-                                  impact: "High Impact",
-                                  origin: "Mumbai",
-                                  reason: "Late aircraft positioning affects return flight",
-                                  status: "Delayed",
-                                  arrival: "2025-01-13T02:45:00+04:00",
-                                  departure: "2025-01-12T20:15:00+05:30",
-                                  passengers: 156,
-                                  destination: "Dubai",
-                                  origin_code: "BOM",
-                                  flightNumber: "FZ446",
-                                  destination_code: "DXB",
-                                },
-                              ];
-
-                              if (!Array.isArray(rotationImpact) || rotationImpact.length === 0) {
-                                return (
-                                  <div className="text-center py-6">
-                                    <Plane className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                                    <p className="text-muted-foreground">No alternate aircraft impact data available</p>
-                                  </div>
-                                );
-                              }
-
-                              return rotationImpact.map((flight, index) => (
-                                <div key={index} className="p-4 border rounded-lg bg-white space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                      <Plane className="h-4 w-4 text-blue-600" />
-                                      <span className="font-semibold">{flight.flightNumber}</span>
-                                      <Badge variant="outline" className="text-xs">
-                                        {flight.origin_code} → {flight.destination_code}
-                                      </Badge>
+                <div className="grid grid-cols-1 gap-6">
+                  {/* Recovery Options Comparison Matrix */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5 text-blue-600" />
+                        Recovery Options Overview
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Option</TableHead>
+                              <TableHead>Cost (AED)</TableHead>
+                              <TableHead>Timeline</TableHead>
+                              <TableHead>Confidence</TableHead>
+                              <TableHead>Impact</TableHead>
+                              <TableHead>Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {/* Selected Option */}
+                            {selectedPlan?.matchingOption && (
+                              <TableRow className="bg-orange-50">
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <Star className="h-4 w-4 text-orange-600" />
+                                    <div>
+                                      <div className="font-medium">{selectedPlan.matchingOption.title}</div>
+                                      <Badge className="bg-orange-100 text-orange-700 mt-1">Selected</Badge>
                                     </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                  {selectedPlan.matchingOption.cost || `AED ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
+                                </TableCell>
+                                <TableCell>{selectedPlan.matchingOption.timeline || selectedPlan.timeline || "TBD"}</TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <span>{selectedPlan.matchingOption.confidence || selectedPlan.confidence || 85}%</span>
+                                    <Progress value={selectedPlan.matchingOption.confidence || selectedPlan.confidence || 85} className="w-16 h-2" />
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className={
+                                    selectedPlan.matchingOption.impact === "High" ? "bg-red-100 text-red-700" :
+                                    selectedPlan.matchingOption.impact === "Medium" ? "bg-yellow-100 text-yellow-700" :
+                                    "bg-green-100 text-green-700"
+                                  }>
+                                    {selectedPlan.matchingOption.impact || selectedPlan.impact || "Medium"}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className="bg-green-100 text-green-700">Available</Badge>
+                                </TableCell>
+                              </TableRow>
+                            )}
+                            
+                            {/* Other Recovery Options */}
+                            {selectedPlan?.recoveryOptions && selectedPlan.recoveryOptions
+                              .filter(option => !(selectedPlan.optionId && (
+                                option.id === selectedPlan.optionId ||
+                                option.option_id === selectedPlan.optionId ||
+                                String(option.id) === String(selectedPlan.optionId) ||
+                                String(option.option_id) === String(selectedPlan.optionId)
+                              )))
+                              .slice(0, 3)
+                              .map((option, index) => (
+                                <TableRow key={option.id || index}>
+                                  <TableCell>
+                                    <div className="font-medium">{option.title}</div>
+                                  </TableCell>
+                                  <TableCell>
+                                    {option.cost || `AED ${(option.estimated_cost || 0).toLocaleString()}`}
+                                  </TableCell>
+                                  <TableCell>{option.timeline || "TBD"}</TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <span>{option.confidence || 80}%</span>
+                                      <Progress value={option.confidence || 80} className="w-16 h-2" />
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
                                     <Badge className={
-                                      flight.impact === "High Impact" ? "bg-red-100 text-red-700" :
-                                      flight.impact === "Medium Impact" ? "bg-yellow-100 text-yellow-700" :
+                                      option.impact === "High" ? "bg-red-100 text-red-700" :
+                                      option.impact === "Medium" ? "bg-yellow-100 text-yellow-700" :
                                       "bg-green-100 text-green-700"
                                     }>
-                                      {flight.impact}
+                                      {option.impact || "Medium"}
                                     </Badge>
-                                  </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Badge variant="outline">Available</Badge>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                                  <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                      <Label className="text-xs text-muted-foreground">Route</Label>
-                                      <p className="font-medium">{flight.origin} → {flight.destination}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-xs text-muted-foreground">Delay</Label>
-                                      <p className="font-medium text-red-600">{flight.delay}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-xs text-muted-foreground">Departure</Label>
-                                      <p className="font-medium">{new Date(flight.departure).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true })}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-xs text-muted-foreground">Passengers Affected</Label>
-                                      <p className="font-medium">{flight.passengers}</p>
-                                    </div>
+                  {/* Cost Impact Analysis */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <DollarSign className="h-5 w-5 text-orange-600" />
+                          Cost Impact Analysis
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {(() => {
+                            const baseCost = 165480;
+                            const actualCost = selectedPlan?.estimatedCost || baseCost;
+                            const variance = actualCost - baseCost;
+                            
+                            return (
+                              <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm font-medium">Base Cost:</span>
+                                  <span className="font-semibold">AED {baseCost.toLocaleString()}</span>
+                                </div>
+                                <Separator />
+                                <div className="flex justify-between items-center text-lg">
+                                  <span className="font-semibold">Total Estimated Cost:</span>
+                                  <span className="font-bold text-orange-600">AED {actualCost.toLocaleString()}</span>
+                                </div>
+                                {variance !== 0 && (
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium">Variance:</span>
+                                    <span className={`font-semibold ${variance > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                      {variance > 0 ? '+' : ''}AED {variance.toLocaleString()}
+                                    </span>
                                   </div>
-
-                                  <div className="p-3 bg-gray-50 rounded">
-                                    <Label className="text-xs text-muted-foreground">Impact Reason</Label>
-                                    <p className="text-sm mt-1">{flight.reason}</p>
+                                )}
+                                
+                                {/* Cost Breakdown */}
+                                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                                  <h4 className="font-medium mb-3">Cost Breakdown</h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                      <span>Aircraft Operations:</span>
+                                      <span>AED {Math.round(actualCost * 0.6).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Passenger Services:</span>
+                                      <span>AED {Math.round(actualCost * 0.25).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Ground Handling:</span>
+                                      <span>AED {Math.round(actualCost * 0.15).toLocaleString()}</span>
+                                    </div>
                                   </div>
                                 </div>
-                              ));
-                            })()}
-                          </CardContent>
-                        </Card>
-                      ) : null}
-
-                      {/* Crew Reassignment Impact */}
-                      {selectedPlan?.assignedCrew && selectedPlan.assignedCrew.length > 0 ? (
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-lg">
-                              <Users className="h-5 w-5 text-purple-600" />
-                              Crew Reassignment Impact
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-4">
-                              {selectedPlan.assignedCrew.map((crewMember, index) => {
-                                // Generate rotation impact for each crew member
-                                const crewRotationImpact = crewMember.rotation_impact || [
-                                  {
-                                    delay: "On Time",
-                                    impact: crewMember.role === "Captain" ? "High Impact" : "Medium Impact",
-                                    origin: "Dubai",
-                                    reason: `${crewMember.role} reassignment - ${crewMember.role === "Captain" ? "Critical crew position requires qualified replacement" : "Standard crew rotation adjustment"}`,
-                                    status: "On Time",
-                                    arrival: "2025-01-12T15:30:00+04:00",
-                                    departure: "2025-01-12T07:30:00+04:00",
-                                    passengers: 167,
-                                    destination: "Mumbai",
-                                    origin_code: "DXB",
-                                    flightNumber: selectedPlan.flightNumber || "FZ445",
-                                    destination_code: "BOM",
-                                    dutyTime: crewMember.dutyTime || "8h 30m",
-                                    restPeriod: crewMember.restPeriod || "12h minimum",
-                                    qualification: crewMember.qualification || "Type rated",
-                                  },
-                                  {
-                                    delay: crewMember.role === "Captain" ? "20 min" : "10 min",
-                                    impact: crewMember.role === "Captain" ? "High Impact" : "Low Impact",
-                                    origin: "Mumbai",
-                                    reason: `Return flight affected by ${crewMember.role.toLowerCase()} duty time restrictions`,
-                                    status: crewMember.role === "Captain" ? "Delayed" : "On Time",
-                                    arrival: "2025-01-13T02:45:00+04:00",
-                                    departure: "2025-01-12T20:15:00+05:30",
-                                    passengers: 156,
-                                    destination: "Dubai",
-                                    origin_code: "BOM",
-                                    flightNumber: "FZ446",
-                                    destination_code: "DXB",
-                                    dutyTime: "12h 15m",
-                                    restPeriod: "16h required",
-                                    qualification: "Compliant",
-                                  },
-                                ];
-
-                                return (
-                                  <div key={index} className="border rounded-lg p-4 space-y-3">
-                                    <div className="flex items-center justify-between mb-3">
-                                      <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-purple-100 rounded">
-                                          <UserCheck className="h-4 w-4 text-purple-600" />
-                                        </div>
-                                        <div>
-                                          <h4 className="font-semibold">{crewMember.name}</h4>
-                                          <Badge variant="outline" className="text-xs">
-                                            {crewMember.role}
-                                          </Badge>
-                                        </div>
-                                      </div>
-                                      <div className="text-right text-sm">
-                                        <p className="text-muted-foreground">Base: {crewMember.base || "DXB"}</p>
-                                        <p className="text-muted-foreground">Status: {crewMember.status || "Available"}</p>
-                                      </div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                      {crewRotationImpact.map((flight, flightIndex) => (
-                                        <div key={flightIndex} className="p-3 border rounded bg-purple-50 space-y-2">
-                                          <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                              <Plane className="h-4 w-4 text-purple-600" />
-                                              <span className="font-medium">{flight.flightNumber}</span>
-                                              <Badge variant="outline" className="text-xs">
-                                                {flight.origin_code} → {flight.destination_code}
-                                              </Badge>
-                                            </div>
-                                            <Badge className={
-                                              flight.impact === "High Impact" ? "bg-red-100 text-red-700 border-red-200" :
-                                              flight.impact === "Medium Impact" ? "bg-yellow-100 text-yellow-700 border-yellow-200" :
-                                              "bg-green-100 text-green-700 border-green-200"
-                                            }>
-                                              {flight.impact}
-                                            </Badge>
-                                          </div>
-
-                                          <div className="grid grid-cols-3 gap-3 text-xs">
-                                            <div>
-                                              <Label className="text-muted-foreground">Delay</Label>
-                                              <p className="font-medium">{flight.delay}</p>
-                                            </div>
-                                            <div>
-                                              <Label className="text-muted-foreground">Duty Time</Label>
-                                              <p className="font-medium">{flight.dutyTime}</p>
-                                            </div>
-                                            <div>
-                                              <Label className="text-muted-foreground">Rest Period</Label>
-                                              <p className="font-medium">{flight.restPeriod}</p>
-                                            </div>
-                                          </div>
-
-                                          <div className="p-2 bg-white rounded text-xs">
-                                            <Label className="text-muted-foreground">Reason</Label>
-                                            <p className="mt-1">{flight.reason}</p>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ) : null}
-
-                      {/* General Rotation Impact (fallback) */}
-                      {selectedPlan?.rotationImpact && 
-                       Object.keys(selectedPlan.rotationImpact).length > 0 &&
-                       !selectedPlan?.matchingOption?.rotation_plan?.aircraft &&
-                       (!selectedPlan?.assignedCrew || selectedPlan.assignedCrew.length === 0) ? (
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                              <Activity className="h-5 w-5" />
-                              General Rotation Impact
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-3">
-                              {Object.entries(selectedPlan.rotationImpact).map(
-                                ([key, value]) => (
-                                  <div
-                                    key={key}
-                                    className="p-3 border rounded-lg bg-gray-50"
-                                  >
-                                    <h4 className="font-medium text-sm capitalize mb-2">
-                                      {key.replace(/([A-Z])/g, " $1").trim()}
-                                    </h4>
-                                    <div className="text-sm text-muted-foreground">
-                                      {typeof value === "object" &&
-                                      value !== null ? (
-                                        <pre className="whitespace-pre-wrap">
-                                          {JSON.stringify(value, null, 2)}
-                                        </pre>
-                                      ) : (
-                                        <span>{String(value)}</span>
-                                      )}
-                                    </div>
-                                  </div>
-                                ),
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ) : null}
-
-                      {/* No data available */}
-                      {(!selectedPlan?.matchingOption?.rotation_plan?.aircraft &&
-                        (!selectedPlan?.assignedCrew || selectedPlan.assignedCrew.length === 0) &&
-                        (!selectedPlan?.rotationImpact || Object.keys(selectedPlan.rotationImpact).length === 0)) ? (
-                        <div className="text-center py-12">
-                          <Activity className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                          <h3 className="text-xl font-semibold mb-2 text-gray-600">
-                            No Rotation Impact Data Available
-                          </h3>
-                          <p className="text-muted-foreground max-w-md mx-auto">
-                            Rotation impact analysis for alternate aircraft and crew reassignments 
-                            will be displayed here once the recovery option data is processed.
-                          </p>
+                              </div>
+                            );
+                          })()}
                         </div>
-                      ) : null}
-                    </div>
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </Card>
+
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Activity className="h-5 w-5 text-blue-600" />
+                          Operational Impact
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {/* Schedule Impact */}
+                          <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Clock className="h-4 w-4 text-yellow-600" />
+                              <span className="font-medium text-yellow-800">Schedule Impact</span>
+                              <Badge className="bg-yellow-100 text-yellow-700 ml-auto">Minimal passenger disruption</Badge>
+                            </div>
+                            <p className="text-sm text-yellow-700">
+                              {selectedPlan?.estimatedDelay || 0} minute delay expected
+                            </p>
+                          </div>
+
+                          {/* Passenger Impact */}
+                          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Users className="h-4 w-4 text-blue-600" />
+                              <span className="font-medium text-blue-800">Passenger Impact</span>
+                              <Badge className="bg-blue-100 text-blue-700 ml-auto">Operational Limited</Badge>
+                            </div>
+                            <p className="text-sm text-blue-700">
+                              {selectedPlan?.affectedPassengers || 0} passengers affected
+                            </p>
+                          </div>
+
+                          {/* Success Probability */}
+                          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <TrendingUp className="h-4 w-4 text-green-600" />
+                              <span className="font-medium text-green-800">Success Probability</span>
+                              <Badge className="bg-green-100 text-green-700 ml-auto">90% confidence in schedule resolution</Badge>
+                            </div>
+                            <p className="text-sm text-green-700">
+                              {selectedPlan?.confidence || 90}% confidence in successful resolution
+                            </p>
+                          </div>
+
+                          {/* Network Impact */}
+                          <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Target className="h-4 w-4 text-purple-600" />
+                              <span className="font-medium text-purple-800">Network Impact</span>
+                              <Badge className="bg-purple-100 text-purple-700 ml-auto">Operational minimal</Badge>
+                            </div>
+                            <p className="text-sm text-purple-700">
+                              Minimal impact on downstream operations
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Detailed Rotation Impact (if available) */}
+                  {selectedPlan?.matchingOption?.rotation_plan?.aircraft ||
+                   selectedPlan?.rotationImpact?.aircraft ||
+                   (selectedPlan?.assignedCrew && selectedPlan.assignedCrew.length > 0) ? (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Plane className="h-5 w-5 text-blue-600" />
+                          Detailed Rotation Impact
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <Alert className="border-blue-200 bg-blue-50 mb-4">
+                          <Info className="h-4 w-4 text-blue-600" />
+                          <AlertDescription className="text-blue-800">
+                            This analysis shows how the recovery option affects subsequent flights, aircraft rotations, and crew assignments.
+                          </AlertDescription>
+                        </Alert>
+
+                        {/* Rotation Impact Details */}
+                        {selectedPlan?.matchingOption?.rotation_impact && (
+                          <div className="space-y-3">
+                            {selectedPlan.matchingOption.rotation_impact.slice(0, 3).map((flight, index) => (
+                              <div key={index} className="p-4 border rounded-lg bg-white space-y-2">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <Plane className="h-4 w-4 text-blue-600" />
+                                    <span className="font-semibold">{flight.flightNumber || `Flight ${index + 1}`}</span>
+                                    <Badge variant="outline" className="text-xs">
+                                      {flight.origin_code || "DXB"} → {flight.destination_code || "Destination"}
+                                    </Badge>
+                                  </div>
+                                  <Badge className={
+                                    flight.impact === "High Impact" ? "bg-red-100 text-red-700" :
+                                    flight.impact === "Medium Impact" ? "bg-yellow-100 text-yellow-700" :
+                                    "bg-green-100 text-green-700"
+                                  }>
+                                    {flight.impact || "Low Impact"}
+                                  </Badge>
+                                </div>
+                                <div className="grid grid-cols-3 gap-4 text-sm">
+                                  <div>
+                                    <Label className="text-xs text-muted-foreground">Delay</Label>
+                                    <p className="font-medium text-red-600">{flight.delay || "On time"}</p>
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs text-muted-foreground">Passengers</Label>
+                                    <p className="font-medium">{flight.passengers || 0}</p>
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs text-muted-foreground">Status</Label>
+                                    <p className="font-medium">{flight.status || "Scheduled"}</p>
+                                  </div>
+                                </div>
+                                {flight.reason && (
+                                  <div className="p-2 bg-gray-50 rounded text-sm">
+                                    <span className="text-muted-foreground">Reason: </span>
+                                    {flight.reason}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ) : null}
+                </div>
               </TabsContent>
 
               {/* Conditional Passenger Re-accommodation Tab */}
