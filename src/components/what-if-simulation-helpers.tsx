@@ -1,5 +1,6 @@
 // Helper functions for what-if simulation and impact calculations
-import { getCurrency, getCurrencySymbol } from '../utils/currencyUtils'
+import { getCurrency } from '../utils/airlineThemeUtils'
+import { getCurrencySymbol } from '../utils/currencyUtils'
 
 // Import the helper functions from the recovery option helpers
 import {
