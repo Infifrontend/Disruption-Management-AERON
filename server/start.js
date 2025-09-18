@@ -5842,6 +5842,129 @@ app.get("/api/disrupted-stations", async (req, res) => {
   }
 });
 
+// Airlines and Airports API endpoints
+// Get airports and hubs for a specific airline code
+app.get("/api/airlines/:airlineCode/airports-hubs", async (req, res) => {
+  try {
+    const { airlineCode } = req.params;
+    
+    if (!airlineCode) {
+      return res.status(400).json({ error: "Airline code is required" });
+    }
+
+    console.log(`Fetching airports and hubs for airline: ${airlineCode}`);
+
+    // Get all airports that serve this airline (from airline_codes array)
+    const airportsQuery = `
+      SELECT code, name, country
+      FROM airports
+      WHERE $1 = ANY(airline_codes)
+      AND is_active = true
+      ORDER BY name
+    `;
+
+    // Get hubs for this airline
+    const hubsQuery = `
+      SELECT airport_code as code, is_primary
+      FROM airline_hubs
+      WHERE airline_code = $1
+      AND is_active = true
+      ORDER BY is_primary DESC, airport_code
+    `;
+
+    const [airportsResult, hubsResult] = await Promise.all([
+      pool.query(airportsQuery, [airlineCode]),
+      pool.query(hubsQuery, [airlineCode])
+    ]);
+
+    const response = {
+      airports: airportsResult.rows,
+      hubs: hubsResult.rows
+    };
+
+    console.log(`Found ${airportsResult.rows.length} airports and ${hubsResult.rows.length} hubs for ${airlineCode}`);
+    res.json(response);
+
+  } catch (error) {
+    console.error("Error fetching airline airports and hubs:", error);
+    res.status(500).json({ 
+      error: "Failed to fetch airline airports and hubs",
+      details: error.message 
+    });
+  }
+});
+
+// Get all airports (reference endpoint)
+app.get("/api/airports", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, code, name, country, airline_codes
+      FROM airports
+      WHERE is_active = true
+      ORDER BY name
+    `);
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching airports:", error);
+    res.status(500).json({ 
+      error: "Failed to fetch airports",
+      details: error.message 
+    });
+  }
+});
+
+// Get all airlines (reference endpoint)
+app.get("/api/airlines", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, code, name
+      FROM airlines
+      WHERE is_active = true
+      ORDER BY name
+    `);
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching airlines:", error);
+    res.status(500).json({ 
+      error: "Failed to fetch airlines",
+      details: error.message 
+    });
+  }
+});
+
+// Get all airline hubs with detailed information (reference endpoint)
+app.get("/api/airline-hubs", async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        ah.id,
+        ah.airline_code,
+        ah.airport_code,
+        ah.is_primary,
+        ah.description,
+        al.name as airline_name,
+        ap.name as airport_name,
+        ap.city as airport_city,
+        ap.country as airport_country
+      FROM airline_hubs ah
+      LEFT JOIN airlines al ON ah.airline_code = al.code
+      LEFT JOIN airports ap ON ah.airport_code = ap.code
+      WHERE ah.is_active = true
+      ORDER BY ah.airline_code, ah.is_primary DESC, ah.airport_code
+    `);
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error("Error fetching airline hubs:", error);
+    res.status(500).json({ 
+      error: "Failed to fetch airline hubs",
+      details: error.message 
+    });
+  }
+});
+
 // Consolidated dashboard analytics endpoint
 app.get("/api/dashboard-analytics", async (req, res) => {
   try {
