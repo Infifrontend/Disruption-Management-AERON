@@ -547,12 +547,10 @@ export function PendingSolutions() {
       if (updatedPlan || recoveryOptionsData) {
         // Find the specific recovery option from the options data
         let matchingOption = null;
-        if (
-          recoveryOptionsData &&
-          Array.isArray(recoveryOptionsData) &&
-          plan.optionId
-        ) {
-          matchingOption = recoveryOptionsData.find(
+        const safeRecoveryOptionsData = Array.isArray(recoveryOptionsData) ? recoveryOptionsData : [];
+        
+        if (safeRecoveryOptionsData.length > 0 && plan.optionId) {
+          matchingOption = safeRecoveryOptionsData.find(
             (opt) =>
               opt.id === plan.optionId || opt.option_id === plan.optionId,
           );
@@ -564,8 +562,8 @@ export function PendingSolutions() {
         let selectedOption = matchingOption;
 
         // If no matching option found but we have recovery options, find the selected one by option_id
-        if (!selectedOption && recoveryOptionsData && plan.optionId) {
-          selectedOption = recoveryOptionsData.find(
+        if (!selectedOption && safeRecoveryOptionsData.length > 0 && plan.optionId) {
+          selectedOption = safeRecoveryOptionsData.find(
             (opt) =>
               opt.id === plan.optionId || opt.option_id === plan.optionId,
           );
@@ -673,7 +671,7 @@ export function PendingSolutions() {
             plan.confidence ||
             80,
           // Store recovery options for the overview tab
-          recoveryOptions: recoveryOptionsData || [],
+          recoveryOptions: safeRecoveryOptionsData,
           matchingOption: selectedOption || matchingOption,
           // Store the option_id from the pending solution for matching
           optionId: finalOptionId,
@@ -707,7 +705,7 @@ export function PendingSolutions() {
         };
 
         // Debug log recovery options for matching
-        if (transformedPlan.recoveryOptions) {
+        if (transformedPlan.recoveryOptions && Array.isArray(transformedPlan.recoveryOptions)) {
           transformedPlan.recoveryOptions.forEach((opt, idx) => {
             console.log(`Recovery option ${idx}:`, {
               id: opt.id,
