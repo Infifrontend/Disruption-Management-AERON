@@ -73,11 +73,10 @@ import {
   Trash2,
   FileText,
 } from "lucide-react";
-import { databaseService, FlightDisruption } from "../services/databaseService";
+import { databaseService, FlightDisruption, airportsHubs } from "../services/databaseService";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
 import { useAirlineTheme } from "../hooks/useAirlineTheme";
-
 
 // Define interface for disruption categories
 interface DisruptionCategory {
@@ -353,6 +352,25 @@ export function DisruptionInput({
   // State for generating recovery options
   const [isGeneratingOptions, setIsGeneratingOptions] = useState(false);
   const [loadingRecovery, setLoadingRecovery] = useState({});
+  // Fetch disruption airportdetails from database
+  let airportDetails : airportsHubs |{};// define with type
+ 
+  const fetchAirportdetails = async (): Promise<airportsHubs | {}> => {
+    try {
+      const data = await databaseService.airportDetails(airlineConfig.code);
+      return data;
+    } catch (error) {
+      console.error("Error fetching disruption categories:", error);
+      return {};
+    }
+  };
+
+  fetchAirportdetails().then((data) => {
+    if(data){
+        airportDetails = data; 
+    } 
+    console.log(airportDetails, "stored airportDetails");
+  });
 
   // Fetch flights from database
   useEffect(() => {
@@ -1204,48 +1222,7 @@ export function DisruptionInput({
                           <SelectValue placeholder="Select origin" />
                         </SelectTrigger>
                         <SelectContent className="max-h-60 overflow-y-auto z-50">
-                          {[
-                            { code: "DXB", name: "Dubai", country: "UAE" },
-                            {
-                              code: "DWC",
-                              name: "Dubai World Central",
-                              country: "UAE",
-                            },
-                            { code: "SHJ", name: "Sharjah", country: "UAE" },
-                            { code: "AUH", name: "Abu Dhabi", country: "UAE" },
-                            { code: "FJR", name: "Fujairah", country: "UAE" },
-                            { code: "KWI", name: "Kuwait", country: "Kuwait" },
-                            { code: "MCT", name: "Muscat", country: "Oman" },
-                            { code: "SLL", name: "Salalah", country: "Oman" },
-                            {
-                              code: "KHI",
-                              name: "Karachi",
-                              country: "Pakistan",
-                            },
-                            { code: "BOM", name: "Mumbai", country: "India" },
-                            { code: "DEL", name: "Delhi", country: "India" },
-                            { code: "COK", name: "Kochi", country: "India" },
-                            {
-                              code: "CMB",
-                              name: "Colombo",
-                              country: "Sri Lanka",
-                            },
-                            {
-                              code: "IST",
-                              name: "Istanbul",
-                              country: "Turkey",
-                            },
-                            {
-                              code: "BCN",
-                              name: "Barcelona",
-                              country: "Spain",
-                            },
-                            {
-                              code: "PRG",
-                              name: "Prague",
-                              country: "Czech Republic",
-                            },
-                          ]
+                          {airportDetails &&  airportDetails.airports
                             .filter(
                               (airport) =>
                                 airport.code !== newDisruption.destination,
@@ -1274,49 +1251,7 @@ export function DisruptionInput({
                           <SelectValue placeholder="Select destination" />
                         </SelectTrigger>
                         <SelectContent className="max-h-60 overflow-y-auto z-50">
-                          {[
-                            { code: "DXB", name: "Dubai", country: "UAE" },
-                            {
-                              code: "DWC",
-                              name: "Dubai World Central",
-                              country: "UAE",
-                            },
-                            { code: "SHJ", name: "Sharjah", country: "UAE" },
-                            { code: "AUH", name: "Abu Dhabi", country: "UAE" },
-                            { code: "FJR", name: "Fujairah", country: "UAE" },
-                            { code: "KWI", name: "Kuwait", country: "Kuwait" },
-                            { code: "MCT", name: "Muscat", country: "Oman" },
-                            { code: "SLL", name: "Salalah", country: "Oman" },
-                            {
-                              code: "KHI",
-                              name: "Karachi",
-                              country: "Pakistan",
-                            },
-                            { code: "BOM", name: "Mumbai", country: "India" },
-                            { code: "DEL", name: "Delhi", country: "India" },
-                            { code: "COK", name: "Kochi", country: "India" },
-                            {
-                              code: "CMB",
-                              name: "Colombo",
-                              country: "Sri Lanka",
-                            },
-                            {
-                              code: "IST",
-                              name: "Istanbul",
-                              country: "Turkey",
-                            },
-                            {
-                              code: "BCN",
-                              name: "Barcelona",
-                              country: "Spain",
-                            },
-                            {
-                              code: "PRG",
-                              name: "Prague",
-                              country: "Czech Republic",
-                            },
-                          ]
-                            .filter(
+                          { airportDetails && airportDetails.airports.filter(
                               (airport) =>
                                 airport.code !== newDisruption.origin,
                             )

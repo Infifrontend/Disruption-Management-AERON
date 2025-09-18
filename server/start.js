@@ -14,7 +14,7 @@ import {
   logException,
   requestLoggerMiddleware,
 } from "./logger.js";
-import config from "./config/airlineConfig.js"
+import config, {getCurrency} from "./config/airlineConfig.js"
 console.log("airline config loaded ==>",config)
 
 const app = express();
@@ -2932,7 +2932,7 @@ app.get("/api/dashboard-analytics", async (req, res) => {
     console.log(actualRebookings, "testtsttsts");
     const analytics = {
       performance: {
-        costSavings: `AED ${Math.round(totalCost / 1000)}K`,
+        costSavings: `${getCurrency()} ${Math.round(totalCost / 1000)}K`,
         avgDecisionTime: `${Math.round(avgDecisionTime * 60)} min`,
         passengersServed: totalPassengers,
         successRate: `${successRate.toFixed(1)}%`,
@@ -2978,7 +2978,7 @@ app.get("/api/dashboard-analytics", async (req, res) => {
     // Return fallback data on error
     res.json({
       performance: {
-        costSavings: "AED 0K",
+        costSavings: `${getCurrency()} 0K`,
         avgDecisionTime: "0 min",
         passengersServed: 0,
         successRate: "0.0%",
@@ -6106,7 +6106,7 @@ app.get("/api/dashboard-analytics", async (req, res) => {
     );
 
     const performance = {
-      costSavings: `AED ${Math.round(totalCost / 1000)}K`,
+      costSavings: `${getCurrency()} ${Math.round(totalCost / 1000)}K`,
       avgDecisionTime: `${Math.round(avgTime)} min`,
       passengersServed: totalPassengers,
       successRate: `${successRate}%`,
@@ -6213,7 +6213,7 @@ app.get("/api/dashboard-analytics", async (req, res) => {
     console.log(actualRebookings, "testtsttsts");
     const analytics = {
       performance: {
-        costSavings: `AED ${Math.round(totalCost / 1000)}K`,
+        costSavings: `${getCurrency()} ${Math.round(totalCost / 1000)}K`,
         avgDecisionTime: `${Math.round(avgDecisionTime * 60)} min`,
         passengersServed: totalPassengers,
         successRate: `${successRate.toFixed(1)}%`,
@@ -6259,7 +6259,7 @@ app.get("/api/dashboard-analytics", async (req, res) => {
     // Return fallback data
     res.json({
       performance: {
-        costSavings: "AED 0K",
+        costSavings: `${getCurrency()} 0K`,
         avgDecisionTime: "0 min",
         passengersServed: 0,
         successRate: "0.0%",

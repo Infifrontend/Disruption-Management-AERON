@@ -120,6 +120,20 @@ export interface HotelBooking {
   createdAt: string;
 }
 
+export interface airportsHubs {
+  airports: {
+    code: string
+    name: string
+    country: string
+    [k: string]: unknown
+  }[]
+  hubs: {
+    code: string
+    is_primary: boolean
+    [k: string]: unknown
+  }[]
+  [k: string]: unknown
+}
 class DatabaseService {
   private baseUrl: string;
   private healthCheckCache: { status: boolean; timestamp: number } | null =
@@ -1207,6 +1221,16 @@ class DatabaseService {
   async getDisruptionCategories(): Promise<any[]> {
     return this.retryApiCall(async () => {
       const response = await fetch(`${this.baseUrl}/disruption-categories`);
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+      return await response.json();
+    }, []);
+  }
+  
+  async airportDetails(airportCode:string): Promise<airportsHubs> {
+    return this.retryApiCall(async () => {
+      const response = await fetch(`${this.baseUrl}/airlines/${airportCode}/airports-hubs`);
+      console.log()
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       return await response.json();

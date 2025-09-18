@@ -4174,7 +4174,7 @@ const generateAircraftIssueRecovery = (flight) => {
       data: {
         affectedFlights: 3,
         totalPassengers: flight.passengers || 189,
-        revenueImpact: "AED 890K",
+        revenueImpact: `${getCurrency()} 890K`,
         curfewBreaches: "None identified",
         overnightImplications: `${flight.destination} turnaround affected`,
       },

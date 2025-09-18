@@ -70,7 +70,6 @@ export function PassengerServicesPage() {
     <div className="space-y-6">
       <PassengerRebooking
         context={activeContext}
-        preservedSelections={preservedSelections}
         onClearContext={() => {
           setPassengerServicesContext(null);
           setPreservedSelections(null);
