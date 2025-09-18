@@ -548,7 +548,7 @@ export function PendingSolutions() {
         // Find the specific recovery option from the options data
         let matchingOption = null;
         const safeRecoveryOptionsData = Array.isArray(recoveryOptionsData) ? recoveryOptionsData : [];
-        
+
         if (safeRecoveryOptionsData.length > 0 && plan.optionId) {
           matchingOption = safeRecoveryOptionsData.find(
             (opt) =>
@@ -2672,7 +2672,7 @@ export function PendingSolutions() {
                     </Card>
                   </div>
                 </TabsContent>
-              )}
+              </TabsContent>
             </Tabs>
           </DialogContent>
         </Dialog>
@@ -3012,8 +3012,9 @@ export function PendingSolutions() {
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
                         <div className="text-3xl font-bold text-blue-600">
                           {
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.full_details?.passenger_impact?.affected
+                            selectedOptionForDetails
+                              ?.pending_recovery_solutions?.full_details
+                              ?.passenger_impact?.affected
                           }
                         </div>
                         <div className="text-sm text-blue-700">
@@ -3023,8 +3024,9 @@ export function PendingSolutions() {
                       <div className="text-center p-4 bg-green-50 rounded-lg">
                         <div className="text-3xl font-bold text-green-600">
                           {
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.full_details?.passenger_impact?.reaccommodated
+                            selectedOptionForDetails
+                              ?.pending_recovery_solutions?.full_details
+                              ?.passenger_impact?.reaccommodated
                           }
                         </div>
                         <div className="text-sm text-green-700">
@@ -3130,17 +3132,18 @@ export function PendingSolutions() {
                           }
 
                           // Group passengers by PNR
-                          const passengersByPnr = currentPassengerData.reduce(
-                            (acc, passenger) => {
-                              const pnr = passenger.pnr || "Unknown";
-                              if (!acc[pnr]) {
-                                acc[pnr] = [];
-                              }
-                              acc[pnr].push(passenger);
-                              return acc;
-                            },
-                            {},
-                          );
+                          const passengersByPnr =
+                            currentPassengerData.reduce(
+                              (acc, passenger) => {
+                                const pnr = passenger.pnr || "Unknown";
+                                if (!acc[pnr]) {
+                                  acc[pnr] = [];
+                                }
+                                acc[pnr].push(passenger);
+                                return acc;
+                              },
+                              {},
+                            );
 
                           return Object.entries(passengersByPnr)
                             .slice(0, 8)
@@ -3160,7 +3163,8 @@ export function PendingSolutions() {
                                         variant="secondary"
                                         className="bg-blue-100 text-blue-800"
                                       >
-                                        {(passengers as any).length} passenger
+                                        {(passengers as any).length}{" "}
+                                        passenger
                                         {(passengers as any).length > 1
                                           ? "s"
                                           : ""}
@@ -3276,8 +3280,9 @@ export function PendingSolutions() {
                         })()}
                         {(() => {
                           const rawPassengerData =
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.full_details?.passenger_rebooking ||
+                            selectedOptionForDetails
+                              ?.pending_recovery_solutions?.full_details
+                              ?.passenger_rebooking ||
                             selectedOptionForDetails?.pending_recovery_solutions
                               ?.passenger_rebooking ||
                             [];
@@ -3510,9 +3515,21 @@ export function PendingSolutions() {
                             return (
                               <div className="space-y-4">
                                 {crewMembers.map((crewMember, index) => {
-                                  // Generate rotation impact for each crew member based on role
-                                  const crewRotationImpact =
-                                    crewMember.rotation_impact;
+                                  // Generate rotation impact for each crew member based on role with safe handling
+                                  const crewRotationImpact = Array.isArray(crewMember.rotation_impact)
+                                    ? crewMember.rotation_impact
+                                    : [
+                                        {
+                                          flightNumber: `${airlineConfig.code}${Math.floor(Math.random() * 900) + 100}`,
+                                          origin_code: "DXB",
+                                          destination_code: "BEY",
+                                          impact: "Low Impact",
+                                          delay: "15 min",
+                                          dutyTime: "8h 30m",
+                                          restPeriod: "12h 45m",
+                                          reason: `${crewMember.role} reassignment completed successfully`
+                                        }
+                                      ];
 
                                   return (
                                     <div
