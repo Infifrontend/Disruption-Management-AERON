@@ -32,20 +32,20 @@ import { LoginPage } from "./pages/LoginPage"; // Assuming LoginPage component i
 import { ProtectedRoute } from "./components/ProtectedRoute"; // Assuming ProtectedRoute component is created
 import { useAirlineTheme } from "./hooks/useAirlineTheme";
 
-const { airlineConfig } = useAirlineTheme();
 // Loading component
-const LoadingSpinner = () => (
+const LoadingSpinner = ({ airlineConfig }: { airlineConfig: any }) => (
   <div className="min-h-screen bg-background flex items-center justify-center">
     <div className="text-center">
       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
       <p className="text-gray-600">
-        Loading ${airlineConfig.displayName} AERON...
+        Loading {airlineConfig.displayName} AERON...
       </p>
     </div>
   </div>
 );
 
 export default function App() {
+  const { airlineConfig } = useAirlineTheme();
   const { alertState, showAlert, hideAlert, handleConfirm, handleCancel } =
     useCustomAlert();
   console.log(airlineConfig, "test");
@@ -68,7 +68,7 @@ export default function App() {
     <AppProvider>
       <Router basename={import.meta.env.VITE_FRONTEND_BASE_URL || "/"}>
         <div className="min-h-screen bg-background">
-          <Suspense fallback={<LoadingSpinner />}>
+          <Suspense fallback={<LoadingSpinner airlineConfig={airlineConfig} />}>
             <Routes>
               <Route path="/login" element={<LoginPage />} />
               <Route
