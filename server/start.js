@@ -16,15 +16,9 @@ import {
   logDatabaseOperation,
   logRecoveryOperation,
 } from "./logger.js";
+import airlineTheme from '../src/config/airlineThemes.json' assert { type: 'json' };
 
-logInfo("Hello world from pino", {
-  name: "logesh",
-  module: "starting express application",
-});
-logger.info("Hello world from pino", {
-  name: "logesh",
-  module: "starting express application",
-});
+console.log("airline config ===>",airlineTheme)
 
 const app = express();
 // Use environment variable for server port, falling back to PORT or 3001
@@ -3347,6 +3341,7 @@ app.get("/api/recovery-templates/:categoryId", async (req, res) => {
 
 // Import LLM Recovery Service
 import { llmRecoveryService } from "./llm-recovery-service.js";
+import { assert } from "console";
 
 // Helper function to validate and parse disruption ID
 function validateDisruptionId(disruptionId) {

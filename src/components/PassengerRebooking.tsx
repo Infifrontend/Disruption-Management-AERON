@@ -102,6 +102,7 @@ import { alertService } from "../services/alertService";
 import { useCustomAlert } from "../hooks/useCustomAlert";
 import { CustomAlertDialog } from "./CustomAlertDialog";
 import { useAppContext } from "../context/AppContext";
+import { useAirlineTheme } from "../hooks/useAirlineTheme";
 
 export function PassengerRebooking({ context, onClearContext }) {
   const location = useLocation();
@@ -191,6 +192,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   const [selectedCrewMembers, setSelectedCrewMembers] = useState(new Set());
   const [selectedHotelForCrew, setSelectedHotelForCrew] = useState(null);
   const [selectedCrewForHotel, setSelectedCrewForHotel] = useState([]);
+  const { airlineConfig } = useAirlineTheme();
 
   // State to track PNRs that were selected for approval (prevents auto-clearing)
   const [pnrsForApproval, setPnrsForApproval] = useState(new Set());
@@ -419,7 +421,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       key: "loungeAccess",
       name: "Lounge Access",
       icon: Crown,
-      description: "Access to flydubai Business Lounge",
+      description: `Access to ${airlineConfig.displayName}  Business Lounge`,
       estimatedCost: "AED 120",
       category: "comfort",
     },
@@ -434,7 +436,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       {
         id: "FZ567",
         flightNumber: "FZ567",
-        airline: "flydubai",
+        airline: airlineConfig.displayName,
         departure: "Tomorrow 08:00",
         arrival: "Tomorrow 12:30",
         route: `DXB → ${context?.flight?.destination || "BOM"}`,
@@ -486,7 +488,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       {
         id: "FZ789",
         flightNumber: "FZ789",
-        airline: "flydubai",
+        airline: airlineConfig.displayName,
         departure: "Tomorrow 14:20",
         arrival: "Tomorrow 18:50",
         route: `DXB → ${context?.flight?.destination || "BOM"}`,

@@ -47,6 +47,10 @@ import {
   Hash
 } from 'lucide-react'
 
+import { useAirlineTheme } from "../hooks/useAirlineTheme";
+ const { airlineConfig } = useAirlineTheme();
+
+
 // Enhanced mock aircraft data for Flydubai with 25+ aircraft and comprehensive flight schedules
 const aircraftFleet = [
   {
@@ -656,7 +660,7 @@ export function FlightTrackingGantt() {
       {/* Header - flydubai themed */}
       <div className="flex items-center justify-between flex-shrink-0">
         <div>
-          <h2 className="text-2xl font-semibold">Flydubai Flight Tracking Gantt</h2>
+          <h2 className="text-2xl font-semibold">{airlineConfig.displayName} Flight Tracking Gantt</h2>
           <p className="text-muted-foreground">Aircraft schedules by tail number with real-time flight tracking</p>
         </div>
         <div className="flex items-center gap-2">
@@ -747,7 +751,7 @@ export function FlightTrackingGantt() {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <CardTitle className="flex items-center gap-2">
               <Hash className="h-5 w-5" />
-              Flydubai Aircraft Schedule by Tail Number
+              {airlineConfig.displayName} Aircraft Schedule by Tail Number
             </CardTitle>
             <div className="flex items-center gap-2">
               <div className="flex flex-wrap items-center gap-2 lg:gap-4 text-xs">
@@ -783,7 +787,7 @@ export function FlightTrackingGantt() {
               <div className="p-3 border-b bg-white flex-shrink-0">
                 <h4 className="font-medium flex items-center gap-2">
                   <Hash className="h-4 w-4" />
-                  Flydubai Fleet (A6-FE*)
+                  {airlineConfig.displayName} Fleet (A6-FE*)
                 </h4>
                 <p className="text-sm text-muted-foreground">{filteredAircraft.length} aircraft</p>
               </div>
@@ -961,7 +965,7 @@ export function FlightTrackingGantt() {
           <div className="flex items-center justify-between">
             <span>
               Last updated: {currentTime.toLocaleTimeString()} • 
-              Tracking {filteredAircraft.filter(a => a.status === 'active').length} active Flydubai aircraft •
+              Tracking {filteredAircraft.filter(a => a.status === 'active').length} active {airlineConfig.displayName} aircraft •
               {getActiveFiltersCount() > 0 && ` ${getActiveFiltersCount()} filters applied`}
             </span>
             <div className="flex items-center gap-2">

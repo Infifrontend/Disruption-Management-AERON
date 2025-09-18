@@ -20,7 +20,10 @@ import {
   RotateCcw,
 } from "lucide-react";
 
+import { useAirlineTheme } from "./../hooks/useAirlineTheme";
+
 export function WorldMap() {
+   const { airlineConfig } = useAirlineTheme();
   const [selectedView, setSelectedView] = useState("routes");
   const [isRealtime, setIsRealtime] = useState(true);
   const [_lastUpdate, setLastUpdate] = useState(new Date());
@@ -244,7 +247,7 @@ export function WorldMap() {
               </div>
               <div>
                 <CardTitle className="text-flydubai-navy">
-                  Flydubai Global Network
+                  {airlineConfig.displayName} Global Network
                 </CardTitle>
                 <p className="text-sm text-muted-foreground">
                   Real-time flight operations & network monitoring

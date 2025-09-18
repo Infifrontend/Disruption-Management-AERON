@@ -1,5 +1,5 @@
+// import {airlineTheme} from '../src/config/airlineThemes.json'
 // File system imports removed - using embedded data instead
-
 // available crew dummy information
 const availableDummyCrew = [
   {

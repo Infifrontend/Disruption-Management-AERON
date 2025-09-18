@@ -259,7 +259,7 @@ export function Dashboard() {
           <strong>Active Disruptions:</strong>{" "}
           {loading
             ? "Loading..."
-            : `${analytics?.operationalInsights.activeDisruptions || 0} Flydubai flights currently disrupted`}
+            : `${analytics?.operationalInsights.activeDisruptions || 0} ${airlineConfig.displayName} flights currently disrupted`}
           . AERON recovery plans available.
         </AlertDescription>
       </Alert>
@@ -275,7 +275,7 @@ export function Dashboard() {
               </div>
               <div>
                 <h3 className="font-medium text-flydubai-navy">
-                  ${airlineConfig.displayName} AERON Performance Today
+                  {airlineConfig.displayName} AERON Performance Today
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {loading
@@ -710,7 +710,7 @@ export function Dashboard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-5 w-5 text-flydubai-blue" />
-            Flydubai Network Filters
+            {airlineConfig.displayName} Network Filters
           </CardTitle>
         </CardHeader>
         <CardContent>
