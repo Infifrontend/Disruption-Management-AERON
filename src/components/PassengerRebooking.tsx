@@ -105,6 +105,7 @@ import { useAppContext } from "../context/AppContext";
 import { useAirlineTheme } from "../hooks/useAirlineTheme";
 
 export function PassengerRebooking({ context, onClearContext }) {
+
   const location = useLocation();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("passenger-service");
@@ -391,15 +392,15 @@ export function PassengerRebooking({ context, onClearContext }) {
       name: "Hotel Accommodation",
       icon: Hotel,
       description: "Overnight stay with meals included",
-      estimatedCost: "AED 450",
+      estimatedCost: airlineConfig.currency +" 450",
       category: "accommodation",
     },
     {
       key: "mealVoucher",
       name: "Meal Voucher",
       icon: Utensils,
-      description: "AED 75 dining credit at airport restaurants",
-      estimatedCost: "AED 75",
+      description: airlineConfig.currency +" 75 dining credit at airport restaurants",
+      estimatedCost: airlineConfig.currency +" 75",
       category: "dining",
     },
     {
@@ -407,7 +408,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       name: "Ground Transportation",
       icon: Car,
       description: "Airport transfer or taxi service",
-      estimatedCost: "AED 80",
+      estimatedCost: airlineConfig.currency +" 80",
       category: "transport",
     },
     {
@@ -423,7 +424,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       name: "Priority Baggage",
       icon: Package,
       description: "Fast-track baggage processing",
-      estimatedCost: "AED 25",
+      estimatedCost: airlineConfig.currency +" 25",
       category: "baggage",
     },
     {
@@ -431,13 +432,14 @@ export function PassengerRebooking({ context, onClearContext }) {
       name: "Lounge Access",
       icon: Crown,
       description: `Access to ${airlineConfig.displayName}  Business Lounge`,
-      estimatedCost: "AED 120",
+      estimatedCost: airlineConfig.currency +" 120",
       category: "comfort",
     },
   ];
 
   // Enhanced Available Flights with detailed information
   const getAvailableFlights = (passengerOrGroup) => {
+    const { airlineConfig } = useAirlineTheme();
     const passengersCount = Array.isArray(passengerOrGroup)
       ? passengerOrGroup.length
       : 1;
@@ -452,9 +454,9 @@ export function PassengerRebooking({ context, onClearContext }) {
         aircraft: "Boeing 737-800",
         duration: "4h 30m",
         availableSeats: {
-          business: { total: 12, available: 8, price: "AED 2,400" },
-          premiumEconomy: { total: 24, available: 16, price: "AED 1,200" },
-          economy: { total: 150, available: 89, price: "AED 800" },
+          business: { total: 12, available: 8, price: airlineConfig.currency +" 2,400" },
+          premiumEconomy: { total: 24, available: 16, price: airlineConfig.currency +" 1,200" },
+          economy: { total: 150, available: 89, price: airlineConfig.currency +" 800" },
         },
         suitabilityScore: calculateGroupFlightScore(
           passengerOrGroup,
@@ -481,9 +483,9 @@ export function PassengerRebooking({ context, onClearContext }) {
         aircraft: "Airbus A380",
         duration: "4h 30m",
         availableSeats: {
-          business: { total: 76, available: 12, price: "AED 3,800" },
-          premiumEconomy: { total: 56, available: 23, price: "AED 1,800" },
-          economy: { total: 399, available: 156, price: "AED 1,200" },
+          business: { total: 76, available: 12, price: airlineConfig.currency +" 3,800" },
+          premiumEconomy: { total: 56, available: 23, price: airlineConfig.currency +" 1,800" },
+          economy: { total: 399, available: 156, price: airlineConfig.currency +" 1,200" },
         },
         suitabilityScore: calculateGroupFlightScore(passengerOrGroup, "EK425"),
         amenities: [
@@ -510,9 +512,9 @@ export function PassengerRebooking({ context, onClearContext }) {
         aircraft: "Boeing 737 MAX 8",
         duration: "4h 30m",
         availableSeats: {
-          business: { total: 12, available: 4, price: "AED 2,600" },
-          premiumEconomy: { total: 24, available: 18, price: "AED 1,400" },
-          economy: { total: 150, available: 67, price: "AED 900" },
+          business: { total: 12, available: 4, price: airlineConfig.currency +" 2,600" },
+          premiumEconomy: { total: 24, available: 18, price: airlineConfig.currency +" 1,400" },
+          economy: { total: 150, available: 67, price: airlineConfig.currency +" 900" },
         },
         suitabilityScore: calculateGroupFlightScore(
           passengerOrGroup,
@@ -539,9 +541,9 @@ export function PassengerRebooking({ context, onClearContext }) {
         aircraft: "Boeing 787-8",
         duration: "4h 30m",
         availableSeats: {
-          business: { total: 18, available: 11, price: "AED 2,800" },
-          premiumEconomy: { total: 35, available: 28, price: "AED 1,500" },
-          economy: { total: 211, available: 134, price: "AED 950" },
+          business: { total: 18, available: 11, price: airlineConfig.currency +" 2,800" },
+          premiumEconomy: { total: 35, available: 28, price: airlineConfig.currency +" 1,500" },
+          economy: { total: 211, available: 134, price: airlineConfig.currency +" 950" },
         },
         suitabilityScore: calculateGroupFlightScore(passengerOrGroup, "AI131"),
         amenities: ["WiFi", "Indian Cuisine", "Entertainment", "Extra Legroom"],
@@ -759,7 +761,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       name: "Dubai International Hotel",
       category: "5-Star",
       distance: "0.5 km from DXB",
-      pricePerNight: "AED 450",
+      pricePerNight: airlineConfig.currency +" 450",
       rating: 4.8,
       amenities: ["Wifi", "Pool", "Gym", "Restaurant", "Airport Shuttle", "AC"],
       availability: "Available",
@@ -773,7 +775,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       name: "Le Meridien Dubai Hotel & Conference Centre",
       category: "5-Star",
       distance: "12 km from DXB",
-      pricePerNight: "AED 380",
+      pricePerNight: airlineConfig.currency +" 380",
       rating: 4.6,
       amenities: ["Wifi", "Pool", "Gym", "Restaurant", "Spa", "Parking"],
       availability: "Available",
@@ -787,7 +789,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       name: "Millennium Airport Hotel Dubai",
       category: "4-Star",
       distance: "8 km from DXB",
-      pricePerNight: "AED 280",
+      pricePerNight: airlineConfig.currency +" 280",
       rating: 4.4,
       amenities: [
         "Wifi",
@@ -806,7 +808,7 @@ export function PassengerRebooking({ context, onClearContext }) {
       name: "Premier Inn Dubai International Airport",
       category: "3-Star",
       distance: "5 km from DXB",
-      pricePerNight: "AED 180",
+      pricePerNight: airlineConfig.currency +" 180",
       rating: 4.2,
       amenities: ["Wifi", "Restaurant", "Airport Shuttle", "AC"],
       availability: "Limited",
@@ -1310,7 +1312,7 @@ export function PassengerRebooking({ context, onClearContext }) {
   const issueVoucher = (amount, type) => {
     setVoucherIssued(true);
     toast.success(`${type} meal voucher issued`, {
-      description: `AED ${selectedPnrGroup ? amount * selectedPnrGroup.passengers.length : amount} credit`,
+      description: `${airlineConfig.currency} ${selectedPnrGroup ? amount * selectedPnrGroup.passengers.length : amount} credit`,
     });
   };
 
@@ -1644,8 +1646,8 @@ export function PassengerRebooking({ context, onClearContext }) {
             typeof recoveryOption?.cost === "string"
               ? recoveryOption.cost
               : recoveryOption?.cost
-                ? `AED ${recoveryOption.cost.toLocaleString()}`
-                : "AED 75,000",
+                ? `${airlineConfig.currency} ${recoveryOption.cost.toLocaleString()}`
+                : airlineConfig.currency +" 75,000",
           estimated_delay: recoveryOption?.delay || 0,
           passenger_impact: {
             affected: hasPassenger ? confirmedPassengers.length : 0,
@@ -3045,7 +3047,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                     {new Date(
                                       (assignment as any).check_in_date,
                                     ).toLocaleDateString()}{" "}
-                                    | Cost: AED {(assignment as any).total_cost}
+                                    | Cost: {airlineConfig.currency} {(assignment as any).total_cost}
                                   </div>
                                 </div>
                               ),
@@ -3950,7 +3952,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                   {new Date(
                                     (assignment as any).check_in_date,
                                   ).toLocaleDateString()}{" "}
-                                  | Cost: AED {(assignment as any).total_cost}
+                                  | Cost: {airlineConfig.currency} {(assignment as any).total_cost}
                                 </div>
                               </div>
                             ),
@@ -4207,7 +4209,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                                     {service.estimatedCost === "Complimentary"
                                       ? "Free"
                                       : groupSize > 1
-                                        ? `AED ${totalCost}`
+                                        ? `${airlineConfig.currency} ${totalCost}`
                                         : service.estimatedCost}
                                   </span>
                                   {groupSize > 1 && serviceCost > 0 && (
@@ -4238,7 +4240,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                               Total Additional Services Cost:
                             </span>
                             <span className="text-lg font-bold text-flydubai-orange">
-                              AED {calculateTotalServicesCost()}
+                              {airlineConfig.currency} {calculateTotalServicesCost()}
                             </span>
                           </div>
                           {groupSize > 1 && (
@@ -4868,8 +4870,8 @@ export function PassengerRebooking({ context, onClearContext }) {
                               <div className="font-medium">Meal Voucher</div>
                               <div className="text-sm text-gray-600">
                                 {selectedPnrGroup
-                                  ? `AED ${50 * selectedPnrGroup.passengers.length} total for group`
-                                  : "AED 50 dining credit"}
+                                  ? `${airlineConfig.currency} ${50 * selectedPnrGroup.passengers.length} total for group`
+                                  : airlineConfig.currency +" 50 dining credit"}
                               </div>
                             </div>
                             <Button
@@ -5115,7 +5117,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                       </div>
                     </div>
                     <div className="font-bold text-flydubai-orange">
-                      AED{" "}
+                      {airlineConfig.currency}{" "}
                       {selectedPnrGroup
                         ? 50 * selectedPnrGroup.passengers.length
                         : 50}
@@ -5135,7 +5137,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                       </div>
                     </div>
                     <div className="font-bold text-flydubai-orange">
-                      AED{" "}
+                      {airlineConfig.currency}{" "}
                       {selectedPnrGroup
                         ? 75 * selectedPnrGroup.passengers.length
                         : 75}
@@ -5155,7 +5157,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                       </div>
                     </div>
                     <div className="font-bold text-flydubai-orange">
-                      AED{" "}
+                      {airlineConfig.currency}{" "}
                       {selectedPnrGroup
                         ? 100 * selectedPnrGroup.passengers.length
                         : 100}
@@ -5223,7 +5225,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                       </div>
                     </div>
                     <div className="font-bold text-flydubai-orange">
-                      AED{" "}
+                      {airlineConfig.currency}{" "}
                       {selectedPnrGroup
                         ? 80 * Math.ceil(selectedPnrGroup.passengers.length / 4)
                         : 80}
@@ -5247,7 +5249,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                       </div>
                     </div>
                     <div className="font-bold text-flydubai-orange">
-                      AED{" "}
+                      {airlineConfig.currency}{" "}
                       {selectedPnrGroup
                         ? 40 * selectedPnrGroup.passengers.length
                         : 40}
@@ -5271,7 +5273,7 @@ export function PassengerRebooking({ context, onClearContext }) {
                       </div>
                     </div>
                     <div className="font-bold text-flydubai-orange">
-                      AED{" "}
+                      {airlineConfig.currency}{" "}
                       {selectedPnrGroup
                         ? 150 *
                           Math.ceil(selectedPnrGroup.passengers.length / 3)

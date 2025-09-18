@@ -1,5 +1,6 @@
 // Dashboard Analytics Service for real-time dashboard data
 import { databaseService } from "./databaseService";
+import { useAirlineTheme } from "../hooks/useAirlineTheme";
 
 export interface DashboardAnalytics {
   // Flydubai AERON Performance Today
@@ -213,6 +214,7 @@ class DashboardAnalyticsService {
   }
 
   private calculatePerformanceMetrics(disruptions: any[], logs: any[]) {
+    const { airlineConfig } = useAirlineTheme();
     console.log("Calculating performance metrics with:", {
       disruptionsCount: disruptions.length,
       logsCount: logs.length,
@@ -282,7 +284,7 @@ class DashboardAnalyticsService {
     });
 
     return {
-      costSavings: `AED ${Math.round(finalCost / 1000)}K`,
+      costSavings: `${airlineConfig.currency} ${Math.round(finalCost / 1000)}K`,
       avgDecisionTime: `${Math.round(avgDelayTime)} min`,
       passengersServed: totalPassengers,
       successRate: `${finalSuccessRate}%`,
@@ -611,10 +613,11 @@ class DashboardAnalyticsService {
   }
 
   private getFallbackAnalytics(): DashboardAnalytics {
+    const { airlineConfig } = useAirlineTheme();
     // Return minimal fallback data when database is unavailable
     return {
       performance: {
-        costSavings: "AED 0K",
+        costSavings: airlineConfig.currency+ "0K",
         avgDecisionTime: "0 min",
         passengersServed: 0,
         successRate: "0.0%",

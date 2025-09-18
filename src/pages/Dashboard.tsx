@@ -289,7 +289,8 @@ export function Dashboard() {
                 <p className="text-lg font-semibold text-flydubai-blue">
                   {loading
                     ? "Loading..."
-                    : analytics?.performance.costSavings || "AED 0K"}
+                    : analytics?.performance.costSavings ||
+                      airlineConfig.currency + " 0K"}
                 </p>
                 <p className="text-xs text-muted-foreground">Cost Savings</p>
               </div>
