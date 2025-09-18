@@ -1820,8 +1820,13 @@ export function DisruptionInput({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All hubs</SelectItem>
-                    <SelectItem value="DXB">DXB</SelectItem>
-                    <SelectItem value="DWC">DWC</SelectItem>
+                    {Array.from(new Set(airportDetails?.hubs?.map((f) => f.code)))
+                      .sort()
+                      .map((code) => (
+                        <SelectItem key={code} value={code}>
+                          {code}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
