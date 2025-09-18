@@ -22,6 +22,13 @@ import {
   Utensils
 } from 'lucide-react'
 
+// Assume this data is fetched or passed down from a configuration context
+// For demonstration, we'll hardcode a sample configuration.
+const airlineConfig = {
+  currency: 'AED', // This would typically come from your airline's theme configuration
+  currencySymbol: 'د.إ' // Corresponding symbol for AED
+};
+
 const voucherTypes = [
   {
     id: 'meal',
@@ -109,6 +116,8 @@ export function VoucherManagement({ selectedPassengers }: { selectedPassengers: 
 
   // const selectedPassengerData = passengers.filter(p => selectedPassengers.includes(p.id))
   const selectedVoucherTypeData = voucherTypes.find(vt => vt.id === selectedVoucherType)
+  const currency = airlineConfig.currency;
+  const currencySymbol = airlineConfig.currencySymbol;
 
   const getTotalCost = () => {
     const amount = useCustomAmount ? parseFloat(customAmount) || 0 : voucherAmount
@@ -125,7 +134,7 @@ export function VoucherManagement({ selectedPassengers }: { selectedPassengers: 
     const recipientCount = bulkIssue ? selectedPassengers.length : 1
     const totalCost = getTotalCost()
 
-    alert(`Issuing ${quantity} ${selectedVoucherTypeData?.name ?? 'Unknown'}(s) worth $${amount} each to ${recipientCount} passenger(s). Total cost: $${totalCost.toFixed(2)}`)
+    alert(`Issuing ${quantity} ${selectedVoucherTypeData?.name ?? 'Unknown'}(s) worth ${currencySymbol}${amount} each to ${recipientCount} passenger(s). Total cost: ${currencySymbol}${totalCost.toFixed(2)}`)
   }
 
   const handleBulkIssue = () => {
@@ -164,13 +173,13 @@ export function VoucherManagement({ selectedPassengers }: { selectedPassengers: 
             </div>
             <div className="text-center p-3 bg-orange-50 rounded border border-orange-200">
               <p className="text-lg font-semibold text-orange-600">
-                ${issuedVouchers.reduce((sum, v) => sum + v.amount, 0)}
+                {currencySymbol}{issuedVouchers.reduce((sum, v) => sum + v.amount, 0)}
               </p>
               <p className="text-sm text-orange-700">Total Value Issued</p>
             </div>
             <div className="text-center p-3 bg-purple-50 rounded border border-purple-200">
               <p className="text-lg font-semibold text-purple-600">{getTotalCost().toFixed(0)}</p>
-              <p className="text-sm text-purple-700">Est. Cost (USD)</p>
+              <p className="text-sm text-purple-700">Est. Cost ({currency})</p>
             </div>
           </div>
 
@@ -213,7 +222,7 @@ export function VoucherManagement({ selectedPassengers }: { selectedPassengers: 
                         <SelectItem key={type.id} value={type.id}>
                           <div className="flex items-center gap-2">
                             <Icon className="h-4 w-4" />
-                            {type.name} - ${type.defaultAmount}
+                            {type.name} - {currencySymbol}{type.defaultAmount}
                           </div>
                         </SelectItem>
                       )
@@ -240,7 +249,7 @@ export function VoucherManagement({ selectedPassengers }: { selectedPassengers: 
                       Use custom amount
                     </Label>
                   </div>
-                  
+
                   {useCustomAmount ? (
                     <Input
                       type="number"
@@ -256,7 +265,7 @@ export function VoucherManagement({ selectedPassengers }: { selectedPassengers: 
                       <SelectContent>
                         {selectedVoucherTypeData?.amounts.map(amount => (
                           <SelectItem key={amount} value={amount.toString()}>
-                            ${amount}
+                            {currencySymbol}{amount}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -330,7 +339,7 @@ export function VoucherManagement({ selectedPassengers }: { selectedPassengers: 
                   <div className="flex justify-between">
                     <span>Amount Each:</span>
                     <span className="font-medium">
-                      ${useCustomAmount ? customAmount || 0 : voucherAmount}
+                      {currencySymbol}{useCustomAmount ? customAmount || 0 : voucherAmount}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -341,7 +350,7 @@ export function VoucherManagement({ selectedPassengers }: { selectedPassengers: 
                   <div className="flex justify-between text-base">
                     <span className="font-medium">Total Cost:</span>
                     <span className="font-semibold text-green-600">
-                      ${getTotalCost().toFixed(2)}
+                      {currencySymbol}{getTotalCost().toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -366,7 +375,7 @@ export function VoucherManagement({ selectedPassengers }: { selectedPassengers: 
                     <Icon className="h-5 w-5" />
                     <h4 className="font-medium">{type.name}</h4>
                     <Badge className={type.color}>
-                      ${type.defaultAmount}
+                      {currencySymbol}{type.defaultAmount}
                     </Badge>
                   </div>
                   <p className="text-sm text-muted-foreground mb-2">{type.description}</p>
@@ -374,7 +383,7 @@ export function VoucherManagement({ selectedPassengers }: { selectedPassengers: 
                   <div className="flex gap-1 mt-2">
                     {type.amounts.map(amount => (
                       <Badge key={amount} variant="outline" className="text-xs">
-                        ${amount}
+                        {currencySymbol}{amount}
                       </Badge>
                     ))}
                   </div>
@@ -416,7 +425,7 @@ export function VoucherManagement({ selectedPassengers }: { selectedPassengers: 
                   <TableCell className="font-mono text-sm">{voucher.id}</TableCell>
                   <TableCell>{voucher.passenger}</TableCell>
                   <TableCell>{voucher.type}</TableCell>
-                  <TableCell className="font-medium">${voucher.amount}</TableCell>
+                  <TableCell className="font-medium">{currencySymbol}{voucher.amount}</TableCell>
                   <TableCell className="text-sm">{voucher.issued}</TableCell>
                   <TableCell className="text-sm">{voucher.expires}</TableCell>
                   <TableCell>

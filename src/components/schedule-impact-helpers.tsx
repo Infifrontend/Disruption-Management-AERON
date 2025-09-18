@@ -1,7 +1,7 @@
 // Helper functions for extracting real data from options
 export const generateScheduleComparisonSummary = (originalPlan, newPlan) => {
   if (!originalPlan || !newPlan) return "No schedule comparison available"
-  
+
   const changes = []
   newPlan.forEach((newFlight, index) => {
     const original = originalPlan[index]
@@ -12,7 +12,7 @@ export const generateScheduleComparisonSummary = (originalPlan, newPlan) => {
       changes.push(`${newFlight.flight}: Aircraft ${original.aircraft} → ${newFlight.aircraft}`)
     }
   })
-  
+
   return changes.length > 0 ? changes.join('; ') : "Schedule maintained"
 }
 
@@ -20,12 +20,12 @@ export const calculatePassengerImpact = (rotationPlan, option, flight) => {
   const estimatedPassengers = flight?.passengers || 167
   const optionId = String(option.id || '')
   const optionTitle = String(option.title || '')
-  
+
   // Check if this is a delay option
   if (optionId.includes('DELAY') || optionTitle.toLowerCase().includes('delay')) {
     const delayMatch = option.timeline?.match(/(\d+)/)
     const delayHours = delayMatch ? parseInt(delayMatch[1]) : 2
-    
+
     return {
       totalAffected: estimatedPassengers,
       delayDuration: option.timeline,
@@ -35,7 +35,7 @@ export const calculatePassengerImpact = (rotationPlan, option, flight) => {
       rebookingRequired: false
     }
   }
-  
+
   // Check if this is a cancellation option
   if (optionId.includes('CANCEL') || optionTitle.toLowerCase().includes('cancel')) {
     return {
@@ -47,7 +47,7 @@ export const calculatePassengerImpact = (rotationPlan, option, flight) => {
       alternativeFlights: 'Partner airlines and next-day options'
     }
   }
-  
+
   // For swaps and other options
   return {
     totalAffected: estimatedPassengers,
@@ -62,7 +62,7 @@ export const calculatePassengerImpact = (rotationPlan, option, flight) => {
 export const extractCrewImpact = (rotationPlan, option) => {
   const optionId = String(option.id || '')
   const optionTitle = String(option.title || '')
-  
+
   if (optionId.includes('CREW') || optionTitle.toLowerCase().includes('crew')) {
     return {
       crewChangeRequired: true,
@@ -72,7 +72,7 @@ export const extractCrewImpact = (rotationPlan, option) => {
       regulatoryCompliance: 'Full GCAA compliance'
     }
   }
-  
+
   return {
     crewChangeRequired: false,
     affectedCrewMembers: [],
@@ -85,11 +85,11 @@ export const extractCrewImpact = (rotationPlan, option) => {
 export const extractAircraftImpact = (rotationPlan, option, flight) => {
   const optionId = String(option.id || '')
   const optionTitle = String(option.title || '')
-  
+
   if (optionId.includes('SWAP') || optionTitle.toLowerCase().includes('swap')) {
     const originalAircraft = rotationPlan?.originalPlan?.[0]?.aircraft || 'A6-FDB'
     const newAircraft = rotationPlan?.newPlan?.[0]?.aircraft || 'A6-FDC'
-    
+
     return {
       aircraftChangeRequired: true,
       originalAircraft: originalAircraft,
@@ -99,7 +99,7 @@ export const extractAircraftImpact = (rotationPlan, option, flight) => {
       utilizationImpact: 'Both aircraft utilization optimized'
     }
   }
-  
+
   return {
     aircraftChangeRequired: false,
     originalAircraft: flight?.aircraft || 'Current aircraft',
@@ -112,7 +112,7 @@ export const extractAircraftImpact = (rotationPlan, option, flight) => {
 
 export const extractCostAnalysis = (rotationPlan, option) => {
   const costBreakdown = rotationPlan?.costBreakdown || {}
-  
+
   return {
     directCost: option.cost,
     breakdown: costBreakdown,
@@ -128,9 +128,9 @@ export const calculateTotalPassengers = (originalPlan, flight) => {
 }
 
 export const calculateRevenueAtRisk = (originalPlan) => {
-  const avgRevenue = 125000 // AED per flight
+  const avgRevenue = 125000 // Per flight in airline currency
   const flightCount = originalPlan?.length || 1
-  return `AED ${(avgRevenue * flightCount).toLocaleString()}`
+  return `${currency} ${(avgRevenue * flightCount).toLocaleString()}`
 }
 
 export const countCriticalConflicts = (newPlan) => {
@@ -161,7 +161,7 @@ export const countProtectedFlights = (newPlan) => {
 
 export const generateRecommendedMitigations = (option, rotationPlan) => {
   const mitigations = []
-  
+
   if (option.status === 'recommended') {
     mitigations.push({
       priority: 1,
@@ -171,7 +171,7 @@ export const generateRecommendedMitigations = (option, rotationPlan) => {
       timeline: option.timeline
     })
   }
-  
+
   if (rotationPlan?.cascadeAnalysis?.affectedCrewMembers?.length > 0) {
     mitigations.push({
       priority: 2,
@@ -181,7 +181,7 @@ export const generateRecommendedMitigations = (option, rotationPlan) => {
       timeline: 'Ongoing monitoring'
     })
   }
-  
+
   if (option.title?.toLowerCase().includes('swap')) {
     mitigations.push({
       priority: 3,
@@ -191,7 +191,7 @@ export const generateRecommendedMitigations = (option, rotationPlan) => {
       timeline: '45 minutes'
     })
   }
-  
+
   return mitigations
 }
 
@@ -199,7 +199,7 @@ export const generateComplianceAnalysis = (option, rotationPlan) => {
   let dutyTimeViolations = 0
   let restPeriodViolations = 0
   let totalComplianceScore = 95
-  
+
   const optionId = String(option.id || '')
   const optionTimeline = String(option.timeline || '')
 
@@ -211,12 +211,12 @@ export const generateComplianceAnalysis = (option, rotationPlan) => {
       totalComplianceScore = 85
     }
   }
-  
+
   if (optionId.includes('CREW')) {
     // Crew changes generally maintain compliance
     totalComplianceScore = 98
   }
-  
+
   return {
     dutyTimeViolations,
     restPeriodViolations,
@@ -242,7 +242,7 @@ export const extractImplementationSteps = (rotationPlan) => {
       status: action.status
     }))
   }
-  
+
   return [
     {
       action: 'Initiate recovery option',
@@ -298,7 +298,7 @@ export const generateScheduleImpactAnalysis = (option, flight, scenarioData) => 
   const rotationPlan = option.rotationPlan
   const optionTitle = option.title || ''
   const optionId = String(option.id || '')
-  
+
   // Determine analysis type based on option content
   let analysisType = 'General Impact Analysis'
   if (optionId.includes('SWAP') || optionTitle.toLowerCase().includes('swap')) {
@@ -327,7 +327,7 @@ export const generateScheduleImpactAnalysis = (option, flight, scenarioData) => 
       impact: option.impact,
       status: option.status
     },
-    
+
     // Extract schedule changes from rotation plan
     scheduleChanges: {
       originalPlan: rotationPlan?.originalPlan || [],
@@ -338,16 +338,16 @@ export const generateScheduleImpactAnalysis = (option, flight, scenarioData) => 
 
     // Calculate real passenger impact
     passengerImpact: calculatePassengerImpact(rotationPlan, option, flight),
-    
+
     // Extract crew impact if available
     crewImpact: extractCrewImpact(rotationPlan, option),
-    
+
     // Extract aircraft impact
     aircraftImpact: extractAircraftImpact(rotationPlan, option, flight),
-    
+
     // Cost breakdown from the option
     costAnalysis: extractCostAnalysis(rotationPlan, option),
-    
+
     // Network impact summary with real data
     networkImpactSummary: {
       totalFlightsAffected: rotationPlan?.originalPlan?.length || 0,
@@ -356,13 +356,13 @@ export const generateScheduleImpactAnalysis = (option, flight, scenarioData) => 
       criticalConflicts: countCriticalConflicts(rotationPlan?.newPlan),
       managableConflicts: countManagableConflicts(rotationPlan?.newPlan),
       protectedFlights: countProtectedFlights(rotationPlan?.newPlan),
-      
+
       recommendedMitigations: generateRecommendedMitigations(option, rotationPlan)
     },
-    
+
     // Compliance analysis based on option type
     complianceAnalysis: generateComplianceAnalysis(option, rotationPlan),
-    
+
     // Advantages and considerations from the option
     operationalDetails: {
       advantages: rotationPlan?.advantages || option.advantages || [],
@@ -370,7 +370,7 @@ export const generateScheduleImpactAnalysis = (option, flight, scenarioData) => 
       timeline: option.timeline,
       implementationSteps: extractImplementationSteps(rotationPlan)
     },
-    
+
     // Cost-benefit analysis with real numbers
     costBenefitAnalysis: {
       selectedOption: {

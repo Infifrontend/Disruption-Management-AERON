@@ -1,4 +1,8 @@
 // Helper functions for generating detailed recovery option information
+import { getCurrency, getCurrencySymbol } from '../utils/currencyUtils'
+
+const currency = getCurrency()
+const currencySymbol = getCurrencySymbol()
 
 export const getDetailedDescription = (option, flight) => {
   const flightNumber = flight?.flightNumber || 'FZ123'
@@ -94,7 +98,7 @@ export const getCostBreakdown = (option) => {
     const breakdown : any = [
       {
         category: "Aircraft Positioning",
-        amount: `AED ${Math.floor(baseCost * 0.35).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.35).toLocaleString()}`,
         percentage: 35,
         description: "Alternative aircraft positioning and preparation costs"
       },

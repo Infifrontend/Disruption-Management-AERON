@@ -1,4 +1,5 @@
 // Helper functions for what-if simulation and impact calculations
+import { getCurrency, getCurrencySymbol } from '../utils/currencyUtils'
 
 // Import the helper functions from the recovery option helpers
 import {
@@ -14,6 +15,9 @@ import {
   getEditableParameters,
   getWhatIfScenarios
 } from './recovery-option-helpers'
+
+const currency = getCurrency()
+const currencySymbol = getCurrencySymbol()
 
 export const calculateScenarioImpact = (baseOption:any, scenario:any, editedParams = {}) => {
   const baseCost = parseInt((baseOption.cost || '50000').replace(/[^\d]/g, '') || '50000')
@@ -70,7 +74,7 @@ export const calculateScenarioImpact = (baseOption:any, scenario:any, editedPara
   })
 
   return {
-    cost: `AED ${Math.round(adjustedCost).toLocaleString()}`,
+    cost: `${currency} ${Math.round(adjustedCost).toLocaleString()}`,
     timeline: adjustedTime < 60 ? `${adjustedTime} minutes` : `${(adjustedTime / 60).toFixed(1)} hours`,
     confidence: Math.round(confidence),
     impact: adjustedCost > baseCost ? 'Higher Cost' : adjustedCost < baseCost ? 'Lower Cost' : 'Same Cost',
@@ -108,8 +112,8 @@ export const calculateImpact = (changes:any) => {
   }
 
   return {
-    originalCost: `AED ${baselineCost.toLocaleString()}`,
-    newCost: `AED ${newCost.toLocaleString()}`,
+    originalCost: `${currency} ${baselineCost.toLocaleString()}`,
+    newCost: `${currency} ${newCost.toLocaleString()}`,
     costDifference: newCost - baselineCost,
     originalTime: `${Math.floor(baselineTime / 60)}h ${baselineTime % 60}m`,
     newTime: `${Math.floor(newTime / 60)}h ${newTime % 60}m`,
@@ -156,7 +160,7 @@ export const generateRecoveryOptionDetails = (option:any, flight:any) => {
     return {
       ...option,
       // Ensure cost is properly formatted
-      cost: option.cost || `AED ${baseCost.toLocaleString()}`,
+      cost: option.cost || `${currency} ${baseCost.toLocaleString()}`,
       detailedDescription: getDetailedDescription(option, flight),
       costBreakdown: costBreakdown,
       totalCost: totalCost,
@@ -165,7 +169,7 @@ export const generateRecoveryOptionDetails = (option:any, flight:any) => {
       riskAssessment: getRiskAssessment(option),
       historicalData: {
         ...getHistoricalData(option),
-        averageCost: `AED ${totalCost.toLocaleString()}`
+        averageCost: `${currency} ${totalCost.toLocaleString()}`
       },
       alternativeConsiderations: getAlternativeConsiderations(option, flight),
       technicalSpecs: getTechnicalSpecs(option),
@@ -178,25 +182,25 @@ export const generateRecoveryOptionDetails = (option:any, flight:any) => {
     const defaultCost = 25000
     return {
       ...option,
-      cost: option.cost || `AED ${defaultCost.toLocaleString()}`,
+      cost: option.cost || `${currency} ${defaultCost.toLocaleString()}`,
       totalCost: defaultCost,
       detailedDescription: option.description || 'No description available',
       costBreakdown: [
         {
           category: "Operational Costs",
-          amount: `AED ${Math.floor(defaultCost * 0.6).toLocaleString()}`,
+          amount: `${currency} ${Math.floor(defaultCost * 0.6).toLocaleString()}`,
           percentage: 60,
           description: "Direct operational expenses"
         },
         {
           category: "Passenger Services",
-          amount: `AED ${Math.floor(defaultCost * 0.25).toLocaleString()}`,
+          amount: `${currency} ${Math.floor(defaultCost * 0.25).toLocaleString()}`,
           percentage: 25,
           description: "Passenger accommodation and services"
         },
         {
           category: "Administrative",
-          amount: `AED ${Math.floor(defaultCost * 0.15).toLocaleString()}`,
+          amount: `${currency} ${Math.floor(defaultCost * 0.15).toLocaleString()}`,
           percentage: 15,
           description: "Administrative and documentation costs"
         }
@@ -204,7 +208,7 @@ export const generateRecoveryOptionDetails = (option:any, flight:any) => {
       timelineDetails: [],
       resourceRequirements: [],
       riskAssessment: [],
-      historicalData: { averageCost: `AED ${defaultCost.toLocaleString()}` },
+      historicalData: { averageCost: `${currency} ${defaultCost.toLocaleString()}` },
       alternativeConsiderations: [],
       technicalSpecs: {},
       stakeholderImpact: {},
