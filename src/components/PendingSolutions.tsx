@@ -1257,6 +1257,11 @@ export function PendingSolutions() {
                 </TabsTrigger>
                 <TabsTrigger value="flight">Flight Details</TabsTrigger>
                 <TabsTrigger value="impact">Impact Analysis</TabsTrigger>
+                {selectedPlan?.hasPassengerData && (
+                 <TabsTrigger value="passenger-reaccommodation">
+                   Passenger Re-accommodation
+                 </TabsTrigger>
+                )}
               </TabsList>
 
               <TabsContent value="overview" className="space-y-4">
@@ -1990,6 +1995,14 @@ export function PendingSolutions() {
                                   <div className="grid grid-cols-3 gap-4 text-sm">
                                     <div>
                                       <Label className="text-xs text-muted-foreground">
+                                        Route
+                                      </Label>
+                                      <p className="font-medium">
+                                        {flight.origin} → {flight.destination}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-muted-foreground">
                                         Delay
                                       </Label>
                                       <p className="font-medium text-red-600">
@@ -1998,18 +2011,23 @@ export function PendingSolutions() {
                                     </div>
                                     <div>
                                       <Label className="text-xs text-muted-foreground">
-                                        Passengers
+                                        Departure
                                       </Label>
                                       <p className="font-medium">
-                                        {flight.passengers || 0}
+                                        {new Date(
+                                          flight.departure,
+                                        ).toLocaleString("en-IN", {
+                                          timeZone: "Asia/Kolkata",
+                                          hour12: true,
+                                        })}
                                       </p>
                                     </div>
                                     <div>
                                       <Label className="text-xs text-muted-foreground">
-                                        Status
+                                        Passengers Affected
                                       </Label>
                                       <p className="font-medium">
-                                        {flight.status || "Scheduled"}
+                                        {flight.passengers || 0}
                                       </p>
                                     </div>
                                   </div>
@@ -2031,7 +2049,7 @@ export function PendingSolutions() {
                 </div>
               </TabsContent>
 
-              {/* Conditional Passenger Re-accommodation Tab */}
+              {/* Passenger Re-accommodation Tab - UPDATED */}
               {selectedPlan?.hasPassengerData && (
                 <TabsContent
                   value="passenger-reaccommodation"
@@ -2050,20 +2068,14 @@ export function PendingSolutions() {
                           <div className="text-center p-4 bg-blue-50 rounded-lg">
                             <div className="text-3xl font-bold text-blue-600">
                               {(() => {
-                                // Try to get passenger count from multiple sources
-                                const passengerData = selectedOptionForDetails?.passenger_rebooking || 
-                                                     selectedOptionForDetails?.passenger_information ||
-                                                     selectedOptionForDetails?.passengers ||
-                                                     selectedPlan?.affectedPassengers;
-                                
-                                if (Array.isArray(passengerData)) {
+                                const passengerData = selectedPlan?.passengerInformation || 
+                                                     selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                     selectedPlan?.matchingOption?.passenger_information ||
+                                                     [];
+
+                                if (Array.isArray(passengerData) && passengerData.length > 0) {
                                   return passengerData.length;
                                 }
-                                
-                                if (typeof passengerData === 'number') {
-                                  return passengerData;
-                                }
-                                
                                 return selectedPlan?.affectedPassengers || 167;
                               })()}
                             </div>
@@ -2074,20 +2086,21 @@ export function PendingSolutions() {
                           <div className="text-center p-4 bg-green-50 rounded-lg">
                             <div className="text-3xl font-bold text-green-600">
                               {(() => {
-                                // Count passengers staying on same flight
-                                const passengerData = selectedOptionForDetails?.passenger_rebooking || 
-                                                     selectedOptionForDetails?.passenger_information ||
+                                const passengerData = selectedPlan?.passengerInformation || 
+                                                     selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                     selectedPlan?.matchingOption?.passenger_information ||
                                                      [];
-                                
-                                if (Array.isArray(passengerData)) {
+
+                                if (Array.isArray(passengerData) && passengerData.length > 0) {
                                   const sameFlightCount = passengerData.filter(p => 
                                     p.rebooked_flight === p.original_flight ||
                                     p.rebooking_status === 'same_flight' ||
-                                    !p.rebooked_flight
+                                    p.status === 'same_flight' ||
+                                    !p.rebooked_flight ||
+                                    p.rebooked_flight === selectedPlan.flightNumber
                                   ).length;
-                                  return sameFlightCount || passengerData.length;
+                                  return sameFlightCount;
                                 }
-                                
                                 return selectedPlan?.affectedPassengers || 167;
                               })()}
                             </div>
@@ -2098,20 +2111,21 @@ export function PendingSolutions() {
                           <div className="text-center p-4 bg-red-50 rounded-lg">
                             <div className="text-3xl font-bold text-red-600">
                               {(() => {
-                                // Count passengers moved to other flights
-                                const passengerData = selectedOptionForDetails?.passenger_rebooking || 
-                                                     selectedOptionForDetails?.passenger_information ||
+                                const passengerData = selectedPlan?.passengerInformation || 
+                                                     selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                     selectedPlan?.matchingOption?.passenger_information ||
                                                      [];
-                                
-                                if (Array.isArray(passengerData)) {
+
+                                if (Array.isArray(passengerData) && passengerData.length > 0) {
                                   const otherFlightCount = passengerData.filter(p => 
                                     p.rebooked_flight && 
                                     p.rebooked_flight !== p.original_flight &&
-                                    p.rebooking_status !== 'same_flight'
+                                    p.rebooked_flight !== selectedPlan.flightNumber &&
+                                    p.rebooking_status !== 'same_flight' &&
+                                    p.status !== 'same_flight'
                                   ).length;
                                   return otherFlightCount;
                                 }
-                                
                                 return 0;
                               })()}
                             </div>
@@ -2131,15 +2145,29 @@ export function PendingSolutions() {
                                 <span className="text-sm">Meal Vouchers:</span>
                                 <span className="font-medium">
                                   {(() => {
-                                    const passengerData = selectedOptionForDetails?.passenger_rebooking || [];
-                                    if (Array.isArray(passengerData)) {
-                                      const mealVoucherCount = passengerData.filter(p => 
-                                        p.additional_services?.some(s => 
-                                          typeof s === 'string' ? s.toLowerCase().includes('meal') : 
-                                          s.service_type?.toLowerCase().includes('meal')
-                                        )
-                                      ).length;
+                                    const passengerData = selectedPlan?.passengerInformation || 
+                                                         selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                         selectedPlan?.matchingOption?.passenger_information ||
+                                                         [];
+
+                                    if (Array.isArray(passengerData) && passengerData.length > 0) {
+                                      const mealVoucherCount = passengerData.filter(p => {
+                                        if (p.additional_services && Array.isArray(p.additional_services)) {
+                                          return p.additional_services.some(s => 
+                                            typeof s === 'string' ? s.toLowerCase().includes('meal') : 
+                                            s.service_type?.toLowerCase().includes('meal') ||
+                                            s.type?.toLowerCase().includes('meal')
+                                          );
+                                        }
+                                        return p.services?.includes('meal') || p.meal_voucher || false;
+                                      }).length;
                                       return `${mealVoucherCount} passengers`;
+                                    }
+
+                                    const delayMinutes = selectedPlan?.estimatedDelay || 0;
+                                    if (delayMinutes > 120) {
+                                      const affected = selectedPlan?.affectedPassengers || 167;
+                                      return `${affected} passengers`;
                                     }
                                     return "0 passengers";
                                   })()}
@@ -2151,15 +2179,61 @@ export function PendingSolutions() {
                                 </span>
                                 <span className="font-medium">
                                   {(() => {
-                                    const passengerData = selectedOptionForDetails?.passenger_rebooking || [];
-                                    if (Array.isArray(passengerData)) {
-                                      const hotelCount = passengerData.filter(p => 
-                                        p.additional_services?.some(s => 
-                                          typeof s === 'string' ? s.toLowerCase().includes('hotel') : 
-                                          s.service_type?.toLowerCase().includes('hotel')
-                                        )
-                                      ).length;
+                                    const passengerData = selectedPlan?.passengerInformation || 
+                                                         selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                         selectedPlan?.matchingOption?.passenger_information ||
+                                                         [];
+
+                                    if (Array.isArray(passengerData) && passengerData.length > 0) {
+                                      const hotelCount = passengerData.filter(p => {
+                                        if (p.additional_services && Array.isArray(p.additional_services)) {
+                                          return p.additional_services.some(s => 
+                                            typeof s === 'string' ? s.toLowerCase().includes('hotel') : 
+                                            s.service_type?.toLowerCase().includes('hotel') ||
+                                            s.type?.toLowerCase().includes('hotel') ||
+                                            s.service_type?.toLowerCase().includes('accommodation')
+                                          );
+                                        }
+                                        return p.services?.includes('hotel') || p.hotel_accommodation || false;
+                                      }).length;
                                       return `${hotelCount} passengers`;
+                                    }
+
+                                    const delayMinutes = selectedPlan?.estimatedDelay || 0;
+                                    if (delayMinutes > 240) {
+                                      const affected = selectedPlan?.affectedPassengers || 167;
+                                      return `${Math.floor(affected * 0.8)} passengers`;
+                                    }
+                                    return "0 passengers";
+                                  })()}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm">Transportation:</span>
+                                <span className="font-medium">
+                                  {(() => {
+                                    const passengerData = selectedPlan?.passengerInformation || 
+                                                         selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                         [];
+
+                                    if (Array.isArray(passengerData) && passengerData.length > 0) {
+                                      const transportCount = passengerData.filter(p => {
+                                        if (p.additional_services && Array.isArray(p.additional_services)) {
+                                          return p.additional_services.some(s => 
+                                            typeof s === 'string' ? s.toLowerCase().includes('transport') : 
+                                            s.service_type?.toLowerCase().includes('transport') ||
+                                            s.type?.toLowerCase().includes('transport')
+                                          );
+                                        }
+                                        return p.services?.includes('transport') || p.transportation || false;
+                                      }).length;
+                                      return `${transportCount} passengers`;
+                                    }
+
+                                    const delayMinutes = selectedPlan?.estimatedDelay || 0;
+                                    if (delayMinutes > 240) {
+                                      const affected = selectedPlan?.affectedPassengers || 167;
+                                      return `${Math.floor(affected * 0.8)} passengers`;
                                     }
                                     return "0 passengers";
                                   })()}
@@ -2172,15 +2246,20 @@ export function PendingSolutions() {
                             <div className="space-y-2">
                               <div className="flex justify-between">
                                 <span className="text-sm">
-                                  Compensation per passenger:
+                                  Per passenger avg:
                                 </span>
                                 <span className="font-medium">
                                   {(() => {
-                                    const passengerData = selectedOptionForDetails?.passenger_rebooking || [];
+                                    const passengerData = selectedPlan?.passengerInformation || 
+                                                         selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                         selectedPlan?.matchingOption?.passenger_information ||
+                                                         [];
+
                                     if (Array.isArray(passengerData) && passengerData.length > 0) {
-                                      const avgCompensation = passengerData.reduce((sum, p) => 
-                                        sum + (p.rebooking_cost || 261), 0
-                                      ) / passengerData.length;
+                                      const totalCost = passengerData.reduce((sum, p) => 
+                                        sum + (p.rebooking_cost || p.compensation_amount || 261), 0
+                                      );
+                                      const avgCompensation = totalCost / passengerData.length;
                                       return `AED ${Math.round(avgCompensation)}`;
                                     }
                                     return "AED 261";
@@ -2193,15 +2272,42 @@ export function PendingSolutions() {
                                 </span>
                                 <span className="font-medium">
                                   {(() => {
-                                    const passengerData = selectedOptionForDetails?.passenger_rebooking || [];
+                                    const passengerData = selectedPlan?.passengerInformation || 
+                                                         selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                         selectedPlan?.matchingOption?.passenger_information ||
+                                                         [];
+
                                     if (Array.isArray(passengerData) && passengerData.length > 0) {
                                       const totalCompensation = passengerData.reduce((sum, p) => 
-                                        sum + (p.rebooking_cost || 261), 0
+                                        sum + (p.rebooking_cost || p.compensation_amount || 261), 0
                                       );
                                       return `AED ${totalCompensation.toLocaleString()}`;
                                     }
+
                                     const affected = selectedPlan?.affectedPassengers || 167;
                                     return `AED ${(affected * 261).toLocaleString()}`;
+                                  })()}
+                                </span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-sm">
+                                  Service costs:
+                                </span>
+                                <span className="font-medium">
+                                  {(() => {
+                                    const affected = selectedPlan?.affectedPassengers || 167;
+                                    const delayMinutes = selectedPlan?.estimatedDelay || 0;
+                                    let serviceCost = 0;
+
+                                    if (delayMinutes > 120) {
+                                      serviceCost += affected * 45; // AED 45 per meal voucher
+                                    }
+
+                                    if (delayMinutes > 240) {
+                                      serviceCost += Math.floor(affected * 0.8) * 350; // AED 350 per hotel room
+                                    }
+
+                                    return `AED ${serviceCost.toLocaleString()}`;
                                   })()}
                                 </span>
                               </div>
@@ -2230,15 +2336,11 @@ export function PendingSolutions() {
                           <div className="space-y-4 max-h-64 overflow-y-auto">
                             {(() => {
                               const rawPassengerData =
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions?.full_details
-                                  ?.passenger_rebooking ||
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions
-                                  ?.passenger_rebooking ||
+                                selectedPlan?.passengerInformation ||
+                                selectedPlan?.matchingOption?.passenger_rebooking ||
+                                selectedPlan?.matchingOption?.passenger_information ||
                                 [];
 
-                              // Ensure currentPassengerData is always an array
                               const currentPassengerData = Array.isArray(
                                 rawPassengerData,
                               )
@@ -2256,7 +2358,6 @@ export function PendingSolutions() {
                                 );
                               }
 
-                              // Group passengers by PNR
                               const passengersByPnr =
                                 currentPassengerData.reduce(
                                   (acc, passenger) => {
@@ -2334,7 +2435,7 @@ export function PendingSolutions() {
                                                 </span>
                                                 <span>
                                                   {passenger.original_flight ||
-                                                    plan.flightNumber}
+                                                    selectedPlan.flightNumber}
                                                 </span>
                                               </div>
                                               <div className="flex justify-between">
@@ -2409,12 +2510,9 @@ export function PendingSolutions() {
                             })()}
                             {(() => {
                               const rawPassengerData =
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions?.full_details
-                                  ?.passenger_rebooking ||
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions
-                                  ?.passenger_rebooking ||
+                                selectedPlan?.passengerInformation ||
+                                selectedPlan?.matchingOption?.passenger_rebooking ||
+                                selectedPlan?.matchingOption?.passenger_information ||
                                 [];
 
                               const groupCount = Array.isArray(rawPassengerData)
@@ -2451,7 +2549,6 @@ export function PendingSolutions() {
                       <CardContent>
                         <div className="space-y-4">
                           {(() => {
-                            // Try to get cost breakdown from multiple sources
                             const costBreakdown =
                               selectedPlan.costAnalysis?.breakdown ||
                               selectedPlan.costBreakdown?.breakdown ||
@@ -2473,7 +2570,6 @@ export function PendingSolutions() {
                             ) {
                               return (
                                 <div className="space-y-4">
-                                  {/* Display total if available */}
                                   {costTotal && (
                                     <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                                       <div className="flex justify-between items-center">
@@ -2493,7 +2589,6 @@ export function PendingSolutions() {
                                     </div>
                                   )}
 
-                                  {/* Display breakdown items */}
                                   <div className="space-y-3">
                                     <h4 className="font-medium text-gray-900">
                                       Cost Breakdown:
@@ -2578,7 +2673,6 @@ export function PendingSolutions() {
                               selectedPlan.costBreakdown &&
                               Object.keys(selectedPlan.costBreakdown).length > 0
                             ) {
-                              // Fallback to old format
                               return (
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                   {Object.entries(
@@ -2605,7 +2699,6 @@ export function PendingSolutions() {
                                 </div>
                               );
                             } else {
-                              // Default breakdown when no data available
                               return (
                                 <div className="grid grid-cols-2 gap-4 text-sm">
                                   <div>
@@ -2750,8 +2843,8 @@ export function PendingSolutions() {
                       </CardContent>
                     </Card>
                   </div>
-                </TabsContent>
-               )}
+                </div>
+              </TabsContent>
             </Tabs>
           </DialogContent>
         </Dialog>
@@ -2922,7 +3015,6 @@ export function PendingSolutions() {
                   </CardHeader>
                   <CardContent>
                     {(() => {
-                      // Get crew data from selected option details
                       const crewData =
                         selectedOptionForDetails?.pending_recovery_solutions
                           ?.full_details?.crew_hotel_assignments;
@@ -2949,7 +3041,6 @@ export function PendingSolutions() {
                         <div className="space-y-6">
                           {crewData.map((assignment, index) => (
                             <div key={index} className="space-y-6">
-                              {/* Hotel Overview */}
                               <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                                 <h3 className="text-lg font-semibold">
                                   {assignment.hotel_name}
@@ -2968,7 +3059,6 @@ export function PendingSolutions() {
                                 </p>
                               </div>
 
-                              {/* Crew Members Table */}
                               <div>
                                 <h4 className="font-medium mb-3">
                                   Crew Assignment Details
@@ -3028,7 +3118,6 @@ export function PendingSolutions() {
                                 </div>
                               </div>
 
-                              {/* Transport Info */}
                               {assignment.transport_details && (
                                 <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                                   <h4 className="font-medium mb-2">
@@ -3090,11 +3179,18 @@ export function PendingSolutions() {
                     <div className="grid grid-cols-3 gap-4 mb-6">
                       <div className="text-center p-4 bg-blue-50 rounded-lg">
                         <div className="text-3xl font-bold text-blue-600">
-                          {
-                            selectedOptionForDetails
-                              ?.pending_recovery_solutions?.full_details
-                              ?.passenger_impact?.affected
-                          }
+                          {(() => {
+                            const passengerData = selectedPlan?.passengerInformation || 
+                                                 selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                 selectedPlan?.matchingOption?.passenger_information ||
+                                                 [];
+
+                            if (Array.isArray(passengerData) && passengerData.length > 0) {
+                              return passengerData.length;
+                            }
+
+                            return selectedPlan?.affectedPassengers || 167;
+                          })()}
                         </div>
                         <div className="text-sm text-blue-700">
                           Total Affected
@@ -3102,18 +3198,52 @@ export function PendingSolutions() {
                       </div>
                       <div className="text-center p-4 bg-green-50 rounded-lg">
                         <div className="text-3xl font-bold text-green-600">
-                          {
-                            selectedOptionForDetails
-                              ?.pending_recovery_solutions?.full_details
-                              ?.passenger_impact?.reaccommodated
-                          }
+                          {(() => {
+                            const passengerData = selectedPlan?.passengerInformation || 
+                                                 selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                 selectedPlan?.matchingOption?.passenger_information ||
+                                                 [];
+
+                            if (Array.isArray(passengerData) && passengerData.length > 0) {
+                              const sameFlightCount = passengerData.filter(p => 
+                                p.rebooked_flight === p.original_flight ||
+                                p.rebooking_status === 'same_flight' ||
+                                p.status === 'same_flight' ||
+                                !p.rebooked_flight ||
+                                p.rebooked_flight === selectedPlan.flightNumber
+                              ).length;
+                              return sameFlightCount;
+                            }
+
+                            return selectedPlan?.affectedPassengers || 167;
+                          })()}
                         </div>
                         <div className="text-sm text-green-700">
                           Same Flight
                         </div>
                       </div>
                       <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-3xl font-bold text-red-600">0</div>
+                        <div className="text-3xl font-bold text-red-600">
+                          {(() => {
+                            const passengerData = selectedPlan?.passengerInformation || 
+                                                 selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                 selectedPlan?.matchingOption?.passenger_information ||
+                                                 [];
+
+                            if (Array.isArray(passengerData) && passengerData.length > 0) {
+                              const otherFlightCount = passengerData.filter(p => 
+                                p.rebooked_flight && 
+                                p.rebooked_flight !== p.original_flight &&
+                                p.rebooked_flight !== selectedPlan.flightNumber &&
+                                p.rebooking_status !== 'same_flight' &&
+                                p.status !== 'same_flight'
+                              ).length;
+                              return otherFlightCount;
+                            }
+
+                            return 0;
+                          })()}
+                        </div>
                         <div className="text-sm text-red-700">
                           Other Flights
                         </div>
@@ -3128,13 +3258,101 @@ export function PendingSolutions() {
                         <div className="space-y-2">
                           <div className="flex justify-between">
                             <span className="text-sm">Meal Vouchers:</span>
-                            <span className="font-medium">0 passengers</span>
+                            <span className="font-medium">
+                              {(() => {
+                                const passengerData = selectedPlan?.passengerInformation || 
+                                                     selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                     selectedPlan?.matchingOption?.passenger_information ||
+                                                     [];
+
+                                if (Array.isArray(passengerData) && passengerData.length > 0) {
+                                  const mealVoucherCount = passengerData.filter(p => {
+                                    if (p.additional_services && Array.isArray(p.additional_services)) {
+                                      return p.additional_services.some(s => 
+                                        typeof s === 'string' ? s.toLowerCase().includes('meal') : 
+                                        s.service_type?.toLowerCase().includes('meal') ||
+                                        s.type?.toLowerCase().includes('meal')
+                                      );
+                                    }
+                                    return p.services?.includes('meal') || p.meal_voucher || false;
+                                  }).length;
+                                  return `${mealVoucherCount} passengers`;
+                                }
+
+                                const delayMinutes = selectedPlan?.estimatedDelay || 0;
+                                if (delayMinutes > 120) {
+                                  const affected = selectedPlan?.affectedPassengers || 167;
+                                  return `${affected} passengers`;
+                                }
+                                return "0 passengers";
+                              })()}
+                            </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-sm">
                               Hotel Accommodation:
                             </span>
-                            <span className="font-medium">0 passengers</span>
+                            <span className="font-medium">
+                              {(() => {
+                                const passengerData = selectedPlan?.passengerInformation || 
+                                                     selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                     selectedPlan?.matchingOption?.passenger_information ||
+                                                     [];
+
+                                if (Array.isArray(passengerData) && passengerData.length > 0) {
+                                  const hotelCount = passengerData.filter(p => {
+                                    if (p.additional_services && Array.isArray(p.additional_services)) {
+                                      return p.additional_services.some(s => 
+                                        typeof s === 'string' ? s.toLowerCase().includes('hotel') : 
+                                        s.service_type?.toLowerCase().includes('hotel') ||
+                                        s.type?.toLowerCase().includes('hotel') ||
+                                        s.service_type?.toLowerCase().includes('accommodation')
+                                      );
+                                    }
+                                    return p.services?.includes('hotel') || p.hotel_accommodation || false;
+                                  }).length;
+                                  return `${hotelCount} passengers`;
+                                }
+
+                                const delayMinutes = selectedPlan?.estimatedDelay || 0;
+                                if (delayMinutes > 240) {
+                                  const affected = selectedPlan?.affectedPassengers || 167;
+                                  return `${Math.floor(affected * 0.8)} passengers`;
+                                }
+                                return "0 passengers";
+                              })()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">Transportation:</span>
+                            <span className="font-medium">
+                              {(() => {
+                                const passengerData = selectedPlan?.passengerInformation || 
+                                                     selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                     [];
+
+                                if (Array.isArray(passengerData) && passengerData.length > 0) {
+                                  const transportCount = passengerData.filter(p => {
+                                    if (p.additional_services && Array.isArray(p.additional_services)) {
+                                      return p.additional_services.some(s => 
+                                        typeof s === 'string' ? s.toLowerCase().includes('transport') : 
+                                        s.service_type?.toLowerCase().includes('transport') ||
+                                        s.type?.toLowerCase().includes('transport')
+                                      );
+                                    }
+                                    return p.services?.includes('transport') || p.transportation || false;
+                                  }).length;
+                                  return `${transportCount} passengers`;
+                                }
+
+                                const delayMinutes = selectedPlan?.estimatedDelay || 0;
+                                if (delayMinutes > 240) {
+                                  const affected = selectedPlan?.affectedPassengers || 167;
+                                  return `${Math.floor(affected * 0.8)} passengers`;
+                                }
+                                return "0 passengers";
+                              })()}
+                            </span>
                           </div>
                         </div>
                       </div>
@@ -3143,22 +3361,69 @@ export function PendingSolutions() {
                         <div className="space-y-2">
                           <div className="flex justify-between">
                             <span className="text-sm">
-                              AED{" "}
-                              {
-                                selectedOptionForDetails
-                                  ?.pending_recovery_solutions?.full_details
-                                  ?.passenger_impact?.affected
-                              }{" "}
-                              per passenger (AED261):
+                              Per passenger avg:
                             </span>
                             <span className="font-medium">
-                              AED{" "}
-                              {
-                                selectedOptionForDetails
-                                  .pending_recovery_solutions?.full_details
-                                  ?.passenger_impact?.affected
-                              }{" "}
-                              per passenger (AED261):
+                              {(() => {
+                                const passengerData = selectedPlan?.passengerInformation || 
+                                                     selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                     selectedPlan?.matchingOption?.passenger_information ||
+                                                     [];
+
+                                if (Array.isArray(passengerData) && passengerData.length > 0) {
+                                  const totalCost = passengerData.reduce((sum, p) => 
+                                    sum + (p.rebooking_cost || p.compensation_amount || 261), 0
+                                  );
+                                  const avgCompensation = totalCost / passengerData.length;
+                                  return `AED ${Math.round(avgCompensation)}`;
+                                }
+                                return "AED 261";
+                              })()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">
+                              Total compensation:
+                            </span>
+                            <span className="font-medium">
+                              {(() => {
+                                const passengerData = selectedPlan?.passengerInformation || 
+                                                     selectedPlan?.matchingOption?.passenger_rebooking ||
+                                                     selectedPlan?.matchingOption?.passenger_information ||
+                                                     [];
+
+                                if (Array.isArray(passengerData) && passengerData.length > 0) {
+                                  const totalCompensation = passengerData.reduce((sum, p) => 
+                                    sum + (p.rebooking_cost || p.compensation_amount || 261), 0
+                                  );
+                                  return `AED ${totalCompensation.toLocaleString()}`;
+                                }
+
+                                const affected = selectedPlan?.affectedPassengers || 167;
+                                return `AED ${(affected * 261).toLocaleString()}`;
+                              })()}
+                            </span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-sm">
+                              Service costs:
+                            </span>
+                            <span className="font-medium">
+                              {(() => {
+                                const affected = selectedPlan?.affectedPassengers || 167;
+                                const delayMinutes = selectedPlan?.estimatedDelay || 0;
+                                let serviceCost = 0;
+
+                                if (delayMinutes > 120) {
+                                  serviceCost += affected * 45; // AED 45 per meal voucher
+                                }
+
+                                if (delayMinutes > 240) {
+                                  serviceCost += Math.floor(affected * 0.8) * 350; // AED 350 per hotel room
+                                }
+
+                                return `AED ${serviceCost.toLocaleString()}`;
+                              })()}
                             </span>
                           </div>
                         </div>
@@ -3186,13 +3451,11 @@ export function PendingSolutions() {
                       <div className="space-y-4 max-h-64 overflow-y-auto">
                         {(() => {
                           const rawPassengerData =
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.full_details?.passenger_rebooking ||
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.passenger_rebooking ||
+                            selectedPlan?.passengerInformation ||
+                            selectedPlan?.matchingOption?.passenger_rebooking ||
+                            selectedPlan?.matchingOption?.passenger_information ||
                             [];
 
-                          // Ensure currentPassengerData is always an array
                           const currentPassengerData = Array.isArray(
                             rawPassengerData,
                           )
@@ -3210,7 +3473,6 @@ export function PendingSolutions() {
                             );
                           }
 
-                          // Group passengers by PNR
                           const passengersByPnr =
                             currentPassengerData.reduce(
                               (acc, passenger) => {
@@ -3288,7 +3550,7 @@ export function PendingSolutions() {
                                             </span>
                                             <span>
                                               {passenger.original_flight ||
-                                                plan.flightNumber}
+                                                selectedPlan.flightNumber}
                                             </span>
                                           </div>
                                           <div className="flex justify-between">
@@ -3317,7 +3579,8 @@ export function PendingSolutions() {
                                                 Cost:
                                               </span>
                                               <span className="text-flydubai-orange">
-                                                AED {passenger.rebooking_cost}
+                                                AED{" "}
+                                                {passenger.rebooking_cost}
                                               </span>
                                             </div>
                                           )}
@@ -3330,7 +3593,10 @@ export function PendingSolutions() {
                                                 </span>
                                                 <span className="text-xs">
                                                   {passenger.additional_services.map(
-                                                    (service, serviceIndex) => (
+                                                    (
+                                                      service,
+                                                      serviceIndex,
+                                                    ) => (
                                                       <Badge
                                                         key={serviceIndex}
                                                         variant="outline"
@@ -3359,11 +3625,9 @@ export function PendingSolutions() {
                         })()}
                         {(() => {
                           const rawPassengerData =
-                            selectedOptionForDetails
-                              ?.pending_recovery_solutions?.full_details
-                              ?.passenger_rebooking ||
-                            selectedOptionForDetails?.pending_recovery_solutions
-                              ?.passenger_rebooking ||
+                            selectedPlan?.passengerInformation ||
+                            selectedPlan?.matchingOption?.passenger_rebooking ||
+                            selectedPlan?.matchingOption?.passenger_information ||
                             [];
 
                           const groupCount = Array.isArray(rawPassengerData)
@@ -3410,7 +3674,6 @@ export function PendingSolutions() {
                     </Alert>
 
                     <div className="space-y-6">
-                      {/* Alternate Aircraft Rotation Impact */}
                       <Card>
                         <CardHeader>
                           <CardTitle className="flex items-center gap-2 text-lg">
@@ -3420,7 +3683,6 @@ export function PendingSolutions() {
                         </CardHeader>
                         <CardContent>
                           {(() => {
-                            // Get rotation impact from API data
                             const rotationImpact =
                               selectedOptionForDetails?.matchingOption
                                 ?.rotation_impact ||
@@ -3529,7 +3791,6 @@ export function PendingSolutions() {
                         </CardContent>
                       </Card>
 
-                      {/* Crew Reassignment Rotation Impact */}
                       <Card>
                         <CardHeader>
                           <CardTitle className="flex items-center gap-2 text-lg">
@@ -3539,7 +3800,6 @@ export function PendingSolutions() {
                         </CardHeader>
                         <CardContent>
                           {(() => {
-                            // Get crew data from API - check multiple possible locations
                             const crewData =
                               selectedOptionForDetails
                                 ?.pending_recovery_solutions?.full_details
@@ -3548,14 +3808,12 @@ export function PendingSolutions() {
                               selectedPlan?.assignedCrew ||
                               [];
 
-                            // If we have crew hotel assignments, extract crew members
                             let crewMembers = [];
                             if (
                               Array.isArray(crewData) &&
                               crewData.length > 0 &&
                               crewData[0].crew_member
                             ) {
-                              // Extract from crew hotel assignments
                               crewMembers = crewData.flatMap((assignment) =>
                                 assignment.crew_member.map((crew) => ({
                                   name: crew.name,
@@ -3567,11 +3825,9 @@ export function PendingSolutions() {
                                 })),
                               );
                             } else if (Array.isArray(crewData)) {
-                              // Use direct crew data
                               crewMembers = crewData;
                             }
 
-                            // Fallback crew data if no API data
                             if (crewMembers.length === 0) {
                               crewMembers = [
                                 {
@@ -3594,7 +3850,6 @@ export function PendingSolutions() {
                             return (
                               <div className="space-y-4">
                                 {crewMembers.map((crewMember, index) => {
-                                  // Generate rotation impact for each crew member based on role with safe handling
                                   const crewRotationImpact = Array.isArray(crewMember.rotation_impact)
                                     ? crewMember.rotation_impact
                                     : [
