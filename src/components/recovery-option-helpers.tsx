@@ -105,19 +105,19 @@ export const getCostBreakdown = (option) => {
       },
       {
         category: "Ground Operations",
-        amount: `AED ${Math.floor(baseCost * 0.25).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.25).toLocaleString()}`,
         percentage: 25,
         description: "Ground handling, gate changes, and ramp services"
       },
       {
         category: "Passenger Transfer",
-        amount: `AED ${Math.floor(baseCost * 0.25).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.25).toLocaleString()}`,
         percentage: 25,
         description: "Passenger transfer operations and services"
       },
       {
         category: "Administrative",
-        amount: `AED ${Math.floor(baseCost * 0.15).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.15).toLocaleString()}`,
         percentage: 15,
         description: "Documentation, coordination, and system updates"
       }
@@ -128,25 +128,25 @@ export const getCostBreakdown = (option) => {
     const breakdown : any = [
       {
         category: "Crew Positioning",
-        amount: `AED ${Math.floor(baseCost * 0.40).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.40).toLocaleString()}`,
         percentage: 40,
         description: "Standby crew positioning and transportation"
       },
       {
         category: "Overtime Costs",
-        amount: `AED ${Math.floor(baseCost * 0.30).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.30).toLocaleString()}`,
         percentage: 30,
         description: "Extended duty time and overtime compensation"
       },
       {
         category: "Accommodation",
-        amount: `AED ${Math.floor(baseCost * 0.20).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.20).toLocaleString()}`,
         percentage: 20,
         description: "Crew rest facilities and accommodation"
       },
       {
         category: "Administrative",
-        amount: `AED ${Math.floor(baseCost * 0.10).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.10).toLocaleString()}`,
         percentage: 10,
         description: "Crew scheduling updates and documentation"
       }
@@ -157,25 +157,25 @@ export const getCostBreakdown = (option) => {
     const breakdown : any = [
       {
         category: "Passenger Services",
-        amount: `AED ${Math.floor(baseCost * 0.45).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.45).toLocaleString()}`,
         percentage: 45,
         description: "Meal vouchers, refreshments, and passenger amenities"
       },
       {
         category: "Airport Charges",
-        amount: `AED ${Math.floor(baseCost * 0.25).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.25).toLocaleString()}`,
         percentage: 25,
         description: "Extended parking, gate fees, and facility charges"
       },
       {
         category: "Crew Costs",
-        amount: `AED ${Math.floor(baseCost * 0.20).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.20).toLocaleString()}`,
         percentage: 20,
         description: "Extended crew duty time and rest requirements"
       },
       {
         category: "Fuel & Operations",
-        amount: `AED ${Math.floor(baseCost * 0.10).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.10).toLocaleString()}`,
         percentage: 10,
         description: "Additional fuel and operational overhead"
       }
@@ -186,25 +186,25 @@ export const getCostBreakdown = (option) => {
     const breakdown : any = [
       {
         category: "Passenger Compensation",
-        amount: `AED ${Math.floor(baseCost * 0.60).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.60).toLocaleString()}`,
         percentage: 60,
         description: "EU261 compensation and refund processing"
       },
       {
         category: "Rebooking Services",
-        amount: `AED ${Math.floor(baseCost * 0.20).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.20).toLocaleString()}`,
         percentage: 20,
         description: "Alternative flight arrangements and partner airline costs"
       },
       {
         category: "Hotel & Transport",
-        amount: `AED ${Math.floor(baseCost * 0.15).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.15).toLocaleString()}`,
         percentage: 15,
         description: "Overnight accommodation and ground transportation"
       },
       {
         category: "Administrative",
-        amount: `AED ${Math.floor(baseCost * 0.05).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.05).toLocaleString()}`,
         percentage: 5,
         description: "Processing fees and documentation"
       }
@@ -216,25 +216,25 @@ export const getCostBreakdown = (option) => {
     const breakdown : any = [
       {
         category: "Operational Costs",
-        amount: `AED ${Math.floor(baseCost * 0.50).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.50).toLocaleString()}`,
         percentage: 50,
         description: "Direct operational expenses and resource costs"
       },
       {
         category: "Passenger Services",
-        amount: `AED ${Math.floor(baseCost * 0.30).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.30).toLocaleString()}`,
         percentage: 30,
         description: "Passenger accommodation and service recovery"
       },
       {
         category: "Coordination",
-        amount: `AED ${Math.floor(baseCost * 0.15).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.15).toLocaleString()}`,
         percentage: 15,
         description: "Inter-departmental coordination and communication"
       },
       {
         category: "Administrative",
-        amount: `AED ${Math.floor(baseCost * 0.05).toLocaleString()}`,
+        amount: `${currency} ${Math.floor(baseCost * 0.05).toLocaleString()}`,
         percentage: 5,
         description: "Documentation and regulatory compliance"
       }

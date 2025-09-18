@@ -47,7 +47,7 @@ export const calculateScenarioImpact = (baseOption:any, scenario:any, editedPara
 
   // Apply parameter edits
   Object.keys(editedParams).forEach(param => {
-    
+
     const paramValue = (editedParams as Record<string, any>)[param]
 
     // Apply parameter-specific adjustments
@@ -142,7 +142,7 @@ export const generateRecoveryOptionDetails = (option:any, flight:any) => {
     }
 
     const baseCost = extractCostFromString(option.cost) || 25000
-    
+
     // Generate cost breakdown with proper totals
     const costBreakdown = getCostBreakdown({
       ...option,

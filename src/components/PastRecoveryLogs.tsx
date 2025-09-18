@@ -481,10 +481,10 @@ export function PastRecoveryLogs() {
   };
 
   const formatCurrency = (amount: number | undefined) => {
-    if (amount === undefined) return "AED 0";
-    return new Intl.NumberFormat("en-AE", {
+    if (amount === undefined) return `${airlineConfig.currency} 0`;
+    return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "AED",
+      currency: airlineConfig.currency,
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
