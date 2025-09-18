@@ -164,9 +164,11 @@ export function PassengerRebooking({ context, onClearContext }) {
   const selectedFlight = context?.selectedFlight || context?.flight;
   const recoveryOption = context?.recoveryOption;
   const fromExecution = context?.fromExecution;
-
+ 
+  
   // Extract preserved selections for easier access
   const preservedSelections = context?.storedSelections; // Renamed for clarity
+  
   const activeContext = context; // Use a distinct name for context
   console.log(context, "Context information");
   // Load reassigned crew data from context if available
