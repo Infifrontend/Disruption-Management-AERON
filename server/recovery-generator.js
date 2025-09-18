@@ -1,4 +1,4 @@
-import config, { getCurrency } from "./config/airlineConfig.js"
+import config from "./config/airlineConfig.js"
 // File system imports removed - using embedded data instead
 // available crew dummy information
 const availableDummyCrew = [
@@ -4255,7 +4255,7 @@ const generateCrewIssueRecovery = (flight) => {
     ],
     impact_area: option.impact_area || ["crew"],
     impact_summary:
-      option.impact_summary ||
+      // option.impact_summary ||
       `Crew issue recovery for ${flight.flightNumber || flight.flight_number}: Standard crew replacement procedure with qualified personnel.`,
     resourceRequirements: option.resource_requirements || [],
     costBreakdown: option.cost_breakdown || {},
@@ -4350,7 +4350,7 @@ const generateWeatherIssueRecovery = (flight) => {
     ],
     impact_area: option.impact_area || ["weather", "schedule"],
     impact_summary:
-      option.impact_summary ||
+      // option.impact_summary ||
       `Weather delay recovery for ${flight.flightNumber || flight.flight_number}: Weather-related operational adjustments with passenger care provisions.`,
     resourceRequirements: option.resource_requirements || [],
     costBreakdown: option.cost_breakdown || {},
