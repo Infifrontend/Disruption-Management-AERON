@@ -48,8 +48,6 @@ import {
 } from 'lucide-react'
 
 import { useAirlineTheme } from "../hooks/useAirlineTheme";
- const { airlineConfig } = useAirlineTheme();
-
 
 // Enhanced mock aircraft data for Flydubai with 25+ aircraft and comprehensive flight schedules
 const aircraftFleet = [
@@ -389,6 +387,8 @@ const aircraftFleet = [
 ]
 
 export function FlightTrackingGantt() {
+  const { airlineConfig } = useAirlineTheme();
+  
   // State management
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [timeRange, setTimeRange] = useState('24h') // 24h, 48h, 7d
