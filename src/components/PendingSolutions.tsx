@@ -3191,286 +3191,273 @@ export function PendingSolutions() {
                     </Alert>
 
                     <div className="space-y-6">
-                      {/* Alternate Aircraft Impact */}
-                      {selectedPlan?.matchingOption?.rotation_plan?.aircraft ||
-                      selectedPlan?.rotationImpact?.aircraft ? (
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-lg">
-                              <Plane className="h-5 w-5 text-blue-600" />
-                              Alternate Aircraft Rotation Impact
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            {(() => {
-                              const aircraftData = selectedPlan?.matchingOption?.rotation_plan?.aircraft || 
-                                                 selectedPlan?.rotationImpact?.aircraft || [];
+                      {/* Alternate Aircraft Rotation Impact */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Plane className="h-5 w-5 text-blue-600" />
+                            Alternate Aircraft Rotation Impact
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {(() => {
+                            // Get rotation impact from API data
+                            const rotationImpact = selectedOptionForDetails?.matchingOption?.rotation_impact || 
+                                                 selectedOptionForDetails?.rotationImpact?.rotation_impact ||
+                                                 selectedPlan?.matchingOption?.rotation_impact || 
+                                                 selectedPlan?.rotationImpact?.rotation_impact || [
+                              {
+                                delay: "15 min",
+                                impact: "Medium Impact",
+                                origin: "Dubai",
+                                reason: "Aircraft swap coordination delay",
+                                status: "Delayed",
+                                arrival: "2025-01-12T14:30:00+04:00",
+                                departure: "2025-01-12T09:15:00+04:00",
+                                passengers: 167,
+                                destination: "Mumbai",
+                                origin_code: "DXB",
+                                flightNumber: selectedOptionForDetails?.flightNumber || "FZ445",
+                                destination_code: "BOM",
+                              },
+                              {
+                                delay: "30 min",
+                                impact: "High Impact",
+                                origin: "Mumbai",
+                                reason: "Late aircraft positioning affects return flight",
+                                status: "Delayed",
+                                arrival: "2025-01-13T02:45:00+04:00",
+                                departure: "2025-01-12T20:15:00+05:30",
+                                passengers: 156,
+                                destination: "Dubai",
+                                origin_code: "BOM",
+                                flightNumber: "FZ446",
+                                destination_code: "DXB",
+                              },
+                            ];
 
-                              const rotationImpact = selectedPlan?.matchingOption?.rotation_impact || [
-                                {
-                                  delay: "15 min",
-                                  impact: "Medium Impact",
-                                  origin: "Dubai",
-                                  reason: "Aircraft swap coordination delay",
-                                  status: "Delayed",
-                                  arrival: "2025-01-12T14:30:00+04:00",
-                                  departure: "2025-01-12T09:15:00+04:00",
-                                  passengers: 167,
-                                  destination: "Mumbai",
-                                  origin_code: "DXB",
-                                  flightNumber: selectedPlan.flightNumber || "FZ445",
-                                  destination_code: "BOM",
-                                },
-                                {
-                                  delay: "30 min",
-                                  impact: "High Impact",
-                                  origin: "Mumbai",
-                                  reason: "Late aircraft positioning affects return flight",
-                                  status: "Delayed",
-                                  arrival: "2025-01-13T02:45:00+04:00",
-                                  departure: "2025-01-12T20:15:00+05:30",
-                                  passengers: 156,
-                                  destination: "Dubai",
-                                  origin_code: "BOM",
-                                  flightNumber: "FZ446",
-                                  destination_code: "DXB",
-                                },
-                              ];
+                            if (!Array.isArray(rotationImpact) || rotationImpact.length === 0) {
+                              return (
+                                <div className="text-center py-6">
+                                  <Plane className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+                                  <p className="text-muted-foreground">No alternate aircraft impact data available</p>
+                                </div>
+                              );
+                            }
 
-                              if (!Array.isArray(rotationImpact) || rotationImpact.length === 0) {
-                                return (
-                                  <div className="text-center py-6">
-                                    <Plane className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                                    <p className="text-muted-foreground">No alternate aircraft impact data available</p>
-                                  </div>
-                                );
-                              }
-
-                              return rotationImpact.map((flight, index) => (
-                                <div key={index} className="p-4 border rounded-lg bg-white space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                      <Plane className="h-4 w-4 text-blue-600" />
-                                      <span className="font-semibold">{flight.flightNumber}</span>
-                                      <Badge variant="outline" className="text-xs">
-                                        {flight.origin_code} → {flight.destination_code}
-                                      </Badge>
-                                    </div>
-                                    <Badge className={
-                                      flight.impact === "High Impact" ? "bg-red-100 text-red-700" :
-                                      flight.impact === "Medium Impact" ? "bg-yellow-100 text-yellow-700" :
-                                      "bg-green-100 text-green-700"
-                                    }>
-                                      {flight.impact}
+                            return rotationImpact.map((flight, index) => (
+                              <div key={index} className="p-4 border rounded-lg bg-white space-y-3 mb-4">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2">
+                                    <Plane className="h-4 w-4 text-blue-600" />
+                                    <span className="font-semibold">{flight.flightNumber}</span>
+                                    <Badge variant="outline" className="text-xs">
+                                      {flight.origin_code} → {flight.destination_code}
                                     </Badge>
                                   </div>
+                                  <Badge className={
+                                    flight.impact === "High Impact" ? "bg-red-100 text-red-700" :
+                                    flight.impact === "Medium Impact" ? "bg-yellow-100 text-yellow-700" :
+                                    "bg-green-100 text-green-700"
+                                  }>
+                                    {flight.impact}
+                                  </Badge>
+                                </div>
 
-                                  <div className="grid grid-cols-2 gap-4 text-sm">
-                                    <div>
-                                      <Label className="text-xs text-muted-foreground">Route</Label>
-                                      <p className="font-medium">{flight.origin} → {flight.destination}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-xs text-muted-foreground">Delay</Label>
-                                      <p className="font-medium text-red-600">{flight.delay}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-xs text-muted-foreground">Departure</Label>
-                                      <p className="font-medium">{new Date(flight.departure).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true })}</p>
-                                    </div>
-                                    <div>
-                                      <Label className="text-xs text-muted-foreground">Passengers Affected</Label>
-                                      <p className="font-medium">{flight.passengers}</p>
-                                    </div>
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                  <div>
+                                    <Label className="text-xs text-muted-foreground">Route</Label>
+                                    <p className="font-medium">{flight.origin} → {flight.destination}</p>
                                   </div>
-
-                                  <div className="p-3 bg-gray-50 rounded">
-                                    <Label className="text-xs text-muted-foreground">Impact Reason</Label>
-                                    <p className="text-sm mt-1">{flight.reason}</p>
+                                  <div>
+                                    <Label className="text-xs text-muted-foreground">Delay</Label>
+                                    <p className="font-medium text-red-600">{flight.delay}</p>
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs text-muted-foreground">Departure</Label>
+                                    <p className="font-medium">{new Date(flight.departure).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', hour12: true })}</p>
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs text-muted-foreground">Passengers Affected</Label>
+                                    <p className="font-medium">{flight.passengers}</p>
                                   </div>
                                 </div>
-                              ));
-                            })()}
-                          </CardContent>
-                        </Card>
-                      ) : null}
 
-                      {/* Crew Reassignment Impact */}
-                      {selectedPlan?.assignedCrew && selectedPlan.assignedCrew.length > 0 ? (
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-lg">
-                              <Users className="h-5 w-5 text-purple-600" />
-                              Crew Reassignment Impact
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-4">
-                              {selectedPlan.assignedCrew.map((crewMember, index) => {
-                                // Generate rotation impact for each crew member
-                                const crewRotationImpact = crewMember.rotation_impact || [
-                                  {
-                                    delay: "On Time",
-                                    impact: crewMember.role === "Captain" ? "High Impact" : "Medium Impact",
-                                    origin: "Dubai",
-                                    reason: `${crewMember.role} reassignment - ${crewMember.role === "Captain" ? "Critical crew position requires qualified replacement" : "Standard crew rotation adjustment"}`,
-                                    status: "On Time",
-                                    arrival: "2025-01-12T15:30:00+04:00",
-                                    departure: "2025-01-12T07:30:00+04:00",
-                                    passengers: 167,
-                                    destination: "Mumbai",
-                                    origin_code: "DXB",
-                                    flightNumber: selectedPlan.flightNumber || "FZ445",
-                                    destination_code: "BOM",
-                                    dutyTime: crewMember.dutyTime || "8h 30m",
-                                    restPeriod: crewMember.restPeriod || "12h minimum",
-                                    qualification: crewMember.qualification || "Type rated",
-                                  },
-                                  {
-                                    delay: crewMember.role === "Captain" ? "20 min" : "10 min",
-                                    impact: crewMember.role === "Captain" ? "High Impact" : "Low Impact",
-                                    origin: "Mumbai",
-                                    reason: `Return flight affected by ${crewMember.role.toLowerCase()} duty time restrictions`,
-                                    status: crewMember.role === "Captain" ? "Delayed" : "On Time",
-                                    arrival: "2025-01-13T02:45:00+04:00",
-                                    departure: "2025-01-12T20:15:00+05:30",
-                                    passengers: 156,
-                                    destination: "Dubai",
-                                    origin_code: "BOM",
-                                    flightNumber: "FZ446",
-                                    destination_code: "DXB",
-                                    dutyTime: "12h 15m",
-                                    restPeriod: "16h required",
-                                    qualification: "Compliant",
-                                  },
-                                ];
+                                <div className="p-3 bg-gray-50 rounded">
+                                  <Label className="text-xs text-muted-foreground">Impact Reason</Label>
+                                  <p className="text-sm mt-1">{flight.reason}</p>
+                                </div>
+                              </div>
+                            ));
+                          })()}
+                        </CardContent>
+                      </Card>
 
-                                return (
-                                  <div key={index} className="border rounded-lg p-4 space-y-3">
-                                    <div className="flex items-center justify-between mb-3">
-                                      <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-purple-100 rounded">
-                                          <UserCheck className="h-4 w-4 text-purple-600" />
-                                        </div>
-                                        <div>
-                                          <h4 className="font-semibold">{crewMember.name}</h4>
-                                          <Badge variant="outline" className="text-xs">
-                                            {crewMember.role}
-                                          </Badge>
-                                        </div>
-                                      </div>
-                                      <div className="text-right text-sm">
-                                        <p className="text-muted-foreground">Base: {crewMember.base || "DXB"}</p>
-                                        <p                className="text-muted-foreground">Status: {crewMember.status || "Available"}</p>
-                                      </div>
-                                    </div>
+                      {/* Crew Reassignment Rotation Impact */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Users className="h-5 w-5 text-purple-600" />
+                            Crew Reassignment Rotation Impact
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {(() => {
+                            // Get crew data from API - check multiple possible locations
+                            const crewData = selectedOptionForDetails?.pending_recovery_solutions?.full_details?.crew_hotel_assignments ||
+                                           selectedOptionForDetails?.assignedCrew ||
+                                           selectedPlan?.assignedCrew || [];
 
-                                    <div className="space-y-3">
-                                      {crewRotationImpact.map((flight, flightIndex) => (
-                                        <div key={flightIndex} className="p-3 border rounded bg-purple-50 space-y-2">
-                                          <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                              <Plane className="h-4 w-4 text-purple-600" />
-                                              <span className="font-medium">{flight.flightNumber}</span>
-                                              <Badge variant="outline" className="text-xs">
-                                                {flight.origin_code} → {flight.destination_code}
-                                              </Badge>
-                                            </div>
-                                            <Badge className={
-                                              flight.impact === "High Impact" ? "bg-red-100 text-red-700 border-red-200" :
-                                              flight.impact === "Medium Impact" ? "bg-yellow-100 text-yellow-700 border-yellow-200" :
-                                              "bg-green-100 text-green-700 border-green-200"
-                                            }>
-                                              {flight.impact}
+                            // If we have crew hotel assignments, extract crew members
+                            let crewMembers = [];
+                            if (Array.isArray(crewData) && crewData.length > 0 && crewData[0].crew_member) {
+                              // Extract from crew hotel assignments
+                              crewMembers = crewData.flatMap(assignment => 
+                                assignment.crew_member.map(crew => ({
+                                  name: crew.name,
+                                  role: crew.rank,
+                                  base: crew.base,
+                                  status: "Reassigned",
+                                  employeeId: crew.employee_id,
+                                  contact: crew.contact_number
+                                }))
+                              );
+                            } else if (Array.isArray(crewData)) {
+                              // Use direct crew data
+                              crewMembers = crewData;
+                            }
+
+                            // Fallback crew data if no API data
+                            if (crewMembers.length === 0) {
+                              crewMembers = [
+                                {
+                                  name: "Capt. Ahmed Hassan",
+                                  role: "Captain", 
+                                  base: "DXB",
+                                  status: "Reassigned",
+                                  employeeId: "FZ001234",
+                                },
+                                {
+                                  name: "F/O Sarah Khan",
+                                  role: "First Officer",
+                                  base: "DXB", 
+                                  status: "Reassigned",
+                                  employeeId: "FZ005678",
+                                }
+                              ];
+                            }
+
+                            return (
+                              <div className="space-y-4">
+                                {crewMembers.map((crewMember, index) => {
+                                  // Generate rotation impact for each crew member based on role
+                                  const crewRotationImpact = crewMember.rotation_impact || [
+                                    {
+                                      delay: "On Time",
+                                      impact: crewMember.role === "Captain" ? "High Impact" : "Medium Impact",
+                                      origin: "Dubai",
+                                      reason: `${crewMember.role} reassignment - ${crewMember.role === "Captain" ? "Critical crew position requires qualified replacement" : "Standard crew rotation adjustment"}`,
+                                      status: "On Time",
+                                      arrival: "2025-01-12T15:30:00+04:00",
+                                      departure: "2025-01-12T07:30:00+04:00",
+                                      passengers: 167,
+                                      destination: "Mumbai",
+                                      origin_code: "DXB",
+                                      flightNumber: selectedOptionForDetails?.flightNumber || "FZ445",
+                                      destination_code: "BOM",
+                                      dutyTime: crewMember.dutyTime || "8h 30m",
+                                      restPeriod: crewMember.restPeriod || "12h minimum",
+                                      qualification: crewMember.qualification || "Type rated",
+                                    },
+                                    {
+                                      delay: crewMember.role === "Captain" ? "20 min" : "10 min",
+                                      impact: crewMember.role === "Captain" ? "High Impact" : "Low Impact",
+                                      origin: "Mumbai",
+                                      reason: `Return flight affected by ${crewMember.role.toLowerCase()} duty time restrictions`,
+                                      status: crewMember.role === "Captain" ? "Delayed" : "On Time",
+                                      arrival: "2025-01-13T02:45:00+04:00",
+                                      departure: "2025-01-12T20:15:00+05:30",
+                                      passengers: 156,
+                                      destination: "Dubai",
+                                      origin_code: "BOM",
+                                      flightNumber: "FZ446",
+                                      destination_code: "DXB",
+                                      dutyTime: "12h 15m",
+                                      restPeriod: "16h required",
+                                      qualification: "Compliant",
+                                    },
+                                  ];
+
+                                  return (
+                                    <div key={index} className="border rounded-lg p-4 space-y-3">
+                                      <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                          <div className="p-2 bg-purple-100 rounded">
+                                            <UserCheck className="h-4 w-4 text-purple-600" />
+                                          </div>
+                                          <div>
+                                            <h4 className="font-semibold">{crewMember.name}</h4>
+                                            <Badge variant="outline" className="text-xs">
+                                              {crewMember.role}
                                             </Badge>
                                           </div>
-
-                                          <div className="grid grid-cols-3 gap-3 text-xs">
-                                            <div>
-                                              <Label className="text-muted-foreground">Delay</Label>
-                                              <p className="font-medium">{flight.delay}</p>
-                                            </div>
-                                            <div>
-                                              <Label className="text-muted-foreground">Duty Time</Label>
-                                              <p className="font-medium">{flight.dutyTime}</p>
-                                            </div>
-                                            <div>
-                                              <Label className="text-muted-foreground">Rest Period</Label>
-                                              <p className="font-medium">{flight.restPeriod}</p>
-                                            </div>
-                                          </div>
-
-                                          <div className="p-2 bg-white rounded text-xs">
-                                            <Label className="text-muted-foreground">Reason</Label>
-                                            <p className="mt-1">{flight.reason}</p>
-                                          </div>
                                         </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ) : null}
+                                        <div className="text-right text-sm">
+                                          <p className="text-muted-foreground">Base: {crewMember.base || "DXB"}</p>
+                                          <p className="text-muted-foreground">Status: {crewMember.status || "Available"}</p>
+                                        </div>
+                                      </div>
 
-                      {/* General Rotation Impact (fallback) */}
-                      {selectedPlan?.rotationImpact && 
-                       Object.keys(selectedPlan.rotationImpact).length > 0 &&
-                       !selectedPlan?.matchingOption?.rotation_plan?.aircraft &&
-                       (!selectedPlan?.assignedCrew || selectedPlan.assignedCrew.length === 0) ? (
-                        <Card>
-                          <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                              <Activity className="h-5 w-5" />
-                              General Rotation Impact
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="space-y-3">
-                              {Object.entries(selectedPlan.rotationImpact).map(
-                                ([key, value]) => (
-                                  <div
-                                    key={key}
-                                    className="p-3 border rounded-lg bg-gray-50"
-                                  >
-                                    <h4 className="font-medium text-sm capitalize mb-2">
-                                      {key.replace(/([A-Z])/g, " $1").trim()}
-                                    </h4>
-                                    <div className="text-sm text-muted-foreground">
-                                      {typeof value === "object" &&
-                                      value !== null ? (
-                                        <pre className="whitespace-pre-wrap">
-                                          {JSON.stringify(value, null, 2)}
-                                        </pre>
-                                      ) : (
-                                        <span>{String(value)}</span>
-                                      )}
-                                    </div>
-                                  </div>
-                                ),
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ) : null}
+                                      <div className="space-y-3">
+                                        {crewRotationImpact.map((flight, flightIndex) => (
+                                          <div key={flightIndex} className="p-3 border rounded bg-purple-50 space-y-2">
+                                            <div className="flex items-center justify-between">
+                                              <div className="flex items-center gap-2">
+                                                <Plane className="h-4 w-4 text-purple-600" />
+                                                <span className="font-medium">{flight.flightNumber}</span>
+                                                <Badge variant="outline" className="text-xs">
+                                                  {flight.origin_code} → {flight.destination_code}
+                                                </Badge>
+                                              </div>
+                                              <Badge className={
+                                                flight.impact === "High Impact" ? "bg-red-100 text-red-700 border-red-200" :
+                                                flight.impact === "Medium Impact" ? "bg-yellow-100 text-yellow-700 border-yellow-200" :
+                                                "bg-green-100 text-green-700 border-green-200"
+                                              }>
+                                                {flight.impact}
+                                              </Badge>
+                                            </div>
 
-                      {/* No data available */}
-                      {(!selectedPlan?.matchingOption?.rotation_plan?.aircraft &&
-                        (!selectedPlan?.assignedCrew || selectedPlan.assignedCrew.length === 0) &&
-                        (!selectedPlan?.rotationImpact || Object.keys(selectedPlan.rotationImpact).length === 0)) ? (
-                        <div className="text-center py-12">
-                          <Activity className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-                          <h3 className="text-xl font-semibold mb-2 text-gray-600">
-                            No Rotation Impact Data Available
-                          </h3>
-                          <p className="text-muted-foreground max-w-md mx-auto">
-                            Rotation impact analysis for alternate aircraft and crew reassignments 
-                            will be displayed here once the recovery option data is processed.
-                          </p>
-                        </div>
-                      ) : null}
+                                            <div className="grid grid-cols-3 gap-3 text-xs">
+                                              <div>
+                                                <Label className="text-muted-foreground">Delay</Label>
+                                                <p className="font-medium">{flight.delay}</p>
+                                              </div>
+                                              <div>
+                                                <Label className="text-muted-foreground">Duty Time</Label>
+                                                <p className="font-medium">{flight.dutyTime}</p>
+                                              </div>
+                                              <div>
+                                                <Label className="text-muted-foreground">Rest Period</Label>
+                                                <p className="font-medium">{flight.restPeriod}</p>
+                                              </div>
+                                            </div>
+
+                                            <div className="p-2 bg-white rounded text-xs">
+                                              <Label className="text-muted-foreground">Reason</Label>
+                                              <p className="mt-1">{flight.reason}</p>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()}
+                        </CardContent>
+                      </Card>
                     </div>
                   </CardContent>
                 </Card>
