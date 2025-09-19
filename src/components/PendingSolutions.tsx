@@ -1018,7 +1018,10 @@ export function PendingSolutions() {
             className="flex items-center gap-1 whitespace-nowrap"
           >
             <span>Critical</span>
-            <Badge variant="destructive" className="ml-1 flex-shrink-0  text-red-600">
+            <Badge
+              variant="destructive"
+              className="ml-1 flex-shrink-0  text-red-600"
+            >
               {tabCounts.critical}
             </Badge>
           </TabsTrigger>
@@ -1133,7 +1136,6 @@ export function PendingSolutions() {
                         </div>
 
                         <div className="flex items-center gap-4 mb-4">
-
                           <div className="flex items-center gap-2">
                             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm">
@@ -1589,13 +1591,18 @@ export function PendingSolutions() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {selectedPlan?.recoveryOptions && selectedPlan.recoveryOptions.length > 0 ? (
+                    {selectedPlan?.recoveryOptions &&
+                    selectedPlan.recoveryOptions.length > 0 ? (
                       <div className="overflow-x-auto">
                         <Table>
                           <TableHeader>
                             <TableRow>
-                              <TableHead className="w-[250px]">Option</TableHead>
-                              <TableHead>Cost ({airlineConfig.currency})</TableHead>
+                              <TableHead className="w-[250px]">
+                                Option
+                              </TableHead>
+                              <TableHead>
+                                Cost ({airlineConfig.currency})
+                              </TableHead>
                               <TableHead>Timeline</TableHead>
                               <TableHead>Confidence</TableHead>
                               <TableHead>Impact</TableHead>
@@ -1603,63 +1610,101 @@ export function PendingSolutions() {
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {selectedPlan.recoveryOptions.map((option, index) => {
-                              const isSelected = selectedPlan.optionId && (
-                                option.id === selectedPlan.optionId ||
-                                option.option_id === selectedPlan.optionId ||
-                                String(option.id) === String(selectedPlan.optionId) ||
-                                String(option.option_id) === String(selectedPlan.optionId)
-                              );
+                            {selectedPlan.recoveryOptions.map(
+                              (option, index) => {
+                                const isSelected =
+                                  selectedPlan.optionId &&
+                                  (option.id === selectedPlan.optionId ||
+                                    option.option_id ===
+                                      selectedPlan.optionId ||
+                                    String(option.id) ===
+                                      String(selectedPlan.optionId) ||
+                                    String(option.option_id) ===
+                                      String(selectedPlan.optionId));
 
-                              // Extract cost value
-                              let costValue = "0";
-                              if (option.cost && typeof option.cost === 'string') {
-                                const numericValue = option.cost.match(/[\d,]+/)?.[0];
-                                costValue = numericValue || "0";
-                              } else if (option.estimated_cost) {
-                                costValue = option.estimated_cost.toLocaleString();
-                              }
+                                // Extract cost value
+                                let costValue = "0";
+                                if (
+                                  option.cost &&
+                                  typeof option.cost === "string"
+                                ) {
+                                  const numericValue =
+                                    option.cost.match(/[\d,]+/)?.[0];
+                                  costValue = numericValue || "0";
+                                } else if (option.estimated_cost) {
+                                  costValue =
+                                    option.estimated_cost.toLocaleString();
+                                }
 
-                              return (
-                                <TableRow key={option.id || index} className={isSelected ? "bg-orange-50" : ""}>
-                                  <TableCell>
-                                    <div className="flex items-center gap-2">
-                                      {isSelected && <div className="w-2 h-2 rounded-full bg-orange-500"></div>}
-                                      <span className="font-medium">{option.title}</span>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell className="font-medium">{airlineConfig.currency} {costValue}</TableCell>
-                                  <TableCell>{option.timeline || "TBD"}</TableCell>
-                                  <TableCell>{option.confidence || 85}%</TableCell>
-                                  <TableCell>
-                                    <span className={`text-sm ${
-                                      option.impact === "High" ? "text-red-600" :
-                                      option.impact === "Medium" ? "text-yellow-600" :
-                                      "text-green-600"
-                                    }`}>
-                                      {option.impact || "Medium"} Impact
-                                    </span>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Badge className={
-                                      isSelected ? "bg-orange-100 text-orange-700" :
-                                      option.status === "available" ? "bg-green-100 text-green-700" :
-                                      "bg-gray-100 text-gray-700"
-                                    }>
-                                      {isSelected ? "Selected" : (option.status || "Available")}
-                                    </Badge>
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })}
+                                return (
+                                  <TableRow
+                                    key={option.id || index}
+                                    className={isSelected ? "bg-orange-50" : ""}
+                                  >
+                                    <TableCell>
+                                      <div className="flex items-center gap-2">
+                                        {isSelected && (
+                                          <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                                        )}
+                                        <span className="font-medium">
+                                          {option.title}
+                                        </span>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell className="font-medium">
+                                      {airlineConfig.currency} {costValue}
+                                    </TableCell>
+                                    <TableCell>
+                                      {option.timeline || "TBD"}
+                                    </TableCell>
+                                    <TableCell>
+                                      {option.confidence || 85}%
+                                    </TableCell>
+                                    <TableCell>
+                                      <span
+                                        className={`text-sm ${
+                                          option.impact === "High"
+                                            ? "text-red-600"
+                                            : option.impact === "Medium"
+                                              ? "text-yellow-600"
+                                              : "text-green-600"
+                                        }`}
+                                      >
+                                        {option.impact || "Medium"} Impact
+                                      </span>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge
+                                        className={
+                                          isSelected
+                                            ? "bg-orange-100 text-orange-700"
+                                            : option.status === "available"
+                                              ? "bg-green-100 text-green-700"
+                                              : "bg-gray-100 text-gray-700"
+                                        }
+                                      >
+                                        {isSelected
+                                          ? "Selected"
+                                          : option.status || "Available"}
+                                      </Badge>
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              },
+                            )}
                           </TableBody>
                         </Table>
                       </div>
                     ) : (
                       <div className="text-center py-8 text-gray-500">
                         <Target className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                        <p className="text-lg font-medium">No Recovery Options Available</p>
-                        <p className="text-sm">Recovery options may still be generating for this disruption.</p>
+                        <p className="text-lg font-medium">
+                          No Recovery Options Available
+                        </p>
+                        <p className="text-sm">
+                          Recovery options may still be generating for this
+                          disruption.
+                        </p>
                       </div>
                     )}
                   </CardContent>
@@ -1670,27 +1715,38 @@ export function PendingSolutions() {
                   {/* Cost Impact Analysis */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Selected Option – Cost Impact Analysis</CardTitle>
+                      <CardTitle>
+                        Selected Option – Cost Impact Analysis
+                      </CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
                         {(() => {
                           // Find the selected option from recovery options
-                          const selectedOption = selectedPlan?.recoveryOptions?.find(option =>
-                            selectedPlan.optionId && (
-                              option.id === selectedPlan.optionId ||
-                              option.option_id === selectedPlan.optionId ||
-                              String(option.id) === String(selectedPlan.optionId) ||
-                              String(option.option_id) === String(selectedPlan.optionId)
-                            )
-                          ) || selectedPlan?.matchingOption;
+                          const selectedOption =
+                            selectedPlan?.recoveryOptions?.find(
+                              (option) =>
+                                selectedPlan.optionId &&
+                                (option.id === selectedPlan.optionId ||
+                                  option.option_id === selectedPlan.optionId ||
+                                  String(option.id) ===
+                                    String(selectedPlan.optionId) ||
+                                  String(option.option_id) ===
+                                    String(selectedPlan.optionId)),
+                            ) || selectedPlan?.matchingOption;
 
-                          let actualCost = selectedPlan?.estimatedCost || 141440;
+                          let actualCost =
+                            selectedPlan?.estimatedCost || 141440;
                           let costBreakdown = null;
 
                           // Parse the cost from the selected option if available
-                          if (selectedOption?.cost && typeof selectedOption.cost === 'string') {
-                            const parsedCost = parseInt(selectedOption.cost.replace(/[^0-9]/g, ''));
+                          if (
+                            selectedOption?.cost &&
+                            typeof selectedOption.cost === "string"
+                          ) {
+                            const parsedCost = parseInt(
+                              selectedOption.cost.replace(/[^0-9]/g, ""),
+                            );
                             if (parsedCost && parsedCost > 0) {
                               actualCost = parsedCost;
                             }
@@ -1702,39 +1758,66 @@ export function PendingSolutions() {
                           if (selectedOption?.cost_breakdown) {
                             if (Array.isArray(selectedOption.cost_breakdown)) {
                               costBreakdown = selectedOption.cost_breakdown;
-                            } else if (typeof selectedOption.cost_breakdown === 'object') {
+                            } else if (
+                              typeof selectedOption.cost_breakdown === "object"
+                            ) {
                               if (selectedOption.cost_breakdown.breakdown) {
-                                costBreakdown = selectedOption.cost_breakdown.breakdown;
+                                costBreakdown =
+                                  selectedOption.cost_breakdown.breakdown;
                               } else {
                                 // Handle case where cost_breakdown is an object with cost items
-                                costBreakdown = Object.entries(selectedOption.cost_breakdown).map(([key, value]) => ({
-                                  category: key.replace(/([A-Z])/g, ' $1').trim(),
-                                  amount: typeof value === 'object' && value?.amount ? value.amount :
-                                         typeof value === 'number' ? `${airlineConfig.currency} ${value.toLocaleString()}` :
-                                         String(value),
-                                  value: typeof value === 'object' && value?.amount ?
-                                        parseInt(String(value.amount).replace(/[^0-9]/g, '')) :
-                                        typeof value === 'number' ? value : 0
+                                costBreakdown = Object.entries(
+                                  selectedOption.cost_breakdown,
+                                ).map(([key, value]) => ({
+                                  category: key
+                                    .replace(/([A-Z])/g, " $1")
+                                    .trim(),
+                                  amount:
+                                    typeof value === "object" && value?.amount
+                                      ? value.amount
+                                      : typeof value === "number"
+                                        ? `${airlineConfig.currency} ${value.toLocaleString()}`
+                                        : String(value),
+                                  value:
+                                    typeof value === "object" && value?.amount
+                                      ? parseInt(
+                                          String(value.amount).replace(
+                                            /[^0-9]/g,
+                                            "",
+                                          ),
+                                        )
+                                      : typeof value === "number"
+                                        ? value
+                                        : 0,
                                 }));
                               }
                             }
                           } else if (selectedPlan?.costAnalysis?.breakdown) {
                             costBreakdown = selectedPlan.costAnalysis.breakdown;
                           } else if (selectedPlan?.costBreakdown?.breakdown) {
-                            costBreakdown = selectedPlan.costBreakdown.breakdown;
+                            costBreakdown =
+                              selectedPlan.costBreakdown.breakdown;
                           }
 
                           // If we have actual cost breakdown from API, use it
-                          if (costBreakdown && Array.isArray(costBreakdown) && costBreakdown.length > 0) {
+                          if (
+                            costBreakdown &&
+                            Array.isArray(costBreakdown) &&
+                            costBreakdown.length > 0
+                          ) {
                             return (
                               <div className="space-y-6">
                                 {/* Selected Option Info */}
                                 <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
                                   <div className="flex items-center justify-between">
                                     <span className="font-medium text-orange-800">
-                                      Selected Option: {selectedOption?.title || selectedPlan?.title}
+                                      Selected Option:{" "}
+                                      {selectedOption?.title ||
+                                        selectedPlan?.title}
                                     </span>
-                                    <Badge className="bg-orange-100 text-orange-700">Selected</Badge>
+                                    <Badge className="bg-orange-100 text-orange-700">
+                                      Selected
+                                    </Badge>
                                   </div>
                                 </div>
 
@@ -1742,32 +1825,83 @@ export function PendingSolutions() {
                                 <div className="grid grid-cols-2 gap-4">
                                   {costBreakdown.map((item, index) => {
                                     const colors = [
-                                      { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', amount: 'text-blue-900', detail: 'text-blue-600' },
-                                      { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-800', amount: 'text-purple-900', detail: 'text-purple-600' },
-                                      { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-800', amount: 'text-green-900', detail: 'text-green-600' },
-                                      { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-800', amount: 'text-orange-900', detail: 'text-orange-600' },
-                                      { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-800', amount: 'text-red-900', detail: 'text-red-600' },
-                                      { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-800', amount: 'text-yellow-900', detail: 'text-yellow-600' }
+                                      {
+                                        bg: "bg-blue-50",
+                                        border: "border-blue-200",
+                                        text: "text-blue-800",
+                                        amount: "text-blue-900",
+                                        detail: "text-blue-600",
+                                      },
+                                      {
+                                        bg: "bg-purple-50",
+                                        border: "border-purple-200",
+                                        text: "text-purple-800",
+                                        amount: "text-purple-900",
+                                        detail: "text-purple-600",
+                                      },
+                                      {
+                                        bg: "bg-green-50",
+                                        border: "border-green-200",
+                                        text: "text-green-800",
+                                        amount: "text-green-900",
+                                        detail: "text-green-600",
+                                      },
+                                      {
+                                        bg: "bg-orange-50",
+                                        border: "border-orange-200",
+                                        text: "text-orange-800",
+                                        amount: "text-orange-900",
+                                        detail: "text-orange-600",
+                                      },
+                                      {
+                                        bg: "bg-red-50",
+                                        border: "border-red-200",
+                                        text: "text-red-800",
+                                        amount: "text-red-900",
+                                        detail: "text-red-600",
+                                      },
+                                      {
+                                        bg: "bg-yellow-50",
+                                        border: "border-yellow-200",
+                                        text: "text-yellow-800",
+                                        amount: "text-yellow-900",
+                                        detail: "text-yellow-600",
+                                      },
                                     ];
-                                    const colorSet = colors[index % colors.length];
+                                    const colorSet =
+                                      colors[index % colors.length];
 
                                     return (
-                                      <div key={index} className={`p-4 ${colorSet.bg} rounded-lg border ${colorSet.border}`}>
+                                      <div
+                                        key={index}
+                                        className={`p-4 ${colorSet.bg} rounded-lg border ${colorSet.border}`}
+                                      >
                                         <div className="flex justify-between items-center mb-2">
-                                          <span className={`text-sm font-medium ${colorSet.text}`}>
-                                            {item.category || item.type || `Cost Item ${index + 1}`}
+                                          <span
+                                            className={`text-sm font-medium ${colorSet.text}`}
+                                          >
+                                            {item.category ||
+                                              item.type ||
+                                              `Cost Item ${index + 1}`}
                                           </span>
-                                          <span className={`text-lg font-bold ${colorSet.amount}`}>
-                                            {item.amount || `${airlineConfig.currency} ${(item.value || 0).toLocaleString()}`}
+                                          <span
+                                            className={`text-lg font-bold ${colorSet.amount}`}
+                                          >
+                                            {item.amount ||
+                                              `${airlineConfig.currency} ${(item.value || 0).toLocaleString()}`}
                                           </span>
                                         </div>
                                         {item.percentage && (
-                                          <div className={`text-xs ${colorSet.detail}`}>
+                                          <div
+                                            className={`text-xs ${colorSet.detail}`}
+                                          >
                                             {item.percentage}% of total cost
                                           </div>
                                         )}
                                         {item.description && (
-                                          <div className={`text-xs ${colorSet.detail} mt-1`}>
+                                          <div
+                                            className={`text-xs ${colorSet.detail} mt-1`}
+                                          >
                                             {item.description}
                                           </div>
                                         )}
@@ -1779,24 +1913,42 @@ export function PendingSolutions() {
                                 {/* Total Cost Summary */}
                                 <div className="border-t pt-4">
                                   <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
-                                    <span className="text-lg font-bold text-gray-900">Total Estimated Cost:</span>
+                                    <span className="text-lg font-bold text-gray-900">
+                                      Total Estimated Cost:
+                                    </span>
                                     <span className="text-2xl font-bold text-orange-600">
                                       {(() => {
                                         // Try to get total from cost breakdown
-                                        if (selectedOption?.cost_breakdown?.total?.amount) {
-                                          return selectedOption.cost_breakdown.total.amount;
+                                        if (
+                                          selectedOption?.cost_breakdown?.total
+                                            ?.amount
+                                        ) {
+                                          return selectedOption.cost_breakdown
+                                            .total.amount;
                                         }
                                         // Calculate total from breakdown items
-                                        const calculatedTotal = costBreakdown.reduce((sum, item) => {
-                                          if (item.value && typeof item.value === 'number') {
-                                            return sum + item.value;
-                                          }
-                                          if (item.amount && typeof item.amount === 'string') {
-                                            const numericValue = parseInt(item.amount.replace(/[^0-9]/g, ''));
-                                            return sum + (numericValue || 0);
-                                          }
-                                          return sum;
-                                        }, 0);
+                                        const calculatedTotal =
+                                          costBreakdown.reduce((sum, item) => {
+                                            if (
+                                              item.value &&
+                                              typeof item.value === "number"
+                                            ) {
+                                              return sum + item.value;
+                                            }
+                                            if (
+                                              item.amount &&
+                                              typeof item.amount === "string"
+                                            ) {
+                                              const numericValue = parseInt(
+                                                item.amount.replace(
+                                                  /[^0-9]/g,
+                                                  "",
+                                                ),
+                                              );
+                                              return sum + (numericValue || 0);
+                                            }
+                                            return sum;
+                                          }, 0);
 
                                         return calculatedTotal > 0
                                           ? `${airlineConfig.currency} ${calculatedTotal.toLocaleString()}`
@@ -1808,16 +1960,26 @@ export function PendingSolutions() {
 
                                 {/* Detailed List */}
                                 <div className="space-y-2">
-                                  <h4 className="font-semibold text-gray-800 mb-3">Detailed Cost Analysis:</h4>
+                                  <h4 className="font-semibold text-gray-800 mb-3">
+                                    Detailed Cost Analysis:
+                                  </h4>
                                   <div className="space-y-1 text-sm">
                                     {costBreakdown.map((item, index) => (
-                                      <div key={index} className="flex justify-between">
+                                      <div
+                                        key={index}
+                                        className="flex justify-between"
+                                      >
                                         <span className="text-gray-600">
-                                          • {item.category || item.type || `Cost Item ${index + 1}`}
-                                          {item.description && ` (${item.description})`}
+                                          •{" "}
+                                          {item.category ||
+                                            item.type ||
+                                            `Cost Item ${index + 1}`}
+                                          {item.description &&
+                                            ` (${item.description})`}
                                         </span>
                                         <span className="font-medium">
-                                          {item.amount || `${airlineConfig.currency} ${(item.value || 0).toLocaleString()}`}
+                                          {item.amount ||
+                                            `${airlineConfig.currency} ${(item.value || 0).toLocaleString()}`}
                                         </span>
                                       </div>
                                     ))}
@@ -1830,9 +1992,14 @@ export function PendingSolutions() {
                           // Fallback to calculated breakdown if no API data
                           const fuelCost = Math.round(actualCost * 0.35);
                           const crewCost = Math.round(actualCost * 0.25);
-                          const aircraftCost = Math.round(actualCost * 0.20);
+                          const aircraftCost = Math.round(actualCost * 0.2);
                           const passengerCost = Math.round(actualCost * 0.15);
-                          const operationalCost = actualCost - fuelCost - crewCost - aircraftCost - passengerCost;
+                          const operationalCost =
+                            actualCost -
+                            fuelCost -
+                            crewCost -
+                            aircraftCost -
+                            passengerCost;
 
                           return (
                             <div className="space-y-6">
@@ -1840,9 +2007,13 @@ export function PendingSolutions() {
                               <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
                                 <div className="flex items-center justify-between">
                                   <span className="font-medium text-orange-800">
-                                    Selected Option: {selectedOption?.title || selectedPlan?.title}
+                                    Selected Option:{" "}
+                                    {selectedOption?.title ||
+                                      selectedPlan?.title}
                                   </span>
-                                  <Badge className="bg-orange-100 text-orange-700">Selected</Badge>
+                                  <Badge className="bg-orange-100 text-orange-700">
+                                    Selected
+                                  </Badge>
                                 </div>
                               </div>
 
@@ -1850,89 +2021,144 @@ export function PendingSolutions() {
                               <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                                   <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm font-medium text-blue-800">Fuel Cost</span>
+                                    <span className="text-sm font-medium text-blue-800">
+                                      Fuel Cost
+                                    </span>
                                     <span className="text-lg font-bold text-blue-900">
-                                      {airlineConfig.currency} {fuelCost.toLocaleString()}
+                                      {airlineConfig.currency}{" "}
+                                      {fuelCost.toLocaleString()}
                                     </span>
                                   </div>
-                                  <div className="text-xs text-blue-600">35% of total cost</div>
+                                  <div className="text-xs text-blue-600">
+                                    35% of total cost
+                                  </div>
                                 </div>
 
                                 <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
                                   <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm font-medium text-purple-800">Crew Cost</span>
+                                    <span className="text-sm font-medium text-purple-800">
+                                      Crew Cost
+                                    </span>
                                     <span className="text-lg font-bold text-purple-900">
-                                      {airlineConfig.currency} {crewCost.toLocaleString()}
+                                      {airlineConfig.currency}{" "}
+                                      {crewCost.toLocaleString()}
                                     </span>
                                   </div>
-                                  <div className="text-xs text-purple-600">25% of total cost</div>
+                                  <div className="text-xs text-purple-600">
+                                    25% of total cost
+                                  </div>
                                 </div>
 
                                 <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                                   <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm font-medium text-green-800">Aircraft Cost</span>
+                                    <span className="text-sm font-medium text-green-800">
+                                      Aircraft Cost
+                                    </span>
                                     <span className="text-lg font-bold text-green-900">
-                                      {airlineConfig.currency} {aircraftCost.toLocaleString()}
+                                      {airlineConfig.currency}{" "}
+                                      {aircraftCost.toLocaleString()}
                                     </span>
                                   </div>
-                                  <div className="text-xs text-green-600">20% of total cost</div>
+                                  <div className="text-xs text-green-600">
+                                    20% of total cost
+                                  </div>
                                 </div>
 
                                 <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
                                   <div className="flex justify-between items-center mb-2">
-                                    <span className="text-sm font-medium text-orange-800">Passenger Services</span>
+                                    <span className="text-sm font-medium text-orange-800">
+                                      Passenger Services
+                                    </span>
                                     <span className="text-lg font-bold text-orange-900">
-                                      {airlineConfig.currency} {passengerCost.toLocaleString()}
+                                      {airlineConfig.currency}{" "}
+                                      {passengerCost.toLocaleString()}
                                     </span>
                                   </div>
-                                  <div className="text-xs text-orange-600">15% of total cost</div>
+                                  <div className="text-xs text-orange-600">
+                                    15% of total cost
+                                  </div>
                                 </div>
                               </div>
 
                               {/* Operational Cost */}
                               <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                                 <div className="flex justify-between items-center mb-2">
-                                  <span className="text-sm font-medium text-gray-800">Other Operational Costs</span>
+                                  <span className="text-sm font-medium text-gray-800">
+                                    Other Operational Costs
+                                  </span>
                                   <span className="text-lg font-bold text-gray-900">
-                                    {airlineConfig.currency} {operationalCost.toLocaleString()}
+                                    {airlineConfig.currency}{" "}
+                                    {operationalCost.toLocaleString()}
                                   </span>
                                 </div>
-                                <div className="text-xs text-gray-600">Remaining operational expenses</div>
+                                <div className="text-xs text-gray-600">
+                                  Remaining operational expenses
+                                </div>
                               </div>
 
                               {/* Total Cost Summary */}
                               <div className="border-t pt-4">
                                 <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
-                                  <span className="text-lg font-bold text-gray-900">Total Estimated Cost:</span>
+                                  <span className="text-lg font-bold text-gray-900">
+                                    Total Estimated Cost:
+                                  </span>
                                   <span className="text-2xl font-bold text-orange-600">
-                                    {airlineConfig.currency} {actualCost.toLocaleString()}
+                                    {airlineConfig.currency}{" "}
+                                    {actualCost.toLocaleString()}
                                   </span>
                                 </div>
                               </div>
 
                               {/* Cost Breakdown Details */}
                               <div className="space-y-2">
-                                <h4 className="font-semibold text-gray-800 mb-3">Estimated Breakdown:</h4>
+                                <h4 className="font-semibold text-gray-800 mb-3">
+                                  Estimated Breakdown:
+                                </h4>
                                 <div className="space-y-1 text-sm">
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">• Fuel & Navigation charges</span>
-                                    <span className="font-medium">{airlineConfig.currency} {fuelCost.toLocaleString()}</span>
+                                    <span className="text-gray-600">
+                                      • Fuel & Navigation charges
+                                    </span>
+                                    <span className="font-medium">
+                                      {airlineConfig.currency}{" "}
+                                      {fuelCost.toLocaleString()}
+                                    </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">• Crew accommodation & overtime</span>
-                                    <span className="font-medium">{airlineConfig.currency} {crewCost.toLocaleString()}</span>
+                                    <span className="text-gray-600">
+                                      • Crew accommodation & overtime
+                                    </span>
+                                    <span className="font-medium">
+                                      {airlineConfig.currency}{" "}
+                                      {crewCost.toLocaleString()}
+                                    </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">• Aircraft repositioning & maintenance</span>
-                                    <span className="font-medium">{airlineConfig.currency} {aircraftCost.toLocaleString()}</span>
+                                    <span className="text-gray-600">
+                                      • Aircraft repositioning & maintenance
+                                    </span>
+                                    <span className="font-medium">
+                                      {airlineConfig.currency}{" "}
+                                      {aircraftCost.toLocaleString()}
+                                    </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">• Passenger compensation & services</span>
-                                    <span className="font-medium">{airlineConfig.currency} {passengerCost.toLocaleString()}</span>
+                                    <span className="text-gray-600">
+                                      • Passenger compensation & services
+                                    </span>
+                                    <span className="font-medium">
+                                      {airlineConfig.currency}{" "}
+                                      {passengerCost.toLocaleString()}
+                                    </span>
                                   </div>
                                   <div className="flex justify-between">
-                                    <span className="text-gray-600">• Ground handling & operational support</span>
-                                    <span className="font-medium">{airlineConfig.currency} {operationalCost.toLocaleString()}</span>
+                                    <span className="text-gray-600">
+                                      • Ground handling & operational support
+                                    </span>
+                                    <span className="font-medium">
+                                      {airlineConfig.currency}{" "}
+                                      {operationalCost.toLocaleString()}
+                                    </span>
                                   </div>
                                 </div>
                               </div>
@@ -1971,8 +2197,8 @@ export function PendingSolutions() {
                               </span>
                             </div>
                             <p className="text-sm text-purple-700">
-                              {selectedPlan.affectedPassengers || "N/A"} passengers
-                              affected
+                              {selectedPlan.affectedPassengers || "N/A"}{" "}
+                              passengers affected
                             </p>
                           </div>
 
@@ -2140,8 +2366,8 @@ export function PendingSolutions() {
                                       Array.isArray(passengerData) &&
                                       passengerData.length > 0
                                     ) {
-                                      const mealVoucherCount = passengerData.filter(
-                                        (p) => {
+                                      const mealVoucherCount =
+                                        passengerData.filter((p) => {
                                           if (
                                             p.additional_services &&
                                             Array.isArray(p.additional_services)
@@ -2149,7 +2375,9 @@ export function PendingSolutions() {
                                             return p.additional_services.some(
                                               (s) =>
                                                 typeof s === "string"
-                                                  ? s.toLowerCase().includes("meal")
+                                                  ? s
+                                                      .toLowerCase()
+                                                      .includes("meal")
                                                   : s.service_type
                                                       ?.toLowerCase()
                                                       .includes("meal") ||
@@ -2163,8 +2391,7 @@ export function PendingSolutions() {
                                             p.meal_voucher ||
                                             false
                                           );
-                                        },
-                                      ).length;
+                                        }).length;
                                       return `${mealVoucherCount} passengers`;
                                     }
 
@@ -2217,7 +2444,9 @@ export function PendingSolutions() {
                                                       .includes("hotel") ||
                                                     s.service_type
                                                       ?.toLowerCase()
-                                                      .includes("accommodation"),
+                                                      .includes(
+                                                        "accommodation",
+                                                      ),
                                             );
                                           }
                                           return (
@@ -2255,8 +2484,8 @@ export function PendingSolutions() {
                                       Array.isArray(passengerData) &&
                                       passengerData.length > 0
                                     ) {
-                                      const transportCount = passengerData.filter(
-                                        (p) => {
+                                      const transportCount =
+                                        passengerData.filter((p) => {
                                           if (
                                             p.additional_services &&
                                             Array.isArray(p.additional_services)
@@ -2280,8 +2509,7 @@ export function PendingSolutions() {
                                             p.transportation ||
                                             false
                                           );
-                                        },
-                                      ).length;
+                                        }).length;
                                       return `${transportCount} passengers`;
                                     }
 
@@ -2406,8 +2634,8 @@ export function PendingSolutions() {
                             </span>
                           </div>
                           <p className="text-sm text-blue-700">
-                            All passengers accommodated on same aircraft with 65min
-                            delay.
+                            All passengers accommodated on same aircraft with
+                            65min delay.
                           </p>
                         </div>
 
@@ -2604,12 +2832,15 @@ export function PendingSolutions() {
 
                               const groupCount = Array.isArray(rawPassengerData)
                                 ? Object.keys(
-                                    rawPassengerData.reduce((acc, passenger) => {
-                                      const pnr = passenger.pnr || "UNKNOWN";
-                                      if (!acc[pnr]) acc[pnr] = [];
-                                      acc[pnr].push(passenger);
-                                      return acc;
-                                    }, {}),
+                                    rawPassengerData.reduce(
+                                      (acc, passenger) => {
+                                        const pnr = passenger.pnr || "UNKNOWN";
+                                        if (!acc[pnr]) acc[pnr] = [];
+                                        acc[pnr].push(passenger);
+                                        return acc;
+                                      },
+                                      {},
+                                    ),
                                   ).length
                                 : 0;
 
@@ -2890,8 +3121,8 @@ export function PendingSolutions() {
                                 </span>
                               </div>
                               <p className="text-sm text-blue-700">
-                                {selectedPlan.affectedPassengers || "N/A"} passengers
-                                affected
+                                {selectedPlan.affectedPassengers || "N/A"}{" "}
+                                passengers affected
                               </p>
                             </div>
 
@@ -3542,9 +3773,7 @@ export function PendingSolutions() {
                         <h4 className="font-medium mb-3">Compensation</h4>
                         <div className="space-y-2">
                           <div className="flex justify-between">
-                            <span className="text-sm">
-                              Per passenger avg:
-                            </span>
+                            <span className="text-sm">Per passenger avg:</span>
                             <span className="font-medium">
                               {(() => {
                                 const passengerData =
@@ -3576,9 +3805,7 @@ export function PendingSolutions() {
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-sm">
-                              Total compensation:
-                            </span>
+                            <span className="text-sm">Total compensation:</span>
                             <span className="font-medium">
                               {(() => {
                                 const passengerData =
@@ -3660,8 +3887,7 @@ export function PendingSolutions() {
                         {(() => {
                           const rawPassengerData =
                             selectedPlan?.passengerInformation ||
-                            selectedPlan?.matchingOption
-                              ?.passenger_rebooking ||
+                            selectedPlan?.matchingOption?.passenger_rebooking ||
                             selectedPlan?.matchingOption
                               ?.passenger_information ||
                             [];
@@ -3683,18 +3909,17 @@ export function PendingSolutions() {
                             );
                           }
 
-                          const passengersByPnr =
-                            currentPassengerData.reduce(
-                              (acc, passenger) => {
-                                const pnr = passenger.pnr || "Unknown";
-                                if (!acc[pnr]) {
-                                  acc[pnr] = [];
-                                }
-                                acc[pnr].push(passenger);
-                                return acc;
-                              },
-                              {},
-                            );
+                          const passengersByPnr = currentPassengerData.reduce(
+                            (acc, passenger) => {
+                              const pnr = passenger.pnr || "Unknown";
+                              if (!acc[pnr]) {
+                                acc[pnr] = [];
+                              }
+                              acc[pnr].push(passenger);
+                              return acc;
+                            },
+                            {},
+                          );
 
                           return Object.entries(passengersByPnr)
                             .slice(0, 8)
@@ -3714,8 +3939,7 @@ export function PendingSolutions() {
                                         variant="secondary"
                                         className="bg-blue-100 text-blue-800"
                                       >
-                                        {(passengers as any).length}{" "}
-                                        passenger
+                                        {(passengers as any).length} passenger
                                         {(passengers as any).length > 1
                                           ? "s"
                                           : ""}
@@ -3745,8 +3969,8 @@ export function PendingSolutions() {
                                                 ? "bg-green-100 text-green-700"
                                                 : passenger.rebooking_status ===
                                                     "pending"
-                                                      ? "bg-yellow-100 text-yellow-700"
-                                                      : "bg-gray-100 text-gray-700"
+                                                  ? "bg-yellow-100 text-yellow-700"
+                                                  : "bg-gray-100 text-gray-700"
                                             }
                                           >
                                             {passenger.rebooking_status ||
@@ -3803,10 +4027,7 @@ export function PendingSolutions() {
                                                 </span>
                                                 <span className="text-xs">
                                                   {passenger.additional_services.map(
-                                                    (
-                                                      service,
-                                                      serviceIndex,
-                                                    ) => (
+                                                    (service, serviceIndex) => (
                                                       <Badge
                                                         key={serviceIndex}
                                                         variant="outline"
@@ -3836,8 +4057,7 @@ export function PendingSolutions() {
                         {(() => {
                           const rawPassengerData =
                             selectedPlan?.passengerInformation ||
-                            selectedPlan?.matchingOption
-                              ?.passenger_rebooking ||
+                            selectedPlan?.matchingOption?.passenger_rebooking ||
                             selectedPlan?.matchingOption
                               ?.passenger_information ||
                             [];
@@ -3900,24 +4120,39 @@ export function PendingSolutions() {
                             const aircraftData =
                               selectedOptionForDetails?.alternateAircraft ||
                               selectedOptionForDetails?.aircraftRotations ||
-                              selectedOptionForDetails?.rotationPlan?.aircraftOptions ||
-                              selectedOptionForDetails?.rotation_plan?.aircraftOptions ||
-                              selectedOptionForDetails?.resourceRequirements?.aircraft ||
+                              selectedOptionForDetails?.rotationPlan
+                                ?.aircraftOptions ||
+                              selectedOptionForDetails?.rotation_plan
+                                ?.aircraftOptions ||
+                              selectedOptionForDetails?.resourceRequirements
+                                ?.aircraft ||
                               [];
 
                             // Also check for rotation impact data
-                            const rotationData = selectedOptionForDetails?.rotationPlan ||
-                                               selectedOptionForDetails?.rotation_plan ||
-                                               {};
+                            const rotationData =
+                              selectedOptionForDetails?.rotationPlan ||
+                              selectedOptionForDetails?.rotation_plan ||
+                              {};
 
-                            const impactedFlights = rotationData?.impactedFlights ||
-                                                  selectedOptionForDetails?.impactedFlights ||
-                                                  rotationData?.nextSectors ||
-                                                  [];
+                            const impactedFlights =
+                              rotationData?.impactedFlights ||
+                              selectedOptionForDetails?.impactedFlights ||
+                              rotationData?.nextSectors ||
+                              [];
 
-                            if (aircraftData && (Array.isArray(aircraftData) ? aircraftData.length > 0 : true)) {
-                              const aircraft = Array.isArray(aircraftData) ? aircraftData[0] : aircraftData;
-                              const isSelected = aircraft?.recommended || aircraft?.selected || true;
+                            if (
+                              aircraftData &&
+                              (Array.isArray(aircraftData)
+                                ? aircraftData.length > 0
+                                : true)
+                            ) {
+                              const aircraft = Array.isArray(aircraftData)
+                                ? aircraftData[0]
+                                : aircraftData;
+                              const isSelected =
+                                aircraft?.recommended ||
+                                aircraft?.selected ||
+                                true;
 
                               return (
                                 <div className="space-y-4">
@@ -3936,33 +4171,55 @@ export function PendingSolutions() {
 
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                                       <div>
-                                        <span className="text-sm text-gray-600">Aircraft Registration:</span>
+                                        <span className="text-sm text-gray-600">
+                                          Aircraft Registration:
+                                        </span>
                                         <div className="font-bold text-blue-900">
-                                          {aircraft?.reg || aircraft?.tail || aircraft?.registration || aircraft?.aircraft || "A6-FED"}
+                                          {aircraft?.reg ||
+                                            aircraft?.tail ||
+                                            aircraft?.registration ||
+                                            aircraft?.aircraft ||
+                                            "A6-FED"}
                                         </div>
                                       </div>
                                       <div>
-                                        <span className="text-sm text-gray-600">Aircraft Type:</span>
+                                        <span className="text-sm text-gray-600">
+                                          Aircraft Type:
+                                        </span>
                                         <div className="font-medium text-blue-800">
-                                          {aircraft?.type || aircraft?.aircraftType || "B737-800 (189Y)"}
+                                          {aircraft?.type ||
+                                            aircraft?.aircraftType ||
+                                            "B737-800 (189Y)"}
                                         </div>
                                       </div>
                                       <div>
-                                        <span className="text-sm text-gray-600">Availability Status:</span>
+                                        <span className="text-sm text-gray-600">
+                                          Availability Status:
+                                        </span>
                                         <div className="font-medium">
-                                          <Badge className={
-                                            aircraft?.availability === "Available" || aircraft?.status === "Available"
-                                              ? "bg-green-100 text-green-700"
-                                              : "bg-yellow-100 text-yellow-700"
-                                          }>
-                                            {aircraft?.availability || aircraft?.status || "Available Now"}
+                                          <Badge
+                                            className={
+                                              aircraft?.availability ===
+                                                "Available" ||
+                                              aircraft?.status === "Available"
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-yellow-100 text-yellow-700"
+                                            }
+                                          >
+                                            {aircraft?.availability ||
+                                              aircraft?.status ||
+                                              "Available Now"}
                                           </Badge>
                                         </div>
                                       </div>
                                       <div>
-                                        <span className="text-sm text-gray-600">Turnaround Time:</span>
+                                        <span className="text-sm text-gray-600">
+                                          Turnaround Time:
+                                        </span>
                                         <div className="font-medium text-blue-800">
-                                          {aircraft?.turnaround || aircraft?.turnaroundTime || "45 min"}
+                                          {aircraft?.turnaround ||
+                                            aircraft?.turnaroundTime ||
+                                            "45 min"}
                                         </div>
                                       </div>
                                     </div>
@@ -3970,26 +4227,38 @@ export function PendingSolutions() {
                                     {/* Technical Specifications */}
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                       <div className="p-3 bg-white rounded border">
-                                        <span className="text-sm text-gray-600">ETOPS Certification:</span>
+                                        <span className="text-sm text-gray-600">
+                                          ETOPS Certification:
+                                        </span>
                                         <div className="font-medium text-green-700">
                                           <Badge className="bg-green-100 text-green-700">
-                                            {aircraft?.etops?.value || aircraft?.etops || "180min Certified"}
+                                            {aircraft?.etops?.value ||
+                                              aircraft?.etops ||
+                                              "180min Certified"}
                                           </Badge>
                                         </div>
                                       </div>
                                       <div className="p-3 bg-white rounded border">
-                                        <span className="text-sm text-gray-600">Cabin Configuration:</span>
+                                        <span className="text-sm text-gray-600">
+                                          Cabin Configuration:
+                                        </span>
                                         <div className="font-medium text-blue-700">
                                           <Badge className="bg-blue-100 text-blue-700">
-                                            {aircraft?.cabinMatch?.value || aircraft?.cabinMatch || "Exact Match"}
+                                            {aircraft?.cabinMatch?.value ||
+                                              aircraft?.cabinMatch ||
+                                              "Exact Match"}
                                           </Badge>
                                         </div>
                                       </div>
                                       <div className="p-3 bg-white rounded border">
-                                        <span className="text-sm text-gray-600">Maintenance Status:</span>
+                                        <span className="text-sm text-gray-600">
+                                          Maintenance Status:
+                                        </span>
                                         <div className="font-medium text-green-700">
                                           <Badge className="bg-green-100 text-green-700">
-                                            {aircraft?.maintenance?.value || aircraft?.maintenance?.status || "Current"}
+                                            {aircraft?.maintenance?.value ||
+                                              aircraft?.maintenance?.status ||
+                                              "Current"}
                                           </Badge>
                                         </div>
                                       </div>
@@ -3998,14 +4267,23 @@ export function PendingSolutions() {
                                     {/* Performance Scores */}
                                     {aircraft?.option_score && (
                                       <div className="p-3 bg-white rounded border">
-                                        <div className="text-sm font-medium text-gray-800 mb-2">Performance Scores:</div>
+                                        <div className="text-sm font-medium text-gray-800 mb-2">
+                                          Performance Scores:
+                                        </div>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                                          {Object.entries(aircraft.option_score).map(([key, value]) => (
-                                            <div key={key} className="flex justify-between items-center">
+                                          {Object.entries(
+                                            aircraft.option_score,
+                                          ).map(([key, value]) => (
+                                            <div
+                                              key={key}
+                                              className="flex justify-between items-center"
+                                            >
                                               <span className="text-gray-600 capitalize">
-                                                {key.replace(/_/g, ' ')}:
+                                                {key.replace(/_/g, " ")}:
                                               </span>
-                                              <span className="font-medium text-blue-900">{value}</span>
+                                              <span className="font-medium text-blue-900">
+                                                {value}
+                                              </span>
                                             </div>
                                           ))}
                                         </div>
@@ -4020,35 +4298,62 @@ export function PendingSolutions() {
                                       Alternate Aircraft Rotation Impact
                                     </h4>
 
-                                    {impactedFlights && (Array.isArray(impactedFlights) ? impactedFlights.length > 0 : true) ? (
+                                    {impactedFlights &&
+                                    (Array.isArray(impactedFlights)
+                                      ? impactedFlights.length > 0
+                                      : true) ? (
                                       <div className="space-y-3">
-                                        {(Array.isArray(impactedFlights) ? impactedFlights : [
-                                          {
-                                            flightNumber: selectedOptionForDetails?.flightNumber || "JU142",
-                                            origin: "BEG",
-                                            destination: "CDG",
-                                            departure: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
-                                            arrival: new Date(Date.now() + 4 * 60 * 60 * 1000).toISOString(),
-                                            delay: "15 minutes",
-                                            impact: "Low Impact",
-                                            status: "On Time",
-                                            reason: "Aircraft swap completed successfully with minimal network disruption",
-                                            passengers: selectedOptionForDetails?.passengers || 167
-                                          },
-                                          {
-                                            flightNumber: "JU187",
-                                            origin: "CDG", 
-                                            destination: "BEG",
-                                            departure: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(),
-                                            arrival: new Date(Date.now() + 8 * 60 * 60 * 1000).toISOString(),
-                                            delay: "No delay",
-                                            impact: "No Impact",
-                                            status: "On Time",
-                                            reason: "Return flight maintains schedule with selected aircraft",
-                                            passengers: 189
-                                          }
-                                        ]).map((flight, index) => (
-                                          <div key={index} className="p-4 bg-white rounded-lg border border-purple-300 shadow-sm">
+                                        {(Array.isArray(impactedFlights)
+                                          ? impactedFlights
+                                          : [
+                                              {
+                                                flightNumber:
+                                                  selectedOptionForDetails?.flightNumber ||
+                                                  "JU142",
+                                                origin: "BEG",
+                                                destination: "CDG",
+                                                departure: new Date(
+                                                  Date.now() +
+                                                    2 * 60 * 60 * 1000,
+                                                ).toISOString(),
+                                                arrival: new Date(
+                                                  Date.now() +
+                                                    4 * 60 * 60 * 1000,
+                                                ).toISOString(),
+                                                delay: "15 minutes",
+                                                impact: "Low Impact",
+                                                status: "On Time",
+                                                reason:
+                                                  "Aircraft swap completed successfully with minimal network disruption",
+                                                passengers:
+                                                  selectedOptionForDetails?.passengers ||
+                                                  167,
+                                              },
+                                              {
+                                                flightNumber: "JU187",
+                                                origin: "CDG",
+                                                destination: "BEG",
+                                                departure: new Date(
+                                                  Date.now() +
+                                                    6 * 60 * 60 * 1000,
+                                                ).toISOString(),
+                                                arrival: new Date(
+                                                  Date.now() +
+                                                    8 * 60 * 60 * 1000,
+                                                ).toISOString(),
+                                                delay: "No delay",
+                                                impact: "No Impact",
+                                                status: "On Time",
+                                                reason:
+                                                  "Return flight maintains schedule with selected aircraft",
+                                                passengers: 189,
+                                              },
+                                            ]
+                                        ).map((flight, index) => (
+                                          <div
+                                            key={index}
+                                            className="p-4 bg-white rounded-lg border border-purple-300 shadow-sm"
+                                          >
                                             <div className="flex items-center justify-between mb-3">
                                               <div className="flex items-center gap-3">
                                                 <div className="p-2 bg-purple-100 rounded">
@@ -4056,27 +4361,51 @@ export function PendingSolutions() {
                                                 </div>
                                                 <div>
                                                   <span className="font-semibold text-purple-900">
-                                                    {flight.flightNumber || flight.flight || flight.flight_number}
+                                                    {flight.flightNumber ||
+                                                      flight.flight ||
+                                                      flight.flight_number}
                                                   </span>
                                                   <div className="text-sm text-gray-600">
-                                                    {flight.origin || flight.origin_code} → {flight.destination || flight.destination_code}
+                                                    {flight.origin ||
+                                                      flight.origin_code}{" "}
+                                                    →{" "}
+                                                    {flight.destination ||
+                                                      flight.destination_code}
                                                   </div>
                                                 </div>
                                               </div>
                                               <div className="flex gap-2">
-                                                <Badge className={
-                                                  flight.impact === "High Impact" || flight.impact === "High" ? "bg-red-100 text-red-700" :
-                                                  flight.impact === "Medium Impact" || flight.impact === "Medium" ? "bg-yellow-100 text-yellow-700" :
-                                                  flight.impact === "No Impact" ? "bg-green-100 text-green-700" :
-                                                  "bg-green-100 text-green-700"
-                                                }>
-                                                  {flight.impact || "Low Impact"}
+                                                <Badge
+                                                  className={
+                                                    flight.impact ===
+                                                      "High Impact" ||
+                                                    flight.impact === "High"
+                                                      ? "bg-red-100 text-red-700"
+                                                      : flight.impact ===
+                                                            "Medium Impact" ||
+                                                          flight.impact ===
+                                                            "Medium"
+                                                        ? "bg-yellow-100 text-yellow-700"
+                                                        : flight.impact ===
+                                                            "No Impact"
+                                                          ? "bg-green-100 text-green-700"
+                                                          : "bg-green-100 text-green-700"
+                                                  }
+                                                >
+                                                  {flight.impact ||
+                                                    "Low Impact"}
                                                 </Badge>
-                                                <Badge variant="outline" className={
-                                                  flight.status === "On Time" ? "border-green-200 text-green-700" :
-                                                  flight.status === "Delayed" ? "border-orange-200 text-orange-700" :
-                                                  "border-gray-200 text-gray-700"
-                                                }>
+                                                <Badge
+                                                  variant="outline"
+                                                  className={
+                                                    flight.status === "On Time"
+                                                      ? "border-green-200 text-green-700"
+                                                      : flight.status ===
+                                                          "Delayed"
+                                                        ? "border-orange-200 text-orange-700"
+                                                        : "border-gray-200 text-gray-700"
+                                                  }
+                                                >
                                                   {flight.status || "On Time"}
                                                 </Badge>
                                               </div>
@@ -4084,29 +4413,50 @@ export function PendingSolutions() {
 
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-3">
                                               <div>
-                                                <span className="text-gray-600">Departure:</span>
+                                                <span className="text-gray-600">
+                                                  Departure:
+                                                </span>
                                                 <div className="font-medium">
-                                                  {flight.departure ? new Date(flight.departure).toLocaleTimeString() : "14:30"}
+                                                  {flight.departure
+                                                    ? new Date(
+                                                        flight.departure,
+                                                      ).toLocaleTimeString()
+                                                    : "14:30"}
                                                 </div>
                                               </div>
                                               <div>
-                                                <span className="text-gray-600">Arrival:</span>
+                                                <span className="text-gray-600">
+                                                  Arrival:
+                                                </span>
                                                 <div className="font-medium">
-                                                  {flight.arrival ? new Date(flight.arrival).toLocaleTimeString() : "16:45"}
+                                                  {flight.arrival
+                                                    ? new Date(
+                                                        flight.arrival,
+                                                      ).toLocaleTimeString()
+                                                    : "16:45"}
                                                 </div>
                                               </div>
                                               <div>
-                                                <span className="text-gray-600">Delay Impact:</span>
-                                                <div className={`font-medium ${
-                                                  flight.delay && flight.delay !== "No delay" && parseInt(flight.delay) > 0 
-                                                    ? "text-orange-600" 
-                                                    : "text-green-600"
-                                                }`}>
+                                                <span className="text-gray-600">
+                                                  Delay Impact:
+                                                </span>
+                                                <div
+                                                  className={`font-medium ${
+                                                    flight.delay &&
+                                                    flight.delay !==
+                                                      "No delay" &&
+                                                    parseInt(flight.delay) > 0
+                                                      ? "text-orange-600"
+                                                      : "text-green-600"
+                                                  }`}
+                                                >
                                                   {flight.delay || "No delay"}
                                                 </div>
                                               </div>
                                               <div>
-                                                <span className="text-gray-600">Passengers:</span>
+                                                <span className="text-gray-600">
+                                                  Passengers:
+                                                </span>
                                                 <div className="font-medium">
                                                   {flight.passengers || "189"}
                                                 </div>
@@ -4114,9 +4464,12 @@ export function PendingSolutions() {
                                             </div>
 
                                             <div className="p-3 bg-purple-50 rounded text-sm">
-                                              <div className="font-medium text-purple-800 mb-1">Impact Analysis:</div>
+                                              <div className="font-medium text-purple-800 mb-1">
+                                                Impact Analysis:
+                                              </div>
                                               <p className="text-purple-700">
-                                                {flight.reason || "Minimal impact on subsequent flights due to efficient aircraft swap"}
+                                                {flight.reason ||
+                                                  "Minimal impact on subsequent flights due to efficient aircraft swap"}
                                               </p>
                                             </div>
                                           </div>
@@ -4125,9 +4478,12 @@ export function PendingSolutions() {
                                     ) : (
                                       <div className="text-center py-6 bg-white rounded-lg border border-purple-300">
                                         <Route className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                                        <h5 className="text-lg font-medium text-gray-700 mb-2">Minimal Rotation Impact</h5>
+                                        <h5 className="text-lg font-medium text-gray-700 mb-2">
+                                          Minimal Rotation Impact
+                                        </h5>
                                         <p className="text-gray-600 mb-3">
-                                          The selected alternate aircraft has minimal impact on subsequent flights
+                                          The selected alternate aircraft has
+                                          minimal impact on subsequent flights
                                         </p>
                                         <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-700">
                                           <CheckCircle className="h-4 w-4 mr-1" />
@@ -4138,21 +4494,36 @@ export function PendingSolutions() {
 
                                     {/* Network Impact Summary */}
                                     <div className="mt-4 p-3 bg-white rounded-lg border border-purple-300">
-                                      <h5 className="font-medium text-purple-800 mb-3">Network Impact Summary</h5>
+                                      <h5 className="font-medium text-purple-800 mb-3">
+                                        Network Impact Summary
+                                      </h5>
                                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                                         <div className="text-center">
                                           <div className="text-2xl font-bold text-blue-600">
-                                            {impactedFlights && Array.isArray(impactedFlights) ? impactedFlights.length : 2}
+                                            {impactedFlights &&
+                                            Array.isArray(impactedFlights)
+                                              ? impactedFlights.length
+                                              : 2}
                                           </div>
-                                          <div className="text-gray-600">Flights Affected</div>
+                                          <div className="text-gray-600">
+                                            Flights Affected
+                                          </div>
                                         </div>
                                         <div className="text-center">
-                                          <div className="text-2xl font-bold text-orange-600">15 min</div>
-                                          <div className="text-gray-600">Max Delay Impact</div>
+                                          <div className="text-2xl font-bold text-orange-600">
+                                            15 min
+                                          </div>
+                                          <div className="text-gray-600">
+                                            Max Delay Impact
+                                          </div>
                                         </div>
                                         <div className="text-center">
-                                          <div className="text-2xl font-bold text-green-600">Minimal</div>
-                                          <div className="text-gray-600">Overall Impact</div>
+                                          <div className="text-2xl font-bold text-green-600">
+                                            Minimal
+                                          </div>
+                                          <div className="text-gray-600">
+                                            Overall Impact
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
@@ -4178,42 +4549,70 @@ export function PendingSolutions() {
 
                                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                                     <div>
-                                      <span className="text-sm text-gray-600">Aircraft Registration:</span>
-                                      <div className="font-bold text-blue-900">A6-FED</div>
-                                    </div>
-                                    <div>
-                                      <span className="text-sm text-gray-600">Aircraft Type:</span>
-                                      <div className="font-medium text-blue-800">B737-800 (189Y)</div>
-                                    </div>
-                                    <div>
-                                      <span className="text-sm text-gray-600">Availability Status:</span>
-                                      <div className="font-medium">
-                                        <Badge className="bg-green-100 text-green-700">Available Now</Badge>
+                                      <span className="text-sm text-gray-600">
+                                        Aircraft Registration:
+                                      </span>
+                                      <div className="font-bold text-blue-900">
+                                        A6-FED
                                       </div>
                                     </div>
                                     <div>
-                                      <span className="text-sm text-gray-600">Turnaround Time:</span>
-                                      <div className="font-medium text-blue-800">45 min</div>
+                                      <span className="text-sm text-gray-600">
+                                        Aircraft Type:
+                                      </span>
+                                      <div className="font-medium text-blue-800">
+                                        B737-800 (189Y)
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <span className="text-sm text-gray-600">
+                                        Availability Status:
+                                      </span>
+                                      <div className="font-medium">
+                                        <Badge className="bg-green-100 text-green-700">
+                                          Available Now
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <span className="text-sm text-gray-600">
+                                        Turnaround Time:
+                                      </span>
+                                      <div className="font-medium text-blue-800">
+                                        45 min
+                                      </div>
                                     </div>
                                   </div>
 
                                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <div className="p-3 bg-white rounded border">
-                                      <span className="text-sm text-gray-600">ETOPS Certification:</span>
+                                      <span className="text-sm text-gray-600">
+                                        ETOPS Certification:
+                                      </span>
                                       <div className="font-medium">
-                                        <Badge className="bg-green-100 text-green-700">180min Certified</Badge>
+                                        <Badge className="bg-green-100 text-green-700">
+                                          180min Certified
+                                        </Badge>
                                       </div>
                                     </div>
                                     <div className="p-3 bg-white rounded border">
-                                      <span className="text-sm text-gray-600">Cabin Configuration:</span>
+                                      <span className="text-sm text-gray-600">
+                                        Cabin Configuration:
+                                      </span>
                                       <div className="font-medium">
-                                        <Badge className="bg-blue-100 text-blue-700">Exact Match</Badge>
+                                        <Badge className="bg-blue-100 text-blue-700">
+                                          Exact Match
+                                        </Badge>
                                       </div>
                                     </div>
                                     <div className="p-3 bg-white rounded border">
-                                      <span className="text-sm text-gray-600">Maintenance Status:</span>
+                                      <span className="text-sm text-gray-600">
+                                        Maintenance Status:
+                                      </span>
                                       <div className="font-medium">
-                                        <Badge className="bg-green-100 text-green-700">Current</Badge>
+                                        <Badge className="bg-green-100 text-green-700">
+                                          Current
+                                        </Badge>
                                       </div>
                                     </div>
                                   </div>
@@ -4227,9 +4626,12 @@ export function PendingSolutions() {
 
                                   <div className="text-center py-6 bg-white rounded-lg border border-purple-300">
                                     <Route className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                                    <h5 className="text-lg font-medium text-gray-700 mb-2">No Rotation Impact</h5>
+                                    <h5 className="text-lg font-medium text-gray-700 mb-2">
+                                      No Rotation Impact
+                                    </h5>
                                     <p className="text-gray-600 mb-3">
-                                      The selected alternate aircraft has no significant impact on subsequent flights
+                                      The selected alternate aircraft has no
+                                      significant impact on subsequent flights
                                     </p>
                                     <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-700">
                                       <CheckCircle className="h-4 w-4 mr-1" />
@@ -4254,13 +4656,19 @@ export function PendingSolutions() {
                         <CardContent>
                           {(() => {
                             const crewData =
-                              selectedOptionForDetails?.pending_recovery_solutions?.full_details?.crew_hotel_assignments ||
+                              selectedOptionForDetails
+                                ?.pending_recovery_solutions?.full_details
+                                ?.crew_hotel_assignments ||
                               selectedOptionForDetails?.assignedCrew ||
                               selectedPlan?.assignedCrew ||
                               [];
 
                             let crewMembers = [];
-                            if (Array.isArray(crewData) && crewData.length > 0 && crewData[0].crew_member) {
+                            if (
+                              Array.isArray(crewData) &&
+                              crewData.length > 0 &&
+                              crewData[0].crew_member
+                            ) {
                               crewMembers = crewData.flatMap((assignment) =>
                                 assignment.crew_member.map((crew) => ({
                                   name: crew.name,
@@ -4279,9 +4687,12 @@ export function PendingSolutions() {
                               return (
                                 <div className="text-center py-6 bg-green-50 rounded-lg border border-green-200">
                                   <UserCheck className="h-12 w-12 text-green-500 mx-auto mb-3" />
-                                  <h5 className="text-lg font-medium text-green-700 mb-2">No Crew Changes Required</h5>
+                                  <h5 className="text-lg font-medium text-green-700 mb-2">
+                                    No Crew Changes Required
+                                  </h5>
                                   <p className="text-green-600">
-                                    Current crew is certified and available for the selected alternate aircraft
+                                    Current crew is certified and available for
+                                    the selected alternate aircraft
                                   </p>
                                 </div>
                               );
@@ -4304,64 +4715,112 @@ export function PendingSolutions() {
                                   ];
 
                                   return (
-                                    <div key={index} className="border rounded-lg p-4 space-y-3">
+                                    <div
+                                      key={index}
+                                      className="border rounded-lg p-4 space-y-3"
+                                    >
                                       <div className="flex items-center justify-between mb-3">
                                         <div className="flex items-center gap-3">
                                           <div className="p-2 bg-purple-100 rounded">
                                             <UserCheck className="h-4 w-4 text-purple-600" />
                                           </div>
                                           <div>
-                                            <h4 className="font-semibold">{crewMember.name}</h4>
-                                            <Badge variant="outline" className="text-xs">{crewMember.role}</Badge>
+                                            <h4 className="font-semibold">
+                                              {crewMember.name}
+                                            </h4>
+                                            <Badge
+                                              variant="outline"
+                                              className="text-xs"
+                                            >
+                                              {crewMember.role}
+                                            </Badge>
                                           </div>
                                         </div>
                                         <div className="text-right text-sm">
-                                          <p className="text-muted-foreground">Base: {crewMember.base || "BEG"}</p>
-                                          <p className="text-muted-foreground">Status: {crewMember.status || "Available"}</p>
+                                          <p className="text-muted-foreground">
+                                            Base: {crewMember.base || "BEG"}
+                                          </p>
+                                          <p className="text-muted-foreground">
+                                            Status:{" "}
+                                            {crewMember.status || "Available"}
+                                          </p>
                                         </div>
                                       </div>
 
                                       <div className="space-y-3">
-                                        {crewRotationImpact.map((flight, flightIndex) => (
-                                          <div key={flightIndex} className="p-3 border rounded bg-purple-50 space-y-2">
-                                            <div className="flex items-center justify-between">
-                                              <div className="flex items-center gap-2">
-                                                <Plane className="h-4 w-4 text-purple-600" />
-                                                <span className="font-medium">{flight.flightNumber}</span>
-                                                <Badge variant="outline" className="text-xs">
-                                                  {flight.origin_code} → {flight.destination_code}
+                                        {crewRotationImpact.map(
+                                          (flight, flightIndex) => (
+                                            <div
+                                              key={flightIndex}
+                                              className="p-3 border rounded bg-purple-50 space-y-2"
+                                            >
+                                              <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                  <Plane className="h-4 w-4 text-purple-600" />
+                                                  <span className="font-medium">
+                                                    {flight.flightNumber}
+                                                  </span>
+                                                  <Badge
+                                                    variant="outline"
+                                                    className="text-xs"
+                                                  >
+                                                    {flight.origin_code} →{" "}
+                                                    {flight.destination_code}
+                                                  </Badge>
+                                                </div>
+                                                <Badge
+                                                  className={
+                                                    flight.impact ===
+                                                    "High Impact"
+                                                      ? "bg-red-100 text-red-700"
+                                                      : flight.impact ===
+                                                          "Medium Impact"
+                                                        ? "bg-yellow-100 text-yellow-700"
+                                                        : "bg-green-100 text-green-700"
+                                                  }
+                                                >
+                                                  {flight.impact}
                                                 </Badge>
                                               </div>
-                                              <Badge className={
-                                                flight.impact === "High Impact" ? "bg-red-100 text-red-700" :
-                                                flight.impact === "Medium Impact" ? "bg-yellow-100 text-yellow-700" :
-                                                "bg-green-100 text-green-700"
-                                              }>
-                                                {flight.impact}
-                                              </Badge>
-                                            </div>
 
-                                            <div className="grid grid-cols-3 gap-3 text-xs">
-                                              <div>
-                                                <Label className="text-muted-foreground">Delay</Label>
-                                                <p className="font-medium">{flight.delay}</p>
+                                              <div className="grid grid-cols-3 gap-3 text-xs">
+                                                <div>
+                                                  <Label className="text-muted-foreground">
+                                                    Delay
+                                                  </Label>
+                                                  <p className="font-medium">
+                                                    {flight.delay}
+                                                  </p>
+                                                </div>
+                                                <div>
+                                                  <Label className="text-muted-foreground">
+                                                    Duty Time
+                                                  </Label>
+                                                  <p className="font-medium">
+                                                    {flight.dutyTime}
+                                                  </p>
+                                                </div>
+                                                <div>
+                                                  <Label className="text-muted-foreground">
+                                                    Rest Period
+                                                  </Label>
+                                                  <p className="font-medium">
+                                                    {flight.restPeriod}
+                                                  </p>
+                                                </div>
                                               </div>
-                                              <div>
-                                                <Label className="text-muted-foreground">Duty Time</Label>
-                                                <p className="font-medium">{flight.dutyTime}</p>
-                                              </div>
-                                              <div>
-                                                <Label className="text-muted-foreground">Rest Period</Label>
-                                                <p className="font-medium">{flight.restPeriod}</p>
-                                              </div>
-                                            </div>
 
-                                            <div className="p-2 bg-white rounded text-xs">
-                                              <Label className="text-muted-foreground">Reason</Label>
-                                              <p className="mt-1">{flight.reason}</p>
+                                              <div className="p-2 bg-white rounded text-xs">
+                                                <Label className="text-muted-foreground">
+                                                  Reason
+                                                </Label>
+                                                <p className="mt-1">
+                                                  {flight.reason}
+                                                </p>
+                                              </div>
                                             </div>
-                                          </div>
-                                        ))}
+                                          ),
+                                        )}
                                       </div>
                                     </div>
                                   );
@@ -4372,286 +4831,6 @@ export function PendingSolutions() {
                         </CardContent>
                       </Card>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Activity className="h-5 w-5" />
-                      Rotation Impact Analysis
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {(() => {
-                      // Extract rotation data from various possible sources
-                      const rotationData = selectedOptionForDetails?.rotationPlan ||
-                                          selectedOptionForDetails?.rotation_plan ||
-                                          selectedOptionForDetails?.matchingOption?.rotation_plan ||
-                                          selectedOptionForDetails?.matchingOption?.rotationPlan;
-
-                      const alternateAircraft = selectedOptionForDetails?.alternateAircraft ||
-                                               selectedOptionForDetails?.aircraftRotations ||
-                                               rotationData?.alternateAircraft ||
-                                               rotationData?.aircraftOptions ||
-                                               selectedOptionForDetails?.matchingOption?.alternateAircraft;
-
-                      const impactedFlights = rotationData?.impactedFlights ||
-                                            selectedOptionForDetails?.impactedFlights ||
-                                            rotationData?.nextSectors ||
-                                            selectedOptionForDetails?.matchingOption?.impacted_flights;
-
-                      const hasRotationData = alternateAircraft || impactedFlights || rotationData;
-
-                      if (hasRotationData) {
-                        return (
-                          <div className="space-y-6">
-                            {/* Selected Alternate Aircraft Section */}
-                            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                              <h4 className="font-medium text-blue-800 mb-3 flex items-center gap-2">
-                                <Plane className="h-4 w-4" />
-                                Selected Alternate Aircraft Information
-                              </h4>
-
-                              {alternateAircraft && (Array.isArray(alternateAircraft) ? alternateAircraft.length > 0 : true) ? (
-                                <div className="space-y-3">
-                                  {(Array.isArray(alternateAircraft) ? alternateAircraft : [alternateAircraft]).map((aircraft, index) => (
-                                    <div key={index} className="p-3 bg-white rounded border border-blue-300">
-                                      <div className="flex items-center justify-between mb-3">
-                                        <h5 className="font-semibold text-blue-900">
-                                          {aircraft.registration || aircraft.tail || aircraft.reg || aircraft.aircraft || `Aircraft ${index + 1}`}
-                                        </h5>
-                                        {aircraft.recommended && (
-                                          <Badge className="bg-green-100 text-green-700">
-                                            <Star className="h-3 w-3 mr-1" />
-                                            Selected
-                                          </Badge>
-                                        )}
-                                      </div>
-
-                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-3">
-                                        <div>
-                                          <span className="text-gray-600">Aircraft Type:</span>
-                                          <div className="font-medium">{aircraft.type || aircraft.aircraftType || "N/A"}</div>
-                                        </div>
-                                        <div>
-                                          <span className="text-gray-600">Availability:</span>
-                                          <div className="font-medium">
-                                            <Badge className={
-                                              aircraft.availability === "Available" || aircraft.status === "Available"
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-yellow-100 text-yellow-700"
-                                            }>
-                                              {aircraft.availability || aircraft.status || "Available"}
-                                            </Badge>
-                                          </div>
-                                        </div>
-                                        <div>
-                                          <span className="text-gray-600">Turnaround:</span>
-                                          <div className="font-medium">{aircraft.turnaround || aircraft.turnaroundTime || "N/A"}</div>
-                                        </div>
-                                        <div>
-                                          <span className="text-gray-600">Maintenance:</span>
-                                          <div className="font-medium">
-                                            <Badge className={
-                                              aircraft.maintenance?.status === "current"
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-yellow-100 text-yellow-700"
-                                            }>
-                                              {aircraft.maintenance?.value || aircraft.maintenance?.status || "Current"}
-                                            </Badge>
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      {/* Additional aircraft details */}
-                                      {(aircraft.etops || aircraft.cabinMatch || aircraft.option_score) && (
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                                          {aircraft.etops && (
-                                            <div>
-                                              <span className="text-gray-600">ETOPS:</span>
-                                              <div className="font-medium">{aircraft.etops.value || aircraft.etops.status}</div>
-                                            </div>
-                                          )}
-                                          {aircraft.cabinMatch && (
-                                            <div>
-                                              <span className="text-gray-600">Cabin Match:</span>
-                                              <div className="font-medium">
-                                                <Badge className="bg-blue-100 text-blue-700">
-                                                  {aircraft.cabinMatch.value || aircraft.cabinMatch.status}
-                                                </Badge>
-                                              </div>
-                                            </div>
-                                          )}
-                                          {aircraft.option_score && (
-                                            <div>
-                                              <span className="text-gray-600">Option Score:</span>
-                                              <div className="font-medium text-green-600">
-                                                {aircraft.option_score.cost_score} Cost / {aircraft.option_score.delay_score} Delay
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
-
-                                      {/* Rotation impact for this aircraft */}
-                                      {aircraft.rotationImpact && (
-                                        <div className="mt-3 p-2 bg-gray-50 rounded">
-                                          <div className="text-xs text-gray-600 mb-1">Rotation Impact:</div>
-                                          <div className="text-sm">{aircraft.rotationImpact}</div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <div className="text-center py-4 text-gray-500">
-                                  <Plane className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                  <p>No alternate aircraft information available</p>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Alternate Aircraft Rotation Impact Section */}
-                            <div className="space-y-4">
-                              <h4 className="font-medium text-gray-800 flex items-center gap-2">
-                                <Route className="h-4 w-4" />
-                                Alternate Aircraft Rotation Impact
-                              </h4>
-
-                              {impactedFlights && (Array.isArray(impactedFlights) ? impactedFlights.length > 0 : true) ? (
-                                <div className="space-y-3">
-                                  {(Array.isArray(impactedFlights) ? impactedFlights : [impactedFlights]).map((flight, index) => (
-                                    <div key={index} className="p-4 border rounded-lg">
-                                      <div className="flex items-center justify-between mb-2">
-                                        <span className="font-medium text-blue-600">
-                                          {flight.flightNumber || flight.flight || flight.flight_number || `Flight ${index + 1}`}
-                                        </span>
-                                        <div className="flex gap-2">
-                                          <Badge className={
-                                            flight.impact === "High Impact" || flight.impact === "High" ? "bg-red-100 text-red-700" :
-                                            flight.impact === "Medium Impact" || flight.impact === "Medium" ? "bg-yellow-100 text-yellow-700" :
-                                            "bg-green-100 text-green-700"
-                                          }>
-                                            {flight.impact || "Low Impact"}
-                                          </Badge>
-                                          {flight.status && (
-                                            <Badge variant="outline" className={
-                                              flight.status === "On Time" ? "border-green-200 text-green-700" :
-                                              flight.status === "Delayed" ? "border-orange-200 text-orange-700" :
-                                              "border-gray-200 text-gray-700"
-                                            }>
-                                              {flight.status}
-                                            </Badge>
-                                          )}
-                                        </div>
-                                      </div>
-
-                                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                                        <div>
-                                          <span className="text-gray-600">Route:</span>
-                                          <div>
-                                            {flight.origin || flight.origin_code}-{flight.destination || flight.destination_code}
-                                          </div>
-                                        </div>
-                                        <div>
-                                          <span className="text-gray-600">Departure:</span>
-                                          <div>{flight.departure ? new Date(flight.departure).toLocaleTimeString() : "N/A"}</div>
-                                        </div>
-                                        <div>
-                                          <span className="text-gray-600">Arrival:</span>
-                                          <div>{flight.arrival ? new Date(flight.arrival).toLocaleTimeString() : "N/A"}</div>
-                                        </div>
-                                        <div>
-                                          <span className="text-gray-600">Delay:</span>
-                                          <div className={flight.delay && parseInt(flight.delay) > 0 ? "text-orange-600 font-medium" : ""}>
-                                            {flight.delay || "No delay"}
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      {flight.reason && (
-                                        <div className="mt-2 text-sm text-gray-600">
-                                          <strong>Impact Reason:</strong> {flight.reason}
-                                        </div>
-                                      )}
-
-                                      {flight.passengers && (
-                                        <div className="mt-2 text-sm text-gray-600">
-                                          <strong>Passengers Affected:</strong> {flight.passengers}
-                                        </div>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              ) : (
-                                <div className="text-center py-6 text-gray-500">
-                                  <Route className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                                  <p>No specific rotation impacts identified</p>
-                                  <p className="text-sm">The selected aircraft has minimal impact on subsequent flights</p>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Network Impact Summary */}
-                            {(() => {
-                              const networkImpact = rotationData?.networkImpact ||
-                                                  selectedOptionForDetails?.networkImpact ||
-                                                  rotationData?.operationalMetrics;
-
-                              if (networkImpact) {
-                                return (
-                                  <div className="p-4 bg-gray-50 rounded-lg">
-                                    <h4 className="font-medium text-gray-800 mb-3">Network Impact Summary</h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                                      <div className="text-center">
-                                        <div className="text-2xl font-bold text-blue-600">
-                                          {networkImpact.totalFlights || networkImpact.affectedFlights || 0}
-                                        </div>
-                                        <div className="text-gray-600">Total Flights Affected</div>
-                                      </div>
-                                      <div className="text-center">
-                                        <div className="text-2xl font-bold text-orange-600">
-                                          {networkImpact.totalDelay || networkImpact.totalDelayMinutes || "0"} min
-                                        </div>
-                                        <div className="text-gray-600">Total Network Delay</div>
-                                      </div>
-                                      <div className="text-center">
-                                        <div className="text-2xl font-bold text-green-600">
-                                          {networkImpact.recoveryTime || networkImpact.estimatedCost || "Minimal"}
-                                        </div>
-                                        <div className="text-gray-600">
-                                          {networkImpact.recoveryTime ? "Recovery Time" : "Impact Cost"}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              }
-
-                              return null;
-                            })()}
-                          </div>
-                        );
-                      }
-
-                      // No rotation data available
-                      return (
-                        <div className="text-center py-12">
-                          <Route className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                          <h3 className="text-lg font-medium text-gray-900 mb-2">
-                            No Rotation Impact Data
-                          </h3>
-                          <p className="text-gray-600 mb-4">
-                            This recovery option has no significant impact on aircraft rotation schedules.
-                          </p>
-                          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-green-100 text-green-700">
-                            <CheckCircle className="h-4 w-4 mr-1" />
-                            Minimal Network Disruption
-                          </div>
-                        </div>
-                      );
-                    })()}
                   </CardContent>
                 </Card>
               </TabsContent>
