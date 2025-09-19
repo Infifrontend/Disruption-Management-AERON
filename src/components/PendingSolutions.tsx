@@ -1671,6 +1671,7 @@ export function PendingSolutions() {
                         {(() => {
                           const selectedOption = selectedPlan?.matchingOption;
                           let actualCost = selectedPlan?.estimatedCost || 141440;
+                          let costBreakdown = null;
                           
                           // Parse the cost from the selected option if available
                           if (selectedOption?.cost && typeof selectedOption.cost === 'string') {
@@ -1682,16 +1683,122 @@ export function PendingSolutions() {
                             actualCost = selectedOption.estimated_cost;
                           }
 
-                          // Calculate cost breakdown based on actual cost
-                          const fuelCost = Math.round(actualCost * 0.35); // 35% for fuel
-                          const crewCost = Math.round(actualCost * 0.25); // 25% for crew
-                          const aircraftCost = Math.round(actualCost * 0.20); // 20% for aircraft
-                          const passengerCost = Math.round(actualCost * 0.15); // 15% for passenger services
-                          const operationalCost = actualCost - fuelCost - crewCost - aircraftCost - passengerCost; // Remaining for operational
+                          // Try to get actual cost breakdown from selected option
+                          if (selectedOption?.cost_breakdown) {
+                            if (Array.isArray(selectedOption.cost_breakdown)) {
+                              costBreakdown = selectedOption.cost_breakdown;
+                            } else if (typeof selectedOption.cost_breakdown === 'object' && selectedOption.cost_breakdown.breakdown) {
+                              costBreakdown = selectedOption.cost_breakdown.breakdown;
+                            }
+                          } else if (selectedPlan?.costAnalysis?.breakdown) {
+                            costBreakdown = selectedPlan.costAnalysis.breakdown;
+                          } else if (selectedPlan?.costBreakdown?.breakdown) {
+                            costBreakdown = selectedPlan.costBreakdown.breakdown;
+                          }
+
+                          // If we have actual cost breakdown from API, use it
+                          if (costBreakdown && Array.isArray(costBreakdown) && costBreakdown.length > 0) {
+                            return (
+                              <div className="space-y-6">
+                                {/* Cost Breakdown from API */}
+                                <div className="grid grid-cols-2 gap-4">
+                                  {costBreakdown.map((item, index) => {
+                                    const colors = [
+                                      { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', amount: 'text-blue-900', detail: 'text-blue-600' },
+                                      { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-800', amount: 'text-purple-900', detail: 'text-purple-600' },
+                                      { bg: 'bg-green-50', border: 'border-green-200', text: 'text-green-800', amount: 'text-green-900', detail: 'text-green-600' },
+                                      { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-800', amount: 'text-orange-900', detail: 'text-orange-600' },
+                                      { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-800', amount: 'text-red-900', detail: 'text-red-600' },
+                                      { bg: 'bg-yellow-50', border: 'border-yellow-200', text: 'text-yellow-800', amount: 'text-yellow-900', detail: 'text-yellow-600' }
+                                    ];
+                                    const colorSet = colors[index % colors.length];
+                                    
+                                    return (
+                                      <div key={index} className={`p-4 ${colorSet.bg} rounded-lg border ${colorSet.border}`}>
+                                        <div className="flex justify-between items-center mb-2">
+                                          <span className={`text-sm font-medium ${colorSet.text}`}>
+                                            {item.category || item.type || `Cost Item ${index + 1}`}
+                                          </span>
+                                          <span className={`text-lg font-bold ${colorSet.amount}`}>
+                                            {item.amount || `${airlineConfig.currency} ${(item.value || 0).toLocaleString()}`}
+                                          </span>
+                                        </div>
+                                        {item.percentage && (
+                                          <div className={`text-xs ${colorSet.detail}`}>
+                                            {item.percentage}% of total cost
+                                          </div>
+                                        )}
+                                        {item.description && (
+                                          <div className={`text-xs ${colorSet.detail} mt-1`}>
+                                            {item.description}
+                                          </div>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+
+                                {/* Total Cost Summary */}
+                                <div className="border-t pt-4">
+                                  <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
+                                    <span className="text-lg font-bold text-gray-900">Total Estimated Cost:</span>
+                                    <span className="text-2xl font-bold text-orange-600">
+                                      {(() => {
+                                        // Try to get total from cost breakdown
+                                        if (selectedOption?.cost_breakdown?.total?.amount) {
+                                          return selectedOption.cost_breakdown.total.amount;
+                                        }
+                                        // Calculate total from breakdown items
+                                        const calculatedTotal = costBreakdown.reduce((sum, item) => {
+                                          if (item.value && typeof item.value === 'number') {
+                                            return sum + item.value;
+                                          }
+                                          if (item.amount && typeof item.amount === 'string') {
+                                            const numericValue = parseInt(item.amount.replace(/[^0-9]/g, ''));
+                                            return sum + (numericValue || 0);
+                                          }
+                                          return sum;
+                                        }, 0);
+                                        
+                                        return calculatedTotal > 0 
+                                          ? `${airlineConfig.currency} ${calculatedTotal.toLocaleString()}`
+                                          : `${airlineConfig.currency} ${actualCost.toLocaleString()}`;
+                                      })()}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                {/* Detailed List */}
+                                <div className="space-y-2">
+                                  <h4 className="font-semibold text-gray-800 mb-3">Detailed Cost Analysis:</h4>
+                                  <div className="space-y-1 text-sm">
+                                    {costBreakdown.map((item, index) => (
+                                      <div key={index} className="flex justify-between">
+                                        <span className="text-gray-600">
+                                          • {item.category || item.type || `Cost Item ${index + 1}`}
+                                          {item.description && ` (${item.description})`}
+                                        </span>
+                                        <span className="font-medium">
+                                          {item.amount || `${airlineConfig.currency} ${(item.value || 0).toLocaleString()}`}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // Fallback to calculated breakdown if no API data
+                          const fuelCost = Math.round(actualCost * 0.35);
+                          const crewCost = Math.round(actualCost * 0.25);
+                          const aircraftCost = Math.round(actualCost * 0.20);
+                          const passengerCost = Math.round(actualCost * 0.15);
+                          const operationalCost = actualCost - fuelCost - crewCost - aircraftCost - passengerCost;
 
                           return (
                             <div className="space-y-6">
-                              {/* Cost Breakdown Cards */}
+                              {/* Calculated Cost Breakdown Cards */}
                               <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                                   <div className="flex justify-between items-center mb-2">
@@ -1757,7 +1864,7 @@ export function PendingSolutions() {
 
                               {/* Cost Breakdown Details */}
                               <div className="space-y-2">
-                                <h4 className="font-semibold text-gray-800 mb-3">Detailed Breakdown:</h4>
+                                <h4 className="font-semibold text-gray-800 mb-3">Estimated Breakdown:</h4>
                                 <div className="space-y-1 text-sm">
                                   <div className="flex justify-between">
                                     <span className="text-gray-600">• Fuel & Navigation charges</span>
