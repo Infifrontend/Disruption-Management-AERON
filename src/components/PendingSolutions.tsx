@@ -4569,7 +4569,6 @@ export function PendingSolutions() {
     </div>
   );
 }
-</new_str>
 </changes>
 <replit_final_file>
 "use client";
