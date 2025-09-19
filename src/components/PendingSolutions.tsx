@@ -1991,12 +1991,12 @@ export function PendingSolutions() {
                                               {airlineConfig.currency} {minOtherCost.toLocaleString()} - {airlineConfig.currency} {maxOtherCost.toLocaleString()}
                                             </span>
                                           </div>
-                                          <div className="flex justify-between text-blue-700">
+                                          {/* <div className="flex justify-between text-blue-700">
                                             <span>Efficiency Rating:</span>
                                             <span className={`font-semibold ${costEfficiency > 0 ? 'text-green-600' : 'text-red-600'}`}>
                                               {costEfficiency > 0 ? `${costEfficiency.toFixed(1)}% more efficient` : `${Math.abs(costEfficiency).toFixed(1)}% more expensive`}
                                             </span>
-                                          </div>
+                                          </div> */}
                                         </>
                                       );
                                     })()}
