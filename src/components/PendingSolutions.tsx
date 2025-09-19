@@ -3359,7 +3359,7 @@ export function PendingSolutions() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-2 gap-6">
                       <div>
                         <h4 className="font-medium mb-3">
                           Accommodation Breakdown
@@ -3639,7 +3639,7 @@ export function PendingSolutions() {
                       </div>
                     </div>
 
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="flex items-center gap-2 mb-2">
                         <Info className="h-4 w-4 text-blue-600" />
                         <span className="font-medium text-blue-800">
@@ -3652,8 +3652,8 @@ export function PendingSolutions() {
                       </p>
                     </div>
 
-                    {/* PNR Grouped Passenger Details */}
-                    <div className="mt-6">
+                       {/* PNR Grouped Passenger Details */}
+                       <div className="mt-6">
                       <h4 className="font-medium mb-3">
                         Passenger Rebookings by PNR
                       </h4>
@@ -3861,9 +3861,9 @@ export function PendingSolutions() {
                                 )
                               );
                             })()}
-                          </div>
-                        </div>
-                      </CardContent>
+                      </div>
+                    </div>
+                    </CardContent>
                     </Card>
 
                     <Card>
@@ -4166,9 +4166,9 @@ export function PendingSolutions() {
                         </div>
                       </CardContent>
                     </Card>
-                  </div>
+                  
                 </TabsContent>
-              )}
+             
             </Tabs>
           )}
         </DialogContent>
