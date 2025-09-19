@@ -76,7 +76,6 @@ import {
   Package,
   Building,
   Activity,
-  Calculator,
 } from "lucide-react";
 import { databaseService } from "../services/databaseService";
 import { useAirlineTheme } from "./../hooks/useAirlineTheme";
@@ -1615,398 +1614,457 @@ export function PendingSolutions() {
               </TabsContent>
 
               <TabsContent value="impact" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <BarChart3 className="h-5 w-5" />
-                      Impact Analysis
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      Comprehensive impact assessment for recovery options
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    {selectedPlan.recoveryOptions &&
-                    selectedPlan.recoveryOptions.length > 0 ? (
-                      <div className="space-y-6">
-                        {/* Recovery Options Comparison */}
-                        <div>
-                          <h4 className="font-medium mb-4">
-                            Recovery Options Comparison
-                          </h4>
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            {selectedPlan.recoveryOptions
-                              .slice(0, 3)
-                              .map((option, index) => {
-                                const isSelected =
-                                  selectedPlan.optionId &&
-                                  (option.id === selectedPlan.optionId ||
-                                    option.option_id === selectedPlan.optionId ||
-                                    String(option.id) ===
-                                      String(selectedPlan.optionId) ||
-                                    String(option.option_id) ===
-                                      String(selectedPlan.optionId));
-
-                                // Extract cost from option
-                                let optionCost = "N/A";
-                                if (option.cost) {
-                                  if (typeof option.cost === 'string') {
-                                    const numericValue = parseInt(option.cost.replace(/[^0-9]/g, ""));
-                                    optionCost = `${airlineConfig.currency} ${numericValue.toLocaleString()}`;
-                                  } else {
-                                    optionCost = `${airlineConfig.currency} ${option.cost.toLocaleString()}`;
-                                  }
-                                }
-
-                                return (
-                                  <Card
-                                    key={option.id || index}
+                <div className="grid grid-cols-1 gap-6">
+                  {/* Recovery Options Comparison Matrix */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="h-5 w-5 text-blue-600" />
+                        Recovery Options Overview
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Option</TableHead>
+                              <TableHead>
+                                Cost ({airlineConfig.currency})
+                              </TableHead>
+                              <TableHead>Timeline</TableHead>
+                              <TableHead>Confidence</TableHead>
+                              <TableHead>Impact</TableHead>
+                              <TableHead>Status</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {/* Selected Option */}
+                            {selectedPlan?.matchingOption && (
+                              <TableRow className="bg-orange-50">
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <Star className="h-4 w-4 text-orange-600" />
+                                    <div>
+                                      <div className="font-medium">
+                                        {selectedPlan.matchingOption.title}
+                                      </div>
+                                      <Badge className="bg-orange-100 text-orange-700 mt-1">
+                                        Selected
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                </TableCell>
+                                <TableCell className="font-medium">
+                                  {selectedPlan.matchingOption.cost ||
+                                    `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
+                                </TableCell>
+                                <TableCell>
+                                  {selectedPlan.matchingOption.timeline ||
+                                    selectedPlan.timeline ||
+                                    "TBD"}
+                                </TableCell>
+                                <TableCell>
+                                  <div className="flex items-center gap-2">
+                                    <span>
+                                      {selectedPlan.matchingOption.confidence ||
+                                        selectedPlan.confidence ||
+                                        85}
+                                      %
+                                    </span>
+                                    <Progress
+                                      value={
+                                        selectedPlan.matchingOption
+                                          .confidence ||
+                                        selectedPlan.confidence ||
+                                        85
+                                      }
+                                      className="w-16 h-2"
+                                    />
+                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge
                                     className={
-                                      isSelected
-                                        ? "border-orange-200 bg-orange-50"
-                                        : "border-gray-200"
+                                      selectedPlan.matchingOption.impact ===
+                                      "High"
+                                        ? "bg-red-100 text-red-700"
+                                        : selectedPlan.matchingOption.impact ===
+                                            "Medium"
+                                          ? "bg-yellow-100 text-yellow-700"
+                                          : "bg-green-100 text-green-700"
                                     }
                                   >
-                                    <CardContent className="p-4">
-                                      <div className="flex justify-between items-start mb-3">
-                                        <h5
-                                          className={`font-medium text-sm ${isSelected ? "text-orange-800" : ""}`}
-                                        >
-                                          Option {String.fromCharCode(65 + index)}: {option.title}
-                                        </h5>
-                                        {isSelected && (
-                                          <Badge className="bg-orange-100 text-orange-700 text-xs">
-                                            Selected
-                                          </Badge>
-                                        )}
-                                      </div>
-                                      <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between">
-                                          <span className="text-muted-foreground">
-                                            Cost:
-                                          </span>
-                                          <span className="font-medium">
-                                            {optionCost}
-                                          </span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                          <span className="text-muted-foreground">
-                                            Timeline:
-                                          </span>
-                                          <span className="font-medium">
-                                            {option.timeline || "TBD"}
-                                          </span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                          <span className="text-muted-foreground">
-                                            Confidence:
-                                          </span>
-                                          <span className="font-medium">
-                                            {option.confidence || 80}%
-                                          </span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                          <span className="text-muted-foreground">
-                                            Impact:
-                                          </span>
-                                          <span className="font-medium">
-                                            {option.impact || "Medium"}
-                                          </span>
-                                        </div>
-                                        {/* Risk Level */}
-                                        <div className="flex justify-between">
-                                          <span className="text-muted-foreground">
-                                            Risk:
-                                          </span>
-                                          <Badge
-                                            className={
-                                              (option.riskAssessment?.technicalRisk || "Medium") === "Low"
-                                                ? "bg-green-100 text-green-700"
-                                                : (option.riskAssessment?.technicalRisk || "Medium") === "Medium"
-                                                ? "bg-yellow-100 text-yellow-700"
-                                                : "bg-red-100 text-red-700"
-                                            }
-                                          >
-                                            {option.riskAssessment?.technicalRisk || "Medium"}
-                                          </Badge>
-                                        </div>
-                                      </div>
-                                    </CardContent>
-                                  </Card>
-                                );
-                              })}
-                          </div>
-                        </div>
-
-                        {/* Cost Impact Analysis for Selected Option */}
-                        {selectedPlan.matchingOption && (
-                          <div>
-                            <h4 className="font-medium mb-4">
-                              Detailed Cost Analysis - Selected Option
-                            </h4>
-                            <Card className="border-blue-200 bg-blue-50">
-                              <CardContent className="p-4">
-                                <div className="flex items-center gap-2 mb-4">
-                                  <DollarSign className="h-5 w-5 text-blue-600" />
-                                  <h5 className="font-medium text-blue-800">
-                                    {selectedPlan.matchingOption.title}
-                                  </h5>
-                                  <Badge className="bg-blue-100 text-blue-700">
-                                    Selected for Execution
+                                    {selectedPlan.matchingOption.impact ||
+                                      selectedPlan.impact ||
+                                      "Medium"}
                                   </Badge>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                  {/* Cost Breakdown */}
-                                  <div>
-                                    <h6 className="font-medium text-sm mb-3 flex items-center gap-2">
-                                      <Calculator className="h-4 w-4" />
-                                      Cost Breakdown
-                                    </h6>
-                                    {selectedPlan.matchingOption.cost_breakdown &&
-                                    Array.isArray(
-                                      selectedPlan.matchingOption.cost_breakdown,
-                                    ) ? (
-                                      <div className="space-y-3">
-                                        {selectedPlan.matchingOption.cost_breakdown.map(
-                                          (item, index) => (
-                                            <div
-                                              key={index}
-                                              className="bg-white rounded-lg p-3 border"
-                                            >
-                                              <div className="flex justify-between items-center mb-1">
-                                                <span className="text-sm font-medium">
-                                                  {item.category}
-                                                </span>
-                                                <span className="font-bold text-blue-600">
-                                                  {item.amount}
-                                                </span>
-                                              </div>
-                                              <div className="flex justify-between items-center text-xs">
-                                                <span className="text-muted-foreground">
-                                                  {item.description}
-                                                </span>
-                                                <span className="text-blue-600 font-medium">
-                                                  {item.percentage}%
-                                                </span>
-                                              </div>
-                                              <Progress
-                                                value={item.percentage}
-                                                className="h-1 mt-2"
-                                              />
-                                            </div>
-                                          ),
-                                        )}
-                                        <Separator className="my-3" />
-                                        <div className="bg-white rounded-lg p-3 border-2 border-blue-200">
-                                          <div className="flex justify-between items-center font-bold text-lg">
-                                            <span>Total Cost:</span>
-                                            <span className="text-blue-600">
-                                              {selectedPlan.matchingOption.cost ||
-                                                `${airlineConfig.currency} ${selectedPlan.estimatedCost?.toLocaleString() || "0"}`}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    ) : (
-                                      <div className="bg-white rounded-lg p-4 border">
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-muted-foreground">Total Cost:</span>
-                                          <span className="font-bold text-blue-600 text-lg">
-                                            {selectedPlan.matchingOption.cost ||
-                                              `${airlineConfig.currency} ${selectedPlan.estimatedCost?.toLocaleString() || "0"}`}
-                                          </span>
-                                        </div>
-                                        <p className="text-xs text-muted-foreground mt-2">
-                                          Detailed breakdown not available
-                                        </p>
-                                      </div>
-                                    )}
-                                  </div>
+                                </TableCell>
+                                <TableCell>
+                                  <Badge className="bg-green-100 text-green-700">
+                                    Available
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                            )}
 
-                                  {/* Impact Metrics */}
-                                  <div>
-                                    <h6 className="font-medium text-sm mb-3 flex items-center gap-2">
-                                      <Activity className="h-4 w-4" />
-                                      Impact Metrics
-                                    </h6>
-                                    <div className="space-y-3">
-                                      <div className="bg-white rounded-lg p-3 border">
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-sm font-medium">
-                                            Passengers Affected:
-                                          </span>
-                                          <span className="font-bold text-orange-600">
-                                            {selectedPlan.affectedPassengers || 0}
-                                          </span>
-                                        </div>
+                            {/* Other Recovery Options */}
+                            {selectedPlan?.recoveryOptions &&
+                              selectedPlan.recoveryOptions
+                                .filter(
+                                  (option) =>
+                                    !(
+                                      selectedPlan.optionId &&
+                                      (option.id === selectedPlan.optionId ||
+                                        option.option_id ===
+                                          selectedPlan.optionId ||
+                                        String(option.id) ===
+                                          String(selectedPlan.optionId) ||
+                                        String(option.option_id) ===
+                                          String(selectedPlan.optionId))
+                                    ),
+                                )
+                                .slice(0, 3)
+                                .map((option, index) => (
+                                  <TableRow key={option.id || index}>
+                                    <TableCell>
+                                      <div className="font-medium">
+                                        {option.title}
                                       </div>
-                                      <div className="bg-white rounded-lg p-3 border">
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-sm font-medium">
-                                            Delay Time:
-                                          </span>
-                                          <span className="font-bold text-yellow-600">
-                                            {selectedPlan.estimatedDelay || 0} min
-                                          </span>
-                                        </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      {option.cost ||
+                                        `${airlineConfig.currency} ${(option.estimated_cost || 0).toLocaleString()}`}
+                                    </TableCell>
+                                    <TableCell>
+                                      {option.timeline || "TBD"}
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center gap-2">
+                                        <span>{option.confidence || 80}%</span>
+                                        <Progress
+                                          value={option.confidence || 80}
+                                          className="w-16 h-2"
+                                        />
                                       </div>
-                                      <div className="bg-white rounded-lg p-3 border">
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-sm font-medium">
-                                            Success Probability:
-                                          </span>
-                                          <span className="font-bold text-green-600">
-                                            {selectedPlan.confidence || 80}%
-                                          </span>
-                                        </div>
-                                      </div>
-                                      <div className="bg-white rounded-lg p-3 border">
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-sm font-medium">
-                                            Implementation Time:
-                                          </span>
-                                          <span className="font-bold text-purple-600">
-                                            {selectedPlan.matchingOption.timeline || selectedPlan.timeline || "TBD"}
-                                          </span>
-                                        </div>
-                                      </div>
-                                      <div className="bg-white rounded-lg p-3 border">
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-sm font-medium">
-                                            Impact Level:
-                                          </span>
-                                          <Badge
-                                            className={
-                                              (selectedPlan.matchingOption.impact || "Medium") === "Low" || (selectedPlan.matchingOption.impact || "Medium") === "Minimal"
-                                                ? "bg-green-100 text-green-700"
-                                                : (selectedPlan.matchingOption.impact || "Medium") === "Medium" || (selectedPlan.matchingOption.impact || "Medium") === "Moderate"
-                                                ? "bg-yellow-100 text-yellow-700"
-                                                : "bg-red-100 text-red-700"
-                                            }
-                                          >
-                                            {selectedPlan.matchingOption.impact || "Medium"}
-                                          </Badge>
-                                        </div>
-                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge
+                                        className={
+                                          option.impact === "High"
+                                            ? "bg-red-100 text-red-700"
+                                            : option.impact === "Medium"
+                                              ? "bg-yellow-100 text-yellow-700"
+                                              : "bg-green-100 text-green-700"
+                                        }
+                                      >
+                                        {option.impact || "Medium"}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                      <Badge variant="outline">Available</Badge>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  {/* Cost Impact Analysis */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <DollarSign className="h-5 w-5 text-orange-600" />
+                          Cost Impact Analysis
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {(() => {
+                            const baseCost = 165480;
+                            const actualCost =
+                              selectedPlan?.estimatedCost || baseCost;
+                            const variance = actualCost - baseCost;
+
+                            return (
+                              <div className="space-y-3">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm font-medium">
+                                    Base Cost:
+                                  </span>
+                                  <span className="font-semibold">
+                                    {airlineConfig.currency}{" "}
+                                    {baseCost.toLocaleString()}
+                                  </span>
+                                </div>
+                                <Separator />
+                                <div className="flex justify-between items-center text-lg">
+                                  <span className="font-semibold">
+                                    Total Estimated Cost:
+                                  </span>
+                                  <span className="font-bold text-orange-600">
+                                    {airlineConfig.currency}{" "}
+                                    {actualCost.toLocaleString()}
+                                  </span>
+                                </div>
+                                {variance !== 0 && (
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-sm font-medium">
+                                      Variance:
+                                    </span>
+                                    <span
+                                      className={`font-semibold ${variance > 0 ? "text-red-600" : "text-green-600"}`}
+                                    >
+                                      {variance > 0 ? "+" : ""}
+                                      {airlineConfig.currency}{" "}
+                                      {variance.toLocaleString()}
+                                    </span>
+                                  </div>
+                                )}
+
+                                {/* Cost Breakdown */}
+                                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                                  <h4 className="font-medium mb-3">
+                                    Cost Breakdown
+                                  </h4>
+                                  <div className="space-y-2 text-sm">
+                                    <div className="flex justify-between">
+                                      <span>Aircraft Operations:</span>
+                                      <span>
+                                        {airlineConfig.currency}{" "}
+                                        {Math.round(
+                                          actualCost * 0.6,
+                                        ).toLocaleString()}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Passenger Services:</span>
+                                      <span>
+                                        {airlineConfig.currency}{" "}
+                                        {Math.round(
+                                          actualCost * 0.25,
+                                        ).toLocaleString()}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span>Ground Handling:</span>
+                                      <span>
+                                        {airlineConfig.currency}{" "}
+                                        {Math.round(
+                                          actualCost * 0.15,
+                                        ).toLocaleString()}
+                                      </span>
                                     </div>
                                   </div>
                                 </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      </CardContent>
+                    </Card>
 
-                                {/* Additional Details */}
-                                {selectedPlan.matchingOption.description && (
-                                  <div className="mt-6">
-                                    <h6 className="font-medium text-sm mb-2 flex items-center gap-2">
-                                      <Info className="h-4 w-4" />
-                                      Solution Details
-                                    </h6>
-                                    <div className="bg-white rounded-lg p-4 border">
-                                      <p className="text-sm text-muted-foreground">
-                                        {selectedPlan.matchingOption.description}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Activity className="h-5 w-5 text-blue-600" />
+                          Operational Impact
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {/* Schedule Impact */}
+                          <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Clock className="h-4 w-4 text-yellow-600" />
+                              <span className="font-medium text-yellow-800">
+                                Schedule Impact
+                              </span>
+                              <Badge className="bg-yellow-100 text-yellow-700 ml-auto">
+                                Minimal passenger disruption
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-yellow-700">
+                              {selectedPlan?.estimatedDelay || 0} minute delay
+                              expected
+                            </p>
+                          </div>
+
+                          {/* Passenger Impact */}
+                          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Users className="h-4 w-4 text-blue-600" />
+                              <span className="font-medium text-blue-800">
+                                Passenger Impact
+                              </span>
+                              <Badge className="bg-blue-100 text-blue-700 ml-auto">
+                                Operational Limited
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-blue-700">
+                              {selectedPlan?.affectedPassengers || 0} passengers
+                              affected
+                            </p>
+                          </div>
+
+                          {/* Success Probability */}
+                          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <TrendingUp className="h-4 w-4 text-green-600" />
+                              <span className="font-medium text-green-800">
+                                Success Probability
+                              </span>
+                              <Badge className="bg-green-100 text-green-700 ml-auto">
+                                90% confidence in schedule resolution
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-green-700">
+                              {selectedPlan?.confidence || 90}% confidence in
+                              successful resolution
+                            </p>
+                          </div>
+
+                          {/* Network Impact */}
+                          <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Target className="h-4 w-4 text-purple-600" />
+                              <span className="font-medium text-purple-800">
+                                Network Impact
+                              </span>
+                              <Badge className="bg-purple-100 text-purple-700 ml-auto">
+                                Operational minimal
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-purple-700">
+                              Minimal impact on downstream operations
+                            </p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Detailed Rotation Impact (if available) */}
+                  {selectedPlan?.matchingOption?.rotation_plan?.aircraft ||
+                  selectedPlan?.rotationImpact?.aircraft ||
+                  (selectedPlan?.assignedCrew &&
+                    selectedPlan.assignedCrew.length > 0) ? (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <Plane className="h-5 w-5 text-blue-600" />
+                          Detailed Rotation Impact
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <Alert className="border-blue-200 bg-blue-50 mb-4">
+                          <Info className="h-4 w-4 text-blue-600" />
+                          <AlertDescription className="text-blue-800">
+                            This analysis shows how the recovery option affects
+                            subsequent flights, aircraft rotations, and crew
+                            assignments.
+                          </AlertDescription>
+                        </Alert>
+
+                        {/* Rotation Impact Details */}
+                        {selectedPlan?.matchingOption?.rotation_impact && (
+                          <div className="space-y-3">
+                            {selectedPlan.matchingOption.rotation_impact
+                              .slice(0, 3)
+                              .map((flight, index) => (
+                                <div
+                                  key={index}
+                                  className="p-4 border rounded-lg bg-white space-y-2"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <Plane className="h-4 w-4 text-blue-600" />
+                                      <span className="font-semibold">
+                                        {flight.flightNumber ||
+                                          `Flight ${index + 1}`}
+                                      </span>
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs"
+                                      >
+                                        {flight.origin_code || "DXB"} →{" "}
+                                        {flight.destination_code ||
+                                          "Destination"}
+                                      </Badge>
+                                    </div>
+                                    <Badge
+                                      className={
+                                        flight.impact === "High Impact"
+                                          ? "bg-red-100 text-red-700"
+                                          : flight.impact === "Medium Impact"
+                                            ? "bg-yellow-100 text-yellow-700"
+                                            : "bg-green-100 text-green-700"
+                                      }
+                                    >
+                                      {flight.impact || "Low Impact"}
+                                    </Badge>
+                                  </div>
+                                  <div className="grid grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                      <Label className="text-xs text-muted-foreground">
+                                        Route
+                                      </Label>
+                                      <p className="font-medium">
+                                        {flight.origin} → {flight.destination}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-muted-foreground">
+                                        Delay
+                                      </Label>
+                                      <p className="font-medium text-red-600">
+                                        {flight.delay || "On time"}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-muted-foreground">
+                                        Departure
+                                      </Label>
+                                      <p className="font-medium">
+                                        {new Date(
+                                          flight.departure,
+                                        ).toLocaleString("en-IN", {
+                                          timeZone: "Asia/Kolkata",
+                                          hour12: true,
+                                        })}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-muted-foreground">
+                                        Passengers Affected
+                                      </Label>
+                                      <p className="font-medium">
+                                        {flight.passengers || 0}
                                       </p>
                                     </div>
                                   </div>
-                                )}
-                              </CardContent>
-                            </Card>
+                                  {flight.reason && (
+                                    <div className="p-2 bg-gray-50 rounded text-sm">
+                                      <span className="text-muted-foreground">
+                                        Reason:{" "}
+                                      </span>
+                                      {flight.reason}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
                           </div>
                         )}
-
-                        {/* Comparative Analysis Summary */}
-                        <div>
-                          <h4 className="font-medium mb-4">
-                            Comparative Analysis Summary
-                          </h4>
-                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                            <Card>
-                              <CardContent className="p-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Clock className="h-4 w-4 text-blue-600" />
-                                  <span className="font-medium text-sm">
-                                    Time Impact
-                                  </span>
-                                </div>
-                                <div className="text-2xl font-bold text-blue-600">
-                                  {selectedPlan.estimatedDelay || 0}m
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                  Selected option delay
-                                </p>
-                              </CardContent>
-                            </Card>
-
-                            <Card>
-                              <CardContent className="p-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Users className="h-4 w-4 text-orange-600" />
-                                  <span className="font-medium text-sm">
-                                    Passenger Impact
-                                  </span>
-                                </div>
-                                <div className="text-2xl font-bold text-orange-600">
-                                  {selectedPlan.affectedPassengers || 0}
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                  Passengers affected
-                                </p>
-                              </CardContent>
-                            </Card>
-
-                            <Card>
-                              <CardContent className="p-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <DollarSign className="h-4 w-4 text-green-600" />
-                                  <span className="font-medium text-sm">
-                                    Cost Impact
-                                  </span>
-                                </div>
-                                <div className="text-2xl font-bold text-green-600">
-                                  {airlineConfig.currency}{" "}
-                                  {(
-                                    selectedPlan.estimatedCost / 1000
-                                  ).toFixed(0)}
-                                  K
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                  Total estimated cost
-                                </p>
-                              </CardContent>
-                            </Card>
-
-                            <Card>
-                              <CardContent className="p-4">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Target className="h-4 w-4 text-purple-600" />
-                                  <span className="font-medium text-sm">
-                                    Success Rate
-                                  </span>
-                                </div>
-                                <div className="text-2xl font-bold text-purple-600">
-                                  {selectedPlan.confidence || 80}%
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                  Confidence level
-                                </p>
-                              </CardContent>
-                            </Card>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <AlertTriangle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <h3 className="text-lg font-semibold mb-2">
-                          No Recovery Options Available
-                        </h3>
-                        <p className="text-muted-foreground">
-                          No recovery options data available for impact
-                          analysis.
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                      </CardContent>
+                    </Card>
+                  ) : null}
+                </div>
               </TabsContent>
 
+              {/* Passenger Re-accommodation Tab - UPDATED */}
               {selectedPlan?.hasPassengerData && (
                 <TabsContent
                   value="passenger-reaccommodation"
@@ -2214,7 +2272,9 @@ export function PendingSolutions() {
                                                       .includes("hotel") ||
                                                     s.service_type
                                                       ?.toLowerCase()
-                                                      .includes("accommodation"),
+                                                      .includes(
+                                                        "accommodation",
+                                                      ),
                                             );
                                           }
                                           return (
@@ -2636,6 +2696,8 @@ export function PendingSolutions() {
                               selectedPlan.costAnalysis?.breakdown ||
                               selectedPlan.costBreakdown?.breakdown ||
                               selectedPlan.matchingOption?.cost_breakdown
+                                ?.breakdown ||
+                              selectedPlan.fullDetails?.cost_breakdown
                                 ?.breakdown;
 
                             const costTotal =
@@ -3793,10 +3855,7 @@ export function PendingSolutions() {
                                                 </span>
                                                 <span className="text-xs">
                                                   {passenger.additional_services.map(
-                                                    (
-                                                      service,
-                                                      serviceIndex,
-                                                    ) => (
+                                                    (service, serviceIndex) => (
                                                       <Badge
                                                         key={serviceIndex}
                                                         variant="outline"
@@ -3854,5232 +3913,342 @@ export function PendingSolutions() {
                     </div>
                   </CardContent>
                 </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Cost Impact Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {(() => {
-                        const costBreakdown =
-                          selectedPlan.costAnalysis?.breakdown ||
-                          selectedPlan.costBreakdown?.breakdown ||
-                          selectedPlan.matchingOption?.cost_breakdown
-                            ?.breakdown;
-
-                        const costTotal =
-                          selectedPlan.costAnalysis?.total ||
-                          selectedPlan.costBreakdown?.total ||
-                          selectedPlan.matchingOption?.cost_breakdown
-                            ?.total;
-
-                        if (
-                          costBreakdown &&
-                          Array.isArray(costBreakdown) &&
-                          costBreakdown.length > 0
-                        ) {
-                          return (
-                            <div className="space-y-4">
-                              {costTotal && (
-                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                  <div className="flex justify-between items-center">
-                                    <span className="font-medium text-blue-800">
-                                      {costTotal.title || "Total Cost"}:
-                                    </span>
-                                    <span className="text-lg font-semibold text-blue-900">
-                                      {costTotal.amount ||
-                                        `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                    </span>
-                                  </div>
-                                  {costTotal.description && (
-                                    <p className="text-sm text-blue-700 mt-1">
-                                      {costTotal.description}
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-
-                              <div className="space-y-3">
-                                <h4 className="font-medium text-gray-900">
-                                  Cost Breakdown:
-                                </h4>
-                                {Array.isArray(costBreakdown)
-                                  ? costBreakdown.map((item, index) => (
-                                      <div
-                                        key={index}
-                                        className="space-y-2 p-3 border rounded-lg"
-                                      >
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-sm font-medium">
-                                            {item.category ||
-                                              `Cost Item ${index + 1}`}
-                                          </span>
-                                          <span className="font-semibold text-flydubai-orange">
-                                            {item.amount}
-                                          </span>
-                                        </div>
-                                        {item.percentage && (
-                                          <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div
-                                              className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
-                                              style={{
-                                                width: `${item.percentage}%`,
-                                              }}
-                                            ></div>
-                                          </div>
-                                        )}
-                                        <div className="flex justify-between items-center text-xs">
-                                          {item.percentage && (
-                                            <span className="text-gray-600">
-                                              {item.percentage}% of total
-                                              cost
-                                            </span>
-                                          )}
-                                          {item.description && (
-                                            <span className="text-blue-600">
-                                              {item.description}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))
-                                  : Object.entries(costBreakdown).map(
-                                      ([key, value]) => (
-                                        <div
-                                          key={key}
-                                          className="space-y-2 p-3 border rounded-lg"
-                                        >
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-sm font-medium capitalize">
-                                              {key.replace(
-                                                /([A-Z])/g,
-                                                " $1",
-                                              )}
-                                            </span>
-                                            <span className="font-semibold text-flydubai-orange">
-                                              {typeof value === "object" &&
-                                              value &&
-                                              typeof (value as any)
-                                                .amount === "number"
-                                                ? `${airlineConfig.currency} ${(value as any).amount.toLocaleString()}`
-                                                : typeof value === "number"
-                                                  ? `${airlineConfig.currency} ${value.toLocaleString()}`
-                                                  : typeof value ===
-                                                        "string" &&
-                                                      !value.includes(
-                                                        "[object",
-                                                      )
-                                                    ? value
-                                                    : `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      ),
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            } else if (
-                              selectedPlan.costBreakdown &&
-                              Object.keys(selectedPlan.costBreakdown).length > 0
-                            ) {
-                              return (
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  {Object.entries(
-                                    selectedPlan.costBreakdown,
-                                  ).map(([key, value]) => (
-                                    <div key={key}>
-                                      <span className="text-gray-600 capitalize">
-                                        {key.replace(/([A-Z])/g, " $1")}:
-                                      </span>
-                                      <div className="font-medium">
-                                        {typeof value === "object" &&
-                                        value &&
-                                        (value as any).amount
-                                          ? (value as any).amount
-                                          : typeof value === "number"
-                                            ? `${airlineConfig.currency} ${value.toLocaleString()}`
-                                            : typeof value === "string" &&
-                                                !value.includes("[object")
-                                              ? value
-                                              : `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              );
-                            } else {
-                              return (
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Direct Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.6
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Indirect Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.4
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Passenger Compensation:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.3
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Operational Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.7
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            }
-                          })()}
-
-                          <Separator />
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">
-                              Total Estimated Cost:
-                            </span>
-                            <span className="text-lg font-semibold text-flydubai-orange">
-                              {(() => {
-                                const costTotal =
-                                  selectedPlan.costAnalysis?.total ||
-                                  selectedPlan.costBreakdown?.total ||
-                                  selectedPlan.matchingOption?.cost_breakdown
-                                    ?.total;
-
-                                if (costTotal && costTotal.amount) {
-                                  return costTotal.amount;
-                                }
-                                return `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 50000).toLocaleString()}`;
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Operational Impact</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 gap-3">
-                            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Clock className="h-4 w-4 text-yellow-600" />
-                                <span className="font-medium text-yellow-800">
-                                  Schedule Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-yellow-700">
-                                {selectedPlan.estimatedDelay || 0} minute delay
-                                expected
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Users className="h-4 w-4 text-blue-600" />
-                                <span className="font-medium text-blue-800">
-                                  Passenger Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-blue-700">
-                                {selectedPlan.affectedPassengers || "N/A"}{" "}
-                                passengers affected
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <TrendingUp className="h-4 w-4 text-green-600" />
-                                <span className="font-medium text-green-800">
-                                  Success Probability
-                                </span>
-                              </div>
-                              <p className="text-sm text-green-700">
-                                {selectedPlan.confidence || 80}% confidence in
-                                successful resolution
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Target className="h-4 w-4 text-purple-600" />
-                                <span className="font-medium text-purple-800">
-                                  Network Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-purple-700">
-                                {selectedPlan.rotationImpact?.networkImpact ||
-                                  selectedPlan.matchingOption?.rotation_plan
-                                    ?.networkImpact ||
-                                  "Assessment pending"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-              )}
-            </Tabs>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      <Dialog
-        open={showDetailedOptionAnalysis}
-        onOpenChange={setShowDetailedOptionAnalysis}
-      >
-        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Detailed Recovery Option Analysis
-            </DialogTitle>
-            <DialogDescription>
-              Comprehensive view of {selectedOptionForDetails?.title} •{" "}
-              {selectedOptionForDetails?.id || "A321-007"} for{" "}
-              {selectedOptionForDetails?.flightNumber}
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedOptionForDetails && (
-            <Tabs defaultValue="option-details" className="w-full">
-              <TabsList
-                className={`grid w-full ${
-                  selectedPlan?.hasCrewData && selectedPlan?.hasPassengerData
-                    ? "grid-cols-5"
-                    : selectedPlan?.hasCrewData ||
-                        selectedPlan?.hasPassengerData
-                      ? "grid-cols-4"
-                      : "grid-cols-4"
-                }`}
-              >
-                <TabsTrigger value="option-details">Option Details</TabsTrigger>
-                {Object.keys(
-                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
-                ).length > 0 &&
-                  selectedOptionForDetails?.pending_recovery_solutions
-                    ?.full_details?.crew_hotel_assignments && (
-                    <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
-                  )}
-
-                {Object.keys(
-                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
-                ).length > 0 &&
-                  Object.keys(
-                    selectedOptionForDetails?.pending_recovery_solutions
-                      ?.full_details?.passenger_rebooking,
-                  ).length > 0 && (
-                    <TabsTrigger value="passenger-reaccommodation">
-                      Passenger Re-accommodation
-                    </TabsTrigger>
-                  )}
-                <TabsTrigger value="rotation-impact">
-                  Rotation Impact
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="option-details" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="h-5 w-5" />
-                      Option Overview
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="font-medium mb-2">
-                            {selectedOptionForDetails.title}
-                          </h4>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            {selectedOptionForDetails.description}
-                          </p>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Total Cost:
-                              </span>
-                              <span className="font-medium text-flydubai-orange">
-                                {selectedOptionForDetails.cost}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Timeline:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.timeline}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Confidence:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.confidence}%
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Impact:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.impact}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-2">
-                            Key Performance Indicators
-                          </h4>
-                          <div className="space-y-3">
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Success Rate</span>
-                                <span>
-                                  {selectedOptionForDetails.confidence}%
-                                </span>
-                              </div>
-                              <Progress
-                                value={selectedOptionForDetails.confidence}
-                                className="h-2"
-                              />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Customer Satisfaction</span>
-                                <span>88%</span>
-                              </div>
-                              <Progress value={88} className="h-2" />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Operational Risk</span>
-                                <span className="text-green-600">Low</span>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Easy
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Operational Risk</span>
-                                <span className="text-red-600">High</span>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Easy
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
               </TabsContent>
 
-              <TabsContent value="crew-hotac" className="space-y-6">
+              <TabsContent value="rotation-impact" className="space-y-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Crew & HOTAC Management
+                      <Activity className="h-5 w-5" />
+                      Rotation Impact Analysis
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    {(() => {
-                      const crewData =
-                        selectedOptionForDetails?.pending_recovery_solutions
-                          ?.full_details?.crew_hotel_assignments;
-                      const hasCrewData =
-                        crewData && Object.keys(crewData).length > 0;
-                      if (!hasCrewData) {
-                        return (
-                          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                            <div className="flex items-center gap-2 mb-2">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="font-medium text-green-800">
-                                No crew changes required.
-                              </span>
-                            </div>
-                            <p className="text-sm text-green-700">
-                              Current crew certified for{" "}
-                              {selectedOptionForDetails?.id || "A321-007"}
-                            </p>
-                          </div>
-                        );
-                      }
+                    <Alert className="border-blue-200 bg-blue-50 mb-4">
+                      <Info className="h-4 w-4 text-blue-600" />
+                      <AlertDescription className="text-blue-800">
+                        This analysis shows how the recovery option affects
+                        subsequent flights, aircraft rotations, and crew
+                        assignments.
+                      </AlertDescription>
+                    </Alert>
 
-                      return (
-                        <div className="space-y-6">
-                          {crewData.map((assignment, index) => (
-                            <div key={index} className="space-y-6">
-                              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                <h3 className="text-lg font-semibold">
-                                  {assignment.hotel_name}
-                                </h3>
-                                <p className="text-sm text-gray-600">
-                                  {assignment.hotel_location}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Room: {assignment.room_number}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Booking Ref: {assignment.booking_reference}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Status: {assignment.assignment_status}
-                                </p>
-                              </div>
-
-                              <div>
-                                <h4 className="font-medium mb-3">
-                                  Crew Assignment Details
-                                </h4>
-                                <div className="overflow-x-auto">
-                                  <table className="w-full border-collapse border border-gray-200 text-sm">
-                                    <thead>
-                                      <tr className="bg-gray-50">
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Name
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Rank
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Base
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Employee ID
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Contact
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {assignment.crew_member.map(
-                                        (crew, crewIndex) => (
-                                          <tr
-                                            key={crewIndex}
-                                            className={
-                                              crewIndex % 2 === 0
-                                                ? "bg-white"
-                                                : "bg-gray-50"
-                                            }
-                                          >
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.name}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.rank}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.base}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.employee_id}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.contact_number}
-                                            </td>
-                                          </tr>
-                                        ),
-                                      )}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-
-                              {assignment.transport_details && (
-                                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                  <h4 className="font-medium mb-2">
-                                    Transport Details
-                                  </h4>
-                                  <p className="text-sm">
-                                    Vendor:{" "}
-                                    {assignment.transport_details.vendor}
-                                  </p>
-                                  <p className="text-sm">
-                                    Pickup:{" "}
-                                    {
-                                      assignment.transport_details
-                                        .pickup_location
-                                    }{" "}
-                                    at{" "}
-                                    {new Date(
-                                      assignment.transport_details.pickup_time,
-                                    ).toLocaleString()}
-                                  </p>
-                                  <p className="text-sm">
-                                    Dropoff:{" "}
-                                    {
-                                      assignment.transport_details
-                                        .dropoff_location
-                                    }{" "}
-                                    at{" "}
-                                    {new Date(
-                                      assignment.transport_details.dropoff_time,
-                                    ).toLocaleString()}
-                                  </p>
-                                  <p className="text-sm">
-                                    Vehicle:{" "}
-                                    {assignment.transport_details.vehicle_type}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent
-                value="passenger-reaccommodation"
-                className="space-y-6"
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Passenger Re-accommodation Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <div className="text-3xl font-bold text-blue-600">
+                    <div className="space-y-6">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Plane className="h-5 w-5 text-blue-600" />
+                            Alternate Aircraft Rotation Impact
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
                           {(() => {
-                            const passengerData =
-                              selectedPlan?.passengerInformation ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_rebooking ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_information ||
-                              [];
+                            const rotationImpact =
+                              selectedOptionForDetails?.matchingOption
+                                ?.rotation_impact ||
+                              selectedOptionForDetails?.rotationImpact
+                                ?.rotation_impact ||
+                              selectedPlan?.matchingOption?.rotation_impact ||
+                              selectedPlan?.rotationImpact?.rotation_impact;
 
                             if (
-                              Array.isArray(passengerData) &&
-                              passengerData.length > 0
+                              Array.isArray(rotationImpact) &&
+                              rotationImpact.length > 0
                             ) {
-                              return passengerData.length;
-                            }
-
-                            return selectedPlan?.affectedPassengers || 167;
-                          })()}
-                        </div>
-                        <div className="text-sm text-blue-700">
-                          Total Affected
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <div className="text-3xl font-bold text-green-600">
-                          {(() => {
-                            const passengerData =
-                              selectedPlan?.passengerInformation ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_rebooking ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_information ||
-                              [];
-
-                            if (
-                              Array.isArray(passengerData) &&
-                              passengerData.length > 0
-                            ) {
-                              const sameFlightCount = passengerData.filter(
-                                (p) =>
-                                  p.rebooked_flight === p.original_flight ||
-                                  p.rebooking_status === "same_flight" ||
-                                  p.status === "same_flight" ||
-                                  !p.rebooked_flight ||
-                                  p.rebooked_flight ===
-                                    selectedPlan.flightNumber,
-                              ).length;
-                              return sameFlightCount;
-                            }
-
-                            return selectedPlan?.affectedPassengers || 167;
-                          })()}
-                        </div>
-                        <div className="text-sm text-green-700">
-                          Same Flight
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-3xl font-bold text-red-600">
-                          {(() => {
-                            const passengerData =
-                              selectedPlan?.passengerInformation ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_rebooking ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_information ||
-                              [];
-
-                            if (
-                              Array.isArray(passengerData) &&
-                              passengerData.length > 0
-                            ) {
-                              const otherFlightCount = passengerData.filter(
-                                (p) =>
-                                  p.rebooked_flight &&
-                                  p.rebooked_flight !== p.original_flight &&
-                                  p.rebooked_flight !==
-                                    selectedPlan.flightNumber &&
-                                  p.rebooking_status !== "same_flight" &&
-                                  p.status !== "same_flight",
-                              ).length;
-                              return otherFlightCount;
-                            }
-
-                            return 0;
-                          })()}
-                        </div>
-                        <div className="text-sm text-red-700">
-                          Other Flights
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium mb-3">
-                          Accommodation Breakdown
-                        </h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">Meal Vouchers:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const mealVoucherCount = passengerData.filter(
-                                    (p) => {
-                                      if (
-                                        p.additional_services &&
-                                        Array.isArray(p.additional_services)
-                                      ) {
-                                        return p.additional_services.some(
-                                          (s) =>
-                                            typeof s === "string"
-                                              ? s.toLowerCase().includes("meal")
-                                              : s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("meal") ||
-                                                s.type
-                                                  ?.toLowerCase()
-                                                  .includes("meal"),
-                                        );
-                                      }
-                                      return (
-                                        p.services?.includes("meal") ||
-                                        p.meal_voucher ||
-                                        false
-                                      );
-                                    },
-                                  ).length;
-                                  return `${mealVoucherCount} passengers`;
-                                }
-
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                if (delayMinutes > 120) {
-                                  const affected =
-                                    selectedPlan?.affectedPassengers || 167;
-                                  return `${affected} passengers`;
-                                }
-                                return "0 passengers";
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">
-                              Hotel Accommodation:
-                            </span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const hotelCount = passengerData.filter(
-                                    (p) => {
-                                      if (
-                                        p.additional_services &&
-                                        Array.isArray(p.additional_services)
-                                      ) {
-                                        return p.additional_services.some(
-                                          (s) =>
-                                            typeof s === "string"
-                                              ? s
-                                                  .toLowerCase()
-                                                  .includes("hotel")
-                                              : s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("hotel") ||
-                                                s.type
-                                                  ?.toLowerCase()
-                                                  .includes("hotel") ||
-                                                s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("accommodation"),
-                                        );
-                                      }
-                                      return (
-                                        p.services?.includes("hotel") ||
-                                        p.hotel_accommodation ||
-                                        false
-                                      );
-                                    },
-                                  ).length;
-                                  return `${hotelCount} passengers`;
-                                }
-
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                if (delayMinutes > 240) {
-                                  const affected =
-                                    selectedPlan?.affectedPassengers || 167;
-                                  return `${Math.floor(affected * 0.8)} passengers`;
-                                }
-                                return "0 passengers";
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">Transportation:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const transportCount = passengerData.filter(
-                                    (p) => {
-                                      if (
-                                        p.additional_services &&
-                                        Array.isArray(p.additional_services)
-                                      ) {
-                                        return p.additional_services.some(
-                                          (s) =>
-                                            typeof s === "string"
-                                              ? s
-                                                  .toLowerCase()
-                                                  .includes("transport")
-                                              : s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("transport") ||
-                                                s.type
-                                                  ?.toLowerCase()
-                                                  .includes("transport"),
-                                        );
-                                      }
-                                      return (
-                                        p.services?.includes("transport") ||
-                                        p.transportation ||
-                                        false
-                                      );
-                                    },
-                                  ).length;
-                                  return `${transportCount} passengers`;
-                                }
-
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                if (delayMinutes > 240) {
-                                  const affected =
-                                    selectedPlan?.affectedPassengers || 167;
-                                  return `${Math.floor(affected * 0.8)} passengers`;
-                                }
-                                return "0 passengers";
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-3">Compensation</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">Per passenger avg:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const totalCost = passengerData.reduce(
-                                    (sum, p) =>
-                                      sum +
-                                      (p.rebooking_cost ||
-                                        p.compensation_amount ||
-                                        261),
-                                    0,
-                                  );
-                                  const avgCompensation =
-                                    totalCost / passengerData.length;
-                                  return `${airlineConfig.currency} ${Math.round(avgCompensation)}`;
-                                }
-                                return `${airlineConfig.currency} 261`;
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">Total compensation:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const totalCompensation =
-                                    passengerData.reduce(
-                                      (sum, p) =>
-                                        sum +
-                                        (p.rebooking_cost ||
-                                          p.compensation_amount ||
-                                          261),
-                                      0,
-                                    );
-                                  return `${airlineConfig.currency} ${totalCompensation.toLocaleString()}`;
-                                }
-
-                                const affected =
-                                  selectedPlan?.affectedPassengers || 167;
-                                return `${airlineConfig.currency} ${(affected * 261).toLocaleString()}`;
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">Service costs:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const affected =
-                                  selectedPlan?.affectedPassengers || 167;
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                let serviceCost = 0;
-
-                                if (delayMinutes > 120) {
-                                  serviceCost += affected * 45; // ${airlineConfig.currency} 45 per meal voucher
-                                }
-
-                                if (delayMinutes > 240) {
-                                  serviceCost +=
-                                    Math.floor(affected * 0.8) * 350; // ${airlineConfig.currency} 350 per hotel room
-                                }
-
-                                return `${airlineConfig.currency} ${serviceCost.toLocaleString()}`;
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Info className="h-4 w-4 text-blue-600" />
-                        <span className="font-medium text-blue-800">
-                          Re-accommodation Details:
-                        </span>
-                      </div>
-                      <p className="text-sm text-blue-700">
-                        All passengers accommodated on same aircraft with 65min
-                        delay.
-                      </p>
-                    </div>
-
-                    {/* PNR Grouped Passenger Details */}
-                    <div className="mt-6">
-                      <h4 className="font-medium mb-3">
-                        Passenger Rebookings by PNR
-                      </h4>
-                      <div className="space-y-4 max-h-64 overflow-y-auto">
-                        {(() => {
-                          const rawPassengerData =
-                            selectedPlan?.passengerInformation ||
-                            selectedPlan?.matchingOption?.passenger_rebooking ||
-                            selectedPlan?.matchingOption
-                              ?.passenger_information ||
-                            [];
-
-                          const currentPassengerData = Array.isArray(
-                            rawPassengerData,
-                          )
-                            ? rawPassengerData
-                            : [];
-
-                          if (
-                            !currentPassengerData ||
-                            currentPassengerData.length === 0
-                          ) {
-                            return (
-                              <div className="text-center py-8 text-gray-500">
-                                No passenger rebooking data available
-                              </div>
-                            );
-                          }
-
-                          const passengersByPnr = currentPassengerData.reduce(
-                            (acc, passenger) => {
-                              const pnr = passenger.pnr || "Unknown";
-                              if (!acc[pnr]) {
-                                acc[pnr] = [];
-                              }
-                              acc[pnr].push(passenger);
-                              return acc;
-                            },
-                            {},
-                          );
-
-                          return Object.entries(passengersByPnr)
-                            .slice(0, 8)
-                            .map(([pnr, passengers], groupIndex) => (
-                              <Card
-                                key={groupIndex}
-                                className="border border-gray-200"
-                              >
-                                <div className="p-3 bg-gray-50 border-b">
+                              console.log(rotationImpact, 'rotationImpact123')
+                              return rotationImpact.map((flight, index) => (
+                                <div
+                                  key={index}
+                                  className="p-4 border rounded-lg bg-white space-y-3 mb-4"
+                                >
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                      <Users className="h-4 w-4 text-blue-600" />
-                                      <span className="font-semibold text-gray-900">
-                                        PNR: {pnr}
+                                      <Plane className="h-4 w-4 text-blue-600" />
+                                      <span className="font-semibold">
+                                        {flight.flightNumber}
                                       </span>
                                       <Badge
-                                        variant="secondary"
-                                        className="bg-blue-100 text-blue-800"
+                                        variant="outline"
+                                        className="text-xs"
                                       >
-                                        {(passengers as any).length} passenger
-                                        {(passengers as any).length > 1
-                                          ? "s"
-                                          : ""}
+                                        {flight.origin_code} →{" "}
+                                        {flight.destination_code}
                                       </Badge>
                                     </div>
-                                    <div className="text-sm text-muted-foreground">
-                                      Group Booking
+                                    <Badge
+                                      className={
+                                        flight.impact === "High Impact"
+                                          ? "bg-red-100 text-red-700"
+                                          : flight.impact === "Medium Impact"
+                                            ? "bg-yellow-100 text-yellow-700"
+                                            : "bg-green-100 text-green-700"
+                                      }
+                                    >
+                                      {flight.impact}
+                                    </Badge>
+                                  </div>
+  
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <Label className="text-xs text-muted-foreground">
+                                        Route
+                                      </Label>
+                                      <p className="font-medium">
+                                        {flight.origin} → {flight.destination}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-muted-foreground">
+                                        Delay
+                                      </Label>
+                                      <p className="font-medium text-red-600">
+                                        {flight.delay}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-muted-foreground">
+                                        Departure
+                                      </Label>
+                                      <p className="font-medium">
+                                        {new Date(
+                                          flight.departure,
+                                        ).toLocaleString("en-IN", {
+                                          timeZone: "Asia/Kolkata",
+                                          hour12: true,
+                                        })}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-muted-foreground">
+                                        Passengers Affected
+                                      </Label>
+                                      <p className="font-medium">
+                                        {flight.passengers}
+                                      </p>
                                     </div>
                                   </div>
-                                </div>
-                                <div className="p-3 space-y-3">
-                                  {(passengers as any).map(
-                                    (passenger, passengerIndex) => (
-                                      <div
-                                        key={passengerIndex}
-                                        className="border-l-2 border-blue-200 pl-3"
-                                      >
-                                        <div className="flex items-center justify-between mb-2">
-                                          <div className="font-medium text-gray-900">
-                                            {passenger.passenger_name ||
-                                              `Passenger ${passengerIndex + 1}`}
-                                          </div>
-                                          <Badge
-                                            className={
-                                              passenger.rebooking_status ===
-                                              "confirmed"
-                                                ? "bg-green-100 text-green-700"
-                                                : passenger.rebooking_status ===
-                                                    "pending"
-                                                  ? "bg-yellow-100 text-yellow-700"
-                                                  : "bg-gray-100 text-gray-700"
-                                            }
-                                          >
-                                            {passenger.rebooking_status ||
-                                              "Unknown"}
-                                          </Badge>
-                                        </div>
-                                        <div className="text-sm space-y-1">
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Original Flight:
-                                            </span>
-                                            <span>
-                                              {passenger.original_flight ||
-                                                selectedPlan.flightNumber}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Rebooked Flight:
-                                            </span>
-                                            <span>
-                                              {passenger.rebooked_flight ||
-                                                "TBD"}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Seat Change:
-                                            </span>
-                                            <span>
-                                              {passenger.original_seat &&
-                                              passenger.rebooked_seat
-                                                ? `${passenger.original_seat} → ${passenger.rebooked_seat}`
-                                                : "N/A"}
-                                            </span>
-                                          </div>
-                                          {passenger.rebooking_cost > 0 && (
-                                            <div className="flex justify-between">
-                                              <span className="text-muted-foreground">
-                                                Cost:
-                                              </span>
-                                              <span className="text-flydubai-orange">
-                                                {airlineConfig.currency}{" "}
-                                                {passenger.rebooking_cost}
-                                              </span>
-                                            </div>
-                                          )}
-                                          {passenger.additional_services &&
-                                            passenger.additional_services
-                                              .length > 0 && (
-                                              <div className="flex justify-between">
-                                                <span className="text-muted-foreground">
-                                                  Services:
-                                                </span>
-                                                <span className="text-xs">
-                                                  {passenger.additional_services.map(
-                                                    (
-                                                      service,
-                                                      serviceIndex,
-                                                    ) => (
-                                                      <Badge
-                                                        key={serviceIndex}
-                                                        variant="outline"
-                                                        className="mr-1 text-xs"
-                                                      >
-                                                        {service.service_type ||
-                                                          service}
-                                                      </Badge>
-                                                    ),
-                                                  )}
-                                                </span>
-                                              </div>
-                                            )}
-                                          {passenger.notes && (
-                                            <div className="text-xs text-muted-foreground mt-2">
-                                              Notes: {passenger.notes}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ),
-                                  )}
-                                </div>
-                              </Card>
-                            ));
-                        })()}
-                        {(() => {
-                          const rawPassengerData =
-                            selectedPlan?.passengerInformation ||
-                            selectedPlan?.matchingOption?.passenger_rebooking ||
-                            selectedPlan?.matchingOption
-                              ?.passenger_information ||
-                            [];
-
-                          const groupCount = Array.isArray(rawPassengerData)
-                            ? Object.keys(
-                                rawPassengerData.reduce((acc, passenger) => {
-                                  const pnr = passenger.pnr || "UNKNOWN";
-                                  if (!acc[pnr]) acc[pnr] = [];
-                                  acc[pnr].push(passenger);
-                                  return acc;
-                                }, {}),
-                              ).length
-                            : 0;
-
-                          return (
-                            groupCount > 8 && (
-                              <div className="text-center text-sm text-muted-foreground p-2">
-                                ... and {groupCount - 8} more PNR groups
-                              </div>
-                            )
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Cost Impact Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {(() => {
-                        const costBreakdown =
-                          selectedPlan.costAnalysis?.breakdown ||
-                          selectedPlan.costBreakdown?.breakdown ||
-                          selectedPlan.matchingOption?.cost_breakdown
-                            ?.breakdown;
-
-                        const costTotal =
-                          selectedPlan.costAnalysis?.total ||
-                          selectedPlan.costBreakdown?.total ||
-                          selectedPlan.matchingOption?.cost_breakdown
-                            ?.total;
-
-                        if (
-                          costBreakdown &&
-                          Array.isArray(costBreakdown) &&
-                          costBreakdown.length > 0
-                        ) {
-                          return (
-                            <div className="space-y-4">
-                              {costTotal && (
-                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                  <div className="flex justify-between items-center">
-                                    <span className="font-medium text-blue-800">
-                                      {costTotal.title || "Total Cost"}:
-                                    </span>
-                                    <span className="text-lg font-semibold text-blue-900">
-                                      {costTotal.amount ||
-                                        `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                    </span>
-                                  </div>
-                                  {costTotal.description && (
-                                    <p className="text-sm text-blue-700 mt-1">
-                                      {costTotal.description}
+  
+                                  <div className="p-3 bg-gray-50 rounded">
+                                    <Label className="text-xs text-muted-foreground">
+                                      Impact Reason
+                                    </Label>
+                                    <p className="text-sm mt-1">
+                                      {flight.reason}
                                     </p>
-                                  )}
-                                </div>
-                              )}
-
-                              <div className="space-y-3">
-                                <h4 className="font-medium text-gray-900">
-                                  Cost Breakdown:
-                                </h4>
-                                {Array.isArray(costBreakdown)
-                                  ? costBreakdown.map((item, index) => (
-                                      <div
-                                        key={index}
-                                        className="space-y-2 p-3 border rounded-lg"
-                                      >
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-sm font-medium">
-                                            {item.category ||
-                                              `Cost Item ${index + 1}`}
-                                          </span>
-                                          <span className="font-semibold text-flydubai-orange">
-                                            {item.amount}
-                                          </span>
-                                        </div>
-                                        {item.percentage && (
-                                          <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div
-                                              className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
-                                              style={{
-                                                width: `${item.percentage}%`,
-                                              }}
-                                            ></div>
-                                          </div>
-                                        )}
-                                        <div className="flex justify-between items-center text-xs">
-                                          {item.percentage && (
-                                            <span className="text-gray-600">
-                                              {item.percentage}% of total
-                                              cost
-                                            </span>
-                                          )}
-                                          {item.description && (
-                                            <span className="text-blue-600">
-                                              {item.description}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))
-                                  : Object.entries(costBreakdown).map(
-                                      ([key, value]) => (
-                                        <div
-                                          key={key}
-                                          className="space-y-2 p-3 border rounded-lg"
-                                        >
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-sm font-medium capitalize">
-                                              {key.replace(
-                                                /([A-Z])/g,
-                                                " $1",
-                                              )}
-                                            </span>
-                                            <span className="font-semibold text-flydubai-orange">
-                                              {typeof value === "object" &&
-                                              value &&
-                                              typeof (value as any)
-                                                .amount === "number"
-                                                ? `${airlineConfig.currency} ${(value as any).amount.toLocaleString()}`
-                                                : typeof value === "number"
-                                                  ? `${airlineConfig.currency} ${value.toLocaleString()}`
-                                                  : typeof value ===
-                                                        "string" &&
-                                                      !value.includes(
-                                                        "[object",
-                                                      )
-                                                    ? value
-                                                    : `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      ),
-                                    )}
                                   </div>
                                 </div>
-                              );
-                            } else if (
-                              selectedPlan.costBreakdown &&
-                              Object.keys(selectedPlan.costBreakdown).length > 0
-                            ) {
-                              return (
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  {Object.entries(
-                                    selectedPlan.costBreakdown,
-                                  ).map(([key, value]) => (
-                                    <div key={key}>
-                                      <span className="text-gray-600 capitalize">
-                                        {key.replace(/([A-Z])/g, " $1")}:
-                                      </span>
-                                      <div className="font-medium">
-                                        {typeof value === "object" &&
-                                        value &&
-                                        (value as any).amount
-                                          ? (value as any).amount
-                                          : typeof value === "number"
-                                            ? `${airlineConfig.currency} ${value.toLocaleString()}`
-                                            : typeof value === "string" &&
-                                                !value.includes("[object")
-                                              ? value
-                                              : `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              );
+                              ));
                             } else {
                               return (
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Direct Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.6
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Indirect Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.4
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Passenger Compensation:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.3
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Operational Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.7
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
+                                <div className="text-center text-sm text-muted-foreground p-4">
+                                  No rotation impact data available
                                 </div>
                               );
                             }
                           })()}
+                        </CardContent>
+                      </Card>
 
-                          <Separator />
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">
-                              Total Estimated Cost:
-                            </span>
-                            <span className="text-lg font-semibold text-flydubai-orange">
-                              {(() => {
-                                const costTotal =
-                                  selectedPlan.costAnalysis?.total ||
-                                  selectedPlan.costBreakdown?.total ||
-                                  selectedPlan.matchingOption?.cost_breakdown
-                                    ?.total;
-
-                                if (costTotal && costTotal.amount) {
-                                  return costTotal.amount;
-                                }
-                                return `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 50000).toLocaleString()}`;
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Operational Impact</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 gap-3">
-                            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Clock className="h-4 w-4 text-yellow-600" />
-                                <span className="font-medium text-yellow-800">
-                                  Schedule Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-yellow-700">
-                                {selectedPlan.estimatedDelay || 0} minute delay
-                                expected
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Users className="h-4 w-4 text-blue-600" />
-                                <span className="font-medium text-blue-800">
-                                  Passenger Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-blue-700">
-                                {selectedPlan.affectedPassengers || "N/A"}{" "}
-                                passengers affected
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <TrendingUp className="h-4 w-4 text-green-600" />
-                                <span className="font-medium text-green-800">
-                                  Success Probability
-                                </span>
-                              </div>
-                              <p className="text-sm text-green-700">
-                                {selectedPlan.confidence || 80}% confidence in
-                                successful resolution
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Target className="h-4 w-4 text-purple-600" />
-                                <span className="font-medium text-purple-800">
-                                  Network Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-purple-700">
-                                {selectedPlan.rotationImpact?.networkImpact ||
-                                  selectedPlan.matchingOption?.rotation_plan
-                                    ?.networkImpact ||
-                                  "Assessment pending"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-              )}
-            </Tabs>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      <Dialog
-        open={showDetailedOptionAnalysis}
-        onOpenChange={setShowDetailedOptionAnalysis}
-      >
-        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Detailed Recovery Option Analysis
-            </DialogTitle>
-            <DialogDescription>
-              Comprehensive view of {selectedOptionForDetails?.title} •{" "}
-              {selectedOptionForDetails?.id || "A321-007"} for{" "}
-              {selectedOptionForDetails?.flightNumber}
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedOptionForDetails && (
-            <Tabs defaultValue="option-details" className="w-full">
-              <TabsList
-                className={`grid w-full ${
-                  selectedPlan?.hasCrewData && selectedPlan?.hasPassengerData
-                    ? "grid-cols-5"
-                    : selectedPlan?.hasCrewData ||
-                        selectedPlan?.hasPassengerData
-                      ? "grid-cols-4"
-                      : "grid-cols-4"
-                }`}
-              >
-                <TabsTrigger value="option-details">Option Details</TabsTrigger>
-                {Object.keys(
-                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
-                ).length > 0 &&
-                  selectedOptionForDetails?.pending_recovery_solutions
-                    ?.full_details?.crew_hotel_assignments && (
-                    <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
-                  )}
-
-                {Object.keys(
-                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
-                ).length > 0 &&
-                  Object.keys(
-                    selectedOptionForDetails?.pending_recovery_solutions
-                      ?.full_details?.passenger_rebooking,
-                  ).length > 0 && (
-                    <TabsTrigger value="passenger-reaccommodation">
-                      Passenger Re-accommodation
-                    </TabsTrigger>
-                  )}
-                <TabsTrigger value="rotation-impact">
-                  Rotation Impact
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="option-details" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="h-5 w-5" />
-                      Option Overview
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="font-medium mb-2">
-                            {selectedOptionForDetails.title}
-                          </h4>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            {selectedOptionForDetails.description}
-                          </p>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Total Cost:
-                              </span>
-                              <span className="font-medium text-flydubai-orange">
-                                {selectedOptionForDetails.cost}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Timeline:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.timeline}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Confidence:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.confidence}%
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Impact:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.impact}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-2">
-                            Key Performance Indicators
-                          </h4>
-                          <div className="space-y-3">
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Success Rate</span>
-                                <span>
-                                  {selectedOptionForDetails.confidence}%
-                                </span>
-                              </div>
-                              <Progress
-                                value={selectedOptionForDetails.confidence}
-                                className="h-2"
-                              />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Customer Satisfaction</span>
-                                <span>88%</span>
-                              </div>
-                              <Progress value={88} className="h-2" />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Operational Risk</span>
-                                <span className="text-green-600">Low</span>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Easy
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Operational Risk</span>
-                                <span className="text-red-600">High</span>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Easy
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="crew-hotac" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Crew & HOTAC Management
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {(() => {
-                      const crewData =
-                        selectedOptionForDetails?.pending_recovery_solutions
-                          ?.full_details?.crew_hotel_assignments;
-                      const hasCrewData =
-                        crewData && Object.keys(crewData).length > 0;
-                      if (!hasCrewData) {
-                        return (
-                          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                            <div className="flex items-center gap-2 mb-2">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="font-medium text-green-800">
-                                No crew changes required.
-                              </span>
-                            </div>
-                            <p className="text-sm text-green-700">
-                              Current crew certified for{" "}
-                              {selectedOptionForDetails?.id || "A321-007"}
-                            </p>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div className="space-y-6">
-                          {crewData.map((assignment, index) => (
-                            <div key={index} className="space-y-6">
-                              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                <h3 className="text-lg font-semibold">
-                                  {assignment.hotel_name}
-                                </h3>
-                                <p className="text-sm text-gray-600">
-                                  {assignment.hotel_location}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Room: {assignment.room_number}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Booking Ref: {assignment.booking_reference}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Status: {assignment.assignment_status}
-                                </p>
-                              </div>
-
-                              <div>
-                                <h4 className="font-medium mb-3">
-                                  Crew Assignment Details
-                                </h4>
-                                <div className="overflow-x-auto">
-                                  <table className="w-full border-collapse border border-gray-200 text-sm">
-                                    <thead>
-                                      <tr className="bg-gray-50">
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Name
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Rank
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Base
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Employee ID
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Contact
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {assignment.crew_member.map(
-                                        (crew, crewIndex) => (
-                                          <tr
-                                            key={crewIndex}
-                                            className={
-                                              crewIndex % 2 === 0
-                                                ? "bg-white"
-                                                : "bg-gray-50"
-                                            }
-                                          >
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.name}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.rank}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.base}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.employee_id}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.contact_number}
-                                            </td>
-                                          </tr>
-                                        ),
-                                      )}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-
-                              {assignment.transport_details && (
-                                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                  <h4 className="font-medium mb-2">
-                                    Transport Details
-                                  </h4>
-                                  <p className="text-sm">
-                                    Vendor:{" "}
-                                    {assignment.transport_details.vendor}
-                                  </p>
-                                  <p className="text-sm">
-                                    Pickup:{" "}
-                                    {
-                                      assignment.transport_details
-                                        .pickup_location
-                                    }{" "}
-                                    at{" "}
-                                    {new Date(
-                                      assignment.transport_details.pickup_time,
-                                    ).toLocaleString()}
-                                  </p>
-                                  <p className="text-sm">
-                                    Dropoff:{" "}
-                                    {
-                                      assignment.transport_details
-                                        .dropoff_location
-                                    }{" "}
-                                    at{" "}
-                                    {new Date(
-                                      assignment.transport_details.dropoff_time,
-                                    ).toLocaleString()}
-                                  </p>
-                                  <p className="text-sm">
-                                    Vehicle:{" "}
-                                    {assignment.transport_details.vehicle_type}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent
-                value="passenger-reaccommodation"
-                className="space-y-6"
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Passenger Re-accommodation Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <div className="text-3xl font-bold text-blue-600">
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-lg">
+                            <Users className="h-5 w-5 text-purple-600" />
+                            Crew Reassignment Rotation Impact
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
                           {(() => {
-                            const passengerData =
-                              selectedPlan?.passengerInformation ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_rebooking ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_information ||
+                            const crewData =
+                              selectedOptionForDetails
+                                ?.pending_recovery_solutions?.full_details
+                                ?.crew_hotel_assignments ||
+                              selectedOptionForDetails?.assignedCrew ||
+                              selectedPlan?.assignedCrew ||
                               [];
 
+                            let crewMembers = [];
                             if (
-                              Array.isArray(passengerData) &&
-                              passengerData.length > 0
+                              Array.isArray(crewData) &&
+                              crewData.length > 0 &&
+                              crewData[0].crew_member
                             ) {
-                              return passengerData.length;
+                              crewMembers = crewData.flatMap((assignment) =>
+                                assignment.crew_member.map((crew) => ({
+                                  name: crew.name,
+                                  role: crew.rank,
+                                  base: crew.base,
+                                  status: "Reassigned",
+                                  employeeId: crew.employee_id,
+                                  contact: crew.contact_number,
+                                })),
+                              );
+                            } else if (Array.isArray(crewData)) {
+                              crewMembers = crewData;
                             }
 
-                            return selectedPlan?.affectedPassengers || 167;
-                          })()}
-                        </div>
-                        <div className="text-sm text-blue-700">
-                          Total Affected
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <div className="text-3xl font-bold text-green-600">
-                          {(() => {
-                            const passengerData =
-                              selectedPlan?.passengerInformation ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_rebooking ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_information ||
-                              [];
-
-                            if (
-                              Array.isArray(passengerData) &&
-                              passengerData.length > 0
-                            ) {
-                              const sameFlightCount = passengerData.filter(
-                                (p) =>
-                                  p.rebooked_flight === p.original_flight ||
-                                  p.rebooking_status === "same_flight" ||
-                                  p.status === "same_flight" ||
-                                  !p.rebooked_flight ||
-                                  p.rebooked_flight ===
-                                    selectedPlan.flightNumber,
-                              ).length;
-                              return sameFlightCount;
+                            if (crewMembers.length === 0) {
+                              crewMembers = [
+                                {
+                                  name: "Capt. Ahmed Hassan",
+                                  role: "Captain",
+                                  base: "DXB",
+                                  status: "Reassigned",
+                                  employeeId: `${airlineConfig.code}001234`,
+                                },
+                                {
+                                  name: "F/O Sarah Khan",
+                                  role: "First Officer",
+                                  base: "DXB",
+                                  status: "Reassigned",
+                                  employeeId: `${airlineConfig.code}001114`,
+                                },
+                              ];
                             }
 
-                            return selectedPlan?.affectedPassengers || 167;
-                          })()}
-                        </div>
-                        <div className="text-sm text-green-700">
-                          Same Flight
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-3xl font-bold text-red-600">
-                          {(() => {
-                            const passengerData =
-                              selectedPlan?.passengerInformation ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_rebooking ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_information ||
-                              [];
-
-                            if (
-                              Array.isArray(passengerData) &&
-                              passengerData.length > 0
-                            ) {
-                              const otherFlightCount = passengerData.filter(
-                                (p) =>
-                                  p.rebooked_flight &&
-                                  p.rebooked_flight !== p.original_flight &&
-                                  p.rebooked_flight !==
-                                    selectedPlan.flightNumber &&
-                                  p.rebooking_status !== "same_flight" &&
-                                  p.status !== "same_flight",
-                              ).length;
-                              return otherFlightCount;
-                            }
-
-                            return 0;
-                          })()}
-                        </div>
-                        <div className="text-sm text-red-700">
-                          Other Flights
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium mb-3">
-                          Accommodation Breakdown
-                        </h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">Meal Vouchers:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const mealVoucherCount = passengerData.filter(
-                                    (p) => {
-                                      if (
-                                        p.additional_services &&
-                                        Array.isArray(p.additional_services)
-                                      ) {
-                                        return p.additional_services.some(
-                                          (s) =>
-                                            typeof s === "string"
-                                              ? s.toLowerCase().includes("meal")
-                                              : s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("meal") ||
-                                                s.type
-                                                  ?.toLowerCase()
-                                                  .includes("meal"),
-                                        );
-                                      }
-                                      return (
-                                        p.services?.includes("meal") ||
-                                        p.meal_voucher ||
-                                        false
-                                      );
-                                    },
-                                  ).length;
-                                  return `${mealVoucherCount} passengers`;
-                                }
-
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                if (delayMinutes > 120) {
-                                  const affected =
-                                    selectedPlan?.affectedPassengers || 167;
-                                  return `${affected} passengers`;
-                                }
-                                return "0 passengers";
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">
-                              Hotel Accommodation:
-                            </span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const hotelCount = passengerData.filter(
-                                    (p) => {
-                                      if (
-                                        p.additional_services &&
-                                        Array.isArray(p.additional_services)
-                                      ) {
-                                        return p.additional_services.some(
-                                          (s) =>
-                                            typeof s === "string"
-                                              ? s
-                                                  .toLowerCase()
-                                                  .includes("hotel")
-                                              : s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("hotel") ||
-                                                s.type
-                                                  ?.toLowerCase()
-                                                  .includes("hotel") ||
-                                                s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("accommodation"),
-                                        );
-                                      }
-                                      return (
-                                        p.services?.includes("hotel") ||
-                                        p.hotel_accommodation ||
-                                        false
-                                      );
-                                    },
-                                  ).length;
-                                         return `${hotelCount} passengers`;
-                                }
-
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                if (delayMinutes > 240) {
-                                  const affected =
-                                    selectedPlan?.affectedPassengers || 167;
-                                  return `${Math.floor(affected * 0.8)} passengers`;
-                                }
-                                return "0 passengers";
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">Transportation:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const transportCount = passengerData.filter(
-                                    (p) => {
-                                      if (
-                                        p.additional_services &&
-                                        Array.isArray(p.additional_services)
-                                      ) {
-                                        return p.additional_services.some(
-                                          (s) =>
-                                            typeof s === "string"
-                                              ? s
-                                                  .toLowerCase()
-                                                  .includes("transport")
-                                              : s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("transport") ||
-                                                s.type
-                                                  ?.toLowerCase()
-                                                  .includes("transport"),
-                                        );
-                                      }
-                                      return (
-                                        p.services?.includes("transport") ||
-                                        p.transportation ||
-                                        false
-                                      );
-                                    },
-                                  ).length;
-                                  return `${transportCount} passengers`;
-                                }
-
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                if (delayMinutes > 240) {
-                                  const affected =
-                                    selectedPlan?.affectedPassengers || 167;
-                                  return `${Math.floor(affected * 0.8)} passengers`;
-                                }
-                                return "0 passengers";
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-3">Compensation</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">Per passenger avg:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const totalCost = passengerData.reduce(
-                                    (sum, p) =>
-                                      sum +
-                                      (p.rebooking_cost ||
-                                        p.compensation_amount ||
-                                        261),
-                                    0,
-                                  );
-                                  const avgCompensation =
-                                    totalCost / passengerData.length;
-                                  return `${airlineConfig.currency} ${Math.round(avgCompensation)}`;
-                                }
-                                return `${airlineConfig.currency} 261`;
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">Total compensation:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const totalCompensation =
-                                    passengerData.reduce(
-                                      (sum, p) =>
-                                        sum +
-                                        (p.rebooking_cost ||
-                                          p.compensation_amount ||
-                                          261),
-                                      0,
-                                    );
-                                  return `${airlineConfig.currency} ${totalCompensation.toLocaleString()}`;
-                                }
-
-                                const affected =
-                                  selectedPlan?.affectedPassengers || 167;
-                                return `${airlineConfig.currency} ${(affected * 261).toLocaleString()}`;
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">Service costs:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const affected =
-                                  selectedPlan?.affectedPassengers || 167;
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                let serviceCost = 0;
-
-                                if (delayMinutes > 120) {
-                                  serviceCost += affected * 45; // ${airlineConfig.currency} 45 per meal voucher
-                                }
-
-                                if (delayMinutes > 240) {
-                                  serviceCost +=
-                                    Math.floor(affected * 0.8) * 350; // ${airlineConfig.currency} 350 per hotel room
-                                }
-
-                                return `${airlineConfig.currency} ${serviceCost.toLocaleString()}`;
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Info className="h-4 w-4 text-blue-600" />
-                        <span className="font-medium text-blue-800">
-                          Re-accommodation Details:
-                        </span>
-                      </div>
-                      <p className="text-sm text-blue-700">
-                        All passengers accommodated on same aircraft with 65min
-                        delay.
-                      </p>
-                    </div>
-
-                    {/* PNR Grouped Passenger Details */}
-                    <div className="mt-6">
-                      <h4 className="font-medium mb-3">
-                        Passenger Rebookings by PNR
-                      </h4>
-                      <div className="space-y-4 max-h-64 overflow-y-auto">
-                        {(() => {
-                          const rawPassengerData =
-                            selectedPlan?.passengerInformation ||
-                            selectedPlan?.matchingOption?.passenger_rebooking ||
-                            selectedPlan?.matchingOption
-                              ?.passenger_information ||
-                            [];
-
-                          const currentPassengerData = Array.isArray(
-                            rawPassengerData,
-                          )
-                            ? rawPassengerData
-                            : [];
-
-                          if (
-                            !currentPassengerData ||
-                            currentPassengerData.length === 0
-                          ) {
                             return (
-                              <div className="text-center py-8 text-gray-500">
-                                No passenger rebooking data available
+                              <div className="space-y-4">
+                                {crewMembers.map((crewMember, index) => {
+                                  const crewRotationImpact = Array.isArray(
+                                    crewMember.rotation_impact,
+                                  )
+                                    ? crewMember.rotation_impact
+                                    : [
+                                        {
+                                          flightNumber: `${airlineConfig.code}${Math.floor(Math.random() * 900) + 100}`,
+                                          origin_code: "DXB",
+                                          destination_code: "BEY",
+                                          impact: "Low Impact",
+                                          delay: "15 min",
+                                          dutyTime: "8h 30m",
+                                          restPeriod: "12h 45m",
+                                          reason: `${crewMember.role} reassignment completed successfully`,
+                                        },
+                                      ];
+
+                                  return (
+                                    <div
+                                      key={index}
+                                      className="border rounded-lg p-4 space-y-3"
+                                    >
+                                      <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                          <div className="p-2 bg-purple-100 rounded">
+                                            <UserCheck className="h-4 w-4 text-purple-600" />
+                                          </div>
+                                          <div>
+                                            <h4 className="font-semibold">
+                                              {crewMember.name}
+                                            </h4>
+                                            <Badge
+                                              variant="outline"
+                                              className="text-xs"
+                                            >
+                                              {crewMember.role}
+                                            </Badge>
+                                          </div>
+                                        </div>
+                                        <div className="text-right text-sm">
+                                          <p className="text-muted-foreground">
+                                            Base: {crewMember.base || "DXB"}
+                                          </p>
+                                          <p className="text-muted-foreground">
+                                            Status:{" "}
+                                            {crewMember.status || "Available"}
+                                          </p>
+                                        </div>
+                                      </div>
+
+                                      <div className="space-y-3">
+                                        {crewRotationImpact.map(
+                                          (flight, flightIndex) => (
+                                            <div
+                                              key={flightIndex}
+                                              className="p-3 border rounded bg-purple-50 space-y-2"
+                                            >
+                                              <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                  <Plane className="h-4 w-4 text-purple-600" />
+                                                  <span className="font-medium">
+                                                    {flight.flightNumber}
+                                                  </span>
+                                                  <Badge
+                                                    variant="outline"
+                                                    className="text-xs"
+                                                  >
+                                                    {flight.origin_code} →{" "}
+                                                    {flight.destination_code}
+                                                  </Badge>
+                                                </div>
+                                                <Badge
+                                                  className={
+                                                    flight.impact ===
+                                                    "High Impact"
+                                                      ? "bg-red-100 text-red-700 border-red-200"
+                                                      : flight.impact ===
+                                                          "Medium Impact"
+                                                        ? "bg-yellow-100 text-yellow-700 border-yellow-200"
+                                                        : "bg-green-100 text-green-700 border-green-200"
+                                                  }
+                                                >
+                                                  {flight.impact}
+                                                </Badge>
+                                              </div>
+
+                                              <div className="grid grid-cols-3 gap-3 text-xs">
+                                                <div>
+                                                  <Label className="text-muted-foreground">
+                                                    Delay
+                                                  </Label>
+                                                  <p className="font-medium">
+                                                    {flight.delay}
+                                                  </p>
+                                                </div>
+                                                <div>
+                                                  <Label className="text-muted-foreground">
+                                                    Duty Time
+                                                  </Label>
+                                                  <p className="font-medium">
+                                                    {flight.dutyTime}
+                                                  </p>
+                                                </div>
+                                                <div>
+                                                  <Label className="text-muted-foreground">
+                                                    Rest Period
+                                                  </Label>
+                                                  <p className="font-medium">
+                                                    {flight.restPeriod}
+                                                  </p>
+                                                </div>
+                                              </div>
+
+                                              <div className="p-2 bg-white rounded text-xs">
+                                                <Label className="text-muted-foreground">
+                                                  Reason
+                                                </Label>
+                                                <p className="mt-1">
+                                                  {flight.reason}
+                                                </p>
+                                              </div>
+                                            </div>
+                                          ),
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
                               </div>
                             );
-                          }
-
-                          const passengersByPnr = currentPassengerData.reduce(
-                            (acc, passenger) => {
-                              const pnr = passenger.pnr || "Unknown";
-                              if (!acc[pnr]) {
-                                acc[pnr] = [];
-                              }
-                              acc[pnr].push(passenger);
-                              return acc;
-                            },
-                            {},
-                          );
-
-                          return Object.entries(passengersByPnr)
-                            .slice(0, 8)
-                            .map(([pnr, passengers], groupIndex) => (
-                              <Card
-                                key={groupIndex}
-                                className="border border-gray-200"
-                              >
-                                <div className="p-3 bg-gray-50 border-b">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                      <Users className="h-4 w-4 text-blue-600" />
-                                      <span className="font-semibold text-gray-900">
-                                        PNR: {pnr}
-                                      </span>
-                                      <Badge
-                                        variant="secondary"
-                                        className="bg-blue-100 text-blue-800"
-                                      >
-                                        {(passengers as any).length} passenger
-                                        {(passengers as any).length > 1
-                                          ? "s"
-                                          : ""}
-                                      </Badge>
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                      Group Booking
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="p-3 space-y-3">
-                                  {(passengers as any).map(
-                                    (passenger, passengerIndex) => (
-                                      <div
-                                        key={passengerIndex}
-                                        className="border-l-2 border-blue-200 pl-3"
-                                      >
-                                        <div className="flex items-center justify-between mb-2">
-                                          <div className="font-medium text-gray-900">
-                                            {passenger.passenger_name ||
-                                              `Passenger ${passengerIndex + 1}`}
-                                          </div>
-                                          <Badge
-                                            className={
-                                              passenger.rebooking_status ===
-                                              "confirmed"
-                                                ? "bg-green-100 text-green-700"
-                                                : passenger.rebooking_status ===
-                                                    "pending"
-                                                  ? "bg-yellow-100 text-yellow-700"
-                                                  : "bg-gray-100 text-gray-700"
-                                            }
-                                          >
-                                            {passenger.rebooking_status ||
-                                              "Unknown"}
-                                          </Badge>
-                                        </div>
-                                        <div className="text-sm space-y-1">
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Original Flight:
-                                            </span>
-                                            <span>
-                                              {passenger.original_flight ||
-                                                selectedPlan.flightNumber}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Rebooked Flight:
-                                            </span>
-                                            <span>
-                                              {passenger.rebooked_flight ||
-                                                "TBD"}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Seat Change:
-                                            </span>
-                                            <span>
-                                              {passenger.original_seat &&
-                                              passenger.rebooked_seat
-                                                ? `${passenger.original_seat} → ${passenger.rebooked_seat}`
-                                                : "N/A"}
-                                            </span>
-                                          </div>
-                                          {passenger.rebooking_cost > 0 && (
-                                            <div className="flex justify-between">
-                                              <span className="text-muted-foreground">
-                                                Cost:
-                                              </span>
-                                              <span className="text-flydubai-orange">
-                                                {airlineConfig.currency}{" "}
-                                                {passenger.rebooking_cost}
-                                              </span>
-                                            </div>
-                                          )}
-                                          {passenger.additional_services &&
-                                            passenger.additional_services
-                                              .length > 0 && (
-                                              <div className="flex justify-between">
-                                                <span className="text-muted-foreground">
-                                                  Services:
-                                                </span>
-                                                <span className="text-xs">
-                                                  {passenger.additional_services.map(
-                                                    (
-                                                      service,
-                                                      serviceIndex,
-                                                    ) => (
-                                                      <Badge
-                                                        key={serviceIndex}
-                                                        variant="outline"
-                                                        className="mr-1 text-xs"
-                                                      >
-                                                        {service.service_type ||
-                                                          service}
-                                                      </Badge>
-                                                    ),
-                                                  )}
-                                                </span>
-                                              </div>
-                                            )}
-                                          {passenger.notes && (
-                                            <div className="text-xs text-muted-foreground mt-2">
-                                              Notes: {passenger.notes}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ),
-                                  )}
-                                </div>
-                              </Card>
-                            ));
-                        })()}
-                        {(() => {
-                          const rawPassengerData =
-                            selectedPlan?.passengerInformation ||
-                            selectedPlan?.matchingOption?.passenger_rebooking ||
-                            selectedPlan?.matchingOption
-                              ?.passenger_information ||
-                            [];
-
-                          const groupCount = Array.isArray(rawPassengerData)
-                            ? Object.keys(
-                                rawPassengerData.reduce((acc, passenger) => {
-                                  const pnr = passenger.pnr || "UNKNOWN";
-                                  if (!acc[pnr]) acc[pnr] = [];
-                                  acc[pnr].push(passenger);
-                                  return acc;
-                                }, {}),
-                              ).length
-                            : 0;
-
-                          return (
-                            groupCount > 8 && (
-                              <div className="text-center text-sm text-muted-foreground p-2">
-                                ... and {groupCount - 8} more PNR groups
-                              </div>
-                            )
-                          );
-                        })()}
-                      </div>
+                          })()}
+                        </CardContent>
+                      </Card>
                     </div>
                   </CardContent>
                 </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Cost Impact Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {(() => {
-                        const costBreakdown =
-                          selectedPlan.costAnalysis?.breakdown ||
-                          selectedPlan.costBreakdown?.breakdown ||
-                          selectedPlan.matchingOption?.cost_breakdown
-                            ?.breakdown;
-
-                        const costTotal =
-                          selectedPlan.costAnalysis?.total ||
-                          selectedPlan.costBreakdown?.total ||
-                          selectedPlan.matchingOption?.cost_breakdown
-                            ?.total;
-
-                        if (
-                          costBreakdown &&
-                          Array.isArray(costBreakdown) &&
-                          costBreakdown.length > 0
-                        ) {
-                          return (
-                            <div className="space-y-4">
-                              {costTotal && (
-                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                  <div className="flex justify-between items-center">
-                                    <span className="font-medium text-blue-800">
-                                      {costTotal.title || "Total Cost"}:
-                                    </span>
-                                    <span className="text-lg font-semibold text-blue-900">
-                                      {costTotal.amount ||
-                                        `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                    </span>
-                                  </div>
-                                  {costTotal.description && (
-                                    <p className="text-sm text-blue-700 mt-1">
-                                      {costTotal.description}
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-
-                              <div className="space-y-3">
-                                <h4 className="font-medium text-gray-900">
-                                  Cost Breakdown:
-                                </h4>
-                                {Array.isArray(costBreakdown)
-                                  ? costBreakdown.map((item, index) => (
-                                      <div
-                                        key={index}
-                                        className="space-y-2 p-3 border rounded-lg"
-                                      >
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-sm font-medium">
-                                            {item.category ||
-                                              `Cost Item ${index + 1}`}
-                                          </span>
-                                          <span className="font-semibold text-flydubai-orange">
-                                            {item.amount}
-                                          </span>
-                                        </div>
-                                        {item.percentage && (
-                                          <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div
-                                              className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
-                                              style={{
-                                                width: `${item.percentage}%`,
-                                              }}
-                                            ></div>
-                                          </div>
-                                        )}
-                                        <div className="flex justify-between items-center text-xs">
-                                          {item.percentage && (
-                                            <span className="text-gray-600">
-                                              {item.percentage}% of total
-                                              cost
-                                            </span>
-                                          )}
-                                          {item.description && (
-                                            <span className="text-blue-600">
-                                              {item.description}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))
-                                  : Object.entries(costBreakdown).map(
-                                      ([key, value]) => (
-                                        <div
-                                          key={key}
-                                          className="space-y-2 p-3 border rounded-lg"
-                                        >
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-sm font-medium capitalize">
-                                              {key.replace(
-                                                /([A-Z])/g,
-                                                " $1",
-                                              )}
-                                            </span>
-                                            <span className="font-semibold text-flydubai-orange">
-                                              {typeof value === "object" &&
-                                              value &&
-                                              typeof (value as any)
-                                                .amount === "number"
-                                                ? `${airlineConfig.currency} ${(value as any).amount.toLocaleString()}`
-                                                : typeof value === "number"
-                                                  ? `${airlineConfig.currency} ${value.toLocaleString()}`
-                                                  : typeof value ===
-                                                        "string" &&
-                                                      !value.includes(
-                                                        "[object",
-                                                      )
-                                                    ? value
-                                                    : `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      ),
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            } else if (
-                              selectedPlan.costBreakdown &&
-                              Object.keys(selectedPlan.costBreakdown).length > 0
-                            ) {
-                              return (
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  {Object.entries(
-                                    selectedPlan.costBreakdown,
-                                  ).map(([key, value]) => (
-                                    <div key={key}>
-                                      <span className="text-gray-600 capitalize">
-                                        {key.replace(/([A-Z])/g, " $1")}:
-                                      </span>
-                                      <div className="font-medium">
-                                        {typeof value === "object" &&
-                                        value &&
-                                        (value as any).amount
-                                          ? (value as any).amount
-                                          : typeof value === "number"
-                                            ? `${airlineConfig.currency} ${value.toLocaleString()}`
-                                            : typeof value === "string" &&
-                                                !value.includes("[object")
-                                              ? value
-                                              : `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              );
-                            } else {
-                              return (
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Direct Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.6
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Indirect Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.4
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Passenger Compensation:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.3
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Operational Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.7
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            }
-                          })()}
-
-                          <Separator />
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">
-                              Total Estimated Cost:
-                            </span>
-                            <span className="text-lg font-semibold text-flydubai-orange">
-                              {(() => {
-                                const costTotal =
-                                  selectedPlan.costAnalysis?.total ||
-                                  selectedPlan.costBreakdown?.total ||
-                                  selectedPlan.matchingOption?.cost_breakdown
-                                    ?.total;
-
-                                if (costTotal && costTotal.amount) {
-                                  return costTotal.amount;
-                                }
-                                return `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 50000).toLocaleString()}`;
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Operational Impact</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 gap-3">
-                            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Clock className="h-4 w-4 text-yellow-600" />
-                                <span className="font-medium text-yellow-800">
-                                  Schedule Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-yellow-700">
-                                {selectedPlan.estimatedDelay || 0} minute delay
-                                expected
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Users className="h-4 w-4 text-blue-600" />
-                                <span className="font-medium text-blue-800">
-                                  Passenger Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-blue-700">
-                                {selectedPlan.affectedPassengers || "N/A"}{" "}
-                                passengers affected
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <TrendingUp className="h-4 w-4 text-green-600" />
-                                <span className="font-medium text-green-800">
-                                  Success Probability
-                                </span>
-                              </div>
-                              <p className="text-sm text-green-700">
-                                {selectedPlan.confidence || 80}% confidence in
-                                successful resolution
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Target className="h-4 w-4 text-purple-600" />
-                                <span className="font-medium text-purple-800">
-                                  Network Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-purple-700">
-                                {selectedPlan.rotationImpact?.networkImpact ||
-                                  selectedPlan.matchingOption?.rotation_plan
-                                    ?.networkImpact ||
-                                  "Assessment pending"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-              )}
+              </TabsContent>
             </Tabs>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      <Dialog
-        open={showDetailedOptionAnalysis}
-        onOpenChange={setShowDetailedOptionAnalysis}
-      >
-        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Detailed Recovery Option Analysis
-            </DialogTitle>
-            <DialogDescription>
-              Comprehensive view of {selectedOptionForDetails?.title} •{" "}
-              {selectedOptionForDetails?.id || "A321-007"} for{" "}
-              {selectedOptionForDetails?.flightNumber}
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedOptionForDetails && (
-            <Tabs defaultValue="option-details" className="w-full">
-              <TabsList
-                className={`grid w-full ${
-                  selectedPlan?.hasCrewData && selectedPlan?.hasPassengerData
-                    ? "grid-cols-5"
-                    : selectedPlan?.hasCrewData ||
-                        selectedPlan?.hasPassengerData
-                      ? "grid-cols-4"
-                      : "grid-cols-4"
-                }`}
-              >
-                <TabsTrigger value="option-details">Option Details</TabsTrigger>
-                {Object.keys(
-                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
-                ).length > 0 &&
-                  selectedOptionForDetails?.pending_recovery_solutions
-                    ?.full_details?.crew_hotel_assignments && (
-                    <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
-                  )}
-
-                {Object.keys(
-                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
-                ).length > 0 &&
-                  Object.keys(
-                    selectedOptionForDetails?.pending_recovery_solutions
-                      ?.full_details?.passenger_rebooking,
-                  ).length > 0 && (
-                    <TabsTrigger value="passenger-reaccommodation">
-                      Passenger Re-accommodation
-                    </TabsTrigger>
-                  )}
-                <TabsTrigger value="rotation-impact">
-                  Rotation Impact
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="option-details" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="h-5 w-5" />
-                      Option Overview
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="font-medium mb-2">
-                            {selectedOptionForDetails.title}
-                          </h4>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            {selectedOptionForDetails.description}
-                          </p>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Total Cost:
-                              </span>
-                              <span className="font-medium text-flydubai-orange">
-                                {selectedOptionForDetails.cost}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Timeline:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.timeline}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Confidence:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.confidence}%
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Impact:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.impact}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-2">
-                            Key Performance Indicators
-                          </h4>
-                          <div className="space-y-3">
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Success Rate</span>
-                                <span>
-                                  {selectedOptionForDetails.confidence}%
-                                </span>
-                              </div>
-                              <Progress
-                                value={selectedOptionForDetails.confidence}
-                                className="h-2"
-                              />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Customer Satisfaction</span>
-                                <span>88%</span>
-                              </div>
-                              <Progress value={88} className="h-2" />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Operational Risk</span>
-                                <span className="text-green-600">Low</span>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Easy
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Operational Risk</span>
-                                <span className="text-red-600">High</span>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Easy
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="crew-hotac" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Crew & HOTAC Management
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {(() => {
-                      const crewData =
-                        selectedOptionForDetails?.pending_recovery_solutions
-                          ?.full_details?.crew_hotel_assignments;
-                      const hasCrewData =
-                        crewData && Object.keys(crewData).length > 0;
-                      if (!hasCrewData) {
-                        return (
-                          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                            <div className="flex items-center gap-2 mb-2">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="font-medium text-green-800">
-                                No crew changes required.
-                              </span>
-                            </div>
-                            <p className="text-sm text-green-700">
-                              Current crew certified for{" "}
-                              {selectedOptionForDetails?.id || "A321-007"}
-                            </p>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div className="space-y-6">
-                          {crewData.map((assignment, index) => (
-                            <div key={index} className="space-y-6">
-                              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                <h3 className="text-lg font-semibold">
-                                  {assignment.hotel_name}
-                                </h3>
-                                <p className="text-sm text-gray-600">
-                                  {assignment.hotel_location}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Room: {assignment.room_number}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Booking Ref: {assignment.booking_reference}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Status: {assignment.assignment_status}
-                                </p>
-                              </div>
-
-                              <div>
-                                <h4 className="font-medium mb-3">
-                                  Crew Assignment Details
-                                </h4>
-                                <div className="overflow-x-auto">
-                                  <table className="w-full border-collapse border border-gray-200 text-sm">
-                                    <thead>
-                                      <tr className="bg-gray-50">
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Name
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Rank
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Base
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Employee ID
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Contact
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {assignment.crew_member.map(
-                                        (crew, crewIndex) => (
-                                          <tr
-                                            key={crewIndex}
-                                            className={
-                                              crewIndex % 2 === 0
-                                                ? "bg-white"
-                                                : "bg-gray-50"
-                                            }
-                                          >
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.name}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.rank}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.base}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.employee_id}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.contact_number}
-                                            </td>
-                                          </tr>
-                                        ),
-                                      )}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-
-                              {assignment.transport_details && (
-                                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                  <h4 className="font-medium mb-2">
-                                    Transport Details
-                                  </h4>
-                                  <p className="text-sm">
-                                    Vendor:{" "}
-                                    {assignment.transport_details.vendor}
-                                  </p>
-                                  <p className="text-sm">
-                                    Pickup:{" "}
-                                    {
-                                      assignment.transport_details
-                                        .pickup_location
-                                    }{" "}
-                                    at{" "}
-                                    {new Date(
-                                      assignment.transport_details.pickup_time,
-                                    ).toLocaleString()}
-                                  </p>
-                                  <p className="text-sm">
-                                    Dropoff:{" "}
-                                    {
-                                      assignment.transport_details
-                                        .dropoff_location
-                                    }{" "}
-                                    at{" "}
-                                    {new Date(
-                                      assignment.transport_details.dropoff_time,
-                                    ).toLocaleString()}
-                                  </p>
-                                  <p className="text-sm">
-                                    Vehicle:{" "}
-                                    {assignment.transport_details.vehicle_type}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent
-                value="passenger-reaccommodation"
-                className="space-y-6"
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Passenger Re-accommodation Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <div className="text-3xl font-bold text-blue-600">
-                          {(() => {
-                            const passengerData =
-                              selectedPlan?.passengerInformation ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_rebooking ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_information ||
-                              [];
-
-                            if (
-                              Array.isArray(passengerData) &&
-                              passengerData.length > 0
-                            ) {
-                              return passengerData.length;
-                            }
-
-                            return selectedPlan?.affectedPassengers || 167;
-                          })()}
-                        </div>
-                        <div className="text-sm text-blue-700">
-                          Total Affected
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <div className="text-3xl font-bold text-green-600">
-                          {(() => {
-                            const passengerData =
-                              selectedPlan?.passengerInformation ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_rebooking ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_information ||
-                              [];
-
-                            if (
-                              Array.isArray(passengerData) &&
-                              passengerData.length > 0
-                            ) {
-                              const sameFlightCount = passengerData.filter(
-                                (p) =>
-                                  p.rebooked_flight === p.original_flight ||
-                                  p.rebooking_status === "same_flight" ||
-                                  p.status === "same_flight" ||
-                                  !p.rebooked_flight ||
-                                  p.rebooked_flight ===
-                                    selectedPlan.flightNumber,
-                              ).length;
-                              return sameFlightCount;
-                            }
-
-                            return selectedPlan?.affectedPassengers || 167;
-                          })()}
-                        </div>
-                        <div className="text-sm text-green-700">
-                          Same Flight
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-3xl font-bold text-red-600">
-                          {(() => {
-                            const passengerData =
-                              selectedPlan?.passengerInformation ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_rebooking ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_information ||
-                              [];
-
-                            if (
-                              Array.isArray(passengerData) &&
-                              passengerData.length > 0
-                            ) {
-                              const otherFlightCount = passengerData.filter(
-                                (p) =>
-                                  p.rebooked_flight &&
-                                  p.rebooked_flight !== p.original_flight &&
-                                  p.rebooked_flight !==
-                                    selectedPlan.flightNumber &&
-                                  p.rebooking_status !== "same_flight" &&
-                                  p.status !== "same_flight",
-                              ).length;
-                              return otherFlightCount;
-                            }
-
-                            return 0;
-                          })()}
-                        </div>
-                        <div className="text-sm text-red-700">
-                          Other Flights
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium mb-3">
-                          Accommodation Breakdown
-                        </h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">Meal Vouchers:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const mealVoucherCount = passengerData.filter(
-                                    (p) => {
-                                      if (
-                                        p.additional_services &&
-                                        Array.isArray(p.additional_services)
-                                      ) {
-                                        return p.additional_services.some(
-                                          (s) =>
-                                            typeof s === "string"
-                                              ? s.toLowerCase().includes("meal")
-                                              : s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("meal") ||
-                                                s.type
-                                                  ?.toLowerCase()
-                                                  .includes("meal"),
-                                        );
-                                      }
-                                      return (
-                                        p.services?.includes("meal") ||
-                                        p.meal_voucher ||
-                                        false
-                                      );
-                                    },
-                                  ).length;
-                                  return `${mealVoucherCount} passengers`;
-                                }
-
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                if (delayMinutes > 120) {
-                                  const affected =
-                                    selectedPlan?.affectedPassengers || 167;
-                                  return `${affected} passengers`;
-                                }
-                                return "0 passengers";
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">
-                              Hotel Accommodation:
-                            </span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const hotelCount = passengerData.filter(
-                                    (p) => {
-                                      if (
-                                        p.additional_services &&
-                                        Array.isArray(p.additional_services)
-                                      ) {
-                                        return p.additional_services.some(
-                                          (s) =>
-                                            typeof s === "string"
-                                              ? s
-                                                  .toLowerCase()
-                                                  .includes("hotel")
-                                              : s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("hotel") ||
-                                                s.type
-                                                  ?.toLowerCase()
-                                                  .includes("hotel") ||
-                                                s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("accommodation"),
-                                        );
-                                      }
-                                      return (
-                                        p.services?.includes("hotel") ||
-                                        p.hotel_accommodation ||
-                                        false
-                                      );
-                                    },
-                                  ).length;
-                                  return `${hotelCount} passengers`;
-                                }
-
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                if (delayMinutes > 240) {
-                                  const affected =
-                                    selectedPlan?.affectedPassengers || 167;
-                                  return `${Math.floor(affected * 0.8)} passengers`;
-                                }
-                                return "0 passengers";
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">Transportation:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const transportCount = passengerData.filter(
-                                    (p) => {
-                                      if (
-                                        p.additional_services &&
-                                        Array.isArray(p.additional_services)
-                                      ) {
-                                        return p.additional_services.some(
-                                          (s) =>
-                                            typeof s === "string"
-                                              ? s
-                                                  .toLowerCase()
-                                                  .includes("transport")
-                                              : s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("transport") ||
-                                                s.type
-                                                  ?.toLowerCase()
-                                                  .includes("transport"),
-                                        );
-                                      }
-                                      return (
-                                        p.services?.includes("transport") ||
-                                        p.transportation ||
-                                        false
-                                      );
-                                    },
-                                  ).length;
-                                  return `${transportCount} passengers`;
-                                }
-
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                if (delayMinutes > 240) {
-                                  const affected =
-                                    selectedPlan?.affectedPassengers || 167;
-                                  return `${Math.floor(affected * 0.8)} passengers`;
-                                }
-                                return "0 passengers";
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-3">Compensation</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">Per passenger avg:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const totalCost = passengerData.reduce(
-                                    (sum, p) =>
-                                      sum +
-                                      (p.rebooking_cost ||
-                                        p.compensation_amount ||
-                                        261),
-                                    0,
-                                  );
-                                  const avgCompensation =
-                                    totalCost / passengerData.length;
-                                  return `${airlineConfig.currency} ${Math.round(avgCompensation)}`;
-                                }
-                                return `${airlineConfig.currency} 261`;
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">Total compensation:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const totalCompensation =
-                                    passengerData.reduce(
-                                      (sum, p) =>
-                                        sum +
-                                        (p.rebooking_cost ||
-                                          p.compensation_amount ||
-                                          261),
-                                      0,
-                                    );
-                                  return `${airlineConfig.currency} ${totalCompensation.toLocaleString()}`;
-                                }
-
-                                const affected =
-                                  selectedPlan?.affectedPassengers || 167;
-                                return `${airlineConfig.currency} ${(affected * 261).toLocaleString()}`;
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">Service costs:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const affected =
-                                  selectedPlan?.affectedPassengers || 167;
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                let serviceCost = 0;
-
-                                if (delayMinutes > 120) {
-                                  serviceCost += affected * 45; // ${airlineConfig.currency} 45 per meal voucher
-                                }
-
-                                if (delayMinutes > 240) {
-                                  serviceCost +=
-                                    Math.floor(affected * 0.8) * 350; // ${airlineConfig.currency} 350 per hotel room
-                                }
-
-                                return `${airlineConfig.currency} ${serviceCost.toLocaleString()}`;
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Info className="h-4 w-4 text-blue-600" />
-                        <span className="font-medium text-blue-800">
-                          Re-accommodation Details:
-                        </span>
-                      </div>
-                      <p className="text-sm text-blue-700">
-                        All passengers accommodated on same aircraft with 65min
-                        delay.
-                      </p>
-                    </div>
-
-                    {/* PNR Grouped Passenger Details */}
-                    <div className="mt-6">
-                      <h4 className="font-medium mb-3">
-                        Passenger Rebookings by PNR
-                      </h4>
-                      <div className="space-y-4 max-h-64 overflow-y-auto">
-                        {(() => {
-                          const rawPassengerData =
-                            selectedPlan?.passengerInformation ||
-                            selectedPlan?.matchingOption?.passenger_rebooking ||
-                            selectedPlan?.matchingOption
-                              ?.passenger_information ||
-                            [];
-
-                          const currentPassengerData = Array.isArray(
-                            rawPassengerData,
-                          )
-                            ? rawPassengerData
-                            : [];
-
-                          if (
-                            !currentPassengerData ||
-                            currentPassengerData.length === 0
-                          ) {
-                            return (
-                              <div className="text-center py-8 text-gray-500">
-                                No passenger rebooking data available
-                              </div>
-                            );
-                          }
-
-                          const passengersByPnr = currentPassengerData.reduce(
-                            (acc, passenger) => {
-                              const pnr = passenger.pnr || "Unknown";
-                              if (!acc[pnr]) {
-                                acc[pnr] = [];
-                              }
-                              acc[pnr].push(passenger);
-                              return acc;
-                            },
-                            {},
-                          );
-
-                          return Object.entries(passengersByPnr)
-                            .slice(0, 8)
-                            .map(([pnr, passengers], groupIndex) => (
-                              <Card
-                                key={groupIndex}
-                                className="border border-gray-200"
-                              >
-                                <div className="p-3 bg-gray-50 border-b">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                      <Users className="h-4 w-4 text-blue-600" />
-                                      <span className="font-semibold text-gray-900">
-                                        PNR: {pnr}
-                                      </span>
-                                      <Badge
-                                        variant="secondary"
-                                        className="bg-blue-100 text-blue-800"
-                                      >
-                                        {(passengers as any).length} passenger
-                                        {(passengers as any).length > 1
-                                          ? "s"
-                                          : ""}
-                                      </Badge>
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                      Group Booking
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="p-3 space-y-3">
-                                  {(passengers as any).map(
-                                    (passenger, passengerIndex) => (
-                                      <div
-                                        key={passengerIndex}
-                                        className="border-l-2 border-blue-200 pl-3"
-                                      >
-                                        <div className="flex items-center justify-between mb-2">
-                                          <div className="font-medium text-gray-900">
-                                            {passenger.passenger_name ||
-                                              `Passenger ${passengerIndex + 1}`}
-                                          </div>
-                                          <Badge
-                                            className={
-                                              passenger.rebooking_status ===
-                                              "confirmed"
-                                                ? "bg-green-100 text-green-700"
-                                                : passenger.rebooking_status ===
-                                                    "pending"
-                                                  ? "bg-yellow-100 text-yellow-700"
-                                                  : "bg-gray-100 text-gray-700"
-                                            }
-                                          >
-                                            {passenger.rebooking_status ||
-                                              "Unknown"}
-                                          </Badge>
-                                        </div>
-                                        <div className="text-sm space-y-1">
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Original Flight:
-                                            </span>
-                                            <span>
-                                              {passenger.original_flight ||
-                                                selectedPlan.flightNumber}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Rebooked Flight:
-                                            </span>
-                                            <span>
-                                              {passenger.rebooked_flight ||
-                                                "TBD"}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Seat Change:
-                                            </span>
-                                            <span>
-                                              {passenger.original_seat &&
-                                              passenger.rebooked_seat
-                                                ? `${passenger.original_seat} → ${passenger.rebooked_seat}`
-                                                : "N/A"}
-                                            </span>
-                                          </div>
-                                          {passenger.rebooking_cost > 0 && (
-                                            <div className="flex justify-between">
-                                              <span className="text-muted-foreground">
-                                                Cost:
-                                              </span>
-                                              <span className="text-flydubai-orange">
-                                                {airlineConfig.currency}{" "}
-                                                {passenger.rebooking_cost}
-                                              </span>
-                                            </div>
-                                          )}
-                                          {passenger.additional_services &&
-                                            passenger.additional_services
-                                              .length > 0 && (
-                                              <div className="flex justify-between">
-                                                <span className="text-muted-foreground">
-                                                  Services:
-                                                </span>
-                                                <span className="text-xs">
-                                                  {passenger.additional_services.map(
-                                                    (
-                                                      service,
-                                                      serviceIndex,
-                                                    ) => (
-                                                      <Badge
-                                                        key={serviceIndex}
-                                                        variant="outline"
-                                                        className="mr-1 text-xs"
-                                                      >
-                                                        {service.service_type ||
-                                                          service}
-                                                      </Badge>
-                                                    ),
-                                                  )}
-                                                </span>
-                                              </div>
-                                            )}
-                                          {passenger.notes && (
-                                            <div className="text-xs text-muted-foreground mt-2">
-                                              Notes: {passenger.notes}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ),
-                                  )}
-                                </div>
-                              </Card>
-                            ));
-                        })()}
-                        {(() => {
-                          const rawPassengerData =
-                            selectedPlan?.passengerInformation ||
-                            selectedPlan?.matchingOption?.passenger_rebooking ||
-                            selectedPlan?.matchingOption
-                              ?.passenger_information ||
-                            [];
-
-                          const groupCount = Array.isArray(rawPassengerData)
-                            ? Object.keys(
-                                rawPassengerData.reduce((acc, passenger) => {
-                                  const pnr = passenger.pnr || "UNKNOWN";
-                                  if (!acc[pnr]) acc[pnr] = [];
-                                  acc[pnr].push(passenger);
-                                  return acc;
-                                }, {}),
-                              ).length
-                            : 0;
-
-                          return (
-                            groupCount > 8 && (
-                              <div className="text-center text-sm text-muted-foreground p-2">
-                                ... and {groupCount - 8} more PNR groups
-                              </div>
-                            )
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Cost Impact Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {(() => {
-                        const costBreakdown =
-                          selectedPlan.costAnalysis?.breakdown ||
-                          selectedPlan.costBreakdown?.breakdown ||
-                          selectedPlan.matchingOption?.cost_breakdown
-                            ?.breakdown;
-
-                        const costTotal =
-                          selectedPlan.costAnalysis?.total ||
-                          selectedPlan.costBreakdown?.total ||
-                          selectedPlan.matchingOption?.cost_breakdown
-                            ?.total;
-
-                        if (
-                          costBreakdown &&
-                          Array.isArray(costBreakdown) &&
-                          costBreakdown.length > 0
-                        ) {
-                          return (
-                            <div className="space-y-4">
-                              {costTotal && (
-                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                  <div className="flex justify-between items-center">
-                                    <span className="font-medium text-blue-800">
-                                      {costTotal.title || "Total Cost"}:
-                                    </span>
-                                    <span className="text-lg font-semibold text-blue-900">
-                                      {costTotal.amount ||
-                                        `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                    </span>
-                                  </div>
-                                  {costTotal.description && (
-                                    <p className="text-sm text-blue-700 mt-1">
-                                      {costTotal.description}
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-
-                              <div className="space-y-3">
-                                <h4 className="font-medium text-gray-900">
-                                  Cost Breakdown:
-                                </h4>
-                                {Array.isArray(costBreakdown)
-                                  ? costBreakdown.map((item, index) => (
-                                      <div
-                                        key={index}
-                                        className="space-y-2 p-3 border rounded-lg"
-                                      >
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-sm font-medium">
-                                            {item.category ||
-                                              `Cost Item ${index + 1}`}
-                                          </span>
-                                          <span className="font-semibold text-flydubai-orange">
-                                            {item.amount}
-                                          </span>
-                                        </div>
-                                        {item.percentage && (
-                                          <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div
-                                              className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
-                                              style={{
-                                                width: `${item.percentage}%`,
-                                              }}
-                                            ></div>
-                                          </div>
-                                        )}
-                                        <div className="flex justify-between items-center text-xs">
-                                          {item.percentage && (
-                                            <span className="text-gray-600">
-                                              {item.percentage}% of total
-                                              cost
-                                            </span>
-                                          )}
-                                          {item.description && (
-                                            <span className="text-blue-600">
-                                              {item.description}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))
-                                  : Object.entries(costBreakdown).map(
-                                      ([key, value]) => (
-                                        <div
-                                          key={key}
-                                          className="space-y-2 p-3 border rounded-lg"
-                                        >
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-sm font-medium capitalize">
-                                              {key.replace(
-                                                /([A-Z])/g,
-                                                " $1",
-                                              )}
-                                            </span>
-                                            <span className="font-semibold text-flydubai-orange">
-                                              {typeof value === "object" &&
-                                              value &&
-                                              typeof (value as any)
-                                                .amount === "number"
-                                                ? `${airlineConfig.currency} ${(value as any).amount.toLocaleString()}`
-                                                : typeof value === "number"
-                                                  ? `${airlineConfig.currency} ${value.toLocaleString()}`
-                                                  : typeof value ===
-                                                        "string" &&
-                                                      !value.includes(
-                                                        "[object",
-                                                      )
-                                                    ? value
-                                                    : `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      ),
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            } else if (
-                              selectedPlan.costBreakdown &&
-                              Object.keys(selectedPlan.costBreakdown).length > 0
-                            ) {
-                              return (
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  {Object.entries(
-                                    selectedPlan.costBreakdown,
-                                  ).map(([key, value]) => (
-                                    <div key={key}>
-                                      <span className="text-gray-600 capitalize">
-                                        {key.replace(/([A-Z])/g, " $1")}:
-                                      </span>
-                                      <div className="font-medium">
-                                        {typeof value === "object" &&
-                                        value &&
-                                        (value as any).amount
-                                          ? (value as any).amount
-                                          : typeof value === "number"
-                                            ? `${airlineConfig.currency} ${value.toLocaleString()}`
-                                            : typeof value === "string" &&
-                                                !value.includes("[object")
-                                              ? value
-                                              : `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              );
-                            } else {
-                              return (
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Direct Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.6
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Indirect Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.4
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Passenger Compensation:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.3
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Operational Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.7
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            }
-                          })()}
-
-                          <Separator />
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">
-                              Total Estimated Cost:
-                            </span>
-                            <span className="text-lg font-semibold text-flydubai-orange">
-                              {(() => {
-                                const costTotal =
-                                  selectedPlan.costAnalysis?.total ||
-                                  selectedPlan.costBreakdown?.total ||
-                                  selectedPlan.matchingOption?.cost_breakdown
-                                    ?.total;
-
-                                if (costTotal && costTotal.amount) {
-                                  return costTotal.amount;
-                                }
-                                return `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 50000).toLocaleString()}`;
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Operational Impact</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 gap-3">
-                            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Clock className="h-4 w-4 text-yellow-600" />
-                                <span className="font-medium text-yellow-800">
-                                  Schedule Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-yellow-700">
-                                {selectedPlan.estimatedDelay || 0} minute delay
-                                expected
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Users className="h-4 w-4 text-blue-600" />
-                                <span className="font-medium text-blue-800">
-                                  Passenger Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-blue-700">
-                                {selectedPlan.affectedPassengers || "N/A"}{" "}
-                                passengers affected
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <TrendingUp className="h-4 w-4 text-green-600" />
-                                <span className="font-medium text-green-800">
-                                  Success Probability
-                                </span>
-                              </div>
-                              <p className="text-sm text-green-700">
-                                {selectedPlan.confidence || 80}% confidence in
-                                successful resolution
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Target className="h-4 w-4 text-purple-600" />
-                                <span className="font-medium text-purple-800">
-                                  Network Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-purple-700">
-                                {selectedPlan.rotationImpact?.networkImpact ||
-                                  selectedPlan.matchingOption?.rotation_plan
-                                    ?.networkImpact ||
-                                  "Assessment pending"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-              )}
-            </Tabs>
-          </DialogContent>
-        </Dialog>
-      )}
-
-      <Dialog
-        open={showDetailedOptionAnalysis}
-        onOpenChange={setShowDetailedOptionAnalysis}
-      >
-        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Detailed Recovery Option Analysis
-            </DialogTitle>
-            <DialogDescription>
-              Comprehensive view of {selectedOptionForDetails?.title} •{" "}
-              {selectedOptionForDetails?.id || "A321-007"} for{" "}
-              {selectedOptionForDetails?.flightNumber}
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedOptionForDetails && (
-            <Tabs defaultValue="option-details" className="w-full">
-              <TabsList
-                className={`grid w-full ${
-                  selectedPlan?.hasCrewData && selectedPlan?.hasPassengerData
-                    ? "grid-cols-5"
-                    : selectedPlan?.hasCrewData ||
-                        selectedPlan?.hasPassengerData
-                      ? "grid-cols-4"
-                      : "grid-cols-4"
-                }`}
-              >
-                <TabsTrigger value="option-details">Option Details</TabsTrigger>
-                {Object.keys(
-                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
-                ).length > 0 &&
-                  selectedOptionForDetails?.pending_recovery_solutions
-                    ?.full_details?.crew_hotel_assignments && (
-                    <TabsTrigger value="crew-hotac">Crew & HOTAC</TabsTrigger>
-                  )}
-
-                {Object.keys(
-                  selectedOptionForDetails?.pending_recovery_solutions ?? {},
-                ).length > 0 &&
-                  Object.keys(
-                    selectedOptionForDetails?.pending_recovery_solutions
-                      ?.full_details?.passenger_rebooking,
-                  ).length > 0 && (
-                    <TabsTrigger value="passenger-reaccommodation">
-                      Passenger Re-accommodation
-                    </TabsTrigger>
-                  )}
-                <TabsTrigger value="rotation-impact">
-                  Rotation Impact
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="option-details" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Target className="h-5 w-5" />
-                      Option Overview
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <h4 className="font-medium mb-2">
-                            {selectedOptionForDetails.title}
-                          </h4>
-                          <p className="text-sm text-muted-foreground mb-4">
-                            {selectedOptionForDetails.description}
-                          </p>
-                          <div className="space-y-2">
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Total Cost:
-                              </span>
-                              <span className="font-medium text-flydubai-orange">
-                                {selectedOptionForDetails.cost}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Timeline:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.timeline}
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Confidence:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.confidence}%
-                              </span>
-                            </div>
-                            <div className="flex justify-between">
-                              <span className="text-sm text-muted-foreground">
-                                Impact:
-                              </span>
-                              <span className="font-medium">
-                                {selectedOptionForDetails.impact}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div>
-                          <h4 className="font-medium mb-2">
-                            Key Performance Indicators
-                          </h4>
-                          <div className="space-y-3">
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Success Rate</span>
-                                <span>
-                                  {selectedOptionForDetails.confidence}%
-                                </span>
-                              </div>
-                              <Progress
-                                value={selectedOptionForDetails.confidence}
-                                className="h-2"
-                              />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Customer Satisfaction</span>
-                                <span>88%</span>
-                              </div>
-                              <Progress value={88} className="h-2" />
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Operational Risk</span>
-                                <span className="text-green-600">Low</span>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Easy
-                              </div>
-                            </div>
-                            <div>
-                              <div className="flex justify-between text-sm mb-1">
-                                <span>Operational Risk</span>
-                                <span className="text-red-600">High</span>
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Easy
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="crew-hotac" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Crew & HOTAC Management
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {(() => {
-                      const crewData =
-                        selectedOptionForDetails?.pending_recovery_solutions
-                          ?.full_details?.crew_hotel_assignments;
-                      const hasCrewData =
-                        crewData && Object.keys(crewData).length > 0;
-                      if (!hasCrewData) {
-                        return (
-                          <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                            <div className="flex items-center gap-2 mb-2">
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                              <span className="font-medium text-green-800">
-                                No crew changes required.
-                              </span>
-                            </div>
-                            <p className="text-sm text-green-700">
-                              Current crew certified for{" "}
-                              {selectedOptionForDetails?.id || "A321-007"}
-                            </p>
-                          </div>
-                        );
-                      }
-
-                      return (
-                        <div className="space-y-6">
-                          {crewData.map((assignment, index) => (
-                            <div key={index} className="space-y-6">
-                              <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                <h3 className="text-lg font-semibold">
-                                  {assignment.hotel_name}
-                                </h3>
-                                <p className="text-sm text-gray-600">
-                                  {assignment.hotel_location}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Room: {assignment.room_number}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Booking Ref: {assignment.booking_reference}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                  Status: {assignment.assignment_status}
-                                </p>
-                              </div>
-
-                              <div>
-                                <h4 className="font-medium mb-3">
-                                  Crew Assignment Details
-                                </h4>
-                                <div className="overflow-x-auto">
-                                  <table className="w-full border-collapse border border-gray-200 text-sm">
-                                    <thead>
-                                      <tr className="bg-gray-50">
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Name
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Rank
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Base
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Employee ID
-                                        </th>
-                                        <th className="border border-gray-200 p-3 text-left">
-                                          Contact
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody>
-                                      {assignment.crew_member.map(
-                                        (crew, crewIndex) => (
-                                          <tr
-                                            key={crewIndex}
-                                            className={
-                                              crewIndex % 2 === 0
-                                                ? "bg-white"
-                                                : "bg-gray-50"
-                                            }
-                                          >
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.name}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.rank}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.base}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.employee_id}
-                                            </td>
-                                            <td className="border border-gray-200 p-3">
-                                              {crew.contact_number}
-                                            </td>
-                                          </tr>
-                                        ),
-                                      )}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              </div>
-
-                              {assignment.transport_details && (
-                                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                                  <h4 className="font-medium mb-2">
-                                    Transport Details
-                                  </h4>
-                                  <p className="text-sm">
-                                    Vendor:{" "}
-                                    {assignment.transport_details.vendor}
-                                  </p>
-                                  <p className="text-sm">
-                                    Pickup:{" "}
-                                    {
-                                      assignment.transport_details
-                                        .pickup_location
-                                    }{" "}
-                                    at{" "}
-                                    {new Date(
-                                      assignment.transport_details.pickup_time,
-                                    ).toLocaleString()}
-                                  </p>
-                                  <p className="text-sm">
-                                    Dropoff:{" "}
-                                    {
-                                      assignment.transport_details
-                                        .dropoff_location
-                                    }{" "}
-                                    at{" "}
-                                    {new Date(
-                                      assignment.transport_details.dropoff_time,
-                                    ).toLocaleString()}
-                                  </p>
-                                  <p className="text-sm">
-                                    Vehicle:{" "}
-                                    {assignment.transport_details.vehicle_type}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })()}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent
-                value="passenger-reaccommodation"
-                className="space-y-6"
-              >
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Users className="h-5 w-5" />
-                      Passenger Re-accommodation Summary
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-3 gap-4 mb-6">
-                      <div className="text-center p-4 bg-blue-50 rounded-lg">
-                        <div className="text-3xl font-bold text-blue-600">
-                          {(() => {
-                            const passengerData =
-                              selectedPlan?.passengerInformation ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_rebooking ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_information ||
-                              [];
-
-                            if (
-                              Array.isArray(passengerData) &&
-                              passengerData.length > 0
-                            ) {
-                              return passengerData.length;
-                            }
-
-                            return selectedPlan?.affectedPassengers || 167;
-                          })()}
-                        </div>
-                        <div className="text-sm text-blue-700">
-                          Total Affected
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-green-50 rounded-lg">
-                        <div className="text-3xl font-bold text-green-600">
-                          {(() => {
-                            const passengerData =
-                              selectedPlan?.passengerInformation ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_rebooking ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_information ||
-                              [];
-
-                            if (
-                              Array.isArray(passengerData) &&
-                              passengerData.length > 0
-                            ) {
-                              const sameFlightCount = passengerData.filter(
-                                (p) =>
-                                  p.rebooked_flight === p.original_flight ||
-                                  p.rebooking_status === "same_flight" ||
-                                  p.status === "same_flight" ||
-                                  !p.rebooked_flight ||
-                                  p.rebooked_flight ===
-                                    selectedPlan.flightNumber,
-                              ).length;
-                              return sameFlightCount;
-                            }
-
-                            return selectedPlan?.affectedPassengers || 167;
-                          })()}
-                        </div>
-                        <div className="text-sm text-green-700">
-                          Same Flight
-                        </div>
-                      </div>
-                      <div className="text-center p-4 bg-red-50 rounded-lg">
-                        <div className="text-3xl font-bold text-red-600">
-                          {(() => {
-                            const passengerData =
-                              selectedPlan?.passengerInformation ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_rebooking ||
-                              selectedPlan?.matchingOption
-                                ?.passenger_information ||
-                              [];
-
-                            if (
-                              Array.isArray(passengerData) &&
-                              passengerData.length > 0
-                            ) {
-                              const otherFlightCount = passengerData.filter(
-                                (p) =>
-                                  p.rebooked_flight &&
-                                  p.rebooked_flight !== p.original_flight &&
-                                  p.rebooked_flight !==
-                                    selectedPlan.flightNumber &&
-                                  p.rebooking_status !== "same_flight" &&
-                                  p.status !== "same_flight",
-                              ).length;
-                              return otherFlightCount;
-                            }
-
-                            return 0;
-                          })()}
-                        </div>
-                        <div className="text-sm text-red-700">
-                          Other Flights
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium mb-3">
-                          Accommodation Breakdown
-                        </h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">Meal Vouchers:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const mealVoucherCount = passengerData.filter(
-                                    (p) => {
-                                      if (
-                                        p.additional_services &&
-                                        Array.isArray(p.additional_services)
-                                      ) {
-                                        return p.additional_services.some(
-                                          (s) =>
-                                            typeof s === "string"
-                                              ? s.toLowerCase().includes("meal")
-                                              : s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("meal") ||
-                                                s.type
-                                                  ?.toLowerCase()
-                                                  .includes("meal"),
-                                        );
-                                      }
-                                      return (
-                                        p.services?.includes("meal") ||
-                                        p.meal_voucher ||
-                                        false
-                                      );
-                                    },
-                                  ).length;
-                                  return `${mealVoucherCount} passengers`;
-                                }
-
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                if (delayMinutes > 120) {
-                                  const affected =
-                                    selectedPlan?.affectedPassengers || 167;
-                                  return `${affected} passengers`;
-                                }
-                                return "0 passengers";
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">
-                              Hotel Accommodation:
-                            </span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const hotelCount = passengerData.filter(
-                                    (p) => {
-                                      if (
-                                        p.additional_services &&
-                                        Array.isArray(p.additional_services)
-                                      ) {
-                                        return p.additional_services.some(
-                                          (s) =>
-                                            typeof s === "string"
-                                              ? s
-                                                  .toLowerCase()
-                                                  .includes("hotel")
-                                              : s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("hotel") ||
-                                                s.type
-                                                  ?.toLowerCase()
-                                                  .includes("hotel") ||
-                                                s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("accommodation"),
-                                        );
-                                      }
-                                      return (
-                                        p.services?.includes("hotel") ||
-                                        p.hotel_accommodation ||
-                                        false
-                                      );
-                                    },
-                                  ).length;
-                                  return `${hotelCount} passengers`;
-                                }
-
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                if (delayMinutes > 240) {
-                                  const affected =
-                                    selectedPlan?.affectedPassengers || 167;
-                                  return `${Math.floor(affected * 0.8)} passengers`;
-                                }
-                                return "0 passengers";
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">Transportation:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const transportCount = passengerData.filter(
-                                    (p) => {
-                                      if (
-                                        p.additional_services &&
-                                        Array.isArray(p.additional_services)
-                                      ) {
-                                        return p.additional_services.some(
-                                          (s) =>
-                                            typeof s === "string"
-                                              ? s
-                                                  .toLowerCase()
-                                                  .includes("transport")
-                                              : s.service_type
-                                                  ?.toLowerCase()
-                                                  .includes("transport") ||
-                                                s.type
-                                                  ?.toLowerCase()
-                                                  .includes("transport"),
-                                        );
-                                      }
-                                      return (
-                                        p.services?.includes("transport") ||
-                                        p.transportation ||
-                                        false
-                                      );
-                                    },
-                                  ).length;
-                                  return `${transportCount} passengers`;
-                                }
-
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                if (delayMinutes > 240) {
-                                  const affected =
-                                    selectedPlan?.affectedPassengers || 167;
-                                  return `${Math.floor(affected * 0.8)} passengers`;
-                                }
-                                return "0 passengers";
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-medium mb-3">Compensation</h4>
-                        <div className="space-y-2">
-                          <div className="flex justify-between">
-                            <span className="text-sm">Per passenger avg:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const totalCost = passengerData.reduce(
-                                    (sum, p) =>
-                                      sum +
-                                      (p.rebooking_cost ||
-                                        p.compensation_amount ||
-                                        261),
-                                    0,
-                                  );
-                                  const avgCompensation =
-                                    totalCost / passengerData.length;
-                                  return `${airlineConfig.currency} ${Math.round(avgCompensation)}`;
-                                }
-                                return `${airlineConfig.currency} 261`;
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">Total compensation:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const passengerData =
-                                  selectedPlan?.passengerInformation ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_rebooking ||
-                                  selectedPlan?.matchingOption
-                                    ?.passenger_information ||
-                                  [];
-
-                                if (
-                                  Array.isArray(passengerData) &&
-                                  passengerData.length > 0
-                                ) {
-                                  const totalCompensation =
-                                    passengerData.reduce(
-                                      (sum, p) =>
-                                        sum +
-                                        (p.rebooking_cost ||
-                                          p.compensation_amount ||
-                                          261),
-                                      0,
-                                    );
-                                  return `${airlineConfig.currency} ${totalCompensation.toLocaleString()}`;
-                                }
-
-                                const affected =
-                                  selectedPlan?.affectedPassengers || 167;
-                                return `${airlineConfig.currency} ${(affected * 261).toLocaleString()}`;
-                              })()}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-sm">Service costs:</span>
-                            <span className="font-medium">
-                              {(() => {
-                                const affected =
-                                  selectedPlan?.affectedPassengers || 167;
-                                const delayMinutes =
-                                  selectedPlan?.estimatedDelay || 0;
-                                let serviceCost = 0;
-
-                                if (delayMinutes > 120) {
-                                  serviceCost += affected * 45; // ${airlineConfig.currency} 45 per meal voucher
-                                }
-
-                                if (delayMinutes > 240) {
-                                  serviceCost +=
-                                    Math.floor(affected * 0.8) * 350; // ${airlineConfig.currency} 350 per hotel room
-                                }
-
-                                return `${airlineConfig.currency} ${serviceCost.toLocaleString()}`;
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Info className="h-4 w-4 text-blue-600" />
-                        <span className="font-medium text-blue-800">
-                          Re-accommodation Details:
-                        </span>
-                      </div>
-                      <p className="text-sm text-blue-700">
-                        All passengers accommodated on same aircraft with 65min
-                        delay.
-                      </p>
-                    </div>
-
-                    {/* PNR Grouped Passenger Details */}
-                    <div className="mt-6">
-                      <h4 className="font-medium mb-3">
-                        Passenger Rebookings by PNR
-                      </h4>
-                      <div className="space-y-4 max-h-64 overflow-y-auto">
-                        {(() => {
-                          const rawPassengerData =
-                            selectedPlan?.passengerInformation ||
-                            selectedPlan?.matchingOption?.passenger_rebooking ||
-                            selectedPlan?.matchingOption
-                              ?.passenger_information ||
-                            [];
-
-                          const currentPassengerData = Array.isArray(
-                            rawPassengerData,
-                          )
-                            ? rawPassengerData
-                            : [];
-
-                          if (
-                            !currentPassengerData ||
-                            currentPassengerData.length === 0
-                          ) {
-                            return (
-                              <div className="text-center py-8 text-gray-500">
-                                No passenger rebooking data available
-                              </div>
-                            );
-                          }
-
-                          const passengersByPnr = currentPassengerData.reduce(
-                            (acc, passenger) => {
-                              const pnr = passenger.pnr || "Unknown";
-                              if (!acc[pnr]) {
-                                acc[pnr] = [];
-                              }
-                              acc[pnr].push(passenger);
-                              return acc;
-                            },
-                            {},
-                          );
-
-                          return Object.entries(passengersByPnr)
-                            .slice(0, 8)
-                            .map(([pnr, passengers], groupIndex) => (
-                              <Card
-                                key={groupIndex}
-                                className="border border-gray-200"
-                              >
-                                <div className="p-3 bg-gray-50 border-b">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                      <Users className="h-4 w-4 text-blue-600" />
-                                      <span className="font-semibold text-gray-900">
-                                        PNR: {pnr}
-                                      </span>
-                                      <Badge
-                                        variant="secondary"
-                                        className="bg-blue-100 text-blue-800"
-                                      >
-                                        {(passengers as any).length} passenger
-                                        {(passengers as any).length > 1
-                                          ? "s"
-                                          : ""}
-                                      </Badge>
-                                    </div>
-                                    <div className="text-sm text-muted-foreground">
-                                      Group Booking
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="p-3 space-y-3">
-                                  {(passengers as any).map(
-                                    (passenger, passengerIndex) => (
-                                      <div
-                                        key={passengerIndex}
-                                        className="border-l-2 border-blue-200 pl-3"
-                                      >
-                                        <div className="flex items-center justify-between mb-2">
-                                          <div className="font-medium text-gray-900">
-                                            {passenger.passenger_name ||
-                                              `Passenger ${passengerIndex + 1}`}
-                                          </div>
-                                          <Badge
-                                            className={
-                                              passenger.rebooking_status ===
-                                              "confirmed"
-                                                ? "bg-green-100 text-green-700"
-                                                : passenger.rebooking_status ===
-                                                    "pending"
-                                                  ? "bg-yellow-100 text-yellow-700"
-                                                  : "bg-gray-100 text-gray-700"
-                                            }
-                                          >
-                                            {passenger.rebooking_status ||
-                                              "Unknown"}
-                                          </Badge>
-                                        </div>
-                                        <div className="text-sm space-y-1">
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Original Flight:
-                                            </span>
-                                            <span>
-                                              {passenger.original_flight ||
-                                                selectedPlan.flightNumber}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Rebooked Flight:
-                                            </span>
-                                            <span>
-                                              {passenger.rebooked_flight ||
-                                                "TBD"}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between">
-                                            <span className="text-muted-foreground">
-                                              Seat Change:
-                                            </span>
-                                            <span>
-                                              {passenger.original_seat &&
-                                              passenger.rebooked_seat
-                                                ? `${passenger.original_seat} → ${passenger.rebooked_seat}`
-                                                : "N/A"}
-                                            </span>
-                                          </div>
-                                          {passenger.rebooking_cost > 0 && (
-                                            <div className="flex justify-between">
-                                              <span className="text-muted-foreground">
-                                                Cost:
-                                              </span>
-                                              <span className="text-flydubai-orange">
-                                                {airlineConfig.currency}{" "}
-                                                {passenger.rebooking_cost}
-                                              </span>
-                                            </div>
-                                          )}
-                                          {passenger.additional_services &&
-                                            passenger.additional_services
-                                              .length > 0 && (
-                                              <div className="flex justify-between">
-                                                <span className="text-muted-foreground">
-                                                  Services:
-                                                </span>
-                                                <span className="text-xs">
-                                                  {passenger.additional_services.map(
-                                                    (
-                                                      service,
-                                                      serviceIndex,
-                                                    ) => (
-                                                      <Badge
-                                                        key={serviceIndex}
-                                                        variant="outline"
-                                                        className="mr-1 text-xs"
-                                                      >
-                                                        {service.service_type ||
-                                                          service}
-                                                      </Badge>
-                                                    ),
-                                                  )}
-                                                </span>
-                                              </div>
-                                            )}
-                                          {passenger.notes && (
-                                            <div className="text-xs text-muted-foreground mt-2">
-                                              Notes: {passenger.notes}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ),
-                                  )}
-                                </div>
-                              </Card>
-                            ));
-                        })()}
-                        {(() => {
-                          const rawPassengerData =
-                            selectedPlan?.passengerInformation ||
-                            selectedPlan?.matchingOption?.passenger_rebooking ||
-                            selectedPlan?.matchingOption
-                              ?.passenger_information ||
-                            [];
-
-                          const groupCount = Array.isArray(rawPassengerData)
-                            ? Object.keys(
-                                rawPassengerData.reduce((acc, passenger) => {
-                                  const pnr = passenger.pnr || "UNKNOWN";
-                                  if (!acc[pnr]) acc[pnr] = [];
-                                  acc[pnr].push(passenger);
-                                  return acc;
-                                }, {}),
-                              ).length
-                            : 0;
-
-                          return (
-                            groupCount > 8 && (
-                              <div className="text-center text-sm text-muted-foreground p-2">
-                                ... and {groupCount - 8} more PNR groups
-                              </div>
-                            )
-                          );
-                        })()}
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Cost Impact Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {(() => {
-                        const costBreakdown =
-                          selectedPlan.costAnalysis?.breakdown ||
-                          selectedPlan.costBreakdown?.breakdown ||
-                          selectedPlan.matchingOption?.cost_breakdown
-                            ?.breakdown;
-
-                        const costTotal =
-                          selectedPlan.costAnalysis?.total ||
-                          selectedPlan.costBreakdown?.total ||
-                          selectedPlan.matchingOption?.cost_breakdown
-                            ?.total;
-
-                        if (
-                          costBreakdown &&
-                          Array.isArray(costBreakdown) &&
-                          costBreakdown.length > 0
-                        ) {
-                          return (
-                            <div className="space-y-4">
-                              {costTotal && (
-                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                  <div className="flex justify-between items-center">
-                                    <span className="font-medium text-blue-800">
-                                      {costTotal.title || "Total Cost"}:
-                                    </span>
-                                    <span className="text-lg font-semibold text-blue-900">
-                                      {costTotal.amount ||
-                                        `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                    </span>
-                                  </div>
-                                  {costTotal.description && (
-                                    <p className="text-sm text-blue-700 mt-1">
-                                      {costTotal.description}
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-
-                              <div className="space-y-3">
-                                <h4 className="font-medium text-gray-900">
-                                  Cost Breakdown:
-                                </h4>
-                                {Array.isArray(costBreakdown)
-                                  ? costBreakdown.map((item, index) => (
-                                      <div
-                                        key={index}
-                                        className="space-y-2 p-3 border rounded-lg"
-                                      >
-                                        <div className="flex justify-between items-center">
-                                          <span className="text-sm font-medium">
-                                            {item.category ||
-                                              `Cost Item ${index + 1}`}
-                                          </span>
-                                          <span className="font-semibold text-flydubai-orange">
-                                            {item.amount}
-                                          </span>
-                                        </div>
-                                        {item.percentage && (
-                                          <div className="w-full bg-gray-200 rounded-full h-2">
-                                            <div
-                                              className="bg-flydubai-blue h-2 rounded-full transition-all duration-500"
-                                              style={{
-                                                width: `${item.percentage}%`,
-                                              }}
-                                            ></div>
-                                          </div>
-                                        )}
-                                        <div className="flex justify-between items-center text-xs">
-                                          {item.percentage && (
-                                            <span className="text-gray-600">
-                                              {item.percentage}% of total
-                                              cost
-                                            </span>
-                                          )}
-                                          {item.description && (
-                                            <span className="text-blue-600">
-                                              {item.description}
-                                            </span>
-                                          )}
-                                        </div>
-                                      </div>
-                                    ))
-                                  : Object.entries(costBreakdown).map(
-                                      ([key, value]) => (
-                                        <div
-                                          key={key}
-                                          className="space-y-2 p-3 border rounded-lg"
-                                        >
-                                          <div className="flex justify-between items-center">
-                                            <span className="text-sm font-medium capitalize">
-                                              {key.replace(
-                                                /([A-Z])/g,
-                                                " $1",
-                                              )}
-                                            </span>
-                                            <span className="font-semibold text-flydubai-orange">
-                                              {typeof value === "object" &&
-                                              value &&
-                                              typeof (value as any)
-                                                .amount === "number"
-                                                ? `${airlineConfig.currency} ${(value as any).amount.toLocaleString()}`
-                                                : typeof value === "number"
-                                                  ? `${airlineConfig.currency} ${value.toLocaleString()}`
-                                                  : typeof value ===
-                                                        "string" &&
-                                                      !value.includes(
-                                                        "[object",
-                                                      )
-                                                    ? value
-                                                    : `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                            </span>
-                                          </div>
-                                        </div>
-                                      ),
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            } else if (
-                              selectedPlan.costBreakdown &&
-                              Object.keys(selectedPlan.costBreakdown).length > 0
-                            ) {
-                              return (
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  {Object.entries(
-                                    selectedPlan.costBreakdown,
-                                  ).map(([key, value]) => (
-                                    <div key={key}>
-                                      <span className="text-gray-600 capitalize">
-                                        {key.replace(/([A-Z])/g, " $1")}:
-                                      </span>
-                                      <div className="font-medium">
-                                        {typeof value === "object" &&
-                                        value &&
-                                        (value as any).amount
-                                          ? (value as any).amount
-                                          : typeof value === "number"
-                                            ? `${airlineConfig.currency} ${value.toLocaleString()}`
-                                            : typeof value === "string" &&
-                                                !value.includes("[object")
-                                              ? value
-                                              : `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 0).toLocaleString()}`}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              );
-                            } else {
-                              return (
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Direct Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.6
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Indirect Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.4
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Passenger Compensation:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.3
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">
-                                      Operational Costs:
-                                    </span>
-                                    <div className="font-medium">
-                                      {airlineConfig.currency}{" "}
-                                      {(
-                                        (selectedPlan.estimatedCost || 50000) *
-                                        0.7
-                                      ).toLocaleString()}
-                                    </div>
-                                  </div>
-                                </div>
-                              );
-                            }
-                          })()}
-
-                          <Separator />
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">
-                              Total Estimated Cost:
-                            </span>
-                            <span className="text-lg font-semibold text-flydubai-orange">
-                              {(() => {
-                                const costTotal =
-                                  selectedPlan.costAnalysis?.total ||
-                                  selectedPlan.costBreakdown?.total ||
-                                  selectedPlan.matchingOption?.cost_breakdown
-                                    ?.total;
-
-                                if (costTotal && costTotal.amount) {
-                                  return costTotal.amount;
-                                }
-                                return `${airlineConfig.currency} ${(selectedPlan.estimatedCost || 50000).toLocaleString()}`;
-                              })()}
-                            </span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Operational Impact</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-1 gap-3">
-                            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Clock className="h-4 w-4 text-yellow-600" />
-                                <span className="font-medium text-yellow-800">
-                                  Schedule Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-yellow-700">
-                                {selectedPlan.estimatedDelay || 0} minute delay
-                                expected
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Users className="h-4 w-4 text-blue-600" />
-                                <span className="font-medium text-blue-800">
-                                  Passenger Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-blue-700">
-                                {selectedPlan.affectedPassengers || "N/A"}{" "}
-                                passengers affected
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <TrendingUp className="h-4 w-4 text-green-600" />
-                                <span className="font-medium text-green-800">
-                                  Success Probability
-                                </span>
-                              </div>
-                              <p className="text-sm text-green-700">
-                                {selectedPlan.confidence || 80}% confidence in
-                                successful resolution
-                              </p>
-                            </div>
-
-                            <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                              <div className="flex items-center gap-2 mb-1">
-                                <Target className="h-4 w-4 text-purple-600" />
-                                <span className="font-medium text-purple-800">
-                                  Network Impact
-                                </span>
-                              </div>
-                              <p className="text-sm text-purple-700">
-                                {selectedPlan.rotationImpact?.networkImpact ||
-                                  selectedPlan.matchingOption?.rotation_plan
-                                    ?.networkImpact ||
-                                  "Assessment pending"}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                </TabsContent>
-              )}
-            </Tabs>
-          </DialogContent>
-        </Dialog>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
