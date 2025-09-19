@@ -1669,7 +1669,16 @@ export function PendingSolutions() {
                     <CardContent>
                       <div className="space-y-4">
                         {(() => {
-                          const selectedOption = selectedPlan?.matchingOption;
+                          // Find the selected option from recovery options
+                          const selectedOption = selectedPlan?.recoveryOptions?.find(option => 
+                            selectedPlan.optionId && (
+                              option.id === selectedPlan.optionId ||
+                              option.option_id === selectedPlan.optionId ||
+                              String(option.id) === String(selectedPlan.optionId) ||
+                              String(option.option_id) === String(selectedPlan.optionId)
+                            )
+                          ) || selectedPlan?.matchingOption;
+
                           let actualCost = selectedPlan?.estimatedCost || 141440;
                           let costBreakdown = null;
                           
@@ -1687,8 +1696,21 @@ export function PendingSolutions() {
                           if (selectedOption?.cost_breakdown) {
                             if (Array.isArray(selectedOption.cost_breakdown)) {
                               costBreakdown = selectedOption.cost_breakdown;
-                            } else if (typeof selectedOption.cost_breakdown === 'object' && selectedOption.cost_breakdown.breakdown) {
-                              costBreakdown = selectedOption.cost_breakdown.breakdown;
+                            } else if (typeof selectedOption.cost_breakdown === 'object') {
+                              if (selectedOption.cost_breakdown.breakdown) {
+                                costBreakdown = selectedOption.cost_breakdown.breakdown;
+                              } else {
+                                // Handle case where cost_breakdown is an object with cost items
+                                costBreakdown = Object.entries(selectedOption.cost_breakdown).map(([key, value]) => ({
+                                  category: key.replace(/([A-Z])/g, ' $1').trim(),
+                                  amount: typeof value === 'object' && value?.amount ? value.amount : 
+                                         typeof value === 'number' ? `${airlineConfig.currency} ${value.toLocaleString()}` : 
+                                         String(value),
+                                  value: typeof value === 'object' && value?.amount ? 
+                                        parseInt(String(value.amount).replace(/[^0-9]/g, '')) : 
+                                        typeof value === 'number' ? value : 0
+                                }));
+                              }
                             }
                           } else if (selectedPlan?.costAnalysis?.breakdown) {
                             costBreakdown = selectedPlan.costAnalysis.breakdown;
@@ -1700,6 +1722,16 @@ export function PendingSolutions() {
                           if (costBreakdown && Array.isArray(costBreakdown) && costBreakdown.length > 0) {
                             return (
                               <div className="space-y-6">
+                                {/* Selected Option Info */}
+                                <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                  <div className="flex items-center justify-between">
+                                    <span className="font-medium text-orange-800">
+                                      Selected Option: {selectedOption?.title || selectedPlan?.title}
+                                    </span>
+                                    <Badge className="bg-orange-100 text-orange-700">Selected</Badge>
+                                  </div>
+                                </div>
+
                                 {/* Cost Breakdown from API */}
                                 <div className="grid grid-cols-2 gap-4">
                                   {costBreakdown.map((item, index) => {
@@ -1798,6 +1830,16 @@ export function PendingSolutions() {
 
                           return (
                             <div className="space-y-6">
+                              {/* Selected Option Info */}
+                              <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-medium text-orange-800">
+                                    Selected Option: {selectedOption?.title || selectedPlan?.title}
+                                  </span>
+                                  <Badge className="bg-orange-100 text-orange-700">Selected</Badge>
+                                </div>
+                              </div>
+
                               {/* Calculated Cost Breakdown Cards */}
                               <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
