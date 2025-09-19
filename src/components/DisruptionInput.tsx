@@ -73,7 +73,11 @@ import {
   Trash2,
   FileText,
 } from "lucide-react";
-import { databaseService, FlightDisruption, airportsHubs } from "../services/databaseService";
+import {
+  databaseService,
+  FlightDisruption,
+  airportsHubs,
+} from "../services/databaseService";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
 import { useAirlineTheme } from "../hooks/useAirlineTheme";
@@ -353,7 +357,9 @@ export function DisruptionInput({
   const [isGeneratingOptions, setIsGeneratingOptions] = useState(false);
   const [loadingRecovery, setLoadingRecovery] = useState({});
   // State for airport details
-  const [airportDetails, setAirportDetails] = useState<airportsHubs | null>(null);
+  const [airportDetails, setAirportDetails] = useState<airportsHubs | null>(
+    null,
+  );
 
   // Fetch airport details on component mount
   useEffect(() => {
@@ -1221,21 +1227,22 @@ export function DisruptionInput({
                           <SelectValue placeholder="Select origin" />
                         </SelectTrigger>
                         <SelectContent className="max-h-60 overflow-y-auto z-50">
-                          {airportDetails && airportDetails.airports &&
+                          {airportDetails &&
+                            airportDetails.airports &&
                             airportDetails.airports
-                            .filter(
-                              (airport) =>
-                                airport.code !== newDisruption.destination,
-                            )
-                            .map((airport) => (
-                              <SelectItem
-                                key={airport.code}
-                                value={airport.code}
-                              >
-                                {airport.code} - {airport.name},{" "}
-                                {airport.country}
-                              </SelectItem>
-                            ))}
+                              .filter(
+                                (airport) =>
+                                  airport.code !== newDisruption.destination,
+                              )
+                              .map((airport) => (
+                                <SelectItem
+                                  key={airport.code}
+                                  value={airport.code}
+                                >
+                                  {airport.code} - {airport.name},{" "}
+                                  {airport.country}
+                                </SelectItem>
+                              ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -1251,20 +1258,22 @@ export function DisruptionInput({
                           <SelectValue placeholder="Select destination" />
                         </SelectTrigger>
                         <SelectContent className="max-h-60 overflow-y-auto z-50">
-                          {airportDetails && airportDetails.airports &&
-                            airportDetails.airports.filter(
-                              (airport) =>
-                                airport.code !== newDisruption.origin,
-                            )
-                            .map((airport) => (
-                              <SelectItem
-                                key={airport.code}
-                                value={airport.code}
-                              >
-                                {airport.code} - {airport.name},{" "}
-                                {airport.country}
-                              </SelectItem>
-                            ))}
+                          {airportDetails &&
+                            airportDetails.airports &&
+                            airportDetails.airports
+                              .filter(
+                                (airport) =>
+                                  airport.code !== newDisruption.origin,
+                              )
+                              .map((airport) => (
+                                <SelectItem
+                                  key={airport.code}
+                                  value={airport.code}
+                                >
+                                  {airport.code} - {airport.name},{" "}
+                                  {airport.country}
+                                </SelectItem>
+                              ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -1820,7 +1829,9 @@ export function DisruptionInput({
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All hubs</SelectItem>
-                    {Array.from(new Set(airportDetails?.hubs?.map((f) => f.code)))
+                    {Array.from(
+                      new Set(airportDetails?.hubs?.map((f) => f.code)),
+                    )
                       .sort()
                       .map((code) => (
                         <SelectItem key={code} value={code}>
@@ -1945,7 +1956,10 @@ export function DisruptionInput({
                     className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
                     <Plane className="h-3.5 w-3.5 transform rotate-180" />
-                    <span className="text-xs">{`Inbound (${
+                    <span className="text-xs">{`Inbound 
+                  
+                    `}</span>
+                    {/* (${
                       filters.hub === "all"
                         ? sortedFlights.filter(
                             (f) =>
@@ -1955,32 +1969,33 @@ export function DisruptionInput({
                         : sortedFlights.filter(
                             (f) => f.destination === filters.hub,
                           ).length
-                    })`}</span>
+                    }) */}
                   </TabsTrigger>
                   <TabsTrigger
                     value="outbound"
                     className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
                     <Plane className="h-3.5 w-3.5" />
-                    <span className="text-xs">{`Outbound (${
+                    <span className="text-xs">{`Outbound `}</span>
+                    {/* (${
                       filters.hub === "all"
                         ? sortedFlights.filter(
                             (f) => f.origin === "DXB" || f.origin === "DWC",
                           ).length
                         : sortedFlights.filter((f) => f.origin === filters.hub)
                             .length
-                    })`}</span>
+                    }) */}
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="inbound" className="space-y-4">
                   {(() => {
+                    console.log(airportDetails, "testtsts");
+                    const hubCodes = airportDetails.hubs.map((h) => h.code);
                     const inboundFlights =
                       filters.hub === "all"
-                        ? sortedFlights.filter(
-                            (f) =>
-                              f.destination === "DXB" ||
-                              f.destination === "DWC",
+                        ? sortedFlights.filter((f) =>
+                            hubCodes.includes(f.destination),
                           )
                         : sortedFlights.filter(
                             (f) => f.destination === filters.hub,
@@ -2287,12 +2302,11 @@ export function DisruptionInput({
 
                 <TabsContent value="outbound" className="space-y-4">
                   {(() => {
+                     const hubCodes = airportDetails.hubs.map((h) => h.code);
                     const outboundFlights =
                       filters.hub === "all"
-                        ? sortedFlights.filter(
-                            (f) => f.origin === "DXB" || f.origin === "DWC",
-                          )
-                        : sortedFlights.filter((f) => f.origin === filters.hub);
+                        ? sortedFlights.filter(f => hubCodes.includes(f.origin))
+                        : sortedFlights.filter(f => f.origin === filters.hub);
                     const startIdx = (currentPage - 1) * itemsPerPage;
                     const endIdx = startIdx + itemsPerPage;
                     const paginatedOutboundFlights = outboundFlights.slice(
