@@ -1012,7 +1012,7 @@ export function PendingSolutions() {
             className="flex items-center gap-1 whitespace-nowrap"
           >
             <span>Critical</span>
-            <Badge variant="destructive" className="ml-1 flex-shrink-0">
+            <Badge variant="destructive" className="ml-1 flex-shrink-0  text-red-600">
               {tabCounts.critical}
             </Badge>
           </TabsTrigger>
