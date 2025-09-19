@@ -1856,8 +1856,35 @@ export function PendingSolutions() {
                       <div className="space-y-4">
                         {(() => {
                           const selectedOption = selectedPlan?.matchingOption;
-                          const baseCost = 165480;
-                          const actualCost = selectedPlan?.estimatedCost || baseCost;
+                          
+                          // Use actual option cost data instead of fallback
+                          let actualCost = selectedPlan?.estimatedCost || 0;
+                          let optionCostString = selectedOption?.cost;
+                          
+                          // Parse the cost from the selected option if available
+                          if (optionCostString && typeof optionCostString === 'string') {
+                            const parsedCost = parseInt(optionCostString.replace(/[^0-9]/g, ''));
+                            if (parsedCost && parsedCost > 0) {
+                              actualCost = parsedCost;
+                            }
+                          } else if (selectedOption?.estimated_cost) {
+                            actualCost = selectedOption.estimated_cost;
+                          }
+                          
+                          // Calculate base cost from other options for comparison
+                          let baseCost = 165480; // fallback
+                          if (selectedPlan?.recoveryOptions && selectedPlan.recoveryOptions.length > 0) {
+                            const otherOptions = selectedPlan.recoveryOptions.filter(opt => 
+                              opt.id !== selectedPlan.optionId && opt.option_id !== selectedPlan.optionId
+                            );
+                            if (otherOptions.length > 0) {
+                              const costs = otherOptions.map(opt => opt.estimated_cost || 0).filter(c => c > 0);
+                              if (costs.length > 0) {
+                                baseCost = costs.reduce((a, b) => a + b, 0) / costs.length;
+                              }
+                            }
+                          }
+                          
                           const variance = actualCost - baseCost;
 
                           return (
@@ -1878,23 +1905,26 @@ export function PendingSolutions() {
                               {/* Cost Summary */}
                               <div className="space-y-3">
                                 <div className="flex justify-between items-center">
-                                  <span className="text-sm font-semibold">Base Cost:</span>
+                                  <span className="text-sm font-semibold">Average Alternative Cost:</span>
                                   <span className="font-semibold">
-                                    {airlineConfig.currency} {baseCost.toLocaleString()}
+                                    {airlineConfig.currency} {Math.round(baseCost).toLocaleString()}
                                   </span>
                                 </div>
                                 <Separator />
                                 <div className="flex justify-between items-center text-lg">
-                                  <span className="font-semibold">Total Estimated Cost:</span>
+                                  <span className="font-semibold">Selected Option Cost:</span>
                                   <span className="font-bold text-orange-600">
-                                    {selectedOption?.cost || `${airlineConfig.currency} ${actualCost.toLocaleString()}`}
+                                    {airlineConfig.currency} {actualCost.toLocaleString()}
                                   </span>
                                 </div>
-                                {variance !== 0 && (
+                                {Math.abs(variance) > 1000 && (
                                   <div className="flex justify-between items-center">
-                                    <span className="text-sm font-semibold">Variance from Base:</span>
+                                    <span className="text-sm font-semibold">Cost Difference:</span>
                                     <span className={`font-semibold ${variance > 0 ? "text-red-600" : "text-green-600"}`}>
-                                      {variance > 0 ? "+" : ""}{airlineConfig.currency} {variance.toLocaleString()}
+                                      {variance > 0 ? "+" : ""}{airlineConfig.currency} {Math.round(variance).toLocaleString()}
+                                      <span className="text-xs ml-1">
+                                        ({variance > 0 ? "more expensive" : "savings"})
+                                      </span>
                                     </span>
                                   </div>
                                 )}
@@ -1902,7 +1932,7 @@ export function PendingSolutions() {
 
                               {/* Detailed Cost Breakdown */}
                               <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                                <h4 className="font-medium mb-3">Detailed Cost Breakdown</h4>
+                                <h4 className="font-medium mb-3">Cost Breakdown</h4>
                                 {selectedOption?.cost_breakdown && typeof selectedOption.cost_breakdown === 'object' ? (
                                   <div className="space-y-2 text-sm">
                                     {Array.isArray(selectedOption.cost_breakdown.breakdown) ? 
@@ -1963,40 +1993,51 @@ export function PendingSolutions() {
                               {/* Cost vs Other Options */}
                               {selectedPlan?.recoveryOptions && selectedPlan.recoveryOptions.length > 1 && (
                                 <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                  <h4 className="font-medium mb-3 text-blue-800">Cost Comparison</h4>
+                                  <h4 className="font-medium mb-3 text-blue-800">Cost Comparison with Alternatives</h4>
                                   <div className="space-y-2 text-sm">
                                     {(() => {
-                                      const otherCosts = selectedPlan.recoveryOptions
+                                      const otherOptions = selectedPlan.recoveryOptions
                                         .filter(opt => opt.id !== selectedPlan.optionId && opt.option_id !== selectedPlan.optionId)
-                                        .map(opt => opt.estimated_cost || 0);
+                                        .map(opt => ({
+                                          title: opt.title,
+                                          cost: opt.estimated_cost || 0
+                                        }))
+                                        .filter(opt => opt.cost > 0)
+                                        .sort((a, b) => a.cost - b.cost);
                                       
-                                      if (otherCosts.length === 0) return null;
+                                      if (otherOptions.length === 0) return (
+                                        <div className="text-blue-700 text-center">
+                                          No alternative options available for comparison
+                                        </div>
+                                      );
                                       
-                                      const avgOtherCost = otherCosts.reduce((a, b) => a + b, 0) / otherCosts.length;
-                                      const minOtherCost = Math.min(...otherCosts);
-                                      const maxOtherCost = Math.max(...otherCosts);
-                                      const costEfficiency = ((avgOtherCost - actualCost) / avgOtherCost * 100);
+                                      const avgOtherCost = otherOptions.reduce((sum, opt) => sum + opt.cost, 0) / otherOptions.length;
+                                      const minOtherCost = Math.min(...otherOptions.map(opt => opt.cost));
+                                      const maxOtherCost = Math.max(...otherOptions.map(opt => opt.cost));
                                       
                                       return (
                                         <>
                                           <div className="flex justify-between text-blue-700">
-                                            <span>vs Average Alternative:</span>
-                                            <span className={`font-semibold ${costEfficiency > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                              {costEfficiency > 0 ? '-' : '+'}{airlineConfig.currency} {Math.abs(actualCost - avgOtherCost).toLocaleString()}
+                                            <span>Cheapest Alternative:</span>
+                                            <span className="font-semibold">
+                                              {airlineConfig.currency} {minOtherCost.toLocaleString()}
+                                              <span className={`ml-2 text-xs ${actualCost <= minOtherCost ? 'text-green-600' : 'text-red-600'}`}>
+                                                ({actualCost <= minOtherCost ? `${airlineConfig.currency} ${(minOtherCost - actualCost).toLocaleString()} savings` : `${airlineConfig.currency} ${(actualCost - minOtherCost).toLocaleString()} more`})
+                                              </span>
                                             </span>
                                           </div>
                                           <div className="flex justify-between text-blue-700">
-                                            <span>Cost Range (Min-Max):</span>
-                                            <span>
-                                              {airlineConfig.currency} {minOtherCost.toLocaleString()} - {airlineConfig.currency} {maxOtherCost.toLocaleString()}
+                                            <span>Most Expensive Alternative:</span>
+                                            <span className="font-semibold">
+                                              {airlineConfig.currency} {maxOtherCost.toLocaleString()}
                                             </span>
                                           </div>
-                                          {/* <div className="flex justify-between text-blue-700">
-                                            <span>Efficiency Rating:</span>
-                                            <span className={`font-semibold ${costEfficiency > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                              {costEfficiency > 0 ? `${costEfficiency.toFixed(1)}% more efficient` : `${Math.abs(costEfficiency).toFixed(1)}% more expensive`}
+                                          <div className="flex justify-between text-blue-700">
+                                            <span>Average Alternative Cost:</span>
+                                            <span className="font-semibold">
+                                              {airlineConfig.currency} {Math.round(avgOtherCost).toLocaleString()}
                                             </span>
-                                          </div> */}
+                                          </div>
                                         </>
                                       );
                                     })()}
