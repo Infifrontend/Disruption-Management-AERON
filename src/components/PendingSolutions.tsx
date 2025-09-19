@@ -3953,100 +3953,92 @@ export function PendingSolutions() {
 
                             if (
                               !Array.isArray(rotationImpact) ||
-                              rotationImpact.length === 0
+                              rotationImpact.length != 0
                             ) {
-                              return (
-                                <div className="text-center py-6">
-                                  <Plane className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                                  <p className="text-muted-foreground">
-                                    No alternate aircraft impact data available
-                                  </p>
-                                </div>
-                              );
-                            }
-
-                            return rotationImpact.map((flight, index) => (
-                              <div
-                                key={index}
-                                className="p-4 border rounded-lg bg-white space-y-3 mb-4"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2">
-                                    <Plane className="h-4 w-4 text-blue-600" />
-                                    <span className="font-semibold">
-                                      {flight.flightNumber}
-                                    </span>
+                              console.log(rotationImpact, 'rotationImpact123')
+                              return rotationImpact.map((flight, index) => (
+                                <div
+                                  key={index}
+                                  className="p-4 border rounded-lg bg-white space-y-3 mb-4"
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <Plane className="h-4 w-4 text-blue-600" />
+                                      <span className="font-semibold">
+                                        {flight.flightNumber}
+                                      </span>
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs"
+                                      >
+                                        {flight.origin_code} →{" "}
+                                        {flight.destination_code}
+                                      </Badge>
+                                    </div>
                                     <Badge
-                                      variant="outline"
-                                      className="text-xs"
+                                      className={
+                                        flight.impact === "High Impact"
+                                          ? "bg-red-100 text-red-700"
+                                          : flight.impact === "Medium Impact"
+                                            ? "bg-yellow-100 text-yellow-700"
+                                            : "bg-green-100 text-green-700"
+                                      }
                                     >
-                                      {flight.origin_code} →{" "}
-                                      {flight.destination_code}
+                                      {flight.impact}
                                     </Badge>
                                   </div>
-                                  <Badge
-                                    className={
-                                      flight.impact === "High Impact"
-                                        ? "bg-red-100 text-red-700"
-                                        : flight.impact === "Medium Impact"
-                                          ? "bg-yellow-100 text-yellow-700"
-                                          : "bg-green-100 text-green-700"
-                                    }
-                                  >
-                                    {flight.impact}
-                                  </Badge>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4 text-sm">
-                                  <div>
-                                    <Label className="text-xs text-muted-foreground">
-                                      Route
-                                    </Label>
-                                    <p className="font-medium">
-                                      {flight.origin} → {flight.destination}
-                                    </p>
+  
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <Label className="text-xs text-muted-foreground">
+                                        Route
+                                      </Label>
+                                      <p className="font-medium">
+                                        {flight.origin} → {flight.destination}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-muted-foreground">
+                                        Delay
+                                      </Label>
+                                      <p className="font-medium text-red-600">
+                                        {flight.delay}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-muted-foreground">
+                                        Departure
+                                      </Label>
+                                      <p className="font-medium">
+                                        {new Date(
+                                          flight.departure,
+                                        ).toLocaleString("en-IN", {
+                                          timeZone: "Asia/Kolkata",
+                                          hour12: true,
+                                        })}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <Label className="text-xs text-muted-foreground">
+                                        Passengers Affected
+                                      </Label>
+                                      <p className="font-medium">
+                                        {flight.passengers}
+                                      </p>
+                                    </div>
                                   </div>
-                                  <div>
+  
+                                  <div className="p-3 bg-gray-50 rounded">
                                     <Label className="text-xs text-muted-foreground">
-                                      Delay
+                                      Impact Reason
                                     </Label>
-                                    <p className="font-medium text-red-600">
-                                      {flight.delay}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs text-muted-foreground">
-                                      Departure
-                                    </Label>
-                                    <p className="font-medium">
-                                      {new Date(
-                                        flight.departure,
-                                      ).toLocaleString("en-IN", {
-                                        timeZone: "Asia/Kolkata",
-                                        hour12: true,
-                                      })}
-                                    </p>
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs text-muted-foreground">
-                                      Passengers Affected
-                                    </Label>
-                                    <p className="font-medium">
-                                      {flight.passengers}
+                                    <p className="text-sm mt-1">
+                                      {flight.reason}
                                     </p>
                                   </div>
                                 </div>
-
-                                <div className="p-3 bg-gray-50 rounded">
-                                  <Label className="text-xs text-muted-foreground">
-                                    Impact Reason
-                                  </Label>
-                                  <p className="text-sm mt-1">
-                                    {flight.reason}
-                                  </p>
-                                </div>
-                              </div>
-                            ));
+                              ));
+                            }
                           })()}
                         </CardContent>
                       </Card>
