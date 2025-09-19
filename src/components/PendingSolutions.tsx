@@ -558,22 +558,22 @@ export function PendingSolutions() {
           );
         }
 
-        // Parse crew and passenger data from the matching option or find selected option
-        let crewData = null;
-        let passengerData = null;
-        let selectedOption = matchingOption;
-
         // If no matching option found but we have recovery options, find the selected one by option_id
         if (
-          !selectedOption &&
+          !matchingOption &&
           safeRecoveryOptionsData.length > 0 &&
           plan.optionId
         ) {
-          selectedOption = safeRecoveryOptionsData.find(
+          matchingOption = safeRecoveryOptionsData.find(
             (opt) =>
               opt.id === plan.optionId || opt.option_id === plan.optionId,
           );
         }
+
+        // Parse crew and passenger data from the matching option or find selected option
+        let crewData = null;
+        let passengerData = null;
+        let selectedOption = matchingOption;
 
         if (selectedOption) {
           // Check for crew information in the selected option
@@ -1342,8 +1342,7 @@ export function PendingSolutions() {
                                   <p
                                     className={`text-sm mb-3 ${isSelected ? "text-orange-700" : "text-gray-600"}`}
                                   >
-                                    {option.description ||
-                                      "Recovery option description"}
+                                    {option.description || "Recovery option description"}
                                   </p>
                                   <div className="grid grid-cols-4 gap-4 text-sm">
                                     <div>
@@ -1622,8 +1621,8 @@ export function PendingSolutions() {
                             );
 
                             return (
-                              <Card 
-                                key={option.id || index} 
+                              <Card
+                                key={option.id || index}
                                 className={`${isSelected ? 'border-orange-300 bg-orange-50' : 'border-gray-200'} relative`}
                               >
                                 {isSelected && (
@@ -1634,7 +1633,7 @@ export function PendingSolutions() {
                                     </Badge>
                                   </div>
                                 )}
-                                
+
                                 <CardHeader className="pb-3">
                                   <div className="flex items-start justify-between">
                                     <div>
@@ -1643,10 +1642,10 @@ export function PendingSolutions() {
                                         {option.description || "Recovery option description"}
                                       </p>
                                     </div>
-                                    <Badge 
+                                    <Badge
                                       className={
-                                        option.impact === "High" ? "bg-red-100 text-red-700" :
-                                        option.impact === "Medium" ? "bg-yellow-100 text-yellow-700" :
+                                        option.impact === "High Impact" ? "bg-red-100 text-red-700" :
+                                        option.impact === "Medium Impact" ? "bg-yellow-100 text-yellow-700" :
                                         "bg-green-100 text-green-700"
                                       }
                                     >
@@ -1693,7 +1692,7 @@ export function PendingSolutions() {
                                     </h4>
                                     {option.cost_breakdown && typeof option.cost_breakdown === 'object' ? (
                                       <div className="space-y-2">
-                                        {Array.isArray(option.cost_breakdown.breakdown) ? 
+                                        {Array.isArray(option.cost_breakdown.breakdown) ?
                                           option.cost_breakdown.breakdown.slice(0, 3).map((item, idx) => (
                                             <div key={idx} className="flex justify-between text-sm">
                                               <span className="text-muted-foreground">{item.category}:</span>
@@ -1706,9 +1705,9 @@ export function PendingSolutions() {
                                                 {key.replace(/([A-Z])/g, ' $1').trim()}:
                                               </span>
                                               <span className="font-medium">
-                                                {typeof value === 'object' && value && (value as any).amount ? 
-                                                  (value as any).amount : 
-                                                  typeof value === 'string' ? value : 
+                                                {typeof value === 'object' && value && (value as any).amount ?
+                                                  (value as any).amount :
+                                                  typeof value === 'string' ? value :
                                                   `${airlineConfig.currency} ${(value as number || 0).toLocaleString()}`
                                                 }
                                               </span>
@@ -1810,9 +1809,9 @@ export function PendingSolutions() {
 
                                   {/* Action Button */}
                                   <div className="border-t pt-3">
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
                                       className="w-full"
                                       onClick={() => handleViewOptionDetails(option, selectedPlan)}
                                     >
@@ -1856,194 +1855,172 @@ export function PendingSolutions() {
                       <div className="space-y-4">
                         {(() => {
                           const selectedOption = selectedPlan?.matchingOption;
-                          
+
                           // Use actual option cost data instead of fallback
                           let actualCost = selectedPlan?.estimatedCost || 0;
                           let optionCostString = selectedOption?.cost;
-                          
+                          let costSource = 'Plan Estimated Cost'; // Default source
+
                           // Parse the cost from the selected option if available
                           if (optionCostString && typeof optionCostString === 'string') {
                             const parsedCost = parseInt(optionCostString.replace(/[^0-9]/g, ''));
                             if (parsedCost && parsedCost > 0) {
                               actualCost = parsedCost;
+                              costSource = 'Option Cost';
                             }
                           } else if (selectedOption?.estimated_cost) {
                             actualCost = selectedOption.estimated_cost;
+                            costSource = 'Option Estimated Cost';
+                          } else if (selectedPlan?.estimatedCost) {
+                            actualCost = selectedPlan.estimatedCost;
+                            costSource = 'Plan Estimated Cost';
                           }
-                          
-                          // Calculate base cost from other options for comparison
-                          let baseCost = 165480; // fallback
-                          if (selectedPlan?.recoveryOptions && selectedPlan.recoveryOptions.length > 0) {
-                            const otherOptions = selectedPlan.recoveryOptions.filter(opt => 
-                              opt.id !== selectedPlan.optionId && opt.option_id !== selectedPlan.optionId
-                            );
-                            if (otherOptions.length > 0) {
-                              const costs = otherOptions.map(opt => opt.estimated_cost || 0).filter(c => c > 0);
-                              if (costs.length > 0) {
-                                baseCost = costs.reduce((a, b) => a + b, 0) / costs.length;
-                              }
+
+                          // Calculate average cost from other recovery options
+                          let averageCost = 0; // Initialize with 0
+                          const costs = selectedPlan.recoveryOptions
+                              .map(opt => {
+                                if (opt.cost && typeof opt.cost === 'string') {
+                                  return parseInt(opt.cost.replace(/[^0-9]/g, '')) || 0;
+                                } else if (opt.estimated_cost) {
+                                  return opt.estimated_cost;
+                                }
+                                return 50000; // Default if no cost found
+                              })
+                              .filter(cost => cost > 0);
+
+                            if (costs.length > 0) {
+                              averageCost = costs.reduce((sum, cost) => sum + cost, 0) / costs.length;
                             }
-                          }
                           
-                          const variance = actualCost - baseCost;
+
+                          const costSavings = averageCost - actualCost;
+                          const percentageSaving = averageCost > 0 ? ((costSavings / averageCost) * 100) : 0;
 
                           return (
-                            <div className="space-y-4">
-                              {/* Option Header */}
-                              <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <Star className="h-4 w-4 text-orange-600" />
-                                  <span className="font-semibold text-orange-800">
-                                    {selectedOption?.title || selectedPlan?.title}
-                                  </span>
+                            <div className="space-y-6">
+                              {/* Cost Overview */}
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="text-center p-4 bg-blue-50 rounded-lg border">
+                                  <div className="text-2xl font-bold text-blue-800">
+                                    {airlineConfig.currency} {Math.round(averageCost).toLocaleString()}
+                                  </div>
+                                  <div className="text-sm text-blue-600">Average Alternative Cost</div>
                                 </div>
-                                <p className="text-sm text-orange-700">
-                                  {selectedOption?.description || "Selected recovery option for implementation"}
-                                </p>
+                                <div className="text-center p-4 bg-orange-50 rounded-lg border">
+                                  <div className="text-2xl font-bold text-orange-800">
+                                    {airlineConfig.currency} {Math.round(actualCost).toLocaleString()}
+                                  </div>
+                                  <div className="text-sm text-orange-600">Selected Option Cost</div>
+                                  <div className="text-xs text-gray-500 mt-1">Source: {costSource}</div>
+                                </div>
                               </div>
 
-                              {/* Cost Summary */}
-                              <div className="space-y-3">
-                                <div className="flex justify-between items-center">
-                                  <span className="text-sm font-semibold">Average Alternative Cost:</span>
-                                  <span className="font-semibold">
-                                    {airlineConfig.currency} {Math.round(baseCost).toLocaleString()}
-                                  </span>
+                              {/* Cost Difference */}
+                              <div className={`text-center p-4 rounded-lg border ${
+                                costSavings >= 0 ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+                              }`}>
+                                <div className={`text-xl font-bold ${
+                                  costSavings >= 0 ? 'text-green-800' : 'text-red-800'
+                                }`}>
+                                  {costSavings >= 0 ? '' : '-'}{airlineConfig.currency} {Math.abs(Math.round(costSavings)).toLocaleString()}
                                 </div>
-                                <Separator />
-                                <div className="flex justify-between items-center text-lg">
-                                  <span className="font-semibold">Selected Option Cost:</span>
-                                  <span className="font-bold text-orange-600">
-                                    {airlineConfig.currency} {actualCost.toLocaleString()}
-                                  </span>
+                                <div className={`text-sm ${costSavings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  {costSavings >= 0 ? 'Cost Savings' : 'Additional Cost'} ({Math.abs(percentageSaving).toFixed(1)}%)
                                 </div>
-                                {Math.abs(variance) > 1000 && (
-                                  <div className="flex justify-between items-center">
-                                    <span className="text-sm font-semibold">Cost Difference:</span>
-                                    <span className={`font-semibold ${variance > 0 ? "text-red-600" : "text-green-600"}`}>
-                                      {variance > 0 ? "+" : ""}{airlineConfig.currency} {Math.round(variance).toLocaleString()}
-                                      <span className="text-xs ml-1">
-                                        ({variance > 0 ? "more expensive" : "savings"})
-                                      </span>
-                                    </span>
-                                  </div>
-                                )}
                               </div>
 
                               {/* Detailed Cost Breakdown */}
-                              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                                <h4 className="font-medium mb-3">Cost Breakdown</h4>
-                                {selectedOption?.cost_breakdown && typeof selectedOption.cost_breakdown === 'object' ? (
-                                  <div className="space-y-2 text-sm">
-                                    {Array.isArray(selectedOption.cost_breakdown.breakdown) ? 
-                                      selectedOption.cost_breakdown.breakdown.map((item, idx) => (
-                                        <div key={idx} className="flex justify-between items-center">
-                                          <div>
-                                            <span className="font-medium">{item.category}:</span>
-                                            {item.description && (
-                                              <div className="text-xs text-muted-foreground">{item.description}</div>
-                                            )}
-                                          </div>
-                                          <div className="text-right">
-                                            <span className="font-semibold">{item.amount}</span>
-                                            {item.percentage && (
-                                              <div className="text-xs text-muted-foreground">{item.percentage}%</div>
-                                            )}
-                                          </div>
-                                        </div>
-                                      )) :
-                                      Object.entries(selectedOption.cost_breakdown).map(([key, value]) => (
-                                        <div key={key} className="flex justify-between">
-                                          <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
-                                          <span className="font-semibold">
-                                            {typeof value === 'object' && value && (value as any).amount ? 
-                                              (value as any).amount : 
-                                              typeof value === 'string' ? value : 
-                                              `${airlineConfig.currency} ${(value as number || 0).toLocaleString()}`
-                                            }
-                                          </span>
-                                        </div>
-                                      ))
-                                    }
-                                  </div>
-                                ) : (
-                                  <div className="space-y-2 text-sm">
-                                    <div className="flex justify-between">
-                                      <span>Aircraft Operations:</span>
-                                      <span className="font-semibold">
-                                        {airlineConfig.currency} {Math.round(actualCost * 0.6).toLocaleString()}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>Passenger Services:</span>
-                                      <span className="font-semibold">
-                                        {airlineConfig.currency} {Math.round(actualCost * 0.25).toLocaleString()}
-                                      </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                      <span>Ground Handling:</span>
-                                      <span className="font-semibold">
-                                        {airlineConfig.currency} {Math.round(actualCost * 0.15).toLocaleString()}
-                                      </span>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
+                              <div className="space-y-3">
+                                <h4 className="font-medium text-gray-800">Cost Breakdown</h4>
+                                {(() => {
+                                  // Try to get breakdown from multiple sources
+                                  let breakdownItems = null;
 
-                              {/* Cost vs Other Options */}
-                              {selectedPlan?.recoveryOptions && selectedPlan.recoveryOptions.length > 1 && (
-                                <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                                  <h4 className="font-medium mb-3 text-blue-800">Cost Comparison with Alternatives</h4>
-                                  <div className="space-y-2 text-sm">
-                                    {(() => {
-                                      const otherOptions = selectedPlan.recoveryOptions
-                                        .filter(opt => opt.id !== selectedPlan.optionId && opt.option_id !== selectedPlan.optionId)
-                                        .map(opt => ({
-                                          title: opt.title,
-                                          cost: opt.estimated_cost || 0
-                                        }))
-                                        .filter(opt => opt.cost > 0)
-                                        .sort((a, b) => a.cost - b.cost);
-                                      
-                                      if (otherOptions.length === 0) return (
-                                        <div className="text-blue-700 text-center">
-                                          No alternative options available for comparison
+                                  // Priority 1: Cost breakdown from selected option
+                                  if (selectedOption?.cost_breakdown?.breakdown && Array.isArray(selectedOption.cost_breakdown.breakdown)) {
+                                    breakdownItems = selectedOption.cost_breakdown.breakdown;
+                                  }
+                                  // Priority 2: Cost analysis breakdown from plan
+                                  else if (selectedPlan?.costAnalysis?.breakdown && Array.isArray(selectedPlan.costAnalysis.breakdown)) {
+                                    breakdownItems = selectedPlan.costAnalysis.breakdown;
+                                  }
+                                  // Priority 3: Cost breakdown from plan
+                                  else if (selectedPlan?.costBreakdown && Array.isArray(selectedPlan.costBreakdown)) {
+                                    breakdownItems = selectedPlan.costBreakdown;
+                                  }
+
+                                  // If we have breakdown items, use them
+                                  if (breakdownItems && breakdownItems.length > 0) {
+                                    return breakdownItems.map((item, index) => (
+                                      <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                        <div>
+                                          <div className="font-medium">{item.category || `Item ${index + 1}`}</div>
+                                          <div className="text-sm text-gray-600">{item.description || 'Cost component'}</div>
                                         </div>
-                                      );
-                                      
-                                      const avgOtherCost = otherOptions.reduce((sum, opt) => sum + opt.cost, 0) / otherOptions.length;
-                                      const minOtherCost = Math.min(...otherOptions.map(opt => opt.cost));
-                                      const maxOtherCost = Math.max(...otherOptions.map(opt => opt.cost));
-                                      
-                                      return (
-                                        <>
-                                          <div className="flex justify-between text-blue-700">
-                                            <span>Cheapest Alternative:</span>
-                                            <span className="font-semibold">
-                                              {airlineConfig.currency} {minOtherCost.toLocaleString()}
-                                              <span className={`ml-2 text-xs ${actualCost <= minOtherCost ? 'text-green-600' : 'text-red-600'}`}>
-                                                ({actualCost <= minOtherCost ? `${airlineConfig.currency} ${(minOtherCost - actualCost).toLocaleString()} savings` : `${airlineConfig.currency} ${(actualCost - minOtherCost).toLocaleString()} more`})
-                                              </span>
-                                            </span>
+                                        <div className="text-right">
+                                          <div className="font-semibold">
+                                            {item.amount || `${airlineConfig.currency} ${Math.round(actualCost * (item.percentage || 25) / 100).toLocaleString()}`}
                                           </div>
-                                          <div className="flex justify-between text-blue-700">
-                                            <span>Most Expensive Alternative:</span>
-                                            <span className="font-semibold">
-                                              {airlineConfig.currency} {maxOtherCost.toLocaleString()}
-                                            </span>
-                                          </div>
-                                          <div className="flex justify-between text-blue-700">
-                                            <span>Average Alternative Cost:</span>
-                                            <span className="font-semibold">
-                                              {airlineConfig.currency} {Math.round(avgOtherCost).toLocaleString()}
-                                            </span>
-                                          </div>
-                                        </>
-                                      );
-                                    })()}
-                                  </div>
-                                </div>
-                              )}
+                                          <div className="text-sm text-gray-600">{item.percentage || 25}%</div>
+                                        </div>
+                                      </div>
+                                    ));
+                                  }
+
+                                  // Generate default breakdown based on actual cost and option type
+                                  const isAircraftSwap = selectedOption?.title?.toLowerCase().includes('aircraft') ||
+                                                        selectedOption?.title?.toLowerCase().includes('swap');
+                                  const isDelay = selectedOption?.title?.toLowerCase().includes('delay');
+                                  const isCrewChange = selectedOption?.title?.toLowerCase().includes('crew');
+
+                                  let defaultBreakdown;
+                                  if (isAircraftSwap) {
+                                    defaultBreakdown = [
+                                      { category: "Aircraft Positioning", percentage: 35, description: "Alternative aircraft positioning and preparation" },
+                                      { category: "Ground Operations", percentage: 25, description: "Ground handling, gate changes, and ramp services" },
+                                      { category: "Passenger Transfer", percentage: 25, description: "Passenger transfer operations and services" },
+                                      { category: "Administrative", percentage: 15, description: "Documentation, coordination, and system updates" }
+                                    ];
+                                  } else if (isDelay) {
+                                    defaultBreakdown = [
+                                      { category: "Passenger Services", percentage: 45, description: "Meal vouchers, refreshments, and passenger amenities" },
+                                      { category: "Airport Charges", percentage: 25, description: "Extended parking, gate fees, and facility charges" },
+                                      { category: "Crew Costs", percentage: 20, description: "Extended duty time and overtime compensation" },
+                                      { category: "Fuel & Operations", percentage: 10, description: "Additional fuel and operational overhead" }
+                                    ];
+                                  } else if (isCrewChange) {
+                                    defaultBreakdown = [
+                                      { category: "Crew Positioning", percentage: 40, description: "Standby crew positioning and transportation" },
+                                      { category: "Overtime Costs", percentage: 30, description: "Extended duty time and overtime compensation" },
+                                      { category: "Accommodation", percentage: 20, description: "Crew rest facilities and accommodation" },
+                                      { category: "Administrative", percentage: 10, description: "Crew scheduling updates and documentation" }
+                                    ];
+                                  } else {
+                                    defaultBreakdown = [
+                                      { category: "Operational Costs", percentage: 50, description: "Direct operational expenses and resource costs" },
+                                      { category: "Passenger Services", percentage: 30, description: "Passenger accommodation and service recovery" },
+                                      { category: "Coordination", percentage: 15, description: "Inter-departmental coordination and communication" },
+                                      { category: "Administrative", percentage: 5, description: "Documentation and regulatory compliance" }
+                                    ];
+                                  }
+
+                                  return defaultBreakdown.map((item, index) => (
+                                    <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                                      <div>
+                                        <div className="font-medium">{item.category}</div>
+                                        <div className="text-sm text-gray-600">{item.description}</div>
+                                      </div>
+                                      <div className="text-right">
+                                        <div className="font-semibold">
+                                          {airlineConfig.currency} {Math.round(actualCost * item.percentage / 100).toLocaleString()}
+                                        </div>
+                                        <div className="text-sm text-gray-600">{item.percentage}%</div>
+                                      </div>
+                                    </div>
+                                  ));
+                                })()}
+                              </div>
                             </div>
                           );
                         })()}
@@ -2053,78 +2030,64 @@ export function PendingSolutions() {
 
                   <Card>
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-blue-600" />
-                        Operational Impact
-                      </CardTitle>
+                      <CardTitle>Operational Impact</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {/* Schedule Impact */}
-                        <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Clock className="h-4 w-4 text-yellow-600" />
-                            <span className="font-medium text-yellow-800">
-                              Schedule Impact
-                            </span>
-                            <Badge className="bg-yellow-100 text-yellow-700 ml-auto">
-                              Minimal passenger disruption
-                            </Badge>
+                        <div className="grid grid-cols-1 gap-3">
+                          <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Clock className="h-4 w-4 text-yellow-600" />
+                              <span className="font-medium text-yellow-800">
+                                Schedule Impact
+                              </span>
+                            </div>
+                            <p className="text-sm text-yellow-700">
+                              {selectedPlan.estimatedDelay || 0} minute delay
+                              expected
+                            </p>
                           </div>
-                          <p className="text-sm text-yellow-700">
-                            {selectedPlan?.estimatedDelay || 0} minute delay
-                            expected
-                          </p>
-                        </div>
 
-                        {/* Passenger Impact */}
-                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Users className="h-4 w-4 text-blue-600" />
-                            <span className="font-medium text-blue-800">
-                              Passenger Impact
-                            </span>
-                            <Badge className="bg-blue-100 text-blue-700 ml-auto">
-                              Operational Limited
-                            </Badge>
+                          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Users className="h-4 w-4 text-blue-600" />
+                              <span className="font-medium text-blue-800">
+                                Passenger Impact
+                              </span>
+                            </div>
+                            <p className="text-sm text-blue-700">
+                              {selectedPlan.affectedPassengers || "N/A"}{" "}
+                              passengers affected
+                            </p>
                           </div>
-                          <p className="text-sm text-blue-700">
-                            {selectedPlan?.affectedPassengers || 0} passengers
-                            affected
-                          </p>
-                        </div>
 
-                        {/* Success Probability */}
-                        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <TrendingUp className="h-4 w-4 text-green-600" />
-                            <span className="font-medium text-green-800">
-                              Success Probability
-                            </span>
-                            <Badge className="bg-green-100 text-green-700 ml-auto">
-                              90% confidence in schedule resolution
-                            </Badge>
+                          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <TrendingUp className="h-4 w-4 text-green-600" />
+                              <span className="font-medium text-green-800">
+                                Success Probability
+                              </span>
+                            </div>
+                            <p className="text-sm text-green-700">
+                              {selectedPlan.confidence || 80}% confidence in
+                              successful resolution
+                            </p>
                           </div>
-                          <p className="text-sm text-green-700">
-                            {selectedPlan?.confidence || 90}% confidence in
-                            successful resolution
-                          </p>
-                        </div>
 
-                        {/* Network Impact */}
-                        <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Target className="h-4 w-4 text-purple-600" />
-                            <span className="font-medium text-purple-800">
-                              Network Impact
-                            </span>
-                            <Badge className="bg-purple-100 text-purple-700 ml-auto">
-                              Operational minimal
-                            </Badge>
+                          <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Target className="h-4 w-4 text-purple-600" />
+                              <span className="font-medium text-purple-800">
+                                Network Impact
+                              </span>
+                            </div>
+                            <p className="text-sm text-purple-700">
+                              {selectedPlan.rotationImpact?.networkImpact ||
+                                selectedPlan.matchingOption?.rotation_plan
+                                  ?.networkImpact ||
+                                "Assessment pending"}
+                            </p>
                           </div>
-                          <p className="text-sm text-purple-700">
-                            Minimal impact on downstream operations
-                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -2244,8 +2207,8 @@ export function PendingSolutions() {
                         )}
                       </CardContent>
                     </Card>
-                  ) : null}
-                
+                  </Card> : null}
+
               </TabsContent>
 
               {/* Passenger Re-accommodation Tab - UPDATED */}
@@ -2842,15 +2805,12 @@ export function PendingSolutions() {
 
                               const groupCount = Array.isArray(rawPassengerData)
                                 ? Object.keys(
-                                    rawPassengerData.reduce(
-                                      (acc, passenger) => {
-                                        const pnr = passenger.pnr || "UNKNOWN";
-                                        if (!acc[pnr]) acc[pnr] = [];
-                                        acc[pnr].push(passenger);
-                                        return acc;
-                                      },
-                                      {},
-                                    ),
+                                    rawPassengerData.reduce((acc, passenger) => {
+                                      const pnr = passenger.pnr || "UNKNOWN";
+                                      if (!acc[pnr]) acc[pnr] = [];
+                                      acc[pnr].push(passenger);
+                                      return acc;
+                                    }, {}),
                                   ).length
                                 : 0;
 
@@ -3169,8 +3129,8 @@ export function PendingSolutions() {
                     </Card>
                   </div>
                 </TabsContent>
-              )}
-            </Tabs>
+              </Tabs>
+            )}
           </DialogContent>
         </Dialog>
       )}
@@ -3883,8 +3843,8 @@ export function PendingSolutions() {
                         </span>
                       </div>
                       <p className="text-sm text-blue-700">
-                        All passengers accommodated on same aircraft with 65min
-                        delay.
+                        All passengers accommodated on same aircraft with
+                        65min delay.
                       </p>
                     </div>
 
@@ -4070,7 +4030,8 @@ export function PendingSolutions() {
                         {(() => {
                           const rawPassengerData =
                             selectedPlan?.passengerInformation ||
-                            selectedPlan?.matchingOption?.passenger_rebooking ||
+                            selectedPlan?.matchingOption
+                              ?.passenger_rebooking ||
                             selectedPlan?.matchingOption
                               ?.passenger_information ||
                             [];
