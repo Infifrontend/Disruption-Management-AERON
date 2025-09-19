@@ -2043,7 +2043,7 @@ export function PendingSolutions() {
                       </CardContent>
                     </Card>
                   ) : null}
-                </div>
+                
               </TabsContent>
 
               {/* Passenger Re-accommodation Tab - UPDATED */}
