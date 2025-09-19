@@ -1664,7 +1664,7 @@ export function PendingSolutions() {
                   {/* Cost Impact Analysis */}
                   <Card>
                     <CardHeader>
-                      <CardTitle>Cost Impact Analysis</CardTitle>
+                      <CardTitle>Selected Option – Cost Impact Analysis</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
@@ -1682,22 +1682,103 @@ export function PendingSolutions() {
                             actualCost = selectedOption.estimated_cost;
                           }
 
+                          // Calculate cost breakdown based on actual cost
+                          const fuelCost = Math.round(actualCost * 0.35); // 35% for fuel
+                          const crewCost = Math.round(actualCost * 0.25); // 25% for crew
+                          const aircraftCost = Math.round(actualCost * 0.20); // 20% for aircraft
+                          const passengerCost = Math.round(actualCost * 0.15); // 15% for passenger services
+                          const operationalCost = actualCost - fuelCost - crewCost - aircraftCost - passengerCost; // Remaining for operational
+
                           return (
-                            <div className="space-y-4">
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm">Total:</span>
-                                <span className="font-semibold">{airlineConfig.currency} {actualCost.toLocaleString()}</span>
+                            <div className="space-y-6">
+                              {/* Cost Breakdown Cards */}
+                              <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-medium text-blue-800">Fuel Cost</span>
+                                    <span className="text-lg font-bold text-blue-900">
+                                      {airlineConfig.currency} {fuelCost.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-blue-600">35% of total cost</div>
+                                </div>
+
+                                <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-medium text-purple-800">Crew Cost</span>
+                                    <span className="text-lg font-bold text-purple-900">
+                                      {airlineConfig.currency} {crewCost.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-purple-600">25% of total cost</div>
+                                </div>
+
+                                <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-medium text-green-800">Aircraft Cost</span>
+                                    <span className="text-lg font-bold text-green-900">
+                                      {airlineConfig.currency} {aircraftCost.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-green-600">20% of total cost</div>
+                                </div>
+
+                                <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <span className="text-sm font-medium text-orange-800">Passenger Services</span>
+                                    <span className="text-lg font-bold text-orange-900">
+                                      {airlineConfig.currency} {passengerCost.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="text-xs text-orange-600">15% of total cost</div>
+                                </div>
                               </div>
-                              <div className="flex justify-between items-center">
-                                <span className="text-sm">Breakdown:</span>
-                                <span className="font-semibold">{airlineConfig.currency} {actualCost.toLocaleString()}</span>
+
+                              {/* Operational Cost */}
+                              <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-medium text-gray-800">Other Operational Costs</span>
+                                  <span className="text-lg font-bold text-gray-900">
+                                    {airlineConfig.currency} {operationalCost.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="text-xs text-gray-600">Remaining operational expenses</div>
                               </div>
-                              <div className="border-t pt-3">
-                                <div className="flex justify-between items-center text-lg">
-                                  <span className="font-semibold">Total Estimated Cost:</span>
-                                  <span className="font-bold text-orange-600">
+
+                              {/* Total Cost Summary */}
+                              <div className="border-t pt-4">
+                                <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
+                                  <span className="text-lg font-bold text-gray-900">Total Estimated Cost:</span>
+                                  <span className="text-2xl font-bold text-orange-600">
                                     {airlineConfig.currency} {actualCost.toLocaleString()}
                                   </span>
+                                </div>
+                              </div>
+
+                              {/* Cost Breakdown Details */}
+                              <div className="space-y-2">
+                                <h4 className="font-semibold text-gray-800 mb-3">Detailed Breakdown:</h4>
+                                <div className="space-y-1 text-sm">
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">• Fuel & Navigation charges</span>
+                                    <span className="font-medium">{airlineConfig.currency} {fuelCost.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">• Crew accommodation & overtime</span>
+                                    <span className="font-medium">{airlineConfig.currency} {crewCost.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">• Aircraft repositioning & maintenance</span>
+                                    <span className="font-medium">{airlineConfig.currency} {aircraftCost.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">• Passenger compensation & services</span>
+                                    <span className="font-medium">{airlineConfig.currency} {passengerCost.toLocaleString()}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">• Ground handling & operational support</span>
+                                    <span className="font-medium">{airlineConfig.currency} {operationalCost.toLocaleString()}</span>
+                                  </div>
                                 </div>
                               </div>
                             </div>
