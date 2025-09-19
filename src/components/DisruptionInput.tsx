@@ -1957,34 +1957,23 @@ export function DisruptionInput({
                   >
                     <Plane className="h-3.5 w-3.5 transform rotate-180" />
                     <span className="text-xs">{`Inbound 
-                  
+                      (${filters.hub === "all"
+                        ? sortedFlights.filter(f => airportDetails.hubs.map(h => h.code).includes(f.destination)).length
+                        : sortedFlights.filter(f => f.destination === filters.hub).length})
                     `}</span>
-                    {/* (${
-                      filters.hub === "all"
-                        ? sortedFlights.filter(
-                            (f) =>
-                              f.destination === "DXB" ||
-                              f.destination === "DWC",
-                          ).length
-                        : sortedFlights.filter(
-                            (f) => f.destination === filters.hub,
-                          ).length
-                    }) */}
+                   
                   </TabsTrigger>
                   <TabsTrigger
                     value="outbound"
                     className="flex items-center justify-center gap-1.5 py-1.5 px-3 data-[state=active]:bg-white data-[state=active]:text-flydubai-blue font-medium text-gray-600 hover:text-gray-800 transition-colors duration-150 rounded-sm"
                   >
                     <Plane className="h-3.5 w-3.5" />
-                    <span className="text-xs">{`Outbound `}</span>
-                    {/* (${
+                    <span className="text-xs">{`Outbound (${
                       filters.hub === "all"
-                        ? sortedFlights.filter(
-                            (f) => f.origin === "DXB" || f.origin === "DWC",
-                          ).length
-                        : sortedFlights.filter((f) => f.origin === filters.hub)
-                            .length
-                    }) */}
+                        ? sortedFlights.filter(f => airportDetails.hubs.map(h => h.code).includes(f.origin)).length
+                        : sortedFlights.filter(f => f.origin === filters.hub).length
+                    })`}</span>
+                    
                   </TabsTrigger>
                 </TabsList>
 
