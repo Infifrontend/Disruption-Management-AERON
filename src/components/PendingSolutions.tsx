@@ -2232,7 +2232,6 @@ export function PendingSolutions() {
                           </div>
                         )}
                       </CardContent>
-                    </Card>
                   </Card>
                 ) : null}
 
@@ -3159,9 +3158,9 @@ export function PendingSolutions() {
                     </Card>
                   </div>
                 </TabsContent>
-
-              </Tabs>
-            )}
+              )}
+            </Tabs>
+            
           </DialogContent>
         </Dialog>
       )}
