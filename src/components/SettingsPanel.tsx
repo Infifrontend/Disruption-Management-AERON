@@ -766,7 +766,7 @@ export function SettingsPanel({
 
     // Get all parameters in this category except the one being changed
     const otherParams = Object.keys(passengerPriorityConfig[category]).filter(
-      (key) => key !== parameter && !key.startsWith("customParameters"), // exclude customParameters array itself
+      (key) => key !== "customParameters", // exclude customParameters array itself
     );
 
     // Calculate current total of other parameters
@@ -1743,11 +1743,7 @@ export function SettingsPanel({
                                   updateScreenSetting(screen.id, checked)
                                 }
                                 disabled={screen.required}
-                                className={
-                                  screen.enabled
-                                    ? "data-[state=checked]:bg-flydubai-blue"
-                                    : ""
-                                }
+                                className="switch-flydubai"
                               />
                             </div>
                           ))}
@@ -1790,11 +1786,7 @@ export function SettingsPanel({
                                   updateScreenSetting(screen.id, checked)
                                 }
                                 disabled={screen.required}
-                                className={
-                                  screen.enabled
-                                    ? "data-[state=checked]:bg-flydubai-blue"
-                                    : ""
-                                }
+                                className="switch-flydubai"
                               />
                             </div>
                           ))}
@@ -1837,11 +1829,7 @@ export function SettingsPanel({
                                   updateScreenSetting(screen.id, checked)
                                 }
                                 disabled={screen.required}
-                                className={
-                                  screen.enabled
-                                    ? "data-[state=checked]:bg-flydubai-blue"
-                                    : ""
-                                }
+                                className="switch-flydubai"
                               />
                             </div>
                           ))}
@@ -1884,11 +1872,7 @@ export function SettingsPanel({
                                   updateScreenSetting(screen.id, checked)
                                 }
                                 disabled={screen.required}
-                                className={
-                                  screen.enabled
-                                    ? "data-[state=checked]:bg-flydubai-blue"
-                                    : ""
-                                }
+                                className="switch-flydubai"
                               />
                             </div>
                           ))}
@@ -1931,11 +1915,7 @@ export function SettingsPanel({
                                   updateScreenSetting(screen.id, checked)
                                 }
                                 disabled={screen.required}
-                                className={
-                                  screen.enabled
-                                    ? "data-[state=checked]:bg-flydubai-blue"
-                                    : ""
-                                }
+                                className="switch-flydubai"
                               />
                             </div>
                           ))}
@@ -1978,11 +1958,7 @@ export function SettingsPanel({
                                   updateScreenSetting(screen.id, checked)
                                 }
                                 disabled={screen.required}
-                                className={
-                                  screen.enabled
-                                    ? "data-[state=checked]:bg-flydubai-blue"
-                                    : ""
-                                }
+                                className="switch-flydubai"
                               />
                             </div>
                           ))}
@@ -2025,11 +2001,7 @@ export function SettingsPanel({
                                   updateScreenSetting(screen.id, checked)
                                 }
                                 disabled={screen.required}
-                                className={
-                                  screen.enabled
-                                    ? "data-[state=checked]:bg-flydubai-blue"
-                                    : ""
-                                }
+                                className="switch-flydubai"
                               />
                             </div>
                           ))}
@@ -2408,7 +2380,8 @@ export function SettingsPanel({
                     <strong>Scoring Example:</strong> VIP passenger on flydubai
                     flight = {(passengerPriorityConfig as any).flightScoring.baseScore}{" "}
                     (base) +{" "}
-                    {(passengerPriorityConfig as any).flightScoring.priorityBonus} (VIP)
+                    {(passengerPriorityConfig as any).flightScoring.priorityBonus}{" "}
+                    (VIP)
                     + {(passengerPriorityConfig as any).flightScoring.airlineBonus}{" "}
                     (flydubai) ={" "}
                     {(passengerPriorityConfig as any).flightScoring.baseScore +
@@ -3919,11 +3892,7 @@ export function SettingsPanel({
                   <Switch
                     checked={(nlpSettings as any).enabled || false}
                     onCheckedChange={() => handleNlpToggle("enabled")}
-                    className={
-                      (nlpSettings as any).enabled
-                        ? "data-[state=checked]:bg-flydubai-blue"
-                        : ""
-                    }
+                    className="switch-flydubai"
                   />
                 </div>
 
@@ -3979,11 +3948,7 @@ export function SettingsPanel({
                   <Switch
                     checked={(nlpSettings as any).autoApply || false}
                     onCheckedChange={() => handleNlpToggle("autoApply")}
-                    className={
-                      (nlpSettings as any).autoApply
-                        ? "data-[state=checked]:bg-flydubai-blue"
-                        : ""
-                    }
+                    className="switch-flydubai"
                   />
                 </div>
               </CardContent>
