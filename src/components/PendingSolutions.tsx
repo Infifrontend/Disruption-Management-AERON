@@ -1096,9 +1096,9 @@ export function PendingSolutions() {
                             <p className="font-medium">
                               {formatIST(plan.submittedAt)}
                             </p>
-                            <p className="text-sm text-muted-foreground">
+                            {/* <p className="text-sm text-muted-foreground">
                               by {plan.submitterName}
-                            </p>
+                            </p> */}
                           </div>
                           <div>
                             <Label className="text-xs text-muted-foreground">
@@ -1127,36 +1127,13 @@ export function PendingSolutions() {
                         </div>
 
                         <div className="flex items-center gap-4 mb-4">
-                          <div className="flex items-center gap-2">
-                            <Target className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">
-                              {plan.recoverySteps.length} steps
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <UserCheck className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm">
-                              Requires {plan.approvalRequired}
-                            </span>
-                          </div>
+                          
                           <div className="flex items-center gap-2">
                             <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm">
                               {plan.disruptionReason}
                             </span>
                           </div>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {plan.tags.map((tag, index) => (
-                            <Badge
-                              key={index}
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              {tag}
-                            </Badge>
-                          ))}
                         </div>
 
                         {plan.rejectionReason && (
@@ -1680,7 +1657,7 @@ export function PendingSolutions() {
                       </div>
                     )}
                   </CardContent>
-                </Card></old_str>
+                </Card>
 
                 {/* Bottom Analysis Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1781,8 +1758,7 @@ export function PendingSolutions() {
                       </div>
                     </CardContent>
                   </Card>
-                </div></old_str>
-
+                </div>
                 {/* Detailed Rotation Impact (if available) */}
                 {selectedPlan?.matchingOption?.rotation_plan?.aircraft ||
                 selectedPlan?.rotationImpact?.aircraft ||
