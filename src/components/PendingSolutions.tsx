@@ -1605,7 +1605,8 @@ export function PendingSolutions() {
                       All Recovery Options - Impact & Cost Analysis
                     </CardTitle>
                     <p className="text-sm text-muted-foreground">
-                      Comprehensive analysis of all available recovery options with detailed cost breakdowns and impact assessments
+                      Comprehensive analysis of all available recovery options with
+                      detailed cost breakdowns and impact assessments
                     </p>
                   </CardHeader>
                   <CardContent>
@@ -1622,8 +1623,8 @@ export function PendingSolutions() {
                             );
 
                             return (
-                              <Card 
-                                key={option.id || index} 
+                              <Card
+                                key={option.id || index}
                                 className={`${isSelected ? 'border-orange-300 bg-orange-50' : 'border-gray-200'} relative`}
                               >
                                 {isSelected && (
@@ -1634,7 +1635,7 @@ export function PendingSolutions() {
                                     </Badge>
                                   </div>
                                 )}
-                                
+
                                 <CardHeader className="pb-3">
                                   <div className="flex items-start justify-between">
                                     <div>
@@ -1643,7 +1644,7 @@ export function PendingSolutions() {
                                         {option.description || "Recovery option description"}
                                       </p>
                                     </div>
-                                    <Badge 
+                                    <Badge
                                       className={
                                         option.impact === "High" ? "bg-red-100 text-red-700" :
                                         option.impact === "Medium" ? "bg-yellow-100 text-yellow-700" :
@@ -1693,7 +1694,7 @@ export function PendingSolutions() {
                                     </h4>
                                     {option.cost_breakdown && typeof option.cost_breakdown === 'object' ? (
                                       <div className="space-y-2">
-                                        {Array.isArray(option.cost_breakdown.breakdown) ? 
+                                        {Array.isArray(option.cost_breakdown.breakdown) ?
                                           option.cost_breakdown.breakdown.slice(0, 3).map((item, idx) => (
                                             <div key={idx} className="flex justify-between text-sm">
                                               <span className="text-muted-foreground">{item.category}:</span>
@@ -1706,9 +1707,9 @@ export function PendingSolutions() {
                                                 {key.replace(/([A-Z])/g, ' $1').trim()}:
                                               </span>
                                               <span className="font-medium">
-                                                {typeof value === 'object' && value && (value as any).amount ? 
-                                                  (value as any).amount : 
-                                                  typeof value === 'string' ? value : 
+                                                {typeof value === 'object' && value && (value as any).amount ?
+                                                  (value as any).amount :
+                                                  typeof value === 'string' ? value :
                                                   `${airlineConfig.currency} ${(value as number || 0).toLocaleString()}`
                                                 }
                                               </span>
@@ -1717,20 +1718,20 @@ export function PendingSolutions() {
                                         }
                                       </div>
                                     ) : (
-                                      <div className="space-y-2">
-                                        <div className="flex justify-between text-sm">
+                                      <div className="space-y-2 text-sm">
+                                        <div className="flex justify-between">
                                           <span className="text-muted-foreground">Operations:</span>
                                           <span className="font-medium">
                                             {airlineConfig.currency} {Math.round((option.estimated_cost || 50000) * 0.6).toLocaleString()}
                                           </span>
                                         </div>
-                                        <div className="flex justify-between text-sm">
+                                        <div className="flex justify-between">
                                           <span className="text-muted-foreground">Passenger Services:</span>
                                           <span className="font-medium">
                                             {airlineConfig.currency} {Math.round((option.estimated_cost || 50000) * 0.25).toLocaleString()}
                                           </span>
                                         </div>
-                                        <div className="flex justify-between text-sm">
+                                        <div className="flex justify-between">
                                           <span className="text-muted-foreground">Administrative:</span>
                                           <span className="font-medium">
                                             {airlineConfig.currency} {Math.round((option.estimated_cost || 50000) * 0.15).toLocaleString()}
@@ -1810,9 +1811,9 @@ export function PendingSolutions() {
 
                                   {/* Action Button */}
                                   <div className="border-t pt-3">
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
                                       className="w-full"
                                       onClick={() => handleViewOptionDetails(option, selectedPlan)}
                                     >
@@ -1856,11 +1857,11 @@ export function PendingSolutions() {
                       <div className="space-y-4">
                         {(() => {
                           const selectedOption = selectedPlan?.matchingOption;
-                          
+
                           // Use actual option cost data instead of fallback
                           let actualCost = selectedPlan?.estimatedCost || 0;
                           let optionCostString = selectedOption?.cost;
-                          
+
                           // Parse the cost from the selected option if available
                           if (optionCostString && typeof optionCostString === 'string') {
                             const parsedCost = parseInt(optionCostString.replace(/[^0-9]/g, ''));
@@ -1870,11 +1871,11 @@ export function PendingSolutions() {
                           } else if (selectedOption?.estimated_cost) {
                             actualCost = selectedOption.estimated_cost;
                           }
-                          
+
                           // Calculate base cost from other options for comparison
                           let baseCost = 165480; // fallback
                           if (selectedPlan?.recoveryOptions && selectedPlan.recoveryOptions.length > 0) {
-                            const otherOptions = selectedPlan.recoveryOptions.filter(opt => 
+                            const otherOptions = selectedPlan.recoveryOptions.filter(opt =>
                               opt.id !== selectedPlan.optionId && opt.option_id !== selectedPlan.optionId
                             );
                             if (otherOptions.length > 0) {
@@ -1884,7 +1885,7 @@ export function PendingSolutions() {
                               }
                             }
                           }
-                          
+
                           const variance = actualCost - baseCost;
 
                           return (
@@ -1935,7 +1936,7 @@ export function PendingSolutions() {
                                 <h4 className="font-medium mb-3">Cost Breakdown</h4>
                                 {selectedOption?.cost_breakdown && typeof selectedOption.cost_breakdown === 'object' ? (
                                   <div className="space-y-2 text-sm">
-                                    {Array.isArray(selectedOption.cost_breakdown.breakdown) ? 
+                                    {Array.isArray(selectedOption.cost_breakdown.breakdown) ?
                                       selectedOption.cost_breakdown.breakdown.map((item, idx) => (
                                         <div key={idx} className="flex justify-between items-center">
                                           <div>
@@ -1956,9 +1957,9 @@ export function PendingSolutions() {
                                         <div key={key} className="flex justify-between">
                                           <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
                                           <span className="font-semibold">
-                                            {typeof value === 'object' && value && (value as any).amount ? 
-                                              (value as any).amount : 
-                                              typeof value === 'string' ? value : 
+                                            {typeof value === 'object' && value && (value as any).amount ?
+                                              (value as any).amount :
+                                              typeof value === 'string' ? value :
                                               `${airlineConfig.currency} ${(value as number || 0).toLocaleString()}`
                                             }
                                           </span>
@@ -1997,24 +1998,26 @@ export function PendingSolutions() {
                                   <div className="space-y-2 text-sm">
                                     {(() => {
                                       const otherOptions = selectedPlan.recoveryOptions
-                                        .filter(opt => opt.id !== selectedPlan.optionId && opt.option_id !== selectedPlan.optionId)
+                                        .filter(opt =>
+                                          opt.id !== selectedPlan.optionId && opt.option_id !== selectedPlan.optionId
+                                        )
                                         .map(opt => ({
                                           title: opt.title,
                                           cost: opt.estimated_cost || 0
                                         }))
                                         .filter(opt => opt.cost > 0)
                                         .sort((a, b) => a.cost - b.cost);
-                                      
+
                                       if (otherOptions.length === 0) return (
                                         <div className="text-blue-700 text-center">
                                           No alternative options available for comparison
                                         </div>
                                       );
-                                      
+
                                       const avgOtherCost = otherOptions.reduce((sum, opt) => sum + opt.cost, 0) / otherOptions.length;
                                       const minOtherCost = Math.min(...otherOptions.map(opt => opt.cost));
                                       const maxOtherCost = Math.max(...otherOptions.map(opt => opt.cost));
-                                      
+
                                       return (
                                         <>
                                           <div className="flex justify-between text-blue-700">
@@ -2053,78 +2056,64 @@ export function PendingSolutions() {
 
                   <Card>
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Activity className="h-5 w-5 text-blue-600" />
-                        Operational Impact
-                      </CardTitle>
+                      <CardTitle>Operational Impact</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {/* Schedule Impact */}
-                        <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Clock className="h-4 w-4 text-yellow-600" />
-                            <span className="font-medium text-yellow-800">
-                              Schedule Impact
-                            </span>
-                            <Badge className="bg-yellow-100 text-yellow-700 ml-auto">
-                              Minimal passenger disruption
-                            </Badge>
+                        <div className="grid grid-cols-1 gap-3">
+                          <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Clock className="h-4 w-4 text-yellow-600" />
+                              <span className="font-medium text-yellow-800">
+                                Schedule Impact
+                              </span>
+                            </div>
+                            <p className="text-sm text-yellow-700">
+                              {selectedPlan.estimatedDelay || 0} minute delay
+                              expected
+                            </p>
                           </div>
-                          <p className="text-sm text-yellow-700">
-                            {selectedPlan?.estimatedDelay || 0} minute delay
-                            expected
-                          </p>
-                        </div>
 
-                        {/* Passenger Impact */}
-                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Users className="h-4 w-4 text-blue-600" />
-                            <span className="font-medium text-blue-800">
-                              Passenger Impact
-                            </span>
-                            <Badge className="bg-blue-100 text-blue-700 ml-auto">
-                              Operational Limited
-                            </Badge>
+                          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Users className="h-4 w-4 text-blue-600" />
+                              <span className="font-medium text-blue-800">
+                                Passenger Impact
+                              </span>
+                            </div>
+                            <p className="text-sm text-blue-700">
+                              {selectedPlan.affectedPassengers || "N/A"} passengers
+                              affected
+                            </p>
                           </div>
-                          <p className="text-sm text-blue-700">
-                            {selectedPlan?.affectedPassengers || 0} passengers
-                            affected
-                          </p>
-                        </div>
 
-                        {/* Success Probability */}
-                        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <TrendingUp className="h-4 w-4 text-green-600" />
-                            <span className="font-medium text-green-800">
-                              Success Probability
-                            </span>
-                            <Badge className="bg-green-100 text-green-700 ml-auto">
-                              90% confidence in schedule resolution
-                            </Badge>
+                          <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <TrendingUp className="h-4 w-4 text-green-600" />
+                              <span className="font-medium text-green-800">
+                                Success Probability
+                              </span>
+                            </div>
+                            <p className="text-sm text-green-700">
+                              {selectedPlan.confidence || 80}% confidence in
+                              successful resolution
+                            </p>
                           </div>
-                          <p className="text-sm text-green-700">
-                            {selectedPlan?.confidence || 90}% confidence in
-                            successful resolution
-                          </p>
-                        </div>
 
-                        {/* Network Impact */}
-                        <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Target className="h-4 w-4 text-purple-600" />
-                            <span className="font-medium text-purple-800">
-                              Network Impact
-                            </span>
-                            <Badge className="bg-purple-100 text-purple-700 ml-auto">
-                              Operational minimal
-                            </Badge>
+                          <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Target className="h-4 w-4 text-purple-600" />
+                              <span className="font-medium text-purple-800">
+                                Network Impact
+                              </span>
+                            </div>
+                            <p className="text-sm text-purple-700">
+                              {selectedPlan.rotationImpact?.networkImpact ||
+                                selectedPlan.matchingOption?.rotation_plan
+                                  ?.networkImpact ||
+                                "Assessment pending"}
+                            </p>
                           </div>
-                          <p className="text-sm text-purple-700">
-                            Minimal impact on downstream operations
-                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -2244,8 +2233,9 @@ export function PendingSolutions() {
                         )}
                       </CardContent>
                     </Card>
-                  ) : null}
-                
+                  </Card>
+                ) : null}
+
               </TabsContent>
 
               {/* Passenger Re-accommodation Tab - UPDATED */}
@@ -3131,8 +3121,8 @@ export function PendingSolutions() {
                                 </span>
                               </div>
                               <p className="text-sm text-blue-700">
-                                {selectedPlan.affectedPassengers || "N/A"}{" "}
-                                passengers affected
+                                {selectedPlan.affectedPassengers || "N/A"} passengers
+                                affected
                               </p>
                             </div>
 
@@ -3169,8 +3159,9 @@ export function PendingSolutions() {
                     </Card>
                   </div>
                 </TabsContent>
-              )}
-            </Tabs>
+
+              </Tabs>
+            )}
           </DialogContent>
         </Dialog>
       )}
@@ -3783,7 +3774,9 @@ export function PendingSolutions() {
                         <h4 className="font-medium mb-3">Compensation</h4>
                         <div className="space-y-2">
                           <div className="flex justify-between">
-                            <span className="text-sm">Per passenger avg:</span>
+                            <span className="text-sm">
+                              Per passenger avg:
+                            </span>
                             <span className="font-medium">
                               {(() => {
                                 const passengerData =
@@ -3815,7 +3808,9 @@ export function PendingSolutions() {
                             </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-sm">Total compensation:</span>
+                            <span className="text-sm">
+                              Total compensation:
+                            </span>
                             <span className="font-medium">
                               {(() => {
                                 const passengerData =
@@ -3919,17 +3914,18 @@ export function PendingSolutions() {
                             );
                           }
 
-                          const passengersByPnr = currentPassengerData.reduce(
-                            (acc, passenger) => {
-                              const pnr = passenger.pnr || "Unknown";
-                              if (!acc[pnr]) {
-                                acc[pnr] = [];
-                              }
-                              acc[pnr].push(passenger);
-                              return acc;
-                            },
-                            {},
-                          );
+                          const passengersByPnr =
+                            currentPassengerData.reduce(
+                              (acc, passenger) => {
+                                const pnr = passenger.pnr || "Unknown";
+                                if (!acc[pnr]) {
+                                  acc[pnr] = [];
+                                }
+                                acc[pnr].push(passenger);
+                                return acc;
+                              },
+                              {},
+                            );
 
                           return Object.entries(passengersByPnr)
                             .slice(0, 8)
@@ -3949,7 +3945,8 @@ export function PendingSolutions() {
                                         variant="secondary"
                                         className="bg-blue-100 text-blue-800"
                                       >
-                                        {(passengers as any).length} passenger
+                                        {(passengers as any).length}{" "}
+                                        passenger
                                         {(passengers as any).length > 1
                                           ? "s"
                                           : ""}
@@ -4217,7 +4214,7 @@ export function PendingSolutions() {
                                     <Label className="text-xs text-muted-foreground">
                                       Impact Reason
                                     </Label>
-                                    <p className="text-sm mt-1">
+                                    <p className="mt-1">
                                       {flight.reason}
                                     </p>
                                   </div>
