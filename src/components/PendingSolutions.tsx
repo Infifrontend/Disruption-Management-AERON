@@ -2986,8 +2986,8 @@ export function PendingSolutions() {
                       </CardContent>
                     </Card>
                   </div>
-                </div>
-              </TabsContent>
+                </TabsContent>
+              )}
             </Tabs>
           </DialogContent>
         </Dialog>
@@ -3855,10 +3855,7 @@ export function PendingSolutions() {
                                                 </span>
                                                 <span className="text-xs">
                                                   {passenger.additional_services.map(
-                                                    (
-                                                      service,
-                                                      serviceIndex,
-                                                    ) => (
+                                                    (service, serviceIndex) => (
                                                       <Badge
                                                         key={serviceIndex}
                                                         variant="outline"
@@ -3888,8 +3885,7 @@ export function PendingSolutions() {
                         {(() => {
                           const rawPassengerData =
                             selectedPlan?.passengerInformation ||
-                            selectedPlan?.matchingOption
-                              ?.passenger_rebooking ||
+                            selectedPlan?.matchingOption?.passenger_rebooking ||
                             selectedPlan?.matchingOption
                               ?.passenger_information ||
                             [];
@@ -3991,7 +3987,7 @@ export function PendingSolutions() {
                                       {flight.impact}
                                     </Badge>
                                   </div>
-
+  
                                   <div className="grid grid-cols-2 gap-4 text-sm">
                                     <div>
                                       <Label className="text-xs text-muted-foreground">
@@ -4031,7 +4027,7 @@ export function PendingSolutions() {
                                       </p>
                                     </div>
                                   </div>
-
+  
                                   <div className="p-3 bg-gray-50 rounded">
                                     <Label className="text-xs text-muted-foreground">
                                       Impact Reason
