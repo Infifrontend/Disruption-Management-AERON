@@ -1545,7 +1545,7 @@ const getAircraftIssuesRecoveryData = () => {
         "Partner airline capacity dependency",
         "Complex rebooking coordination required",
       ],
-      impact_area: ["passenger", "crew"],
+      impact_area: ["passenger"],
       impact_summary: `Aircraft issue recovery for ${config.code || 'FZ'}147: Technical disruption requiring aircraft substitution with minimal passenger impact through efficient swap procedures.`,
       resource_requirements: [
         {
