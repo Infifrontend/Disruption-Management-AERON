@@ -3952,8 +3952,8 @@ export function PendingSolutions() {
                               selectedPlan?.rotationImpact?.rotation_impact;
 
                             if (
-                              !Array.isArray(rotationImpact) ||
-                              rotationImpact.length != 0
+                              Array.isArray(rotationImpact) &&
+                              rotationImpact.length > 0
                             ) {
                               console.log(rotationImpact, 'rotationImpact123')
                               return rotationImpact.map((flight, index) => (
@@ -4038,6 +4038,12 @@ export function PendingSolutions() {
                                   </div>
                                 </div>
                               ));
+                            } else {
+                              return (
+                                <div className="text-center text-sm text-muted-foreground p-4">
+                                  No rotation impact data available
+                                </div>
+                              );
                             }
                           })()}
                         </CardContent>
